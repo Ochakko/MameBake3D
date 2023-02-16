@@ -1256,6 +1256,13 @@ public: //accesser
 	}
 
 
+	//2023/02/16
+	//fbxの初期姿勢のジョイントの向きを書き出すために追加
+	void SaveFbxNodePosture(FbxNode* pNode);
+	void RestoreFbxNodePosture(FbxNode* pNode);
+
+
+
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
 	CRITICAL_SECTION m_CritSection_AddMP;
@@ -1395,6 +1402,22 @@ private:
 	bool m_skipRenderBoneMark;
 
 	FbxNode* m_fbxnodeonload;//2022/11/01
+
+
+	//2023/02/16
+	//jointの向きの書き出しに対応するためメンバ追加
+	FbxDouble3 m_fbxLclPos;
+	FbxDouble3 m_fbxRotOff;
+	FbxDouble3 m_fbxRotPiv;
+	FbxDouble3 m_fbxPreRot;
+	FbxDouble3 m_fbxLclRot;
+	FbxDouble3 m_fbxPostRot;
+	FbxDouble3 m_fbxSclOff;
+	FbxDouble3 m_fbxSclPiv;
+	FbxDouble3 m_fbxLclScl;
+	bool m_fbxrotationActive;
+
+
 
 	CBone* m_parent;
 	CBone* m_child;

@@ -1903,7 +1903,7 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 	//Reqで呼び出す
 	//テスト中　未採用
 
-	if (!dstnodemat || !dstnodeanimmat) {
+	if (!dstnodemat || !dstnodeanimmat || !curbone) {
 		_ASSERT(0);
 		return 1;
 	}
@@ -1914,99 +1914,61 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 
 	FbxNode* pNode = pmodel->GetBoneNode(curbone);
 	if (pNode) {
-		FbxDouble3 fbxLclPos = pNode->LclTranslation.Get();
-		FbxDouble3 fbxRotOff = pNode->RotationOffset.Get();
-		FbxDouble3 fbxRotPiv = pNode->RotationPivot.Get();
-		FbxDouble3 fbxPreRot = pNode->PreRotation.Get();
-		FbxDouble3 fbxLclRot = pNode->LclRotation.Get();
-		FbxDouble3 fbxPostRot = pNode->PostRotation.Get();
-		FbxDouble3 fbxSclOff = pNode->ScalingOffset.Get();
-		FbxDouble3 fbxSclPiv = pNode->ScalingPivot.Get();
-		FbxDouble3 fbxLclScl = pNode->LclScaling.Get();
 
-		bool rotationActive = pNode->RotationActive.Get();
+		curbone->SaveFbxNodePosture(pNode);//2023/02/16
 
-		//Local Matrix = LclTranslation * RotationOffset * RotationPivot *
-		//	PreRotation * LclRotation * PostRotation * RotationPivotInverse *
-		//	ScalingOffset * ScalingPivot * LclScaling * ScalingPivotInverse
+		FbxTime fbxtime;
+		fbxtime.SetSecondDouble(0.0);
+		FbxDouble3 fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);
+		FbxDouble3 fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);
+		FbxDouble3 fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);
+
+		FbxDouble3 fbxRotOff = pNode->GetRotationOffset(FbxNode::eSourcePivot);
+		FbxDouble3 fbxRotPiv = pNode->GetRotationPivot(FbxNode::eSourcePivot);
+		FbxDouble3 fbxPreRot = pNode->GetPreRotation(FbxNode::eSourcePivot);
+		FbxDouble3 fbxPostRot = pNode->GetPostRotation(FbxNode::eSourcePivot);
+		FbxDouble3 fbxSclOff = pNode->GetScalingOffset(FbxNode::eSourcePivot);
+		FbxDouble3 fbxSclPiv = pNode->GetScalingPivot(FbxNode::eSourcePivot);
+		bool rotationActive = pNode->GetRotationActive();
+
+
+		ChaMatrix fbxT, fbxRoff, fbxRp, fbxRpre, fbxR, fbxRpost, fbxRpinv, fbxSoff, fbxSp, fbxS, fbxSpinv;
+		fbxT.SetIdentity();
+		fbxRoff.SetIdentity();
+		fbxRp.SetIdentity();
+		fbxRpre.SetIdentity();
+		fbxR.SetIdentity();
+		fbxRpost.SetIdentity();
+		fbxRpinv.SetIdentity();
+		fbxSoff.SetIdentity();
+		fbxSp.SetIdentity();
+		fbxS.SetIdentity();
+		fbxSpinv.SetIdentity();
+
+		fbxT.SetTranslation(ChaVector3((float)fbxLclPos[0], (float)fbxLclPos[1], (float)fbxLclPos[2]));
+		fbxRoff.SetTranslation(ChaVector3((float)fbxRotOff[0], (float)fbxRotOff[1], (float)fbxRotOff[2]));
+		fbxRp.SetTranslation(ChaVector3((float)fbxRotPiv[0], (float)fbxRotPiv[1], (float)fbxRotPiv[2]));
+		fbxRpre.SetXYZRotation(0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
+		fbxR.SetXYZRotation(0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
+		fbxRpost.SetXYZRotation(0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
+		fbxRpinv = ChaMatrixInv(fbxRp);
+		fbxSoff.SetTranslation(ChaVector3((float)fbxSclOff[0], (float)fbxSclOff[1], (float)fbxSclOff[2]));
+		fbxSp.SetTranslation(ChaVector3((float)fbxSclPiv[0], (float)fbxSclPiv[1], (float)fbxSclPiv[2]));
+		fbxS.SetScale(ChaVector3((float)fbxLclScl[0], (float)fbxLclScl[1], (float)fbxLclScl[2]));
+		fbxSpinv = ChaMatrixInv(fbxSp);
+
+		//#############################################################################
+		//Transform = T * Roff * Rp * Rpre * R * Rpost * Rp-1 * Soff * Sp * S * Sp-1
+		//#############################################################################
 
 		ChaMatrix localnodemat, localnodeanimmat;
-		localnodemat.SetIdentity();
-		localnodeanimmat.SetIdentity();
+		localnodeanimmat = fbxT * fbxRoff * fbxRp * fbxRpre * fbxR * fbxRpost * fbxRpinv * fbxSoff * fbxSp * fbxS * fbxSpinv;
+		
+		//0フレームアニメ無し : fbxRとfbxS無し
+		localnodemat = fbxT * fbxRoff * fbxRp * fbxRpre * fbxRpost * fbxRpinv * fbxSoff * fbxSp * fbxSpinv;
 
-		ChaMatrix tramat0, tramat1, tramat2_0, tramat2_anim;
-		ChaMatrix scalemat;
-		CQuaternion lclrotq, prerotq, postrotq, rotq, rotwithanimq;
-		ChaMatrix rotmat, rotwithanimmat;
-		tramat0.SetIdentity();
-		tramat1.SetIdentity();
-		tramat2_0.SetIdentity();
-		tramat2_anim.SetIdentity();
-		scalemat.SetIdentity();
-		lclrotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-		prerotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-		postrotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-		rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-		rotwithanimq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-		rotmat.SetIdentity();
-		rotwithanimmat.SetIdentity();
-
-		tramat0.SetTranslation(ChaVector3((float)-fbxSclPiv[0], (float)-fbxSclPiv[1], (float)-fbxSclPiv[2]));
-		scalemat.SetScale(ChaVector3((float)fbxLclScl[0], (float)fbxLclScl[1], (float)fbxLclScl[2]));
-		tramat1.SetTranslation(
-			ChaVector3((float)(fbxSclOff[0] + fbxSclPiv[0] - fbxRotPiv[0]),
-				(float)(fbxSclOff[1] + fbxSclPiv[1] - fbxRotPiv[1]),
-				(float)(fbxSclOff[2] + fbxSclPiv[2] - fbxRotPiv[2])));
-		//lclrotq.SetRotationRadXYZ(0, fbxLclRot[0], fbxLclRot[1], fbxLclRot[2]);
-		//prerotq.SetRotationRadXYZ(0, fbxPreRot[0], fbxPreRot[1], fbxPreRot[2]);
-		//postrotq.SetRotationRadXYZ(0, fbxPostRot[0], fbxPostRot[1], fbxPostRot[2]);
-		lclrotq.SetRotationXYZ(0, fbxLclRot[0], fbxLclRot[1], fbxLclRot[2]);
-		prerotq.SetRotationXYZ(0, fbxPreRot[0], fbxPreRot[1], fbxPreRot[2]);
-		postrotq.SetRotationXYZ(0, fbxPostRot[0], fbxPostRot[1], fbxPostRot[2]);
-
-		if (rotationActive) {
-			rotwithanimq = postrotq * lclrotq * prerotq;//lclrotqは０フレームアニメ成分と思われる
-			rotq = postrotq * prerotq;
-		}
-		else {
-			//rotq = lclrotq;//lclrotqは０フレームアニメ成分と思われる
-			rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-		}
-		rotmat = rotq.MakeRotMatX();
-
-		tramat1.SetTranslation(
-			ChaVector3((float)(fbxSclOff[0] + fbxSclPiv[0] - fbxRotPiv[0]),
-				(float)(fbxSclOff[1] + fbxSclPiv[1] - fbxRotPiv[1]),
-				(float)(fbxSclOff[2] + fbxSclPiv[2] - fbxRotPiv[2])));
-
-
-		tramat2_0.SetTranslation(
-			ChaVector3((float)(fbxRotOff[0] + fbxRotPiv[0]),
-				(float)(fbxRotOff[1] + fbxRotPiv[1]),
-				(float)(fbxRotOff[2] + fbxRotPiv[2])));
-		tramat2_anim.SetTranslation(//lclposは０フレームアニメ成分だと思われる
-			ChaVector3((float)(fbxLclPos[0] + fbxRotOff[0] + fbxRotPiv[0]),
-				(float)(fbxLclPos[1] + fbxRotOff[1] + fbxRotPiv[1]),
-				(float)(fbxLclPos[2] + fbxRotOff[2] + fbxRotPiv[2])));
-
-		localnodeanimmat = tramat0 * scalemat * tramat1 * rotwithanimmat * tramat2_anim;//with 0frame anim
-		localnodemat = tramat0 * scalemat * tramat1 * rotmat * tramat2_0;//without 0frame anim
-		//curbone->SetLocalNodeMat(localnodemat);
-
-		*dstnodeanimmat = localnodeanimmat;
 		*dstnodemat = localnodemat;
-
-
-		//ChaMatrix parentglobalnodemat;
-		//ChaMatrix globalnodemat;
-		//parentglobalnodemat.SetIdentity();
-		//globalnodemat.SetIdentity();
-		//if (curbone->GetParent()) {
-		//	parentglobalnodemat = curbone->GetParent()->GetNodeMat();
-		//}
-		//globalnodemat = localnodemat * parentglobalnodemat;
-		//curbone->SetNodeMat(globalnodemat);
-		//retmat = globalnodemat;
+		*dstnodeanimmat = localnodeanimmat;
 	}
 	else {
 		_ASSERT(0);
@@ -2118,6 +2080,8 @@ void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lBindMatrix)
 	lBindMatrix[3][1] = tramat.data[MATI_42];
 	lBindMatrix[3][2] = tramat.data[MATI_43];
 	lBindMatrix[3][3] = tramat.data[MATI_44];
+
+	
 
 	return;
 }
@@ -2623,7 +2587,9 @@ CFBXBone* CreateFBXBone(FbxScene* pScene, CModel* pmodel )
 
 	lSkeletonNode = FbxNode::Create(pScene,lNodeName.Buffer());
 	lSkeletonNode->SetNodeAttribute(lSkeletonNodeAttribute);
-	lSkeletonNode->LclTranslation.Set(FbxVector4(topj->GetJointFPos().x, topj->GetJointFPos().y, topj->GetJointFPos().z));
+	//lSkeletonNode->LclTranslation.Set(FbxVector4(topj->GetJointFPos().x, topj->GetJointFPos().y, topj->GetJointFPos().z));
+	topj->RestoreFbxNodePosture(lSkeletonNode);
+
 	//{
 	//	ChaMatrix tramat;
 	//	ChaMatrix zeroanim;//2022/08/18
@@ -2700,7 +2666,8 @@ void CreateFBXBoneReq( FbxScene* pScene, CBone* pbone, CFBXBone* parfbxbone )
 	lSkeletonLimbNodeAttribute1->Size.Set(1.0);
 	FbxNode* lSkeletonLimbNode1 = FbxNode::Create(pScene,lLimbNodeName1.Buffer());
 	lSkeletonLimbNode1->SetNodeAttribute(lSkeletonLimbNodeAttribute1);
-	lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x - parentpos.x, curpos.y - parentpos.y, curpos.z - parentpos.z));
+	//lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x - parentpos.x, curpos.y - parentpos.y, curpos.z - parentpos.z));
+	pbone->RestoreFbxNodePosture(lSkeletonLimbNode1);
 
 	//ChaVector3 curpos = ChaVector3(0.0f, 0.0f, 0.0f);
 	//{
@@ -3641,15 +3608,17 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 			parentnodeanimmat = curbone->GetParent()->GetNodeAnimMat();
 		}
 		//nodemat = localnodemat * parentnodemat;
-		nodeanimmat = localnodeanimmat * parentnodeanimmat;
+		nodeanimmat = localnodeanimmat * parentnodeanimmat;//!!!!!!!!! bindmatと同じ
+		//nodemat = nodeanimmat;
 
-		nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
+		nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);//!!!!!! nodeanimmatと同じ
 
 
 		//curbone->SetPositionFound(lPositionFound);//!!!
 		curbone->SetPositionFound(true);//!!! 2022/07/30 bone markを表示するためtrueに。
 
 		curbone->SetNodeMat(nodemat);//2022/12/19
+		//curbone->SetNodeMat(nodeanimmat);
 		curbone->SetNodeAnimMat(nodeanimmat);//2022/12/21
 
 		curbone->SetGlobalPosMat(lGlobalPosition);

@@ -390,8 +390,18 @@ int CBone::InitParams()
 
 
 	m_befupdatetime = -1.0;
-
 	m_skipRenderBoneMark = false;
+
+	m_fbxLclPos = FbxDouble3(0.0, 0.0, 0.0);
+	m_fbxRotOff = FbxDouble3(0.0, 0.0, 0.0);
+	m_fbxRotPiv = FbxDouble3(0.0, 0.0, 0.0);
+	m_fbxPreRot = FbxDouble3(0.0, 0.0, 0.0);
+	m_fbxLclRot = FbxDouble3(0.0, 0.0, 0.0);
+	m_fbxPostRot = FbxDouble3(0.0, 0.0, 0.0);
+	m_fbxSclOff = FbxDouble3(0.0, 0.0, 0.0);
+	m_fbxSclPiv = FbxDouble3(0.0, 0.0, 0.0);
+	m_fbxLclScl = FbxDouble3(0.0, 0.0, 0.0);
+	m_fbxrotationActive = false;
 
 	return 0;
 }
@@ -6600,7 +6610,6 @@ int CBone::PasteMotionPoint(bool limitdegflag, int srcmotid, double srcframe, CM
 
 ChaVector3 CBone::CalcFBXEulXYZ(bool limitdegflag, int srcmotid, double srcframe, ChaVector3* befeulptr)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
 
 	//############################
 	// fbx書き出し専用
@@ -6620,59 +6629,18 @@ ChaVector3 CBone::CalcFBXEulXYZ(bool limitdegflag, int srcmotid, double srcframe
 	// NodeMatを掛けた姿勢を書き出す。
 	//############################################################################
 
-	ChaVector3 orgeul = ChaVector3(0.0f, 0.0f, 0.0f);
-	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-	
-	ChaMatrix wmanim = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-	ChaMatrix fbxwm = GetNodeMat() * wmanim;
-	ChaMatrix parentfbxwm;
-	parentfbxwm.SetIdentity();
-	if (GetParent()) {
-		ChaMatrix parentwmanim = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-		parentfbxwm = GetParent()->GetNodeMat() * parentwmanim;
-	}
+	//#####################################################################
+	// 2023/02/16
+	// オイラー角がMayaと同じなのだから　そのまま書き出す方が合っている
+	// ジョイントの向きが設定されていても正しく書き出せる
+	//#####################################################################
 
-	ChaMatrix localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
-	CQuaternion fbxq;
-	fbxq.RotationMatrix(localfbxmat);
+	double roundingframe = (double)((int)(srcframe + 0.0001));
 
-	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-	if (befeulptr) {
-		befeul = *befeulptr;
-	}
+	ChaVector3 cureul;
+	cureul = CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 
-	int isfirstbone;
-	if (GetParent()) {
-		isfirstbone = 0;
-	}
-	else {
-		isfirstbone = 1;
-	}
-	int isendbone;
-	if (GetChild()) {
-		if (GetChild()->GetChild()) {
-			isendbone = 0;
-		}
-		else {
-			isendbone = 1;
-		}
-	}
-	else {
-		isendbone = 1;
-	}
-
-	//int notmodify180flag = GetNotModify180Flag(srcmotid, roundingframe);
-	int notmodify180flag = 0;
-	if (roundingframe <= 1.01) {
-		befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-	}
-
-	fbxq.CalcFBXEulXYZ(0, befeul, &orgeul, isfirstbone, isendbone, notmodify180flag);
-
-	cureul = orgeul;
-	
 	return cureul;
-
 }
 //ChaVector3 CBone::CalcFBXEulZXY(int srcmotid, double srcframe, ChaVector3* befeulptr)
 //{
@@ -8976,28 +8944,60 @@ int CBone::SwapCurrentMotionPoint()
 	return 0;
 }
 
-//int CBone::Adjust180Deg(int srcmotid, double srcleng)
-//{
-//	double curframe;
-//	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-//	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-//
-//	befeul = CalcLocalEulXYZ(-1, srcmotid, 0.0, BEFEUL_BEFFRAME);
-//
-//	for (curframe = 1.0; curframe < srcleng; curframe += 1.0) {
-//		int paraxsiflag1 = 1;
-//		cureul = CalcLocalEulXYZ(-1, srcmotid, (double)((int)(curframe + 0.1)), BEFEUL_BEFFRAME);
-//		CQuaternion curq;
-//		curq.ModifyEulerXYZ(&cureul, &befeul, 0, 0, 0);
-//
-//		int inittraflag1 = 0;
-//		//int setchildflag1 = 1;
-//		int setchildflag1 = 0;
-//		SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, curframe);
-//
-//		befeul = cureul;
-//	}
-//
-//	return 0;
-//}
+void CBone::SaveFbxNodePosture(FbxNode* pNode)
+{
+	if (pNode) {
+		//m_fbxLclPos = pNode->LclTranslation.Get();
+		//m_fbxLclRot = pNode->LclRotation.Get();
+		//m_fbxLclScl = pNode->LclScaling.Get();
+
+		FbxTime fbxtime;
+		fbxtime.SetSecondDouble(0.0);
+		m_fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);
+		m_fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);
+		m_fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);
+
+		m_fbxRotOff = pNode->GetRotationOffset(FbxNode::eSourcePivot);
+		m_fbxRotPiv = pNode->GetRotationPivot(FbxNode::eSourcePivot);
+		m_fbxPreRot = pNode->GetPreRotation(FbxNode::eSourcePivot);
+		m_fbxPostRot = pNode->GetPostRotation(FbxNode::eSourcePivot);
+		m_fbxSclOff = pNode->GetScalingOffset(FbxNode::eSourcePivot);
+		m_fbxSclPiv = pNode->GetScalingPivot(FbxNode::eSourcePivot);
+		m_fbxrotationActive = pNode->GetRotationActive();
+	}
+}
+
+//2023/02/16
+//fbxの初期姿勢のジョイントの向きを書き出すために追加
+void CBone::RestoreFbxNodePosture(FbxNode* pNode)
+{
+
+	if (pNode) {
+
+		pNode->LclTranslation.Set(m_fbxLclPos);
+		pNode->LclRotation.Set(m_fbxLclRot);
+		pNode->LclScaling.Set(m_fbxLclScl);
+
+		pNode->SetRotationOffset(FbxNode::eSourcePivot, m_fbxRotOff);
+		//pNode->SetRotationOffset(FbxNode::eDestinationPivot, m_fbxRotOff);
+
+		pNode->SetRotationPivot(FbxNode::eSourcePivot, m_fbxRotPiv);
+		//pNode->SetRotationPivot(FbxNode::eDestinationPivot, m_fbxRotPiv);
+
+		pNode->SetPreRotation(FbxNode::eSourcePivot, m_fbxPreRot);
+		//pNode->SetPreRotation(FbxNode::eDestinationPivot, m_fbxPreRot);
+
+		pNode->SetPostRotation(FbxNode::eSourcePivot, m_fbxPostRot);
+		//pNode->SetPostRotation(FbxNode::eDestinationPivot, m_fbxPostRot);
+
+		pNode->SetScalingOffset(FbxNode::eSourcePivot, m_fbxSclOff);
+		//pNode->SetScalingOffset(FbxNode::eDestinationPivot, m_fbxSclOff);
+
+		pNode->SetScalingPivot(FbxNode::eSourcePivot, m_fbxSclPiv);
+		//pNode->SetScalingPivot(FbxNode::eDestinationPivot, m_fbxSclPiv);
+
+		pNode->SetRotationActive(m_fbxrotationActive);
+	}
+}
+
 
