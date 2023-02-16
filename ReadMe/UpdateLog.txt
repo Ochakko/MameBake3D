@@ -1,5 +1,48 @@
+2023/02/16
+	EditMot 1.2.0.11 release
+
+	モーションを持たないfbx対応
+		１回目の読み込み後　そのまま作業を続けても　OKになった
+ 
+
+	fbxにバインドポーズとジョイントの向きが設定されていても書き出しが正常(Mayaで読める)に
+
+
+	IK操作後にグラフがギザギザする不具合修正
+		IK操作後も　グラフは滑らか
+		元からギザギザしている場合への対応として　メインウインドウに　Smoothスプライトボタン追加
+		繰り返し操作の結果スケールがずれた場合への対応として　ToolWindow-->ScaleAllInit(ギザギザしたら押すボタン)ボタン追加
+		スケール保持自動処理追加
+
+	平滑化機能 不具合修正
+		実行するとピークが後ろにずれたり　形が崩れすぎる不具合修正
+　　
+	よく使うチェックボックスを メインウインドウのスプライトボタン化
+		LimitEulチェックボックスとWallScrapingIKチェックボックスを　メインウインドウのスプライトボタン化
+
+	リターゲットウインドウのよく使うボタンを上方に配置
+		convertボタン, LoadRtgFileボタンを 上方に配置
+		SaveRtgFileボタンは　設定し終わってから押すので　一番下のまま
+
+	モデルパネル、モーションパネルをフレームに組み込み表示(4K)
+
+
+	サンプル更新
+	　Test/0_VRoid_Winter_B4
+
+	トラブルシューティング修正
+	　BecomeJaggedEulerGraph_OnIK.docxを修正
+	　ACaseThatTranslationOfResultOfRetargetDontMove.docxを削除
+
+	YouTubeチャンネル
+		https://www.youtube.com/@ochakkolab
+
+	おちゃっこLAB
+		https://ochakkolab.jp/
+
+
 2023/02/15
-	EditMot 1.2.0.11 RC2
+	EditMot 1.2.0.11へ向けて
 
 	モーションを持たないfbx対応
 		１回目の読み込み後　そのまま作業を続けても　OKになった
