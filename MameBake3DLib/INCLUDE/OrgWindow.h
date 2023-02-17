@@ -914,10 +914,19 @@ void s_dummyfunc()
 			currentPartsSizeY+= a.getSize().y+1;
 			partsList.push_back(&a);
 
-			if( (partsAreaPos.y + currentPartsSizeY + 2) >= size.y ){		//ウィンドウからはみ出る場合はサイズを調整
-				setSize( WindowSize(size.x, partsAreaPos.y+currentPartsSizeY+2) );
-			}
 
+			//2023/02/17追加
+			//modelpanelにScrollWndをaddしている最中に
+			//指定と違う場所に大きい白い領域が表示されるのを防ぐ
+			autoResizeAllParts();
+
+
+			//2023/02/17コメントアウト
+			//setPos(0, 30)したWindowPartsをaddPartsすると
+			//フレーム組み込みOrgWindowのサイズが変わってしまう不具合があったため　コメントアウト
+			//if( (partsAreaPos.y + currentPartsSizeY + 2) >= size.y ){		//ウィンドウからはみ出る場合はサイズを調整
+			//	setSize( WindowSize(size.x, partsAreaPos.y+currentPartsSizeY+2) );
+			//}
 
 			//refreshPosAndSize();//2022/09/20
 
@@ -943,8 +952,10 @@ void s_dummyfunc()
 			
 			std::list<OrgWindowParts*>::iterator itr;
 			for (itr = partsList.begin(); itr != partsList.end(); itr++) {
-				//(*itr)->draw();
-				(*itr)->callRewrite();
+				if (*itr) {
+					//(*itr)->draw();
+					(*itr)->callRewrite();
+				}
 			}
 		}
 
@@ -965,10 +976,12 @@ void s_dummyfunc()
 			//全ての内部要素に対して位置・サイズを自動設定
 			std::list<OrgWindowParts*>::iterator itr;
 			for (itr = partsList.begin(); itr != partsList.end(); itr++) {
-				(*itr)->setPos(  WindowPos(  partsAreaPos.x,  partsAreaPos.y+currentPartsSizeY  ) );
-				(*itr)->setSize( WindowSize( partsAreaSize.x, partsAreaSize.y-currentPartsSizeY ) );
-				(*itr)->autoResize();
-				currentPartsSizeY+= (*itr)->getSize().y+1;
+				if (*itr) {
+					(*itr)->setPos(WindowPos(partsAreaPos.x, partsAreaPos.y + currentPartsSizeY));
+					(*itr)->setSize(WindowSize(partsAreaSize.x, partsAreaSize.y - currentPartsSizeY));
+					(*itr)->autoResize();
+					currentPartsSizeY += (*itr)->getSize().y + 1;
+				}
 			}
 
 			//再描画要求を送る
@@ -1847,15 +1860,19 @@ void s_dummyfunc()
 				int sizey2 = 0;
 				std::list<OrgWindowParts*>::iterator itr;
 				for ( itr = partsList1.begin(); itr != partsList1.end(); itr++) {
-					(*itr)->autoResize();
-					WindowSize befsize = (*itr)->getSize();
-					sizey1 += (*itr)->getSize().y;
+					if (*itr) {
+						(*itr)->autoResize();
+						WindowSize befsize = (*itr)->getSize();
+						sizey1 += (*itr)->getSize().y;
+					}
 				}
 				std::list<OrgWindowParts*>::iterator itr2;
 				for (itr2 = partsList2.begin(); itr2 != partsList2.end(); itr2++) {
-					(*itr2)->autoResize();
-					WindowSize befsize = (*itr2)->getSize();
-					sizey2 += (*itr2)->getSize().y;
+					if (*itr2) {
+						(*itr2)->autoResize();
+						WindowSize befsize = (*itr2)->getSize();
+						sizey2 += (*itr2)->getSize().y;
+					}
 				}
 				size.y = max(sizey1, sizey2);
 				if (size.y == 0) {
@@ -1880,26 +1897,30 @@ void s_dummyfunc()
 			//全ての内部パーツの位置とサイズを自動設定
 			std::list<OrgWindowParts*>::iterator itr;
 			for (itr = partsList1.begin(); itr != partsList1.end(); itr++) {
-				(*itr)->autoResize();//!!!!!!!!!!!!
-				WindowSize befsize = (*itr)->getSize();
-				(*itr)->setPos(  WindowPos(  partsAreaPos1.x,  partsAreaPos1.y+currentPartsSizeY1  ) );
-				//(*itr)->setSize( WindowSize( partsAreaSize1.x, partsAreaSize1.y-currentPartsSizeY1 ) );
-				(*itr)->setSize(WindowSize(partsAreaSize1.x, befsize.y));
-				//(*itr)->autoResize();//befsizeよりも前に移動
+				if (*itr) {
+					(*itr)->autoResize();//!!!!!!!!!!!!
+					WindowSize befsize = (*itr)->getSize();
+					(*itr)->setPos(WindowPos(partsAreaPos1.x, partsAreaPos1.y + currentPartsSizeY1));
+					//(*itr)->setSize( WindowSize( partsAreaSize1.x, partsAreaSize1.y-currentPartsSizeY1 ) );
+					(*itr)->setSize(WindowSize(partsAreaSize1.x, befsize.y));
+					//(*itr)->autoResize();//befsizeよりも前に移動
 
-				//currentPartsSizeY1+= (*itr)->getSize().y+1;
-				currentPartsSizeY1 += (*itr)->getSize().y;
+					//currentPartsSizeY1+= (*itr)->getSize().y+1;
+					currentPartsSizeY1 += (*itr)->getSize().y;
+				}
 			}
 			std::list<OrgWindowParts*>::iterator itr2;
 			for (itr2 = partsList2.begin(); itr2 != partsList2.end(); itr2++) {
-				WindowSize befsize = (*itr2)->getSize();
-				(*itr2)->setPos(  WindowPos(  partsAreaPos2.x,  partsAreaPos2.y+currentPartsSizeY2  ) );
-				//(*itr2)->setSize( WindowSize( partsAreaSize2.x, partsAreaSize2.y-currentPartsSizeY2 ) );
-				(*itr2)->setSize(WindowSize(partsAreaSize2.x, befsize.y));
-				//(*itr2)->autoResize();//befsizeよりも前に移動
+				if (*itr2) {
+					WindowSize befsize = (*itr2)->getSize();
+					(*itr2)->setPos(WindowPos(partsAreaPos2.x, partsAreaPos2.y + currentPartsSizeY2));
+					//(*itr2)->setSize( WindowSize( partsAreaSize2.x, partsAreaSize2.y-currentPartsSizeY2 ) );
+					(*itr2)->setSize(WindowSize(partsAreaSize2.x, befsize.y));
+					//(*itr2)->autoResize();//befsizeよりも前に移動
 
-				//currentPartsSizeY2+= (*itr2)->getSize().y+1;
-				currentPartsSizeY2 += (*itr2)->getSize().y;
+					//currentPartsSizeY2+= (*itr2)->getSize().y+1;
+					currentPartsSizeY2 += (*itr2)->getSize().y;
+				}
 			}
 		}
 		///	Method : 描画
@@ -2401,18 +2422,25 @@ void s_dummyfunc()
 		virtual void autoResize(){
 			if( open ){
 				//パーツエリアの位置とサイズを設定
-				partsAreaPos=  pos+ WindowPos( 3, SIZE_CLOSE_Y+2 );
+				partsAreaPos=  pos + WindowPos( 3, SIZE_CLOSE_Y+2 );
 				partsAreaSize= WindowSize( size.x-3-3, size.y-(SIZE_CLOSE_Y+3)-3 );
 				currentPartsSizeY= 0;
 
 				//全ての内部パーツの位置とサイズを自動設定
 				std::list<OrgWindowParts*>::iterator itr;
 				for(itr = partsList.begin(); itr != partsList.end(); itr++){
-					(*itr)->setPos(  WindowPos(  partsAreaPos.x,  partsAreaPos.y+currentPartsSizeY  ) );
-					(*itr)->setSize( WindowSize( partsAreaSize.x, partsAreaSize.y-currentPartsSizeY ) );
-					(*itr)->autoResize();
+					if (*itr) {
+						//(*itr)->setPos(WindowPos(partsAreaPos.x, partsAreaPos.y + currentPartsSizeY));
+						//(*itr)->setSize(WindowSize(partsAreaSize.x, partsAreaSize.y - currentPartsSizeY));
+						//(*itr)->autoResize();
+						//currentPartsSizeY += (*itr)->getSize().y + 1;
 
-					currentPartsSizeY+= (*itr)->getSize().y+1;
+						(*itr)->autoResize();//!!!!!!!!!!!!
+						WindowSize befsize = (*itr)->getSize();
+						(*itr)->setPos(WindowPos(partsAreaPos.x, partsAreaPos.y + currentPartsSizeY));
+						(*itr)->setSize(WindowSize(partsAreaSize.x, befsize.y));
+						currentPartsSizeY += (*itr)->getSize().y;
+					}
 				}
 
 				//グループボックスのサイズを内部要素に合わせてトリミング
@@ -2495,7 +2523,9 @@ void s_dummyfunc()
 			if( open ){
 				std::list<OrgWindowParts*>::iterator itr;
 				for(itr = partsList.begin(); itr != partsList.end(); itr++){
-					(*itr)->draw();
+					if (*itr) {
+						(*itr)->draw();
+					}
 				}
 			}
 
@@ -3732,8 +3762,40 @@ void s_dummyfunc()
 	class OWP_RadioButton : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_RadioButton( const TCHAR *name ) : OrgWindowParts() {
-			nameList.push_back(name);
+		OWP_RadioButton( const TCHAR *name, bool srclimitnamelen) : OrgWindowParts() {
+
+			limitnamelen = srclimitnamelen;
+
+			if (limitnamelen) {
+				//2023/02/17
+				//sepalatorと一緒に使う場合に　右側にはみ出さないように文字数制限30
+				TCHAR name30[31];
+				ZeroMemory(name30, sizeof(TCHAR) * 31);
+				if (name) {
+					size_t namelen = _tcslen(name);
+					size_t cplen;
+					if (namelen <= 30) {
+						cplen = namelen;
+					}
+					else {
+						cplen = 30;
+					}
+					_tcsncpy_s(name30, 31, name, cplen);
+				}
+				else {
+					_tcscpy_s(name30, 31, _T(" "));
+				}
+				nameList.push_back(name30);
+			}
+			else {
+				if (name) {
+					nameList.push_back(name);
+				}
+				else {
+					nameList.push_back(_T(" "));
+				}
+			}
+
 			selectIndex= 0;
 
 			//selectListener = [](){s_dummyfunc();};
@@ -3816,7 +3878,35 @@ void s_dummyfunc()
 		}
 		/// Method : 項目の追加
 		void addLine( const TCHAR *name ){
-			nameList.push_back(name);
+			if (limitnamelen) {
+				//2023/02/17
+				//sepalatorと一緒に使う場合に　右側にはみ出さないように文字数制限30
+				TCHAR name30[31];
+				ZeroMemory(name30, sizeof(TCHAR) * 31);
+				if (name) {
+					size_t namelen = _tcslen(name);
+					size_t cplen;
+					if (namelen <= 30) {
+						cplen = namelen;
+					}
+					else {
+						cplen = 30;
+					}
+					_tcsncpy_s(name30, 31, name, cplen);
+				}
+				else {
+					_tcscpy_s(name30, 31, _T(" "));
+				}
+				nameList.push_back(name30);
+			}
+			else {
+				if (name) {
+					nameList.push_back(name);
+				}
+				else {
+					nameList.push_back(_T(" "));
+				}
+			}
 
 			//ウィンドウ内の全パーツの位置とサイズを自動設定
 			if( parentWindow!=NULL ){
@@ -3908,10 +3998,10 @@ void s_dummyfunc()
 		void setSelectListener(std::function<void()> listener){
 			selectListener= listener;
 		}
-
 	private:
 		////////////////////////// MemberVar /////////////////////////////
 		TCHAR *name;
+		bool limitnamelen;
 		int selectIndex;
 		std::function<void()> selectListener;
 
@@ -5347,11 +5437,12 @@ void s_dummyfunc()
 		int getShowPosLine() const{
 			return showPos_line;
 		}
+
 		void setShowPosLine(int _showPosLine){
+			int showLineNum = (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) / (LABEL_SIZE_Y - 1);
 			int y0= MARGIN+AXIS_SIZE_Y;
 			int y1= size.y-MARGIN-SCROLL_BAR_WIDTH+1;
 
-			int showLineNum= (size.y-SCROLL_BAR_WIDTH-AXIS_SIZE_Y-MARGIN*2)/(LABEL_SIZE_Y-1);
 			if( showLineNum < (int)lineData.size() ){
 				showPos_line= max(0,min( _showPosLine ,(int)lineData.size()-showLineNum));
 			}else{
@@ -9156,7 +9247,7 @@ void s_dummyfunc()
 		bool getVisible(const std::basic_string<TCHAR> &_name) const{
 			std::vector<LineData*>::const_iterator itr;
 			for(itr = lineData.begin(); itr != lineData.end(); itr++){
-				if( (*itr)->name==_name ){
+				if( *itr && ((*itr)->name==_name) ){
 					return (*itr)->visible;
 				}
 			}
@@ -9215,7 +9306,7 @@ void s_dummyfunc()
 		bool getLock(const std::basic_string<TCHAR> &_name) const{
 			std::vector<LineData*>::const_iterator itr;
 			for(itr = lineData.begin(); itr != lineData.end(); itr++){
-				if( (*itr)->name==_name ){
+				if( *itr && ((*itr)->name==_name) ){
 					return (*itr)->lock;
 				}
 			}
@@ -9525,7 +9616,7 @@ void s_dummyfunc()
 			}
 
 			size = parentWindow->getSize();
-			pos = WindowPos(0, 0);
+			//pos = WindowPos(0, 0);//2023/02/17 setPosを反映させるためコメントアウト
 
 			int showLineNum = (size.y) / (LABEL_SIZE_Y);
 
@@ -9544,11 +9635,13 @@ void s_dummyfunc()
 				int starty = showPosLine * (LABEL_SIZE_Y);
 				std::list<OrgWindowParts*>::iterator itr;
 				for (itr = partsList.begin(); itr != partsList.end(); itr++){
-					(*itr)->setPos(WindowPos(partsAreaPos.x, partsAreaPos.y - starty));
-					(*itr)->setSize(WindowSize(partsAreaSize.x, partsAreaSize.y));
-					(*itr)->autoResize();
+					if (*itr) {
+						(*itr)->setPos(WindowPos(partsAreaPos.x, partsAreaPos.y - starty));
+						(*itr)->setSize(WindowSize(partsAreaSize.x, partsAreaSize.y));
+						(*itr)->autoResize();
 
-					//currentPartsSizeY += (*itr)->getSize().y;
+						currentPartsSizeY += (*itr)->getSize().y;
+					}
 				}
 
 				//グループボックスのサイズを内部要素に合わせてトリミング
@@ -9569,7 +9662,9 @@ void s_dummyfunc()
 			if (open){
 				std::list<OrgWindowParts*>::iterator itr;
 				for (itr = partsList.begin(); itr != partsList.end(); itr++){
-					(*itr)->draw();
+					if (*itr) {
+						(*itr)->draw();
+					}
 				}
 			}
 
@@ -9767,9 +9862,28 @@ void s_dummyfunc()
 				showPosLine = 0;
 			}
 
+			autoResize();//2023/02/17
+
 			//再描画要求
 			if (rewriteOnChange){
 				callRewrite();
+			}
+		}
+		void inView(int srcline)
+		{
+			int showLineNum = (size.y) / (LABEL_SIZE_Y);
+			//int currentline = getCurrentLine();
+
+			if ((srcline >= showPosLine) && (srcline <= (showPosLine + showLineNum))) {
+				//2023/02/17
+				//currentlineが　既に表示範囲に入っている場合には　変更しないで再描画
+				autoResize();
+				if (rewriteOnChange) {
+					callRewrite();
+				}
+			}
+			else {
+				setShowPosLine(srcline - showLineNum + 3);
 			}
 		}
 

@@ -1922,6 +1922,7 @@ static SPELEM s_mousecenteron;
 typedef struct tag_modelpanel
 {
 	OrgWindow* panel;
+	OWP_ScrollWnd* scroll;
 	OWP_RadioButton* radiobutton;
 	OWP_Separator* separator;
 	OWP_Separator* separator2;
@@ -1936,6 +1937,7 @@ static WindowPos s_modelpanelpos;
 typedef struct tag_motionpanel
 {
 	OrgWindow* panel;
+	OWP_ScrollWnd* scroll;
 	OWP_RadioButton* radiobutton;
 	OWP_Separator* separator;
 	vector<OWP_Button*> delbutton;
@@ -1952,6 +1954,8 @@ static map<int, int> s_boneno2lineno;
 static vector<MODELELEM> s_modelindex;
 static MODELBOUND	s_totalmb;
 static int s_curmodelmenuindex = -1;
+static int s_savemodelpanelshowposline = -1;
+static int s_savemotionpanelshowposline = -1;
 
 static WCHAR s_tmpmotname[256] = { 0L };
 static double s_tmpmotframeleng = 100.0f;
@@ -3991,6 +3995,7 @@ void InitApp()
 	::ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
 
 	s_modelpanel.panel = 0;
+	s_modelpanel.scroll = 0;
 	s_modelpanel.radiobutton = 0;
 	s_modelpanel.separator = 0;
 	s_modelpanel.separator2 = 0;
@@ -3999,6 +4004,7 @@ void InitApp()
 	s_modelpanel.modelindex = -1;
 
 	s_motionpanel.panel = 0;
+	s_motionpanel.scroll = 0;
 	s_motionpanel.radiobutton = 0;
 	s_motionpanel.separator = 0;
 	s_motionpanel.delbutton.clear();
@@ -11892,19 +11898,27 @@ int DispModelPanel()
 
 
 	bool savedispmodel = s_dispmodel;
+
+	if (s_modelpanel.scroll) {
+		s_savemodelpanelshowposline = s_modelpanel.scroll->getShowPosLine();
+	}
+	else {
+		s_savemodelpanelshowposline = 0;
+	}
+
 	CreateModelPanel();
 	if (!s_modelpanel.panel || !(s_modelpanel.panel->getHWnd())) {
 		return 0;
 	}
 
 	if (!savedispmodel) {
-		s_modelpanel.panel->setListenMouse(false);
+		//s_modelpanel.panel->setListenMouse(false);
 		s_modelpanel.panel->setVisible(false);
 		s_dispmodel = false;
 		s_modelpanel.panel->setListenMouse(false);
 	}
 	else {
-		s_modelpanel.panel->setListenMouse(true);
+		//s_modelpanel.panel->setListenMouse(true);
 		s_modelpanel.panel->setVisible(true);
 		s_dispmodel = true;
 		s_modelpanel.panel->callRewrite();
@@ -11930,19 +11944,27 @@ int DispMotionPanel()
 
 
 	bool savedispmotion = s_dispmotion;
+
+	if (s_motionpanel.scroll) {
+		s_savemotionpanelshowposline = s_motionpanel.scroll->getShowPosLine();
+	}
+	else {
+		s_savemotionpanelshowposline = 0;
+	}
+
 	CreateMotionPanel();
 	if (!s_motionpanel.panel || !(s_motionpanel.panel->getHWnd())) {
 		return 0;
 	}
 
 	if (!savedispmotion) {
-		s_motionpanel.panel->setListenMouse(false);
+		//s_motionpanel.panel->setListenMouse(false);
 		s_motionpanel.panel->setVisible(false);
 		s_dispmotion = false;
 		s_motionpanel.panel->setListenMouse(false);
 	}
 	else {
-		s_motionpanel.panel->setListenMouse(true);
+		//s_motionpanel.panel->setListenMouse(true);
 		s_motionpanel.panel->setVisible(true);
 		s_dispmotion = true;
 		s_motionpanel.panel->callRewrite();
@@ -12891,12 +12913,12 @@ int refreshModelPanel()
 		s_owpLayerTable->newLine(label, 0);
 	}
 
-	if (s_modelpanel.radiobutton && ((int)s_modelindex.size() > 0) && (s_curmodelmenuindex >= 0)) {
-		//if( s_curmodelmenuindex >= 0 ){
-		s_modelpanel.modelindex = s_curmodelmenuindex;
-		s_modelpanel.radiobutton->setSelectIndex(s_modelpanel.modelindex);
-		//}
-	}
+	//if (s_modelpanel.radiobutton && ((int)s_modelindex.size() > 0) && (s_curmodelmenuindex >= 0)) {
+	//	//if( s_curmodelmenuindex >= 0 ){
+	//	s_modelpanel.modelindex = s_curmodelmenuindex;
+	//	s_modelpanel.radiobutton->setSelectIndex(s_modelpanel.modelindex);
+	//	//}
+	//}
 
 	return 0;
 }
@@ -14866,6 +14888,10 @@ int DestroyModelPanel()
 		delete s_modelpanel.panel;
 		s_modelpanel.panel = 0;
 	}
+	if (s_modelpanel.scroll) {
+		delete s_modelpanel.scroll;
+		s_modelpanel.scroll = 0;
+	}
 	if (s_modelpanel.radiobutton) {
 		delete s_modelpanel.radiobutton;
 		s_modelpanel.radiobutton = 0;
@@ -14932,13 +14958,30 @@ int CreateModelPanel()
 		istopmost = 1;
 	}
 
+	if (s_firstmodelpanelpos) {
+		if (g_4kresolution) {
+			s_modelpanelpos = WindowPos(s_toolwidth, MAINMENUAIMBARH);
+		}
+		else {
+			RECT wnd3drect;
+			if (s_mainhwnd) {
+				GetWindowRect(s_mainhwnd, &wnd3drect);
+				s_modelpanelpos = WindowPos(wnd3drect.left + 100, wnd3drect.top + 500);
+			}
+			else {
+				s_modelpanelpos = WindowPos(200, s_2ndposy);
+			}
+		}
+		s_firstmodelpanelpos = false;
+	}
 
 
 	s_modelpanel.panel = new OrgWindow(
 		istopmost,
 		clsname,		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(s_toolwidth, MAINMENUAIMBARH),		//位置
+		//WindowPos(s_toolwidth, MAINMENUAIMBARH),		//位置
+		s_modelpanelpos,
 		WindowSize(s_modelwindowwidth, s_modelwindowheight),	//サイズ
 		L"ModelPanel",	//タイトル
 		//s_mainhwnd,					//親ウィンドウハンドル
@@ -14954,9 +14997,23 @@ int CreateModelPanel()
 		return 1;
 	}
 
-	//s_modelpanel.panel->setVisible(false);//作成中
+	s_modelpanel.panel->setVisible(false);//作成中
 
 	s_modelpanel.panel->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
+
+
+	//スクロールウインドウ
+	s_modelpanel.scroll = new OWP_ScrollWnd(L"ModelPanelScroll");
+	if (!s_modelpanel.scroll) {
+		_ASSERT(0);
+		return 1;
+	}
+	//要素数が変わったときには指定し忘れないように！！！
+	s_modelpanel.scroll->setLineDataSize(modelnum + 3);
+	s_modelpanel.scroll->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight - 30));
+	s_modelpanel.panel->addParts(*(s_modelpanel.scroll));
+	s_modelpanel.panel->setPos(WindowPos(s_toolwidth, MAINMENUAIMBARH));
+	s_modelpanel.scroll->setPos(WindowPos(0, 30));
 
 	int modelcnt;
 
@@ -14967,7 +15024,8 @@ int CreateModelPanel()
 			_ASSERT(curmodel);
 
 			if (modelcnt == 0) {
-				s_modelpanel.radiobutton = new OWP_RadioButton(curmodel->GetFileName());
+				bool limitnamelen = true;
+				s_modelpanel.radiobutton = new OWP_RadioButton(curmodel->GetFileName(), limitnamelen);
 			}
 			else {
 				s_modelpanel.radiobutton->addLine(curmodel->GetFileName());
@@ -14980,14 +15038,17 @@ int CreateModelPanel()
 			_ASSERT(0);
 			return 1;
 		}
-		s_modelpanel.separator->setSize(WindowSize(400, 30));
-		//s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, false);									// セパレータ2（境界線による横方向2分割）
+		s_modelpanel.separator->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight));
+		s_modelpanel.separator->setPos(OrgWinGUI::WindowPos(0, 0));
+		
+		// セパレータ2（境界線による横方向2分割）
 		s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, true);									// セパレータ2（境界線による横方向2分割）
 		if (!s_modelpanel.separator2) {
 			_ASSERT(0);
 			return 1;
 		}
-		s_modelpanel.separator2->setSize(WindowSize(200, 30));
+		s_modelpanel.separator2->setSize(WindowSize(s_modelwindowwidth / 2, s_modelwindowheight));
+		s_modelpanel.separator2->setPos(OrgWinGUI::WindowPos(0, 0));
 
 
 		for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
@@ -14998,7 +15059,9 @@ int CreateModelPanel()
 			s_modelpanel.delbutton.push_back(owpButton);
 		}
 
-		s_modelpanel.panel->addParts(*(s_modelpanel.separator));
+
+		//s_modelpanel.panel->addParts(*(s_modelpanel.separator));
+		s_modelpanel.scroll->addParts(*(s_modelpanel.separator));
 
 		s_modelpanel.separator->addParts1(*(s_modelpanel.radiobutton));
 		s_modelpanel.separator->addParts2(*(s_modelpanel.separator2));
@@ -15014,7 +15077,23 @@ int CreateModelPanel()
 		s_modelpanel.modelindex = s_curmodelmenuindex;
 		s_modelpanel.radiobutton->setSelectIndex(s_modelpanel.modelindex);
 
+		//s_modelpanel.scroll->inView(s_modelpanel.modelindex);
+		s_modelpanel.scroll->setShowPosLine(s_savemodelpanelshowposline);
+
+		//s_modelpanel.scroll->addParts(*(s_modelpanel.separator));
+		//s_modelpanel.panel->addParts(*(s_modelpanel.scroll));
+
 	}
+
+
+	//if (s_modelpanel.panel && s_modelpanel.scroll) {
+	//	if (s_modelpanel.separator) {
+	//		s_modelpanel.scroll->addParts(*(s_modelpanel.separator));
+	//	}
+	//	s_modelpanel.panel->addParts(*(s_modelpanel.scroll));
+	//	s_modelpanel.scroll->setPos(OrgWinGUI::WindowPos(0, 30));
+	//}
+
 
 	//s_modelpanel.panel->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -15077,27 +15156,27 @@ int CreateModelPanel()
 			}
 		});
 	}
-	if (s_firstmodelpanelpos) {
-		if (g_4kresolution) {
-			s_modelpanelpos = WindowPos(s_toolwidth, MAINMENUAIMBARH);
-		}
-		else {
-			RECT wnd3drect;
-			if (s_mainhwnd) {
-				GetWindowRect(s_mainhwnd, &wnd3drect);
-				s_modelpanelpos = WindowPos(wnd3drect.left + 100, wnd3drect.top + 500);
-			}
-			else {
-				s_modelpanelpos = WindowPos(200, s_2ndposy);
-			}
-		}
-		s_firstmodelpanelpos = false;
-	}
-	s_modelpanel.panel->setPos(s_modelpanelpos);
 
+	//if (s_firstmodelpanelpos) {
+	//	if (g_4kresolution) {
+	//		s_modelpanelpos = WindowPos(s_toolwidth, MAINMENUAIMBARH);
+	//	}
+	//	else {
+	//		RECT wnd3drect;
+	//		if (s_mainhwnd) {
+	//			GetWindowRect(s_mainhwnd, &wnd3drect);
+	//			s_modelpanelpos = WindowPos(wnd3drect.left + 100, wnd3drect.top + 500);
+	//		}
+	//		else {
+	//			s_modelpanelpos = WindowPos(200, s_2ndposy);
+	//		}
+	//	}
+	//	s_firstmodelpanelpos = false;
+	//}
+	//s_modelpanel.panel->setPos(s_modelpanelpos);
 
-	//s_modelpanel.panel->setSize(WindowSize(200, 100));//880
-	s_modelpanel.panel->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight));
+	////s_modelpanel.panel->setSize(WindowSize(200, 100));//880
+	//s_modelpanel.panel->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight));
 
 	s_rcmodelpanel.top = s_modelpanelpos.y;
 	s_rcmodelpanel.bottom = s_modelpanelpos.y + s_modelwindowheight;
@@ -15125,6 +15204,10 @@ int DestroyMotionPanel()
 		s_motionpanel.panel->setVisible(false);
 		delete s_motionpanel.panel;
 		s_motionpanel.panel = 0;
+	}
+	if (s_motionpanel.scroll) {
+		delete s_motionpanel.scroll;
+		s_motionpanel.scroll = 0;
 	}
 	if (s_motionpanel.radiobutton) {
 		delete s_motionpanel.radiobutton;
@@ -15193,11 +15276,29 @@ int CreateMotionPanel()
 		istopmost = 1;
 	}
 
+	if (s_firstmotionpanelpos) {
+		RECT wnd3drect;
+		if (g_4kresolution) {
+			s_motionpanelpos = WindowPos(s_toolwidth, MAINMENUAIMBARH + s_modelwindowheight);
+		}
+		else {
+			if (s_mainhwnd) {
+				GetWindowRect(s_mainhwnd, &wnd3drect);
+				s_motionpanelpos = WindowPos(wnd3drect.left + 500, wnd3drect.top + 500);
+			}
+			else {
+				s_motionpanelpos = WindowPos(600, s_2ndposy);
+			}
+		}
+		s_firstmotionpanelpos = false;
+	}
+
+
 	s_motionpanel.panel = new OrgWindow(
 		istopmost,
 		clsname,		//ウィンドウクラス名
 		GetModuleHandle(NULL),	//インスタンスハンドル
-		WindowPos(s_toolwidth, MAINMENUAIMBARH + s_modelwindowheight),		//位置
+		s_motionpanelpos,		//位置
 		WindowSize(s_motionwindowwidth, s_motionwindowheight),	//サイズ
 		L"MotionPanel",	//タイトル
 		//s_mainhwnd,					//親ウィンドウハンドル
@@ -15216,14 +15317,7 @@ int CreateMotionPanel()
 
 	s_motionpanel.panel->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
 
-	s_motionpanel.separator = new OWP_Separator(s_motionpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
-	if (!s_motionpanel.separator) {
-		_ASSERT(0);
-		return 1;
-	}
-	s_motionpanel.separator->setSize(WindowSize(400, 30));
 
-	s_motionpanel.panel->addParts(*(s_motionpanel.separator));
 
 	if (s_model) {
 		int motioncnt = 0;
@@ -15234,7 +15328,8 @@ int CreateMotionPanel()
 				WCHAR wmotname[MAX_PATH] = { 0L };
 				MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, curmi->motname, 256, wmotname, MAX_PATH);
 				if (motioncnt == 0) {
-					s_motionpanel.radiobutton = new OWP_RadioButton(wmotname);
+					bool limitnamelen = true;
+					s_motionpanel.radiobutton = new OWP_RadioButton(wmotname, limitnamelen);
 				}
 				else {
 					s_motionpanel.radiobutton->addLine(wmotname);
@@ -15243,6 +15338,28 @@ int CreateMotionPanel()
 				motioncnt++;
 			}
 		}
+
+		//スクロールウインドウ
+		s_motionpanel.scroll = new OWP_ScrollWnd(L"MotionPanelScroll");
+		if (!s_motionpanel.scroll) {
+			_ASSERT(0);
+			return 1;
+		}
+		//要素数が変わったときには指定し忘れないように！！！
+		s_motionpanel.scroll->setLineDataSize(motionnum + 3);
+		s_motionpanel.scroll->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight - 30));
+		s_motionpanel.panel->addParts(*(s_motionpanel.scroll));
+		s_motionpanel.panel->setPos(s_motionpanelpos);
+		s_motionpanel.scroll->setPos(WindowPos(0, 30));
+
+		s_motionpanel.separator = new OWP_Separator(s_motionpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
+		if (!s_motionpanel.separator) {
+			_ASSERT(0);
+			return 1;
+		}
+		//s_motionpanel.separator->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight));
+		//s_motionpanel.scroll->addParts(*(s_motionpanel.separator));
+		s_motionpanel.scroll->addParts(*(s_motionpanel.separator));
 
 		s_motionpanel.separator->addParts1(*(s_motionpanel.radiobutton));//add once
 
@@ -15261,11 +15378,19 @@ int CreateMotionPanel()
 		//s_motionpanel.radiobutton->setSelectIndex(0);
 		if (s_model) {
 			s_motionpanel.radiobutton->setSelectIndex(s_motmenuindexmap[s_model]);//!!!!
+			//s_motionpanel.scroll->inView(s_motmenuindexmap[s_model]);
+			s_motionpanel.scroll->setShowPosLine(s_savemotionpanelshowposline);
 		}
 		else {
 			_ASSERT(0);
 			return 1;
 		}
+
+	}
+	else {
+
+
+
 
 	}
 
@@ -15315,27 +15440,8 @@ int CreateMotionPanel()
 		});
 	}
 	
-
-	if (s_firstmotionpanelpos) {
-		RECT wnd3drect;
-		if (g_4kresolution) {
-			s_motionpanelpos = WindowPos(s_toolwidth, MAINMENUAIMBARH + s_modelwindowheight);
-		}
-		else {
-			if (s_mainhwnd) {
-				GetWindowRect(s_mainhwnd, &wnd3drect);
-				s_motionpanelpos = WindowPos(wnd3drect.left + 500, wnd3drect.top + 500);
-			}
-			else {
-				s_motionpanelpos = WindowPos(600, s_2ndposy);
-			}
-		}
-		s_firstmotionpanelpos = false;
-	}
-	s_motionpanel.panel->setPos(s_motionpanelpos);
-
-	//s_motionpanel.panel->setSize(WindowSize(200, 100));//880
-	s_motionpanel.panel->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight));
+	//s_motionpanel.panel->setPos(s_motionpanelpos);
+	//s_motionpanel.panel->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight));
 
 	s_rcmotionpanel.top = s_motionpanelpos.y;
 	s_rcmotionpanel.bottom = s_motionpanelpos.y + s_motionwindowheight;
@@ -25572,6 +25678,8 @@ int CreateRigidWnd()
 		0, 0, 0,				//カラー
 		true, true);					//サイズ変更の可否
 
+	bool limitradionamelen = false;
+
 	s_groupcheck = new OWP_CheckBoxA(L"ToAll_MeansToSetToSameGroupRigids", 0);
 	s_sphrateSlider = new OWP_Slider(0.6, 20.0, 0.0);
 	s_boxzSlider = new OWP_Slider(0.6, 20.0, 0.0);
@@ -25613,12 +25721,12 @@ int CreateRigidWnd()
 
 	s_colSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
 	s_colB = new OWP_Button(L"ToAll");
-	s_colradio = new OWP_RadioButton(L"Cone");
+	s_colradio = new OWP_RadioButton(L"Cone", limitradionamelen);
 	s_colradio->addLine(L"Capsule");
 	s_colradio->addLine(L"Sphere");
 	s_colradio->addLine(L"Rectangular");
 
-	s_lkradio = new OWP_RadioButton(L"[posSpring]very weak");
+	s_lkradio = new OWP_RadioButton(L"[posSpring]very weak", limitradionamelen);
 	s_lkradio->addLine(L"[posSpring]weak");
 	s_lkradio->addLine(L"[posSpring]regular");
 	s_lkradio->addLine(L"[posSpring]custom");
@@ -25628,7 +25736,7 @@ int CreateRigidWnd()
 	s_lkSlider = new OWP_Slider(g_initcuslk, 1e4, 1e2);//60000
 	s_lklabel = new OWP_Label(L"posSpring customValue");
 
-	s_akradio = new OWP_RadioButton(L"[rotSpring]very weak");
+	s_akradio = new OWP_RadioButton(L"[rotSpring]very weak", limitradionamelen);
 	s_akradio->addLine(L"[rotSpring]weak");
 	s_akradio->addLine(L"[rotSpring]regular");
 	s_akradio->addLine(L"[rotSpring]custom");
@@ -29779,7 +29887,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.11 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.12 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -37038,31 +37146,32 @@ void ChangeMouseSetCapture()
 		}
 	}
 
-	//check modelpanel
-	{
-		int wndtop = s_rcmodelpanel.top;
-		int wndleft = s_rcmodelpanel.left;
-		int wndbottom = s_rcmodelpanel.bottom;
-		int wndright = s_rcmodelpanel.right;
+	if (s_dispmodel) {
+		//check modelpanel
+		{
+			int wndtop = s_rcmodelpanel.top;
+			int wndleft = s_rcmodelpanel.left;
+			int wndbottom = s_rcmodelpanel.bottom;
+			int wndright = s_rcmodelpanel.right;
 
-		if ((chkx >= wndleft) && (chkx <= wndright) && (chky >= wndtop) && (chky <= wndbottom)) {
-			nextcapwndid = 8;
+			if ((chkx >= wndleft) && (chkx <= wndright) && (chky >= wndtop) && (chky <= wndbottom)) {
+				nextcapwndid = 8;
+			}
 		}
 	}
+	if (s_dispmotion) {
+		//check motionpanel
+		{
+			int wndtop = s_rcmotionpanel.top;
+			int wndleft = s_rcmotionpanel.left;
+			int wndbottom = s_rcmotionpanel.bottom;
+			int wndright = s_rcmotionpanel.right;
 
-	//check motionpanel
-	{
-		int wndtop = s_rcmotionpanel.top;
-		int wndleft = s_rcmotionpanel.left;
-		int wndbottom = s_rcmotionpanel.bottom;
-		int wndright = s_rcmotionpanel.right;
-
-		if ((chkx >= wndleft) && (chkx <= wndright) && (chky >= wndtop) && (chky <= wndbottom)) {
-			nextcapwndid = 9;
+			if ((chkx >= wndleft) && (chkx <= wndright) && (chky >= wndtop) && (chky <= wndbottom)) {
+				nextcapwndid = 9;
+			}
 		}
 	}
-
-
 
 
 	///////////////
@@ -37302,7 +37411,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.11 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.12 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
