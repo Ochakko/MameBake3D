@@ -3007,11 +3007,21 @@ void s_dummyfunc()
 	class OWP_PlayerButton : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_PlayerButton() : OrgWindowParts() {
+		OWP_PlayerButton(int srctotalwidth) : OrgWindowParts() {
 			BOX_WIDTH= 11;
 			SIZE_Y= 15;
 			setIsPlayerButton(true);
 			wcscpy_s(strjointname, 1024, L"Unknown joint");
+
+			if (g_4kresolution) {
+				//ボタンの配置開始位置
+				OFFSET_X = srctotalwidth / 3;
+			}
+			else {
+				OFFSET_X = 0;
+			}
+
+
 		}
 		~OWP_PlayerButton(){
 		}
@@ -3022,9 +3032,9 @@ void s_dummyfunc()
 
 			if ((buttonno >= 0) && (buttonno <= 14)) {
 				//ボタンの四隅になる座標を求める
-				int pos1x = pos.x + BOX_POS_X + BOX_WIDTH * buttonno;
+				int pos1x = OFFSET_X + pos.x + BOX_POS_X + BOX_WIDTH * buttonno;
 				int pos1y = pos.y + size.y / 2 - BOX_WIDTH / 2;
-				int pos2x = pos.x + BOX_POS_X + BOX_WIDTH * (buttonno + 1) - 1;
+				int pos2x = OFFSET_X + pos.x + BOX_POS_X + BOX_WIDTH * (buttonno + 1) - 1;
 				int pos2y = pos1y + BOX_WIDTH - 1;
 
 				retpos.x = ((pos1x + pos2x) / 2);
@@ -3052,9 +3062,9 @@ void s_dummyfunc()
 			for(int i=0; i<16; i++){
 
 				//ボタンの四隅になる座標を求める
-				int pos1x= pos.x+BOX_POS_X+BOX_WIDTH*i;
+				int pos1x= OFFSET_X + pos.x+BOX_POS_X+BOX_WIDTH*i;
 				int pos1y= pos.y+size.y/2-BOX_WIDTH/2;
-				int pos2x= pos.x+BOX_POS_X+BOX_WIDTH*(i+1)-1;
+				int pos2x= OFFSET_X + pos.x+BOX_POS_X+BOX_WIDTH*(i+1)-1;
 				int pos2y= pos1y+BOX_WIDTH-1;
 
 				//ボタンパラメータのインスタンスへのポインタを作成
@@ -3411,7 +3421,7 @@ void s_dummyfunc()
 			for(int i=0; i<16; i++){
 
 				//まずボタンが押されたかを確認
-				if( ((BOX_POS_X + BOX_WIDTH * i) <= e.localX) && (e.localX < (BOX_POS_X + BOX_WIDTH * (i+1))) ){
+				if( ((OFFSET_X + BOX_POS_X + BOX_WIDTH * i) <= e.localX) && (e.localX < (OFFSET_X + BOX_POS_X + BOX_WIDTH * (i+1))) ){
 				}else{
 					continue;
 				}
@@ -3564,6 +3574,7 @@ void s_dummyfunc()
 		int SIZE_Y;
 		static const int BOX_POS_X= 3;
 		int BOX_WIDTH;
+		int OFFSET_X;
 
 		WCHAR strjointname[1024] = { 0L };
 

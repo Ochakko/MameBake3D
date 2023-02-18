@@ -10746,43 +10746,40 @@ void CModel::InterpolateBetweenSelectionReq(bool limitdegflag, CBone* srcbone,
 		return;
 	}
 
+	double roundingstartframe = (double)((int)(srcstartframe + 0.0001));
+	double roundingendframe = (double)((int)(srcendframe + 0.0001));
+
 	if (srcbone){
 		int curmotid = GetCurMotInfo()->motid;
 		CMotionPoint startmp, endmp;
-		srcbone->CalcLocalInfo(limitdegflag, curmotid, srcstartframe, &startmp);
-		srcbone->CalcLocalInfo(limitdegflag, curmotid, srcendframe, &endmp);
+		srcbone->CalcLocalInfo(limitdegflag, curmotid, roundingstartframe, &startmp);
+		srcbone->CalcLocalInfo(limitdegflag, curmotid, roundingendframe, &endmp);
 		CQuaternion startq, endq;
 		ChaVector3 starttra, endtra;
 		startq = startmp.GetQ();
 		endq = endmp.GetQ();
-		starttra = srcbone->CalcLocalTraAnim(limitdegflag, curmotid, srcstartframe);
-		endtra = srcbone->CalcLocalTraAnim(limitdegflag, curmotid, srcendframe);
+		starttra = srcbone->CalcLocalTraAnim(limitdegflag, curmotid, roundingstartframe);
+		endtra = srcbone->CalcLocalTraAnim(limitdegflag, curmotid, roundingendframe);
 
 		double frame;
-		for (frame = (double)((int)(srcstartframe + 0.0001)); frame <= (double)((int)(srcendframe + 0.0001)); frame += 1.0){
-
-			//double slerpt;
+		for (frame = roundingstartframe; frame <= roundingendframe; frame += 1.0){
 			CQuaternion setq;
 			ChaVector3 settra;
-			if (IsTimeEqual(frame, (double)((int)(srcstartframe + 0.0001)))){
+			if (IsTimeEqual(frame, roundingstartframe)){
 				setq = startq;
 				settra = starttra;
 			}
-			else if (IsTimeEqual(frame, (double)((int)(srcendframe + 0.0001)))){
+			else if (IsTimeEqual(frame, roundingendframe)){
 				setq = endq;
 				settra = endtra;
 			}
 			else{
-				//slerpt = (frame - srcstartframe) / (srcendframe - srcstartframe);//srcendframe==srcstartframeは冒頭でreturnしている。
-				//startq.Slerp2(endq, slerpt, &setq);
-				//settra = starttra + (endtra - starttra) * slerpt;
-
 				double changerate;
-				if ((frame >= (double)((int)(srcstartframe + 0.0001))) && (frame <= (double)((int)(srcendframe + 0.0001)))) {
+				if ((frame >= roundingstartframe) && (frame <= roundingendframe)) {
 					changerate = (double)(*(g_motionbrush_value + (int)(frame + 0.1)));
 				}
 				else {
-					changerate = ((double)frame - (double)((int)(srcstartframe + 0.0001))) / ((double)((int)(srcendframe + 0.0001)) - (double)((int)(srcstartframe + 0.0001)));//srcendframe==srcstartframeは冒頭でreturnしている。
+					changerate = (frame - roundingstartframe) / (roundingendframe - roundingstartframe + 1.0);
 				}
 				
 				startq.Slerp2(endq, changerate, &setq);
@@ -10791,6 +10788,7 @@ void CModel::InterpolateBetweenSelectionReq(bool limitdegflag, CBone* srcbone,
 			}
 			int setchildflag1 = 1;
 			CQuaternion iniq;
+			iniq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 			ChaMatrix befwm = srcbone->GetWorldMat(limitdegflag, curmotid, frame, 0);
 			srcbone->SetWorldMatFromQAndTra(limitdegflag, setchildflag1, befwm, iniq, setq, settra, curmotid, frame);
 		}
@@ -10798,10 +10796,10 @@ void CModel::InterpolateBetweenSelectionReq(bool limitdegflag, CBone* srcbone,
 
 		if (oneflag == false) {
 			if (srcbone->GetChild()) {
-				InterpolateBetweenSelectionReq(limitdegflag, srcbone->GetChild(), srcstartframe, srcendframe, oneflag);
+				InterpolateBetweenSelectionReq(limitdegflag, srcbone->GetChild(), roundingstartframe, roundingendframe, oneflag);
 			}
 			if (srcbone->GetBrother()) {
-				InterpolateBetweenSelectionReq(limitdegflag, srcbone->GetBrother(), srcstartframe, srcendframe, oneflag);
+				InterpolateBetweenSelectionReq(limitdegflag, srcbone->GetBrother(), roundingstartframe, roundingendframe, oneflag);
 			}
 		}
 	}

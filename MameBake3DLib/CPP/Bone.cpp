@@ -6368,30 +6368,17 @@ ChaVector3 CBone::CalcLocalTraAnim(bool limitdegflag, int srcmotid, double srcfr
 	ChaMatrix curmat;
 	curmat = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 
-	//GetCalclatedLimitedWM(srcmotid, roundingframe, &curmat);//2023/01/10
-	
-	
-	//ChaMatrix curmats0;
-	//curmats0 = GetS0RTMatrix(curmat);
-
-	//ChaVector3 svec, tvec;
-	//ChaMatrix rmat;
-	//GetSRTMatrix(curmat, &svec, &rmat, &tvec);
-
-
-	//int rotcenterflag1 = 1;
-	//ChaMatrix curlocalrotmat, invcurlocalrotmat;
-	//curlocalrotmat = CalcLocalScaleRotMat(rotcenterflag1, srcmotid, roundingframe);
-	//ChaMatrixInverse(&invcurlocalrotmat, NULL, &curlocalrotmat);
-	ChaMatrix parmat, invparmat;
-	ChaMatrixIdentity(&parmat);
-	invparmat = parmat;
+	ChaMatrix localmat;
+	localmat.SetIdentity();
 	if (GetParent()){
+		ChaMatrix parmat;
 		parmat = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-		ChaMatrixInverse(&invparmat, NULL, &parmat);
+		localmat = curmat * ChaMatrixInv(parmat);
+	}
+	else {
+		localmat = curmat;
 	}
 
-	ChaMatrix localmat = curmat * invparmat;
 	ChaMatrix smat, rmat, tmat;
 	GetSRTMatrix2(localmat, &smat, &rmat, &tmat);
 
@@ -6413,44 +6400,6 @@ ChaVector3 CBone::CalcLocalTraAnim(bool limitdegflag, int srcmotid, double srcfr
 	ChaVector3 rettraanim;
 	rettraanim = localpos - srpos;
 	return rettraanim;
-
-
-	//ChaMatrix curmvmat;
-	//curmvmat = invcurlocalrotmat * curmat * invparmat;
-	//curmvmat = invcurlocalrotmat * GetS0RTMatrix(curmat) * invparmat;
-	//curmvmat = invcurlocalrotmat * GetS0RTMatrix(curmat) * GetS0RTMatrix(invparmat);
-
-	//ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
-	//ChaVector3 curanimtra;
-	//ChaVector3TransformCoord(&curanimtra, &zeropos, &curmvmat);
-
-	//if (svec.x != 0.0f) {
-	//	curanimtra.x /= svec.x;
-	//}
-	//if (svec.y != 0.0f) {
-	//	curanimtra.y /= svec.y;
-	//}
-	//if (svec.z != 0.0f) {
-	//	curanimtra.z /= svec.z;
-	//}
-
-
-	//ChaMatrix localmat;
-	//localmat = curmat * invparmat;
-	//ChaVector3 svec, tvec;
-	//ChaMatrix rmat;
-	//GetSRTMatrix(localmat, &svec, &rmat, &tvec);
-	//ChaVector3 retvec;
-	//retvec = tvec - GetJointFPos();
-	//return retvec;
-
-	//ChaVector3 curjointpos;
-	//ChaVector3TransformCoord(&curjointpos, &(GetJointFPos()), &curmvmat);
-	//ChaVector3 curanimtra;
-	//curanimtra = curjointpos - GetJointFPos();
-	//return curanimtra;
-	
-	//return tvec;
 
 }
 

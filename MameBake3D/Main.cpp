@@ -23161,7 +23161,7 @@ int OnFrameToolWnd()
 			operatingjointno = s_model->InterpolateBetweenSelection(g_limitdegflag,
 				s_buttonselectstart, s_buttonselectend, curbone, s_interpolateState);
 
-			if (g_limitdegflag == true) {
+			if ((g_limitdegflag == true) && (operatingjointno >= 0)) {
 				bool allframeflag = false;
 				bool setcursorflag = false;
 				bool onpasteflag = false;
@@ -23450,32 +23450,12 @@ int OnFrameToolWnd()
 	}
 
 
-
-	/*
-	if ((g_keybuf['E'] & 0x80) && ((g_savekeybuf['E'] & 0x80) == 0)){
-	if (s_model && (s_curboneno >= 0)){
-	CBone* curbone = s_model->GetBoneByID(s_curboneno);
-	if (curbone){
-	MOTINFO* curmi = s_model->GetCurMotInfo();
-	if (curmi){
-	const WCHAR* wbonename = curbone->GetWBoneName();
-	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-	int paraxsiflag = 1;
-	int isfirstbone = 0;
-	cureul = curbone->CalcLocalEulZXY(paraxsiflag, curmi->motid, curmi->curframe, BEFEUL_ZERO, isfirstbone);
-	curbone->SetWorldMatFromEul(1, cureul, curmi->motid, curmi->curframe);
-	::DSMessageBox(NULL, L"SetWorldMatFromEul", L"Check", MB_OK);
-	}
-	}
-	}
-	}
-	*/
-
 	if (s_filterState != 0) {//ToolWindowの平滑化ボタン用
 		FilterFunc();
 		s_filterState = 0;
 		s_filternodlg = false;
 	}
+
 	if (s_smoothFlag) {//s_spsmoothボタン用
 		if (s_model && s_model->GetCurMotInfo()) {
 			//PrepairUndo();
@@ -25078,7 +25058,7 @@ int CreateLongTimelineWnd()
 
 
 	/////////
-	s_owpPlayerButton = new OWP_PlayerButton;
+	s_owpPlayerButton = new OWP_PlayerButton(s_longtimelinewidth);
 	s_owpPlayerButton->setButtonSize(20);
 	s_LtimelineWnd->addParts(*s_owpPlayerButton);//owp_timelineより前
 
@@ -39691,25 +39671,26 @@ int FilterFunc()
 				s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
 
 
-				CBone* curbone = 0;
-				if (s_curboneno >= 0) {
-					curbone = s_model->GetBoneByID(s_curboneno);
-				}
-				else {
-					curbone = 0;
-				}
 				CBone* opebone = 0;
-				if (curbone && curbone->GetParent()) {
-					opebone = curbone->GetParent();
-				}
-				else {
+				if (s_curboneno >= 0) {
+					CBone* curbone = 0;
+					curbone = s_model->GetBoneByID(s_curboneno);
 					if (curbone) {
-						opebone = curbone;
+						if (curbone->GetParent()) {
+							opebone = curbone->GetParent();
+						}
+						else {
+							opebone = curbone;
+						}
 					}
 					else {
-						opebone = 0;
+						return 0;//!!!!!!!!
 					}
 				}
+				else {
+					return 0;//!!!!!!!!!!
+				}
+
 
 				if (opebone) {
 					if (keynum >= 2) {
@@ -39728,6 +39709,7 @@ int FilterFunc()
 						}
 
 
+						//nodlgの場合は　何回か処理してから　呼び出し元でCopyLimitedWorldToWorldする
 						if (s_filternodlg == false) {
 							if (g_limitdegflag == true) {
 								bool allframeflag = false;
