@@ -3008,16 +3008,24 @@ void s_dummyfunc()
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
 		OWP_PlayerButton(int srctotalwidth) : OrgWindowParts() {
-			BOX_WIDTH= 11;
-			SIZE_Y= 15;
 			setIsPlayerButton(true);
 			wcscpy_s(strjointname, 1024, L"Unknown joint");
 
 			if (g_4kresolution) {
+				//BOX_WIDTHとSIZE_Yは setButtonSizeでも変更出来る
+				BOX_WIDTH = 40;
+				SIZE_Y = 44;
+
 				//ボタンの配置開始位置
 				OFFSET_X = srctotalwidth / 3;
 			}
 			else {
+				//BOX_WIDTHとSIZE_Yは setButtonSizeでも変更出来る
+				//BOX_WIDTH = 20;
+				//SIZE_Y = 24;
+				BOX_WIDTH = 26;
+				SIZE_Y = 30;
+
 				OFFSET_X = 0;
 			}
 
@@ -3030,7 +3038,7 @@ void s_dummyfunc()
 		{
 			WindowPos retpos;
 
-			if ((buttonno >= 0) && (buttonno <= 14)) {
+			if ((buttonno >= 0) && (buttonno <= 6)) {
 				//ボタンの四隅になる座標を求める
 				int pos1x = OFFSET_X + pos.x + BOX_POS_X + BOX_WIDTH * buttonno;
 				int pos1y = pos.y + size.y / 2 - BOX_WIDTH / 2;
@@ -3059,7 +3067,7 @@ void s_dummyfunc()
 			drawEdge();
 
 			//全てのボタンについて繰り返す
-			for(int i=0; i<16; i++){
+			for(int i=0; i<=6; i++){
 
 				//ボタンの四隅になる座標を求める
 				int pos1x= OFFSET_X + pos.x+BOX_POS_X+BOX_WIDTH*i;
@@ -3069,296 +3077,139 @@ void s_dummyfunc()
 
 				//ボタンパラメータのインスタンスへのポインタを作成
 				OneButtonParam *btnPrm;
-				switch(i){
-				case 0: btnPrm= &reset; break;
-				case 1: btnPrm= &backStep; break;
-				case 2: btnPrm= &backPlay; break;
-				case 3: btnPrm= &stop; break;
-				case 4: btnPrm= &frontPlay; break;
-				case 5: btnPrm= &frontStep; break;
-				case 6: btnPrm = &onefps; break;
-				case 7: btnPrm = &selecttolast; break;
-				case 8: btnPrm = &btreset; break;
-				case 9: btnPrm = &prevrange; break;
-				case 10: btnPrm = &nextrange; break;
-				case 11: btnPrm = &plusdisp; break;
-				case 12: btnPrm = &minusdisp; break;
-				case 13: btnPrm = &plusoffsetdisp; break;
-				case 14: btnPrm = &minusoffsetdisp; break;
-				case 15: btnPrm = &resetdisp; break;
-				}
-
-				//枠組み描画
-				if(btnPrm->buttonPush){
-					hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
-				}else{
-					hdcM->setPenAndBrush(RGB(240,240,240),NULL); 
-				}
-				Rectangle(hdcM->hDC,pos1x,pos1y,pos2x+1,pos2y+1);
-				if(!btnPrm->buttonPush){
-					hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
-				}else{
-					hdcM->setPenAndBrush(RGB(240,240,240),NULL); 
-				}
-				MoveToEx(hdcM->hDC, pos1x,pos2y, NULL);
-				LineTo(hdcM->hDC,   pos2x,pos2y);
-				LineTo(hdcM->hDC,   pos2x,pos1y);
-
-				//中身描画
-				int shiftDot= btnPrm->buttonPush?1:0;
-				//hdcM->setPenAndBrush(RGB(240,240,240),RGB(240,240,240));
+				//switch(i){
+				//case 0: btnPrm= &reset; break;
+				//case 1: btnPrm= &backStep; break;
+				//case 2: btnPrm= &backPlay; break;
+				//case 3: btnPrm= &stop; break;
+				//case 4: btnPrm= &frontPlay; break;
+				//case 5: btnPrm= &frontStep; break;
+				//case 6: btnPrm = &onefps; break;
+				//case 7: btnPrm = &selecttolast; break;
+				//case 8: btnPrm = &btreset; break;
+				//case 9: btnPrm = &prevrange; break;
+				//case 10: btnPrm = &nextrange; break;
+				//case 11: btnPrm = &plusdisp; break;
+				//case 12: btnPrm = &minusdisp; break;
+				//case 13: btnPrm = &plusoffsetdisp; break;
+				//case 14: btnPrm = &minusoffsetdisp; break;
+				//case 15: btnPrm = &resetdisp; break;
+				//}
 				switch (i) {
-				case 0:		//リセットボタン
-					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
-					Rectangle(hdcM->hDC,
-						pos1x + 4 + shiftDot, pos1y + 4 + shiftDot,
-						pos2x - 3 + shiftDot, pos2y - 3 + shiftDot);
-					break;
-				case 1:		//先頭フレームジャンプボタン
-				{
-					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
-					int x1 = (pos1x + pos2x) / 2 + 2;
-					int x2 = pos2x - 2;
-					Rectangle(hdcM->hDC, x1 + shiftDot, pos1y + 3 + shiftDot, x2 + shiftDot, pos2y - 2 + shiftDot);
-
-					int y1 = pos1y + 3;
-					int y2 = pos2y - 2;
-					int x4 = (pos1x + pos2x) / 2;
-					int x3 = x4 - (y2 - y1) / 2;
-					for (int j = 0; j <= x4 - x3; j++) {
-						MoveToEx(hdcM->hDC, x4 - j + shiftDot, y1 + j + shiftDot, NULL);
-						LineTo(hdcM->hDC, x4 - j + shiftDot, y2 - j + shiftDot);
-					}
-				}break;
-				case 2:		//逆再生ボタン
-				{
-					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
-					int y1 = pos1y + 3;
-					int y2 = pos2y - 2;
-					int x1 = (pos1x + pos2x) / 2 - (y2 - y1) / 4;
-					int x2 = x1 + (y2 - y1) / 2;
-					for (int j = 0; j <= x2 - x1; j++) {
-						MoveToEx(hdcM->hDC, x2 - j + shiftDot, y1 + j + shiftDot, NULL);
-						LineTo(hdcM->hDC, x2 - j + shiftDot, y2 - j + shiftDot);
-					}
-				}break;
-				case 3:		//停止ボタン
-				{
-					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
-					int x1 = pos1x + 3;
-					int x2 = (pos1x + pos2x) / 2;
-					int x4 = pos2x - 2;
-					int x3 = x4 - (x2 - x1);
-					Rectangle(hdcM->hDC, x1 + shiftDot, pos1y + 4 + shiftDot, x2 + shiftDot, pos2y - 3 + shiftDot);
-					Rectangle(hdcM->hDC, x3 + shiftDot, pos1y + 4 + shiftDot, x4 + shiftDot, pos2y - 3 + shiftDot);
-				}break;
-				case 4:		//再生ボタン
-				{
-					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
-					int y1 = pos1y + 3;
-					int y2 = pos2y - 2;
-					int x1 = (pos1x + pos2x) / 2 - (y2 - y1) / 4;
-					int x2 = x1 + (y2 - y1) / 2;
-					for (int j = 0; j <= x2 - x1; j++) {
-						MoveToEx(hdcM->hDC, x1 + j + shiftDot, y1 + j + shiftDot, NULL);
-						LineTo(hdcM->hDC, x1 + j + shiftDot, y2 - j + shiftDot);
-					}
-				}break;
-				case 5:		//最終フレームジャンプボタン
-				{
-					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
-					int x1 = pos1x + 3;
-					int x2 = (pos1x + pos2x) / 2 - 1;
-					Rectangle(hdcM->hDC, x1 + shiftDot, pos1y + 3 + shiftDot, x2 + shiftDot, pos2y - 2 + shiftDot);
-
-					int y1 = pos1y + 3;
-					int y2 = pos2y - 2;
-					int x3 = (pos1x + pos2x) / 2;
-					int x4 = x3 + (y2 - y1) / 2;
-					for (int j = 0; j <= x4 - x3; j++) {
-						MoveToEx(hdcM->hDC, x3 + j + shiftDot, y1 + j + shiftDot, NULL);
-						LineTo(hdcM->hDC, x3 + j + shiftDot, y2 - j + shiftDot);
-					}
-				}break;
-				case 6:		//1fps
-				{
-					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
-					int x1 = (pos1x + pos2x) / 2;
-					int x2 = x1 - 2;
-					int x3 = x1 + 2;
-					int y1 = pos1y + 3;
-					int y2 = pos2y - 3;
-					int y3 = y1 + 2;
-
-					MoveToEx(hdcM->hDC, x1, y1, NULL);
-					LineTo(hdcM->hDC, x1, y2);
-					MoveToEx(hdcM->hDC, x1, y1, NULL);
-					LineTo(hdcM->hDC, x2, y3);
-					MoveToEx(hdcM->hDC, x2, y2, NULL);
-					LineTo(hdcM->hDC, x3, y2);
-				}break;
-				case 7:		//最終フレームまで選択
-				{
-					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
-					int x1 = pos1x + 4;
-					int x2 = pos2x - 4;
-					int y1 = pos1y + 3;
-					int y2 = pos2y - 3;
-
-					MoveToEx(hdcM->hDC, x1, y1, NULL);
-					LineTo(hdcM->hDC, x1, y2);
-					MoveToEx(hdcM->hDC, x2, y1, NULL);
-					LineTo(hdcM->hDC, x2, y2);
-				}break;
-				case 8:		//bt reset event設定
-				{
-					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
-					int x1 = pos1x + 4;
-					int x2 = pos2x - 4;
-					int y1 = (pos1y + pos2y) / 2;
-
-					MoveToEx(hdcM->hDC, x1, y1, NULL);
-					LineTo(hdcM->hDC, x2, y1);
-				}break;
-				case 9:		//prev edit range
-				{
-					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
-					int x1 = pos1x + 4;
-					int x2 = (pos1x + pos2x) / 2;
-					int x3 = pos2x - 4;
-					int y1 = pos1y + 2;
-					int y2 = pos2y - 6;
-					int y3 = y1 + 4;
-					int y4 = y2 + 4;
-
-					MoveToEx(hdcM->hDC, x1, y1, NULL);
-					LineTo(hdcM->hDC, x2, y2);
-					LineTo(hdcM->hDC, x3, y1);
-
-					MoveToEx(hdcM->hDC, x1, y3, NULL);
-					LineTo(hdcM->hDC, x2, y4);
-					LineTo(hdcM->hDC, x3, y3);
-				}break;
-				case 10:		//next edit range
-				{
-					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
-					int x1 = pos1x + 4;
-					int x2 = (pos1x + pos2x) / 2;
-					int x3 = pos2x - 4;
-					int y1 = pos1y + 2;
-					int y2 = pos2y - 6;
-					int y3 = y1 + 4;
-					int y4 = y2 + 4;
-
-					MoveToEx(hdcM->hDC, x1, y2, NULL);
-					LineTo(hdcM->hDC, x2, y1);
-					LineTo(hdcM->hDC, x3, y2);
-
-					MoveToEx(hdcM->hDC, x1, y4, NULL);
-					LineTo(hdcM->hDC, x2, y3);
-					LineTo(hdcM->hDC, x3, y4);
-				}break;
-				case 11:		//plusdisp
-				{
-					hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
-					int x1 = pos1x + 5;
-					int x2 = pos2x - 5;
-					int y1 = (pos1y + pos2y) / 2;
-					int x3 = (pos1x + pos2x) / 2;
-					int y2 = pos1y + 5;
-					int y3 = pos2y - 5;
-
-					int x4 = pos1x + 3;
-					int x5 = pos2x - 3;
-					int y4 = pos1y + 3;
-					int y5 = pos2y - 3;
-
-					MoveToEx(hdcM->hDC, x1, y1, NULL);
-					LineTo(hdcM->hDC, x2, y1);
-					MoveToEx(hdcM->hDC, x3, y2, NULL);
-					LineTo(hdcM->hDC, x3, y3);
-
-					Ellipse(hdcM->hDC, x4, y4, x5, y5);
-				}break;
-				case 12:		//minusdisp
-				{
-					hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
-					int x1 = pos1x + 5;
-					int x2 = pos2x - 5;
-					int y1 = (pos1y + pos2y) / 2;
-					int x3 = (pos1x + pos2x) / 2;
-					int y2 = pos1y + 5;
-					int y3 = pos2y - 5;
-
-					int x4 = pos1x + 3;
-					int x5 = pos2x - 3;
-					int y4 = pos1y + 3;
-					int y5 = pos2y - 3;
-
-					MoveToEx(hdcM->hDC, x1, y1, NULL);
-					LineTo(hdcM->hDC, x2, y1);
-
-					Ellipse(hdcM->hDC, x4, y4, x5, y5);
-				}break;
-				case 13:		//plusoffsetdisp
-				{
-					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
-					int x1 = pos1x + 4;
-					int x2 = (pos1x + pos2x) / 2;
-					int x3 = pos2x - 4;
-					int y1 = pos1y + 2;
-					int y2 = pos2y - 6;
-					int y3 = pos2y - 4;
-
-					MoveToEx(hdcM->hDC, x1, y2, NULL);
-					LineTo(hdcM->hDC, x2, y1);
-					LineTo(hdcM->hDC, x3, y2);
-
-					MoveToEx(hdcM->hDC, x2, y1, NULL);
-					LineTo(hdcM->hDC, x2, y3);
-				}break;
-				case 14:		//minusoffsetdisp
-				{
-					hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
-					int x1 = pos1x + 4;
-					int x2 = (pos1x + pos2x) / 2;
-					int x3 = pos2x - 4;
-					int y1 = pos1y + 2;
-					int y2 = pos2y - 6;
-					int y3 = pos2y - 4;
-
-					MoveToEx(hdcM->hDC, x1, y1, NULL);
-					LineTo(hdcM->hDC, x2, y2);
-					LineTo(hdcM->hDC, x3, y1);
-
-					MoveToEx(hdcM->hDC, x2, y1, NULL);
-					LineTo(hdcM->hDC, x2, y3);
-				}break;
-				case 15:		//resetdisp
-				{
-					hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
-					int x1 = pos1x + 4;
-					int x2 = pos2x - 4;
-					int y1 = pos1y + 4;
-					int y2 = pos2y - 4;
-					int y3 = (y1 + y2) / 2;
-
-					//横
-					MoveToEx(hdcM->hDC, x1, y1, NULL);
-					LineTo(hdcM->hDC, x2, y1);
-					MoveToEx(hdcM->hDC, x1, y3, NULL);
-					LineTo(hdcM->hDC, x2, y3);
-					MoveToEx(hdcM->hDC, x1, y2, NULL);
-					LineTo(hdcM->hDC, x2, y2);
-
-					//縦
-					MoveToEx(hdcM->hDC, x1, y1, NULL);
-					LineTo(hdcM->hDC, x1, y2);
-				}break;
+				case 0: btnPrm = &backStep; break;
+				case 1: btnPrm = &backPlay; break;
+				case 2: btnPrm = &reset; break;
+				case 3: btnPrm = &frontPlay; break;
+				case 4: btnPrm = &frontStep; break;
+				case 5: btnPrm = 0; break;
+				case 6: btnPrm = &selecttolast; break;
+				default: btnPrm = 0; break;
 				}
+				if (btnPrm) {
+					//枠組み描画
+					if (btnPrm->buttonPush) {
+						hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+					}
+					else {
+						hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
+					}
+					Rectangle(hdcM->hDC, pos1x, pos1y, pos2x + 1, pos2y + 1);
+					if (!btnPrm->buttonPush) {
+						hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
+					}
+					else {
+						hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
+					}
+					MoveToEx(hdcM->hDC, pos1x, pos2y, NULL);
+					LineTo(hdcM->hDC, pos2x, pos2y);
+					LineTo(hdcM->hDC, pos2x, pos1y);
+
+					//中身描画
+					int shiftDot = btnPrm->buttonPush ? 1 : 0;
+					switch (i) {
+					case 0:		//先頭フレームジャンプボタン
+					{
+						hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
+						int x1 = (pos1x + pos2x) / 2 + 2;
+						int x2 = pos2x - 2;
+						Rectangle(hdcM->hDC, x1 + shiftDot, pos1y + 3 + shiftDot, x2 + shiftDot, pos2y - 2 + shiftDot);
+
+						int y1 = pos1y + 3;
+						int y2 = pos2y - 2;
+						int x4 = (pos1x + pos2x) / 2;
+						int x3 = x4 - (y2 - y1) / 2;
+						for (int j = 0; j <= x4 - x3; j++) {
+							MoveToEx(hdcM->hDC, x4 - j + shiftDot, y1 + j + shiftDot, NULL);
+							LineTo(hdcM->hDC, x4 - j + shiftDot, y2 - j + shiftDot);
+						}
+					}break;
+					case 1:		//逆再生ボタン
+					{
+						hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
+						int y1 = pos1y + 3;
+						int y2 = pos2y - 2;
+						int x1 = (pos1x + pos2x) / 2 - (y2 - y1) / 4;
+						int x2 = x1 + (y2 - y1) / 2;
+						for (int j = 0; j <= x2 - x1; j++) {
+							MoveToEx(hdcM->hDC, x2 - j + shiftDot, y1 + j + shiftDot, NULL);
+							LineTo(hdcM->hDC, x2 - j + shiftDot, y2 - j + shiftDot);
+						}
+					}break;
+					case 2:		//リセットボタン
+						hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
+						Rectangle(hdcM->hDC,
+							pos1x + 4 + shiftDot, pos1y + 4 + shiftDot,
+							pos2x - 3 + shiftDot, pos2y - 3 + shiftDot);
+						break;
+					case 3:		//再生ボタン
+					{
+						hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
+						int y1 = pos1y + 3;
+						int y2 = pos2y - 2;
+						int x1 = (pos1x + pos2x) / 2 - (y2 - y1) / 4;
+						int x2 = x1 + (y2 - y1) / 2;
+						for (int j = 0; j <= x2 - x1; j++) {
+							MoveToEx(hdcM->hDC, x1 + j + shiftDot, y1 + j + shiftDot, NULL);
+							LineTo(hdcM->hDC, x1 + j + shiftDot, y2 - j + shiftDot);
+						}
+					}break;
+					case 4:		//最終フレームジャンプボタン
+					{
+						hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
+						int x1 = pos1x + 3;
+						int x2 = (pos1x + pos2x) / 2 - 1;
+						Rectangle(hdcM->hDC, x1 + shiftDot, pos1y + 3 + shiftDot, x2 + shiftDot, pos2y - 2 + shiftDot);
+
+						int y1 = pos1y + 3;
+						int y2 = pos2y - 2;
+						int x3 = (pos1x + pos2x) / 2;
+						int x4 = x3 + (y2 - y1) / 2;
+						for (int j = 0; j <= x4 - x3; j++) {
+							MoveToEx(hdcM->hDC, x3 + j + shiftDot, y1 + j + shiftDot, NULL);
+							LineTo(hdcM->hDC, x3 + j + shiftDot, y2 - j + shiftDot);
+						}
+					}break;
+					case 5:
+						break;
+					case 6:		//最終フレームまで選択
+					{
+						hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
+						int x1 = pos1x + 4;
+						int x2 = pos2x - 4;
+						int y1 = pos1y + 3;
+						int y2 = pos2y - 3;
+
+						MoveToEx(hdcM->hDC, x1, y1, NULL);
+						LineTo(hdcM->hDC, x1, y2);
+						MoveToEx(hdcM->hDC, x2, y1, NULL);
+						LineTo(hdcM->hDC, x2, y2);
+					}break;
+					default:
+						break;
+					}
+				}
+				
 			}
-
-
 
 			//2023/01/08
 			//ジョイント名を　大きく　タイムライン上の　真ん中に表示
@@ -3371,7 +3222,13 @@ void s_dummyfunc()
 				if (pjointname) {
 					size_t jointnamelen = wcslen(pjointname);
 					if ((jointnamelen >= 1) && (jointnamelen <= 1020)) {
-						hdcM->setFont(18, _T("ＭＳ ゴシック"));
+						//hdcM->setFont(18, _T("ＭＳ ゴシック"));
+						if (g_4kresolution) {
+							hdcM->setFont(32, _T("ＭＳ ゴシック"));
+						}
+						else {
+							hdcM->setFont(24, _T("ＭＳ ゴシック"));
+						}
 						SetTextColor(hdcM->hDC, RGB(168, 129, 129));
 						TextOut(hdcM->hDC,
 							pos1x, pos1y,
@@ -3418,7 +3275,7 @@ void s_dummyfunc()
 		virtual void onLButtonDown(const MouseEvent& e){
 
 			//全てのボタンについて繰り返す
-			for(int i=0; i<16; i++){
+			for(int i=0; i<=6; i++){
 
 				//まずボタンが押されたかを確認
 				if( ((OFFSET_X + BOX_POS_X + BOX_WIDTH * i) <= e.localX) && (e.localX < (OFFSET_X + BOX_POS_X + BOX_WIDTH * (i+1))) ){
@@ -3428,56 +3285,40 @@ void s_dummyfunc()
 
 				//ボタンパラメータのインスタンスへのポインタを作成
 				OneButtonParam *btnPrm;
-				switch(i){
-				case 0: btnPrm= &reset; break;
-				case 1: btnPrm= &backStep; break;//step to one
-				case 2: btnPrm= &backPlay; break;
-				case 3: btnPrm= &stop; break;
-				case 4: btnPrm= &frontPlay; break;
-				case 5: btnPrm = &frontStep; break;//step to the last
-				case 6: btnPrm = &onefps; break;
-				case 7: btnPrm = &selecttolast; break;
-				case 8: btnPrm = &btreset; break;
-				case 9: btnPrm = &prevrange; break;
-				case 10: btnPrm = &nextrange; break;
-				case 11: btnPrm = &plusdisp; break;
-				case 12: btnPrm = &minusdisp; break;
-				case 13: btnPrm = &plusoffsetdisp; break;
-				case 14: btnPrm = &minusoffsetdisp; break;
-				case 15: btnPrm = &resetdisp; break;
+				switch (i) {
+				case 0: btnPrm = &backStep; break;
+				case 1: btnPrm = &backPlay; break;
+				case 2: btnPrm = &reset; break;
+				case 3: btnPrm = &frontPlay; break;
+				case 4: btnPrm = &frontStep; break;
+				case 5: btnPrm = 0; break;
+				case 6: btnPrm = &selecttolast; break;
+				default: btnPrm = 0; break;
 				}
+				if (btnPrm) {
+					//ボタンリスナーを呼ぶ
+					if (btnPrm->buttonListener != NULL) {
+						(btnPrm->buttonListener)();
+					}
 
-				//ボタンリスナーを呼ぶ
-				if( btnPrm->buttonListener!=NULL){
-					(btnPrm->buttonListener)();
+					//ボタン押下状態をONにする
+					btnPrm->buttonPush = true;
+
+					//再描画通知
+					callRewrite();
+
+					//ボタンアップアニメーションのためのスレッド作成
+					switch (i) {
+					case 0: _beginthread(drawBackStepButtonUpThread, 0, (void*)this); break;
+					case 1: _beginthread(drawBackPlayButtonUpThread, 0, (void*)this); break;
+					case 2: _beginthread(drawResetButtonUpThread, 0, (void*)this); break;
+					case 3: _beginthread(drawFrontPlayButtonUpThread, 0, (void*)this); break;
+					case 4: _beginthread(drawFrontStepButtonUpThread, 0, (void*)this); break;
+					case 5: break;
+					case 6: _beginthread(drawSelectToLastButtonUpThread, 0, (void*)this); break;
+					default: break;
+					}
 				}
-				
-				//ボタン押下状態をONにする
-				btnPrm->buttonPush=true;
-
-				//再描画通知
-				callRewrite();
-
-				//ボタンアップアニメーションのためのスレッド作成
-				switch(i){
-				case 0: _beginthread(drawResetButtonUpThread,0,(void *)this); break;
-				case 1: _beginthread(drawBackStepButtonUpThread,0,(void *)this); break;
-				case 2: _beginthread(drawBackPlayButtonUpThread,0,(void *)this); break;
-				case 3: _beginthread(drawStopButtonUpThread,0,(void *)this); break;
-				case 4: _beginthread(drawFrontPlayButtonUpThread,0,(void *)this); break;
-				case 5: _beginthread(drawFrontStepButtonUpThread,0,(void *)this); break;
-				case 6: _beginthread(drawOneFpsButtonUpThread, 0, (void*)this); break;
-				case 7: _beginthread(drawSelectToLastButtonUpThread, 0, (void *)this); break;
-				case 8: _beginthread(drawBtResetButtonUpThread, 0, (void *)this); break;
-				case 9: _beginthread(drawPrevRangeButtonUpThread, 0, (void *)this); break;
-				case 10: _beginthread(drawNextRangeButtonUpThread, 0, (void *)this); break;
-				case 11: _beginthread(drawPlusDispButtonUpThread, 0, (void*)this); break;
-				case 12: _beginthread(drawMinusDispButtonUpThread, 0, (void*)this); break;
-				case 13: _beginthread(drawPlusOffsetDispButtonUpThread, 0, (void*)this); break;
-				case 14: _beginthread(drawMinusOffsetDispButtonUpThread, 0, (void*)this); break;
-				case 15: _beginthread(drawResetDispButtonUpThread, 0, (void*)this); break;
-				}
-
 				return;
 			}
 		}
@@ -3503,9 +3344,9 @@ void s_dummyfunc()
 		void setBackPlayButtonListener(std::function<void()> listener){
 			backPlay.buttonListener= listener;
 		}
-		void setStopButtonListener(std::function<void()> listener){
-			stop.buttonListener= listener;
-		}
+		//void setStopButtonListener(std::function<void()> listener){
+		//	stop.buttonListener= listener;
+		//}
 		void setResetButtonListener(std::function<void()> listener){
 			reset.buttonListener= listener;
 		}
@@ -3515,36 +3356,36 @@ void s_dummyfunc()
 		void setBackStepButtonListener(std::function<void()> listener){
 			backStep.buttonListener= listener;
 		}
-		void setOneFpsButtonListener(std::function<void()> listener) {
-			onefps.buttonListener = listener;
-		}
+		//void setOneFpsButtonListener(std::function<void()> listener) {
+		//	onefps.buttonListener = listener;
+		//}
 		void setSelectToLastButtonListener(std::function<void()> listener){
 			selecttolast.buttonListener = listener;
 		}
-		void setBtResetButtonListener(std::function<void()> listener){
-			btreset.buttonListener = listener;
-		}
-		void setPrevRangeButtonListener(std::function<void()> listener){
-			prevrange.buttonListener = listener;
-		}
-		void setNextRangeButtonListener(std::function<void()> listener){
-			nextrange.buttonListener = listener;
-		}
-		void setPlusDispButtonListener(std::function<void()> listener) {
-			plusdisp.buttonListener = listener;
-		}
-		void setMinusDispButtonListener(std::function<void()> listener) {
-			minusdisp.buttonListener = listener;
-		}
-		void setPlusOffsetDispButtonListener(std::function<void()> listener) {
-			plusoffsetdisp.buttonListener = listener;
-		}
-		void setMinusOffsetDispButtonListener(std::function<void()> listener) {
-			minusoffsetdisp.buttonListener = listener;
-		}
-		void setResetDispButtonListener(std::function<void()> listener) {
-			resetdisp.buttonListener = listener;
-		}
+		//void setBtResetButtonListener(std::function<void()> listener){
+		//	btreset.buttonListener = listener;
+		//}
+		//void setPrevRangeButtonListener(std::function<void()> listener){
+		//	prevrange.buttonListener = listener;
+		//}
+		//void setNextRangeButtonListener(std::function<void()> listener){
+		//	nextrange.buttonListener = listener;
+		//}
+		//void setPlusDispButtonListener(std::function<void()> listener) {
+		//	plusdisp.buttonListener = listener;
+		//}
+		//void setMinusDispButtonListener(std::function<void()> listener) {
+		//	minusdisp.buttonListener = listener;
+		//}
+		//void setPlusOffsetDispButtonListener(std::function<void()> listener) {
+		//	plusoffsetdisp.buttonListener = listener;
+		//}
+		//void setMinusOffsetDispButtonListener(std::function<void()> listener) {
+		//	minusoffsetdisp.buttonListener = listener;
+		//}
+		//void setResetDispButtonListener(std::function<void()> listener) {
+		//	resetdisp.buttonListener = listener;
+		//}
 
 		/// Accessor : ボタンサイズを変更する
 		void setButtonSize(int value){
@@ -3568,7 +3409,8 @@ void s_dummyfunc()
 
 			bool buttonPush;
 			std::function<void()> buttonListener;
-		}frontPlay,backPlay,stop,reset,frontStep,backStep,onefps,selecttolast,btreset,prevrange,nextrange,plusdisp,minusdisp,plusoffsetdisp,minusoffsetdisp,resetdisp;
+		//}frontPlay,backPlay,stop,reset,frontStep,backStep,onefps,selecttolast,btreset,prevrange,nextrange,plusdisp,minusdisp,plusoffsetdisp,minusoffsetdisp,resetdisp;
+		}backStep, backPlay, reset, frontPlay, frontStep, selecttolast;
 		
 
 		int SIZE_Y;
@@ -3594,13 +3436,13 @@ void s_dummyfunc()
 			thisClass->backPlay.buttonPush=false;
 			thisClass->callRewrite();
 		}
-		static void drawStopButtonUpThread(LPVOID	pParam){
-			Sleep(100);
+		//static void drawStopButtonUpThread(LPVOID	pParam){
+		//	Sleep(100);
 
-			OWP_PlayerButton *thisClass= (OWP_PlayerButton*)pParam;
-			thisClass->stop.buttonPush=false;
-			thisClass->callRewrite();
-		}
+		//	OWP_PlayerButton *thisClass= (OWP_PlayerButton*)pParam;
+		//	thisClass->stop.buttonPush=false;
+		//	thisClass->callRewrite();
+		//}
 		static void drawResetButtonUpThread(LPVOID	pParam){
 			Sleep(100);
 
@@ -3622,13 +3464,13 @@ void s_dummyfunc()
 			thisClass->backStep.buttonPush=false;
 			thisClass->callRewrite();
 		}
-		static void drawOneFpsButtonUpThread(LPVOID	pParam) {
-			Sleep(100);
+		//static void drawOneFpsButtonUpThread(LPVOID	pParam) {
+		//	Sleep(100);
 
-			OWP_PlayerButton* thisClass = (OWP_PlayerButton*)pParam;
-			thisClass->onefps.buttonPush = false;
-			thisClass->callRewrite();
-		}
+		//	OWP_PlayerButton* thisClass = (OWP_PlayerButton*)pParam;
+		//	thisClass->onefps.buttonPush = false;
+		//	thisClass->callRewrite();
+		//}
 		static void drawSelectToLastButtonUpThread(LPVOID	pParam){
 			Sleep(100);
 
@@ -3636,62 +3478,62 @@ void s_dummyfunc()
 			thisClass->selecttolast.buttonPush = false;
 			thisClass->callRewrite();
 		}
-		static void drawBtResetButtonUpThread(LPVOID	pParam){
-			Sleep(100);
+		//static void drawBtResetButtonUpThread(LPVOID	pParam){
+		//	Sleep(100);
 
-			OWP_PlayerButton *thisClass = (OWP_PlayerButton*)pParam;
-			thisClass->btreset.buttonPush = false;
-			thisClass->callRewrite();
-		}
-		static void drawPrevRangeButtonUpThread(LPVOID	pParam){
-			Sleep(100);
+		//	OWP_PlayerButton *thisClass = (OWP_PlayerButton*)pParam;
+		//	thisClass->btreset.buttonPush = false;
+		//	thisClass->callRewrite();
+		//}
+		//static void drawPrevRangeButtonUpThread(LPVOID	pParam){
+		//	Sleep(100);
 
-			OWP_PlayerButton *thisClass = (OWP_PlayerButton*)pParam;
-			thisClass->prevrange.buttonPush = false;
-			thisClass->callRewrite();
-		}
-		static void drawNextRangeButtonUpThread(LPVOID	pParam){
-			Sleep(100);
+		//	OWP_PlayerButton *thisClass = (OWP_PlayerButton*)pParam;
+		//	thisClass->prevrange.buttonPush = false;
+		//	thisClass->callRewrite();
+		//}
+		//static void drawNextRangeButtonUpThread(LPVOID	pParam){
+		//	Sleep(100);
 
-			OWP_PlayerButton *thisClass = (OWP_PlayerButton*)pParam;
-			thisClass->nextrange.buttonPush = false;
-			thisClass->callRewrite();
-		}
-		static void drawPlusDispButtonUpThread(LPVOID	pParam) {
-			Sleep(100);
+		//	OWP_PlayerButton *thisClass = (OWP_PlayerButton*)pParam;
+		//	thisClass->nextrange.buttonPush = false;
+		//	thisClass->callRewrite();
+		//}
+		//static void drawPlusDispButtonUpThread(LPVOID	pParam) {
+		//	Sleep(100);
 
-			OWP_PlayerButton* thisClass = (OWP_PlayerButton*)pParam;
-			thisClass->plusdisp.buttonPush = false;
-			thisClass->callRewrite();
-		}
-		static void drawMinusDispButtonUpThread(LPVOID	pParam) {
-			Sleep(100);
+		//	OWP_PlayerButton* thisClass = (OWP_PlayerButton*)pParam;
+		//	thisClass->plusdisp.buttonPush = false;
+		//	thisClass->callRewrite();
+		//}
+		//static void drawMinusDispButtonUpThread(LPVOID	pParam) {
+		//	Sleep(100);
 
-			OWP_PlayerButton* thisClass = (OWP_PlayerButton*)pParam;
-			thisClass->minusdisp.buttonPush = false;
-			thisClass->callRewrite();
-		}
-		static void drawPlusOffsetDispButtonUpThread(LPVOID	pParam) {
-			Sleep(100);
+		//	OWP_PlayerButton* thisClass = (OWP_PlayerButton*)pParam;
+		//	thisClass->minusdisp.buttonPush = false;
+		//	thisClass->callRewrite();
+		//}
+		//static void drawPlusOffsetDispButtonUpThread(LPVOID	pParam) {
+		//	Sleep(100);
 
-			OWP_PlayerButton* thisClass = (OWP_PlayerButton*)pParam;
-			thisClass->plusoffsetdisp.buttonPush = false;
-			thisClass->callRewrite();
-		}
-		static void drawMinusOffsetDispButtonUpThread(LPVOID	pParam) {
-			Sleep(100);
+		//	OWP_PlayerButton* thisClass = (OWP_PlayerButton*)pParam;
+		//	thisClass->plusoffsetdisp.buttonPush = false;
+		//	thisClass->callRewrite();
+		//}
+		//static void drawMinusOffsetDispButtonUpThread(LPVOID	pParam) {
+		//	Sleep(100);
 
-			OWP_PlayerButton* thisClass = (OWP_PlayerButton*)pParam;
-			thisClass->minusoffsetdisp.buttonPush = false;
-			thisClass->callRewrite();
-		}
-		static void drawResetDispButtonUpThread(LPVOID	pParam) {
-			Sleep(100);
+		//	OWP_PlayerButton* thisClass = (OWP_PlayerButton*)pParam;
+		//	thisClass->minusoffsetdisp.buttonPush = false;
+		//	thisClass->callRewrite();
+		//}
+		//static void drawResetDispButtonUpThread(LPVOID	pParam) {
+		//	Sleep(100);
 
-			OWP_PlayerButton* thisClass = (OWP_PlayerButton*)pParam;
-			thisClass->resetdisp.buttonPush = false;
-			thisClass->callRewrite();
-		}
+		//	OWP_PlayerButton* thisClass = (OWP_PlayerButton*)pParam;
+		//	thisClass->resetdisp.buttonPush = false;
+		//	thisClass->callRewrite();
+		//}
 	};
 
 	///<summary>
@@ -8044,7 +7886,14 @@ void s_dummyfunc()
 						else if (sgraph && ((g_previewFlag == 0)) || (g_previewFlag == 5)) {
 							//再生中以外　ブラシ色で　currenttimeに　縦線
 							//MoveToEx(hdcM->hDC, ex0, y0, NULL);
-							MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 2), NULL);
+							//MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 2), NULL);
+							if (g_4kresolution) {
+								MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 4), NULL);
+							}
+							else {
+								MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 3), NULL);
+							}
+							
 							LineTo(hdcM->hDC, ex0, y1);
 						}
 					}
@@ -8081,7 +7930,14 @@ void s_dummyfunc()
 						ex1 = ex0 + DOT_SIZE_X;
 						if (ex0 >= x1) {
 							//MoveToEx(hdcM->hDC, ex0, y0, NULL);
-							MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 2), NULL);
+							//MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 2), NULL);
+							if (g_4kresolution) {
+								MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 4), NULL);
+							}
+							else {
+								MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 3), NULL);
+							}
+							
 							LineTo(hdcM->hDC, ex0, y1);
 						}
 					}
@@ -8096,7 +7952,13 @@ void s_dummyfunc()
 						ex1 = ex0 + DOT_SIZE_X;
 						if (ex0 >= x1) {
 							//MoveToEx(hdcM->hDC, ex0, y0, NULL);
-							MoveToEx(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, (parent->LABEL_SIZE_Y * 2), NULL);
+							//MoveToEx(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, (parent->LABEL_SIZE_Y * 2), NULL);
+							if (g_4kresolution) {
+								MoveToEx(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, (parent->LABEL_SIZE_Y * 4), NULL);
+							}
+							else {
+								MoveToEx(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, (parent->LABEL_SIZE_Y * 3), NULL);
+							}							
 							LineTo(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, y1);
 						}
 					}

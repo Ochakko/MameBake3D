@@ -15012,7 +15012,7 @@ int CreateModelPanel()
 	s_modelpanel.scroll->setLineDataSize(modelnum + 3);
 	s_modelpanel.scroll->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight - 30));
 	s_modelpanel.panel->addParts(*(s_modelpanel.scroll));
-	s_modelpanel.panel->setPos(WindowPos(s_toolwidth, MAINMENUAIMBARH));
+	s_modelpanel.panel->setPos(s_modelpanelpos);
 	s_modelpanel.scroll->setPos(WindowPos(0, 30));
 
 	int modelcnt;
@@ -25059,7 +25059,7 @@ int CreateLongTimelineWnd()
 
 	/////////
 	s_owpPlayerButton = new OWP_PlayerButton(s_longtimelinewidth);
-	s_owpPlayerButton->setButtonSize(20);
+	//s_owpPlayerButton->setButtonSize(20);
 	s_LtimelineWnd->addParts(*s_owpPlayerButton);//owp_timelineより前
 
 	s_owpPlayerButton->setFrontPlayButtonListener([]() {
@@ -25106,33 +25106,33 @@ int CreateLongTimelineWnd()
 		});
 
 
-	s_owpPlayerButton->setOneFpsButtonListener([]() {
-		if (s_model) {
+	//s_owpPlayerButton->setOneFpsButtonListener([]() {
+	//	if (s_model) {
 
-			int tmponefps;
-			if (s_onefps == 0) {
-				tmponefps = 1;
-			}
-			else if (s_onefps == 1) {
-				tmponefps = 2;
-			}
-			else if (s_onefps == 2) {
-				tmponefps = 0;
-			}
-			else {
-				tmponefps = 0;
-			}
-			s_onefps = tmponefps;
+	//		int tmponefps;
+	//		if (s_onefps == 0) {
+	//			tmponefps = 1;
+	//		}
+	//		else if (s_onefps == 1) {
+	//			tmponefps = 2;
+	//		}
+	//		else if (s_onefps == 2) {
+	//			tmponefps = 0;
+	//		}
+	//		else {
+	//			tmponefps = 0;
+	//		}
+	//		s_onefps = tmponefps;
 
-			//s_LtimelineWnd->setDoneFlag(1);
-		}
-		});
-	s_owpPlayerButton->setStopButtonListener([]() {
-		if (s_model) {
-			s_LstopFlag = true; s_LcursorFlag = true; g_previewFlag = 0;
-			//s_LtimelineWnd->setDoneFlag(1);
-		}
-		});
+	//		//s_LtimelineWnd->setDoneFlag(1);
+	//	}
+	//	});
+	//s_owpPlayerButton->setStopButtonListener([]() {
+	//	if (s_model) {
+	//		s_LstopFlag = true; s_LcursorFlag = true; g_previewFlag = 0;
+	//		//s_LtimelineWnd->setDoneFlag(1);
+	//	}
+	//	});
 	s_owpPlayerButton->setResetButtonListener([]() {
 		//##############################################
 		// means to stop preview and step to first key 
@@ -25142,8 +25142,8 @@ int CreateLongTimelineWnd()
 				s_LstopFlag = true;
 				g_previewFlag = 0;
 				s_LcursorFlag = true;
-				s_firstkeyFlag = true;
-				//s_LtimelineWnd->setDoneFlag(1);
+				//s_firstkeyFlag = true;
+				////s_LtimelineWnd->setDoneFlag(1);
 			}
 		}
 		});
@@ -25163,77 +25163,77 @@ int CreateLongTimelineWnd()
 			}
 		}
 		});
-	s_owpPlayerButton->setBtResetButtonListener([]() {
-		if (s_model) {
-			s_btresetFlag = true;
-			//StartBt(s_model, TRUE, 0, 1);
-			//s_LtimelineWnd->setDoneFlag(1);
-		}
-		});
-	s_owpPlayerButton->setPrevRangeButtonListener([]() {
-		if (s_model) {
-			//g_undereditrange = true; s_prevrangeFlag = true;
-			////s_LtimelineWnd->setDoneFlag(1);
+	//s_owpPlayerButton->setBtResetButtonListener([]() {
+	//	if (s_model) {
+	//		s_btresetFlag = true;
+	//		//StartBt(s_model, TRUE, 0, 1);
+	//		//s_LtimelineWnd->setDoneFlag(1);
+	//	}
+	//	});
+	//s_owpPlayerButton->setPrevRangeButtonListener([]() {
+	//	if (s_model) {
+	//		//g_undereditrange = true; s_prevrangeFlag = true;
+	//		////s_LtimelineWnd->setDoneFlag(1);
 
-			RollbackCurBoneNo();//2022/11/07
-			s_undoFlag = true;//2022/11/02 選択範囲だけの履歴をやめて　アンドゥに
+	//		RollbackCurBoneNo();//2022/11/07
+	//		s_undoFlag = true;//2022/11/02 選択範囲だけの履歴をやめて　アンドゥに
 
-			//2022/11/27 playerbuttonからundoredoすると　s_LupFlagとs_selectFlagがtrueになり　PrepairUndoが呼ばれる
-			//undoredo結果が　SaveUndoMotionされないように　s_undoredoFromPlayerButtonフラグを立てる
-			s_undoredoFromPlayerButton = true;
-		}
-		});
-	s_owpPlayerButton->setNextRangeButtonListener([]() {
-		if (s_model) {
-			//g_undereditrange = true; s_nextrangeFlag = true;
-			////s_LtimelineWnd->setDoneFlag(1);
+	//		//2022/11/27 playerbuttonからundoredoすると　s_LupFlagとs_selectFlagがtrueになり　PrepairUndoが呼ばれる
+	//		//undoredo結果が　SaveUndoMotionされないように　s_undoredoFromPlayerButtonフラグを立てる
+	//		s_undoredoFromPlayerButton = true;
+	//	}
+	//	});
+	//s_owpPlayerButton->setNextRangeButtonListener([]() {
+	//	if (s_model) {
+	//		//g_undereditrange = true; s_nextrangeFlag = true;
+	//		////s_LtimelineWnd->setDoneFlag(1);
 
-			RollbackCurBoneNo();//2022/11/07
-			s_redoFlag = true;//2022/11/02 選択範囲だけの履歴をやめて　リドゥに
+	//		RollbackCurBoneNo();//2022/11/07
+	//		s_redoFlag = true;//2022/11/02 選択範囲だけの履歴をやめて　リドゥに
 
-			//2022/11/27 playerbuttonからundoredoすると　s_LupFlagとs_selectFlagがtrueになり　PrepairUndoが呼ばれる
-			//undoredo結果が　SaveUndoMotionされないように　s_undoredoFromPlayerButtonフラグを立てる
-			s_undoredoFromPlayerButton = true;
-		}
-		});
-	s_owpPlayerButton->setPlusDispButtonListener([]() {
-		if (s_model && s_owpEulerGraph) {
-			s_owpEulerGraph->PlusDisp();
-			s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
-			s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
-			s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
-			//s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
-			//s_LtimelineWnd->setDoneFlag(1);
-		}
-		});
-	s_owpPlayerButton->setMinusDispButtonListener([]() {
-		if (s_model && s_owpEulerGraph) {
-			s_owpEulerGraph->MinusDisp();
-			s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
-			s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
-			s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
-			//s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
-			//s_LtimelineWnd->setDoneFlag(1);
-		}
-		});
-	s_owpPlayerButton->setPlusOffsetDispButtonListener([]() {
-		if (s_model && s_owpEulerGraph) {
-			s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
-			//s_LtimelineWnd->setDoneFlag(1);
-		}
-		});
-	s_owpPlayerButton->setMinusOffsetDispButtonListener([]() {
-		if (s_model && s_owpEulerGraph) {
-			s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
-			//s_LtimelineWnd->setDoneFlag(1);
-		}
-		});
-	s_owpPlayerButton->setResetDispButtonListener([]() {
-		if (s_model && s_owpEulerGraph) {
-			s_owpEulerGraph->ResetScaleAndOffset();
-			//s_LtimelineWnd->setDoneFlag(1);
-		}
-		});
+	//		//2022/11/27 playerbuttonからundoredoすると　s_LupFlagとs_selectFlagがtrueになり　PrepairUndoが呼ばれる
+	//		//undoredo結果が　SaveUndoMotionされないように　s_undoredoFromPlayerButtonフラグを立てる
+	//		s_undoredoFromPlayerButton = true;
+	//	}
+	//	});
+	//s_owpPlayerButton->setPlusDispButtonListener([]() {
+	//	if (s_model && s_owpEulerGraph) {
+	//		s_owpEulerGraph->PlusDisp();
+	//		s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+	//		s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+	//		s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+	//		//s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+	//		//s_LtimelineWnd->setDoneFlag(1);
+	//	}
+	//	});
+	//s_owpPlayerButton->setMinusDispButtonListener([]() {
+	//	if (s_model && s_owpEulerGraph) {
+	//		s_owpEulerGraph->MinusDisp();
+	//		s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+	//		s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+	//		s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+	//		//s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+	//		//s_LtimelineWnd->setDoneFlag(1);
+	//	}
+	//	});
+	//s_owpPlayerButton->setPlusOffsetDispButtonListener([]() {
+	//	if (s_model && s_owpEulerGraph) {
+	//		s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+	//		//s_LtimelineWnd->setDoneFlag(1);
+	//	}
+	//	});
+	//s_owpPlayerButton->setMinusOffsetDispButtonListener([]() {
+	//	if (s_model && s_owpEulerGraph) {
+	//		s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+	//		//s_LtimelineWnd->setDoneFlag(1);
+	//	}
+	//	});
+	//s_owpPlayerButton->setResetDispButtonListener([]() {
+	//	if (s_model && s_owpEulerGraph) {
+	//		s_owpEulerGraph->ResetScaleAndOffset();
+	//		//s_LtimelineWnd->setDoneFlag(1);
+	//	}
+	//	});
 
 
 	//###################################
