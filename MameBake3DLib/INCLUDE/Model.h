@@ -195,6 +195,7 @@ public:
  * @return ê¨å˜ÇµÇΩÇÁÇOÅB
  */
 	int RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediateContext, CModel* bmarkptr, CMySprite* bcircleptr, int selboneno, int skiptopbonemark = 0 );
+	int RenderBoneCircleOne(bool limitdegflag, ID3D11DeviceContext* pd3dImmediateContext, CMySprite* bcircleptr, int selboneno);
 
 
 	void RenderCapsuleReq(bool limitdegflag, ID3D11DeviceContext* pd3dImmediateContext, CBtObject* srcbto);

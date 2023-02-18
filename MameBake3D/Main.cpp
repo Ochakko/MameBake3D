@@ -2012,7 +2012,7 @@ static CDXUTControl* s_ui_slikorder = 0;
 //static CDXUTControl* s_ui_slikrate = 0;
 static CDXUTControl* s_ui_texref = 0;
 static CDXUTControl* s_ui_slirefpos = 0;
-static CDXUTControl* s_ui_slirefmult = 0;
+static CDXUTControl* s_ui_slirefalpha = 0;
 static CDXUTControl* s_ui_applytotheend = 0;
 static CDXUTControl* s_ui_slerpoff = 0;
 //static CDXUTControl* s_ui_absikon = 0;
@@ -2243,10 +2243,10 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 
 #define IDC_IK_SC					72
 
-#define IDC_SL_REFPOS				73
+#define IDC_SL_REFPOSSTEP			73
 #define IDC_SL_REFARROW				74
 #define IDC_STATIC_REF				75
-#define IDC_SL_REFMULT				76
+#define IDC_SL_REFALPHA				76
 
 #define IDC_WALLSCRAPINGIK			77
 #define IDC_HIGHRPM					78
@@ -3378,6 +3378,9 @@ void InitApp()
 	g_tpose = true;
 	g_preciseOnPreviewToo = false;
 
+	g_refposstep = 10;
+	g_refalpha = 50;
+
 	g_underIKRot = false;
 	g_underRetargetFlag = false;
 	s_retargetguiFlag = false;
@@ -3715,7 +3718,7 @@ void InitApp()
 	//s_ui_slikrate = 0;
 	s_ui_texref = 0;
 	s_ui_slirefpos = 0;
-	s_ui_slirefmult = 0;
+	s_ui_slirefalpha = 0;
 	s_ui_applytotheend = 0;
 	s_ui_slerpoff = 0;
 	//s_ui_absikon = 0;
@@ -5122,9 +5125,9 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	//	delete s_ui_slirefpos;
 	//	s_ui_slirefpos = 0;
 	//}
-	//if (s_ui_slirefmult) {
-	//	delete s_ui_slirefmult;
-	//	s_ui_slirefmult = 0;
+	//if (s_ui_slirefalpha) {
+	//	delete s_ui_slirefalpha;
+	//	s_ui_slirefalpha = 0;
 	//}
 	//if (s_ui_applytotheend) {
 	//	delete s_ui_applytotheend;
@@ -8270,32 +8273,18 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 			  //   swprintf_s( sz, 100, L"IK Trans : %f", g_ikrate );
 		//         g_SampleUI.GetStatic( IDC_STATIC_IKRATE )->SetText( sz );
 		//         break;
-	case IDC_SL_REFPOS:
+	case IDC_SL_REFPOSSTEP:
 	{
 		RollbackCurBoneNo();
-		g_refpos = g_SampleUI.GetSlider(IDC_SL_REFPOS)->GetValue();
-		double refframe = CalcRefFrame();
-		if (refframe >= 0.0) {
-			swprintf_s(sz, 100, L"RefPos : %d%% : %d", g_refpos, (int)refframe);
-		}
-		else {
-			swprintf_s(sz, 100, L"RefPos : %d%%", g_refpos);
-		}
+		g_refposstep = g_SampleUI.GetSlider(IDC_SL_REFPOSSTEP)->GetValue();
+		swprintf_s(sz, 100, L"ReferencePos : %d", g_refposstep);
 		g_SampleUI.GetStatic(IDC_STATIC_REF)->SetText(sz);
-		//CEditRange::SetApplyRate((double)g_refpos);
-		//OnTimeLineSelectFromSelectedKey();
-		//if (s_editmotionflag < 0) {
-		//	int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-		//	if (result) {
-		//		_ASSERT(0);
-		//	}
-		//}
 	}
 	break;
-	case IDC_SL_REFMULT:
+	case IDC_SL_REFALPHA:
 	{
 		RollbackCurBoneNo();
-		g_refmult = g_SampleUI.GetSlider(IDC_SL_REFMULT)->GetValue();
+		g_refalpha = g_SampleUI.GetSlider(IDC_SL_REFALPHA)->GetValue();
 	}
 	break;
 	case IDC_SL_NUMTHREAD:
@@ -24887,7 +24876,7 @@ int CreateUtDialog()
 	}
 
 	{//1-->Experimental
-		swprintf_s(sz, 100, L"ReferencePos : %d%%", g_refpos);
+		swprintf_s(sz, 100, L"ReferencePos : %d", g_refposstep);
 		//g_SampleUI.AddStatic(IDC_STATIC_IKRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
 		g_SampleUI.AddStatic(IDC_STATIC_REF, sz, startx, iY += addh, ctrlxlen, 18);
 		s_ui_texref = g_SampleUI.GetControl(IDC_STATIC_REF);
@@ -24895,15 +24884,15 @@ int CreateUtDialog()
 		s_dsutgui3.push_back(s_ui_texref);
 		s_dsutguiid3.push_back(IDC_STATIC_REF);
 		//g_SampleUI.AddSlider(IDC_SL_IKRATE, 50, iY += addh, 100, ctrlh, 0, 100, (int)(g_ikrate * 100.0f));
-		g_SampleUI.AddSlider(IDC_SL_REFPOS, startx, iY += (18 + 2), 100, ctrlh, 0, 100, g_refpos);
-		s_ui_slirefpos = g_SampleUI.GetControl(IDC_SL_REFPOS);
-		g_SampleUI.AddSlider(IDC_SL_REFMULT, startx, iY += (18 + 2), 100, ctrlh, 0, 100, g_refmult);
-		s_ui_slirefmult = g_SampleUI.GetControl(IDC_SL_REFMULT);
-		_ASSERT(s_ui_slirefmult);
+		g_SampleUI.AddSlider(IDC_SL_REFPOSSTEP, startx, iY += (18 + 2), 100, ctrlh, 1, 50, g_refposstep);
+		s_ui_slirefpos = g_SampleUI.GetControl(IDC_SL_REFPOSSTEP);
+		g_SampleUI.AddSlider(IDC_SL_REFALPHA, startx, iY += (18 + 2), 100, ctrlh, 1, 100, g_refalpha);
+		s_ui_slirefalpha = g_SampleUI.GetControl(IDC_SL_REFALPHA);
+		_ASSERT(s_ui_slirefalpha);
 		s_dsutgui3.push_back(s_ui_slirefpos);
-		s_dsutguiid3.push_back(IDC_SL_REFPOS);
-		s_dsutgui3.push_back(s_ui_slirefmult);
-		s_dsutguiid3.push_back(IDC_SL_REFMULT);
+		s_dsutguiid3.push_back(IDC_SL_REFPOSSTEP);
+		s_dsutgui3.push_back(s_ui_slirefalpha);
+		s_dsutguiid3.push_back(IDC_SL_REFALPHA);
 	}
 
 
@@ -27077,67 +27066,113 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 
 	if (s_sprefpos.state) {
 		if (curmodel == s_model) {
-			int lightflag = 0;
-			int btflag = 0;
 
-			double refframe = CalcRefFrame();
-			if (refframe >= 0.0) {
+			int keynum;
+			double startframe, endframe, applyframe;
+			double roundingstartframe, roundingendframe, roundingapplyframe;
+			s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
+			roundingstartframe = (double)((int)(startframe + 0.0001));
+			roundingendframe = (double)((int)(endframe + 0.0001));
+			roundingapplyframe = (double)((int)(applyframe + 0.0001));
+
+			//if (keynum >= 3) {
 				MOTINFO* curmi = s_model->GetCurMotInfo();
 				if (curmi) {
-					double saveframe = curmi->curframe;
-					if (saveframe != refframe) {
-						CBone* curbone = s_model->GetBoneByID(s_curboneno);
-						if (curbone) {
-							std::vector<ChaVector3> vecbonepos;
-							vecbonepos.clear();
-							ChaVector3 curbonepos;
+					double currentframe = curmi->curframe;
+					CBone* curbone = s_model->GetBoneByID(s_curboneno);
+					if (curbone) {
+						std::vector<ChaVector3> vecbonepos;
+						vecbonepos.clear();
+						ChaVector3 curbonepos;
 
-							double starttime, endtime;
-							if (refframe < saveframe) {
-								starttime = refframe;
-								endtime = saveframe;
+						ChaMatrix modelwm = s_model->GetWorldMat();
+
+						int rendercount = 0;
+						double renderframe;
+						for (renderframe = roundingstartframe; renderframe <= roundingendframe; renderframe += 1.0) {
+							s_model->SetMotionFrame(renderframe);
+							//s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
+							//ChaMatrix tmpwm = s_model->GetWorldMat();
+							s_model->HierarchyRouteUpdateMatrix(g_limitdegflag, curbone, &modelwm, &s_matVP);//高速化：関係ボーンルート限定アップデート
+							ChaVector3 tmpfpos = curbone->GetJointFPos();
+							ChaMatrix tmpcurwm = curbone->GetCurMp().GetWorldMat();
+							ChaVector3TransformCoord(&curbonepos, &tmpfpos, &tmpcurwm);
+							vecbonepos.push_back(curbonepos);
+
+							int lightflag = 0;
+							int btflag = 0;
+
+							if (renderframe != applyframe) {
+								if ((rendercount % g_refposstep) == 0) {
+									//refframeのポーズを表示
+									s_model->SetMotionFrame(renderframe);
+									s_model->UpdateMatrix(g_limitdegflag, &modelwm, &s_matVP);
+
+
+									//カレントフレームから離れるほど　透明度を薄くする
+									double rendernum;
+									double renderalpha0, renderalpha;
+									rendernum = endframe - startframe + 1.0;
+									renderalpha0 = (rendernum - fabs(currentframe - renderframe)) / rendernum;
+									renderalpha = renderalpha0 * renderalpha0 * renderalpha0 * (double)g_refalpha * 0.01f;
+									ChaVector4 refdiffusemult = ChaVector4(1.0f, 1.0f, 1.0f, (float)renderalpha);
+
+									s_model->OnRender(pd3dImmediateContext, lightflag, refdiffusemult, btflag);//render model at reference pos
+								}
+							}
+
+							rendercount++;
+						}
+
+						////refframeのポーズを表示
+						//s_model->SetMotionFrame(refframe);
+						////ChaMatrix tmpwm = s_model->GetWorldMat();
+						//s_model->UpdateMatrix(g_limitdegflag, &modelwm, &s_matVP);
+						//ChaVector4 refdiffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.25f);
+						//s_model->OnRender(pd3dImmediateContext, lightflag, refdiffusemult, btflag);//render model at reference pos
+
+
+						{
+							////カレントフレームをレンダー
+							s_model->SetMotionFrame(currentframe);
+							s_model->UpdateMatrix(g_limitdegflag, &modelwm, &s_matVP);
+							int lightflag = 1;
+							ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
+							int btflag = 0;
+							if ((g_previewFlag != 4) && (g_previewFlag != 5)) {
+								btflag = 0;
 							}
 							else {
-								starttime = saveframe;
-								endtime = refframe;
+								if (g_previewFlag == 4) {
+									btflag = 1;
+								}
+								else {
+									//previewFlag == 5
+									if ((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))) {
+										btflag = 2;//2022/07/09
+									}
+								}
 							}
-							double insideframe;
-							for (insideframe = starttime; insideframe <= endtime; insideframe += 1.0) {
-								s_model->SetMotionFrame(insideframe);
-								//s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
-								ChaMatrix tmpwm = s_model->GetWorldMat();
-								s_model->HierarchyRouteUpdateMatrix(g_limitdegflag, curbone, &tmpwm, &s_matVP);//高速化：関係ボーンルート限定アップデート
-								ChaVector3 tmpfpos = curbone->GetJointFPos();
-								ChaMatrix tmpcurwm = curbone->GetCurMp().GetWorldMat();
-								ChaVector3TransformCoord(&curbonepos, &tmpfpos, &tmpcurwm);
-								vecbonepos.push_back(curbonepos);
-							}
+							s_model->OnRender(pd3dImmediateContext, lightflag, diffusemult, btflag);
+						}
 
-							//refframeのポーズを表示
-							s_model->SetMotionFrame(refframe);
-							ChaMatrix tmpwm = s_model->GetWorldMat();
-							s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
-							ChaVector4 refdiffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.25f);
-							s_model->OnRender(pd3dImmediateContext, lightflag, refdiffusemult, btflag);//render model at reference pos
+						//render arrow : selected bone : befpos --> aftpos arrow
+						CBone* childbone = curbone->GetChild();
+						if (childbone && curbone->GetColDisp(childbone, COL_CONE_INDEX)) {
+							ChaVector4 arrowdiffusemult = ChaVector4(1.0f, 0.5f, 0.5f, 0.85f);
 
+							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 
-							//元のフレームに戻す
-							s_model->SetMotionFrame(saveframe);
-							s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
+							curbone->GetColDisp(childbone, COL_CONE_INDEX)->RenderRefArrow(g_limitdegflag,
+								pd3dImmediateContext, curbone, arrowdiffusemult, 1, vecbonepos);
+							s_model->RenderBoneCircleOne(g_limitdegflag,
+								pd3dImmediateContext, s_bcircle, s_curboneno);
 
-
-							//render arrow : selected bone : befpos --> aftpos arrow
-							CBone* childbone = curbone->GetChild();
-							if (childbone && curbone->GetColDisp(childbone, COL_CONE_INDEX)) {
-								ChaVector4 arrowdiffusemult = ChaVector4(1.0f, 0.5f, 0.5f, 0.85f);
-								curbone->GetColDisp(childbone, COL_CONE_INDEX)->RenderRefArrow(g_limitdegflag,
-									pd3dImmediateContext, curbone, arrowdiffusemult, g_refmult, vecbonepos);
-							}
-
+							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 						}
 					}
 				}
-			}
+			//}
 		}
 	}
 
@@ -27185,9 +27220,18 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 				}
 			}
 
-			curmodel->OnRender(pd3dImmediateContext, lightflag, diffusemult, btflag);
-
-			OnRenderRefPose(pd3dImmediateContext, curmodel);
+			if (curmodel == s_model) {
+				//render reference pose
+				if (s_sprefpos.state) {
+					OnRenderRefPose(pd3dImmediateContext, s_model);
+				}
+				else {
+					curmodel->OnRender(pd3dImmediateContext, lightflag, diffusemult, btflag);
+				}
+			}
+			else {
+				curmodel->OnRender(pd3dImmediateContext, lightflag, diffusemult, btflag);
+			}
 		}
 	}
 
@@ -39239,21 +39283,21 @@ void OnArrowKey()
 
 }
 
-double CalcRefFrame()
-{
-	double startframe = s_editrange.GetStartFrame();
-	double endframe = s_editrange.GetEndFrame();
-	if (startframe != endframe) {
-		double offset = 0;
-		double refframe = (double)((int)(startframe + (endframe - startframe) * g_refpos / 100.0 + offset));
-
-		return refframe;
-	}
-	else {
-		return -1.0;
-	}
-
-}
+//double CalcRefFrame()
+//{
+//	double startframe = s_editrange.GetStartFrame();
+//	double endframe = s_editrange.GetEndFrame();
+//	if (startframe != endframe) {
+//		double offset = 0;
+//		double refframe = (double)((int)(startframe + (endframe - startframe) * g_refpos / 100.0 + offset));
+//
+//		return refframe;
+//	}
+//	else {
+//		return -1.0;
+//	}
+//
+//}
 
 ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis, int disporder, bool posinverse)
 {

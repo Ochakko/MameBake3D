@@ -5533,7 +5533,55 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 	return 0;
 }
 
+int CModel::RenderBoneCircleOne(bool limitdegflag, ID3D11DeviceContext* pd3dImmediateContext, CMySprite* bcircleptr, int selboneno)
+{
+	if (!pd3dImmediateContext || !bcircleptr) {
+		_ASSERT(0);
+		return 1;
+	}
+	if (selboneno < 0) {
+		return 0;
+	}
 
+	MOTINFO* curmi = 0;
+	int curmotid;
+	double roundingframe;
+	curmi = GetCurMotInfo();
+	if (curmi) {
+		curmotid = curmi->motid;
+		roundingframe = (double)((int)(curmi->curframe + 0.0001));
+	}
+	else {
+		return 0;
+	}
+
+	if (bcircleptr) {
+		CBone* boneptr = GetBoneByID(selboneno);
+		if (boneptr) {
+			CMotionPoint curmp = boneptr->GetCurMp();
+
+			ChaMatrix bcmat;
+			bcmat = boneptr->GetWorldMat(limitdegflag, curmotid, roundingframe, &curmp);
+			ChaMatrix transmat = bcmat * m_matVP;
+			ChaVector3 scpos;
+			ChaVector3 firstpos = boneptr->GetJointFPos();
+
+			ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
+			scpos.z = 0.0f;
+			bcircleptr->SetPos(scpos);
+			ChaVector2 bsize;
+			bcircleptr->SetColor(ChaVector4(1.0f, 0.0f, 0.0f, 0.7f));
+			bsize = ChaVector2(0.025f, 0.025f);
+			//if (g_4kresolution) {
+			//	bsize = bsize * 0.5f;
+			//}
+			bcircleptr->SetSize(bsize);
+
+			CallF(bcircleptr->OnRender(pd3dImmediateContext), return 1);
+		}
+	}
+	return 0;
+}
 
 void CModel::RenderCapsuleReq(bool limitdegflag, ID3D11DeviceContext* pd3dImmediateContext, CBtObject* srcbto)
 {
