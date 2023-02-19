@@ -403,6 +403,10 @@ int CBone::InitParams()
 	m_fbxLclScl = FbxDouble3(0.0, 0.0, 0.0);
 	m_fbxrotationActive = false;
 
+	m_ikstopflag = false;
+	m_iktargetflag = false;
+	m_iktargetpos = ChaVector3(0.0f, 0.0f, 0.0f);
+
 	return 0;
 }
 
@@ -8949,4 +8953,37 @@ void CBone::RestoreFbxNodePosture(FbxNode* pNode)
 	}
 }
 
+
+void CBone::SetIKTargetFlag(bool srcflag)
+{
+	m_iktargetflag = srcflag;
+
+	if (srcflag == true) {
+		if (GetParModel()) {
+			MOTINFO* curmi = GetParModel()->GetCurMotInfo();
+			if (curmi) {
+				CMotionPoint curmp = GetCurMp();
+				ChaMatrix curwm = GetWorldMat(g_limitdegflag, curmi->motid, curmi->curframe, &curmp);
+				ChaVector3 jointpos0, jointpos1;
+				jointpos0 = GetJointFPos();
+				ChaVector3TransformCoord(&jointpos1, &jointpos0, &curwm);
+				SetIKTargetPos(jointpos1);
+			}
+			else {
+				SetIKTargetPos(ChaVector3(0.0f, 0.0f, 0.0f));
+			}
+		}
+		else {
+			SetIKTargetPos(ChaVector3(0.0f, 0.0f, 0.0f));
+		}
+	}
+	else {
+		SetIKTargetPos(ChaVector3(0.0f, 0.0f, 0.0f));
+	}
+
+}
+bool CBone::GetIKTargetFlag()
+{
+	return m_iktargetflag;
+}
 

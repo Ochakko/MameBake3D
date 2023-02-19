@@ -837,6 +837,7 @@ int CDispObj::RenderNormal(ID3D11DeviceContext* pd3d11DeviceContext, CMQOMateria
 			//g_hMeshTexture->SetResource(NULL);
 			//p = 1;///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! no texture test
 
+			//FLOAT blendFactor[4] = { D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO };
 			FLOAT blendFactor[4] = { D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO };
 			pd3d11DeviceContext->OMSetBlendState(g_blendState, blendFactor, 0xffffffff);
 

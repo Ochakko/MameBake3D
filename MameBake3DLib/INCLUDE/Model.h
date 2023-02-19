@@ -397,8 +397,9 @@ public:
  * @return 成功したら０。
  * @detail MameBake3Dにおいては、マニピュレータの中央の黄色をドラッグした時に呼ばれる。
  */
-	int IKRotate(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel);
-
+	int IKRotate(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel, double directframe = -1.0);
+	int IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel, double directframe = -1.0);
+	int IKTargetReq(bool limitdegflag, CEditRange* srptr, CBone* srcbone, double srcframe);
 
 	//int PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel);
 	//int PhysicsMV(CEditRange* erptr, int srcboneno, ChaVector3 diffvec);

@@ -2152,6 +2152,8 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define ID_RMENU_KINEMATIC_ON_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 13)
 #define ID_RMENU_KINEMATIC_OFF_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 14)
 
+#define ID_RMENU_IKTARGET (ID_RMENU_PHYSICSCONSTRAINT + 15)
+
 #define IDC_TOGGLEFULLSCREEN    1
 #define IDC_TOGGLEREF           3
 #define IDC_CHANGEDEVICE        4
@@ -4687,10 +4689,13 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	blendDesc.RenderTarget[0].BlendEnable = TRUE;
 	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
 	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	//blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_DEST_COLOR;
 
 	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	//blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
+	//blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
 	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 	if (FAILED(s_pdev->CreateBlendState(&blendDesc, &g_blendState)))
@@ -7138,98 +7143,97 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 
 
-		else if (menuid == (ID_RMENU_PHYSICSCONSTRAINT + MENUOFFSET_BONERCLICK)) {
-			//位置コンストレイントはMass0で実現する。
-			////toggle
-			//if (opebone->GetPosConstraint() == 0){
-			//	s_model->CreatePhysicsPosConstraint(opebone);
-			//}
-			//else{
-			//	s_model->DestroyPhysicsPosConstraint(opebone);
-			//}
-		}
-		else if (menuid == (ID_RMENU_KINEMATIC_ON_LOWER + MENUOFFSET_BONERCLICK)) {
-			if (s_model && curbone) {
-				s_model->SetKinematicTmpLower(curbone, true);
+		else if (menuid == (ID_RMENU_IKTARGET + MENUOFFSET_BONERCLICK)) {
+			//toggle
+			if (curbone->GetIKTargetFlag() == false){
+				curbone->SetIKTargetFlag(true);
+			}
+			else{
+				curbone->SetIKTargetFlag(false);
 			}
 		}
-		else if (menuid == (ID_RMENU_KINEMATIC_OFF_LOWER + MENUOFFSET_BONERCLICK)) {
-			if (s_model && curbone) {
-				s_model->SetKinematicTmpLower(curbone, false);
-			}
-		}
-		else if (menuid == (ID_RMENU_MASS0_ON_ALL + MENUOFFSET_BONERCLICK)) {
-			if (s_model && curbone) {
-				s_model->Mass0_All(true);
-			}
-		}
-		else if (menuid == (ID_RMENU_MASS0_OFF_ALL + MENUOFFSET_BONERCLICK)) {
-			if (s_model && curbone) {
-				s_model->Mass0_All(false);
-			}
-		}
-		else if (menuid == (ID_RMENU_MASS0_ON_UPPER + MENUOFFSET_BONERCLICK)) {
-			if (s_model && curbone) {
-				s_model->Mass0_Upper(true, curbone);
-			}
-		}
-		else if (menuid == (ID_RMENU_MASS0_OFF_UPPER + MENUOFFSET_BONERCLICK)) {
-			if (s_model && curbone) {
-				s_model->Mass0_Upper(false, curbone);
-			}
-		}
-		else if (menuid == (ID_RMENU_MASS0_ON_LOWER + MENUOFFSET_BONERCLICK)) {
-			if (s_model && curbone) {
-				s_model->Mass0_Lower(true, curbone);
-			}
-		}
-		else if (menuid == (ID_RMENU_MASS0_OFF_LOWER + MENUOFFSET_BONERCLICK)) {
-			if (s_model && curbone) {
-				s_model->Mass0_Lower(false, curbone);
-			}
-		}
-		else if (menuid == (ID_RMENU_MASS0 + MENUOFFSET_BONERCLICK)) {
-			if (s_model && curbone) {
-				//toggle
-				if (curbone->GetMass0() == 0) {
-					s_model->SetMass0(curbone);
-				}
-				else {
-					s_model->RestoreMass(curbone);
-				}
-			}
-		}
-		else if (menuid == (ID_RMENU_EXCLUDE_MV + MENUOFFSET_BONERCLICK)) {
-			if (s_model && curbone) {
-				//toggle
-				if (curbone->GetExcludeMv() == 0) {
-					curbone->SetExcludeMv(1);
-				}
-				else {
-					curbone->SetExcludeMv(0);
-				}
-			}
-		}
-		else if (menuid == (ID_RMENU_FORBIDROT_ONE + MENUOFFSET_BONERCLICK)) {
-			if (s_model && curre) {
-				curre->SetForbidRotFlag(1);
-			}
-		}
-		else if (menuid == (ID_RMENU_ENABLEROT_ONE + MENUOFFSET_BONERCLICK)) {
-			if (s_model && curre) {
-				curre->SetForbidRotFlag(0);
-			}
-		}
-		else if (menuid == (ID_RMENU_FORBIDROT_CHILDREN + MENUOFFSET_BONERCLICK)) {
-			if (s_model && curre) {
-				s_model->EnableRotChildren(curbone, false);
-			}
-		}
-		else if (menuid == (ID_RMENU_ENABLEROT_CHILDREN + MENUOFFSET_BONERCLICK)) {
-			if (s_model && curre) {
-				s_model->EnableRotChildren(curbone, true);
-			}
-		}
+		//else if (menuid == (ID_RMENU_KINEMATIC_ON_LOWER + MENUOFFSET_BONERCLICK)) {
+		//	if (s_model && curbone) {
+		//		s_model->SetKinematicTmpLower(curbone, true);
+		//	}
+		//}
+		//else if (menuid == (ID_RMENU_KINEMATIC_OFF_LOWER + MENUOFFSET_BONERCLICK)) {
+		//	if (s_model && curbone) {
+		//		s_model->SetKinematicTmpLower(curbone, false);
+		//	}
+		//}
+		//else if (menuid == (ID_RMENU_MASS0_ON_ALL + MENUOFFSET_BONERCLICK)) {
+		//	if (s_model && curbone) {
+		//		s_model->Mass0_All(true);
+		//	}
+		//}
+		//else if (menuid == (ID_RMENU_MASS0_OFF_ALL + MENUOFFSET_BONERCLICK)) {
+		//	if (s_model && curbone) {
+		//		s_model->Mass0_All(false);
+		//	}
+		//}
+		//else if (menuid == (ID_RMENU_MASS0_ON_UPPER + MENUOFFSET_BONERCLICK)) {
+		//	if (s_model && curbone) {
+		//		s_model->Mass0_Upper(true, curbone);
+		//	}
+		//}
+		//else if (menuid == (ID_RMENU_MASS0_OFF_UPPER + MENUOFFSET_BONERCLICK)) {
+		//	if (s_model && curbone) {
+		//		s_model->Mass0_Upper(false, curbone);
+		//	}
+		//}
+		//else if (menuid == (ID_RMENU_MASS0_ON_LOWER + MENUOFFSET_BONERCLICK)) {
+		//	if (s_model && curbone) {
+		//		s_model->Mass0_Lower(true, curbone);
+		//	}
+		//}
+		//else if (menuid == (ID_RMENU_MASS0_OFF_LOWER + MENUOFFSET_BONERCLICK)) {
+		//	if (s_model && curbone) {
+		//		s_model->Mass0_Lower(false, curbone);
+		//	}
+		//}
+		//else if (menuid == (ID_RMENU_MASS0 + MENUOFFSET_BONERCLICK)) {
+		//	if (s_model && curbone) {
+		//		//toggle
+		//		if (curbone->GetMass0() == 0) {
+		//			s_model->SetMass0(curbone);
+		//		}
+		//		else {
+		//			s_model->RestoreMass(curbone);
+		//		}
+		//	}
+		//}
+		//else if (menuid == (ID_RMENU_EXCLUDE_MV + MENUOFFSET_BONERCLICK)) {
+		//	if (s_model && curbone) {
+		//		//toggle
+		//		if (curbone->GetExcludeMv() == 0) {
+		//			curbone->SetExcludeMv(1);
+		//		}
+		//		else {
+		//			curbone->SetExcludeMv(0);
+		//		}
+		//	}
+		//}
+		//else if (menuid == (ID_RMENU_FORBIDROT_ONE + MENUOFFSET_BONERCLICK)) {
+		//	if (s_model && curre) {
+		//		curre->SetForbidRotFlag(1);
+		//	}
+		//}
+		//else if (menuid == (ID_RMENU_ENABLEROT_ONE + MENUOFFSET_BONERCLICK)) {
+		//	if (s_model && curre) {
+		//		curre->SetForbidRotFlag(0);
+		//	}
+		//}
+		//else if (menuid == (ID_RMENU_FORBIDROT_CHILDREN + MENUOFFSET_BONERCLICK)) {
+		//	if (s_model && curre) {
+		//		s_model->EnableRotChildren(curbone, false);
+		//	}
+		//}
+		//else if (menuid == (ID_RMENU_ENABLEROT_CHILDREN + MENUOFFSET_BONERCLICK)) {
+		//	if (s_model && curre) {
+		//		s_model->EnableRotChildren(curbone, true);
+		//	}
+		//}
 		else if (menuid == (ID_RMENU_0 + MENUOFFSET_BONERCLICK)) {
 			//新規
 			GUIMenuSetVisible(-1, -1);
@@ -27099,76 +27103,74 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 							ChaVector3TransformCoord(&curbonepos, &tmpfpos, &tmpcurwm);
 							vecbonepos.push_back(curbonepos);
 
-							int lightflag = 0;
-							int btflag = 0;
+							int lightflag = 0;//!!!!!!!透けるために必要!!!!!!!!!
 
-							if (renderframe != applyframe) {
+							if (renderframe != currentframe) {
 								if ((rendercount % g_refposstep) == 0) {
 									//refframeのポーズを表示
+									int btflag1 = 0;
+
 									s_model->SetMotionFrame(renderframe);
 									s_model->UpdateMatrix(g_limitdegflag, &modelwm, &s_matVP);
 
 
 									//カレントフレームから離れるほど　透明度を薄くする
+									const double refstartalpha = 0.80f;
 									double rendernum;
 									double renderalpha0, renderalpha;
 									rendernum = endframe - startframe + 1.0;
 									renderalpha0 = (rendernum - fabs(currentframe - renderframe)) / rendernum;
-									renderalpha = renderalpha0 * renderalpha0 * renderalpha0 * (double)g_refalpha * 0.01f;
+									renderalpha = refstartalpha * renderalpha0 * renderalpha0 * renderalpha0 * (double)g_refalpha * 0.01f;
 									ChaVector4 refdiffusemult = ChaVector4(1.0f, 1.0f, 1.0f, (float)renderalpha);
 
-									s_model->OnRender(pd3dImmediateContext, lightflag, refdiffusemult, btflag);//render model at reference pos
+									s_model->OnRender(pd3dImmediateContext, lightflag, refdiffusemult, btflag1);//render model at reference pos
 								}
 							}
-
 							rendercount++;
 						}
-
-						////refframeのポーズを表示
-						//s_model->SetMotionFrame(refframe);
-						////ChaMatrix tmpwm = s_model->GetWorldMat();
-						//s_model->UpdateMatrix(g_limitdegflag, &modelwm, &s_matVP);
-						//ChaVector4 refdiffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.25f);
-						//s_model->OnRender(pd3dImmediateContext, lightflag, refdiffusemult, btflag);//render model at reference pos
 
 
 						{
 							////カレントフレームをレンダー
 							s_model->SetMotionFrame(currentframe);
 							s_model->UpdateMatrix(g_limitdegflag, &modelwm, &s_matVP);
-							int lightflag = 1;
-							ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
-							int btflag = 0;
+
+							int lightflag2 = 0;//!!!!!!!透けるために必要!!!!!!!!!
+							//const float orgalpha = 0.8880f;
+							const float orgalpha = 1.0f;
+							ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, orgalpha);
+							int btflag2 = 0;
 							if ((g_previewFlag != 4) && (g_previewFlag != 5)) {
-								btflag = 0;
+								btflag2 = 0;
 							}
 							else {
 								if (g_previewFlag == 4) {
-									btflag = 1;
+									btflag2 = 1;
 								}
 								else {
 									//previewFlag == 5
 									if ((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))) {
-										btflag = 2;//2022/07/09
+										btflag2 = 2;//2022/07/09
 									}
 								}
 							}
-							s_model->OnRender(pd3dImmediateContext, lightflag, diffusemult, btflag);
+							s_model->OnRender(pd3dImmediateContext, lightflag2, diffusemult, btflag2);
 						}
+
 
 						//render arrow : selected bone : befpos --> aftpos arrow
 						CBone* childbone = curbone->GetChild();
 						if (childbone && curbone->GetColDisp(childbone, COL_CONE_INDEX)) {
 							ChaVector4 arrowdiffusemult = ChaVector4(1.0f, 0.5f, 0.5f, 0.85f);
 
-							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);//不透明の場合には手動で指定
 
 							curbone->GetColDisp(childbone, COL_CONE_INDEX)->RenderRefArrow(g_limitdegflag,
 								pd3dImmediateContext, curbone, arrowdiffusemult, 1, vecbonepos);
 							s_model->RenderBoneCircleOne(g_limitdegflag,
 								pd3dImmediateContext, s_bcircle, s_curboneno);
 
-							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);//元に戻す
 						}
 					}
 				}
@@ -28635,54 +28637,47 @@ int BoneRClick(int srcboneno)
 				}
 				s_customrigmenuindex.clear();
 
-				//位置コンストレイントはMass0で実現する。
-				//if (curbone->GetPosConstraint() == 0){
-				//	AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT, L"Physics Pos Constraint設定");
+
+				if (curbone->GetIKTargetFlag() == false){
+					AppendMenu(submenu, MF_STRING, (ID_RMENU_IKTARGET + MENUOFFSET_BONERCLICK), L"Pos Constraint ON");
+				}
+				else{
+					AppendMenu(submenu, MF_STRING, (ID_RMENU_IKTARGET + MENUOFFSET_BONERCLICK), L"Pos Constraint OFF");
+				}
+
+				//AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_ALL + MENUOFFSET_BONERCLICK, L"Mass0 ON tO AllJoints");
+				//AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_ALL + MENUOFFSET_BONERCLICK, L"Mass0 OFF to AllJoints");
+				//AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_UPPER + MENUOFFSET_BONERCLICK, L"Mass0 ON to UpperJoints");
+				//AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_UPPER + MENUOFFSET_BONERCLICK, L"Mass0 OFF to UpperJoints");
+				//AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_LOWER + MENUOFFSET_BONERCLICK, L"Mass0 ON to LowerJoints");
+				//AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_LOWER + MENUOFFSET_BONERCLICK, L"Mass0 OFF to LowerJoints");
+				//if (curbone->GetMass0() == 0) {
+				//	AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0 + MENUOFFSET_BONERCLICK, L"Tempolary Mass0 Set");
 				//}
-				//else{
-				//	AppendMenu(submenu, MF_STRING, ID_RMENU_PHYSICSCONSTRAINT, L"Physics Pos Constraint解除");
+				//else {
+				//	AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0 + MENUOFFSET_BONERCLICK, L"Tempolary Mass0 Unset");
 				//}
-
-				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_ALL + MENUOFFSET_BONERCLICK, L"Mass0 ON tO AllJoints");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_ALL + MENUOFFSET_BONERCLICK, L"Mass0 OFF to AllJoints");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_UPPER + MENUOFFSET_BONERCLICK, L"Mass0 ON to UpperJoints");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_UPPER + MENUOFFSET_BONERCLICK, L"Mass0 OFF to UpperJoints");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_LOWER + MENUOFFSET_BONERCLICK, L"Mass0 ON to LowerJoints");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_LOWER + MENUOFFSET_BONERCLICK, L"Mass0 OFF to LowerJoints");
-
-				if (curbone->GetMass0() == 0) {
-					AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0 + MENUOFFSET_BONERCLICK, L"Tempolary Mass0 Set");
-				}
-				else {
-					AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0 + MENUOFFSET_BONERCLICK, L"Tempolary Mass0 Unset");
-				}
-
-				if (curbone->GetExcludeMv() == 0) {
-					AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV + MENUOFFSET_BONERCLICK, L"Exclude MV Set");
-				}
-				else {
-					AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV + MENUOFFSET_BONERCLICK, L"Exclude MV Unset");
-				}
-
-				AppendMenu(submenu, MF_STRING, ID_RMENU_KINEMATIC_ON_LOWER + MENUOFFSET_BONERCLICK, L"Kinematic ON to LowerJoints");
-				AppendMenu(submenu, MF_STRING, ID_RMENU_KINEMATIC_OFF_LOWER + MENUOFFSET_BONERCLICK, L"Kinematic OFF to LowerJoints");
-
-				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-				int forbidflag = 0;
-				if (curre) {
-					forbidflag = curre->GetForbidRotFlag();
-					if (forbidflag == 0) {
-						AppendMenu(submenu, MF_STRING, ID_RMENU_FORBIDROT_ONE + MENUOFFSET_BONERCLICK, L"Forbid Rot Of ParentJoint.");
-					}
-					else {
-						AppendMenu(submenu, MF_STRING, ID_RMENU_ENABLEROT_ONE + MENUOFFSET_BONERCLICK, L"NotForbid Rot Of ParentJoint");
-					}
-
-
-					AppendMenu(submenu, MF_STRING, ID_RMENU_FORBIDROT_CHILDREN + MENUOFFSET_BONERCLICK, L"Forbid Rot Of LowerJoints");
-					AppendMenu(submenu, MF_STRING, ID_RMENU_ENABLEROT_CHILDREN + MENUOFFSET_BONERCLICK, L"NotForbid Rot Of LowerJoints");
-
-				}
+				//if (curbone->GetExcludeMv() == 0) {
+				//	AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV + MENUOFFSET_BONERCLICK, L"Exclude MV Set");
+				//}
+				//else {
+				//	AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV + MENUOFFSET_BONERCLICK, L"Exclude MV Unset");
+				//}
+				//AppendMenu(submenu, MF_STRING, ID_RMENU_KINEMATIC_ON_LOWER + MENUOFFSET_BONERCLICK, L"Kinematic ON to LowerJoints");
+				//AppendMenu(submenu, MF_STRING, ID_RMENU_KINEMATIC_OFF_LOWER + MENUOFFSET_BONERCLICK, L"Kinematic OFF to LowerJoints");
+				//CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				//int forbidflag = 0;
+				//if (curre) {
+				//	forbidflag = curre->GetForbidRotFlag();
+				//	if (forbidflag == 0) {
+				//		AppendMenu(submenu, MF_STRING, ID_RMENU_FORBIDROT_ONE + MENUOFFSET_BONERCLICK, L"Forbid Rot Of ParentJoint.");
+				//	}
+				//	else {
+				//		AppendMenu(submenu, MF_STRING, ID_RMENU_ENABLEROT_ONE + MENUOFFSET_BONERCLICK, L"NotForbid Rot Of ParentJoint");
+				//	}
+				//	AppendMenu(submenu, MF_STRING, ID_RMENU_FORBIDROT_CHILDREN + MENUOFFSET_BONERCLICK, L"Forbid Rot Of LowerJoints");
+				//	AppendMenu(submenu, MF_STRING, ID_RMENU_ENABLEROT_CHILDREN + MENUOFFSET_BONERCLICK, L"NotForbid Rot Of LowerJoints");
+				//}
 
 
 				AppendMenu(submenu, MF_STRING, ID_RMENU_0 + MENUOFFSET_BONERCLICK, L"CreateNewRig");

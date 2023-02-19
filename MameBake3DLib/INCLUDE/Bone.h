@@ -1255,6 +1255,24 @@ public: //accesser
 		return m_fbxnodeonload;
 	}
 
+	void SetIKStopFlag(bool srcflag)
+	{
+		m_ikstopflag = srcflag;
+	}
+	bool GetIKStopFlag()
+	{
+		return m_ikstopflag;
+	}
+	void SetIKTargetFlag(bool srcflag);
+	bool GetIKTargetFlag();
+	void SetIKTargetPos(ChaVector3 srcpos)
+	{
+		m_iktargetpos = srcpos;
+	}
+	ChaVector3 GetIKTargetPos()
+	{
+		return m_iktargetpos;
+	}
 
 	//2023/02/16
 	//fbxの初期姿勢のジョイントの向きを書き出すために追加
@@ -1417,7 +1435,9 @@ private:
 	FbxDouble3 m_fbxLclScl;
 	bool m_fbxrotationActive;
 
-
+	bool m_ikstopflag;
+	bool m_iktargetflag;
+	ChaVector3 m_iktargetpos;
 
 	CBone* m_parent;
 	CBone* m_child;
