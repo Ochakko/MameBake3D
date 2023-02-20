@@ -2103,6 +2103,11 @@ static void OnArrowKey();//DS関数でキーボードの矢印キーに対応
 static void CalcTotalBound();
 
 
+//IKRotate用
+static std::vector<IKROTREC> s_rotrec;
+
+
+
 //--------------------------------------------------------------------------------------
 // Global variables
 //--------------------------------------------------------------------------------------
@@ -3371,6 +3376,8 @@ void InitApp()
 	//WCHAR strchk[256] = { 0L };
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
+
+	s_rotrec.clear();
 
 	g_btcalccnt = 2.0;
 
@@ -7577,6 +7584,8 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		s_rectime = 0.0;
 		s_reccnt = 0;
 
+		s_rotrec.clear();
+
 		//!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//DS deviceがあっても、マウスを併用する場合があるのでマウスのSetCaptureとReleaseCaptureは必要
 		//!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -7976,6 +7985,71 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		ReleaseCapture();
 		//}
 		//ReleaseCapture();
+
+
+
+		//マウスによるIKとFKの後処理　applyframe以外のフレームの処理
+		if ((s_ikkind == 0) && (s_editmotionflag >= 0)){
+			if (s_pickinfo.buttonflag == PICK_CENTER) {
+				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+				if (s_rotrec.empty() == false) {
+					s_editmotionflag = s_model->IKRotatePostIK(s_rotrec, g_limitdegflag,
+						&s_editrange, s_pickinfo.pickobjno, g_iklevel);
+				}
+				if (oldcursor != NULL) {
+					SetCursor(oldcursor);
+				}
+			}
+			else if ((s_pickinfo.buttonflag == PICK_X) || 
+				(s_pickinfo.buttonflag == PICK_Y) || 
+				(s_pickinfo.buttonflag == PICK_Z) ||
+				(s_pickinfo.buttonflag == PICK_SPA_X) || 
+				(s_pickinfo.buttonflag == PICK_SPA_Y) || 
+				(s_pickinfo.buttonflag == PICK_SPA_Z)) {
+				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+				s_editmotionflag = s_model->IKRotateAxisDeltaPostIK(s_rotrec,
+					g_limitdegflag,
+					&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno,
+					g_iklevel, s_ikcnt);
+
+				if (oldcursor != NULL) {
+					SetCursor(oldcursor);
+				}
+			}
+		}
+		else if ((s_ikkind == 1) && (s_editmotionflag >= 0)) {
+			if (s_pickinfo.buttonflag == PICK_CENTER) {
+				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+				s_model->FKBoneTraPostFK(s_rotrec, g_limitdegflag,
+					&s_editrange, s_curboneno);
+				s_editmotionflag = s_curboneno;
+
+				if (oldcursor != NULL) {
+					SetCursor(oldcursor);
+				}
+			}
+			else if ((s_pickinfo.buttonflag == PICK_X) ||
+				(s_pickinfo.buttonflag == PICK_Y) ||
+				(s_pickinfo.buttonflag == PICK_Z) ||
+				(s_pickinfo.buttonflag == PICK_SPA_X) ||
+				(s_pickinfo.buttonflag == PICK_SPA_Y) ||
+				(s_pickinfo.buttonflag == PICK_SPA_Z)) {
+				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+				s_model->FKBoneTraAxisPostFK(s_rotrec,
+					g_limitdegflag,
+					&s_editrange, s_curboneno);
+				s_editmotionflag = s_curboneno;
+
+				if (oldcursor != NULL) {
+					SetCursor(oldcursor);
+				}
+			}
+		}
+
+
 		s_wmlbuttonup = 1;//ゲームパッド用フラグ
 
 		s_befdeltax = 0.0f;
@@ -11662,7 +11736,7 @@ int AddBoneTra2(ChaVector3 diffvec)
 		return 0;
 	}
 
-	s_model->FKBoneTra(g_limitdegflag, 0, &s_editrange, s_curboneno, diffvec);
+	s_model->FKBoneTraUnderFK(s_rotrec, g_limitdegflag, &s_editrange, s_curboneno, diffvec);
 
 	s_editmotionflag = s_curboneno;
 
@@ -11702,10 +11776,9 @@ int AddBoneTra(int kind, float srctra)
 		return 0;
 	}
 
-	s_model->FKBoneTraAxis(g_limitdegflag,
-		0, &s_editrange, s_curboneno, kind, srctra, s_ikselectmat);
-
-
+	s_model->FKBoneTraAxisUnderFK(s_rotrec, 
+		g_limitdegflag,
+		&s_editrange, s_curboneno, kind, srctra, s_ikselectmat);
 	s_editmotionflag = s_curboneno;
 
 	return 0;
@@ -30250,7 +30323,7 @@ int OnMouseMoveFunc()
 						//CallF(CalcTargetPos(&targetpos), return 1);
 						CalcTargetPos(&targetpos);
 						if (s_ikkind == 0) {
-							s_editmotionflag = s_model->IKRotate(g_limitdegflag,
+							s_editmotionflag = s_model->IKRotateUnderIK(s_rotrec, g_limitdegflag,
 								&s_editrange, s_pickinfo.pickobjno, targetpos, g_iklevel);
 
 							//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
@@ -30323,7 +30396,8 @@ int OnMouseMoveFunc()
 
 					if ((s_befdeltax * deltax) > 0.0f) {
 						if (s_ikkind == 0) {
-							s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag,
+							s_editmotionflag = s_model->IKRotateAxisDeltaUnderIK(s_rotrec,
+								g_limitdegflag,
 								&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno,
 								deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 
@@ -30373,7 +30447,8 @@ int OnMouseMoveFunc()
 
 					if ((s_befdeltax * deltax) > 0.0f) {
 						if (s_ikkind == 0) {
-							s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag,
+							s_editmotionflag = s_model->IKRotateAxisDeltaUnderIK(s_rotrec,
+								g_limitdegflag,
 								&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno,
 								deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 

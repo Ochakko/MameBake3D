@@ -77,6 +77,14 @@ typedef struct tag_physikrec
 	ChaMatrix btmat;
 }PHYSIKREC;
 
+
+typedef struct tag_ikrotrec
+{
+	ChaVector3 targetpos;
+	CQuaternion rotq;
+}IKROTREC;
+
+
 #define MAXPHYSIKRECCNT		(60 * 60)
 
 //########################################
@@ -397,10 +405,19 @@ public:
  * @return 成功したら０。
  * @detail MameBake3Dにおいては、マニピュレータの中央の黄色をドラッグした時に呼ばれる。
  */
-	int IKRotate(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel, double directframe = -1.0);
-	int IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel, double directframe = -1.0);
-	int IKTargetReq(bool limitdegflag, CEditRange* srptr, CBone* srcbone, double srcframe);
 
+	int IKRotateUnderIK(std::vector<IKROTREC>& rotrec, bool limitdegflag, CEditRange* erptr,
+		int srcboneno, ChaVector3 targetpos, int maxlevel);
+	int IKRotatePostIK(std::vector<IKROTREC>& rotrec, bool limitdegflag, CEditRange* erptr,
+		int srcboneno, int maxlevel);
+
+
+	int IKRotate(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel, double directframe = -1.0);
+	int IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, 
+		int maxlevel, double directframe, bool postflag);
+	int IKTargetVec(bool limitdegflag, CEditRange* srptr, double srcframe, bool postflag);
+	int SetIKTargetVec();
+	void SetIKTargetVecReq(CBone* srcbone);
 	//int PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel);
 	//int PhysicsMV(CEditRange* erptr, int srcboneno, ChaVector3 diffvec);
 
@@ -436,8 +453,17 @@ public:
  * @return 成功したら０。
  * @detail MameBake3Dにおいては、マニピュレータのリングまたは球をドラッグした時に呼ばれる。
  */
+	int IKRotateAxisDeltaUnderIK(std::vector<IKROTREC>& rotrec, 
+		bool limitdegflag, CEditRange* erptr, 
+		int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat);
+	int IKRotateAxisDeltaPostIK(std::vector<IKROTREC>& rotrec, 
+		bool limitdegflag, CEditRange* erptr, 
+		int axiskind, int srcboneno, int maxlevel, int ikcnt);
+
+
+
 	int IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat);
-	int TwistBoneAxisDelta(CEditRange* erptr, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat);
+	//int TwistBoneAxisDelta(CEditRange* erptr, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat);
 
 
 	//int PhysicsRotAxisDelta(CEditRange* erptr, int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat);
@@ -479,11 +505,29 @@ public:
  * @param (ChaVector3 addtra) IN 移動分のベクトル。
  * @return 成功したら０。
  */
+	int FKBoneTraUnderFK(std::vector<IKROTREC>& rotrec,
+		bool limitdegflag, CEditRange* erptr,
+		int srcboneno, ChaVector3 addtra);
+	int FKBoneTraPostFK(std::vector<IKROTREC>& rotrec,
+		bool limitdegflag, CEditRange* erptr,
+		int srcboneno);
+
+
 	int FKBoneTra(bool limitdegflag, int onlyoneflag, CEditRange* erptr, 
 		int srcboneno, ChaVector3 addtra, double onlyoneframe = 0.0 );
 
+
+
+	int FKBoneTraAxisUnderFK(std::vector<IKROTREC>& rotrec,
+		bool limitdegflag, CEditRange* erptr,
+		int srcboneno, int axiskind, float delta, ChaMatrix selectmat);
+	int FKBoneTraAxisPostFK(std::vector<IKROTREC>& rotrec, 
+		bool limitdegflag, CEditRange* erptr,
+		int srcboneno);
 	int FKBoneTraAxis(bool limitdegflag, int onlyoneflag, CEditRange* erptr, 
 		int srcboneno, int axiskind, float delta, ChaMatrix selectmat);
+
+
 
 	int FKBoneScale(bool limitdegflag, int onlyoneflag, CEditRange* erptr, 
 		int srcboneno, ChaVector3 scalevec);
@@ -921,6 +965,18 @@ private:
 		CQuaternion* dstqForRot, CQuaternion* dstqForHipsRot);
 	int IsMovableRot(bool limitdegflag, int srcmotid, double srcframe, double srcapplyframe, 
 		CQuaternion srcaddrot, CBone* srcrotbone, CBone* srcaplybone);
+	int CalcAxisAndRotForIKRotate(int limitdegflag, 
+		CBone* parentbone, CBone* firstbone, 
+		double curframe, ChaVector3 targetpos, 
+		ChaVector3* dstaxis, float* dstrotrad);
+	int CalcAxisAndRotForIKRotateVert(int limitdegflag,
+		CBone* parentbone, CBone* firstbone,
+		double curframe, ChaVector3 targetpos,
+		ChaVector3* dstaxis, float* dstrotrad);
+	int IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
+		int keyno, CBone* parentbone,
+		double curframe, double startframe, double applyframe,
+		CQuaternion rotq0, bool keynum1flag, bool postflag, bool fromiktarget);
 
 
 	//int GetFreeThreadIndex();
@@ -1466,6 +1522,7 @@ private:
 
 	float m_setfl4x4[16 * MAXCLUSTERNUM];//SetShaderConst用
 
+	std::vector<CBone*> m_iktargetbonevec;
 
 	int m_loadbonecount;//GetFbxAnim用
 };
