@@ -85,6 +85,12 @@
   		ドラッグ時間が長いほど　その後のウェイトカーソルも長い
 
  
+	fpsコンボボックス追加
+		VSyncRefPosプレートメニューのVSyncチェックボックス廃止
+		DispAndLimitsプレートメニューの一番上に　fpsコンボボックス追加
+		ドロップダウンから　max500fps, 100fps, 60fps, 30fps, 15fpsを選ぶように
+
+
 
 2023/02/16
 	EditMot 1.2.0.11 release

@@ -764,6 +764,11 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 * 		ドラッグ時間が長いほど　その後のウェイトカーソルも長い
 * 
 * 
+*	fpsコンボボックス追加
+*		VSyncRefPosプレートメニューのVSyncチェックボックス廃止
+*		DispAndLimitsプレートメニューの一番上に　fpsコンボボックス追加
+*		ドロップダウンから　max500fps, 100fps, 60fps, 30fps, 15fpsを選ぶように
+* 
 * 
 */
 
@@ -2077,13 +2082,14 @@ CDXUTCheckBox* s_RigidMarkCheckBox = 0;
 CDXUTCheckBox* s_BrushMirrorUCheckBox = 0;
 CDXUTCheckBox* s_BrushMirrorVCheckBox = 0;
 CDXUTCheckBox* s_IfMirrorVDiv2CheckBox = 0;
-CDXUTCheckBox* s_VSyncCheckBox = 0;
+//CDXUTCheckBox* s_VSyncCheckBox = 0;
 CDXUTCheckBox* s_TraRotCheckBox = 0;
 CDXUTCheckBox* s_PreciseCheckBox = 0;
 CDXUTCheckBox* s_TPoseCheckBox = 0;
 
 
 //Left
+static CDXUTControl* s_ui_fpskind = 0;
 static CDXUTControl* s_ui_lightscale = 0;
 static CDXUTControl* s_ui_texlight = 0;
 static CDXUTControl* s_ui_dispbone = 0;
@@ -2126,7 +2132,7 @@ static CDXUTControl* s_ui_wallscrapingik = 0;
 static CDXUTControl* s_ui_limiteul = 0;
 static CDXUTControl* s_ui_texspeed = 0;
 static CDXUTControl* s_ui_speed = 0;
-static CDXUTControl* s_ui_vsync = 0;
+//static CDXUTControl* s_ui_vsync = 0;
 static CDXUTControl* s_ui_trarot = 0;
 
 
@@ -2350,11 +2356,12 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_SL_UMTHREADS			79
 #define IDC_STATIC_UMTHREADS		80
 
-#define IDC_VSYNC					81
+//#define IDC_VSYNC					81
 #define IDC_PRECISEONPREVIEWTOO		82
 #define IDC_TPOSE_MANIPULATOR		83
 
 #define IDC_TRAROT					84
+#define IDC_COMBO_FPS				85
 
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -3481,6 +3488,8 @@ void InitApp()
 	s_retargetguiFlag = false;
 
 	g_VSync = false;
+	g_fpskind = 0;
+
 	g_rotatetanim = false;
 	g_HighRpmMode = false;
 	g_UpdateMatrixThreads = 2;
@@ -3789,12 +3798,13 @@ void InitApp()
 	s_BrushMirrorUCheckBox = 0;
 	s_BrushMirrorVCheckBox = 0;
 	s_IfMirrorVDiv2CheckBox = 0;
-	s_VSyncCheckBox = 0;
+	//s_VSyncCheckBox = 0;
 	s_TraRotCheckBox = 0;
 	s_PreciseCheckBox = 0;
 	s_TPoseCheckBox = 0;
 
 	//Left
+	s_ui_fpskind = 0;
 	s_ui_lightscale = 0;
 	s_ui_texlight = 0;
 	s_ui_dispbone = 0;
@@ -3834,7 +3844,7 @@ void InitApp()
 	s_ui_limiteul = 0;
 	s_ui_texspeed = 0;
 	s_ui_speed = 0;
-	s_ui_vsync = 0;
+	//s_ui_vsync = 0;
 	s_ui_trarot = 0;
 	s_ui_precise = 0;
 	s_ui_tpose = 0;
@@ -8664,10 +8674,25 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 		//	}
 		//	break;
 
+	case IDC_COMBO_FPS:
+		RollbackCurBoneNo();
+		pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_FPS);
+		if (pComboBox) {
+			g_fpskind = (int)PtrToUlong(pComboBox->GetSelectedData());
+			if (g_fpskind != 0) {
+				g_VSync = true;
+			}
+			else {
+				g_VSync = false;
+			}
+		}
+		break;
 	case IDC_COMBO_IKLEVEL:
 		RollbackCurBoneNo();
 		pComboBox = g_SampleUI.GetComboBox(IDC_COMBO_IKLEVEL);
-		g_iklevel = (int)PtrToUlong(pComboBox->GetSelectedData());
+		if (pComboBox) {
+			g_iklevel = (int)PtrToUlong(pComboBox->GetSelectedData());
+		}
 		break;
 	case IDC_CAMTARGET:
 		RollbackCurBoneNo();
@@ -8695,9 +8720,9 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 	//	RollbackCurBoneNo();
 	//	s_WallScrapingCheckBoxFlag = true;//2022/11/23 For PrepairUndoMotion at OnFrameUtCheckBox
 	//	break;
-	case IDC_VSYNC:
-		RollbackCurBoneNo();
-		break;
+	//case IDC_VSYNC:
+	//	RollbackCurBoneNo();
+	//	break;
 	case IDC_TRAROT:
 		RollbackCurBoneNo();
 		break;
@@ -22008,9 +22033,9 @@ int OnFrameUtCheckBox()
 	if (s_PreciseCheckBox) {
 		g_preciseOnPreviewToo = (bool)s_PreciseCheckBox->GetChecked();
 	}
-	if (s_VSyncCheckBox) {
-		g_VSync = (bool)s_VSyncCheckBox->GetChecked();
-	}
+	//if (s_VSyncCheckBox) {
+	//	g_VSync = (bool)s_VSyncCheckBox->GetChecked();
+	//}
 	if (s_TraRotCheckBox) {
 		g_rotatetanim = (bool)s_TraRotCheckBox->GetChecked();
 	}
@@ -24598,13 +24623,13 @@ int CreateUtDialog()
 
 		//iY = s_mainheight - 210 - 10 - 3 * addh;
 		//iY = s_mainheight - 210 - 2 * addh - 10;
-		iY = s_mainheight - 210 - 10;
+		iY = s_mainheight - 210 - 10 - addh - 10;
 		iX0 = s_mainwidth / 2 - 180 - 2 * 180 - 30;
 	}
 	else {
 		//iY = 0;
 		//iY = 0;
-		iY = 2 * addh;
+		iY = addh;
 		iX0 = 0;
 	}
 
@@ -24659,9 +24684,31 @@ int CreateUtDialog()
 	}
 
 
+	g_SampleUI.AddComboBox(IDC_COMBO_FPS, iX0 + 25, iY, ctrlxlen, ctrlh);//Comboの要素が見切れないようになるべく上方に配置
+	s_ui_fpskind = g_SampleUI.GetControl(IDC_COMBO_FPS);
+	_ASSERT(s_ui_fpskind);
+	s_dsutgui0.push_back(s_ui_fpskind);
+	s_dsutguiid0.push_back(IDC_COMBO_FPS);
+	CDXUTComboBox* pComboBoxFps = g_SampleUI.GetComboBox(IDC_COMBO_FPS);
+	pComboBoxFps->RemoveAllItems();
+	WCHAR strfpskind[256];
+	swprintf_s(strfpskind, 256, L"max500");
+	pComboBoxFps->AddItem(strfpskind, ULongToPtr(0));
+	swprintf_s(strfpskind, 256, L"100fps");
+	pComboBoxFps->AddItem(strfpskind, ULongToPtr(1));
+	swprintf_s(strfpskind, 256, L"60fps");
+	pComboBoxFps->AddItem(strfpskind, ULongToPtr(2));
+	swprintf_s(strfpskind, 256, L"30fps");
+	pComboBoxFps->AddItem(strfpskind, ULongToPtr(3));
+	swprintf_s(strfpskind, 256, L"15fps");
+	pComboBoxFps->AddItem(strfpskind, ULongToPtr(4));
+	pComboBoxFps->SetSelectedByData(ULongToPtr(2));
+	g_fpskind = 2;
+	g_VSync = true;
+
 
 	swprintf_s(sz, 100, L"Light Scale");
-	g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, iX0 + 25, iY, ctrlxlen, 18);
+	g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, iX0 + 25, iY += addh, ctrlxlen, 18);
 	s_ui_texlight = g_SampleUI.GetControl(IDC_LIGHT_SCALE_STATIC);
 	_ASSERT(s_ui_texlight);
 	s_dsutgui0.push_back(s_ui_texlight);//s_dsutgui1
@@ -25032,13 +25079,14 @@ int CreateUtDialog()
 	}
 
 	{//Experimental新規
-		g_SampleUI.AddCheckBox(IDC_VSYNC, L"VSync", startx, iY + addh, checkboxxlen / 2, 16, g_VSync, 0U, false, &s_VSyncCheckBox);
-		s_ui_vsync = g_SampleUI.GetControl(IDC_VSYNC);
-		_ASSERT(s_ui_vsync);
-		s_dsutgui3.push_back(s_ui_vsync);
-		s_dsutguiid3.push_back(IDC_VSYNC);
+		//g_SampleUI.AddCheckBox(IDC_VSYNC, L"VSync", startx, iY + addh, checkboxxlen / 2, 16, g_VSync, 0U, false, &s_VSyncCheckBox);
+		//s_ui_vsync = g_SampleUI.GetControl(IDC_VSYNC);
+		//_ASSERT(s_ui_vsync);
+		//s_dsutgui3.push_back(s_ui_vsync);
+		//s_dsutguiid3.push_back(IDC_VSYNC);
 
-		g_SampleUI.AddCheckBox(IDC_TRAROT, L"TRot", startx + checkboxxlen / 2 + 5, iY + addh, checkboxxlen / 2, 16, g_rotatetanim, 0U, false, &s_TraRotCheckBox);
+		//g_SampleUI.AddCheckBox(IDC_TRAROT, L"TRot", startx + checkboxxlen / 2 + 5, iY + addh, checkboxxlen / 2, 16, g_rotatetanim, 0U, false, &s_TraRotCheckBox);
+		g_SampleUI.AddCheckBox(IDC_TRAROT, L"TRot", startx, iY + addh, checkboxxlen / 2, 16, g_rotatetanim, 0U, false, &s_TraRotCheckBox);
 		s_ui_trarot = g_SampleUI.GetControl(IDC_TRAROT);
 		_ASSERT(s_ui_trarot);
 		s_dsutgui3.push_back(s_ui_trarot);

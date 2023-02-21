@@ -68,6 +68,7 @@ float g_SpecularFactorAtSaving = 1.0f;
 float g_EmissiveFactorAtSaving = 1.0f;
 
 bool g_VSync = false;
+int g_fpskind = 0;
 bool g_HighRpmMode = false;
 int g_UpdateMatrixThreads = 2;
 
@@ -253,6 +254,7 @@ extern float g_SpecularFactorAtSaving;
 extern float g_EmissiveFactorAtSaving;
 
 extern bool g_VSync;
+extern int g_fpskind;
 extern bool g_HighRpmMode;
 extern int g_UpdateMatrixThreads;
 

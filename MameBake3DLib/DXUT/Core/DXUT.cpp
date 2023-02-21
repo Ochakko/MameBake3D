@@ -15,6 +15,7 @@
 
 
 extern bool g_VSync;//GlobalVar.h
+extern int g_fpskind;
 
 #define DXUT_MIN_WINDOW_SIZE_X 200
 #define DXUT_MIN_WINDOW_SIZE_Y 200
@@ -2894,6 +2895,39 @@ void WINAPI DXUTRender3DEnvironment()
     double fTime, fAbsTime; float fElapsedTime;
     DXUTGetGlobalTimer()->GetTimeValues( &fTime, &fAbsTime, &fElapsedTime );
 
+
+    //2023/02/21
+    {
+        double oneframetime = 0.010;
+        if (g_fpskind == 0)
+        {
+            oneframetime = 0.0020;
+        }
+        else if (g_fpskind == 1)
+        {
+            oneframetime = 0.010;
+        }
+        else if (g_fpskind == 2)
+        {
+            oneframetime = 1.0 / 60.0;
+        }
+        else if (g_fpskind == 3)
+        {
+            oneframetime = 1.0 / 30.0;
+        }
+        else if (g_fpskind == 4)
+        {
+            oneframetime = 1.0 / 15.0;
+        }
+
+        GetDXUTState().SetOverrideConstantFrameTime(true);
+        GetDXUTState().SetOverrideConstantTimePerFrame(oneframetime);
+        DXUTSetConstantFrameTime(true, oneframetime);
+    }
+
+
+
+
     // Store the time for the app
     if( GetDXUTState().GetConstantFrameTime() )
     {
@@ -2967,13 +3001,12 @@ void WINAPI DXUTRender3DEnvironment()
     UINT SyncInterval = GetDXUTState().GetCurrentDeviceSettings()->d3d11.SyncInterval;
 
     // Show the frame on the primary surface.
-    if (g_VSync) {
-        hr = pSwapChain->Present( SyncInterval, dwFlags );
-    }
-    else {
-        hr = pSwapChain->Present(0, 0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    }
-
+    //if (g_VSync) {
+        hr = pSwapChain->Present(SyncInterval, dwFlags);
+    //}
+    //else {
+    //    hr = pSwapChain->Present(0, 0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    //}
 
     if( DXGI_STATUS_OCCLUDED == hr )
     {
@@ -4475,6 +4508,7 @@ void DXUTApplyDefaultDeviceSettings(DXUTDeviceSettings *modifySettings)
     modifySettings->d3d11.sd.SampleDesc.Count = 1;
     modifySettings->d3d11.sd.SampleDesc.Quality = 0;
     modifySettings->d3d11.sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+    //modifySettings->d3d11.sd.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
     modifySettings->d3d11.sd.Windowed = TRUE;
     modifySettings->d3d11.SyncInterval = 0;
 }
