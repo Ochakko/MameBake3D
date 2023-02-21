@@ -676,6 +676,96 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だけになりました)
 *
 */
 
+/*
+* 2023/02/21
+* EditMot 1.2.0.12へ向けて
+* 
+* 	モデルパネル、モーションパネルの選択がシングルクリックで出来るように
+* 		4Kフレーム組み込み時に　ダブルクリックしないと選択変更できなかった不具合修正
+*
+* 	モデルパネル、モーションパネル　スクロールバー対応
+* 		選択変更しても　ビュー位置が残るように
+*
+* 	モデルパネル、モーションパネル　表示名を３０字切り詰め
+* 		右側のボタンに　表示名が被らないように　30字までの表示に
+*
+* 	OrgWindowの作成途中に　指定と異なる場所が　白い四角で表示される不具合の原因わかる
+* 		OrgWindowに　WindowPartsをaddPartsする際に　addParts内で　メンバに対してautoResizeをよぶ必要があった
+*
+* 	ロングタイムラインのプレイヤーボタンを押しやすいように中央寄せ
+* 		4Kモードのときに　ボタンを中央寄せ
+*
+* 	プレイヤーボタンを　大きく　シンプルに
+* 		グラフのジョイント名も大きく
+*
+*
+* 	refpos機能ブラッシュアップ
+* 		フレーム範囲を選択後　走る絵のスプライトボタンを押すと　リファレンスポーズ機能がオン
+* 			RefPos And VSyncプレートメニューの　GUIスライダーで　描画フレーム間隔と透明度を指定
+* 		リファレンスポーズの描画数を　スライダー指定フレーム間隔で多数描画　(以前は指定した１つだけだった)
+* 		リファレンスポーズの透明度を　topposから離れるほど薄くして　動きを感じるように
+* 		topposの選択ジョイント位置に　赤い丸マークを描画　(ジョイント描画をオフにしていても)
+* 		選択ジョイント位置の軌跡が　モデル描画によって隠されないように描画　
+*
+*
+* 	位置コンストレイント機能
+* 		物理ではなく　普通に数学とIKターゲットによる　位置コンストレイント
+* 		ジョイント右クリックでメニューを出して　PosConstraintをオンオフ
+* 		オンにすると　移動回転操作の際に　オンにした時のそのジョイントの位置を目標に　位置修正
+* 		位置修正のための回転は　IKStopFlagが設定されているジョイントで止まる
+*
+* 		IKStopFlagは　現在は　自動設定　UpperLegまたはUpperArmが名前に含まれるジョイントにセットされる
+*
+*
+* 		位置修正のための回転が　ねじれないように　回転の軸は　カメラの向きにも依存する
+* 			カメラ軸とカメラ軸に垂直な軸に関して回転してIKターゲットすることにより　前よりも安定
+*
+*
+* 		効果が分かりやすい使い方としては
+* 			HandのPos Constraintをオンにしてから　一番右の上から２番根のアイコンで移動モードにして　Hipsを移動
+*
+* 		Pos Constraintオンオフのコツ
+* 			想定としては　Hand と Foot のジョイントに使う
+* 				補足：
+* 					３Dウインドウの一番右の列の上から３つのボタンで　回転　移動　スケールを切り替える
+* 					回転の時には　オイラーグラフの上段のジョイント名には　選択ジョイントの１つ親ジョイントの名前が表示される
+* 					移動　スケールの時には　選択ジョイントの名前が表示される
+*
+* 					回転モードの場合に　LowerLegとLowerArmと表示されているジョイントの　Pos Constraintが無難な使い方
+* 					実際の選択ジョイントとしては　FootとHand
+*
+* 			設定ジョイント周辺には　ジョイントが密集していることがあるので
+* 			設定ジョイントの親をクリックしてから　下矢印キーで　その子供を選択し　
+* 			マウスを　ジョイントに充てて　小さい黄色い四角が光ったときに　右クリックすると間違いが少ない
+*		
+*			ツリーミューのジョイント項目右クリックでも　オンオフ用のメニューが出る
+*				ツリービュー右クリックで設定した方が　分かりやすい
+* 
+*		マウスドラッグによる回転角度が閾値未満の場合修正
+*			回転角度が閾値未満の場合に　PosConstraintが機能していなかったのを修正
+*			閾値未満の場合にも　IKROTRECを保存して　PosConstraintだけ実行
+*			ブラシのウェイトカーブが小さい部分で　コンストレイントがおかしかったのが直った
+* 
+* 
+* 		PosConstraintの設定の保存は　まだ　していない
+*
+* 
+*	左ペインのツリービューアップデート
+*	　ツリービューの名前の右に　
+* 		IKStopFlagとしてUNICODEの進入禁止マーク
+* 		ConstraintFlagとしてUNICODEの一時停止マークを表示
+*		ウインドウ大モードのときの　ツリービューの大きさを大きく　フォントも大きく
+* 
+*
+* 	マウスによるIK操作のレスポンスを向上
+* 		マウス操作中の関数　*UnderIK, *UnderFKと 選択フレーム全体の計算をする関数 *PostIK, *PostFKとに分けた
+* 		操作中のレスポンス大幅向上　ただし　操作後の後処理中は　ウェイトカーソル　
+*		マウスのドラッグ操作が軽くて　長い時間ドラッグ可能だが
+* 		ドラッグ時間が長いほど　その後のウェイトカーソルも長い
+* 
+* 
+* 
+*/
 
 #include "useatl.h"
 
@@ -3254,28 +3344,33 @@ int CheckResolution()
 					s_totalwndheight = (950 - MAINMENUAIMBARH) * 2;
 					s_2ndposy = 600 * 2;
 
-					s_toolwidth = 230 * 2 - 60;
-					//s_toolheight = 290 * 2;
-					//s_toolheight = (s_totalwndheight - s_2ndposy - MAINMENUAIMBARH - 18) * 2;
-					s_toolheight = s_totalwndheight - s_2ndposy - (MAINMENUAIMBARH + 18) * 2 + MAINMENUAIMBARH + 8;
-
-					s_mainwidth = 800 * 2 + 340 + 450 - 64 + 60 - s_modelwindowwidth;
-					s_mainheight = (520 * 2 - MAINMENUAIMBARH);
-					
-
-
-
-					//s_bufwidth = (800 * 2);
-					s_bufwidth = 800 * 2 + 340 + 450 - 64 + 60 - s_modelwindowwidth;
-					s_bufheight = (520 * 2 - MAINMENUAIMBARH);
-
 
 					//s_timelinewidth = 400 * 2;
-					s_timelinewidth = s_toolwidth;
+					//s_timelinewidth = s_toolwidth;
+					s_timelinewidth = 600;
 					s_timelineheight = s_2ndposy - MAINMENUAIMBARH;
 
+					s_toolwidth = 400;
+					s_toolheight = s_totalwndheight - s_2ndposy - (MAINMENUAIMBARH + 18) * 2 + MAINMENUAIMBARH + 8;
+
+					s_sidemenuwidth = 600;
+					s_sidemenuheight = MAINMENUAIMBARH;
+					s_sidewidth = s_sidemenuwidth;
+					s_sideheight = s_totalwndheight - s_sidemenuheight - 28 * 2 - 4;
+
+					//s_mainwidth = 800 * 2 + 340 + 450 - 64 + 60 - s_modelwindowwidth;
+					s_mainwidth = s_totalwndwidth - s_timelinewidth - s_modelwindowwidth - s_sidewidth - 16;
+					s_mainheight = (520 * 2 - MAINMENUAIMBARH);
+					
+					//s_bufwidth = (800 * 2);
+					//s_bufwidth = 800 * 2 + 340 + 450 - 64 + 60 - s_modelwindowwidth;
+					s_bufwidth = s_mainwidth;
+					s_bufheight = s_mainheight;
+
+
 					//s_longtimelinewidth = 970 * 2;
-					s_longtimelinewidth = s_mainwidth + s_modelwindowwidth;
+					//s_longtimelinewidth = s_mainwidth + s_modelwindowwidth;
+					s_longtimelinewidth = s_totalwndwidth - s_toolwidth - s_sidewidth;
 					//s_longtimelineheight = (s_totalwndheight - s_2ndposy - MAINMENUAIMBARH - 18) * 2;
 					s_longtimelineheight = s_totalwndheight - s_2ndposy - (MAINMENUAIMBARH + 18) * 2 + MAINMENUAIMBARH + 8;
 
@@ -3285,15 +3380,6 @@ int CheckResolution()
 
 					s_modelwindowheight = 460;
 					s_motionwindowheight = s_mainheight - s_modelwindowheight + s_infowinheight;
-
-
-					//s_sidemenuwidth = 450 * 2 + 16;
-					s_sidemenuwidth = 450 + 16 + 64 - 4;
-					s_sidemenuheight = MAINMENUAIMBARH;
-
-					s_sidewidth = s_sidemenuwidth;
-					//s_sideheight = (s_totalwndheight - MAINMENUAIMBARH - s_sidemenuheight - 28) * 2 + MAINMENUAIMBARH;
-					s_sideheight = s_totalwndheight - s_sidemenuheight - 28 * 2 - 4;
 
 
 					//s_guibarX0 = s_mainwidth / 2 - 180 - 2 * 180 - 30;
@@ -7157,6 +7243,9 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			}
 			else{
 				curbone->SetIKTargetFlag(false);
+			}
+			if (s_owpTimeline) {
+				refreshTimeline(*s_owpTimeline);
 			}
 		}
 		//else if (menuid == (ID_RMENU_KINEMATIC_ON_LOWER + MENUOFFSET_BONERCLICK)) {
@@ -11657,6 +11746,9 @@ void refreshTimeline(OWP_Timeline& timeline) {
 	//	return;
 	//}
 
+	int saveshowposline = timeline.getShowPosLine();
+
+
 	//時刻幅を設定
 	if (s_model && (s_model->GetCurMotInfo())) {
 		timeline.setMaxTime(s_model->GetCurMotInfo()->frameleng);
@@ -11664,10 +11756,10 @@ void refreshTimeline(OWP_Timeline& timeline) {
 		s_owpLTimeline->deleteKey();
 		s_owpLTimeline->deleteLine();
 
-		s_owpLTimeline->newLine(0, 0, s_strcurrent);
+		s_owpLTimeline->newLine(0, 0, false, false, s_strcurrent);
 		//s_owpLTimeline->newKey( s_strcurrent, 0.0, 0 );
-		s_owpLTimeline->newLine(0, 0, s_streditrange);
-		s_owpLTimeline->newLine(0, 0, s_strmark);
+		s_owpLTimeline->newLine(0, 0, false, false, s_streditrange);
+		s_owpLTimeline->newLine(0, 0, false, false, s_strmark);
 		//s_owpLTimeline->newKey( s_strmark, 0.0, 0 );
 
 		//s_owpLTimeline->setMaxTime( s_model->m_curmotinfo->frameleng - 1.0 );
@@ -11693,7 +11785,7 @@ void refreshTimeline(OWP_Timeline& timeline) {
 	else {
 		WCHAR label[256];
 		swprintf_s(label, 256, L"dummy%d", 0);
-		timeline.newLine(0, 0, label);
+		timeline.newLine(0, 0, false, false, label);
 	}
 
 	//選択時刻を設定
@@ -11717,6 +11809,8 @@ void refreshTimeline(OWP_Timeline& timeline) {
 	//		}
 	//	}
 	//}
+
+	timeline.setShowPosLine(saveshowposline);
 
 	refreshEulerGraph();
 	s_owpEulerGraph->setCurrentTime(1.0, false);
@@ -15026,7 +15120,7 @@ int CreateModelPanel()
 
 	if (s_firstmodelpanelpos) {
 		if (g_4kresolution) {
-			s_modelpanelpos = WindowPos(s_toolwidth, MAINMENUAIMBARH);
+			s_modelpanelpos = WindowPos(s_timelinewidth, MAINMENUAIMBARH);
 		}
 		else {
 			RECT wnd3drect;
@@ -15345,7 +15439,7 @@ int CreateMotionPanel()
 	if (s_firstmotionpanelpos) {
 		RECT wnd3drect;
 		if (g_4kresolution) {
-			s_motionpanelpos = WindowPos(s_toolwidth, MAINMENUAIMBARH + s_modelwindowheight);
+			s_motionpanelpos = WindowPos(s_timelinewidth, MAINMENUAIMBARH + s_modelwindowheight);
 		}
 		else {
 			if (s_mainhwnd) {
@@ -15647,7 +15741,7 @@ int CreateConvBoneWnd()
 		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
 	}
 	else {
-		windowposx = s_timelinewidth + s_mainwidth + 16;
+		windowposx = s_timelinewidth + s_mainwidth;
 	}
 
 	s_convboneWnd = new OrgWindow(
@@ -21771,7 +21865,8 @@ int OnFrameKeyboard()
 
 	if (GetKeyboardState((PBYTE)g_keybuf) == FALSE) {
 		//失敗した場合にはゴミが入らないように初期化
-		MoveMemory(g_savekeybuf, g_keybuf, sizeof(BYTE) * 256);
+		//MoveMemory(g_savekeybuf, g_keybuf, sizeof(BYTE) * 256);
+		ZeroMemory(g_keybuf, sizeof(BYTE) * 256);
 	}
 
 	if (g_keybuf[VK_SHIFT] & 0x80) {
@@ -30097,7 +30192,7 @@ HWND Create3DWnd()
 		//hr = DXUTCreateWindow(L"MameBake3D", 0, 0, 0, s_toolwidth + s_modelwindowwidth, 0);
 		hr = DXUTCreateWindow(L"MameBake3D", s_mainhwnd, (HINSTANCE)GetModuleHandle(NULL),
 			0, 0,
-			(s_toolwidth + s_modelwindowwidth), MAINMENUAIMBARH,
+			(s_timelinewidth + s_modelwindowwidth), MAINMENUAIMBARH,
 			s_mainwidth, s_mainheight);
 	}
 	else {
@@ -30166,7 +30261,7 @@ HWND Create3DWnd()
 	//::MoveWindow(s_3dwnd, 400, 0, winrect.right - winrect.left, winrect.bottom - winrect.top, TRUE);
 	//::MoveWindow(s_3dwnd, 400, 0, s_mainwidth, s_mainheight, TRUE);
 	if (g_4kresolution) {
-		::MoveWindow(s_3dwnd, s_toolwidth + s_modelwindowwidth, MAINMENUAIMBARH, s_mainwidth, s_mainheight, TRUE);
+		::MoveWindow(s_3dwnd, s_timelinewidth + s_modelwindowwidth, MAINMENUAIMBARH, s_mainwidth, s_mainheight, TRUE);
 		//::SetWindowPos(s_3dwnd, HWND_NOTOPMOST, 
 		//	s_toolwidth + s_modelwindowwidth, MAINMENUAIMBARH, s_mainwidth, s_mainheight, SWP_NOSIZE);
 	}
@@ -30177,9 +30272,11 @@ HWND Create3DWnd()
 	}
 
 	s_rc3dwnd.top = MAINMENUAIMBARH;
-	s_rc3dwnd.left = 0;
-	s_rc3dwnd.right = s_mainwidth;
 	s_rc3dwnd.bottom = (s_mainheight + MAINMENUAIMBARH);
+	//s_rc3dwnd.left = 0;
+	//s_rc3dwnd.right = s_mainwidth;
+	s_rc3dwnd.left = s_timelinewidth + s_modelwindowwidth;
+	s_rc3dwnd.right = s_rc3dwnd.left + s_mainwidth;
 
 
 	//#############################################################################
@@ -30230,10 +30327,10 @@ CInfoWindow* CreateInfoWnd()
 
 		if (g_4kresolution) {
 			ret = newinfownd->CreateInfoWindow(s_mainhwnd,
-				s_toolwidth + s_modelwindowwidth, s_mainheight + 3 * cyframe + MAINMENUAIMBARH,
+				s_timelinewidth + s_modelwindowwidth, s_mainheight + 3 * cyframe + MAINMENUAIMBARH,
 				s_infowinwidth, s_infowinheight + 2 * cyframe);
 
-			s_rcinfownd.left = s_toolwidth;
+			s_rcinfownd.left = s_timelinewidth;
 		}
 		else {
 			ret = newinfownd->CreateInfoWindow(s_mainhwnd,

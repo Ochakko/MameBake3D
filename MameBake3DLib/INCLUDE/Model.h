@@ -82,6 +82,11 @@ typedef struct tag_ikrotrec
 {
 	ChaVector3 targetpos;
 	CQuaternion rotq;
+
+	//rotqの回転角度が1e-4より小さい場合にtrue. 
+	//ウェイトが小さいフレームにおいても　IKTargetが走るように記録する必要がある
+	bool lessthanthflag;
+
 }IKROTREC;
 
 
@@ -302,6 +307,9 @@ public:
  * @return 成功したら０。
  */
 	int FillTimeLine( OrgWinGUI::OWP_Timeline& timeline, std::map<int, int>& lineno2boneno, std::map<int, int>& boneno2lineno );
+	int FillTimeLineOne(CBone* curbone, int lineno,
+		OrgWinGUI::OWP_Timeline& timeline,
+		std::map<int, int>& lineno2boneno, std::map<int, int>& boneno2lineno);
 
 /**
  * @fn
@@ -950,7 +958,7 @@ private:
 	void RestoreMassReq(CBone* srcbone);
 	void SetKinematicTmpLowerReq(CBone* srcbone, bool srcflag);
 
-	void PhysicsMVReq(CBone* srcbone, ChaVector3 diffvec);
+	//void PhysicsMVReq(CBone* srcbone, ChaVector3 diffvec);
 	int WithConstraint(CBone* srcbone);
 	void BulletSimulationStopReq(CBtObject* srcbto);
 	void BulletSimulationStartReq(CBtObject* srcbto);

@@ -1,4 +1,4 @@
-#ifndef ORGWINDOWH
+ï»¿#ifndef ORGWINDOWH
 #define ORGWINDOWH
 
 #include <crtdbg.h>
@@ -82,7 +82,7 @@ void s_dummyfunc()
 	dummycnt++;
 }
 
-/*	//	function : WCHAR ¨ TCHAR
+/*	//	function : WCHAR â†’ TCHAR
 	int wchar2tchar(const WCHAR *src, TCHAR *dst, size_t size){
 #ifdef UNICODE
 //		return wcscpy_s(dst,size,src);
@@ -92,7 +92,7 @@ void s_dummyfunc()
 		return wcstombs_s(&returnCharCount,dst,size,src,size-1);
 #endif
 	}
-	//	function : char ¨ TCHAR
+	//	function : char â†’ TCHAR
 	int char2tchar(const char *src, TCHAR *dst, size_t size){
 #ifdef UNICODE
 		size_t returnCharCount;
@@ -106,7 +106,7 @@ void s_dummyfunc()
 
 	//--------------------------------------------------//
 	//													//
-	//	ƒIƒŠƒWƒiƒ‹ƒc[ƒ‹ƒEƒBƒ“ƒhƒEƒNƒ‰ƒXŒQ				//
+	//	ã‚ªãƒªã‚¸ãƒŠãƒ«ãƒ„ãƒ¼ãƒ«ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹ç¾¤				//
 	//													//
 	//--------------------------------------------------//
 
@@ -114,7 +114,7 @@ void s_dummyfunc()
 
 	////////////////----------------------------------------////////////////
 	////////////////										////////////////
-	////////////////	ƒEƒBƒ“ƒhƒEƒTƒCƒYEˆÊ’uƒNƒ‰ƒX		////////////////
+	////////////////	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚ºãƒ»ä½ç½®ã‚¯ãƒ©ã‚¹		////////////////
 	////////////////										////////////////
 	////////////////----------------------------------------////////////////
 
@@ -151,7 +151,7 @@ void s_dummyfunc()
 		}
 
 		//////////////////////////// Method //////////////////////////////
-		//	Method : ƒfƒtƒHƒ‹ƒgˆÊ’u‚ğ“K‰
+		//	Method : ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆä½ç½®ã‚’é©å¿œ
 		void useDefault(){
 			x=CW_USEDEFAULT;
 			y=CW_USEDEFAULT;
@@ -190,7 +190,7 @@ void s_dummyfunc()
 		}
 
 		//////////////////////////// Method //////////////////////////////
-		//	Method : ƒfƒtƒHƒ‹ƒgˆÊ’u‚ğ“K‰
+		//	Method : ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆä½ç½®ã‚’é©å¿œ
 		void useDefault(){
 			x=CW_USEDEFAULT;
 			y=CW_USEDEFAULT;
@@ -199,7 +199,7 @@ void s_dummyfunc()
 
 	////////////////----------------------------------------////////////////
 	////////////////										////////////////
-	////////////////			ƒCƒxƒ“ƒgƒNƒ‰ƒX				////////////////
+	////////////////			ã‚¤ãƒ™ãƒ³ãƒˆã‚¯ãƒ©ã‚¹				////////////////
 	////////////////										////////////////
 	////////////////----------------------------------------////////////////
 
@@ -224,7 +224,7 @@ void s_dummyfunc()
 
 	////////////////----------------------------------------////////////////
 	////////////////										////////////////
-	////////////////			HDC—ŞŠÇ—ƒNƒ‰ƒX				////////////////
+	////////////////			HDCé¡ç®¡ç†ã‚¯ãƒ©ã‚¹				////////////////
 	////////////////										////////////////
 	////////////////----------------------------------------////////////////
 
@@ -247,7 +247,7 @@ void s_dummyfunc()
 			ZeroMemory(&paint, sizeof(PAINTSTRUCT));
 		}
 		HDCMaster( const HDCMaster& a ){
-			_ASSERT_EXPR( 0, L"ƒRƒs[ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚Íg‚¦‚Ü‚¹‚ñ" );
+			_ASSERT_EXPR( 0, L"ã‚³ãƒ”ãƒ¼ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã¯ä½¿ãˆã¾ã›ã‚“" );
 
 			hWnd = NULL;
 			hDC = NULL;
@@ -287,7 +287,7 @@ void s_dummyfunc()
 		HBRUSH hBrush;
 
 		//////////////////////////// Method //////////////////////////////
-/*		//	Method : ƒoƒbƒNƒoƒbƒtƒ@ƒTƒCƒY•ÏX
+/*		//	Method : ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã‚µã‚¤ã‚ºå¤‰æ›´
 		void refreshBackBaffer(){
 			RECT tmpRect;
 			GetWindowRect(hWnd, &tmpRect);
@@ -298,7 +298,7 @@ void s_dummyfunc()
 			backBM_old= (HBITMAP)SelectObject(backDC,backBM);
 			EndPaint(hWnd, &paint);
 		}*/
-		//	Method : •`‰æ€”õ
+		//	Method : æç”»æº–å‚™
 		void beginPaint(){
 			if( hDC==NULL ){
 				hDC_window= BeginPaint(hWnd, &paint);
@@ -315,7 +315,7 @@ void s_dummyfunc()
 				SetBkMode(hDC, TRANSPARENT);
 			}
 		}
-		//	Method : •`‰æI—¹
+		//	Method : æç”»çµ‚äº†
 		void endPaint(){
 			if(hWnd!=NULL){
 				//SetBkColor(hDC, g_tranbmp);
@@ -347,28 +347,28 @@ void s_dummyfunc()
 				hBrush= NULL;
 			}
 		}
-		//	Method : ƒtƒHƒ“ƒg‚ğw’è
+		//	Method : ãƒ•ã‚©ãƒ³ãƒˆã‚’æŒ‡å®š
 		void setFont(int h, LPCTSTR face){
 //			if( hFont ) DeleteObject(hFont);
-			hFont = CreateFont( h,					//ƒtƒHƒ“ƒg‚‚³
-								0,					//•¶š•
-								0,					//ƒeƒLƒXƒg‚ÌŠp“x
-								0,					//ƒx[ƒXƒ‰ƒCƒ“‚Æ‚˜²‚Æ‚ÌŠp“x
-								FW_NORMAL,			//ƒtƒHƒ“ƒg‚Ìd‚³i‘¾‚³j
-								FALSE,				//ƒCƒ^ƒŠƒbƒN‘Ì
-								FALSE,				//ƒAƒ“ƒ_[ƒ‰ƒCƒ“
-								FALSE,				//‘Å‚¿Á‚µü
-								SHIFTJIS_CHARSET,	//•¶šƒZƒbƒg
-								OUT_DEFAULT_PRECIS,	//o—Í¸“x
-								CLIP_DEFAULT_PRECIS,//ƒNƒŠƒbƒsƒ“ƒO¸“x
-								PROOF_QUALITY,		//o—Í•i¿
-								FIXED_PITCH | FF_MODERN,//ƒsƒbƒ`‚Æƒtƒ@ƒ~ƒŠ[
-								face);				//‘‘Ì–¼
+			hFont = CreateFont( h,					//ãƒ•ã‚©ãƒ³ãƒˆé«˜ã•
+								0,					//æ–‡å­—å¹…
+								0,					//ãƒ†ã‚­ã‚¹ãƒˆã®è§’åº¦
+								0,					//ãƒ™ãƒ¼ã‚¹ãƒ©ã‚¤ãƒ³ã¨ï½˜è»¸ã¨ã®è§’åº¦
+								FW_NORMAL,			//ãƒ•ã‚©ãƒ³ãƒˆã®é‡ã•ï¼ˆå¤ªã•ï¼‰
+								FALSE,				//ã‚¤ã‚¿ãƒªãƒƒã‚¯ä½“
+								FALSE,				//ã‚¢ãƒ³ãƒ€ãƒ¼ãƒ©ã‚¤ãƒ³
+								FALSE,				//æ‰“ã¡æ¶ˆã—ç·š
+								SHIFTJIS_CHARSET,	//æ–‡å­—ã‚»ãƒƒãƒˆ
+								OUT_DEFAULT_PRECIS,	//å‡ºåŠ›ç²¾åº¦
+								CLIP_DEFAULT_PRECIS,//ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°ç²¾åº¦
+								PROOF_QUALITY,		//å‡ºåŠ›å“è³ª
+								FIXED_PITCH | FF_MODERN,//ãƒ”ãƒƒãƒã¨ãƒ•ã‚¡ãƒŸãƒªãƒ¼
+								face);				//æ›¸ä½“å
 			DeleteObject( SelectObject(hDC, hFont) );
 		}
-		//	Method : ƒyƒ“Eƒuƒ‰ƒV‚ğw’è
-		//			 penColor‚ğNULL‚É‚·‚é‚ÆAƒuƒ‰ƒV‚Æ“¯‚¶ƒJƒ‰[‚ª“K‰‚³‚ê‚Ü‚·
-		//			 brushColor‚ğNULL‚É‚·‚é‚ÆA“§–¾‚Èƒuƒ‰ƒV‚ª“K‰‚³‚ê‚Ü‚·
+		//	Method : ãƒšãƒ³ãƒ»ãƒ–ãƒ©ã‚·ã‚’æŒ‡å®š
+		//			 penColorã‚’NULLã«ã™ã‚‹ã¨ã€ãƒ–ãƒ©ã‚·ã¨åŒã˜ã‚«ãƒ©ãƒ¼ãŒé©å¿œã•ã‚Œã¾ã™
+		//			 brushColorã‚’NULLã«ã™ã‚‹ã¨ã€é€æ˜ãªãƒ–ãƒ©ã‚·ãŒé©å¿œã•ã‚Œã¾ã™
 		void setPenAndBrush(COLORREF penColor, COLORREF brushColor, int penStyle=PS_SOLID, int penWidth=1){
 //			if( hPen )   DeleteObject(hPen);
 //			if( hBrush ) DeleteObject(hBrush);
@@ -396,7 +396,7 @@ void s_dummyfunc()
 
 				return;
 			}
-			_ASSERT_EXPR( 0, L"hWnd‚Ì‘½dİ’è" );
+			_ASSERT_EXPR( 0, L"hWndã®å¤šé‡è¨­å®š" );
 		}
 
 	private:
@@ -409,7 +409,7 @@ void s_dummyfunc()
 
 	////////////////----------------------------------------////////////////
 	////////////////										////////////////
-	////////////////	ƒEƒBƒ“ƒhƒE“à•”•i—pƒX[ƒp[ƒNƒ‰ƒX	////////////////
+	////////////////	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“ç”¨ã‚¹ãƒ¼ãƒ‘ãƒ¼ã‚¯ãƒ©ã‚¹	////////////////
 	////////////////										////////////////
 	////////////////----------------------------------------////////////////
 
@@ -494,7 +494,7 @@ void s_dummyfunc()
 		};
 
 		//////////////////////////// Method //////////////////////////////
-		//	Method : eƒEƒBƒ“ƒhƒE‚É“o˜^
+		//	Method : è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²
 		virtual void registmember( OrgWindow *_parentWindow,
 							 WindowPos _pos, WindowSize _size,
 							 HDCMaster* _hdcM,
@@ -503,46 +503,46 @@ void s_dummyfunc()
 			_registmember(_parentWindow,_pos,_size,_hdcM,_baseR,_baseG,_baseB);
 			autoResize();
 		}
-		/// Method : ©“®ƒTƒCƒYİ’è
+		/// Method : è‡ªå‹•ã‚µã‚¤ã‚ºè¨­å®š
 		virtual void autoResize(){
 
 		}
-		//	Method : •`‰æ
+		//	Method : æç”»
 		virtual void draw();
 		//virtual void draw(){
 		//	drawEdge();
 		//}
-		/// Method : Ä•`‰æ—v‹‚ğ‘—‚é
+		/// Method : å†æç”»è¦æ±‚ã‚’é€ã‚‹
 		virtual void callRewrite();
-		//	Method : ¶ƒ}ƒEƒXƒ{ƒ^ƒ“ƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		//	Method : å·¦ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonDown(const MouseEvent& e){
 		}
-		//	Method : ¶ƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		//	Method : å·¦ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonUp(const MouseEvent& e){
 		}
-		//	Method : ‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		//	Method : å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onRButtonDown(const MouseEvent& e){
 		}
-		//	Method : ‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		//	Method : å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onRButtonUp(const MouseEvent& e){
 		}
-		//	Method : ’†ƒ}ƒEƒXƒ{ƒ^ƒ“ƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		//	Method : ä¸­ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onMButtonDown(const MouseEvent& e){
 		}
-		//	Method : ’†ƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		//	Method : ä¸­ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onMButtonUp(const MouseEvent& e){
 		}
-		//	Method : ƒ}ƒEƒXˆÚ“®ƒCƒxƒ“ƒgóM
+		//	Method : ãƒã‚¦ã‚¹ç§»å‹•ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onMouseMove(const MouseEvent& e){
 		}
 		virtual void onMouseHover(const MouseEvent& e) {
 		}
 		virtual void onMouseLeave(const MouseEvent& e) {
 		}
-		//	Method : ƒL[ƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		//	Method : ã‚­ãƒ¼ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onKeyDown(const KeyboardEvent& e){
 		}
-		//	Method : ƒL[ƒAƒbƒvƒCƒxƒ“ƒgóM
+		//	Method : ã‚­ãƒ¼ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onKeyUp(const KeyboardEvent& e){
 		}
 		virtual void onMouseWheel(const MouseEvent & e){
@@ -550,7 +550,7 @@ void s_dummyfunc()
 
 		/////////////////////////// Operator /////////////////////////////
 		void operator=(const OrgWindow& a){
-			_ASSERT_EXPR( 0, L"ƒRƒs[ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚Íg‚¦‚Ü‚¹‚ñ" );
+			_ASSERT_EXPR( 0, L"ã‚³ãƒ”ãƒ¼ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã¯ä½¿ãˆã¾ã›ã‚“" );
 		}
 
 		/////////////////////////// Accessor /////////////////////////////
@@ -621,7 +621,7 @@ void s_dummyfunc()
 		bool isplayerbutton;
 		bool lrbuttondone;
 		//////////////////////////// Method //////////////////////////////
-		//	Method : eƒEƒBƒ“ƒhƒE‚É“o˜^
+		//	Method : è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²
 		void _registmember( OrgWindow *_parentWindow,
 					  WindowPos _pos, WindowSize _size,
 					  HDCMaster* _hdcM,
@@ -635,7 +635,7 @@ void s_dummyfunc()
 			hdcM= _hdcM;
 			isregistered = true;
 		}
-		//	Method : ˜g‚ğ•`‰æ
+		//	Method : æ ã‚’æç”»
 		void drawEdge(bool fill=true){
 			if (isregistered && hdcM) {
 				if (getActive()) {
@@ -662,7 +662,7 @@ void s_dummyfunc()
 
 	////////////////----------------------------------------////////////////
 	////////////////										////////////////
-	////////////////		ƒIƒŠƒWƒiƒ‹ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX		////////////////
+	////////////////		ã‚ªãƒªã‚¸ãƒŠãƒ«ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹		////////////////
 	////////////////										////////////////
 	////////////////----------------------------------------////////////////
 
@@ -686,11 +686,11 @@ void s_dummyfunc()
 
 			//##########################################################################
 			// For Handleing Mouse Event, It is necessary to call setListenMouse(true).
-			// ƒ}ƒEƒXƒCƒxƒ“ƒg‚ğˆ—‚·‚é‚½‚ß‚É‚ÍAsetListenMouse(true)‚ğ‚ ‚ç‚©‚¶‚ßŒÄ‚ñ‚Å‚¨‚­•K—v—L‚èB
+			// ãƒã‚¦ã‚¹ã‚¤ãƒ™ãƒ³ãƒˆã‚’å‡¦ç†ã™ã‚‹ãŸã‚ã«ã¯ã€setListenMouse(true)ã‚’ã‚ã‚‰ã‹ã˜ã‚å‘¼ã‚“ã§ãŠãå¿…è¦æœ‰ã‚Šã€‚
 			//##########################################################################
 
 
-			//ƒCƒxƒ“ƒgƒŠƒXƒi[
+			//ã‚¤ãƒ™ãƒ³ãƒˆãƒªã‚¹ãƒŠãƒ¼
 			//closeListener = [](){s_dummyfunc();};
 			closeListener = NULL;
 			keyboardListener = [](const KeyboardEvent &e){s_dummyfunc();};
@@ -704,7 +704,7 @@ void s_dummyfunc()
 			hoverListener = NULL;
 			leaveListener = NULL;
 			
-			//ƒ}ƒEƒXƒLƒƒƒvƒ`ƒƒ—p‚Ìƒtƒ‰ƒO
+			//ãƒã‚¦ã‚¹ã‚­ãƒ£ãƒ—ãƒãƒ£ç”¨ã®ãƒ•ãƒ©ã‚°
 			mouseCaptureFlagL=mouseCaptureFlagR=false;
 
 			pos=  _pos;
@@ -733,13 +733,13 @@ void s_dummyfunc()
 
 			partsList.clear();
 
-			//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX‚ğ“o˜^
+			//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹ã‚’ç™»éŒ²
 			registerWindowClass();
 
-			//ƒEƒBƒ“ƒhƒEì¬
+			//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ä½œæˆ
 			create();
 
-			//ƒEƒBƒ“ƒhƒE•\¦
+			//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦è¡¨ç¤º
 			if (hWnd) {
 				ShowWindow(hWnd, SW_SHOW);
 			}
@@ -752,10 +752,10 @@ void s_dummyfunc()
 				UpdateWindow(hWnd);
 			}
 
-			//•\¦”ñ•\¦
+			//è¡¨ç¤ºéè¡¨ç¤º
 			setVisible(_visible);
 			
-			//ƒTƒCƒY•ÏX’†ƒtƒ‰ƒO
+			//ã‚µã‚¤ã‚ºå¤‰æ›´ä¸­ãƒ•ãƒ©ã‚°
 			nowChangingSize= false;
 
 		}
@@ -765,7 +765,7 @@ void s_dummyfunc()
 		~OrgWindow(){
 			if(hWnd!=NULL){
 				DestroyWindow(hWnd);
-				hWndAndClassMap.erase(hWnd);	//hWnd‚Æ‚±‚ÌƒNƒ‰ƒX‚ÌƒCƒ“ƒXƒ^ƒ“ƒXƒ|ƒCƒ“ƒ^‚Ì‘Î‰•\XV
+				hWndAndClassMap.erase(hWnd);	//hWndã¨ã“ã®ã‚¯ãƒ©ã‚¹ã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒã‚¤ãƒ³ã‚¿ã®å¯¾å¿œè¡¨æ›´æ–°
 			}
 
 			hWnd = NULL;
@@ -805,7 +805,7 @@ void s_dummyfunc()
 		}
 
 		//////////////////////////// Method //////////////////////////////
-		//	Method : ƒEƒBƒ“ƒhƒE“à•”•i‚ğ’Ç‰Á
+		//	Method : ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“ã‚’è¿½åŠ 
 		void setBackGroundColor(bool srcisactive) {
 			if (hWnd == NULL) return;
 
@@ -887,7 +887,7 @@ void s_dummyfunc()
 			if (hWnd == NULL) return;
 
 
-			////®‡«ƒ`ƒFƒbƒN
+			////æ•´åˆæ€§ãƒã‚§ãƒƒã‚¯
 			//if (!partsList.empty()) {
 			//	std::list<OrgWindowParts*>::iterator itr = partsList.begin();
 			//	if (*itr) {
@@ -915,16 +915,16 @@ void s_dummyfunc()
 			partsList.push_back(&a);
 
 
-			//2023/02/17’Ç‰Á
-			//modelpanel‚ÉScrollWnd‚ğadd‚µ‚Ä‚¢‚éÅ’†‚É
-			//w’è‚Æˆá‚¤êŠ‚É‘å‚«‚¢”’‚¢—Ìˆæ‚ª•\¦‚³‚ê‚é‚Ì‚ğ–h‚®
+			//2023/02/17è¿½åŠ 
+			//modelpanelã«ScrollWndã‚’addã—ã¦ã„ã‚‹æœ€ä¸­ã«
+			//æŒ‡å®šã¨é•ã†å ´æ‰€ã«å¤§ãã„ç™½ã„é ˜åŸŸãŒè¡¨ç¤ºã•ã‚Œã‚‹ã®ã‚’é˜²ã
 			autoResizeAllParts();
 
 
-			//2023/02/17ƒRƒƒ“ƒgƒAƒEƒg
-			//setPos(0, 30)‚µ‚½WindowParts‚ğaddParts‚·‚é‚Æ
-			//ƒtƒŒ[ƒ€‘g‚İ‚İOrgWindow‚ÌƒTƒCƒY‚ª•Ï‚í‚Á‚Ä‚µ‚Ü‚¤•s‹ï‡‚ª‚ ‚Á‚½‚½‚ß@ƒRƒƒ“ƒgƒAƒEƒg
-			//if( (partsAreaPos.y + currentPartsSizeY + 2) >= size.y ){		//ƒEƒBƒ“ƒhƒE‚©‚ç‚Í‚İo‚éê‡‚ÍƒTƒCƒY‚ğ’²®
+			//2023/02/17ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
+			//setPos(0, 30)ã—ãŸWindowPartsã‚’addPartsã™ã‚‹ã¨
+			//ãƒ•ãƒ¬ãƒ¼ãƒ çµ„ã¿è¾¼ã¿OrgWindowã®ã‚µã‚¤ã‚ºãŒå¤‰ã‚ã£ã¦ã—ã¾ã†ä¸å…·åˆãŒã‚ã£ãŸãŸã‚ã€€ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
+			//if( (partsAreaPos.y + currentPartsSizeY + 2) >= size.y ){		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‹ã‚‰ã¯ã¿å‡ºã‚‹å ´åˆã¯ã‚µã‚¤ã‚ºã‚’èª¿æ•´
 			//	setSize( WindowSize(size.x, partsAreaPos.y+currentPartsSizeY+2) );
 			//}
 
@@ -938,11 +938,11 @@ void s_dummyfunc()
 			tmpRect.bottom= a.getPos().y+ a.getSize().y-1;
 			InvalidateRect( hWnd, NULL, false );
 		}
-		/// Method : Ä•`‰æ—v‹‚ğ‘—‚é
+		/// Method : å†æç”»è¦æ±‚ã‚’é€ã‚‹
 		void callRewrite(){
 			if( hWnd==NULL ) return;
 
-			////Ä•`‰æ—Ìˆæ
+			////å†æç”»é ˜åŸŸ
 			RECT tmpRect;
 			tmpRect.left=   0;
 			tmpRect.top=    0;
@@ -959,7 +959,7 @@ void s_dummyfunc()
 			}
 		}
 
-		/// Method : ƒEƒBƒ“ƒhƒE“à•”•i‚ğ‘S‚Ä’Ç‰Á‚µ‚È‚¨‚·
+		/// Method : ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“ã‚’å…¨ã¦è¿½åŠ ã—ãªãŠã™
 		void reAddAllParts(){
 			std::list<OrgWindowParts*> tmpPartsList= partsList;
 			partsList.clear();
@@ -969,11 +969,11 @@ void s_dummyfunc()
 				addParts(**itr);
 			}
 		}
-		/// Method : ƒEƒBƒ“ƒhƒE“à•”•i‚ÌˆÊ’uEƒTƒCƒY‚ğ‘S‚Ä©“®İ’è‚·‚é
+		/// Method : ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“ã®ä½ç½®ãƒ»ã‚µã‚¤ã‚ºã‚’å…¨ã¦è‡ªå‹•è¨­å®šã™ã‚‹
 		void autoResizeAllParts(){
 			currentPartsSizeY= 0;
 
-			//‘S‚Ä‚Ì“à•”—v‘f‚É‘Î‚µ‚ÄˆÊ’uEƒTƒCƒY‚ğ©“®İ’è
+			//å…¨ã¦ã®å†…éƒ¨è¦ç´ ã«å¯¾ã—ã¦ä½ç½®ãƒ»ã‚µã‚¤ã‚ºã‚’è‡ªå‹•è¨­å®š
 			std::list<OrgWindowParts*>::iterator itr;
 			for (itr = partsList.begin(); itr != partsList.end(); itr++) {
 				if (*itr) {
@@ -984,10 +984,10 @@ void s_dummyfunc()
 				}
 			}
 
-			//Ä•`‰æ—v‹‚ğ‘—‚é
+			//å†æç”»è¦æ±‚ã‚’é€ã‚‹
 			callRewrite();
 		}
-		//	Method : ƒEƒBƒ“ƒhƒEˆÊ’u‚ÆƒTƒCƒY‚ÌXV
+		//	Method : ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ä½ç½®ã¨ã‚µã‚¤ã‚ºã®æ›´æ–°
 		void refreshPosAndSize() {
 			if (hWnd == NULL) return;
 
@@ -998,7 +998,7 @@ void s_dummyfunc()
 			size.x = tmpRect.right - tmpRect.left;
 			size.y = tmpRect.bottom - tmpRect.top;
 
-			//Å¬ƒEƒBƒ“ƒhƒEƒTƒCƒY–¢–‚É‚È‚Á‚Ä‹‚È‚¢‚©‚Ç‚¤‚©Šm”F
+			//æœ€å°ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚µã‚¤ã‚ºæœªæº€ã«ãªã£ã¦å±…ãªã„ã‹ã©ã†ã‹ç¢ºèª
 			if ((size.x < sizeMin.x) || (size.y < sizeMin.y)) {
 				if (size.x < sizeMin.x) size.x = sizeMin.x;
 				if (size.y < sizeMin.y) size.y = sizeMin.y;
@@ -1010,7 +1010,7 @@ void s_dummyfunc()
 
 		/////////////////////////// Operator /////////////////////////////
 		void operator=(const OrgWindow& a){
-			_ASSERT_EXPR( 0, L"ƒRƒs[ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚Íg‚¦‚Ü‚¹‚ñ" );
+			_ASSERT_EXPR( 0, L"ã‚³ãƒ”ãƒ¼ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã¯ä½¿ãˆã¾ã›ã‚“" );
 		}
 
 		/////////////////////////// Accessor /////////////////////////////
@@ -1167,7 +1167,7 @@ void s_dummyfunc()
 
 		static std::map<HWND,OrgWindow*> hWndAndClassMap;
 
-		//ƒ†[ƒU[ƒCƒxƒ“ƒgƒŠƒXƒi[
+		//ãƒ¦ãƒ¼ã‚¶ãƒ¼ã‚¤ãƒ™ãƒ³ãƒˆãƒªã‚¹ãƒŠãƒ¼
 		std::function<void()> closeListener;
 		std::function<void()> ldownListener;
 		std::function<void()> lupListener;
@@ -1176,7 +1176,7 @@ void s_dummyfunc()
 		std::function<void()> leaveListener;
 		std::function<void(const KeyboardEvent&)> keyboardListener;
 
-		//ƒ}ƒEƒXƒLƒƒƒvƒ`ƒƒ—p‚Ìƒtƒ‰ƒO
+		//ãƒã‚¦ã‚¹ã‚­ãƒ£ãƒ—ãƒãƒ£ç”¨ã®ãƒ•ãƒ©ã‚°
 		bool mouseCaptureFlagL,mouseCaptureFlagR;
 
 		bool isblacktheme;
@@ -1186,10 +1186,10 @@ void s_dummyfunc()
 		bool lrbuttondone;
 
 		//////////////////////////// Method //////////////////////////////
-		//	Method : ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX‚ğ“o˜^
+		//	Method : ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹ã‚’ç™»éŒ²
 
 /*
-	//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX‚ğ“o˜^
+	//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹ã‚’ç™»éŒ²
 	WNDCLASSEX wcex;
 	ZeroMemory((LPVOID)&wcex, sizeof(WNDCLASSEX));
 	wcex.cbSize = sizeof(WNDCLASSEX);
@@ -1208,7 +1208,7 @@ void s_dummyfunc()
 
 
 
-	//ƒEƒBƒ“ƒhƒEì¬
+	//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ä½œæˆ
 	int cxframe = GetSystemMetrics(SM_CXFRAME);
 	int cyframe = GetSystemMetrics(SM_CYFRAME);
 	//if (istopmost) {
@@ -1247,7 +1247,7 @@ void s_dummyfunc()
 			wcex.hIconSm		= NULL;
 			RegisterClassExW(&wcex);
 		}
-		//	Method : ƒEƒBƒ“ƒhƒEì¬
+		//	Method : ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ä½œæˆ
 		void create(){
 			if (hWndParent != NULL) {
 				if (istopmost) {
@@ -1287,15 +1287,15 @@ void s_dummyfunc()
 			if (hWnd) {
 				hdcM.setHWnd(hWnd);
 
-				hWndAndClassMap[hWnd] = this;	//hWnd‚Æ‚±‚ÌƒNƒ‰ƒX‚ÌƒCƒ“ƒXƒ^ƒ“ƒXƒ|ƒCƒ“ƒ^‚Ì‘Î‰•\XV
+				hWndAndClassMap[hWnd] = this;	//hWndã¨ã“ã®ã‚¯ãƒ©ã‚¹ã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒã‚¤ãƒ³ã‚¿ã®å¯¾å¿œè¡¨æ›´æ–°
 			}
 			else {
 				_ASSERT(0);
 			}
 		}
-		//	Method : ƒEƒBƒ“ƒhƒEƒvƒƒV[ƒWƒƒ
+		//	Method : ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£
 		static LRESULT CALLBACK wndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
-		//	Method : ‘S•`‰æ
+		//	Method : å…¨æç”»
 		void allPaint();
 		//void allPaint(){
 		//	static int s_paintcnt = 0;
@@ -1316,7 +1316,7 @@ void s_dummyfunc()
 		//		}
 		//	endPaint();
 		//}
-		///	Method : ¶‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		///	Method : å·¦å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonDown(const MouseEvent& e){
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
@@ -1344,7 +1344,7 @@ void s_dummyfunc()
 			refreshPosAndSize();
 
 			if( lButton ){
-				//ƒ^ƒCƒgƒ‹ƒo[‚ÌXƒ{ƒ^ƒ“
+				//ã‚¿ã‚¤ãƒˆãƒ«ãƒãƒ¼ã®Xãƒœã‚¿ãƒ³
 				if( (xButtonX1 <= e.localX) && (e.localX <= xButtonX2 - 1)
 				 && (xButtonY1 <= e.localY) && (e.localY <= xButtonY2 - 1)
 				 && canQuit ){
@@ -1356,7 +1356,7 @@ void s_dummyfunc()
 
 
 				
-				////ƒ^ƒCƒgƒ‹ƒo[
+				////ã‚¿ã‚¤ãƒˆãƒ«ãƒãƒ¼
 				if( (1 <= e.localX) && (e.localX <= size.x - 2)
 				 && (1 <= e.localY) && (e.localY <= 1 + 2 + 9 + 1) ){
 					if (istopmost) {
@@ -1365,7 +1365,7 @@ void s_dummyfunc()
 					return;
 				}
 
-				//‰E‰º‚Ì‹÷
+				//å³ä¸‹ã®éš…
 				if( canChangeSize &&
 					((size.x - 4) <= e.localX) && ((size.y - 4) <= e.localY) ){
 					if (istopmost) {
@@ -1375,12 +1375,12 @@ void s_dummyfunc()
 				}
 			}
 
-			//ƒ}ƒEƒXƒLƒƒƒvƒ`ƒƒ
+			//ãƒã‚¦ã‚¹ã‚­ãƒ£ãƒ—ãƒãƒ£
 			if( !mouseCaptureFlagL && !mouseCaptureFlagR ) SetCapture(hWnd);
 			if( lButton ) mouseCaptureFlagL=true;
 			else		  mouseCaptureFlagR=true;
 
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			setDoneFlag(false);
 			std::list<OrgWindowParts*>::iterator plItr;
 			int loopcount;
@@ -1426,7 +1426,7 @@ void s_dummyfunc()
 				}
 			}
 		}
-		//	Method : ¶‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		//	Method : å·¦å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonUp(const MouseEvent& e){
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
@@ -1451,12 +1451,12 @@ void s_dummyfunc()
 				return;//!!!!!!!!!!!!!!!!
 			}
 
-			//ƒ}ƒEƒXƒLƒƒƒvƒ`ƒƒƒŠƒŠ[ƒX
+			//ãƒã‚¦ã‚¹ã‚­ãƒ£ãƒ—ãƒãƒ£ãƒªãƒªãƒ¼ã‚¹
 			if( lButton ) mouseCaptureFlagL=false;
 			else		  mouseCaptureFlagR=false;
 			if( !mouseCaptureFlagL && !mouseCaptureFlagR ) ReleaseCapture();
 
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			//setDoneFlag(0);
 			std::list<OrgWindowParts*>::iterator plItr;
 			for( plItr = partsList.begin(); plItr!=partsList.end(); plItr++ ){
@@ -1498,12 +1498,12 @@ void s_dummyfunc()
 			int xButtonY2 = xButtonY1 + 9;
 			refreshPosAndSize();
 
-			//ƒ}ƒEƒXƒLƒƒƒvƒ`ƒƒ
+			//ãƒã‚¦ã‚¹ã‚­ãƒ£ãƒ—ãƒãƒ£
 			//if (!mouseCaptureFlagL && !mouseCaptureFlagR) SetCapture(hWnd);
 			//if (lButton) mouseCaptureFlagL = true;
 			//else		  mouseCaptureFlagR = true;
 
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			//setDoneFlag(0);
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++){
@@ -1538,12 +1538,12 @@ void s_dummyfunc()
 				return;//!!!!!!!!!!!!!!!!
 			}
 
-			//ƒ}ƒEƒXƒLƒƒƒvƒ`ƒƒƒŠƒŠ[ƒX
+			//ãƒã‚¦ã‚¹ã‚­ãƒ£ãƒ—ãƒãƒ£ãƒªãƒªãƒ¼ã‚¹
 			//if (lButton) mouseCaptureFlagL = false;
 			//else		  mouseCaptureFlagR = false;
 			//if (!mouseCaptureFlagL && !mouseCaptureFlagR) ReleaseCapture();
 
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			//setDoneFlag(0);
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++){
@@ -1575,12 +1575,12 @@ void s_dummyfunc()
 			int xButtonY2 = xButtonY1 + 9;
 			refreshPosAndSize();
 
-			//ƒ}ƒEƒXƒLƒƒƒvƒ`ƒƒ
+			//ãƒã‚¦ã‚¹ã‚­ãƒ£ãƒ—ãƒãƒ£
 			//if (!mouseCaptureFlagL && !mouseCaptureFlagR) SetCapture(hWnd);
 			//if (lButton) mouseCaptureFlagL = true;
 			//else		  mouseCaptureFlagR = true;
 
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			//setDoneFlag(0);
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++){
@@ -1611,20 +1611,20 @@ void s_dummyfunc()
 
 
 		}
-		//	Method : ƒ}ƒEƒXˆÚ“®ƒCƒxƒ“ƒgóM
+		//	Method : ãƒã‚¦ã‚¹ç§»å‹•ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onMouseMove(const MouseEvent& e){
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
 			}
 
-			//‰E‰º‚Ì‹÷
+			//å³ä¸‹ã®éš…
 			if( canChangeSize && 
 				((size.x - 4) <= e.localX) && ((size.y - 4) <= e.localY) ){
 				SetCursor((HCURSOR)LoadImage(NULL, IDC_SIZENWSE,IMAGE_CURSOR,
 											 NULL, NULL,LR_DEFAULTCOLOR | LR_SHARED));
 			}
 
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
 				//if (*plItr) {
@@ -1652,7 +1652,7 @@ void s_dummyfunc()
 				(this->hoverListener)();
 			}
 
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			std::list<OrgWindowParts*>::iterator plItr;
 			for ( plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
 				if (*plItr) {
@@ -1678,7 +1678,7 @@ void s_dummyfunc()
 				(this->leaveListener)();
 			}
 
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
 				if (*plItr) {
@@ -1696,35 +1696,35 @@ void s_dummyfunc()
 			}
 		}
 
-		//	Method : ƒL[ƒ{[ƒhƒCƒxƒ“ƒgóM
+		//	Method : ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onKeyboard(const KeyboardEvent& e){
 			if( this->keyboardListener!=NULL ){
 				(this->keyboardListener)(e);
 			}
 		}
-		//	Method : •`‰æ€”õ
+		//	Method : æç”»æº–å‚™
 		void beginPaint(){
 			hdcM.beginPaint();
 		}
-		//	Method : •`‰æI—¹
+		//	Method : æç”»çµ‚äº†
 		void endPaint(){
 			hdcM.endPaint();
 		}
-		//	Method : ƒ^ƒCƒgƒ‹ƒo[‚ğ•`‰æ
+		//	Method : ã‚¿ã‚¤ãƒˆãƒ«ãƒãƒ¼ã‚’æç”»
 		void paintTitleBar(){
 			if( hdcM.hDC==NULL ){
 				_ASSERT_EXPR( 0, L"HDC = NULL" );
 			}else{
 
-				//˜g‚ğ•`‰æ
+				//æ ã‚’æç”»
 				hdcM.setPenAndBrush(RGB(baseR,baseG,baseB),NULL);
-				Rectangle(hdcM.hDC,0,0,size.x,size.y);					//ƒEƒBƒ“ƒhƒE˜g1
+				Rectangle(hdcM.hDC,0,0,size.x,size.y);					//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦æ 1
 				hdcM.setPenAndBrush(RGB(240,240,240),RGB(baseR,baseG,baseB));
-				Rectangle(hdcM.hDC,1,1,size.x-1,size.y-1);				//ƒEƒBƒ“ƒhƒE˜g2
+				Rectangle(hdcM.hDC,1,1,size.x-1,size.y-1);				//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦æ 2
 				hdcM.setPenAndBrush(RGB(240,240,240),NULL);
-				Rectangle(hdcM.hDC,1,1,size.x-1,1+13);				//ƒ^ƒCƒgƒ‹˜g
+				Rectangle(hdcM.hDC,1,1,size.x-1,1+13);				//ã‚¿ã‚¤ãƒˆãƒ«æ 
 
-				//‰E‰º‚Ì‹÷‚ÌƒTƒCƒY•ÏXƒ}[ƒN‚ğ•`‰æ
+				//å³ä¸‹ã®éš…ã®ã‚µã‚¤ã‚ºå¤‰æ›´ãƒãƒ¼ã‚¯ã‚’æç”»
 				if( canChangeSize ){
 					MoveToEx(hdcM.hDC, size.x-3, size.y-1, NULL);
 					LineTo(hdcM.hDC,   size.x-1, size.y-3);
@@ -1734,34 +1734,34 @@ void s_dummyfunc()
 					Rectangle(hdcM.hDC, size.x-2,size.y-2,size.x,size.y);
 				}
 
-				//ƒ^ƒCƒgƒ‹ƒ{ƒ^ƒ“‚ğ•`‰æ
+				//ã‚¿ã‚¤ãƒˆãƒ«ãƒœã‚¿ãƒ³ã‚’æç”»
 				hdcM.setPenAndBrush(RGB(240,240,240),NULL);
 				int xButtonX1=size.x-1-2-9;
 				int xButtonY1=1+2;
 				int xButtonX2=xButtonX1+9;
 				int xButtonY2=xButtonY1+9;
-				Rectangle(hdcM.hDC,xButtonX1,xButtonY1,xButtonX2,xButtonY2);	//X˜g
-				MoveToEx(hdcM.hDC, xButtonX1+2, xButtonY1+2, NULL);			//Xˆó
+				Rectangle(hdcM.hDC,xButtonX1,xButtonY1,xButtonX2,xButtonY2);	//Xæ 
+				MoveToEx(hdcM.hDC, xButtonX1+2, xButtonY1+2, NULL);			//Xå°
 				LineTo(hdcM.hDC, xButtonX2-2, xButtonY2-2);
 				MoveToEx(hdcM.hDC, xButtonX2-3, xButtonY1+2, NULL);
 				LineTo(hdcM.hDC, xButtonX1+1, xButtonY2-2);
 
-				//ƒ^ƒCƒgƒ‹–¼‚ğ•`‰æ
-				hdcM.setFont(12,_T("‚l‚r ƒSƒVƒbƒN"));
+				//ã‚¿ã‚¤ãƒˆãƒ«åã‚’æç”»
+				hdcM.setFont(12,_T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 				SetTextColor(hdcM.hDC,RGB(240,240,240));
-				TextOut(hdcM.hDC, 10, 2, title, (int)_tcslen(title));			//ƒ^ƒCƒgƒ‹–¼
+				TextOut(hdcM.hDC, 10, 2, title, (int)_tcslen(title));			//ã‚¿ã‚¤ãƒˆãƒ«å
 			}
 		}
 	};
 
 	////////////////----------------------------------------////////////////
 	////////////////										////////////////
-	////////////////		ƒEƒBƒ“ƒhƒE“à•”•iƒNƒ‰ƒX			////////////////
+	////////////////		ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“ã‚¯ãƒ©ã‚¹			////////////////
 	////////////////										////////////////
 	////////////////----------------------------------------////////////////
 
 	///<summary>
-	///	ƒEƒBƒ“ƒhƒE“à•”•i"ƒZƒpƒŒ[ƒ^"ƒNƒ‰ƒX
+	///	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“"ã‚»ãƒ‘ãƒ¬ãƒ¼ã‚¿"ã‚¯ãƒ©ã‚¹
 	///</summary>
 	class OWP_Separator : public OrgWindowParts{
 	public:
@@ -1786,7 +1786,7 @@ void s_dummyfunc()
 		}
 
 		//////////////////////////// Method //////////////////////////////
-		///	Method : eƒEƒBƒ“ƒhƒE‚É“o˜^
+		///	Method : è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²
 		//void regist( OrgWindow *_parentWindow,
 		//					 WindowPos _pos, WindowSize _size,
 		//					 HDCMaster* _hdcM,
@@ -1794,8 +1794,8 @@ void s_dummyfunc()
 		//	_regist(_parentWindow,_pos,_size,_hdcM,_baseR,_baseG,_baseB);
 
 
-		//	//addParts1, addParts2‚ÅŒÂ•Ê‚Éregist‚ªŒÄ‚Î‚ê‚é‚Ì‚ÅƒRƒƒ“ƒgƒAƒEƒgB
-		//	////‘S‚Ä‚ÌƒOƒ‹[ƒv“à•”•i‚ğ“¯‚¶ƒEƒBƒ“ƒhƒE‚É“o˜^
+		//	//addParts1, addParts2ã§å€‹åˆ¥ã«registãŒå‘¼ã°ã‚Œã‚‹ã®ã§ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆã€‚
+		//	////å…¨ã¦ã®ã‚°ãƒ«ãƒ¼ãƒ—å†…éƒ¨å“ã‚’åŒã˜ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²
 		//	//for(std::list<OrgWindowParts*>::iterator itr=partsList1.begin();
 		//	//	itr!=partsList1.end(); itr++){
 		//	//	(*itr)->regist( parentWindow,
@@ -1811,50 +1811,50 @@ void s_dummyfunc()
 		//	//					baseColor.r,baseColor.g,baseColor.b);
 		//	//}
 
-		//	//ƒOƒ‹[ƒvƒ{ƒbƒNƒX‚Æ“à•”—v‘f‚ÌˆÊ’u‚ÆƒTƒCƒY‚ğ©“®İ’è
+		//	//ã‚°ãƒ«ãƒ¼ãƒ—ãƒœãƒƒã‚¯ã‚¹ã¨å†…éƒ¨è¦ç´ ã®ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’è‡ªå‹•è¨­å®š
 		//	autoResize();
 		//}
-		///	Method : ƒOƒ‹[ƒv“à•”•i‚ğ’Ç‰Á
+		///	Method : ã‚°ãƒ«ãƒ¼ãƒ—å†…éƒ¨å“ã‚’è¿½åŠ 
 		void addParts1(OrgWindowParts& a){
 			partsList1.push_back(&a);
 
-			// ƒOƒ‹[ƒvƒ{ƒbƒNƒX‚ªƒEƒBƒ“ƒhƒE‚É“o˜^‚³‚ê‚Ä‚¢‚éê‡‚Í
-			// ƒOƒ‹[ƒv“à•”•i‚à“¯‚¶ƒEƒBƒ“ƒhƒE‚É“o˜^‚·‚é
+			// ã‚°ãƒ«ãƒ¼ãƒ—ãƒœãƒƒã‚¯ã‚¹ãŒã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹å ´åˆã¯
+			// ã‚°ãƒ«ãƒ¼ãƒ—å†…éƒ¨å“ã‚‚åŒã˜ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²ã™ã‚‹
 			if( parentWindow!=NULL ){
 				a.registmember( parentWindow,
 						  pos, size,
 						  hdcM,
 						  baseColor.r,baseColor.g,baseColor.b);
 
-				//ƒEƒBƒ“ƒhƒE“à‚Ì‘Sƒp[ƒc‚ÌˆÊ’uEƒTƒCƒY‚ğ©“®’²®
+				//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…ã®å…¨ãƒ‘ãƒ¼ãƒ„ã®ä½ç½®ãƒ»ã‚µã‚¤ã‚ºã‚’è‡ªå‹•èª¿æ•´
 				parentWindow->autoResizeAllParts();
 			}
 		}
 		void addParts2(OrgWindowParts& a){
 			partsList2.push_back(&a);
 
-			// ƒOƒ‹[ƒvƒ{ƒbƒNƒX‚ªƒEƒBƒ“ƒhƒE‚É“o˜^‚³‚ê‚Ä‚¢‚éê‡‚Í
-			// ƒOƒ‹[ƒv“à•”•i‚à“¯‚¶ƒEƒBƒ“ƒhƒE‚É“o˜^‚·‚é
+			// ã‚°ãƒ«ãƒ¼ãƒ—ãƒœãƒƒã‚¯ã‚¹ãŒã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹å ´åˆã¯
+			// ã‚°ãƒ«ãƒ¼ãƒ—å†…éƒ¨å“ã‚‚åŒã˜ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²ã™ã‚‹
 			if( parentWindow!=NULL ){
 				a.registmember( parentWindow,
 						  pos, size,
 						  hdcM,
 						  baseColor.r,baseColor.g,baseColor.b);
 
-				//ƒEƒBƒ“ƒhƒE“à‚Ì‘Sƒp[ƒc‚ÌˆÊ’uEƒTƒCƒY‚ğ©“®’²®
+				//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…ã®å…¨ãƒ‘ãƒ¼ãƒ„ã®ä½ç½®ãƒ»ã‚µã‚¤ã‚ºã‚’è‡ªå‹•èª¿æ•´
 				parentWindow->autoResizeAllParts();
 			}
 		}
 
 
-		/// Method : ©“®ƒTƒCƒYİ’è
+		/// Method : è‡ªå‹•ã‚µã‚¤ã‚ºè¨­å®š
 		virtual void autoResize(){
-			//ƒp[ƒcƒGƒŠƒA‚ÌˆÊ’u‚ÆƒTƒCƒY‚ğİ’è
+			//ãƒ‘ãƒ¼ãƒ„ã‚¨ãƒªã‚¢ã®ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’è¨­å®š
 			int onelineheight = 16;
 			int centerPos= getCenterLinePos();
 
 
-			//only1line == true‚ÌÛ‚É‚ÍƒZƒpƒŒ[ƒ^©‘Ì‚ÌÅ¬ƒTƒCƒY‚ğŒˆ‚ß‚é
+			//only1line == trueã®éš›ã«ã¯ã‚»ãƒ‘ãƒ¬ãƒ¼ã‚¿è‡ªä½“ã®æœ€å°ã‚µã‚¤ã‚ºã‚’æ±ºã‚ã‚‹
 			if (only1line == true) {
 				int sizey1 = 0;
 				int sizey2 = 0;
@@ -1894,7 +1894,7 @@ void s_dummyfunc()
 			currentPartsSizeY1= 0;
 			currentPartsSizeY2= 0;
 
-			//‘S‚Ä‚Ì“à•”ƒp[ƒc‚ÌˆÊ’u‚ÆƒTƒCƒY‚ğ©“®İ’è
+			//å…¨ã¦ã®å†…éƒ¨ãƒ‘ãƒ¼ãƒ„ã®ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’è‡ªå‹•è¨­å®š
 			std::list<OrgWindowParts*>::iterator itr;
 			for (itr = partsList1.begin(); itr != partsList1.end(); itr++) {
 				if (*itr) {
@@ -1903,7 +1903,7 @@ void s_dummyfunc()
 					(*itr)->setPos(WindowPos(partsAreaPos1.x, partsAreaPos1.y + currentPartsSizeY1));
 					//(*itr)->setSize( WindowSize( partsAreaSize1.x, partsAreaSize1.y-currentPartsSizeY1 ) );
 					(*itr)->setSize(WindowSize(partsAreaSize1.x, befsize.y));
-					//(*itr)->autoResize();//befsize‚æ‚è‚à‘O‚ÉˆÚ“®
+					//(*itr)->autoResize();//befsizeã‚ˆã‚Šã‚‚å‰ã«ç§»å‹•
 
 					//currentPartsSizeY1+= (*itr)->getSize().y+1;
 					currentPartsSizeY1 += (*itr)->getSize().y;
@@ -1916,17 +1916,17 @@ void s_dummyfunc()
 					(*itr2)->setPos(WindowPos(partsAreaPos2.x, partsAreaPos2.y + currentPartsSizeY2));
 					//(*itr2)->setSize( WindowSize( partsAreaSize2.x, partsAreaSize2.y-currentPartsSizeY2 ) );
 					(*itr2)->setSize(WindowSize(partsAreaSize2.x, befsize.y));
-					//(*itr2)->autoResize();//befsize‚æ‚è‚à‘O‚ÉˆÚ“®
+					//(*itr2)->autoResize();//befsizeã‚ˆã‚Šã‚‚å‰ã«ç§»å‹•
 
 					//currentPartsSizeY2+= (*itr2)->getSize().y+1;
 					currentPartsSizeY2 += (*itr2)->getSize().y;
 				}
 			}
 		}
-		///	Method : •`‰æ
+		///	Method : æç”»
 		virtual void draw();
 		//void draw(){
-		//	//˜g‚ğ‘‚­
+		//	//æ ã‚’æ›¸ã
 		//	int centerPos= getCenterLinePos();
 		//	hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
 		//	if( divideSide ){
@@ -1949,7 +1949,7 @@ void s_dummyfunc()
 		//		}
 		//	}
 
-		//	//‘S‚Ä‚Ì“à•”ƒp[ƒc‚ğ•`‰æ
+		//	//å…¨ã¦ã®å†…éƒ¨ãƒ‘ãƒ¼ãƒ„ã‚’æç”»
 		//	for(std::list<OrgWindowParts*>::iterator itr=partsList1.begin();
 		//		itr!=partsList1.end(); itr++){
 		//			(*itr)->draw();
@@ -1959,24 +1959,24 @@ void s_dummyfunc()
 		//			(*itr)->draw();
 		//	}
 		//}
-		///	Method : ¶‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		///	Method : å·¦å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonDown(const MouseEvent& e){
 			onLRButtonDown(e,true);
 		}
 		virtual void onRButtonDown(const MouseEvent& e){
 			onLRButtonDown(e,false);
 		}
-		///	Method : ¶‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		///	Method : å·¦å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonUp(const MouseEvent& e){
 			onLRButtonUp(e,true);
 		}
 		virtual void onRButtonUp(const MouseEvent& e){
 			onLRButtonUp(e,false);
 		}
-		///	Method : ƒ}ƒEƒXˆÚ“®ƒCƒxƒ“ƒgóM
+		///	Method : ãƒã‚¦ã‚¹ç§»å‹•ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onMouseMove(const MouseEvent& e){
 
-			//ƒJ[ƒ\ƒ‹•ÏX
+			//ã‚«ãƒ¼ã‚½ãƒ«å¤‰æ›´
 			if( canShift && isMouseOnHandle(e) ){
 				if( divideSide ){
 					SetCursor((HCURSOR)LoadImage(NULL, IDC_SIZEWE,IMAGE_CURSOR,
@@ -1987,12 +1987,12 @@ void s_dummyfunc()
 				}
 			}
 
-			//ƒhƒ‰ƒbƒO‚É‚æ‚éˆÚ“®
+			//ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹ç§»å‹•
 			if( shiftDrag ){
 				shiftLine(e);
 			}
 
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList1.begin(); plItr != partsList1.end(); plItr++) {
 				if (*plItr) {
@@ -2025,7 +2025,7 @@ void s_dummyfunc()
 			}
 		}
 		virtual void onMouseWheel(const MouseEvent& e) {
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList1.begin(); plItr != partsList1.end(); plItr++) {
 				if (*plItr) {
@@ -2061,7 +2061,7 @@ void s_dummyfunc()
 		}
 
 		virtual void onMButtonDown(const MouseEvent& e) {
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList1.begin(); plItr != partsList1.end(); plItr++) {
 				if (*plItr) {
@@ -2097,7 +2097,7 @@ void s_dummyfunc()
 
 		}
 		virtual void onMButtonUp(const MouseEvent& e) {
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList1.begin(); plItr != partsList1.end(); plItr++) {
 				if (*plItr) {
@@ -2187,7 +2187,7 @@ void s_dummyfunc()
 		static const int HANDLE_SIZE= 12;
 		static const int HANDLE_MARK_SIZE= 6;
 
-		/// Method : dØ‚èü‚ÌˆÊ’u‚ğæ“¾
+		/// Method : ä»•åˆ‡ã‚Šç·šã®ä½ç½®ã‚’å–å¾—
 		int getCenterLinePos() const{
 			int divval = divideSide ? size.x : size.y;
 			int divpos = divideSide ? pos.x : pos.y;
@@ -2196,7 +2196,7 @@ void s_dummyfunc()
 			centerPos= max(1, min(centerPos, divval-2));
 			return centerPos;
 		}
-		/// Method : dØ‚èü‚ÉG‚ê‚Ä‚¢‚é‚©‚Ç‚¤‚©æ“¾
+		/// Method : ä»•åˆ‡ã‚Šç·šã«è§¦ã‚Œã¦ã„ã‚‹ã‹ã©ã†ã‹å–å¾—
 		bool isMouseOnHandle(const MouseEvent& e) const{
 			int centerPos= getCenterLinePos();
 			if( ((centerPos - LINE_MARGIN) <= (divideSide ? e.localX : e.localY))
@@ -2210,7 +2210,7 @@ void s_dummyfunc()
 			}
 			return false;
 		}
-		/// Method : ƒ}ƒEƒXˆÊ’u‚ÉdØ‚èü‚ğˆÚ“®
+		/// Method : ãƒã‚¦ã‚¹ä½ç½®ã«ä»•åˆ‡ã‚Šç·šã‚’ç§»å‹•
 		void shiftLine(const MouseEvent& e){
 			if( divideSide ){
 				setCenterRate( (double)e.localX/(double)size.x );
@@ -2218,15 +2218,15 @@ void s_dummyfunc()
 				setCenterRate( (double)e.localY/(double)size.y );
 			}
 		}
-		///	Method : ¶‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		///	Method : å·¦å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		void onLRButtonDown(const MouseEvent& e, bool lButton){
 
-			//dØ‚èüƒhƒ‰ƒbƒO‚ÅˆÚ“®
+			//ä»•åˆ‡ã‚Šç·šãƒ‰ãƒ©ãƒƒã‚°ã§ç§»å‹•
 			if( isMouseOnHandle(e) ){
 
 				if( canShift && lButton ){
 					shiftDrag= true;
-					//ƒJ[ƒ\ƒ‹•ÏX
+					//ã‚«ãƒ¼ã‚½ãƒ«å¤‰æ›´
 					if( divideSide ){
 						SetCursor((HCURSOR)LoadImage(NULL, IDC_SIZEWE,IMAGE_CURSOR,
 													 NULL, NULL,LR_DEFAULTCOLOR | LR_SHARED));
@@ -2236,7 +2236,7 @@ void s_dummyfunc()
 					}
 				}
 
-			//“à•”ƒp[ƒc1
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„1
 			}else if( (divideSide ? e.localX : e.localY) <= getCenterLinePos() ){
 
 				std::list<OrgWindowParts*>::iterator plItr;
@@ -2268,7 +2268,7 @@ void s_dummyfunc()
 					}
 				}
 
-			//“à•”ƒp[ƒc2
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„2
 			}else{
 
 				std::list<OrgWindowParts*>::iterator plItr2;
@@ -2303,16 +2303,16 @@ void s_dummyfunc()
 			}
 
 		}
-		///	Method : ¶‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		///	Method : å·¦å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		void onLRButtonUp(const MouseEvent& e, bool lButton){
 
-			//ƒhƒ‰ƒbƒOˆÚ“®‰ğœ
+			//ãƒ‰ãƒ©ãƒƒã‚°ç§»å‹•è§£é™¤
 			if( shiftDrag ){
 				shiftDrag= false;
 				shiftLine(e);
 			}
 
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList1.begin(); plItr != partsList1.end(); plItr++) {
 
@@ -2358,7 +2358,7 @@ void s_dummyfunc()
 	};
 
 	///<summary>
-	///	ƒEƒBƒ“ƒhƒE“à•”•i"ƒOƒ‹[ƒvƒ{ƒbƒNƒX"ƒNƒ‰ƒX
+	///	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“"ã‚°ãƒ«ãƒ¼ãƒ—ãƒœãƒƒã‚¯ã‚¹"ã‚¯ãƒ©ã‚¹
 	///</summary>
 	class OWP_GroupBox : public OrgWindowParts{
 	public:
@@ -2380,14 +2380,14 @@ void s_dummyfunc()
 		}
 
 		//////////////////////////// Method //////////////////////////////
-		///	Method : eƒEƒBƒ“ƒhƒE‚É“o˜^
+		///	Method : è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²
 		//void regist( OrgWindow *_parentWindow,
 		//					 WindowPos _pos, WindowSize _size,
 		//					 HDCMaster* _hdcM,
 		//					 unsigned char _baseR=50, unsigned char _baseG=70, unsigned char _baseB=70 ){
 		//	_regist(_parentWindow,_pos,_size,_hdcM,_baseR,_baseG,_baseB);
 
-		//	////‘S‚Ä‚ÌƒOƒ‹[ƒv“à•”•i‚ğ“¯‚¶ƒEƒBƒ“ƒhƒE‚É“o˜^
+		//	////å…¨ã¦ã®ã‚°ãƒ«ãƒ¼ãƒ—å†…éƒ¨å“ã‚’åŒã˜ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²
 		//	//for(std::list<OrgWindowParts*>::iterator itr=partsList.begin();
 		//	//	itr!=partsList.end(); itr++){
 		//	//	(*itr)->regist( parentWindow,
@@ -2396,37 +2396,37 @@ void s_dummyfunc()
 		//	//					baseColor.r,baseColor.g,baseColor.b);
 		//	//}
 
-		//	//ƒOƒ‹[ƒvƒ{ƒbƒNƒX‚Æ“à•”—v‘f‚ÌˆÊ’u‚ÆƒTƒCƒY‚ğ©“®İ’è
+		//	//ã‚°ãƒ«ãƒ¼ãƒ—ãƒœãƒƒã‚¯ã‚¹ã¨å†…éƒ¨è¦ç´ ã®ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’è‡ªå‹•è¨­å®š
 		//	autoResize();
 		//}
-		///	Method : ƒOƒ‹[ƒv“à•”•i‚ğ’Ç‰Á
+		///	Method : ã‚°ãƒ«ãƒ¼ãƒ—å†…éƒ¨å“ã‚’è¿½åŠ 
 		void addParts(OrgWindowParts& a){
 			partsList.push_back(&a);
 
-			// ƒOƒ‹[ƒvƒ{ƒbƒNƒX‚ªƒEƒBƒ“ƒhƒE‚É“o˜^‚³‚ê‚Ä‚¢‚éê‡‚Í
-			// ƒOƒ‹[ƒv“à•”•i‚à“¯‚¶ƒEƒBƒ“ƒhƒE‚É“o˜^‚·‚é
+			// ã‚°ãƒ«ãƒ¼ãƒ—ãƒœãƒƒã‚¯ã‚¹ãŒã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹å ´åˆã¯
+			// ã‚°ãƒ«ãƒ¼ãƒ—å†…éƒ¨å“ã‚‚åŒã˜ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²ã™ã‚‹
 			if( parentWindow!=NULL ){
 				a.registmember( parentWindow,
 						  pos, size,
 						  hdcM,
 						  baseColor.r,baseColor.g,baseColor.b);
 
-				// ƒOƒ‹[ƒvƒ{ƒbƒNƒX‚ªƒI[ƒvƒ“ó‘Ô‚Ì‚Í
-				// ƒEƒBƒ“ƒhƒE“à‚Ì‘Sƒp[ƒc‚ÌˆÊ’uEƒTƒCƒY‚ğ©“®’²®
+				// ã‚°ãƒ«ãƒ¼ãƒ—ãƒœãƒƒã‚¯ã‚¹ãŒã‚ªãƒ¼ãƒ—ãƒ³çŠ¶æ…‹ã®æ™‚ã¯
+				// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…ã®å…¨ãƒ‘ãƒ¼ãƒ„ã®ä½ç½®ãƒ»ã‚µã‚¤ã‚ºã‚’è‡ªå‹•èª¿æ•´
 				if( open ){
 					parentWindow->autoResizeAllParts();
 				}
 			}
 		}
-		/// Method : ©“®ƒTƒCƒYİ’è
+		/// Method : è‡ªå‹•ã‚µã‚¤ã‚ºè¨­å®š
 		virtual void autoResize(){
 			if( open ){
-				//ƒp[ƒcƒGƒŠƒA‚ÌˆÊ’u‚ÆƒTƒCƒY‚ğİ’è
+				//ãƒ‘ãƒ¼ãƒ„ã‚¨ãƒªã‚¢ã®ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’è¨­å®š
 				partsAreaPos=  pos + WindowPos( 3, SIZE_CLOSE_Y+2 );
 				partsAreaSize= WindowSize( size.x-3-3, size.y-(SIZE_CLOSE_Y+3)-3 );
 				currentPartsSizeY= 0;
 
-				//‘S‚Ä‚Ì“à•”ƒp[ƒc‚ÌˆÊ’u‚ÆƒTƒCƒY‚ğ©“®İ’è
+				//å…¨ã¦ã®å†…éƒ¨ãƒ‘ãƒ¼ãƒ„ã®ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’è‡ªå‹•è¨­å®š
 				std::list<OrgWindowParts*>::iterator itr;
 				for(itr = partsList.begin(); itr != partsList.end(); itr++){
 					if (*itr) {
@@ -2443,7 +2443,7 @@ void s_dummyfunc()
 					}
 				}
 
-				//ƒOƒ‹[ƒvƒ{ƒbƒNƒX‚ÌƒTƒCƒY‚ğ“à•”—v‘f‚É‡‚í‚¹‚ÄƒgƒŠƒ~ƒ“ƒO
+				//ã‚°ãƒ«ãƒ¼ãƒ—ãƒœãƒƒã‚¯ã‚¹ã®ã‚µã‚¤ã‚ºã‚’å†…éƒ¨è¦ç´ ã«åˆã‚ã›ã¦ãƒˆãƒªãƒŸãƒ³ã‚°
 				partsAreaSize.y= currentPartsSizeY;
 				size.y= partsAreaPos.y-pos.y+partsAreaSize.y+3;
 
@@ -2451,34 +2451,34 @@ void s_dummyfunc()
 				size.y= SIZE_CLOSE_Y;
 			}
 		}
-		///	Method : •`‰æ
+		///	Method : æç”»
 		virtual void draw(){
-			//˜g‚ğ‘‚­
+			//æ ã‚’æ›¸ã
 			if( open ){
 				hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),RGB(baseColor.r,baseColor.g,baseColor.b));
 				Rectangle(hdcM->hDC,pos.x,pos.y+SIZE_CLOSE_Y/2,pos.x+size.x,pos.y+size.y);
 			}
 
-			//ŠJ•Âƒ{ƒ^ƒ“
+			//é–‹é–‰ãƒœã‚¿ãƒ³
 			if( canClose ){
 				int pos0x= pos.x+ BOX_POS_X;
 				int pos0y= pos.y+ SIZE_CLOSE_Y/2- BOX_WIDTH/2;
 				int pos1x= pos.x+ BOX_POS_X+ BOX_WIDTH;
 				int pos1y= pos.y+ SIZE_CLOSE_Y/2+ BOX_WIDTH/2;
 
-				//”wŒi
+				//èƒŒæ™¯
 				hdcM->setPenAndBrush(NULL,RGB(baseColor.r,baseColor.g,baseColor.b));
 				Rectangle(hdcM->hDC,
 					pos0x-1, pos0y,
 					pos1x+3, pos1y);
 
-				//˜g
+				//æ 
 				hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
 				Rectangle(hdcM->hDC,
 					pos0x, pos0y,
 					pos1x, pos1y);
 
-				//’†g
+				//ä¸­èº«
 				hdcM->setPenAndBrush(RGB(240,240,240),NULL);
 				if(open){
 					MoveToEx(hdcM->hDC, (pos0x+pos1x)/2,pos0y+2, NULL);
@@ -2499,7 +2499,7 @@ void s_dummyfunc()
 				}//*/
 			}
 
-			{//–¼‘O
+			{//åå‰
 				int pos1x,pos1y;
 				if( canClose ){
 					pos1x= pos.x+ BOX_POS_X+ BOX_WIDTH+ NAME_POS_X2;
@@ -2508,7 +2508,7 @@ void s_dummyfunc()
 					pos1x= pos.x+NAME_POS_X1;
 					pos1y= pos.y+SIZE_CLOSE_Y/2-5;
 				}
-				hdcM->setFont(12,_T("‚l‚r ƒSƒVƒbƒN"));
+				hdcM->setFont(12,_T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 				SetTextColor(hdcM->hDC,RGB(240,240,240));
 				SetBkColor(hdcM->hDC,RGB(baseColor.r,baseColor.g,baseColor.b));
 				SetBkMode(hdcM->hDC,OPAQUE);
@@ -2519,7 +2519,7 @@ void s_dummyfunc()
 				SetBkMode(hdcM->hDC,TRANSPARENT);
 			}
 
-			//‘S‚Ä‚Ì“à•”ƒp[ƒc‚ğ•`‰æ
+			//å…¨ã¦ã®å†…éƒ¨ãƒ‘ãƒ¼ãƒ„ã‚’æç”»
 			if( open ){
 				std::list<OrgWindowParts*>::iterator itr;
 				for(itr = partsList.begin(); itr != partsList.end(); itr++){
@@ -2561,23 +2561,23 @@ void s_dummyfunc()
 			}
 
 		}
-		///	Method : ¶‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		///	Method : å·¦å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonDown(const MouseEvent& e){
 			onLRButtonDown(e,true);
 		}
 		virtual void onRButtonDown(const MouseEvent& e){
 			onLRButtonDown(e,false);
 		}
-		///	Method : ¶‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		///	Method : å·¦å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonUp(const MouseEvent& e){
 			onLRButtonUp(e,true);
 		}
 		virtual void onRButtonUp(const MouseEvent& e){
 			onLRButtonUp(e,false);
 		}
-		///	Method : ƒ}ƒEƒXˆÚ“®ƒCƒxƒ“ƒgóM
+		///	Method : ãƒã‚¦ã‚¹ç§»å‹•ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onMouseMove(const MouseEvent& e){
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
 
@@ -2612,16 +2612,16 @@ void s_dummyfunc()
 		}
 		void setOpenStatus(bool value){
 
-			//Œ»İ‚ÌŠJ•Âó‘Ô‚ÆˆÙ‚È‚éó‘Ô‚ğƒZƒbƒg‚µ‚½‚¾‚¯•ÏX‚·‚é
+			//ç¾åœ¨ã®é–‹é–‰çŠ¶æ…‹ã¨ç•°ãªã‚‹çŠ¶æ…‹ã‚’ã‚»ãƒƒãƒˆã—ãŸæ™‚ã ã‘å¤‰æ›´ã™ã‚‹
 			if( open!=value ){
 				open= value;
 
-				//ƒŠƒXƒi[ƒR[ƒ‹
+				//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 				if( this->openListener!=NULL ){
 					(this->openListener)();
 				}
 
-				//ƒEƒBƒ“ƒhƒE“à•”•i‚Ì‘S‚Ä‚ÌˆÊ’u‚ÆƒTƒCƒY‚ğ©“®İ’è
+				//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“ã®å…¨ã¦ã®ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’è‡ªå‹•è¨­å®š
 				if( parentWindow!=NULL ){
 					parentWindow->autoResizeAllParts();
 				}
@@ -2661,17 +2661,17 @@ void s_dummyfunc()
 		static const int NAME_POS_X1= 5;
 		static const int NAME_POS_X2= 3;
 
-		///	Method : ¶‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		///	Method : å·¦å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		void onLRButtonDown(const MouseEvent& e, bool lButton){
 
 			if( lButton ){
-				//ƒ‰ƒxƒ‹ƒNƒŠƒbƒN‚ÅŠJ•Â
+				//ãƒ©ãƒ™ãƒ«ã‚¯ãƒªãƒƒã‚¯ã§é–‹é–‰
 				if( (e.localY < SIZE_CLOSE_Y) && canClose ){
 					setOpenStatus(!open);
 				}
 			}
 
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
 
@@ -2703,9 +2703,9 @@ void s_dummyfunc()
 			}
 
 		}
-		///	Method : ¶‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		///	Method : å·¦å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		void onLRButtonUp(const MouseEvent& e, bool lButton){
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
 
@@ -2731,7 +2731,7 @@ void s_dummyfunc()
 	};
 
 	///<summary>
-	///	ƒEƒBƒ“ƒhƒE“à•”•i"ƒ‰ƒxƒ‹"ƒNƒ‰ƒX
+	///	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“"ãƒ©ãƒ™ãƒ«"ã‚¯ãƒ©ã‚¹
 	///</summary>
 	class OWP_Label : public OrgWindowParts{
 	public:
@@ -2745,16 +2745,16 @@ void s_dummyfunc()
 		}
 
 		//////////////////////////// Method //////////////////////////////
-		/// Method : ©“®ƒTƒCƒYİ’è
+		/// Method : è‡ªå‹•ã‚µã‚¤ã‚ºè¨­å®š
 		virtual void autoResize(){
 			size.y= SIZE_Y;
 		}
-		//	Method : •`‰æ
+		//	Method : æç”»
 		virtual void draw(){
-			//–¼‘O
+			//åå‰
 			int pos1x= pos.x+NAME_POS_X;
 			int pos1y= pos.y+size.y/2-5;
-			hdcM->setFont(12,_T("‚l‚r ƒSƒVƒbƒN"));
+			hdcM->setFont(12,_T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 			//SetTextColor(hdcM->hDC,RGB(240,240,240));
 			SetTextColor(hdcM->hDC, OrgWindowParts::getTextColor());
 			TextOut( hdcM->hDC,
@@ -2822,7 +2822,7 @@ void s_dummyfunc()
 			}
 
 		}
-		/// Method : “à—e•ÏX
+		/// Method : å†…å®¹å¤‰æ›´
 		void setName(const TCHAR *value ){
 			_tcscpy_s(name,256,value);
 
@@ -2838,7 +2838,7 @@ void s_dummyfunc()
 	};
 
 	///<summary>
-	///	ƒEƒBƒ“ƒhƒE“à•”•i"ƒ{ƒ^ƒ“"ƒNƒ‰ƒX
+	///	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“"ãƒœã‚¿ãƒ³"ã‚¯ãƒ©ã‚¹
 	///</summary>
 	class OWP_Button : public OrgWindowParts{
 	public:
@@ -2857,15 +2857,15 @@ void s_dummyfunc()
 		}
 
 		//////////////////////////// Method //////////////////////////////
-		/// Method : ©“®ƒTƒCƒYİ’è
+		/// Method : è‡ªå‹•ã‚µã‚¤ã‚ºè¨­å®š
 		virtual void autoResize(){
 			size.y= SIZE_Y;
 		}
-		//	Method : •`‰æ
+		//	Method : æç”»
 		virtual void draw(){
 			drawEdge();
 
-			//ƒ{ƒbƒNƒX
+			//ãƒœãƒƒã‚¯ã‚¹
 			int pos1x= pos.x+BOX_POS_X;
 			int pos1y= pos.y+size.y/2-BOX_WIDTH/2;
 			int pos2x= pos.x+BOX_POS_X+BOX_WIDTH-1;
@@ -2885,17 +2885,17 @@ void s_dummyfunc()
 			LineTo(hdcM->hDC,   pos2x,pos2y);
 			LineTo(hdcM->hDC,   pos2x,pos1y);
 
-			//–¼‘O
+			//åå‰
 			pos1x= pos.x+BOX_POS_X+BOX_WIDTH+3;
 			pos1y= pos.y+size.y/2-5;
-			hdcM->setFont(12,_T("‚l‚r ƒSƒVƒbƒN"));
+			hdcM->setFont(12,_T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 			//TCHAR* isToAll = 0;
 			//isToAll = _tcsstr(name, _T("ToAll"));
 			//if(!isToAll){
 			//	SetTextColor(hdcM->hDC, RGB(240, 240, 240));
 			//}
 			//else {
-			//	//–¼‘O‚ÉToAll‚Æ‚Â‚¢‚Ä‚¢‚½ê‡‚É‚ÍA“Áêƒ{ƒ^ƒ“‚Æ‚µ‚ÄF‚ğ•Ï‚¦‚é
+			//	//åå‰ã«ToAllã¨ã¤ã„ã¦ã„ãŸå ´åˆã«ã¯ã€ç‰¹æ®Šãƒœã‚¿ãƒ³ã¨ã—ã¦è‰²ã‚’å¤‰ãˆã‚‹
 			//	SetTextColor(hdcM->hDC, RGB(64, 128 + 32, 128 + 32));
 			//}
 			
@@ -2936,7 +2936,7 @@ void s_dummyfunc()
 			}
 
 		}
-		//	Method : ƒ}ƒEƒXƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		//	Method : ãƒã‚¦ã‚¹ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonDown(const MouseEvent& e){
 			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
@@ -2954,7 +2954,7 @@ void s_dummyfunc()
 				InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
 				draw();
 
-				//ƒ{ƒ^ƒ“ƒAƒbƒvƒAƒjƒ[ƒVƒ‡ƒ“‚Ì‚½‚ß‚ÌƒXƒŒƒbƒhì¬
+				//ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®ãŸã‚ã®ã‚¹ãƒ¬ãƒƒãƒ‰ä½œæˆ
 				_beginthread(drawButtonUpThread, 0, (void*)this);
 			}
 		}
@@ -2981,7 +2981,7 @@ void s_dummyfunc()
 		static const int BOX_WIDTH= 10;
 
 		//////////////////////////// Method //////////////////////////////
-		//	Method : ƒ{ƒ^ƒ“ƒAƒbƒv‚ÌƒXƒŒƒbƒh
+		//	Method : ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã®ã‚¹ãƒ¬ãƒƒãƒ‰
 		static void drawButtonUpThread(LPVOID	pParam){
 			Sleep(100);
 
@@ -3002,7 +3002,7 @@ void s_dummyfunc()
 	};
 
 	///<summary>
-	///	ƒEƒBƒ“ƒhƒE“à•”•i"ƒvƒŒƒCƒ„[ƒ{ƒ^ƒ“"ƒNƒ‰ƒX
+	///	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“"ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒœã‚¿ãƒ³"ã‚¯ãƒ©ã‚¹
 	///</summary>
 	class OWP_PlayerButton : public OrgWindowParts{
 	public:
@@ -3012,15 +3012,15 @@ void s_dummyfunc()
 			wcscpy_s(strjointname, 1024, L"Unknown joint");
 
 			if (g_4kresolution) {
-				//BOX_WIDTH‚ÆSIZE_Y‚Í setButtonSize‚Å‚à•ÏXo—ˆ‚é
+				//BOX_WIDTHã¨SIZE_Yã¯ setButtonSizeã§ã‚‚å¤‰æ›´å‡ºæ¥ã‚‹
 				BOX_WIDTH = 40;
 				SIZE_Y = 44;
 
-				//ƒ{ƒ^ƒ“‚Ì”z’uŠJnˆÊ’u
+				//ãƒœã‚¿ãƒ³ã®é…ç½®é–‹å§‹ä½ç½®
 				OFFSET_X = srctotalwidth / 3;
 			}
 			else {
-				//BOX_WIDTH‚ÆSIZE_Y‚Í setButtonSize‚Å‚à•ÏXo—ˆ‚é
+				//BOX_WIDTHã¨SIZE_Yã¯ setButtonSizeã§ã‚‚å¤‰æ›´å‡ºæ¥ã‚‹
 				//BOX_WIDTH = 20;
 				//SIZE_Y = 24;
 				BOX_WIDTH = 26;
@@ -3039,7 +3039,7 @@ void s_dummyfunc()
 			WindowPos retpos;
 
 			if ((buttonno >= 0) && (buttonno <= 6)) {
-				//ƒ{ƒ^ƒ“‚Ìl‹÷‚É‚È‚éÀ•W‚ğ‹‚ß‚é
+				//ãƒœã‚¿ãƒ³ã®å››éš…ã«ãªã‚‹åº§æ¨™ã‚’æ±‚ã‚ã‚‹
 				int pos1x = OFFSET_X + pos.x + BOX_POS_X + BOX_WIDTH * buttonno;
 				int pos1y = pos.y + size.y / 2 - BOX_WIDTH / 2;
 				int pos2x = OFFSET_X + pos.x + BOX_POS_X + BOX_WIDTH * (buttonno + 1) - 1;
@@ -3058,24 +3058,24 @@ void s_dummyfunc()
 		};
 
 		//////////////////////////// Method //////////////////////////////
-		/// Method : ©“®ƒTƒCƒYİ’è
+		/// Method : è‡ªå‹•ã‚µã‚¤ã‚ºè¨­å®š
 		virtual void autoResize(){
 			size.y= SIZE_Y;
 		}
-		//	Method : •`‰æ
+		//	Method : æç”»
 		virtual void draw(){
 			drawEdge();
 
-			//‘S‚Ä‚Ìƒ{ƒ^ƒ“‚É‚Â‚¢‚ÄŒJ‚è•Ô‚·
+			//å…¨ã¦ã®ãƒœã‚¿ãƒ³ã«ã¤ã„ã¦ç¹°ã‚Šè¿”ã™
 			for(int i=0; i<=6; i++){
 
-				//ƒ{ƒ^ƒ“‚Ìl‹÷‚É‚È‚éÀ•W‚ğ‹‚ß‚é
+				//ãƒœã‚¿ãƒ³ã®å››éš…ã«ãªã‚‹åº§æ¨™ã‚’æ±‚ã‚ã‚‹
 				int pos1x= OFFSET_X + pos.x+BOX_POS_X+BOX_WIDTH*i;
 				int pos1y= pos.y+size.y/2-BOX_WIDTH/2;
 				int pos2x= OFFSET_X + pos.x+BOX_POS_X+BOX_WIDTH*(i+1)-1;
 				int pos2y= pos1y+BOX_WIDTH-1;
 
-				//ƒ{ƒ^ƒ“ƒpƒ‰ƒ[ƒ^‚ÌƒCƒ“ƒXƒ^ƒ“ƒX‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ğì¬
+				//ãƒœã‚¿ãƒ³ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã‚’ä½œæˆ
 				OneButtonParam *btnPrm;
 				//switch(i){
 				//case 0: btnPrm= &reset; break;
@@ -3106,7 +3106,7 @@ void s_dummyfunc()
 				default: btnPrm = 0; break;
 				}
 				if (btnPrm) {
-					//˜g‘g‚İ•`‰æ
+					//æ çµ„ã¿æç”»
 					if (btnPrm->buttonPush) {
 						hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
 					}
@@ -3124,10 +3124,10 @@ void s_dummyfunc()
 					LineTo(hdcM->hDC, pos2x, pos2y);
 					LineTo(hdcM->hDC, pos2x, pos1y);
 
-					//’†g•`‰æ
+					//ä¸­èº«æç”»
 					int shiftDot = btnPrm->buttonPush ? 1 : 0;
 					switch (i) {
-					case 0:		//æ“ªƒtƒŒ[ƒ€ƒWƒƒƒ“ƒvƒ{ƒ^ƒ“
+					case 0:		//å…ˆé ­ãƒ•ãƒ¬ãƒ¼ãƒ ã‚¸ãƒ£ãƒ³ãƒ—ãƒœã‚¿ãƒ³
 					{
 						hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
 						int x1 = (pos1x + pos2x) / 2 + 2;
@@ -3143,7 +3143,7 @@ void s_dummyfunc()
 							LineTo(hdcM->hDC, x4 - j + shiftDot, y2 - j + shiftDot);
 						}
 					}break;
-					case 1:		//‹tÄ¶ƒ{ƒ^ƒ“
+					case 1:		//é€†å†ç”Ÿãƒœã‚¿ãƒ³
 					{
 						hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
 						int y1 = pos1y + 3;
@@ -3155,13 +3155,13 @@ void s_dummyfunc()
 							LineTo(hdcM->hDC, x2 - j + shiftDot, y2 - j + shiftDot);
 						}
 					}break;
-					case 2:		//ƒŠƒZƒbƒgƒ{ƒ^ƒ“
+					case 2:		//ãƒªã‚»ãƒƒãƒˆãƒœã‚¿ãƒ³
 						hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
 						Rectangle(hdcM->hDC,
 							pos1x + 4 + shiftDot, pos1y + 4 + shiftDot,
 							pos2x - 3 + shiftDot, pos2y - 3 + shiftDot);
 						break;
-					case 3:		//Ä¶ƒ{ƒ^ƒ“
+					case 3:		//å†ç”Ÿãƒœã‚¿ãƒ³
 					{
 						hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
 						int y1 = pos1y + 3;
@@ -3173,7 +3173,7 @@ void s_dummyfunc()
 							LineTo(hdcM->hDC, x1 + j + shiftDot, y2 - j + shiftDot);
 						}
 					}break;
-					case 4:		//ÅIƒtƒŒ[ƒ€ƒWƒƒƒ“ƒvƒ{ƒ^ƒ“
+					case 4:		//æœ€çµ‚ãƒ•ãƒ¬ãƒ¼ãƒ ã‚¸ãƒ£ãƒ³ãƒ—ãƒœã‚¿ãƒ³
 					{
 						hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
 						int x1 = pos1x + 3;
@@ -3191,7 +3191,7 @@ void s_dummyfunc()
 					}break;
 					case 5:
 						break;
-					case 6:		//ÅIƒtƒŒ[ƒ€‚Ü‚Å‘I‘ğ
+					case 6:		//æœ€çµ‚ãƒ•ãƒ¬ãƒ¼ãƒ ã¾ã§é¸æŠ
 					{
 						hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
 						int x1 = pos1x + 4;
@@ -3212,7 +3212,7 @@ void s_dummyfunc()
 			}
 
 			//2023/01/08
-			//ƒWƒ‡ƒCƒ“ƒg–¼‚ğ@‘å‚«‚­@ƒ^ƒCƒ€ƒ‰ƒCƒ“ã‚Ì@^‚ñ’†‚É•\¦
+			//ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆåã‚’ã€€å¤§ããã€€ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ä¸Šã®ã€€çœŸã‚“ä¸­ã«è¡¨ç¤º
 			if(getParent()){
 				WindowSize parentsize = getParent()->getSizeSimple();
 				//int pos1x = pos.x + BOX_POS_X + BOX_WIDTH * 18;
@@ -3222,12 +3222,12 @@ void s_dummyfunc()
 				if (pjointname) {
 					size_t jointnamelen = wcslen(pjointname);
 					if ((jointnamelen >= 1) && (jointnamelen <= 1020)) {
-						//hdcM->setFont(18, _T("‚l‚r ƒSƒVƒbƒN"));
+						//hdcM->setFont(18, _T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 						if (g_4kresolution) {
-							hdcM->setFont(32, _T("‚l‚r ƒSƒVƒbƒN"));
+							hdcM->setFont(32, _T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 						}
 						else {
-							hdcM->setFont(24, _T("‚l‚r ƒSƒVƒbƒN"));
+							hdcM->setFont(24, _T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 						}
 						SetTextColor(hdcM->hDC, RGB(168, 129, 129));
 						TextOut(hdcM->hDC,
@@ -3271,19 +3271,19 @@ void s_dummyfunc()
 			}
 		}
 
-		//	Method : ƒ}ƒEƒXƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		//	Method : ãƒã‚¦ã‚¹ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonDown(const MouseEvent& e){
 
-			//‘S‚Ä‚Ìƒ{ƒ^ƒ“‚É‚Â‚¢‚ÄŒJ‚è•Ô‚·
+			//å…¨ã¦ã®ãƒœã‚¿ãƒ³ã«ã¤ã„ã¦ç¹°ã‚Šè¿”ã™
 			for(int i=0; i<=6; i++){
 
-				//‚Ü‚¸ƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚©‚ğŠm”F
+				//ã¾ãšãƒœã‚¿ãƒ³ãŒæŠ¼ã•ã‚ŒãŸã‹ã‚’ç¢ºèª
 				if( ((OFFSET_X + BOX_POS_X + BOX_WIDTH * i) <= e.localX) && (e.localX < (OFFSET_X + BOX_POS_X + BOX_WIDTH * (i+1))) ){
 				}else{
 					continue;
 				}
 
-				//ƒ{ƒ^ƒ“ƒpƒ‰ƒ[ƒ^‚ÌƒCƒ“ƒXƒ^ƒ“ƒX‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ğì¬
+				//ãƒœã‚¿ãƒ³ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã‚’ä½œæˆ
 				OneButtonParam *btnPrm;
 				switch (i) {
 				case 0: btnPrm = &backStep; break;
@@ -3296,18 +3296,18 @@ void s_dummyfunc()
 				default: btnPrm = 0; break;
 				}
 				if (btnPrm) {
-					//ƒ{ƒ^ƒ“ƒŠƒXƒi[‚ğŒÄ‚Ô
+					//ãƒœã‚¿ãƒ³ãƒªã‚¹ãƒŠãƒ¼ã‚’å‘¼ã¶
 					if (btnPrm->buttonListener != NULL) {
 						(btnPrm->buttonListener)();
 					}
 
-					//ƒ{ƒ^ƒ“‰Ÿ‰ºó‘Ô‚ğON‚É‚·‚é
+					//ãƒœã‚¿ãƒ³æŠ¼ä¸‹çŠ¶æ…‹ã‚’ONã«ã™ã‚‹
 					btnPrm->buttonPush = true;
 
-					//Ä•`‰æ’Ê’m
+					//å†æç”»é€šçŸ¥
 					callRewrite();
 
-					//ƒ{ƒ^ƒ“ƒAƒbƒvƒAƒjƒ[ƒVƒ‡ƒ“‚Ì‚½‚ß‚ÌƒXƒŒƒbƒhì¬
+					//ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®ãŸã‚ã®ã‚¹ãƒ¬ãƒƒãƒ‰ä½œæˆ
 					switch (i) {
 					case 0: _beginthread(drawBackStepButtonUpThread, 0, (void*)this); break;
 					case 1: _beginthread(drawBackPlayButtonUpThread, 0, (void*)this); break;
@@ -3327,14 +3327,14 @@ void s_dummyfunc()
 		//	Accessor : buttonListener
 		void setJointName(const WCHAR* srcjointname) {
 			if (srcjointname) {
-				strjointname[1024 - 1] = 0L;//”O‚Ì‚½‚ßI’[
+				strjointname[1024 - 1] = 0L;//å¿µã®ãŸã‚çµ‚ç«¯
 				wcscpy_s(strjointname, 1024, srcjointname);
-				strjointname[1024 - 1] = 0L;//”O‚Ì‚½‚ßI’[
+				strjointname[1024 - 1] = 0L;//å¿µã®ãŸã‚çµ‚ç«¯
 			}
 		}
 		const WCHAR* getJointName()
 		{
-			strjointname[1024 - 1] = 0L;//”O‚Ì‚½‚ßI’[
+			strjointname[1024 - 1] = 0L;//å¿µã®ãŸã‚çµ‚ç«¯
 			return &(strjointname[0]);
 		}
 
@@ -3387,7 +3387,7 @@ void s_dummyfunc()
 		//	resetdisp.buttonListener = listener;
 		//}
 
-		/// Accessor : ƒ{ƒ^ƒ“ƒTƒCƒY‚ğ•ÏX‚·‚é
+		/// Accessor : ãƒœã‚¿ãƒ³ã‚µã‚¤ã‚ºã‚’å¤‰æ›´ã™ã‚‹
 		void setButtonSize(int value){
 			BOX_WIDTH= value;
 			SIZE_Y= BOX_WIDTH+4;
@@ -3421,7 +3421,7 @@ void s_dummyfunc()
 		WCHAR strjointname[1024] = { 0L };
 
 		//////////////////////////// Method //////////////////////////////
-		//	Method : ƒ{ƒ^ƒ“ƒAƒbƒv‚ÌƒXƒŒƒbƒh
+		//	Method : ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã®ã‚¹ãƒ¬ãƒƒãƒ‰
 		static void drawFrontPlayButtonUpThread(LPVOID	pParam){
 			Sleep(100);
 
@@ -3537,7 +3537,7 @@ void s_dummyfunc()
 	};
 
 	///<summary>
-	///	ƒEƒBƒ“ƒhƒE“à•”•i"ƒ`ƒFƒbƒNƒ{ƒbƒNƒX"ƒNƒ‰ƒX
+	///	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“"ãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹"ã‚¯ãƒ©ã‚¹
 	///</summary>
 	class OWP_CheckBoxA : public OrgWindowParts {
 	public:
@@ -3556,13 +3556,13 @@ void s_dummyfunc()
 		}
 
 		//////////////////////////// Method //////////////////////////////
-		/// Method : ©“®ƒTƒCƒYİ’è
+		/// Method : è‡ªå‹•ã‚µã‚¤ã‚ºè¨­å®š
 		virtual void autoResize(){
 			size.y= SIZE_Y;
 		}
-		//	Method : •`‰æ
+		//	Method : æç”»
 		virtual void draw();
-		//	Method : ƒ}ƒEƒXƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		//	Method : ãƒã‚¦ã‚¹ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonDown(const MouseEvent& e){
 			//if ((e.localX >= pos.x) && (e.localX <= (pos.x + size.x)) && 
 			//	(e.localY >= pos.y) && (e.localY <= (pos.y + size.y))) {
@@ -3584,7 +3584,7 @@ void s_dummyfunc()
 				tmpRect.bottom = pos.y + size.y - 1;
 				InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
 
-				//ƒŠƒXƒi[ƒR[ƒ‹
+				//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 				if (this->buttonListener != NULL) {
 					(this->buttonListener)();
 				}
@@ -3610,7 +3610,7 @@ void s_dummyfunc()
 	};
 
 	///<summary>
-	///	ƒEƒBƒ“ƒhƒE“à•”•i"ƒ‰ƒWƒIƒ{ƒ^ƒ“"ƒNƒ‰ƒX
+	///	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“"ãƒ©ã‚¸ã‚ªãƒœã‚¿ãƒ³"ã‚¯ãƒ©ã‚¹
 	///</summary>
 	class OWP_RadioButton : public OrgWindowParts{
 	public:
@@ -3621,7 +3621,7 @@ void s_dummyfunc()
 
 			if (limitnamelen) {
 				//2023/02/17
-				//sepalator‚Æˆê‚Ég‚¤ê‡‚É@‰E‘¤‚É‚Í‚İo‚³‚È‚¢‚æ‚¤‚É•¶š”§ŒÀ30
+				//sepalatorã¨ä¸€ç·’ã«ä½¿ã†å ´åˆã«ã€€å³å´ã«ã¯ã¿å‡ºã•ãªã„ã‚ˆã†ã«æ–‡å­—æ•°åˆ¶é™30
 				TCHAR name30[31];
 				ZeroMemory(name30, sizeof(TCHAR) * 31);
 				if (name) {
@@ -3658,17 +3658,17 @@ void s_dummyfunc()
 		}
 
 		//////////////////////////// Method //////////////////////////////
-		/// Method : ©“®ƒTƒCƒYİ’è
+		/// Method : è‡ªå‹•ã‚µã‚¤ã‚ºè¨­å®š
 		virtual void autoResize(){
 			size.y = SIZE_Y*(int)nameList.size() + 4;
 		}
-		///	Method : •`‰æ
+		///	Method : æç”»
 		virtual void draw(){
 			drawEdge();
 
-			//ƒ‰ƒWƒIƒ{ƒ^ƒ“‚Ì”‚¾‚¯ŒJ‚è•Ô‚·
+			//ãƒ©ã‚¸ã‚ªãƒœã‚¿ãƒ³ã®æ•°ã ã‘ç¹°ã‚Šè¿”ã™
 			for(int i=0; i<(int)nameList.size(); i++){
-				//ƒ{ƒ^ƒ“•”•ª
+				//ãƒœã‚¿ãƒ³éƒ¨åˆ†
 				int pos1x= pos.x+BOX_POS_X;
 				int pos1y= pos.y+SIZE_Y/2-BOX_WIDTH/2+ SIZE_Y*i+ 2;
 				int pos2x= pos.x+BOX_POS_X+BOX_WIDTH-1;
@@ -3680,10 +3680,10 @@ void s_dummyfunc()
 				hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
 				Ellipse(hdcM->hDC, pos1x,pos1y, pos2x,pos2y);
 
-				//–¼‘O
+				//åå‰
 				pos1x= pos.x+BOX_POS_X+BOX_WIDTH+3;
 				pos1y= pos.y+SIZE_Y/2-6+ SIZE_Y*i+ 2;
-				hdcM->setFont(12,_T("‚l‚r ƒSƒVƒbƒN"));
+				hdcM->setFont(12,_T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 				SetTextColor(hdcM->hDC,RGB(240,240,240));
 				TextOut( hdcM->hDC,
 						 pos1x, pos1y,
@@ -3722,18 +3722,18 @@ void s_dummyfunc()
 
 			}
 		}
-		///	Method : ƒ}ƒEƒXƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		///	Method : ãƒã‚¦ã‚¹ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonDown(const MouseEvent& e){
 			int targetIndex= (e.localY-2)/SIZE_Y;
 			if( (0 <= targetIndex) && (targetIndex < (int)nameList.size()) ){
 				setSelectIndex(targetIndex);
 			}
 		}
-		/// Method : €–Ú‚Ì’Ç‰Á
+		/// Method : é …ç›®ã®è¿½åŠ 
 		void addLine( const TCHAR *name ){
 			if (limitnamelen) {
 				//2023/02/17
-				//sepalator‚Æˆê‚Ég‚¤ê‡‚É@‰E‘¤‚É‚Í‚İo‚³‚È‚¢‚æ‚¤‚É•¶š”§ŒÀ30
+				//sepalatorã¨ä¸€ç·’ã«ä½¿ã†å ´åˆã«ã€€å³å´ã«ã¯ã¿å‡ºã•ãªã„ã‚ˆã†ã«æ–‡å­—æ•°åˆ¶é™30
 				TCHAR name30[31];
 				ZeroMemory(name30, sizeof(TCHAR) * 31);
 				if (name) {
@@ -3761,24 +3761,24 @@ void s_dummyfunc()
 				}
 			}
 
-			//ƒEƒBƒ“ƒhƒE“à‚Ì‘Sƒp[ƒc‚ÌˆÊ’u‚ÆƒTƒCƒY‚ğ©“®İ’è
+			//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…ã®å…¨ãƒ‘ãƒ¼ãƒ„ã®ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’è‡ªå‹•è¨­å®š
 			if( parentWindow!=NULL ){
 				parentWindow->autoResizeAllParts();
 			}
 		}
-		/// Method : €–Ú‚Ìíœ
+		/// Method : é …ç›®ã®å‰Šé™¤
 		bool deleteLine(){
 
-			//2‚ÂˆÈã‚Ì€–Ú‚ª‚ ‚éê‡‚ÍÅŒã‚Ì€–Ú‚ğíœ
+			//2ã¤ä»¥ä¸Šã®é …ç›®ãŒã‚ã‚‹å ´åˆã¯æœ€å¾Œã®é …ç›®ã‚’å‰Šé™¤
 			if ((int)nameList.size() != 1){
 				nameList.pop_back();
 
-				//Á‚µ‚½€–Ú‚ğ‘I‘ğ‚µ‚Ä‚¢‚½ê‡‚ÍÅŒã‚Ì€–Ú‚ğ‘I‘ğ
+				//æ¶ˆã—ãŸé …ç›®ã‚’é¸æŠã—ã¦ã„ãŸå ´åˆã¯æœ€å¾Œã®é …ç›®ã‚’é¸æŠ
 				if (selectIndex == (int)nameList.size()){
 					setSelectIndex(selectIndex-1);
 				}
 
-				//ƒEƒBƒ“ƒhƒE“à‚Ì‘Sƒp[ƒc‚ÌˆÊ’u‚ÆƒTƒCƒY‚ğ©“®İ’è
+				//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…ã®å…¨ãƒ‘ãƒ¼ãƒ„ã®ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’è‡ªå‹•è¨­å®š
 				if( parentWindow!=NULL ){
 					parentWindow->autoResizeAllParts();
 				}
@@ -3789,7 +3789,7 @@ void s_dummyfunc()
 		}
 		bool deleteLine(int index){
 
-			//2‚ÂˆÈã‚Ì€–Ú‚ª‚ ‚éê‡‚Íw’è‚µ‚½ƒCƒ“ƒfƒbƒNƒX‚Ì€–Ú‚ğíœ
+			//2ã¤ä»¥ä¸Šã®é …ç›®ãŒã‚ã‚‹å ´åˆã¯æŒ‡å®šã—ãŸã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã®é …ç›®ã‚’å‰Šé™¤
 			if (
 			//((int)nameList.size() != 1)
 			((int)nameList.size() >= 2)
@@ -3799,14 +3799,14 @@ void s_dummyfunc()
 				}
 				nameList.pop_back();
 
-				//Á‚µ‚½€–ÚˆÈ~‚Ì€–Ú‚ğ‘I‘ğ‚µ‚Ä‚¢‚½ê‡‚ÍÄ‘I‘ğ
+				//æ¶ˆã—ãŸé …ç›®ä»¥é™ã®é …ç›®ã‚’é¸æŠã—ã¦ã„ãŸå ´åˆã¯å†é¸æŠ
 				if( selectIndex==index ){
 					setSelectIndex(0);
 				}else if( index<=selectIndex ){
 					setSelectIndex(selectIndex-1);
 				}
 
-				//ƒEƒBƒ“ƒhƒE“à‚Ì‘Sƒp[ƒc‚ÌˆÊ’u‚ÆƒTƒCƒY‚ğ©“®İ’è
+				//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…ã®å…¨ãƒ‘ãƒ¼ãƒ„ã®ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’è‡ªå‹•è¨­å®š
 				if( parentWindow!=NULL ){
 					parentWindow->autoResizeAllParts();
 				}
@@ -3817,7 +3817,7 @@ void s_dummyfunc()
 		}
 		bool deleteLine( const TCHAR *name ){
 
-			//2‚ÂˆÈã‚Ì€–Ú‚ª‚ ‚éê‡‚ÍÅ‰‚É–¼‘O‚ªˆê’v‚µ‚½€–Ú‚ğíœ
+			//2ã¤ä»¥ä¸Šã®é …ç›®ãŒã‚ã‚‹å ´åˆã¯æœ€åˆã«åå‰ãŒä¸€è‡´ã—ãŸé …ç›®ã‚’å‰Šé™¤
 			if ((int)nameList.size() != 1){
 				for( int i=0; i<(int)nameList.size(); i++ ){
 					if( nameList[i]==name ){
@@ -3832,11 +3832,11 @@ void s_dummyfunc()
 		//	Accessor : selectIndex
 		void setSelectIndex(int value){
 			value= max(0, min(value,(int)nameList.size()-1));
-			//Œ»İİ’è‚³‚ê‚Ä‚¢‚é’l‚ÆˆÙ‚È‚é’l‚ğƒZƒbƒg‚µ‚½‚É‚¾‚¯•ÏX‚·‚é
+			//ç¾åœ¨è¨­å®šã•ã‚Œã¦ã„ã‚‹å€¤ã¨ç•°ãªã‚‹å€¤ã‚’ã‚»ãƒƒãƒˆã—ãŸæ™‚ã«ã ã‘å¤‰æ›´ã™ã‚‹
 			if( selectIndex!=value ){
 				selectIndex= value;
 
-				//ƒŠƒXƒi[ƒR[ƒ‹
+				//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 				if(this->selectListener!=NULL){
 					(this->selectListener)();
 				}
@@ -3866,7 +3866,7 @@ void s_dummyfunc()
 	};
 
 	///<summary>
-	///	ƒEƒBƒ“ƒhƒE“à•”•i"ƒXƒ‰ƒCƒ_["ƒNƒ‰ƒX
+	///	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“"ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼"ã‚¯ãƒ©ã‚¹
 	///</summary>
 	class OWP_Slider : public OrgWindowParts{
 	public:
@@ -3881,11 +3881,11 @@ void s_dummyfunc()
 		}
 
 		//////////////////////////// Method //////////////////////////////
-		/// Method : ©“®ƒTƒCƒYİ’è
+		/// Method : è‡ªå‹•ã‚µã‚¤ã‚ºè¨­å®š
 		virtual void autoResize(){
 			size.y= SIZE_Y;
 		}
-		//	Method : •`‰æ
+		//	Method : æç”»
 		virtual void draw(){
 			drawEdge();
 
@@ -3894,7 +3894,7 @@ void s_dummyfunc()
 			int pos1y= pos.y+size.y/2;
 			int pos2x= pos.x+size.x-LABEL_SIZE_X;
 			int pos2y= pos.y+size.y/2;
-			//²
+			//è»¸
 			hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
 			MoveToEx(hdcM->hDC, pos1x,pos1y, NULL);
 			LineTo(hdcM->hDC,   pos2x,pos2y);
@@ -3906,7 +3906,7 @@ void s_dummyfunc()
 			MoveToEx(hdcM->hDC, pos2x,pos2y+1, NULL);
 			LineTo(hdcM->hDC,   pos2x,pos2y-2);
 
-			//‚Â‚Ü‚İ
+			//ã¤ã¾ã¿
 			int tumamiPosX= pos1x+ (int)( (value-minValue)*(float)(pos2x-pos1x)/(maxValue-minValue)+ 0.5f );
 			pos1x= tumamiPosX-1;
 			pos1y= pos1y-AXIS_SIZE_Y/2;
@@ -3920,7 +3920,7 @@ void s_dummyfunc()
 			MoveToEx(hdcM->hDC, pos2x,pos1y+2, NULL);
 			LineTo(hdcM->hDC,   pos2x,pos2y-1);
 
-			//ƒ‰ƒxƒ‹
+			//ãƒ©ãƒ™ãƒ«
 			pos1x= pos.x+size.x-LABEL_SIZE_X+3;
 			pos1y= pos.y+size.y/2-5;
 			pos2x= pos.x+size.x-4;
@@ -3930,7 +3930,7 @@ void s_dummyfunc()
 			LineTo(hdcM->hDC,   pos2x+1,pos1y);
 			MoveToEx(hdcM->hDC, pos1x,pos2y, NULL);
 			LineTo(hdcM->hDC,   pos2x+1,pos2y);
-			hdcM->setFont(12,_T("‚l‚r ƒSƒVƒbƒN"));
+			hdcM->setFont(12,_T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 			SetTextColor(hdcM->hDC,RGB(240,240,240));
 			TCHAR tmpChar[20];
 			_stprintf_s(tmpChar,20,_T("% 9.3G"),value);
@@ -3969,7 +3969,7 @@ void s_dummyfunc()
 			}
 
 		}
-		//	Method : ƒ}ƒEƒXƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		//	Method : ãƒã‚¦ã‚¹ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonDown(const MouseEvent& e){
 			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
@@ -3992,11 +3992,11 @@ void s_dummyfunc()
 				}
 			}
 		}
-		//	Method : ¶ƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		//	Method : å·¦ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonUp(const MouseEvent& e){
 			drag=false;
 		}
-		//	Method : ƒ}ƒEƒXˆÚ“®ƒCƒxƒ“ƒgóM
+		//	Method : ãƒã‚¦ã‚¹ç§»å‹•ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onMouseMove(const MouseEvent& e){
 			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
@@ -4039,7 +4039,7 @@ void s_dummyfunc()
 		void setValue(double _value){
 			value= min(max(_value,minValue),maxValue);
 
-			//ƒŠƒXƒi[ƒR[ƒ‹
+			//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 			if(this->cursorListener!=NULL){
 				(this->cursorListener)();
 			}
@@ -4063,7 +4063,7 @@ void s_dummyfunc()
 	};
 
 	///<summary>
-	///	ƒEƒBƒ“ƒhƒE“à•”•i"ƒ^ƒCƒ€ƒ‰ƒCƒ“ƒe[ƒuƒ‹"ƒNƒ‰ƒX
+	///	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“"ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ãƒ†ãƒ¼ãƒ–ãƒ«"ã‚¯ãƒ©ã‚¹
 	///</summary>
 	class OWP_Timeline : public OrgWindowParts{
 	public:
@@ -4072,7 +4072,7 @@ void s_dummyfunc()
 			
 			TIME_ERROR_WIDTH = 0.0001;
 
-			lineData.push_back(new LineData(0,0,_name,this,0));
+			lineData.push_back(new LineData(0,0,false,false,_name,this,0));
 			maxTime= _maxTime;
 			timeSize= _timeSize;
 			//cursorListener = [](){s_dummyfunc();};
@@ -4127,7 +4127,14 @@ void s_dummyfunc()
 				LABEL_SIZE_X = 135;
 			}
 			else {
-				LABEL_SIZE_X = 280;
+				//LABEL_SIZE_X = 280;
+				LABEL_SIZE_X = 600 - SCROLL_BAR_WIDTH - 20;
+			}
+			if (g_4kresolution) {
+				LABEL_SIZE_Y = 22;
+			}
+			else {
+				LABEL_SIZE_Y = 15;
 			}
 		}
 		~OWP_Timeline(){
@@ -4146,7 +4153,7 @@ void s_dummyfunc()
 
 
 		//////////////////////////// Method //////////////////////////////
-		/// Method : ©“®ƒTƒCƒYİ’è
+		/// Method : è‡ªå‹•ã‚µã‚¤ã‚ºè¨­å®š
 		virtual void autoResize(){
 			size.y-= (size.y-SCROLL_BAR_WIDTH-AXIS_SIZE_Y-MARGIN*2)%(LABEL_SIZE_Y-1);
 		}
@@ -4158,7 +4165,7 @@ void s_dummyfunc()
 			retpos.x = pos.x + MARGIN + (size.x - SCROLL_BAR_WIDTH - MARGIN * 2) / 2;
 			retpos.y = pos.y + MARGIN + AXIS_SIZE_Y + j * (LABEL_SIZE_Y - 1) + LABEL_SIZE_Y / 2;
 
-			////sƒf[ƒ^
+			////è¡Œãƒ‡ãƒ¼ã‚¿
 			//int showLineNum = (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) / (LABEL_SIZE_Y - 1);
 			//for (int i = showPos_line, j = 0; i < (int)lineData.size() && j < showLineNum; i++, j++) {
 			//	bool highLight = false;
@@ -4174,18 +4181,18 @@ void s_dummyfunc()
 
 			return retpos;
 		}
-		//	Method : •`‰æ
+		//	Method : æç”»
 		virtual void callRewrite();
 		virtual void draw();
 		//void draw(){
 		//	drawEdge();
 
-		//	//ŠÔ²–Ú·‚è
+		//	//æ™‚é–“è»¸ç›®ç››ã‚Š
 		//	{
 		//		const int AXIS_CURSOR_SIZE=4;
 		//		const int AXIS_LABEL_SIDE_MARGIN=7;
 
-		//		//–Ú·‚èü & ƒ‰ƒxƒ‹
+		//		//ç›®ç››ã‚Šç·š & ãƒ©ãƒ™ãƒ«
 		//		int x0= pos.x+MARGIN+LABEL_SIZE_X;
 		//		int x1= pos.x+size.x-MARGIN-SCROLL_BAR_WIDTH;
 		//		int y0= pos.y+MARGIN;
@@ -4202,7 +4209,7 @@ void s_dummyfunc()
 		//				if (((i < 1000) && (i % 5 == 0)) || ((i >= 1000) && (i % 10 == 0))){
 		//					TCHAR tmpChar[20];
 		//					_stprintf_s(tmpChar, 20, _T("%.3G"), (double)i);
-		//					hdcM->setFont(12, _T("‚l‚r ƒSƒVƒbƒN"));
+		//					hdcM->setFont(12, _T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 		//					SetTextColor(hdcM->hDC, RGB(240, 240, 240));
 		//					TextOut(hdcM->hDC,
 		//						xx - (int)((double)_tcslen(tmpChar)*2.0), y0,
@@ -4211,7 +4218,7 @@ void s_dummyfunc()
 		//			}
 		//		}
 
-		//		//ƒJ[ƒ\ƒ‹
+		//		//ã‚«ãƒ¼ã‚½ãƒ«
 		//		int xx= (int)((currentTime-showPos_time)*timeSize) + x0 + 1;
 		//		hdcM->setPenAndBrush(RGB(240,240,240),NULL);
 		//		if( x0-AXIS_CURSOR_SIZE <= xx && xx <= x1+AXIS_CURSOR_SIZE ){
@@ -4221,7 +4228,7 @@ void s_dummyfunc()
 		//			}
 		//		}
 
-		//		//˜g
+		//		//æ 
 		//		hdcM->setPenAndBrush(NULL,RGB(baseColor.r,baseColor.g,baseColor.b));
 		//		Rectangle(hdcM->hDC,pos.x,y0,x0,y1);
 		//		Rectangle(hdcM->hDC,x1,y0,pos.x+size.x,y1);
@@ -4231,7 +4238,7 @@ void s_dummyfunc()
 		//	
 		//	drawEdge(false);
 
-		//	//sƒf[ƒ^
+		//	//è¡Œãƒ‡ãƒ¼ã‚¿
 		//	int showLineNum= (size.y-SCROLL_BAR_WIDTH-AXIS_SIZE_Y-MARGIN*2)/(LABEL_SIZE_Y-1);
 		//	for(int i=showPos_line,j=0; i<(int)lineData.size() && j<showLineNum; i++,j++){
 		//		bool highLight=false;
@@ -4245,7 +4252,7 @@ void s_dummyfunc()
 		//		}
 		//	}
 
-		//	//ƒhƒ‰ƒbƒO‚É‚æ‚é‘I‘ğ”ÍˆÍ
+		//	//ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹é¸æŠç¯„å›²
 		//	if( dragSelect && dragSelectTime1!=dragSelectTime2 ){
 		//		int xx0= pos.x+MARGIN+LABEL_SIZE_X+ 1;
 		//		int yy0= pos.y+MARGIN+AXIS_SIZE_Y;
@@ -4256,39 +4263,39 @@ void s_dummyfunc()
 		//		int y0= yy0+ (min(dragSelectLine1,dragSelectLine2)- showPos_line)* (LABEL_SIZE_Y-1)+ 1;
 		//		int y1= yy0+ (max(dragSelectLine1,dragSelectLine2)- showPos_line+ 1)* (LABEL_SIZE_Y-1)- 1;
 
-		//		{//˜g•`‰æ
+		//		{//æ æç”»
 		//			hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
-		//			if( xx0<=x0 ){		//¶˜g
+		//			if( xx0<=x0 ){		//å·¦æ 
 		//				MoveToEx(hdcM->hDC, x0, max(yy0,y0+1), NULL);
 		//				LineTo(hdcM->hDC,   x0, min(y1,yy1));
 		//			}
-		//			if( x1<=xx1 ){		//‰E˜g
+		//			if( x1<=xx1 ){		//å³æ 
 		//				MoveToEx(hdcM->hDC, x1, max(yy0,y0+1), NULL);
 		//				LineTo(hdcM->hDC,   x1, min(y1,yy1));
 		//			}
-		//			if( yy0<=y0 ){		//ã˜g
+		//			if( yy0<=y0 ){		//ä¸Šæ 
 		//				MoveToEx(hdcM->hDC, max(xx0,x0+1), y0, NULL);
 		//				LineTo(hdcM->hDC,   min(x1,xx1), y0);
 		//			}
-		//			if( y1<=yy1 ){		//‰º˜g
+		//			if( y1<=yy1 ){		//ä¸‹æ 
 		//				MoveToEx(hdcM->hDC, max(xx0,x0+1), y1, NULL);
 		//				LineTo(hdcM->hDC,   min(x1,xx1), y1);
 		//			}
 		//		}
 		//	}
 
-		//	//ŠÔ²ƒXƒNƒ[ƒ‹ƒo[
+		//	//æ™‚é–“è»¸ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 		//	{
 		//		int x0= pos.x+MARGIN+LABEL_SIZE_X;
 		//		int x1= pos.x+size.x-MARGIN-SCROLL_BAR_WIDTH;
 		//		int y0= pos.y+size.y-MARGIN-SCROLL_BAR_WIDTH;
 		//		int y1= y0+SCROLL_BAR_WIDTH;
 
-		//		//˜g
+		//		//æ 
 		//		hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
 		//		Rectangle(hdcM->hDC,x0,y0,x1,y1);
 
-		//		//’†g
+		//		//ä¸­èº«
 		//		double showTimeLength= ((double)(x1-x0-3))/timeSize;
 		//		double barSize= ((double)(x1-x0-4))*showTimeLength/maxTime;
 		//		double barStart= ((double)(x1-x0-4))*showPos_time/maxTime;
@@ -4298,18 +4305,18 @@ void s_dummyfunc()
 		//		}
 		//	}
 
-		//	//ƒ‰ƒxƒ‹ƒXƒNƒ[ƒ‹ƒo[
+		//	//ãƒ©ãƒ™ãƒ«ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 		//	{
 		//		int x0= pos.x+size.x-MARGIN-SCROLL_BAR_WIDTH-1;
 		//		int x1= x0+SCROLL_BAR_WIDTH+1;
 		//		int y0= pos.y+MARGIN+AXIS_SIZE_Y;
 		//		int y1= pos.y+size.y-MARGIN-SCROLL_BAR_WIDTH+1;
 
-		//		//˜g
+		//		//æ 
 		//		hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
 		//		Rectangle(hdcM->hDC,x0,y0,x1,y1);
 
-		//		//’†g
+		//		//ä¸­èº«
 		//		int barSize= (y1-y0-4)*showLineNum/(int)lineData.size();
 		//		int barStart= (y1-y0-4)*showPos_line/(int)lineData.size();
 		//		if( showLineNum<(int)lineData.size() ){
@@ -4320,29 +4327,35 @@ void s_dummyfunc()
 		//}
 		
 
-		//	Method : s‚ğ’Ç‰Á	(Šù‚É“¯–¼‚ÌƒL[‚ª‚ ‚éê‡‚ÍFalse‚ğ•Ô‚·)
-		bool newLine(int _depth, int nullflag, const std::basic_string<TCHAR>& _name, COLORREF srctextcol = RGB(255, 255, 255)){
+		//	Method : è¡Œã‚’è¿½åŠ 	(æ—¢ã«åŒåã®ã‚­ãƒ¼ãŒã‚ã‚‹å ´åˆã¯Falseã‚’è¿”ã™)
+		bool newLine(int _depth, int nullflag, 
+			bool srcikstopflag, bool srcconstraintflag,
+			const std::basic_string<TCHAR>& _name, 
+			COLORREF srctextcol = RGB(255, 255, 255)){
+			
 			for(int i=0; i<(int)lineData.size(); i++){
 				if(lineData[i]->name==_name){
 					return false;
 				}
 			}
-			lineData.push_back(new LineData(_depth, nullflag, _name, this, (int)lineData.size(), srctextcol));
+			lineData.push_back(new LineData(_depth, nullflag, 
+				srcikstopflag, srcconstraintflag,
+				_name, this, (int)lineData.size(), srctextcol));
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( rewriteOnChange ){
 				callRewrite();
 			}
 			return true;
 		}
-		//	Method : s‚ğíœ
+		//	Method : è¡Œã‚’å‰Šé™¤
 		void deleteLine(){
 			for(int i=0; i<(int)lineData.size(); i++){
 				delete lineData[i];
 			}
 			lineData.clear();
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( rewriteOnChange ){
 				callRewrite();
 			}
@@ -4362,7 +4375,7 @@ void s_dummyfunc()
 			}
 			lineData.pop_back();
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( rewriteOnChange ){
 				callRewrite();
 			}
@@ -4373,19 +4386,19 @@ void s_dummyfunc()
 
 			bool ret= deleteLine(lineData[index]->name);
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( ret && rewriteOnChange ){
 				callRewrite();
 			}
 			return ret;
 		}
-		//	Method : ƒL[‚ğ’Ç‰Á
+		//	Method : ã‚­ãƒ¼ã‚’è¿½åŠ 
 		bool newKey(const std::basic_string<TCHAR>& _name, const double &time, void* object=NULL, const double &length=1.0){
 			for(int i=0; i<(int)lineData.size(); i++){
 				if(lineData[i]->name==_name){
 					bool ret= lineData[i]->newKey(time,0,object,length);
 
-					//Ä•`‰æ—v‹
+					//å†æç”»è¦æ±‚
 					if( ret && rewriteOnChange ){
 						callRewrite();
 					}
@@ -4399,7 +4412,7 @@ void s_dummyfunc()
 				if (lineData[i]->name == _name) {
 					bool ret = lineData[i]->setHasRigFlag(flag);
 
-					//Ä•`‰æ—v‹
+					//å†æç”»è¦æ±‚
 					if (ret && rewriteOnChange) {
 						callRewrite();
 					}
@@ -4411,7 +4424,7 @@ void s_dummyfunc()
 		}
 
 
-		////	Method : ƒL[‚ğíœ
+		////	Method : ã‚­ãƒ¼ã‚’å‰Šé™¤
 		//bool deleteKey(const std::basic_string<TCHAR>& _name, double time){
 		//	for(int i=0; i<(int)lineData.size(); i++){
 		//		if(lineData[i]->name==_name){
@@ -4419,7 +4432,7 @@ void s_dummyfunc()
 		//			bool ret= lineData[i]->selectKey(time);
 		//			lineData[i]->deleteKey();
 
-		//			//Ä•`‰æ—v‹
+		//			//å†æç”»è¦æ±‚
 		//			if( ret && rewriteOnChange ){
 		//				callRewrite();
 		//			}
@@ -4433,7 +4446,7 @@ void s_dummyfunc()
 		//		if(lineData[i]->name==_name){
 		//			bool ret= lineData[i]->deleteKey(index);
 
-		//			//Ä•`‰æ—v‹
+		//			//å†æç”»è¦æ±‚
 		//			if( ret && rewriteOnChange ){
 		//				callRewrite();
 		//			}
@@ -4449,7 +4462,7 @@ void s_dummyfunc()
 		//	bool ret= lineData[lineIndex]->selectKey(time);
 		//	lineData[lineIndex]->deleteKey();
 
-		//	//Ä•`‰æ—v‹
+		//	//å†æç”»è¦æ±‚
 		//	if( ret && rewriteOnChange ){
 		//		callRewrite();
 		//	}
@@ -4461,7 +4474,7 @@ void s_dummyfunc()
 
 		//	bool ret= lineData[lineIndex]->deleteKey(keyIndex);
 
-		//	//Ä•`‰æ—v‹
+		//	//å†æç”»è¦æ±‚
 		//	if( ret && rewriteOnChange ){
 		//		callRewrite();
 		//	}
@@ -4475,47 +4488,47 @@ void s_dummyfunc()
 				deleteNum+= lineData[i]->deleteKey();
 			}
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( (deleteNum != 0) && rewriteOnChange ){
 				callRewrite();
 			}
 
 			return deleteNum;
 		}
-		//	Method : ‚·‚×‚Ä‚ÌƒL[‚Ì‘I‘ğ‚ğ‰ğœ‚·‚é
+		//	Method : ã™ã¹ã¦ã®ã‚­ãƒ¼ã®é¸æŠã‚’è§£é™¤ã™ã‚‹
 		void selectClear(bool noCallListener= false){
 			for(int i=0; i<(int)lineData.size(); i++){
 				lineData[i]->selectClear();
 			}
 
-			//ƒŠƒXƒi[ƒR[ƒ‹
+			//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 			if(!noCallListener && (this->selectListener != NULL)){
 				(this->selectListener)();
 			}
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( rewriteOnChange ){
 				callRewrite();
 			}
 		}
-		//	Method : ‚·‚×‚Ä‚ÌƒL[‚ğ‘I‘ğ‚·‚é
+		//	Method : ã™ã¹ã¦ã®ã‚­ãƒ¼ã‚’é¸æŠã™ã‚‹
 		void selectAll(bool noCallListener= false){
 			for(int i=0; i<(int)lineData.size(); i++){
 				lineData[i]->selectAll();
 			}
 
-			//ƒŠƒXƒi[ƒR[ƒ‹
+			//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 			if(!noCallListener && (this->selectListener != NULL)){
 				(this->selectListener)();
 			}
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( rewriteOnChange ){
 				callRewrite();
 			}
 		}
 
-		//MaxSelectionFrame‚ğ•Ô‚·
+		//MaxSelectionFrameã‚’è¿”ã™
 		double OnButtonSelect(double startframe, double endframe, int tothelastflag)
 		{
 			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
@@ -4542,7 +4555,7 @@ void s_dummyfunc()
 
 				//for (int j = 0; j < (int)lineData.size(); j++){
 				int j = 1;
-				if (j < (int)lineData.size()) {//line‚ÌƒCƒ“ƒfƒbƒNƒX
+				if (j < (int)lineData.size()) {//lineã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
 					LineData* curLineData = lineData[j];
 					if (curLineData) {
 						if (tothelastflag == 1) {
@@ -4552,7 +4565,7 @@ void s_dummyfunc()
 							int startindex = curLineData->getKeyIndex(tmpstart);
 							if (startindex >= 0) {
 								int currentkeynum = (int)curLineData->key.size();
-								for (int i = startindex; i < currentkeynum; i++) {//key‚ÌƒCƒ“ƒfƒbƒNƒX
+								for (int i = startindex; i < currentkeynum; i++) {//keyã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
 									if (curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) {
 										curLineData->key[i]->select = true;
 										if (maxframe < curLineData->key[i]->time) {
@@ -4580,7 +4593,7 @@ void s_dummyfunc()
 							int startindex = curLineData->getKeyIndex(tmpstart);
 							int endindex = curLineData->getKeyIndex(tmpend);
 							if ((startindex >= 0) && (endindex >= 0)) {
-								for (int i = startindex; i <= endindex; i++) {//key‚ÌƒCƒ“ƒfƒbƒNƒX
+								for (int i = startindex; i <= endindex; i++) {//keyã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
 									if ((curLineData->key[i]->time >= (tmpstart - TIME_ERROR_WIDTH)) &&
 										(curLineData->key[i]->time <= (tmpend + TIME_ERROR_WIDTH))) {
 										curLineData->key[i]->select = true;
@@ -4615,7 +4628,7 @@ void s_dummyfunc()
 				showPos_line = 0;
 				currentLine = 1;//!!!!!!!
 
-				//Ä•`‰æ—Ìˆæ
+				//å†æç”»é ˜åŸŸ
 				RECT tmpRect;
 				tmpRect.left = pos.x + 1;
 				tmpRect.top = pos.y + 1;
@@ -4623,7 +4636,7 @@ void s_dummyfunc()
 				tmpRect.bottom = pos.y + size.y - 1;
 				InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
 
-				//Ä•`‰æ—v‹
+				//å†æç”»è¦æ±‚
 				//if (rewriteOnChange){
 				callRewrite();
 				//}
@@ -4635,7 +4648,7 @@ void s_dummyfunc()
 			}
 		}
 
-		/// Method : ‚·‚×‚Ä‚Ì‘I‘ğ‚³‚ê‚Ä‚¢‚éƒL[‚ğæ“¾‚·‚é
+		/// Method : ã™ã¹ã¦ã®é¸æŠã•ã‚Œã¦ã„ã‚‹ã‚­ãƒ¼ã‚’å–å¾—ã™ã‚‹
 		std::list<KeyInfo> getSelectedKey() const{
 			std::list<KeyInfo> ret;
 			ret.clear();
@@ -4667,7 +4680,7 @@ void s_dummyfunc()
 			}
 
 			//if ((ret.size() == 1) && ((*ret.begin()).time != currentTime)) {
-			//	//‰Šúó‘ÔBƒZƒŒƒNƒg‚Å‚Í‚È‚¢B
+			//	//åˆæœŸçŠ¶æ…‹ã€‚ã‚»ãƒ¬ã‚¯ãƒˆã§ã¯ãªã„ã€‚
 			//	(lineData[(*ret.begin()).lineIndex])->key[(*ret.begin()).timeIndex]->select = false;
 			//	ret.clear();
 			//}
@@ -4675,13 +4688,13 @@ void s_dummyfunc()
 //_ASSERT(0);
 			return ret;
 		}
-		///// Method : ‘S‚Ä‚Ì‘I‘ğ‚³‚ê‚Ä‚¢‚éƒL[‚ğˆÚ“®‚·‚é
+		///// Method : å…¨ã¦ã®é¸æŠã•ã‚Œã¦ã„ã‚‹ã‚­ãƒ¼ã‚’ç§»å‹•ã™ã‚‹
 		//void shiftKeyTime(const double &shiftTime){
 		//	for(int i=0; i<(int)lineData.size(); i++){
 		//		lineData[i]->shiftKey(shiftTime);
 		//	}
 
-		//	//Ä•`‰æ—v‹
+		//	//å†æç”»è¦æ±‚
 		//	if( rewriteOnChange ){
 		//		callRewrite();
 		//	}
@@ -4719,7 +4732,7 @@ void s_dummyfunc()
 				}
 
 
-				//Ä•`‰æ—v‹
+				//å†æç”»è¦æ±‚
 				//if (rewriteOnChange) {
 					callRewrite();
 				//}
@@ -4732,7 +4745,7 @@ void s_dummyfunc()
 
 
 
-		///	Method : ƒ}ƒEƒXƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		///	Method : ãƒã‚¦ã‚¹ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonDown(const MouseEvent& e){
 			selectClear(true);
 
@@ -4749,7 +4762,7 @@ void s_dummyfunc()
 			int y2= size.y-MARGIN-SCROLL_BAR_WIDTH;
 			int y3= size.y-MARGIN;
 
-			//ƒ‰ƒxƒ‹
+			//ãƒ©ãƒ™ãƒ«
 			if( (x0 <= e.localX) && (e.localX < x2) && 
 				(y1 <= e.localY) && (e.localY < y2) ){
 
@@ -4758,7 +4771,7 @@ void s_dummyfunc()
 			}
 
 
-			//ŠÔ²–Ú·‚è
+			//æ™‚é–“è»¸ç›®ç››ã‚Š
 			if (!dragScrollBarTime) {
 				if (((x1 - 2) <= e.localX) && (e.localX < x2) &&
 					(y0 <= e.localY) && (e.localY < y2)) {
@@ -4768,12 +4781,12 @@ void s_dummyfunc()
 				}
 			}
 
-			{//ƒhƒ‰ƒbƒO‚Å‚Ì”ÍˆÍ‘I‘ğ
+			{//ãƒ‰ãƒ©ãƒƒã‚°ã§ã®ç¯„å›²é¸æŠ
 				dragSelectTime1= currentTime;
 				dragSelectLine1= currentLine;
 			}
 
-			////ŠÔ²ƒXƒNƒ[ƒ‹ƒo[
+			////æ™‚é–“è»¸ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if( (x1 <= e.localX) && (e.localX < x2) && 
 				(y2 <= e.localY) && (e.localY < y3) ){
 				int xx0= MARGIN+LABEL_SIZE_X;
@@ -4792,7 +4805,7 @@ void s_dummyfunc()
 				}
 			}
 
-			//ƒ‰ƒxƒ‹ƒXƒNƒ[ƒ‹ƒo[
+			//ãƒ©ãƒ™ãƒ«ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if( (x2 <= e.localX) && (e.localX < x3) && 
 				(y1 <= e.localY) && (e.localY < y2) ){
 				int yy0= MARGIN+AXIS_SIZE_Y;
@@ -4811,13 +4824,13 @@ void s_dummyfunc()
 				}
 			}
 
-			//Ctrl+ƒhƒ‰ƒbƒO‚É‚æ‚éƒL[ˆÚ“®
+			//Ctrl+ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹ã‚­ãƒ¼ç§»å‹•
 			if( e.ctrlKey && !dragScrollBarTime && !dragScrollBarLabel ){
 				dragShift= true;
 			}
 
 		}
-		///	Method : ¶ƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		///	Method : å·¦ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonUp(const MouseEvent& e){
 			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
@@ -4826,7 +4839,7 @@ void s_dummyfunc()
 					g_underselecttolast = false;
 					g_undereditrange = false;
 
-					//ƒhƒ‰ƒbƒOƒtƒ‰ƒO‚ğ‰Šú‰»
+					//ãƒ‰ãƒ©ãƒƒã‚°ãƒ•ãƒ©ã‚°ã‚’åˆæœŸåŒ–
 					dragLabel = false;
 					dragTime = false;
 					dragScrollBarLabel = false;
@@ -4837,7 +4850,7 @@ void s_dummyfunc()
 					return;
 				}
 
-				//ƒhƒ‰ƒbƒO‘I‘ğ”ÍˆÍ“à‚ÌƒL[‚ğ‘I‘ğó‘Ô‚É‚·‚é
+				//ãƒ‰ãƒ©ãƒƒã‚°é¸æŠç¯„å›²å†…ã®ã‚­ãƒ¼ã‚’é¸æŠçŠ¶æ…‹ã«ã™ã‚‹
 				if (!dragShift && !dragScrollBarLabel && !dragScrollBarTime) {
 					selectClear(true);
 					if (dragSelect) {
@@ -4849,21 +4862,21 @@ void s_dummyfunc()
 								max(dragSelectTime1, dragSelectTime2));
 						}
 					}
-					//ƒŠƒXƒi[ƒR[ƒ‹
+					//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 					if (this->selectListener != NULL) {
 						(this->selectListener)();
 					}
 				}
 
-				//Ctrl+ƒhƒ‰ƒbƒO‚É‚æ‚éƒL[ˆÚ“®
+				//Ctrl+ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹ã‚­ãƒ¼ç§»å‹•
 				if (dragShift) {
-					//ƒŠƒXƒi[ƒR[ƒ‹
+					//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 					if (this->keyShiftListener != NULL) {
 						(this->keyShiftListener)();
 					}
 					ghostShiftTime = 0.0;
 				}
-				//ƒhƒ‰ƒbƒOƒtƒ‰ƒO‚ğ‰Šú‰»
+				//ãƒ‰ãƒ©ãƒƒã‚°ãƒ•ãƒ©ã‚°ã‚’åˆæœŸåŒ–
 				dragLabel = false;
 				dragTime = false;
 				dragScrollBarLabel = false;
@@ -4871,7 +4884,7 @@ void s_dummyfunc()
 				dragSelect = false;
 				dragShift = false;
 
-				//Ä•`‰æ—Ìˆæ
+				//å†æç”»é ˜åŸŸ
 				RECT tmpRect;
 				tmpRect.left = pos.x + 1;
 				tmpRect.top = pos.y + 1;
@@ -4896,7 +4909,7 @@ void s_dummyfunc()
 			int y2 = size.y - MARGIN - SCROLL_BAR_WIDTH;
 			int y3 = size.y - MARGIN;
 
-			//ƒ‰ƒxƒ‹
+			//ãƒ©ãƒ™ãƒ«
 			if ((x0 <= e.localX) && (e.localX < x2) && 
 				(y1 <= e.localY) && (e.localY < y2)){
 				setCurrentLine(showPos_line + (e.localY - y1) / (LABEL_SIZE_Y - 1));
@@ -4905,7 +4918,7 @@ void s_dummyfunc()
 			}
 
 			/*
-			//ŠÔ²–Ú·‚è
+			//æ™‚é–“è»¸ç›®ç››ã‚Š
 			if (x1 - 2 <= e.localX && e.localX<x2
 				&& y0 <= e.localY && e.localY<y2){
 				setCurrentTime(showPos_time + (double)(e.localX - x1) / timeSize);
@@ -4913,12 +4926,12 @@ void s_dummyfunc()
 				dragTime = true;
 			}
 
-			{//ƒhƒ‰ƒbƒO‚Å‚Ì”ÍˆÍ‘I‘ğ
+			{//ãƒ‰ãƒ©ãƒƒã‚°ã§ã®ç¯„å›²é¸æŠ
 				dragSelectTime1 = currentTime;
 				dragSelectLine1 = currentLine;
 			}
 
-			//ŠÔ²ƒXƒNƒ[ƒ‹ƒo[
+			//æ™‚é–“è»¸ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if (x1 <= e.localX && e.localX<x2
 				&& y2 <= e.localY && e.localY<y3){
 				int xx0 = MARGIN + LABEL_SIZE_X;
@@ -4937,7 +4950,7 @@ void s_dummyfunc()
 				}
 			}
 
-			//ƒ‰ƒxƒ‹ƒXƒNƒ[ƒ‹ƒo[
+			//ãƒ©ãƒ™ãƒ«ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if (x2 <= e.localX && e.localX<x3
 				&& y1 <= e.localY && e.localY<y2){
 				int yy0 = MARGIN + AXIS_SIZE_Y;
@@ -4956,13 +4969,13 @@ void s_dummyfunc()
 				}
 			}
 
-			//Ctrl+ƒhƒ‰ƒbƒO‚É‚æ‚éƒL[ˆÚ“®
+			//Ctrl+ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹ã‚­ãƒ¼ç§»å‹•
 			if (e.ctrlKey && !dragScrollBarTime && !dragScrollBarLabel){
 				dragShift = true;
 			}
 			*/
 		}
-		///	Method : ¶ƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		///	Method : å·¦ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onRButtonUp(const MouseEvent& e){
 			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
@@ -4971,7 +4984,7 @@ void s_dummyfunc()
 					g_underselecttolast = false;
 					g_undereditrange = false;
 
-					//ƒhƒ‰ƒbƒOƒtƒ‰ƒO‚ğ‰Šú‰»
+					//ãƒ‰ãƒ©ãƒƒã‚°ãƒ•ãƒ©ã‚°ã‚’åˆæœŸåŒ–
 					dragLabel = false;
 					dragTime = false;
 					dragScrollBarLabel = false;
@@ -4983,7 +4996,7 @@ void s_dummyfunc()
 				}
 
 				/*
-				//ƒhƒ‰ƒbƒO‘I‘ğ”ÍˆÍ“à‚ÌƒL[‚ğ‘I‘ğó‘Ô‚É‚·‚é
+				//ãƒ‰ãƒ©ãƒƒã‚°é¸æŠç¯„å›²å†…ã®ã‚­ãƒ¼ã‚’é¸æŠçŠ¶æ…‹ã«ã™ã‚‹
 				if (!dragShift && !dragScrollBarLabel && !dragScrollBarTime){
 					selectClear(true);
 					if (dragSelect){
@@ -4994,22 +5007,22 @@ void s_dummyfunc()
 								max(dragSelectTime1, dragSelectTime2));
 						}
 					}
-					//ƒŠƒXƒi[ƒR[ƒ‹
+					//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 					if (this->selectListener != NULL){
 						(this->selectListener)();
 					}
 				}
 
-				//Ctrl+ƒhƒ‰ƒbƒO‚É‚æ‚éƒL[ˆÚ“®
+				//Ctrl+ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹ã‚­ãƒ¼ç§»å‹•
 				if (dragShift){
-					//ƒŠƒXƒi[ƒR[ƒ‹
+					//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 					if (this->keyShiftListener != NULL){
 						(this->keyShiftListener)();
 					}
 					ghostShiftTime = 0.0;
 				}
 				*/
-				//ƒhƒ‰ƒbƒOƒtƒ‰ƒO‚ğ‰Šú‰»
+				//ãƒ‰ãƒ©ãƒƒã‚°ãƒ•ãƒ©ã‚°ã‚’åˆæœŸåŒ–
 				dragLabel = false;
 				dragTime = false;
 				dragScrollBarLabel = false;
@@ -5017,7 +5030,7 @@ void s_dummyfunc()
 				dragSelect = false;
 				dragShift = false;
 
-				//Ä•`‰æ—Ìˆæ
+				//å†æç”»é ˜åŸŸ
 				RECT tmpRect;
 				tmpRect.left = pos.x + 1;
 				tmpRect.top = pos.y + 1;
@@ -5031,7 +5044,7 @@ void s_dummyfunc()
 			}
 		}
 
-		///	Method : ƒ}ƒEƒXˆÚ“®ƒCƒxƒ“ƒgóM
+		///	Method : ãƒã‚¦ã‚¹ç§»å‹•ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onMouseMove(const MouseEvent& e){
 			if( !canMouseControll ) return;
 			if (g_underselecttolast) return;
@@ -5046,7 +5059,7 @@ void s_dummyfunc()
 			int y2= size.y-MARGIN-SCROLL_BAR_WIDTH;
 			int y3= size.y-MARGIN;
 
-			//ƒ‰ƒxƒ‹
+			//ãƒ©ãƒ™ãƒ«
 			bool callCursorListener= false;
 			if(dragLabel){
 				int oldLine= currentLine;
@@ -5056,7 +5069,7 @@ void s_dummyfunc()
 				}
 			}
 
-			//ŠÔ²–Ú·‚è
+			//æ™‚é–“è»¸ç›®ç››ã‚Š
 			if(dragTime){
 				double oldTime= currentTime;
 				setCurrentTime( showPos_time+ (double)(e.localX-x1)/timeSize, true );
@@ -5065,24 +5078,24 @@ void s_dummyfunc()
 				}
 			}
 
-			//ƒJ[ƒ\ƒ‹ƒŠƒXƒi[ƒR[ƒ‹
+			//ã‚«ãƒ¼ã‚½ãƒ«ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 			if( callCursorListener && this->cursorListener!=NULL ){
 				(this->cursorListener)();
 			}
 
-			//Ctrl+ƒhƒ‰ƒbƒO‚Å‚ÌƒL[ˆÚ“®
+			//Ctrl+ãƒ‰ãƒ©ãƒƒã‚°ã§ã®ã‚­ãƒ¼ç§»å‹•
 			if( dragShift ){
 				ghostShiftTime= currentTime-dragSelectTime1;
 			}
 
-			//ƒhƒ‰ƒbƒO‚Å‚Ì”ÍˆÍ‘I‘ğ
+			//ãƒ‰ãƒ©ãƒƒã‚°ã§ã®ç¯„å›²é¸æŠ
 			if( !dragShift && (dragSelect || dragLabel || dragTime) && !dragScrollBarLabel && !dragScrollBarTime ){
 				dragSelect=true;
 				dragSelectTime2= currentTime;
 				dragSelectLine2= currentLine;
 			}
 
-			//ƒhƒ‰ƒbƒO‘I‘ğ”ÍˆÍ“à‚ÌƒL[‚ğ‘I‘ğó‘Ô‚É‚·‚é
+			//ãƒ‰ãƒ©ãƒƒã‚°é¸æŠç¯„å›²å†…ã®ã‚­ãƒ¼ã‚’é¸æŠçŠ¶æ…‹ã«ã™ã‚‹
 			if( dragSelect ){
 				selectClear(true);
 				for(int i=min(dragSelectLine1,dragSelectLine2);
@@ -5092,7 +5105,7 @@ void s_dummyfunc()
 				}
 			}
 
-			//ŠÔ²ƒXƒNƒ[ƒ‹ƒo[
+			//æ™‚é–“è»¸ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if( dragScrollBarTime ){
 				int xx0= MARGIN+LABEL_SIZE_X;
 				int xx1= size.x-MARGIN-SCROLL_BAR_WIDTH;
@@ -5106,7 +5119,7 @@ void s_dummyfunc()
 				setShowPosTime( ((double)(e.localX-movableXStart))*(maxTime-showTimeLength)/(double)movableX );
 			}
 
-			//ƒ‰ƒxƒ‹ƒXƒNƒ[ƒ‹ƒo[
+			//ãƒ©ãƒ™ãƒ«ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if( dragScrollBarLabel ){
 				int yy0= MARGIN+AXIS_SIZE_Y;
 				int yy1= size.y-MARGIN-SCROLL_BAR_WIDTH+1;
@@ -5132,14 +5145,14 @@ void s_dummyfunc()
 			int y2 = size.y - MARGIN - SCROLL_BAR_WIDTH;
 			int y3 = size.y - MARGIN;
 
-			//ƒ‰ƒxƒ‹
+			//ãƒ©ãƒ™ãƒ«
 			if ((x0 <= e.localX) && (e.localX < x2) && (y1 <= e.localY) && (e.localY < y2)){
 				setCurrentLine(showPos_line + (e.localY - y1) / (LABEL_SIZE_Y - 1));
 
 				//dragLabel = true;
 			}
 
-			//ŠÔ²–Ú·‚è
+			//æ™‚é–“è»¸ç›®ç››ã‚Š
 			if (((x1 - 2) <= e.localX) && (e.localX < x2) && (y0 <= e.localY) && (e.localY < y2)){
 				setCurrentTime(showPos_time + (double)(e.localX - x1) / timeSize);
 
@@ -5154,7 +5167,7 @@ void s_dummyfunc()
 
 				if (!canMouseControll) return;
 
-				//ƒhƒ‰ƒbƒOƒtƒ‰ƒO‚ğ‰Šú‰»
+				//ãƒ‰ãƒ©ãƒƒã‚°ãƒ•ãƒ©ã‚°ã‚’åˆæœŸåŒ–
 				dragLabel = false;
 				dragTime = false;
 				dragScrollBarLabel = false;
@@ -5162,7 +5175,7 @@ void s_dummyfunc()
 				dragSelect = false;
 				dragShift = false;
 
-				//Ä•`‰æ—Ìˆæ
+				//å†æç”»é ˜åŸŸ
 				RECT tmpRect;
 				tmpRect.left = pos.x + 1;
 				tmpRect.top = pos.y + 1;
@@ -5178,7 +5191,7 @@ void s_dummyfunc()
 			}
 		}
 		int getMouseWheelDelta(){ return wheeldelta; }
-		/// Method : sƒCƒ“ƒfƒbƒNƒX‚ğæ“¾‚·‚é
+		/// Method : è¡Œã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’å–å¾—ã™ã‚‹
 		int getLineIndex(const std::basic_string<TCHAR>& _name) const{
 			for(int i=0; i<(int)lineData.size(); i++){
 				if(lineData[i]->name==_name){
@@ -5197,7 +5210,7 @@ void s_dummyfunc()
 			maxTime= max(_maxTime,0);
 			currentTime= min(currentTime,maxTime);
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( rewriteOnChange ){
 				callRewrite();
 			}
@@ -5253,12 +5266,12 @@ void s_dummyfunc()
 				showPos_line= currentLine-showLineNum+1;
 			}
 
-			//ƒŠƒXƒi[ƒR[ƒ‹
+			//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 			if( !noCallListener && (this->cursorListener != NULL) ){
 				(this->cursorListener)();
 			}
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( rewriteOnChange ){
 				callRewrite();
 			}
@@ -5281,7 +5294,7 @@ void s_dummyfunc()
 		void setShowPosTime(const double& _showPosTime) {
 			showPos_time = calcShowPosTime(_showPosTime);
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			//if (rewriteOnChange) {
 			//	callRewrite();
 			//}
@@ -5302,7 +5315,7 @@ void s_dummyfunc()
 				showPos_line= 0;
 			}
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( rewriteOnChange ){
 				callRewrite();
 			}
@@ -5377,12 +5390,16 @@ void s_dummyfunc()
 		bool dispkeyflag;
 
 
-		//sƒf[ƒ^ƒNƒ‰ƒX-------------
+		//è¡Œãƒ‡ãƒ¼ã‚¿ã‚¯ãƒ©ã‚¹-------------
 		public: class LineData{
 		public:
-			LineData(int _depth, int nullflag, const std::basic_string<TCHAR>& _name, OWP_Timeline *_parent, unsigned int _lineIndex, COLORREF srctextcol = RGB(256,256, 256)){
+			LineData(int _depth, int nullflag, 
+				bool srcikstopflag, bool srcconstraintflag, 
+				const std::basic_string<TCHAR>& _name, OWP_Timeline *_parent, unsigned int _lineIndex, COLORREF srctextcol = RGB(256,256, 256)){
 				depth = _depth;
 				m_nullflag = nullflag;
+				ikstopflag = srcikstopflag;
+				constraintflag = srcconstraintflag;
 				name= _name;
 				parent= _parent;
 				lineIndex= _lineIndex;
@@ -5393,7 +5410,7 @@ void s_dummyfunc()
 				maxselected = 0;
 			}
 			//LineData( const LineData& a ){
-			//	_ASSERT_EXPR( 0, L"ƒRƒs[ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚Íg‚¦‚Ü‚¹‚ñ" );
+			//	_ASSERT_EXPR( 0, L"ã‚³ãƒ”ãƒ¼ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã¯ä½¿ãˆã¾ã›ã‚“" );
 			//}
 			~LineData(){
 				if (!key.empty()) {
@@ -5431,7 +5448,24 @@ void s_dummyfunc()
 			{
 				maxselected = srcval;
 			}
-			//ƒL[ƒf[ƒ^ƒNƒ‰ƒX---------------
+			bool getIKStopFlag()
+			{
+				return ikstopflag;
+			}
+			void setIKStopFlag(bool srcflag)
+			{
+				ikstopflag = srcflag;
+			}
+			bool getConstraintFlag()
+			{
+				return constraintflag;
+			}
+			void setConstraintFlag(bool srcflag)
+			{
+				constraintflag = srcflag;
+			}
+
+			//ã‚­ãƒ¼ãƒ‡ãƒ¼ã‚¿ã‚¯ãƒ©ã‚¹---------------
 			class Key{
 			public:
 				Key()
@@ -5443,7 +5477,7 @@ void s_dummyfunc()
 				}
 
 				void SetParams(double _time, int _type = 0, void* _object = NULL, double _length = 1.0, bool _select = false) {
-					//InitParams();//useflag, indexofpool, allogheadflag‚Íİ’èÏ
+					//InitParams();//useflag, indexofpool, allogheadflagã¯è¨­å®šæ¸ˆ
 
 					time = _time;
 					type = _type;
@@ -5503,17 +5537,19 @@ void s_dummyfunc()
 
 			////////////////////////// MemberVar /////////////////////////////
 			int m_nullflag;
+			bool ikstopflag;
+			bool constraintflag;
 			std::basic_string<TCHAR> name;
 			std::vector<Key*> key;
 			unsigned int lineIndex;
 			int depth;
 			bool hasrigflag;
 			COLORREF textcol;
-			int minselected;//2022/09/12 : key[].select‚ÌŒŸõƒqƒ“ƒg
-			int maxselected;//2022/09/12 : key[].select‚ÌŒŸõƒqƒ“ƒg
+			int minselected;//2022/09/12 : key[].selectã®æ¤œç´¢ãƒ’ãƒ³ãƒˆ
+			int maxselected;//2022/09/12 : key[].selectã®æ¤œç´¢ãƒ’ãƒ³ãƒˆ
 
 			//////////////////////////// Method //////////////////////////////
-			//	Method : •`‰æ
+			//	Method : æç”»
 			virtual void callRewrite();
 
 			void draw(	HDCMaster *hdcM,
@@ -5538,8 +5574,14 @@ void s_dummyfunc()
 					Rectangle(hdcM->hDC,x0,y0,x1,y1);
 				}
 
-				//ƒ‰ƒxƒ‹
-				hdcM->setFont(12,_T("‚l‚r ƒSƒVƒbƒN"));
+				//ãƒ©ãƒ™ãƒ«
+				if (g_4kresolution) {
+					hdcM->setFont(20, _T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
+				}
+				else {
+					hdcM->setFont(12, _T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
+				}
+				
 				if (textcol == RGB(255, 255, 255)) {
 					if (hasrigflag) {
 						SetTextColor(hdcM->hDC, RGB(0, 255, 0));
@@ -5570,6 +5612,13 @@ void s_dummyfunc()
 				}
 				prname += name;
 
+				if (getIKStopFlag()) {
+					prname += TEXT(" (â›”)");
+				}
+				if (getConstraintFlag()) {
+					prname += TEXT(" (â¸)");
+				}
+
 				TextOut(hdcM->hDC,
 					posX + 2, posY + parent->LABEL_SIZE_Y / 2 - 5,
 					prname.c_str(), (int)_tcslen(prname.c_str()));
@@ -5578,7 +5627,7 @@ void s_dummyfunc()
 				//		 posX+2, posY+parent->LABEL_SIZE_Y/2-5,
 				//		 name.c_str(), _tcslen(name.c_str()));
 
-				//˜g
+				//æ 
 				hdcM->setPenAndBrush(RGB(min(baseR+20,255),min(baseG+20,255),min(baseB+20,255)),NULL);
 				Rectangle(hdcM->hDC,x0,y0,x2,y1);
 				hdcM->setPenAndBrush(RGB(min(baseR+20,255),min(baseG+20,255),min(baseB+20,255)),RGB(baseR,baseG,baseB));
@@ -5599,7 +5648,7 @@ void s_dummyfunc()
 					LineTo(hdcM->hDC,   x4,y1);
 				}
 				
-				//ƒS[ƒXƒgƒL[
+				//ã‚´ãƒ¼ã‚¹ãƒˆã‚­ãƒ¼
 				x1++; x2--;
 				y0++; y1--;
 				//for(int i=0; i<(int)key.size(); i++){
@@ -5627,8 +5676,8 @@ void s_dummyfunc()
 				//	}
 				//}
 
-				//ƒL[
-				if (parent->getDispKeyFlag()) {//2022/09/12 LTimeline‚Ìê‡‚É•\¦@Timeline‚Ìê‡”ñ•\¦
+				//ã‚­ãƒ¼
+				if (parent->getDispKeyFlag()) {//2022/09/12 LTimelineã®å ´åˆã«è¡¨ç¤ºã€€Timelineã®å ´åˆéè¡¨ç¤º
 					int startindex = getKeyIndex(startTime);
 					if (startindex >= 0) {
 						int currentkeynum = (int)key.size();
@@ -5652,7 +5701,7 @@ void s_dummyfunc()
 										//hdcM->setPenAndBrush(NULL, RGB(255, 128, 128));
 										hdcM->setPenAndBrush(NULL, RGB(64, 128, 255));//AO
 										Rectangle(hdcM->hDC, max(xx0 + 1, x1), y0 + 1, min(xx1 - 1, x2), y1 - 1);
-										//hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));//lŠp‚Ì’†g‚ğ•‚­”²‚­‚Æ‚«‚Í‚±‚Ì‚Qs
+										//hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));//å››è§’ã®ä¸­èº«ã‚’é»’ãæŠœãã¨ãã¯ã“ã®ï¼’è¡Œ
 										//Rectangle(hdcM->hDC, max(xx0 + 2, x1), y0 + 2, min(xx1 - 2, x2), y1 - 2);
 
 									}
@@ -5711,13 +5760,13 @@ void s_dummyfunc()
 
 			}
 
-			//	Method : ƒL[‚ğì¬‚·‚é
+			//	Method : ã‚­ãƒ¼ã‚’ä½œæˆã™ã‚‹
 			bool newKey(const double &_time, int _type=0, void* _object=NULL, double _length=1.0, bool _select=false){
 
 				if(parent->allowSameTimeKey==false){
 					int i= getKeyIndex(_time);
 					if(i != -1){
-						//ã‘‚«ƒŠƒXƒi[ƒR[ƒ‹
+						//ä¸Šæ›¸ããƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 						if( parent->keyDeleteListener!=NULL ){
 							KeyInfo ki;
 							ki.label= name.c_str();
@@ -5739,7 +5788,7 @@ void s_dummyfunc()
 				}
 				
 				if( _time>=parent->maxTime || (_time < 0.0) ){
-/*					//ì¬•s”\íœƒŠƒXƒi[ƒR[ƒ‹
+/*					//ä½œæˆä¸èƒ½å‰Šé™¤ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 					if( parent->keyDeleteListener!=NULL ){
 						KeyInfo ki;
 						ki.label= name.c_str();
@@ -5817,14 +5866,14 @@ void s_dummyfunc()
 
 
 
-			//	Method : ‚·‚×‚Ä‚ÌƒL[‚Ì‘I‘ğ‚ğ‰ğœ‚·‚é
+			//	Method : ã™ã¹ã¦ã®ã‚­ãƒ¼ã®é¸æŠã‚’è§£é™¤ã™ã‚‹
 			void selectClear(){
 				int currentkeynum = (int)key.size();
 				for(int i = 0; i < currentkeynum; i++){
 					key[i]->select=false;
 				}
 			}
-			//	Method : ‚·‚×‚Ä‚ÌƒL[‚ğ‘I‘ğ‚·‚é
+			//	Method : ã™ã¹ã¦ã®ã‚­ãƒ¼ã‚’é¸æŠã™ã‚‹
 			void selectAll(){
 				int currentkeynum = (int)key.size();
 				for(int i = 0; i < currentkeynum; i++){
@@ -5832,7 +5881,7 @@ void s_dummyfunc()
 				}
 				parent->ghostShiftTime=0;
 			}
-			//	Method : w’è‚³‚ê‚½‚É‚ ‚éƒL[‚ğ‚Ğ‚Æ‚Â‘I‘ğ‚·‚é
+			//	Method : æŒ‡å®šã•ã‚ŒãŸæ™‚åˆ»ã«ã‚ã‚‹ã‚­ãƒ¼ã‚’ã²ã¨ã¤é¸æŠã™ã‚‹
 			bool selectKey(const double &_time){
 
 				int currentindex = getKeyIndex(_time);
@@ -5854,8 +5903,8 @@ void s_dummyfunc()
 				return false;
 
 			}
-			///	Method : w’è‚³‚ê‚½”ÍˆÍ‚É‚ ‚éƒL[‚ğ‚·‚×‚Ä‘I‘ğ‚·‚é
-			///			 Œµ–§ƒ‚[ƒh(startTime<=keyTime<endTime)
+			///	Method : æŒ‡å®šã•ã‚ŒãŸæ™‚åˆ»ç¯„å›²ã«ã‚ã‚‹ã‚­ãƒ¼ã‚’ã™ã¹ã¦é¸æŠã™ã‚‹
+			///			 å³å¯†ãƒ¢ãƒ¼ãƒ‰(startTime<=keyTime<endTime)
 			int selectKey(const double &startTime, const double &endTime){
 
 				int selectCount = 0;
@@ -5864,7 +5913,7 @@ void s_dummyfunc()
 				endindex = getKeyIndex(endTime);
 				if ((startindex >= 0) && (endindex >= 0)) {
 					for (int i = startindex; i <= endindex; i++) {
-						if ((startTime <= key[i]->time) && (key[i]->time <= endTime)) {//endTime ==ŠÜ‚Ş@2021/11/09
+						if ((startTime <= key[i]->time) && (key[i]->time <= endTime)) {//endTime ==å«ã‚€ã€€2021/11/09
 							key[i]->select = true;
 							selectCount++;
 						}
@@ -5877,7 +5926,7 @@ void s_dummyfunc()
 //				for(int i=0; i<(int)key.size(); i++){
 ////					if( startTime-TIME_ERROR_WIDTH <= key[i]->time
 ////					 && key[i]->time <= endTime+TIME_ERROR_WIDTH ){
-//					if((startTime <= key[i]->time) && (key[i]->time <= endTime)){//endTime ==ŠÜ‚Ş@2021/11/09
+//					if((startTime <= key[i]->time) && (key[i]->time <= endTime)){//endTime ==å«ã‚€ã€€2021/11/09
 //						key[i]->select=true;
 //						selectCount++;
 //					}
@@ -5886,8 +5935,8 @@ void s_dummyfunc()
 				return selectCount;
 
 			}
-			///	Method : w’è‚³‚ê‚½”ÍˆÍ‚É‚ ‚éƒL[‚ğ‚·‚×‚Ä‘I‘ğ‚·‚é
-			///			 ‘åG”cƒ‚[ƒh(startTime-TIME_ERROR_WIDTH<=keyTime<=endTime+TIME_ERROR_WIDTH)
+			///	Method : æŒ‡å®šã•ã‚ŒãŸæ™‚åˆ»ç¯„å›²ã«ã‚ã‚‹ã‚­ãƒ¼ã‚’ã™ã¹ã¦é¸æŠã™ã‚‹
+			///			 å¤§é›‘æŠŠãƒ¢ãƒ¼ãƒ‰(startTime-TIME_ERROR_WIDTH<=keyTime<=endTime+TIME_ERROR_WIDTH)
 			int selectKey2(const double &startTime, const double &endTime){
 
 				int selectCount = 0;
@@ -5896,7 +5945,7 @@ void s_dummyfunc()
 				endindex = getKeyIndex(endTime);
 				if ((startindex >= 0) && (endindex >= 0)) {
 					for (int i = startindex; i <= endindex; i++) {
-						if ((startTime <= key[i]->time) && (key[i]->time <= endTime)) {//endTime ==ŠÜ‚Ş@2021/11/09
+						if ((startTime <= key[i]->time) && (key[i]->time <= endTime)) {//endTime ==å«ã‚€ã€€2021/11/09
 							key[i]->select = true;
 							selectCount++;
 						}
@@ -5917,7 +5966,7 @@ void s_dummyfunc()
 				return selectCount;
 
 			}
-			//	Method : w’è‚³‚ê‚½‚É‚ ‚éƒL[‚ÌƒCƒ“ƒfƒbƒNƒX‚ğ‚Ğ‚Æ‚Âæ“¾‚·‚é
+			//	Method : æŒ‡å®šã•ã‚ŒãŸæ™‚åˆ»ã«ã‚ã‚‹ã‚­ãƒ¼ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’ã²ã¨ã¤å–å¾—ã™ã‚‹
 			int getKeyIndex(const double &_time){
 				
 				unsigned int currentindex = (unsigned int)(_time + 0.1);
@@ -5937,14 +5986,14 @@ void s_dummyfunc()
 				//return -1;
 
 			}
-			////	Method : ‘I‘ğ‚³‚ê‚Ä‚¢‚éƒL[‚ğ‚·‚×‚Äíœ‚·‚é
+			////	Method : é¸æŠã•ã‚Œã¦ã„ã‚‹ã‚­ãƒ¼ã‚’ã™ã¹ã¦å‰Šé™¤ã™ã‚‹
 			//unsigned int deleteKey(bool noCallListener=false){
-			//	Method : ƒL[‚ğ‚·‚×‚Äíœ‚·‚é
+			//	Method : ã‚­ãƒ¼ã‚’ã™ã¹ã¦å‰Šé™¤ã™ã‚‹
 			unsigned int deleteKey(bool noCallListener = false) {
 				unsigned int deleteNum = 0;
 				for (unsigned int i = 0; i < (int)key.size(); i++) {
 					//if (key[i]->select) {
-						//ƒŠƒXƒi[ƒR[ƒ‹
+						//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 						if (!noCallListener && (parent->keyDeleteListener != NULL)) {
 							KeyInfo ki;
 							ki.label = name.c_str();
@@ -5972,11 +6021,11 @@ void s_dummyfunc()
 				return deleteNum;
 
 			}
-			////	Method : w’è‚³‚ê‚½ƒL[‚ğíœ‚·‚é
+			////	Method : æŒ‡å®šã•ã‚ŒãŸã‚­ãƒ¼ã‚’å‰Šé™¤ã™ã‚‹
 			//bool deleteKey(int index, bool noCallListener=false){
 			//	if( (unsigned int)key.size() <= (unsigned int)index ) return false;
 
-			//	//ƒŠƒXƒi[ƒR[ƒ‹
+			//	//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 			//	if( !noCallListener && (parent->keyDeleteListener != NULL) ){
 			//		KeyInfo ki;
 			//		ki.label= name.c_str();
@@ -5996,7 +6045,7 @@ void s_dummyfunc()
 			//	key.pop_back();
 			//	return true;
 			//}
-//			//	Method : w’è‚³‚ê‚½ƒL[‚ğˆÚ“®‚·‚é
+//			//	Method : æŒ‡å®šã•ã‚ŒãŸã‚­ãƒ¼ã‚’ç§»å‹•ã™ã‚‹
 //			bool shiftKey(const double &shiftTime, int index){
 //				if( key.size() <= (unsigned int)index ) return false;
 //
@@ -6007,9 +6056,9 @@ void s_dummyfunc()
 //				void *object= key[index]->object;
 //				deleteKey(index,true);
 //
-//				//Šù‚ÉƒL[‚ª‘¶İ‚·‚éê‡
+//				//æ—¢ã«ã‚­ãƒ¼ãŒå­˜åœ¨ã™ã‚‹å ´åˆ
 //				if( !newKey(dstTime,type,object,length,select) ){
-//					//’u‚«Š·‚¦‚É‚æ‚éƒL[íœƒŠƒXƒi[ƒR[ƒ‹
+//					//ç½®ãæ›ãˆã«ã‚ˆã‚‹ã‚­ãƒ¼å‰Šé™¤ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 //					if( parent->keyDeleteListener != NULL ){
 //						KeyInfo ki;
 //						ki.label= name.c_str();
@@ -6020,7 +6069,7 @@ void s_dummyfunc()
 //						(parent->keyDeleteListener)(ki);
 //					}
 //
-//					//‘¶İ‚·‚éƒL[‚Ì’l‚ğ’u‚«Š·‚¦Œã‚ÌƒL[‚Ì’l‚É•ÏX
+//					//å­˜åœ¨ã™ã‚‹ã‚­ãƒ¼ã®å€¤ã‚’ç½®ãæ›ãˆå¾Œã®ã‚­ãƒ¼ã®å€¤ã«å¤‰æ›´
 //					int dstIndex= getKeyIndex(dstTime);
 //					key[dstIndex]->type= type;
 //					key[dstIndex]->length= length;
@@ -6029,7 +6078,7 @@ void s_dummyfunc()
 //
 //				return true;
 //			}
-//			//	Method : ‘I‘ğ‚³‚ê‚Ä‚¢‚éƒL[‚ğ‚·‚×‚ÄˆÚ“®‚·‚é
+//			//	Method : é¸æŠã•ã‚Œã¦ã„ã‚‹ã‚­ãƒ¼ã‚’ã™ã¹ã¦ç§»å‹•ã™ã‚‹
 //			unsigned int shiftKey(const double &shiftTime){
 //
 //				unsigned int shiftNum=0;
@@ -6047,7 +6096,7 @@ void s_dummyfunc()
 //				std::list<Key>::iterator itr;
 //				for(itr = shiftKeyList.begin(); itr != shiftKeyList.end(); itr++){
 //					if( !newKey( itr->time+shiftTime, itr->type, itr->object, itr->length, itr->select ) ){
-//						//ì¬•s”\íœƒŠƒXƒi[ƒR[ƒ‹
+//						//ä½œæˆä¸èƒ½å‰Šé™¤ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 //						if( parent->keyDeleteListener != NULL ){
 //							KeyInfo ki;
 //							ki.label= name.c_str();
@@ -6062,7 +6111,7 @@ void s_dummyfunc()
 //
 //				return shiftNum;
 //			}
-//			//	Method : ‘I‘ğ‚³‚ê‚Ä‚¢‚éƒL[‚ğƒS[ƒXƒgƒL[‚ÌˆÊ’u‚Ö‚·‚×‚ÄˆÚ“®‚·‚é
+//			//	Method : é¸æŠã•ã‚Œã¦ã„ã‚‹ã‚­ãƒ¼ã‚’ã‚´ãƒ¼ã‚¹ãƒˆã‚­ãƒ¼ã®ä½ç½®ã¸ã™ã¹ã¦ç§»å‹•ã™ã‚‹
 //			unsigned int shiftKey(){
 //				return shiftKey(parent->ghostShiftTime);
 //			}
@@ -6099,7 +6148,8 @@ void s_dummyfunc()
 		double ghostShiftTime;
 
 
-		static const int LABEL_SIZE_Y= 15;
+		//static const int LABEL_SIZE_Y= 15;
+		int LABEL_SIZE_Y= 15;
 		//static const int LABEL_SIZE_X= 75;
 		//static const int LABEL_SIZE_X= 250;
 
@@ -6117,23 +6167,23 @@ void s_dummyfunc()
 
 		double timeSnapSize;
 
-		bool rewriteOnChange;		//ƒL[‘€ì‚ÉÄ•`‰æ‚ğs‚¤‚©”Û‚©‚Ìƒtƒ‰ƒO
-		bool canMouseControll;		//ƒ}ƒEƒX‚Å‚Ì‘€ì‚ª‰Â”\‚©”Û‚©‚Ìƒtƒ‰ƒO
+		bool rewriteOnChange;		//ã‚­ãƒ¼æ“ä½œæ™‚ã«å†æç”»ã‚’è¡Œã†ã‹å¦ã‹ã®ãƒ•ãƒ©ã‚°
+		bool canMouseControll;		//ãƒã‚¦ã‚¹ã§ã®æ“ä½œãŒå¯èƒ½ã‹å¦ã‹ã®ãƒ•ãƒ©ã‚°
 
 		bool dragLabel;
 		bool dragTime;
 		bool dragScrollBarLabel;
 		bool dragScrollBarTime;
 
-		bool dragSelect;		//ƒhƒ‰ƒbƒO‚Å‚Ì”ÍˆÍ‘I‘ğ
+		bool dragSelect;		//ãƒ‰ãƒ©ãƒƒã‚°ã§ã®ç¯„å›²é¸æŠ
 		double dragSelectTime1,dragSelectTime2;
 		int dragSelectLine1,dragSelectLine2;
 
-		bool dragShift;			//ƒhƒ‰ƒbƒO‚Å‚ÌƒL[ˆÚ“®
+		bool dragShift;			//ãƒ‰ãƒ©ãƒƒã‚°ã§ã®ã‚­ãƒ¼ç§»å‹•
 	};
 
 	///<summary>
-	///	ƒEƒBƒ“ƒhƒE“à•”•i"ƒIƒCƒ‰[ƒOƒ‰ƒt"ƒNƒ‰ƒX
+	///	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“"ã‚ªã‚¤ãƒ©ãƒ¼ã‚°ãƒ©ãƒ•"ã‚¯ãƒ©ã‚¹
 	///</summary>
 	class OWP_EulerGraph : public OrgWindowParts {
 	public:
@@ -6142,7 +6192,7 @@ void s_dummyfunc()
 
 			TIME_ERROR_WIDTH = 0.0001;
 
-			//í¯FƒRƒ“ƒXƒgƒ‰ƒNƒ^‚Å‚Íthis‚Í‚Ü‚¾g‚¦‚È‚¢III
+			//å¸¸è­˜ï¼šã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§ã¯thisã¯ã¾ã ä½¿ãˆãªã„ï¼ï¼ï¼
 			//lineData.push_back(new EulLineData(0, 0, _T("X"), this, 0));
 			//lineData.push_back(new EulLineData(0, 0, _T("Y"), this, 1));
 			//lineData.push_back(new EulLineData(0, 0, _T("Z"), this, 2));
@@ -6231,23 +6281,23 @@ void s_dummyfunc()
 
 
 		//////////////////////////// Method //////////////////////////////
-		/// Method : ©“®ƒTƒCƒYİ’è
+		/// Method : è‡ªå‹•ã‚µã‚¤ã‚ºè¨­å®š
 		virtual void autoResize() {
 			//size.y -= (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) % (LABEL_SIZE_Y - 1);
 		}
 		virtual void callRewrite();
 
-		//	Method : •`‰æ
+		//	Method : æç”»
 		virtual void draw();
 		//void draw() {
 		//	//drawEdge();
 
-		//	////ŠÔ²–Ú·‚è
+		//	////æ™‚é–“è»¸ç›®ç››ã‚Š
 		//	//{
 		//	//	const int AXIS_CURSOR_SIZE = 4;
 		//	//	const int AXIS_LABEL_SIDE_MARGIN = 7;
 
-		//	//	//–Ú·‚èü & ƒ‰ƒxƒ‹
+		//	//	//ç›®ç››ã‚Šç·š & ãƒ©ãƒ™ãƒ«
 		//	//	int x0 = pos.x + MARGIN + LABEL_SIZE_X;
 		//	//	int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
 		//	//	int y0 = pos.y + MARGIN;
@@ -6264,7 +6314,7 @@ void s_dummyfunc()
 		//	//			if (((i < 1000) && (i % 5 == 0)) || ((i >= 1000) && (i % 10 == 0))) {
 		//	//				TCHAR tmpChar[20];
 		//	//				_stprintf_s(tmpChar, 20, _T("%.3G"), (double)i);
-		//	//				hdcM->setFont(12, _T("‚l‚r ƒSƒVƒbƒN"));
+		//	//				hdcM->setFont(12, _T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 		//	//				SetTextColor(hdcM->hDC, RGB(240, 240, 240));
 		//	//				TextOut(hdcM->hDC,
 		//	//					xx - (int)((double)_tcslen(tmpChar)*2.0), y0,
@@ -6273,7 +6323,7 @@ void s_dummyfunc()
 		//	//		}
 		//	//	}
 
-		//	//	//ƒJ[ƒ\ƒ‹
+		//	//	//ã‚«ãƒ¼ã‚½ãƒ«
 		//	//	int xx = (int)((currentTime - showPos_time)*timeSize) + x0 + 1;
 		//	//	hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
 		//	//	if (x0 - AXIS_CURSOR_SIZE <= xx && xx <= x1 + AXIS_CURSOR_SIZE) {
@@ -6283,7 +6333,7 @@ void s_dummyfunc()
 		//	//		}
 		//	//	}
 
-		//	//	//˜g
+		//	//	//æ 
 		//	//	hdcM->setPenAndBrush(NULL, RGB(baseColor.r, baseColor.g, baseColor.b));
 		//	//	Rectangle(hdcM->hDC, pos.x, y0, x0, y1);
 		//	//	Rectangle(hdcM->hDC, x1, y0, pos.x + size.x, y1);
@@ -6293,7 +6343,7 @@ void s_dummyfunc()
 
 		//	//drawEdge(false);
 
-		//	//sƒf[ƒ^
+		//	//è¡Œãƒ‡ãƒ¼ã‚¿
 		//	//int showLineNum = (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) / (LABEL_SIZE_Y - 1);
 		//	int showLineNum = 3;
 		//	//for (int i = showPos_line, j = 0; i<(int)lineData.size() && j<showLineNum; i++, j++) {
@@ -6310,7 +6360,7 @@ void s_dummyfunc()
 		//		}
 		//	}
 
-		//	////ƒhƒ‰ƒbƒO‚É‚æ‚é‘I‘ğ”ÍˆÍ
+		//	////ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹é¸æŠç¯„å›²
 		//	//if (dragSelect && dragSelectTime1 != dragSelectTime2) {
 		//	//	int xx0 = pos.x + MARGIN + LABEL_SIZE_X + 1;
 		//	//	int yy0 = pos.y + MARGIN + AXIS_SIZE_Y;
@@ -6321,39 +6371,39 @@ void s_dummyfunc()
 		//	//	int y0 = yy0 + (min(dragSelectLine1, dragSelectLine2) - showPos_line)* (LABEL_SIZE_Y - 1) + 1;
 		//	//	int y1 = yy0 + (max(dragSelectLine1, dragSelectLine2) - showPos_line + 1)* (LABEL_SIZE_Y - 1) - 1;
 
-		//	//	{//˜g•`‰æ
+		//	//	{//æ æç”»
 		//	//		hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
-		//	//		if (xx0 <= x0) {		//¶˜g
+		//	//		if (xx0 <= x0) {		//å·¦æ 
 		//	//			MoveToEx(hdcM->hDC, x0, max(yy0, y0 + 1), NULL);
 		//	//			LineTo(hdcM->hDC, x0, min(y1, yy1));
 		//	//		}
-		//	//		if (x1 <= xx1) {		//‰E˜g
+		//	//		if (x1 <= xx1) {		//å³æ 
 		//	//			MoveToEx(hdcM->hDC, x1, max(yy0, y0 + 1), NULL);
 		//	//			LineTo(hdcM->hDC, x1, min(y1, yy1));
 		//	//		}
-		//	//		if (yy0 <= y0) {		//ã˜g
+		//	//		if (yy0 <= y0) {		//ä¸Šæ 
 		//	//			MoveToEx(hdcM->hDC, max(xx0, x0 + 1), y0, NULL);
 		//	//			LineTo(hdcM->hDC, min(x1, xx1), y0);
 		//	//		}
-		//	//		if (y1 <= yy1) {		//‰º˜g
+		//	//		if (y1 <= yy1) {		//ä¸‹æ 
 		//	//			MoveToEx(hdcM->hDC, max(xx0, x0 + 1), y1, NULL);
 		//	//			LineTo(hdcM->hDC, min(x1, xx1), y1);
 		//	//		}
 		//	//	}
 		//	//}
 
-		//	////ŠÔ²ƒXƒNƒ[ƒ‹ƒo[
+		//	////æ™‚é–“è»¸ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 		//	//{
 		//	//	int x0 = pos.x + MARGIN + LABEL_SIZE_X;
 		//	//	int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
 		//	//	int y0 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH;
 		//	//	int y1 = y0 + SCROLL_BAR_WIDTH;
 
-		//	//	//˜g
+		//	//	//æ 
 		//	//	hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
 		//	//	Rectangle(hdcM->hDC, x0, y0, x1, y1);
 
-		//	//	//’†g
+		//	//	//ä¸­èº«
 		//	//	double showTimeLength = ((double)(x1 - x0 - 3)) / timeSize;
 		//	//	double barSize = ((double)(x1 - x0 - 4))*showTimeLength / maxTime;
 		//	//	double barStart = ((double)(x1 - x0 - 4))*showPos_time / maxTime;
@@ -6363,18 +6413,18 @@ void s_dummyfunc()
 		//	//	}
 		//	//}
 
-		//	////ƒ‰ƒxƒ‹ƒXƒNƒ[ƒ‹ƒo[
+		//	////ãƒ©ãƒ™ãƒ«ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 		//	//{
 		//	//	int x0 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH - 1;
 		//	//	int x1 = x0 + SCROLL_BAR_WIDTH + 1;
 		//	//	int y0 = pos.y + MARGIN + AXIS_SIZE_Y;
 		//	//	int y1 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH + 1;
 
-		//	//	//˜g
+		//	//	//æ 
 		//	//	hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
 		//	//	Rectangle(hdcM->hDC, x0, y0, x1, y1);
 
-		//	//	//’†g
+		//	//	//ä¸­èº«
 		//	//	int barSize = (y1 - y0 - 4)*showLineNum / (int)lineData.size();
 		//	//	int barStart = (y1 - y0 - 4)*showPos_line / (int)lineData.size();
 		//	//	if (showLineNum<(int)lineData.size()) {
@@ -6383,7 +6433,7 @@ void s_dummyfunc()
 		//	//	}
 		//	//}
 		//}
-		//	Method : s‚ğ’Ç‰Á	(Šù‚É“¯–¼‚ÌƒL[‚ª‚ ‚éê‡‚ÍFalse‚ğ•Ô‚·)
+		//	Method : è¡Œã‚’è¿½åŠ 	(æ—¢ã«åŒåã®ã‚­ãƒ¼ãŒã‚ã‚‹å ´åˆã¯Falseã‚’è¿”ã™)
 		bool newLine(int _depth, int nullflag, const std::basic_string<TCHAR>& _name) {
 			for (int i = 0; i<(int)lineData.size(); i++) {
 				if (lineData[i]->name == _name) {
@@ -6393,20 +6443,20 @@ void s_dummyfunc()
 			EulLineData* neweulline = new EulLineData(_depth, nullflag, _name, this, (int)lineData.size());
 			lineData.push_back(neweulline);
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if (rewriteOnChange) {
 				callRewrite();
 			}
 			return true;
 		}
-		//	Method : s‚ğíœ
+		//	Method : è¡Œã‚’å‰Šé™¤
 		void deleteLine() {
 			for (int i = 0; i<(int)lineData.size(); i++) {
 				delete lineData[i];
 			}
 			lineData.clear();
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if (rewriteOnChange) {
 				callRewrite();
 			}
@@ -6426,7 +6476,7 @@ void s_dummyfunc()
 			}
 			lineData.pop_back();
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if (rewriteOnChange) {
 				callRewrite();
 			}
@@ -6437,19 +6487,19 @@ void s_dummyfunc()
 
 			bool ret = deleteLine(lineData[index]->name);
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if (ret && rewriteOnChange) {
 				callRewrite();
 			}
 			return ret;
 		}
-		//	Method : ƒL[‚ğ’Ç‰Á
+		//	Method : ã‚­ãƒ¼ã‚’è¿½åŠ 
 		bool newKey(bool needCallRewrite, const std::basic_string<TCHAR>& _name, const double &time, double _value = 0.0, const double &length = 1.0) {
 			for (int i = 0; i<(int)lineData.size(); i++) {
 				if (lineData[i]->name == _name) {
 					bool ret = lineData[i]->newKey(time, 0, _value, length);
 
-					//Ä•`‰æ—v‹
+					//å†æç”»è¦æ±‚
 					if (needCallRewrite && ret && rewriteOnChange) {
 						callRewrite();
 					}
@@ -6458,13 +6508,13 @@ void s_dummyfunc()
 			}
 			return false;
 		}
-		//	Method : ƒL[‚É’l‚ğƒZƒbƒg
+		//	Method : ã‚­ãƒ¼ã«å€¤ã‚’ã‚»ãƒƒãƒˆ
 		bool setKey(bool needCallRewrite, const std::basic_string<TCHAR>& _name, const double &time, double _value = 0.0) {
 			for (int i = 0; i<(int)lineData.size(); i++) {
 				if (lineData[i]->name == _name) {
 					bool ret = lineData[i]->setKey(time, 0, _value);
 
-					//Ä•`‰æ—v‹
+					//å†æç”»è¦æ±‚
 					if (needCallRewrite && ret && rewriteOnChange) {
 						callRewrite();
 					}
@@ -6473,7 +6523,7 @@ void s_dummyfunc()
 			}
 			return false;
 		}
-		////	Method : ƒL[‚ğíœ
+		////	Method : ã‚­ãƒ¼ã‚’å‰Šé™¤
 		//bool deleteKey(const std::basic_string<TCHAR>& _name, double time) {
 		//	for (int i = 0; i<(int)lineData.size(); i++) {
 		//		if (lineData[i]->name == _name) {
@@ -6481,7 +6531,7 @@ void s_dummyfunc()
 		//			bool ret = lineData[i]->selectKey(time);
 		//			lineData[i]->deleteKey();
 
-		//			//Ä•`‰æ—v‹
+		//			//å†æç”»è¦æ±‚
 		//			if (ret && rewriteOnChange) {
 		//				callRewrite();
 		//			}
@@ -6495,7 +6545,7 @@ void s_dummyfunc()
 		//		if (lineData[i]->name == _name) {
 		//			bool ret = lineData[i]->deleteKey(index);
 
-		//			//Ä•`‰æ—v‹
+		//			//å†æç”»è¦æ±‚
 		//			if (ret && rewriteOnChange) {
 		//				callRewrite();
 		//			}
@@ -6511,7 +6561,7 @@ void s_dummyfunc()
 		//	bool ret = lineData[lineIndex]->selectKey(time);
 		//	lineData[lineIndex]->deleteKey();
 
-		//	//Ä•`‰æ—v‹
+		//	//å†æç”»è¦æ±‚
 		//	if (ret && rewriteOnChange) {
 		//		callRewrite();
 		//	}
@@ -6523,7 +6573,7 @@ void s_dummyfunc()
 
 		//	bool ret = lineData[lineIndex]->deleteKey(keyIndex);
 
-		//	//Ä•`‰æ—v‹
+		//	//å†æç”»è¦æ±‚
 		//	if (ret && rewriteOnChange) {
 		//		callRewrite();
 		//	}
@@ -6537,41 +6587,41 @@ void s_dummyfunc()
 				deleteNum += lineData[i]->deleteKey();
 			}
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if ((deleteNum != 0) && rewriteOnChange) {
 				callRewrite();
 			}
 
 			return deleteNum;
 		}
-		//	Method : ‚·‚×‚Ä‚ÌƒL[‚Ì‘I‘ğ‚ğ‰ğœ‚·‚é
+		//	Method : ã™ã¹ã¦ã®ã‚­ãƒ¼ã®é¸æŠã‚’è§£é™¤ã™ã‚‹
 		void selectClear(bool noCallListener = false) {
 			for (int i = 0; i<(int)lineData.size(); i++) {
 				lineData[i]->selectClear();
 			}
 
-			//ƒŠƒXƒi[ƒR[ƒ‹
+			//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 			if (!noCallListener && (this->selectListener != NULL)) {
 				(this->selectListener)();
 			}
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if (rewriteOnChange) {
 				callRewrite();
 			}
 		}
-		//	Method : ‚·‚×‚Ä‚ÌƒL[‚ğ‘I‘ğ‚·‚é
+		//	Method : ã™ã¹ã¦ã®ã‚­ãƒ¼ã‚’é¸æŠã™ã‚‹
 		void selectAll(bool noCallListener = false) {
 			for (int i = 0; i<(int)lineData.size(); i++) {
 				lineData[i]->selectAll();
 			}
 
-			//ƒŠƒXƒi[ƒR[ƒ‹
+			//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 			if (!noCallListener && (this->selectListener != NULL)) {
 				(this->selectListener)();
 			}
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if (rewriteOnChange) {
 				callRewrite();
 			}
@@ -6677,7 +6727,7 @@ void s_dummyfunc()
 				showPos_line = 0;
 				currentLine = 1;//!!!!!!!
 
-								//Ä•`‰æ—Ìˆæ
+								//å†æç”»é ˜åŸŸ
 				RECT tmpRect;
 				tmpRect.left = pos.x + 1;
 				tmpRect.top = pos.y + 1;
@@ -6685,14 +6735,14 @@ void s_dummyfunc()
 				tmpRect.bottom = pos.y + size.y - 1;
 				InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
 
-				//Ä•`‰æ—v‹
+				//å†æç”»è¦æ±‚
 				//if (rewriteOnChange){
 				callRewrite();
 				//}
 			}
 		}
 
-		/// Method : ‚·‚×‚Ä‚Ì‘I‘ğ‚³‚ê‚Ä‚¢‚éƒL[‚ğæ“¾‚·‚é
+		/// Method : ã™ã¹ã¦ã®é¸æŠã•ã‚Œã¦ã„ã‚‹ã‚­ãƒ¼ã‚’å–å¾—ã™ã‚‹
 		std::list<KeyInfo> getSelectedKey() const {
 			std::list<KeyInfo> ret;
 			ret.clear();
@@ -6724,7 +6774,7 @@ void s_dummyfunc()
 				
 			}
 			if ((ret.size() == 1) && ((*ret.begin()).time != currentTime)) {
-				//‰Šúó‘ÔBƒZƒŒƒNƒg‚Å‚Í‚È‚¢B
+				//åˆæœŸçŠ¶æ…‹ã€‚ã‚»ãƒ¬ã‚¯ãƒˆã§ã¯ãªã„ã€‚
 				(lineData[(*ret.begin()).lineIndex])->key[(*ret.begin()).timeIndex]->select = false;
 				ret.clear();
 			}
@@ -6732,18 +6782,18 @@ void s_dummyfunc()
 			//_ASSERT(0);
 			return ret;
 		}
-		///// Method : ‘S‚Ä‚Ì‘I‘ğ‚³‚ê‚Ä‚¢‚éƒL[‚ğˆÚ“®‚·‚é
+		///// Method : å…¨ã¦ã®é¸æŠã•ã‚Œã¦ã„ã‚‹ã‚­ãƒ¼ã‚’ç§»å‹•ã™ã‚‹
 		//void shiftKeyTime(const double &shiftTime) {
 		//	for (int i = 0; i<(int)lineData.size(); i++) {
 		//		lineData[i]->shiftKey(shiftTime);
 		//	}
 
-		//	//Ä•`‰æ—v‹
+		//	//å†æç”»è¦æ±‚
 		//	if (rewriteOnChange) {
 		//		callRewrite();
 		//	}
 		//}
-		///	Method : ƒ}ƒEƒXƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		///	Method : ãƒã‚¦ã‚¹ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonDown(const MouseEvent& e) {
 			selectClear(true);
 
@@ -6760,7 +6810,7 @@ void s_dummyfunc()
 			int y2 = size.y - MARGIN - SCROLL_BAR_WIDTH;
 			int y3 = size.y - MARGIN;
 
-			//ƒ‰ƒxƒ‹
+			//ãƒ©ãƒ™ãƒ«
 			if ((x0 <= e.localX) && (e.localX < x2) && 
 				(y1 <= e.localY) && (e.localY < y2)) {
 				setCurrentLine(showPos_line + (e.localY - y1) / (LABEL_SIZE_Y - 1));
@@ -6768,7 +6818,7 @@ void s_dummyfunc()
 				dragLabel = true;
 			}
 
-			//ŠÔ²–Ú·‚è
+			//æ™‚é–“è»¸ç›®ç››ã‚Š
 			if (((x1 - 2) <= e.localX) && (e.localX < x2) && 
 				(y0 <= e.localY) && (e.localY < y2)) {
 				setCurrentTime(showPos_time + (double)(e.localX - x1) / timeSize);
@@ -6776,12 +6826,12 @@ void s_dummyfunc()
 				dragTime = true;
 			}
 
-			{//ƒhƒ‰ƒbƒO‚Å‚Ì”ÍˆÍ‘I‘ğ
+			{//ãƒ‰ãƒ©ãƒƒã‚°ã§ã®ç¯„å›²é¸æŠ
 				dragSelectTime1 = currentTime;
 				dragSelectLine1 = currentLine;
 			}
 
-			//ŠÔ²ƒXƒNƒ[ƒ‹ƒo[
+			//æ™‚é–“è»¸ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if ((x1 <= e.localX) && (e.localX < x2) && 
 				(y2 <= e.localY) && (e.localY < y3)) {
 				int xx0 = MARGIN + LABEL_SIZE_X;
@@ -6800,7 +6850,7 @@ void s_dummyfunc()
 				}
 			}
 
-			//ƒ‰ƒxƒ‹ƒXƒNƒ[ƒ‹ƒo[
+			//ãƒ©ãƒ™ãƒ«ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if ((x2 <= e.localX) && (e.localX < x3) && 
 				(y1 <= e.localY) && (e.localY < y2)) {
 				int yy0 = MARGIN + AXIS_SIZE_Y;
@@ -6819,13 +6869,13 @@ void s_dummyfunc()
 				}
 			}
 
-			//Ctrl+ƒhƒ‰ƒbƒO‚É‚æ‚éƒL[ˆÚ“®
+			//Ctrl+ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹ã‚­ãƒ¼ç§»å‹•
 			if (e.ctrlKey && !dragScrollBarTime && !dragScrollBarLabel) {
 				dragShift = true;
 			}
 
 		}
-		///	Method : ¶ƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		///	Method : å·¦ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonUp(const MouseEvent& e) {
 			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
@@ -6834,7 +6884,7 @@ void s_dummyfunc()
 					g_underselecttolast = false;
 					g_undereditrange = false;
 
-					//ƒhƒ‰ƒbƒOƒtƒ‰ƒO‚ğ‰Šú‰»
+					//ãƒ‰ãƒ©ãƒƒã‚°ãƒ•ãƒ©ã‚°ã‚’åˆæœŸåŒ–
 					dragLabel = false;
 					dragTime = false;
 					dragScrollBarLabel = false;
@@ -6845,7 +6895,7 @@ void s_dummyfunc()
 					return;
 				}
 
-				//ƒhƒ‰ƒbƒO‘I‘ğ”ÍˆÍ“à‚ÌƒL[‚ğ‘I‘ğó‘Ô‚É‚·‚é
+				//ãƒ‰ãƒ©ãƒƒã‚°é¸æŠç¯„å›²å†…ã®ã‚­ãƒ¼ã‚’é¸æŠçŠ¶æ…‹ã«ã™ã‚‹
 				if (!dragShift && !dragScrollBarLabel && !dragScrollBarTime) {
 					selectClear(true);
 					if (dragSelect) {
@@ -6856,21 +6906,21 @@ void s_dummyfunc()
 								max(dragSelectTime1, dragSelectTime2));
 						}
 					}
-					//ƒŠƒXƒi[ƒR[ƒ‹
+					//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 					if (this->selectListener != NULL) {
 						(this->selectListener)();
 					}
 				}
 
-				//Ctrl+ƒhƒ‰ƒbƒO‚É‚æ‚éƒL[ˆÚ“®
+				//Ctrl+ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹ã‚­ãƒ¼ç§»å‹•
 				if (dragShift) {
-					//ƒŠƒXƒi[ƒR[ƒ‹
+					//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 					if (this->keyShiftListener != NULL) {
 						(this->keyShiftListener)();
 					}
 					ghostShiftTime = 0.0;
 				}
-				//ƒhƒ‰ƒbƒOƒtƒ‰ƒO‚ğ‰Šú‰»
+				//ãƒ‰ãƒ©ãƒƒã‚°ãƒ•ãƒ©ã‚°ã‚’åˆæœŸåŒ–
 				dragLabel = false;
 				dragTime = false;
 				dragScrollBarLabel = false;
@@ -6878,7 +6928,7 @@ void s_dummyfunc()
 				dragSelect = false;
 				dragShift = false;
 
-				//Ä•`‰æ—Ìˆæ
+				//å†æç”»é ˜åŸŸ
 				RECT tmpRect;
 				tmpRect.left = pos.x + 1;
 				tmpRect.top = pos.y + 1;
@@ -6903,7 +6953,7 @@ void s_dummyfunc()
 			int y2 = size.y - MARGIN - SCROLL_BAR_WIDTH;
 			int y3 = size.y - MARGIN;
 
-			//ƒ‰ƒxƒ‹
+			//ãƒ©ãƒ™ãƒ«
 			if ((x0 <= e.localX) && (e.localX < x2) && 
 				(y1 <= e.localY) && (e.localY < y2)) {
 				setCurrentLine(showPos_line + (e.localY - y1) / (LABEL_SIZE_Y - 1));
@@ -6912,7 +6962,7 @@ void s_dummyfunc()
 			}
 
 			/*
-			//ŠÔ²–Ú·‚è
+			//æ™‚é–“è»¸ç›®ç››ã‚Š
 			if (x1 - 2 <= e.localX && e.localX<x2
 			&& y0 <= e.localY && e.localY<y2){
 			setCurrentTime(showPos_time + (double)(e.localX - x1) / timeSize);
@@ -6920,12 +6970,12 @@ void s_dummyfunc()
 			dragTime = true;
 			}
 
-			{//ƒhƒ‰ƒbƒO‚Å‚Ì”ÍˆÍ‘I‘ğ
+			{//ãƒ‰ãƒ©ãƒƒã‚°ã§ã®ç¯„å›²é¸æŠ
 			dragSelectTime1 = currentTime;
 			dragSelectLine1 = currentLine;
 			}
 
-			//ŠÔ²ƒXƒNƒ[ƒ‹ƒo[
+			//æ™‚é–“è»¸ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if (x1 <= e.localX && e.localX<x2
 			&& y2 <= e.localY && e.localY<y3){
 			int xx0 = MARGIN + LABEL_SIZE_X;
@@ -6944,7 +6994,7 @@ void s_dummyfunc()
 			}
 			}
 
-			//ƒ‰ƒxƒ‹ƒXƒNƒ[ƒ‹ƒo[
+			//ãƒ©ãƒ™ãƒ«ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if (x2 <= e.localX && e.localX<x3
 			&& y1 <= e.localY && e.localY<y2){
 			int yy0 = MARGIN + AXIS_SIZE_Y;
@@ -6963,13 +7013,13 @@ void s_dummyfunc()
 			}
 			}
 
-			//Ctrl+ƒhƒ‰ƒbƒO‚É‚æ‚éƒL[ˆÚ“®
+			//Ctrl+ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹ã‚­ãƒ¼ç§»å‹•
 			if (e.ctrlKey && !dragScrollBarTime && !dragScrollBarLabel){
 			dragShift = true;
 			}
 			*/
 		}
-		///	Method : ¶ƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		///	Method : å·¦ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onRButtonUp(const MouseEvent& e) {
 			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
@@ -6978,7 +7028,7 @@ void s_dummyfunc()
 					g_underselecttolast = false;
 					g_undereditrange = false;
 
-					//ƒhƒ‰ƒbƒOƒtƒ‰ƒO‚ğ‰Šú‰»
+					//ãƒ‰ãƒ©ãƒƒã‚°ãƒ•ãƒ©ã‚°ã‚’åˆæœŸåŒ–
 					dragLabel = false;
 					dragTime = false;
 					dragScrollBarLabel = false;
@@ -6990,7 +7040,7 @@ void s_dummyfunc()
 				}
 
 				/*
-				//ƒhƒ‰ƒbƒO‘I‘ğ”ÍˆÍ“à‚ÌƒL[‚ğ‘I‘ğó‘Ô‚É‚·‚é
+				//ãƒ‰ãƒ©ãƒƒã‚°é¸æŠç¯„å›²å†…ã®ã‚­ãƒ¼ã‚’é¸æŠçŠ¶æ…‹ã«ã™ã‚‹
 				if (!dragShift && !dragScrollBarLabel && !dragScrollBarTime){
 				selectClear(true);
 				if (dragSelect){
@@ -7001,22 +7051,22 @@ void s_dummyfunc()
 				max(dragSelectTime1, dragSelectTime2));
 				}
 				}
-				//ƒŠƒXƒi[ƒR[ƒ‹
+				//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 				if (this->selectListener != NULL){
 				(this->selectListener)();
 				}
 				}
 
-				//Ctrl+ƒhƒ‰ƒbƒO‚É‚æ‚éƒL[ˆÚ“®
+				//Ctrl+ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹ã‚­ãƒ¼ç§»å‹•
 				if (dragShift){
-				//ƒŠƒXƒi[ƒR[ƒ‹
+				//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 				if (this->keyShiftListener != NULL){
 				(this->keyShiftListener)();
 				}
 				ghostShiftTime = 0.0;
 				}
 				*/
-				//ƒhƒ‰ƒbƒOƒtƒ‰ƒO‚ğ‰Šú‰»
+				//ãƒ‰ãƒ©ãƒƒã‚°ãƒ•ãƒ©ã‚°ã‚’åˆæœŸåŒ–
 				dragLabel = false;
 				dragTime = false;
 				dragScrollBarLabel = false;
@@ -7024,7 +7074,7 @@ void s_dummyfunc()
 				dragSelect = false;
 				dragShift = false;
 
-				//Ä•`‰æ—Ìˆæ
+				//å†æç”»é ˜åŸŸ
 				RECT tmpRect;
 				tmpRect.left = pos.x + 1;
 				tmpRect.top = pos.y + 1;
@@ -7038,7 +7088,7 @@ void s_dummyfunc()
 			}
 		}
 
-		///	Method : ƒ}ƒEƒXˆÚ“®ƒCƒxƒ“ƒgóM
+		///	Method : ãƒã‚¦ã‚¹ç§»å‹•ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onMouseMove(const MouseEvent& e) {
 			if (!canMouseControll) return;
 			if (g_underselecttolast) return;
@@ -7053,7 +7103,7 @@ void s_dummyfunc()
 			int y2 = size.y - MARGIN - SCROLL_BAR_WIDTH;
 			int y3 = size.y - MARGIN;
 
-			//ƒ‰ƒxƒ‹
+			//ãƒ©ãƒ™ãƒ«
 			bool callCursorListener = false;
 			if (dragLabel) {
 				int oldLine = currentLine;
@@ -7063,7 +7113,7 @@ void s_dummyfunc()
 				}
 			}
 
-			//ŠÔ²–Ú·‚è
+			//æ™‚é–“è»¸ç›®ç››ã‚Š
 			if (dragTime) {
 				double oldTime = currentTime;
 				setCurrentTime(showPos_time + (double)(e.localX - x1) / timeSize, true);
@@ -7072,24 +7122,24 @@ void s_dummyfunc()
 				}
 			}
 
-			//ƒJ[ƒ\ƒ‹ƒŠƒXƒi[ƒR[ƒ‹
+			//ã‚«ãƒ¼ã‚½ãƒ«ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 			if (callCursorListener && (this->cursorListener != NULL)) {
 				(this->cursorListener)();
 			}
 
-			//Ctrl+ƒhƒ‰ƒbƒO‚Å‚ÌƒL[ˆÚ“®
+			//Ctrl+ãƒ‰ãƒ©ãƒƒã‚°ã§ã®ã‚­ãƒ¼ç§»å‹•
 			if (dragShift) {
 				ghostShiftTime = currentTime - dragSelectTime1;
 			}
 
-			//ƒhƒ‰ƒbƒO‚Å‚Ì”ÍˆÍ‘I‘ğ
+			//ãƒ‰ãƒ©ãƒƒã‚°ã§ã®ç¯„å›²é¸æŠ
 			if (!dragShift && (dragSelect || dragLabel || dragTime) && !dragScrollBarLabel && !dragScrollBarTime) {
 				dragSelect = true;
 				dragSelectTime2 = currentTime;
 				dragSelectLine2 = currentLine;
 			}
 
-			//ƒhƒ‰ƒbƒO‘I‘ğ”ÍˆÍ“à‚ÌƒL[‚ğ‘I‘ğó‘Ô‚É‚·‚é
+			//ãƒ‰ãƒ©ãƒƒã‚°é¸æŠç¯„å›²å†…ã®ã‚­ãƒ¼ã‚’é¸æŠçŠ¶æ…‹ã«ã™ã‚‹
 			if (dragSelect) {
 				selectClear(true);
 				for (int i = min(dragSelectLine1, dragSelectLine2);
@@ -7099,7 +7149,7 @@ void s_dummyfunc()
 				}
 			}
 
-			//ŠÔ²ƒXƒNƒ[ƒ‹ƒo[
+			//æ™‚é–“è»¸ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if (dragScrollBarTime) {
 				int xx0 = MARGIN + LABEL_SIZE_X;
 				int xx1 = size.x - MARGIN - SCROLL_BAR_WIDTH;
@@ -7113,7 +7163,7 @@ void s_dummyfunc()
 				setShowPosTime(((double)(e.localX - movableXStart))*(maxTime - showTimeLength) / (double)movableX);
 			}
 
-			//ƒ‰ƒxƒ‹ƒXƒNƒ[ƒ‹ƒo[
+			//ãƒ©ãƒ™ãƒ«ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if (dragScrollBarLabel) {
 				int yy0 = MARGIN + AXIS_SIZE_Y;
 				int yy1 = size.y - MARGIN - SCROLL_BAR_WIDTH + 1;
@@ -7139,7 +7189,7 @@ void s_dummyfunc()
 			int y2 = size.y - MARGIN - SCROLL_BAR_WIDTH;
 			int y3 = size.y - MARGIN;
 
-			//ƒ‰ƒxƒ‹
+			//ãƒ©ãƒ™ãƒ«
 			if ((x0 <= e.localX) && (e.localX < x2) && 
 				(y1 <= e.localY) && (e.localY < y2)) {
 				setCurrentLine(showPos_line + (e.localY - y1) / (LABEL_SIZE_Y - 1));
@@ -7147,7 +7197,7 @@ void s_dummyfunc()
 				//dragLabel = true;
 			}
 
-			//ŠÔ²–Ú·‚è
+			//æ™‚é–“è»¸ç›®ç››ã‚Š
 			if (((x1 - 2) <= e.localX) && (e.localX < x2) && 
 				(y0 <= e.localY) && (e.localY < y2)) {
 				setCurrentTime(showPos_time + (double)(e.localX - x1) / timeSize);
@@ -7163,7 +7213,7 @@ void s_dummyfunc()
 
 				if (!canMouseControll) return;
 
-				//ƒhƒ‰ƒbƒOƒtƒ‰ƒO‚ğ‰Šú‰»
+				//ãƒ‰ãƒ©ãƒƒã‚°ãƒ•ãƒ©ã‚°ã‚’åˆæœŸåŒ–
 				dragLabel = false;
 				dragTime = false;
 				dragScrollBarLabel = false;
@@ -7171,7 +7221,7 @@ void s_dummyfunc()
 				dragSelect = false;
 				dragShift = false;
 
-				//Ä•`‰æ—Ìˆæ
+				//å†æç”»é ˜åŸŸ
 				RECT tmpRect;
 				tmpRect.left = pos.x + 1;
 				tmpRect.top = pos.y + 1;
@@ -7187,7 +7237,7 @@ void s_dummyfunc()
 			}
 		}
 		int getMouseWheelDelta() { return wheeldelta; }
-		/// Method : sƒCƒ“ƒfƒbƒNƒX‚ğæ“¾‚·‚é
+		/// Method : è¡Œã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’å–å¾—ã™ã‚‹
 		int getLineIndex(const std::basic_string<TCHAR>& _name) const {
 			for (int i = 0; i<(int)lineData.size(); i++) {
 				if (lineData[i]->name == _name) {
@@ -7213,9 +7263,9 @@ void s_dummyfunc()
 			}
 
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			//if (rewriteOnChange) {
-			//callRewrite();//Main.cpp refreshEulerGraph‚ÅÄ•`‰æ‚·‚é
+			//callRewrite();//Main.cpp refreshEulerGraphã§å†æç”»ã™ã‚‹
 			//}
 
 			//setShowPosTime(((double)(e.localX - movableXStart)) * (maxTime - showTimeLength) / (double)movableX);
@@ -7273,7 +7323,7 @@ void s_dummyfunc()
 			maxTime = max(_maxTime, 0);
 			currentTime = min(currentTime, maxTime);
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if (rewriteOnChange) {
 				callRewrite();
 			}
@@ -7323,12 +7373,12 @@ void s_dummyfunc()
 				showPos_line = currentLine - showLineNum + 1;
 			}
 
-			//ƒŠƒXƒi[ƒR[ƒ‹
+			//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 			if (!noCallListener && (this->cursorListener != NULL)) {
 				(this->cursorListener)();
 			}
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if (rewriteOnChange) {
 				callRewrite();
 			}
@@ -7351,7 +7401,7 @@ void s_dummyfunc()
 		void setShowPosTime(const double& _showPosTime) {
 			showPos_time = calcShowPosTime(_showPosTime);
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			//if (rewriteOnChange) {
 			//	callRewrite();
 			//}
@@ -7372,7 +7422,7 @@ void s_dummyfunc()
 				showPos_line = 0;
 			}
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if (rewriteOnChange) {
 				callRewrite();
 			}
@@ -7465,7 +7515,7 @@ void s_dummyfunc()
 		double dispscale;
 		double dispoffset;
 
-		//sƒf[ƒ^ƒNƒ‰ƒX-------------
+		//è¡Œãƒ‡ãƒ¼ã‚¿ã‚¯ãƒ©ã‚¹-------------
 		public : class EulLineData {
 		public:
 			EulLineData(int _depth, int nullflag, const std::basic_string<TCHAR>& _name, OWP_EulerGraph* _parent, unsigned int _lineIndex) {
@@ -7480,7 +7530,7 @@ void s_dummyfunc()
 				//InitEulKeys();
 			};
 			//EulLineData(const EulLineData& a) {
-			//	_ASSERT_EXPR(0, L"ƒRƒs[ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚Íg‚¦‚Ü‚¹‚ñ");
+			//	_ASSERT_EXPR(0, L"ã‚³ãƒ”ãƒ¼ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã¯ä½¿ãˆã¾ã›ã‚“");
 			//};
 			~EulLineData() {
 				std::vector<EulKey*>::iterator it;
@@ -7519,7 +7569,7 @@ void s_dummyfunc()
 			}
 
 
-			//ƒL[ƒf[ƒ^ƒNƒ‰ƒX---------------
+			//ã‚­ãƒ¼ãƒ‡ãƒ¼ã‚¿ã‚¯ãƒ©ã‚¹---------------
 			class EulKey {
 			public:
 				EulKey() {
@@ -7622,14 +7672,14 @@ void s_dummyfunc()
 			std::vector<OWP_EulerGraph::EulLineData::EulKey*> key;
 			unsigned int lineIndex;
 			int depth;
-			int minselected;//2022/09/12 : key[].selectedŒŸõ‚Ìƒqƒ“ƒg
-			int maxselected;//2022/09/12 : key[].selectedŒŸõ‚Ìƒqƒ“ƒg
+			int minselected;//2022/09/12 : key[].selectedæ¤œç´¢ã®ãƒ’ãƒ³ãƒˆ
+			int maxselected;//2022/09/12 : key[].selectedæ¤œç´¢ã®ãƒ’ãƒ³ãƒˆ
 
 
 			int getValue(double srcframe, double* dstvalue);
 
 			//////////////////////////// Method //////////////////////////////
-			//	Method : •`‰æ
+			//	Method : æç”»
 			void draw(HDCMaster *hdcM,
 				int posX, int posY,
 				int width,
@@ -7648,7 +7698,7 @@ void s_dummyfunc()
 				unsigned char baseB = parent->baseColor.b;
 
 
-				int offsetY = -32;//!!!!!!!!!!! ¶ã‚ª‚O‚Åã‚ªƒ}ƒCƒiƒXAã‚É16
+				int offsetY = -32;//!!!!!!!!!!! å·¦ä¸ŠãŒï¼ã§ä¸ŠãŒãƒã‚¤ãƒŠã‚¹ã€ä¸Šã«16
 				posY += offsetY;//!!!!!!!!!!!
 
 
@@ -7680,7 +7730,7 @@ void s_dummyfunc()
 				//		 posX+2, posY+parent->LABEL_SIZE_Y/2-5,
 				//		 name.c_str(), _tcslen(name.c_str()));
 
-				//˜g
+				//æ 
 				//if (wcscmp(L"X", name.c_str()) == 0) {
 					//hdcM->setPenAndBrush(RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)), NULL);
 					//Rectangle(hdcM->hDC, x0, y0, x2, y1);
@@ -7703,7 +7753,7 @@ void s_dummyfunc()
 					//}
 				//}
 
-				//ƒS[ƒXƒgƒL[
+				//ã‚´ãƒ¼ã‚¹ãƒˆã‚­ãƒ¼
 				x1++; x2--;
 				y0++; y1--;
 				//for (int i = 0; i<(int)key.size(); i++) {
@@ -7738,7 +7788,7 @@ void s_dummyfunc()
 
 				bool sgraph = false;
 
-				//ƒL[
+				//ã‚­ãƒ¼
 				if (wcscmp(L"X", name.c_str()) == 0) {
 					sgraph = false;
 
@@ -7767,19 +7817,19 @@ void s_dummyfunc()
 				else if (wcscmp(L"S", name.c_str()) == 0) {
 					sgraph = true;
 
-					//2022/10/20 CommentOut : ƒXƒP[ƒ‹‚ÌF‚Å‘I‘ğ”ÍˆÍ‚Ì—¼’[‚É‚’¼ü‚ğˆø‚­‚½‚ß‚É@return‚µ‚È‚¢‚±‚Æ‚É
+					//2022/10/20 CommentOut : ã‚¹ã‚±ãƒ¼ãƒ«ã®è‰²ã§é¸æŠç¯„å›²ã®ä¸¡ç«¯ã«å‚ç›´ç·šã‚’å¼•ããŸã‚ã«ã€€returnã—ãªã„ã“ã¨ã«
 					//if ((g_previewFlag) != 0 && (g_previewFlag != 5)) {
-					//	return;//!!!!!!!!!!!!!!! preview‚É‚Íƒuƒ‰ƒVƒ‰ƒCƒ“‚Í•\¦‚µ‚È‚¢
+					//	return;//!!!!!!!!!!!!!!! previewæ™‚ã«ã¯ãƒ–ãƒ©ã‚·ãƒ©ã‚¤ãƒ³ã¯è¡¨ç¤ºã—ãªã„
 					//}
 
 					hdcM->setPenAndBrush(NULL, RGB(255, 255, 255));
 					eulrange = abs(parent->maxeul - parent->mineul) * 1.0;//scale 1.0
-					y2 = y0;//MotionBrush‚Í‰ŠúˆÊ’u
+					y2 = y0;//MotionBrushã¯åˆæœŸä½ç½®
 				}
 				else {
 					hdcM->setPenAndBrush(NULL, RGB(min(baseR + 20, 255), min(baseG + 20, 255), min(baseB + 20, 255)));
 					eulrange = abs(parent->maxeul - parent->mineul) * 1.0;//scale 1.0
-					y2 = y0;//MotionBrush‚Í‰ŠúˆÊ’u
+					y2 = y0;//MotionBrushã¯åˆæœŸä½ç½®
 				}
 
 				//if (eulrange < 10.0) {
@@ -7799,7 +7849,7 @@ void s_dummyfunc()
 					startindex = max(0, (getKeyIndex(parent->currentTime) - KEYNUM_ONPREVIEW * 2));
 				}
 
-				//ƒXƒP[ƒ‹•\¦@Ä¶’†‚ÍSƒOƒ‰ƒt”ñ•\¦@‚½‚¾‚µ‰º•ûƒR[ƒh‚É‚Ä@—¼’[‚Ì‚’¼ƒ‰ƒCƒ“‚Í•`‰æ
+				//ã‚¹ã‚±ãƒ¼ãƒ«è¡¨ç¤ºæ™‚ã€€å†ç”Ÿä¸­ã¯Sã‚°ãƒ©ãƒ•éè¡¨ç¤ºã€€ãŸã ã—ä¸‹æ–¹ã‚³ãƒ¼ãƒ‰ã«ã¦ã€€ä¸¡ç«¯ã®å‚ç›´ãƒ©ã‚¤ãƒ³ã¯æç”»
 				if ((startindex >= 0) && !(sgraph && (g_previewFlag != 0) && (g_previewFlag != 5))) {
 					int currentkeynum = (int)key.size();
 					int currenttimeindex = getKeyIndex(parent->currentTime);
@@ -7825,7 +7875,7 @@ void s_dummyfunc()
 							//break;
 						}
 
-						//value‚ª‘‚¦‚é•ûŒü‚ğã•ûŒü‚ÉBÀ•WŒn‚Í‰º•ûŒü‚Éƒvƒ‰ƒXB
+						//valueãŒå¢—ãˆã‚‹æ–¹å‘ã‚’ä¸Šæ–¹å‘ã«ã€‚åº§æ¨™ç³»ã¯ä¸‹æ–¹å‘ã«ãƒ—ãƒ©ã‚¹ã€‚
 						//int ey0 = (parent->maxeul - key[i]->value) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
 						int ey0 = (int)((parent->maxeul - key[i]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
 						int ey1 = ey0 + DOT_SIZE_Y;
@@ -7852,7 +7902,7 @@ void s_dummyfunc()
 								firstdrawflag = false;
 							}
 							else {
-								LineTo(hdcM->hDC, ex0, ey0);//2022/09/13 Rectangle‚æ‚è‚àLineTo‚Ì•û‚ª•`‰æ‚ª‘¬‚¢
+								LineTo(hdcM->hDC, ex0, ey0);//2022/09/13 Rectangleã‚ˆã‚Šã‚‚LineToã®æ–¹ãŒæç”»ãŒé€Ÿã„
 							}
 
 							//Rectangle(hdcM->hDC, ex0, ey0, ex1, ey1);
@@ -7865,7 +7915,7 @@ void s_dummyfunc()
 
 
 			//Ellipse and line at current.
-			//ƒJƒŒƒ“ƒgˆÊ’u‚ÉŠÛƒ}[ƒN@ƒJƒŒƒ“ƒgˆÊ’u‚É‚’¼ƒ‰ƒCƒ“
+			//ã‚«ãƒ¬ãƒ³ãƒˆä½ç½®ã«ä¸¸ãƒãƒ¼ã‚¯ã€€ã‚«ãƒ¬ãƒ³ãƒˆä½ç½®ã«å‚ç›´ãƒ©ã‚¤ãƒ³
 				{
 					double keytime = parent->currentTime;
 					int currentindex = getKeyIndex(keytime);
@@ -7880,11 +7930,11 @@ void s_dummyfunc()
 
 
 						if (!sgraph && ((g_previewFlag != 0) && (g_previewFlag != 5))) {
-							//Ä¶’†‚Écurrenttime‚ÉƒT[ƒNƒ‹•\¦
+							//å†ç”Ÿä¸­ã«currenttimeã«ã‚µãƒ¼ã‚¯ãƒ«è¡¨ç¤º
 							Ellipse(hdcM->hDC, ex0 - 2, ey0 - 2, ex0 + AXIS_CURSOR_SIZE + 2, ey0 + 2);
 						}
 						else if (sgraph && ((g_previewFlag == 0)) || (g_previewFlag == 5)) {
-							//Ä¶’†ˆÈŠO@ƒuƒ‰ƒVF‚Å@currenttime‚É@cü
+							//å†ç”Ÿä¸­ä»¥å¤–ã€€ãƒ–ãƒ©ã‚·è‰²ã§ã€€currenttimeã«ã€€ç¸¦ç·š
 							//MoveToEx(hdcM->hDC, ex0, y0, NULL);
 							//MoveToEx(hdcM->hDC, ex0, (parent->LABEL_SIZE_Y * 2), NULL);
 							if (g_4kresolution) {
@@ -7900,7 +7950,7 @@ void s_dummyfunc()
 				}
 
 			//Lines at both of edge
-			//‘I‘ğ—¼’[‚É@‚’¼ƒ‰ƒCƒ“
+			//é¸æŠä¸¡ç«¯ã«ã€€å‚ç›´ãƒ©ã‚¤ãƒ³
 				if (sgraph) {
 
 					int edgeindex;
@@ -7970,7 +8020,7 @@ void s_dummyfunc()
 
 
 				//for (int i = 0; i < (int)key.size(); i++) {
-				//	//value‚ª‘‚¦‚é•ûŒü‚ğã•ûŒü‚ÉBÀ•WŒn‚Í‰º•ûŒü‚Éƒvƒ‰ƒXB
+				//	//valueãŒå¢—ãˆã‚‹æ–¹å‘ã‚’ä¸Šæ–¹å‘ã«ã€‚åº§æ¨™ç³»ã¯ä¸‹æ–¹å‘ã«ãƒ—ãƒ©ã‚¹ã€‚
 				//	//int ey0 = (parent->maxeul - key[i]->value) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
 				//	int ey0 = (int)((parent->maxeul - key[i]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
 				//	int ey1 = ey0 + DOT_SIZE_Y;
@@ -7996,10 +8046,10 @@ void s_dummyfunc()
 				//}
 
 
-				//–Ú·‚è 10“x’PˆÊ
+				//ç›®ç››ã‚Š 10åº¦å˜ä½
 				if (wcscmp(L"X", name.c_str()) == 0) {
 					int fontsize = 12;
-					hdcM->setFont(fontsize, _T("‚l‚r ƒSƒVƒbƒN"));
+					hdcM->setFont(fontsize, _T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 					//SetTextColor(hdcM->hDC, RGB(255, 255, 255));
 
 					double mesurestep;
@@ -8112,11 +8162,11 @@ void s_dummyfunc()
 
 					//between min and max
 					for (double curmeasure = minmeasure + mesurestep; curmeasure < maxmeasure; curmeasure += mesurestep) {
-						//value‚ª‘‚¦‚é•ûŒü‚ğã•ûŒü‚ÉBÀ•WŒn‚Í‰º•ûŒü‚Éƒvƒ‰ƒXB
+						//valueãŒå¢—ãˆã‚‹æ–¹å‘ã‚’ä¸Šæ–¹å‘ã«ã€‚åº§æ¨™ç³»ã¯ä¸‹æ–¹å‘ã«ãƒ—ãƒ©ã‚¹ã€‚
 						//ey0 = (parent->maxeul - curmeasure) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
 						ey0 = (int)((parent->maxeul - curmeasure) / eulrange * (y1 - y0) + y2);
 						ex0 = (int)(x0 + parent->LABEL_SIZE_X - 7 * fontsize);
-						if ((ey0 >= y0) && (abs(ey0 - prevy0) > 16)) {//•¶šƒtƒHƒ“ƒgƒTƒCƒY‚ğl—¶
+						if ((ey0 >= y0) && (abs(ey0 - prevy0) > 16)) {//æ–‡å­—ãƒ•ã‚©ãƒ³ãƒˆã‚µã‚¤ã‚ºã‚’è€ƒæ…®
 							//if (abs(ey0 - befey0) > 20) {
 							//if (abs(ey0 - befey0) > (mesurestep * 2)) {
 								swprintf_s(strmeasure, 64, L"%+3.3lf---", curmeasure);
@@ -8150,7 +8200,7 @@ void s_dummyfunc()
 					//ey0 = (parent->maxeul - maxmeasure) / (eulrange + 2.0 * eulmargin) * (y1 - y0) + y0;
 					ey0 = (int)((parent->maxeul - maxmeasure) / eulrange * (y1 - y0) + y2);
 					ex0 = (int)(x0 + parent->LABEL_SIZE_X - 7 * fontsize);
-					if ((ey0 >= y0) && (abs(ey0 - prevy0) > 16)) {//•¶šƒtƒHƒ“ƒgƒTƒCƒY‚ğl—¶
+					if ((ey0 >= y0) && (abs(ey0 - prevy0) > 16)) {//æ–‡å­—ãƒ•ã‚©ãƒ³ãƒˆã‚µã‚¤ã‚ºã‚’è€ƒæ…®
 						swprintf_s(strmeasure, 64, L"%+3.3lf---", maxmeasure);
 						strmeasure[64 - 1] = 0L;
 						size_t measurelen;
@@ -8174,13 +8224,13 @@ void s_dummyfunc()
 				}
 			}
 
-			//	Method : ƒL[‚ğì¬‚·‚é
+			//	Method : ã‚­ãƒ¼ã‚’ä½œæˆã™ã‚‹
 			bool newKey(const double &_time, int _type = 0, double _value = 0.0, double _length = 1.0, bool _select = false) {
 
 				if (parent->allowSameTimeKey == false) {
 					int i = getKeyIndex(_time);
 					if (i != -1) {
-						//ã‘‚«ƒŠƒXƒi[ƒR[ƒ‹
+						//ä¸Šæ›¸ããƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 						if (parent->keyDeleteListener != NULL) {
 							KeyInfo ki;
 							ki.label = name.c_str();
@@ -8202,7 +8252,7 @@ void s_dummyfunc()
 				}
 
 				if ((_time >= parent->maxTime) || _time<0.0) {
-					/*					//ì¬•s”\íœƒŠƒXƒi[ƒR[ƒ‹
+					/*					//ä½œæˆä¸èƒ½å‰Šé™¤ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 					if( parent->keyDeleteListener!=NULL ){
 					KeyInfo ki;
 					ki.label= name.c_str();
@@ -8278,7 +8328,7 @@ void s_dummyfunc()
 
 				//return true;
 			}
-			//	Method : ƒL[‚É’l‚ğİ’è‚·‚éB
+			//	Method : ã‚­ãƒ¼ã«å€¤ã‚’è¨­å®šã™ã‚‹ã€‚
 			bool setKey(const double &_time, int _type = 0, double _value = 0.0) {
 				int i = getKeyIndex(_time);
 				if (i < 0) {
@@ -8288,7 +8338,7 @@ void s_dummyfunc()
 
 				return true;
 			}
-			//	Method : ‚·‚×‚Ä‚ÌƒL[‚Ì‘I‘ğ‚ğ‰ğœ‚·‚é
+			//	Method : ã™ã¹ã¦ã®ã‚­ãƒ¼ã®é¸æŠã‚’è§£é™¤ã™ã‚‹
 			void selectClear() {
 				int currentkeynum = (int)key.size();
 				for (int i = 0; i < currentkeynum; i++) {
@@ -8297,7 +8347,7 @@ void s_dummyfunc()
 				setMinSelected(0);
 				setMaxSelected(0);
 			}
-			//	Method : ‚·‚×‚Ä‚ÌƒL[‚ğ‘I‘ğ‚·‚é
+			//	Method : ã™ã¹ã¦ã®ã‚­ãƒ¼ã‚’é¸æŠã™ã‚‹
 			void selectAll() {
 				int currentkeynum = (int)key.size();
 				for (int i = 0; i < currentkeynum; i++) {
@@ -8308,7 +8358,7 @@ void s_dummyfunc()
 
 				parent->ghostShiftTime = 0;
 			}
-			//	Method : w’è‚³‚ê‚½‚É‚ ‚éƒL[‚ğ‚Ğ‚Æ‚Â‘I‘ğ‚·‚é
+			//	Method : æŒ‡å®šã•ã‚ŒãŸæ™‚åˆ»ã«ã‚ã‚‹ã‚­ãƒ¼ã‚’ã²ã¨ã¤é¸æŠã™ã‚‹
 			bool selectKey(const double &_time) {
 
 				int currentindex = getKeyIndex(_time);
@@ -8331,8 +8381,8 @@ void s_dummyfunc()
 				return false;
 
 			}
-			///	Method : w’è‚³‚ê‚½”ÍˆÍ‚É‚ ‚éƒL[‚ğ‚·‚×‚Ä‘I‘ğ‚·‚é
-			///			 Œµ–§ƒ‚[ƒh(startTime<=keyTime<endTime)
+			///	Method : æŒ‡å®šã•ã‚ŒãŸæ™‚åˆ»ç¯„å›²ã«ã‚ã‚‹ã‚­ãƒ¼ã‚’ã™ã¹ã¦é¸æŠã™ã‚‹
+			///			 å³å¯†ãƒ¢ãƒ¼ãƒ‰(startTime<=keyTime<endTime)
 			int selectKey(const double &startTime, const double &endTime) {
 				int selectCount = 0;
 				int startindex, endindex;
@@ -8340,7 +8390,7 @@ void s_dummyfunc()
 				endindex = getKeyIndex(endTime);
 				if ((startindex >= 0) && (endindex >= 0)) {
 					for (int i = startindex; i <= endindex; i++) {
-						if ((startTime <= key[i]->time) && (key[i]->time <= endTime)) {//endTime ==ŠÜ‚Ş@2021/11/09
+						if ((startTime <= key[i]->time) && (key[i]->time <= endTime)) {//endTime ==å«ã‚€ã€€2021/11/09
 							key[i]->select = true;
 							selectCount++;
 						}
@@ -8363,8 +8413,8 @@ void s_dummyfunc()
 				return selectCount;
 
 			}
-			///	Method : w’è‚³‚ê‚½”ÍˆÍ‚É‚ ‚éƒL[‚ğ‚·‚×‚Ä‘I‘ğ‚·‚é
-			///			 ‘åG”cƒ‚[ƒh(startTime-TIME_ERROR_WIDTH<=keyTime<=endTime+TIME_ERROR_WIDTH)
+			///	Method : æŒ‡å®šã•ã‚ŒãŸæ™‚åˆ»ç¯„å›²ã«ã‚ã‚‹ã‚­ãƒ¼ã‚’ã™ã¹ã¦é¸æŠã™ã‚‹
+			///			 å¤§é›‘æŠŠãƒ¢ãƒ¼ãƒ‰(startTime-TIME_ERROR_WIDTH<=keyTime<=endTime+TIME_ERROR_WIDTH)
 			int selectKey2(const double &startTime, const double &endTime) {
 
 				int selectCount = 0;
@@ -8373,7 +8423,7 @@ void s_dummyfunc()
 				endindex = getKeyIndex(endTime);
 				if ((startindex >= 0) && (endindex >= 0)) {
 					for (int i = startindex; i <= endindex; i++) {
-						if ((startTime <= key[i]->time) && (key[i]->time <= endTime)) {//endTime ==ŠÜ‚Ş@2021/11/09
+						if ((startTime <= key[i]->time) && (key[i]->time <= endTime)) {//endTime ==å«ã‚€ã€€2021/11/09
 							key[i]->select = true;
 							selectCount++;
 						}
@@ -8395,7 +8445,7 @@ void s_dummyfunc()
 				return selectCount;
 
 			}
-			//	Method : w’è‚³‚ê‚½‚É‚ ‚éƒL[‚ÌƒCƒ“ƒfƒbƒNƒX‚ğ‚Ğ‚Æ‚Âæ“¾‚·‚é
+			//	Method : æŒ‡å®šã•ã‚ŒãŸæ™‚åˆ»ã«ã‚ã‚‹ã‚­ãƒ¼ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’ã²ã¨ã¤å–å¾—ã™ã‚‹
 			int getKeyIndex(const double &_time) {
 				//int timeindex = (int)(_time + 0.1);
 				unsigned int currentindex = (unsigned int)(_time + 0.1);
@@ -8415,11 +8465,11 @@ void s_dummyfunc()
 				//return -1;
 
 			}
-			////	Method : ‘I‘ğ‚³‚ê‚Ä‚¢‚éƒL[‚ğ‚·‚×‚Äíœ‚·‚é
+			////	Method : é¸æŠã•ã‚Œã¦ã„ã‚‹ã‚­ãƒ¼ã‚’ã™ã¹ã¦å‰Šé™¤ã™ã‚‹
 			//unsigned int deleteKey(bool noCallListener = false) {
-			//	Method : ƒL[‚ğ‚·‚×‚Äíœ‚·‚é
+			//	Method : ã‚­ãƒ¼ã‚’ã™ã¹ã¦å‰Šé™¤ã™ã‚‹
 			unsigned int deleteKey(bool noCallListener = false) {
-				//EulKey‚Ìê‡@‘S‚ÄInvalidate
+				//EulKeyã®å ´åˆã€€å…¨ã¦Invalidate
 				unsigned int deleteNum;
 				deleteNum = (unsigned int)key.size();
 				for (unsigned int i = 0; i < deleteNum; i++) {
@@ -8431,7 +8481,7 @@ void s_dummyfunc()
 				//unsigned int deleteNum = 0;
 				//for (unsigned int i = 0; i<(int)key.size(); i++) {
 				//	if (key[i]->select) {
-				//		//ƒŠƒXƒi[ƒR[ƒ‹
+				//		//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 				//		if (!noCallListener && parent->keyDeleteListener != NULL) {
 				//			KeyInfo ki;
 				//			ki.label = name.c_str();
@@ -8457,11 +8507,11 @@ void s_dummyfunc()
 				return deleteNum;
 
 			}
-			////	Method : w’è‚³‚ê‚½ƒL[‚ğíœ‚·‚é
+			////	Method : æŒ‡å®šã•ã‚ŒãŸã‚­ãƒ¼ã‚’å‰Šé™¤ã™ã‚‹
 			//bool deleteKey(int index, bool noCallListener = false) {
 			//	if ((unsigned int)key.size() <= (unsigned int)index) return false;
 
-			//	//ƒŠƒXƒi[ƒR[ƒ‹
+			//	//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 			//	if (!noCallListener && (parent->keyDeleteListener != NULL)) {
 			//		KeyInfo ki;
 			//		ki.label = name.c_str();
@@ -8481,7 +8531,7 @@ void s_dummyfunc()
 			//	key.pop_back();
 			//	return true;
 			//}
-			////	Method : w’è‚³‚ê‚½ƒL[‚ğˆÚ“®‚·‚é
+			////	Method : æŒ‡å®šã•ã‚ŒãŸã‚­ãƒ¼ã‚’ç§»å‹•ã™ã‚‹
 			//bool shiftKey(const double &shiftTime, int index) {
 			//	if (key.size() <= (unsigned int)index) return false;
 
@@ -8493,9 +8543,9 @@ void s_dummyfunc()
 			//	double value = key[index]->value;
 			//	deleteKey(index, true);
 
-			//	//Šù‚ÉƒL[‚ª‘¶İ‚·‚éê‡
+			//	//æ—¢ã«ã‚­ãƒ¼ãŒå­˜åœ¨ã™ã‚‹å ´åˆ
 			//	if (!newKey(dstTime, type, value, length, select)) {
-			//		//’u‚«Š·‚¦‚É‚æ‚éƒL[íœƒŠƒXƒi[ƒR[ƒ‹
+			//		//ç½®ãæ›ãˆã«ã‚ˆã‚‹ã‚­ãƒ¼å‰Šé™¤ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 			//		if (parent->keyDeleteListener != NULL) {
 			//			KeyInfo ki;
 			//			ki.label = name.c_str();
@@ -8506,7 +8556,7 @@ void s_dummyfunc()
 			//			(parent->keyDeleteListener)(ki);
 			//		}
 
-			//		//‘¶İ‚·‚éƒL[‚Ì’l‚ğ’u‚«Š·‚¦Œã‚ÌƒL[‚Ì’l‚É•ÏX
+			//		//å­˜åœ¨ã™ã‚‹ã‚­ãƒ¼ã®å€¤ã‚’ç½®ãæ›ãˆå¾Œã®ã‚­ãƒ¼ã®å€¤ã«å¤‰æ›´
 			//		int dstIndex = getKeyIndex(dstTime);
 			//		key[dstIndex]->type = type;
 			//		key[dstIndex]->length = length;
@@ -8515,7 +8565,7 @@ void s_dummyfunc()
 
 			//	return true;
 			//}
-			////	Method : ‘I‘ğ‚³‚ê‚Ä‚¢‚éƒL[‚ğ‚·‚×‚ÄˆÚ“®‚·‚é
+			////	Method : é¸æŠã•ã‚Œã¦ã„ã‚‹ã‚­ãƒ¼ã‚’ã™ã¹ã¦ç§»å‹•ã™ã‚‹
 			//unsigned int shiftKey(const double &shiftTime) {
 
 			//	unsigned int shiftNum = 0;
@@ -8533,7 +8583,7 @@ void s_dummyfunc()
 			//	std::list<EulKey>::iterator itr;
 			//	for (itr = shiftKeyList.begin(); itr != shiftKeyList.end(); itr++) {
 			//		if (!newKey(itr->time + shiftTime, itr->type, itr->value, itr->length, itr->select)) {
-			//			//ì¬•s”\íœƒŠƒXƒi[ƒR[ƒ‹
+			//			//ä½œæˆä¸èƒ½å‰Šé™¤ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 			//			if (parent->keyDeleteListener != NULL) {
 			//				KeyInfo ki;
 			//				ki.label = name.c_str();
@@ -8548,7 +8598,7 @@ void s_dummyfunc()
 
 			//	return shiftNum;
 			//}
-			////	Method : ‘I‘ğ‚³‚ê‚Ä‚¢‚éƒL[‚ğƒS[ƒXƒgƒL[‚ÌˆÊ’u‚Ö‚·‚×‚ÄˆÚ“®‚·‚é
+			////	Method : é¸æŠã•ã‚Œã¦ã„ã‚‹ã‚­ãƒ¼ã‚’ã‚´ãƒ¼ã‚¹ãƒˆã‚­ãƒ¼ã®ä½ç½®ã¸ã™ã¹ã¦ç§»å‹•ã™ã‚‹
 			//unsigned int shiftKey() {
 			//	return shiftKey(parent->ghostShiftTime);
 			//}
@@ -8579,7 +8629,7 @@ void s_dummyfunc()
 		//static const int GRAPH_SIZE_Y = 120;
 		
 		//static const int GRAPH_SIZE_Y = 170;
-		int GRAPH_SIZE_Y;//constructor‚ÅƒZƒbƒg
+		int GRAPH_SIZE_Y;//constructorã§ã‚»ãƒƒãƒˆ
 		
 		static const int LABEL_SIZE_Y = 20;
 		//static const int LABEL_SIZE_X= 75;
@@ -8587,7 +8637,7 @@ void s_dummyfunc()
 		
 		
 		//static const int LABEL_SIZE_X = 280;
-		static const int LABEL_SIZE_X = 135;//2023/01/08 owp_timeline‚Ìshortlabel‚Æ‡‚í‚¹‚é
+		static const int LABEL_SIZE_X = 135;//2023/01/08 owp_timelineã®shortlabelã¨åˆã‚ã›ã‚‹
 
 
 		static const int AXIS_SIZE_Y = 15;
@@ -8600,24 +8650,24 @@ void s_dummyfunc()
 
 		double timeSnapSize;
 
-		bool rewriteOnChange;		//ƒL[‘€ì‚ÉÄ•`‰æ‚ğs‚¤‚©”Û‚©‚Ìƒtƒ‰ƒO
-		bool canMouseControll;		//ƒ}ƒEƒX‚Å‚Ì‘€ì‚ª‰Â”\‚©”Û‚©‚Ìƒtƒ‰ƒO
+		bool rewriteOnChange;		//ã‚­ãƒ¼æ“ä½œæ™‚ã«å†æç”»ã‚’è¡Œã†ã‹å¦ã‹ã®ãƒ•ãƒ©ã‚°
+		bool canMouseControll;		//ãƒã‚¦ã‚¹ã§ã®æ“ä½œãŒå¯èƒ½ã‹å¦ã‹ã®ãƒ•ãƒ©ã‚°
 
 		bool dragLabel;
 		bool dragTime;
 		bool dragScrollBarLabel;
 		bool dragScrollBarTime;
 
-		bool dragSelect;		//ƒhƒ‰ƒbƒO‚Å‚Ì”ÍˆÍ‘I‘ğ
+		bool dragSelect;		//ãƒ‰ãƒ©ãƒƒã‚°ã§ã®ç¯„å›²é¸æŠ
 		double dragSelectTime1, dragSelectTime2;
 		int dragSelectLine1, dragSelectLine2;
 
-		bool dragShift;			//ƒhƒ‰ƒbƒO‚Å‚ÌƒL[ˆÚ“®
+		bool dragShift;			//ãƒ‰ãƒ©ãƒƒã‚°ã§ã®ã‚­ãƒ¼ç§»å‹•
 	};
 
 
 	///<summary>
-	///	ƒEƒBƒ“ƒhƒE“à•”•i"ƒŒƒCƒ„[ƒe[ƒuƒ‹"ƒNƒ‰ƒX
+	///	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“"ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ†ãƒ¼ãƒ–ãƒ«"ã‚¯ãƒ©ã‚¹
 	///</summary>
 	class OWP_LayerTable: public OrgWindowParts{
 	public:
@@ -8661,17 +8711,17 @@ void s_dummyfunc()
 		}
 
 		//////////////////////////// Method //////////////////////////////
-		/// Method : ©“®ƒTƒCƒYİ’è
+		/// Method : è‡ªå‹•ã‚µã‚¤ã‚ºè¨­å®š
 		virtual void autoResize(){
 			size.y-= (size.y-MARGIN*2)%(LABEL_SIZE_Y-1)-1;
 		}
-		//	Method : •`‰æ
+		//	Method : æç”»
 		virtual void draw(){
 			drawEdge();
 
 			int showLineNum= (size.y-MARGIN*2)/(LABEL_SIZE_Y-1);
 
-			//sƒf[ƒ^
+			//è¡Œãƒ‡ãƒ¼ã‚¿
 			for(int i=showPosLine,j=0; i<(int)lineData.size() && j<showLineNum; i++,j++){
 				bool highLight=false;
 				if( i == currentLine ) highLight=true;
@@ -8682,7 +8732,7 @@ void s_dummyfunc()
 									size.x-SCROLL_BAR_WIDTH-MARGIN*2,highLight );
 			}
 
-			//ƒhƒ‰ƒbƒOˆÚ“®‚Ì–Úˆó
+			//ãƒ‰ãƒ©ãƒƒã‚°ç§»å‹•ã®ç›®å°
 			if( dragLine && (shiftIndex != 0) ){
 				int markPos= currentLine+shiftIndex-showPosLine;
 				if( 0 <= shiftIndex ) markPos+=1;
@@ -8694,17 +8744,17 @@ void s_dummyfunc()
 				LineTo(hdcM->hDC,   size.x-SCROLL_BAR_WIDTH-MARGIN*2,markPos);
 			}
 
-			{//ƒ‰ƒxƒ‹ƒXƒNƒ[ƒ‹ƒo[
+			{//ãƒ©ãƒ™ãƒ«ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 				int x0= pos.x+size.x-MARGIN-SCROLL_BAR_WIDTH-1;
 				int x1= x0+SCROLL_BAR_WIDTH+1;
 				int y0= pos.y+MARGIN;
 				int y1= pos.y+size.y-MARGIN;
 
-				//˜g
+				//æ 
 				hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
 				Rectangle(hdcM->hDC,x0,y0,x1,y1);
 
-				//’†g
+				//ä¸­èº«
 				if (lineData.size() > 0) {
 					int barSize = (y1 - y0 - 4) * showLineNum / (int)lineData.size();
 					int barStart = (y1 - y0 - 4) * showPosLine / (int)lineData.size();
@@ -8746,7 +8796,7 @@ void s_dummyfunc()
 			}
 
 		}
-		//	Method : s‚ğ’Ç‰Á	(Šù‚É“¯–¼‚ÌƒL[‚ª‚ ‚éê‡‚ÍFalse‚ğ•Ô‚·)
+		//	Method : è¡Œã‚’è¿½åŠ 	(æ—¢ã«åŒåã®ã‚­ãƒ¼ãŒã‚ã‚‹å ´åˆã¯Falseã‚’è¿”ã™)
 		bool newLine(const std::basic_string<TCHAR> &_name, const void *object=NULL){
 			for(int i=0; i<(int)lineData.size(); i++){
 				if(lineData[i]->name==_name){
@@ -8755,20 +8805,20 @@ void s_dummyfunc()
 			}
 			lineData.push_back(new LineData(_name,this,object));
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( rewriteOnChange ){
 				callRewrite();
 			}
 			return true;
 		}
-		//	Method : s‚ğíœ
+		//	Method : è¡Œã‚’å‰Šé™¤
 		void deleteLine(){
 			for(int i=0; i<(int)lineData.size(); i++){
 				delete lineData[i];
 			}
 			lineData.clear();
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( rewriteOnChange ){
 				callRewrite();
 			}
@@ -8787,7 +8837,7 @@ void s_dummyfunc()
 			}
 			lineData.pop_back();
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( rewriteOnChange ){
 				callRewrite();
 			}
@@ -8798,13 +8848,13 @@ void s_dummyfunc()
 
 			bool ret= deleteLine(lineData[index]->name);
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( ret && rewriteOnChange ){
 				callRewrite();
 			}
 			return ret;
 		}
-		///	Method : ƒ}ƒEƒX¶ƒ{ƒ^ƒ“ƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		///	Method : ãƒã‚¦ã‚¹å·¦ãƒœã‚¿ãƒ³ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonDown(const MouseEvent& e){
 			if( !canMouseControll ) return;
 
@@ -8815,25 +8865,25 @@ void s_dummyfunc()
 			int y0= MARGIN;
 			int y1= size.y-MARGIN;
 
-			//ƒ{ƒ^ƒ“
+			//ãƒœã‚¿ãƒ³
 			if( (x0 <= e.localX) && (e.localX < x1) && 
 				(y0 <= e.localY) && (e.localY < y1) ){
 				unsigned int targetIndex= showPosLine+ (e.localY-y0)/(LABEL_SIZE_Y-1);
 				if( targetIndex <= ((unsigned int)lineData.size() - 1) ){
-					//‰Â‹E•s‰Â‹ƒ{ƒ^ƒ“
+					//å¯è¦–ãƒ»ä¸å¯è¦–ãƒœã‚¿ãƒ³
 					if( e.localX < (x0 + LABEL_SIZE_Y) ){
 						lineData[targetIndex]->visible= !lineData[targetIndex]->visible;
-						//ƒŠƒXƒi[ƒR[ƒ‹
+						//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 						if( this->changeVisibleListener != NULL ){
 							(this->changeVisibleListener)(targetIndex);
 						}
 						dragVisibleButton= true;
 						dragVisibleButtonValue= lineData[targetIndex]->visible;
 
-					//ƒƒbƒNƒ{ƒ^ƒ“
+					//ãƒ­ãƒƒã‚¯ãƒœã‚¿ãƒ³
 					}else{
 						lineData[targetIndex]->lock= !lineData[targetIndex]->lock;
-						//ƒŠƒXƒi[ƒR[ƒ‹
+						//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 						if( this->changeLockListener != NULL ){
 							(this->changeLockListener)(targetIndex);
 						}
@@ -8841,14 +8891,14 @@ void s_dummyfunc()
 						dragLockButtonValue= lineData[targetIndex]->lock;
 					}
 
-					//Ä•`‰æ—v‹
+					//å†æç”»è¦æ±‚
 					if( rewriteOnChange ){
 						callRewrite();
 					}
 				}
 			}
 
-			//ƒ‰ƒxƒ‹ƒhƒ‰ƒbƒO
+			//ãƒ©ãƒ™ãƒ«ãƒ‰ãƒ©ãƒƒã‚°
 			if( (x1 <= e.localX) && (e.localX < x2) && 
 				(y0 <= e.localY) && (e.localY < y1) ){
 				setCurrentLine( showPosLine+ (e.localY-y0)/(LABEL_SIZE_Y-1) );
@@ -8857,7 +8907,7 @@ void s_dummyfunc()
 				shiftIndex= 0;
 			}
 
-			//ƒ‰ƒCƒ“ƒXƒNƒ[ƒ‹ƒo[
+			//ãƒ©ã‚¤ãƒ³ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if( (x2 <= e.localX) && (e.localX < x3) && 
 				(y0 <= e.localY) && (e.localY < y1) ){
 				int showLineNum= (y1-y0)/(LABEL_SIZE_Y-1);
@@ -8874,22 +8924,22 @@ void s_dummyfunc()
 			}
 
 		}
-		///	Method : ¶ƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		///	Method : å·¦ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onLButtonUp(const MouseEvent& e){
 			if( !canMouseControll ) return;
 
-			//ƒhƒ‰ƒbƒO‚É‚æ‚éƒL[ˆÚ“®
+			//ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹ã‚­ãƒ¼ç§»å‹•
 			if( dragLine ){
 				int beforIndex= currentLine;
 				int afterIndex= max(0, min(currentLine+shiftIndex, ((int)lineData.size()-1)));
 				if( beforIndex != afterIndex ){
 
-					//ƒŠƒXƒi[ƒR[ƒ‹
+					//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 					if(this->lineShiftListener != NULL){
 						(this->lineShiftListener)(beforIndex,afterIndex);
 					}
 
-					//’u‚«Š·‚¦
+					//ç½®ãæ›ãˆ
 					if( beforIndex<afterIndex ){
 						LineData* tmp= lineData[beforIndex];
 						for(int i=beforIndex; i<afterIndex; i++){
@@ -8904,24 +8954,24 @@ void s_dummyfunc()
 						lineData[afterIndex]= tmp;
 					}
 
-					//ƒJƒŒƒ“ƒgƒ‰ƒCƒ“‚ğC³
+					//ã‚«ãƒ¬ãƒ³ãƒˆãƒ©ã‚¤ãƒ³ã‚’ä¿®æ­£
 					currentLine= afterIndex;
 
 				}
 			}
 
-			//ƒhƒ‰ƒbƒOƒtƒ‰ƒO‚ğ‰Šú‰»
+			//ãƒ‰ãƒ©ãƒƒã‚°ãƒ•ãƒ©ã‚°ã‚’åˆæœŸåŒ–
 			dragLine= false;
 			dragScrollBarLine= false;
 			dragVisibleButton= false;
 			dragLockButton= false;
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( rewriteOnChange ){
 				callRewrite();
 			}
 		}
-		///	Method : ƒ}ƒEƒXˆÚ“®ƒCƒxƒ“ƒgóM
+		///	Method : ãƒã‚¦ã‚¹ç§»å‹•ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onMouseMove(const MouseEvent& e){
 			if( !canMouseControll ) return;
 
@@ -8931,7 +8981,7 @@ void s_dummyfunc()
 			int y0= MARGIN;
 			int y1= size.y-MARGIN;
 
-			//ƒ‰ƒCƒ“
+			//ãƒ©ã‚¤ãƒ³
 			if( dragLine || dragVisibleButton || dragLockButton ){
 				int showLineNum= (size.y-MARGIN*2)/(LABEL_SIZE_Y-1);
 
@@ -8945,27 +8995,27 @@ void s_dummyfunc()
 					showPosLine= newCposLine-showLineNum+1;
 				}
 
-				//ƒ‰ƒxƒ‹ƒhƒ‰ƒbƒO
+				//ãƒ©ãƒ™ãƒ«ãƒ‰ãƒ©ãƒƒã‚°
 				if( dragLine ){
 					shiftIndex= newCposLine-currentLine;
 
-				//‰Â‹ó‘Ôƒ{ƒ^ƒ“ƒhƒ‰ƒbƒO
+				//å¯è¦–çŠ¶æ…‹ãƒœã‚¿ãƒ³ãƒ‰ãƒ©ãƒƒã‚°
 				}else if( dragVisibleButton ){
 					setVisible(newCposLine,dragVisibleButtonValue);
 
-				//ƒƒbƒNó‘Ôƒ{ƒ^ƒ“ƒhƒ‰ƒbƒO
+				//ãƒ­ãƒƒã‚¯çŠ¶æ…‹ãƒœã‚¿ãƒ³ãƒ‰ãƒ©ãƒƒã‚°
 				}else{
 					setLock(newCposLine,dragLockButtonValue);
 
 				}
 
-				//Ä•`‰æ—v‹
+				//å†æç”»è¦æ±‚
 				if( rewriteOnChange ){
 					callRewrite();
 				}
 			}
 
-			//ƒ‰ƒxƒ‹ƒXƒNƒ[ƒ‹ƒo[
+			//ãƒ©ãƒ™ãƒ«ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if( dragScrollBarLine ){
 				int showLineNum= (y1-y0)/(LABEL_SIZE_Y-1);
 				int barSize= (y1-y0-4)*showLineNum/(int)lineData.size();
@@ -8976,7 +9026,7 @@ void s_dummyfunc()
 				setShowPosLine( (e.localY-movableYStart)*((int)lineData.size()-showLineNum)/movableY );
 			}
 		}
-		///	Method : ‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		///	Method : å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onRButtonDown(const MouseEvent& e){
 			if( !canMouseControll ) return;
 
@@ -8987,7 +9037,7 @@ void s_dummyfunc()
 			int y0= MARGIN;
 			int y1= size.y-MARGIN;
 
-			//ƒ‰ƒxƒ‹‰EƒNƒŠƒbƒN
+			//ãƒ©ãƒ™ãƒ«å³ã‚¯ãƒªãƒƒã‚¯
 			if( (x1 <= e.localX) && (e.localX < x2) && 
 				(y0 <= e.localY) && (e.localY < y1) ){
 				mouseRBtnOnIndex= showPosLine+ (e.localY-y0)/(LABEL_SIZE_Y-1);
@@ -8996,7 +9046,7 @@ void s_dummyfunc()
 			}
 
 		}
-		///	Method : ‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		///	Method : å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		virtual void onRButtonUp(const MouseEvent& e){
 			if( !canMouseControll ) return;
 
@@ -9007,13 +9057,13 @@ void s_dummyfunc()
 			int y0= MARGIN;
 			int y1= size.y-MARGIN;
 
-			//ƒvƒƒpƒeƒBƒR[ƒ‹
+			//ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ã‚³ãƒ¼ãƒ«
 			if( (mouseRBtnOnIndex != -1) && 
 				(mouseRBtnOnIndex == ((showPosLine + (e.localY - y0)) / (LABEL_SIZE_Y-1))) && 
 				(x1 <= e.localX) && (e.localX < x2) && 
 				(y0 <= e.localY) && (e.localY < y1) ){
 
-				//ƒŠƒXƒi[ƒR[ƒ‹
+				//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 				if( this->callPropertyListener!=NULL ){
 					(this->callPropertyListener)(mouseRBtnOnIndex);
 				}
@@ -9030,7 +9080,7 @@ void s_dummyfunc()
 		void setName(const TCHAR *value){
 			_tcscpy_s(name,256,value);
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( rewriteOnChange ){
 				callRewrite();
 			}
@@ -9044,7 +9094,7 @@ void s_dummyfunc()
 
 				lineData[index]->name= value;
 
-				//Ä•`‰æ—v‹
+				//å†æç”»è¦æ±‚
 				if( rewriteOnChange ){
 					callRewrite();
 				}
@@ -9076,12 +9126,12 @@ void s_dummyfunc()
 				showPosLine= currentLine-showLineNum+1;
 			}
 
-			//ƒŠƒXƒi[ƒR[ƒ‹
+			//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 			if( !noCallListener && (this->cursorListener != NULL) ){
 				(this->cursorListener)();
 			}
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( rewriteOnChange ){
 				callRewrite();
 			}
@@ -9111,12 +9161,12 @@ void s_dummyfunc()
 				showPosLine= 0;
 			}
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if( rewriteOnChange ){
 				callRewrite();
 			}
 		}
-		/// Accessor: ‰Â‹E•s‰Â‹ƒtƒ‰ƒO
+		/// Accessor: å¯è¦–ãƒ»ä¸å¯è¦–ãƒ•ãƒ©ã‚°
 		bool getVisible(const std::basic_string<TCHAR> &_name) const{
 			std::vector<LineData*>::const_iterator itr;
 			for(itr = lineData.begin(); itr != lineData.end(); itr++){
@@ -9136,16 +9186,16 @@ void s_dummyfunc()
 			for(unsigned int i=0; i<(unsigned int)lineData.size(); i++){
 				if( lineData[i]->name==_name ){
 
-					//ƒZƒbƒg‚·‚é’l‚ªŒ»İ‚Ì’l‚ÆˆÙ‚È‚é‚Æ‚«‚Ì‚İ•ÏX‚·‚é
+					//ã‚»ãƒƒãƒˆã™ã‚‹å€¤ãŒç¾åœ¨ã®å€¤ã¨ç•°ãªã‚‹ã¨ãã®ã¿å¤‰æ›´ã™ã‚‹
 					if( lineData[i]->visible != value ){
 						lineData[i]->visible= value;
 
-						//ƒŠƒXƒi[ƒR[ƒ‹
+						//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 						if( !noCallListener && (this->changeVisibleListener != NULL) ){
 							(this->changeVisibleListener)((int)i);
 						}
 
-						//Ä•`‰æ—v‹
+						//å†æç”»è¦æ±‚
 						if( rewriteOnChange ){
 							callRewrite();
 						}
@@ -9159,23 +9209,23 @@ void s_dummyfunc()
 		bool setVisible(int index, bool value, bool noCallListener=false){
 			if(lineData.size() <= (unsigned int)index) return false;
 
-			//ƒZƒbƒg‚·‚é’l‚ªŒ»İ‚Ì’l‚ÆˆÙ‚È‚é‚Æ‚«‚Ì‚İ•ÏX‚·‚é
+			//ã‚»ãƒƒãƒˆã™ã‚‹å€¤ãŒç¾åœ¨ã®å€¤ã¨ç•°ãªã‚‹ã¨ãã®ã¿å¤‰æ›´ã™ã‚‹
 			if( lineData[index]->visible != value ){
 				lineData[index]->visible= value;
 
-				//ƒŠƒXƒi[ƒR[ƒ‹
+				//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 				if( !noCallListener && (this->changeVisibleListener!=NULL) ){
 					(this->changeVisibleListener)(index);
 				}
 
-				//Ä•`‰æ—v‹
+				//å†æç”»è¦æ±‚
 				if( rewriteOnChange ){
 					callRewrite();
 				}
 			}
 			return true;
 		}
-		/// Accessor: ƒƒbƒNƒtƒ‰ƒO
+		/// Accessor: ãƒ­ãƒƒã‚¯ãƒ•ãƒ©ã‚°
 		bool getLock(const std::basic_string<TCHAR> &_name) const{
 			std::vector<LineData*>::const_iterator itr;
 			for(itr = lineData.begin(); itr != lineData.end(); itr++){
@@ -9195,16 +9245,16 @@ void s_dummyfunc()
 			for(unsigned int i=0; i<(unsigned int)lineData.size(); i++){
 				if( lineData[i]->name==_name ){
 
-					//ƒZƒbƒg‚·‚é’l‚ªŒ»İ‚Ì’l‚ÆˆÙ‚È‚é‚Æ‚«‚Ì‚İ•ÏX‚·‚é
+					//ã‚»ãƒƒãƒˆã™ã‚‹å€¤ãŒç¾åœ¨ã®å€¤ã¨ç•°ãªã‚‹ã¨ãã®ã¿å¤‰æ›´ã™ã‚‹
 					if( lineData[i]->lock != value ){
 						lineData[i]->lock= value;
 
-						//ƒŠƒXƒi[ƒR[ƒ‹
+						//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 						if( !noCallListener && (this->changeLockListener != NULL) ){
 							(this->changeLockListener)(i);
 						}
 
-						//Ä•`‰æ—v‹
+						//å†æç”»è¦æ±‚
 						if( rewriteOnChange ){
 							callRewrite();
 						}
@@ -9218,16 +9268,16 @@ void s_dummyfunc()
 		bool setLock(int index, bool value, bool noCallListener=false){
 			if(lineData.size() <= (unsigned int)index) return false;
 
-			//ƒZƒbƒg‚·‚é’l‚ªŒ»İ‚Ì’l‚ÆˆÙ‚È‚é‚Æ‚«‚Ì‚İ•ÏX‚·‚é
+			//ã‚»ãƒƒãƒˆã™ã‚‹å€¤ãŒç¾åœ¨ã®å€¤ã¨ç•°ãªã‚‹ã¨ãã®ã¿å¤‰æ›´ã™ã‚‹
 			if( lineData[index]->lock != value ){
 				lineData[index]->lock= value;
 
-				//ƒŠƒXƒi[ƒR[ƒ‹
+				//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 				if( !noCallListener && (this->changeLockListener != NULL) ){
 					(this->changeLockListener)(index);
 				}
 
-				//Ä•`‰æ—v‹
+				//å†æç”»è¦æ±‚
 				if( rewriteOnChange ){
 					callRewrite();
 				}
@@ -9266,11 +9316,11 @@ void s_dummyfunc()
 		////////////////////////// MemberVar /////////////////////////////
 		int currentLine,showPosLine;
 		TCHAR *name;
-		std::function<void()> cursorListener;										//ƒJ[ƒ\ƒ‹ˆÊ’u‚ª•ÏX‚³‚ê‚½’¼Œã‚ÉŒÄ‚Î‚ê‚é
-		std::function<void(int beforIndex, int afterIndex)> lineShiftListener;		//ˆÚ“®‚ªs‚í‚ê‚é’¼‘O‚ÉŒÄ‚Î‚ê‚é
-		std::function<void(int targetIndex)> changeVisibleListener;				//‰Â‹ó‘Ô‚ª•ÏX‚³‚ê‚½’¼Œã‚ÉŒÄ‚Î‚ê‚é
-		std::function<void(int targetIndex)> changeLockListener;					//ƒƒbƒNó‘Ô‚ª•ÏX‚³‚ê‚½’¼Œã‚ÉŒÄ‚Î‚ê‚é
-		std::function<void(int targetIndex)> callPropertyListener;					//ƒŒƒCƒ„[‚ÌƒvƒƒpƒeƒB‚ğŒÄ‚Ô‚ÉŒÄ‚Î‚ê‚é
+		std::function<void()> cursorListener;										//ã‚«ãƒ¼ã‚½ãƒ«ä½ç½®ãŒå¤‰æ›´ã•ã‚ŒãŸç›´å¾Œã«å‘¼ã°ã‚Œã‚‹
+		std::function<void(int beforIndex, int afterIndex)> lineShiftListener;		//ç§»å‹•ãŒè¡Œã‚ã‚Œã‚‹ç›´å‰ã«å‘¼ã°ã‚Œã‚‹
+		std::function<void(int targetIndex)> changeVisibleListener;				//å¯è¦–çŠ¶æ…‹ãŒå¤‰æ›´ã•ã‚ŒãŸç›´å¾Œã«å‘¼ã°ã‚Œã‚‹
+		std::function<void(int targetIndex)> changeLockListener;					//ãƒ­ãƒƒã‚¯çŠ¶æ…‹ãŒå¤‰æ›´ã•ã‚ŒãŸç›´å¾Œã«å‘¼ã°ã‚Œã‚‹
+		std::function<void(int targetIndex)> callPropertyListener;					//ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ã‚’å‘¼ã¶æ™‚ã«å‘¼ã°ã‚Œã‚‹
 
 		class LineData{
 		public:
@@ -9291,7 +9341,7 @@ void s_dummyfunc()
 			bool lock;
 			bool select;
 
-			//	Method : •`‰æ
+			//	Method : æç”»
 			void draw(	HDCMaster *hdcM,
 						int posX, int posY,
 						int width,
@@ -9313,14 +9363,14 @@ void s_dummyfunc()
 					Rectangle(hdcM->hDC,x3,y0,x1,y1);
 				}
 
-				//ƒ‰ƒxƒ‹
-				hdcM->setFont(12,_T("‚l‚r ƒSƒVƒbƒN"));
+				//ãƒ©ãƒ™ãƒ«
+				hdcM->setFont(12,_T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 				SetTextColor(hdcM->hDC,RGB(240,240,240));
 				TextOut( hdcM->hDC,
 						 x3+2, posY+parent->LABEL_SIZE_Y/2-5,
 						 name.c_str(), (int)_tcslen(name.c_str()));
 
-				{//‰Â‹E•s‰Â‹
+				{//å¯è¦–ãƒ»ä¸å¯è¦–
 					if( visible ){
 						hdcM->setPenAndBrush( RGB(255,255,255), NULL );
 					}else{
@@ -9343,7 +9393,7 @@ void s_dummyfunc()
 									   (int)(cx+ry/2+1.0), (int)(cy+ry+1.0) );
 				}
 				
-				{//ƒƒbƒNó‘Ô
+				{//ãƒ­ãƒƒã‚¯çŠ¶æ…‹
 					if( lock ){
 						hdcM->setPenAndBrush( RGB(255,255,255), NULL );
 					}else{
@@ -9364,7 +9414,7 @@ void s_dummyfunc()
 					LineTo(hdcM->hDC,   (int)(cx+r*0.35+0.5)+1,(int)(cy+r*0.35+0.5) );
 				}
 
-				//˜g
+				//æ 
 				hdcM->setPenAndBrush(RGB(min(baseR+20,255),min(baseG+20,255),min(baseB+20,255)),NULL);
 				Rectangle(hdcM->hDC,x0,y0,x1,y1);
 				MoveToEx(hdcM->hDC, x2,y0, NULL);
@@ -9384,21 +9434,21 @@ void s_dummyfunc()
 		static const int MARGIN= 3;
 		static const int NAME_POS_X= 5;
 
-		bool rewriteOnChange;		//ƒL[‘€ì‚ÉÄ•`‰æ‚ğs‚¤‚©”Û‚©‚Ìƒtƒ‰ƒO
-		bool canMouseControll;		//ƒ}ƒEƒX‚Å‚Ì‘€ì‚ª‰Â”\‚©”Û‚©‚Ìƒtƒ‰ƒO
+		bool rewriteOnChange;		//ã‚­ãƒ¼æ“ä½œæ™‚ã«å†æç”»ã‚’è¡Œã†ã‹å¦ã‹ã®ãƒ•ãƒ©ã‚°
+		bool canMouseControll;		//ãƒã‚¦ã‚¹ã§ã®æ“ä½œãŒå¯èƒ½ã‹å¦ã‹ã®ãƒ•ãƒ©ã‚°
 
 		bool dragLine,dragScrollBarLine;
 		bool dragVisibleButton,dragVisibleButtonValue;
 		bool dragLockButton,dragLockButtonValue;
 
-		int shiftIndex;				//‘I‘ğs‚Ìƒhƒ‰ƒbƒO‚Å‚ÌˆÚ“®—Ê
+		int shiftIndex;				//é¸æŠè¡Œã®ãƒ‰ãƒ©ãƒƒã‚°ã§ã®ç§»å‹•é‡
 
-		int mouseRBtnOnIndex;		//‰EƒNƒŠƒbƒN‚ª‰Ÿ‚³‚ê‚½‚Æ‚«‚ÌsƒCƒ“ƒfƒbƒNƒX
+		int mouseRBtnOnIndex;		//å³ã‚¯ãƒªãƒƒã‚¯ãŒæŠ¼ã•ã‚ŒãŸã¨ãã®è¡Œã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
 	};
 
 
 	///<summary>
-	///	ƒEƒBƒ“ƒhƒE“à•”•i"ƒXƒNƒ[ƒ‹ƒEƒCƒ“ƒhƒE"ƒNƒ‰ƒX
+	///	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“"ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦"ã‚¯ãƒ©ã‚¹
 	///</summary>
 	class OWP_ScrollWnd : public OrgWindowParts{
 	public:
@@ -9443,14 +9493,14 @@ void s_dummyfunc()
 		}
 
 		//////////////////////////// Method //////////////////////////////
-		///	Method : eƒEƒBƒ“ƒhƒE‚É“o˜^
+		///	Method : è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²
 		//void regist(OrgWindow *_parentWindow,
 		//	WindowPos _pos, WindowSize _size,
 		//	HDCMaster* _hdcM,
 		//	unsigned char _baseR = 50, unsigned char _baseG = 70, unsigned char _baseB = 70){
 		//	_regist(_parentWindow, _pos, _size, _hdcM, _baseR, _baseG, _baseB);
 
-		//	////‘S‚Ä‚ÌƒOƒ‹[ƒv“à•”•i‚ğ“¯‚¶ƒEƒBƒ“ƒhƒE‚É“o˜^
+		//	////å…¨ã¦ã®ã‚°ãƒ«ãƒ¼ãƒ—å†…éƒ¨å“ã‚’åŒã˜ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²
 		//	//for (std::list<OrgWindowParts*>::iterator itr = partsList.begin();
 		//	//	itr != partsList.end(); itr++){
 		//	//	(*itr)->regist(parentWindow,
@@ -9459,37 +9509,37 @@ void s_dummyfunc()
 		//	//		baseColor.r, baseColor.g, baseColor.b);
 		//	//}
 
-		//	//ƒOƒ‹[ƒvƒ{ƒbƒNƒX‚Æ“à•”—v‘f‚ÌˆÊ’u‚ÆƒTƒCƒY‚ğ©“®İ’è
+		//	//ã‚°ãƒ«ãƒ¼ãƒ—ãƒœãƒƒã‚¯ã‚¹ã¨å†…éƒ¨è¦ç´ ã®ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’è‡ªå‹•è¨­å®š
 		//	autoResize();
 		//}
-		///	Method : ƒOƒ‹[ƒv“à•”•i‚ğ’Ç‰Á
+		///	Method : ã‚°ãƒ«ãƒ¼ãƒ—å†…éƒ¨å“ã‚’è¿½åŠ 
 		void addParts(OrgWindowParts& a){
 			partsList.push_back(&a);
 
-			// ƒOƒ‹[ƒvƒ{ƒbƒNƒX‚ªƒEƒBƒ“ƒhƒE‚É“o˜^‚³‚ê‚Ä‚¢‚éê‡‚Í
-			// ƒOƒ‹[ƒv“à•”•i‚à“¯‚¶ƒEƒBƒ“ƒhƒE‚É“o˜^‚·‚é
+			// ã‚°ãƒ«ãƒ¼ãƒ—ãƒœãƒƒã‚¯ã‚¹ãŒã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²ã•ã‚Œã¦ã„ã‚‹å ´åˆã¯
+			// ã‚°ãƒ«ãƒ¼ãƒ—å†…éƒ¨å“ã‚‚åŒã˜ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ç™»éŒ²ã™ã‚‹
 			if (parentWindow != NULL){
 				a.registmember(parentWindow,
 					pos, size,
 					hdcM,
 					baseColor.r, baseColor.g, baseColor.b);
 
-				// ƒOƒ‹[ƒvƒ{ƒbƒNƒX‚ªƒI[ƒvƒ“ó‘Ô‚Ì‚Í
-				// ƒEƒBƒ“ƒhƒE“à‚Ì‘Sƒp[ƒc‚ÌˆÊ’uEƒTƒCƒY‚ğ©“®’²®
+				// ã‚°ãƒ«ãƒ¼ãƒ—ãƒœãƒƒã‚¯ã‚¹ãŒã‚ªãƒ¼ãƒ—ãƒ³çŠ¶æ…‹ã®æ™‚ã¯
+				// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…ã®å…¨ãƒ‘ãƒ¼ãƒ„ã®ä½ç½®ãƒ»ã‚µã‚¤ã‚ºã‚’è‡ªå‹•èª¿æ•´
 				if (open){
 					parentWindow->autoResizeAllParts();
 				}
 			}
 		}
 		
-		/// Method : ©“®ƒTƒCƒYİ’è
+		/// Method : è‡ªå‹•ã‚µã‚¤ã‚ºè¨­å®š
 		virtual void autoResize(){
 			if (!parentWindow) {
 				return;
 			}
 
 			size = parentWindow->getSize();
-			//pos = WindowPos(0, 0);//2023/02/17 setPos‚ğ”½‰f‚³‚¹‚é‚½‚ßƒRƒƒ“ƒgƒAƒEƒg
+			//pos = WindowPos(0, 0);//2023/02/17 setPosã‚’åæ˜ ã•ã›ã‚‹ãŸã‚ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
 
 			int showLineNum = (size.y) / (LABEL_SIZE_Y);
 
@@ -9499,12 +9549,12 @@ void s_dummyfunc()
 			int y1 = pos.y + size.y;
 
 			//if (open){
-				//ƒp[ƒcƒGƒŠƒA‚ÌˆÊ’u‚ÆƒTƒCƒY‚ğİ’è
+				//ãƒ‘ãƒ¼ãƒ„ã‚¨ãƒªã‚¢ã®ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’è¨­å®š
 				partsAreaPos = pos;
 				partsAreaSize = WindowSize(size.x - SCROLL_BAR_WIDTH - 1, size.y);
 				currentPartsSizeY = 0;
 
-				//‘S‚Ä‚Ì“à•”ƒp[ƒc‚ÌˆÊ’u‚ÆƒTƒCƒY‚ğ©“®İ’è
+				//å…¨ã¦ã®å†…éƒ¨ãƒ‘ãƒ¼ãƒ„ã®ä½ç½®ã¨ã‚µã‚¤ã‚ºã‚’è‡ªå‹•è¨­å®š
 				int starty = showPosLine * (LABEL_SIZE_Y);
 				std::list<OrgWindowParts*>::iterator itr;
 				for (itr = partsList.begin(); itr != partsList.end(); itr++){
@@ -9517,7 +9567,7 @@ void s_dummyfunc()
 					}
 				}
 
-				//ƒOƒ‹[ƒvƒ{ƒbƒNƒX‚ÌƒTƒCƒY‚ğ“à•”—v‘f‚É‡‚í‚¹‚ÄƒgƒŠƒ~ƒ“ƒO
+				//ã‚°ãƒ«ãƒ¼ãƒ—ãƒœãƒƒã‚¯ã‚¹ã®ã‚µã‚¤ã‚ºã‚’å†…éƒ¨è¦ç´ ã«åˆã‚ã›ã¦ãƒˆãƒªãƒŸãƒ³ã‚°
 				//partsAreaSize.y = currentPartsSizeY;
 				//size.y = partsAreaPos.y - pos.y + partsAreaSize.y + 3;
 
@@ -9527,11 +9577,11 @@ void s_dummyfunc()
 			//}
 		}
 		
-		//	Method : •`‰æ
+		//	Method : æç”»
 		virtual void draw(){
 			drawEdge();
 
-			//‘S‚Ä‚Ì“à•”ƒp[ƒc‚ğ•`‰æ
+			//å…¨ã¦ã®å†…éƒ¨ãƒ‘ãƒ¼ãƒ„ã‚’æç”»
 			if (open){
 				std::list<OrgWindowParts*>::iterator itr;
 				for (itr = partsList.begin(); itr != partsList.end(); itr++){
@@ -9543,18 +9593,18 @@ void s_dummyfunc()
 
 			int showLineNum = (size.y) / (LABEL_SIZE_Y);
 
-			{//ƒ‰ƒxƒ‹ƒXƒNƒ[ƒ‹ƒo[
+			{//ãƒ©ãƒ™ãƒ«ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 				int x0 = pos.x + size.x - SCROLL_BAR_WIDTH - 1;
 				int x1 = x0 + SCROLL_BAR_WIDTH + 1;
 				int y0 = pos.y;
 				int y1 = pos.y + size.y;
 
-				//˜g
+				//æ 
 				//hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
 				hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
 				Rectangle(hdcM->hDC, x0, y0, x1, y1);
 
-				//’†g
+				//ä¸­èº«
 				int barSize = (y1 - y0 - 4)*showLineNum / lineDatasize;
 				int barStart = (y1 - y0 - 4)*showPosLine / lineDatasize;
 				if (showLineNum < lineDatasize){
@@ -9576,7 +9626,7 @@ void s_dummyfunc()
 
 			int showLineNum = (size.y) / (LABEL_SIZE_Y);
 
-			//ƒ‰ƒCƒ“ƒXƒNƒ[ƒ‹ƒo[
+			//ãƒ©ã‚¤ãƒ³ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if ((x2 <= e.localX) && (e.localX < x3) && 
 				(y0 <= e.localY) && (e.localY < y1)){
 				showLineNum = (y1 - y0) / (LABEL_SIZE_Y);
@@ -9593,7 +9643,7 @@ void s_dummyfunc()
 			}
 			autoResize();
 
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++){
 				if (*plItr) {
@@ -9617,11 +9667,11 @@ void s_dummyfunc()
 		}
 
 
-		///	Method : ¶ƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		///	Method : å·¦ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		void onLButtonUp(const MouseEvent& e){
 			if (!canMouseControll) return;
 
-			//ƒhƒ‰ƒbƒOƒtƒ‰ƒO‚ğ‰Šú‰»
+			//ãƒ‰ãƒ©ãƒƒã‚°ãƒ•ãƒ©ã‚°ã‚’åˆæœŸåŒ–
 			dragLine = false;
 			dragScrollBarLine = false;
 			dragVisibleButton = false;
@@ -9629,7 +9679,7 @@ void s_dummyfunc()
 
 			autoResize();
 
-			//“à•”ƒp[ƒc
+			//å†…éƒ¨ãƒ‘ãƒ¼ãƒ„
 			std::list<OrgWindowParts*>::iterator plItr;
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++){
 				if (*plItr) {
@@ -9650,12 +9700,12 @@ void s_dummyfunc()
 				}
 			}
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if (rewriteOnChange){
 				callRewrite();
 			}
 		}
-		///	Method : ƒ}ƒEƒXˆÚ“®ƒCƒxƒ“ƒgóM
+		///	Method : ãƒã‚¦ã‚¹ç§»å‹•ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		void onMouseMove(const MouseEvent& e){
 			if (!canMouseControll) return;
 
@@ -9665,7 +9715,7 @@ void s_dummyfunc()
 			int y0 = 0;
 			int y1 = size.y;
 
-			//ƒ‰ƒxƒ‹ƒXƒNƒ[ƒ‹ƒo[
+			//ãƒ©ãƒ™ãƒ«ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			if (dragScrollBarLine){
 				int showLineNum = (y1 - y0) / (LABEL_SIZE_Y);
 				int barSize = (y1 - y0) * showLineNum / lineDatasize;
@@ -9679,12 +9729,12 @@ void s_dummyfunc()
 			autoResize();
 
 		}
-		///	Method : ‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒ_ƒEƒ“ƒCƒxƒ“ƒgóM
+		///	Method : å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ãƒ€ã‚¦ãƒ³ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		void onRButtonDown(const MouseEvent& e){
 			if (!canMouseControll) return;
 
 		}
-		///	Method : ‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒvƒCƒxƒ“ƒgóM
+		///	Method : å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—ã‚¤ãƒ™ãƒ³ãƒˆå—ä¿¡
 		void onRButtonUp(const MouseEvent& e){
 			if (!canMouseControll) return;
 
@@ -9703,7 +9753,7 @@ void s_dummyfunc()
 		void setName(const TCHAR *value){
 			_tcscpy_s(name, 256, value);
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if (rewriteOnChange){
 				callRewrite();
 			}
@@ -9737,7 +9787,7 @@ void s_dummyfunc()
 
 			autoResize();//2023/02/17
 
-			//Ä•`‰æ—v‹
+			//å†æç”»è¦æ±‚
 			if (rewriteOnChange){
 				callRewrite();
 			}
@@ -9749,7 +9799,7 @@ void s_dummyfunc()
 
 			if ((srcline >= showPosLine) && (srcline <= (showPosLine + showLineNum))) {
 				//2023/02/17
-				//currentline‚ª@Šù‚É•\¦”ÍˆÍ‚É“ü‚Á‚Ä‚¢‚éê‡‚É‚Í@•ÏX‚µ‚È‚¢‚ÅÄ•`‰æ
+				//currentlineãŒã€€æ—¢ã«è¡¨ç¤ºç¯„å›²ã«å…¥ã£ã¦ã„ã‚‹å ´åˆã«ã¯ã€€å¤‰æ›´ã—ãªã„ã§å†æç”»
 				autoResize();
 				if (rewriteOnChange) {
 					callRewrite();
@@ -9785,11 +9835,11 @@ void s_dummyfunc()
 		////////////////////////// MemberVar /////////////////////////////
 		int currentLine, showPosLine;
 		TCHAR *name;
-		std::function<void()> cursorListener;										//ƒJ[ƒ\ƒ‹ˆÊ’u‚ª•ÏX‚³‚ê‚½’¼Œã‚ÉŒÄ‚Î‚ê‚é
-		std::function<void(int beforIndex, int afterIndex)> lineShiftListener;		//ˆÚ“®‚ªs‚í‚ê‚é’¼‘O‚ÉŒÄ‚Î‚ê‚é
-		std::function<void(int targetIndex)> changeVisibleListener;				//‰Â‹ó‘Ô‚ª•ÏX‚³‚ê‚½’¼Œã‚ÉŒÄ‚Î‚ê‚é
-		std::function<void(int targetIndex)> changeLockListener;					//ƒƒbƒNó‘Ô‚ª•ÏX‚³‚ê‚½’¼Œã‚ÉŒÄ‚Î‚ê‚é
-		std::function<void(int targetIndex)> callPropertyListener;					//ƒŒƒCƒ„[‚ÌƒvƒƒpƒeƒB‚ğŒÄ‚Ô‚ÉŒÄ‚Î‚ê‚é
+		std::function<void()> cursorListener;										//ã‚«ãƒ¼ã‚½ãƒ«ä½ç½®ãŒå¤‰æ›´ã•ã‚ŒãŸç›´å¾Œã«å‘¼ã°ã‚Œã‚‹
+		std::function<void(int beforIndex, int afterIndex)> lineShiftListener;		//ç§»å‹•ãŒè¡Œã‚ã‚Œã‚‹ç›´å‰ã«å‘¼ã°ã‚Œã‚‹
+		std::function<void(int targetIndex)> changeVisibleListener;				//å¯è¦–çŠ¶æ…‹ãŒå¤‰æ›´ã•ã‚ŒãŸç›´å¾Œã«å‘¼ã°ã‚Œã‚‹
+		std::function<void(int targetIndex)> changeLockListener;					//ãƒ­ãƒƒã‚¯çŠ¶æ…‹ãŒå¤‰æ›´ã•ã‚ŒãŸç›´å¾Œã«å‘¼ã°ã‚Œã‚‹
+		std::function<void(int targetIndex)> callPropertyListener;					//ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ã‚’å‘¼ã¶æ™‚ã«å‘¼ã°ã‚Œã‚‹
 
 		int lineDatasize;
 		
@@ -9798,16 +9848,16 @@ void s_dummyfunc()
 		static const int MARGIN = 3;
 		static const int NAME_POS_X = 5;
 
-		bool rewriteOnChange;		//ƒL[‘€ì‚ÉÄ•`‰æ‚ğs‚¤‚©”Û‚©‚Ìƒtƒ‰ƒO
-		bool canMouseControll;		//ƒ}ƒEƒX‚Å‚Ì‘€ì‚ª‰Â”\‚©”Û‚©‚Ìƒtƒ‰ƒO
+		bool rewriteOnChange;		//ã‚­ãƒ¼æ“ä½œæ™‚ã«å†æç”»ã‚’è¡Œã†ã‹å¦ã‹ã®ãƒ•ãƒ©ã‚°
+		bool canMouseControll;		//ãƒã‚¦ã‚¹ã§ã®æ“ä½œãŒå¯èƒ½ã‹å¦ã‹ã®ãƒ•ãƒ©ã‚°
 
 		bool dragLine, dragScrollBarLine;
 		bool dragVisibleButton, dragVisibleButtonValue;
 		bool dragLockButton, dragLockButtonValue;
 
-		int shiftIndex;				//‘I‘ğs‚Ìƒhƒ‰ƒbƒO‚Å‚ÌˆÚ“®—Ê
+		int shiftIndex;				//é¸æŠè¡Œã®ãƒ‰ãƒ©ãƒƒã‚°ã§ã®ç§»å‹•é‡
 
-		int mouseRBtnOnIndex;		//‰EƒNƒŠƒbƒN‚ª‰Ÿ‚³‚ê‚½‚Æ‚«‚ÌsƒCƒ“ƒfƒbƒNƒX
+		int mouseRBtnOnIndex;		//å³ã‚¯ãƒªãƒƒã‚¯ãŒæŠ¼ã•ã‚ŒãŸã¨ãã®è¡Œã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
 
 
 		int currentPartsSizeY;
