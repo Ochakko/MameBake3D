@@ -2210,10 +2210,6 @@ static void OnArrowKey();//DS関数でキーボードの矢印キーに対応
 static void CalcTotalBound();
 
 
-//IKRotate用
-static std::vector<IKROTREC> s_rotrec;
-
-
 
 //--------------------------------------------------------------------------------------
 // Global variables
@@ -3482,7 +3478,6 @@ void InitApp()
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
-	s_rotrec.clear();
 	g_lightflag = 1;
 
 	g_btcalccnt = 2.0;
@@ -7709,7 +7704,10 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		s_rectime = 0.0;
 		s_reccnt = 0;
 
-		s_rotrec.clear();
+		
+		if (s_model) {
+			s_model->ClearIKRotRec();
+		}
 
 		//!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//DS deviceがあっても、マウスを併用する場合があるのでマウスのSetCaptureとReleaseCaptureは必要
@@ -8117,10 +8115,8 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		if ((s_ikkind == 0) && (s_editmotionflag >= 0)){
 			if (s_pickinfo.buttonflag == PICK_CENTER) {
 				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
-				if (s_rotrec.empty() == false) {
-					s_editmotionflag = s_model->IKRotatePostIK(s_rotrec, g_limitdegflag,
-						&s_editrange, s_pickinfo.pickobjno, g_iklevel);
-				}
+				s_editmotionflag = s_model->IKRotatePostIK(g_limitdegflag,
+					&s_editrange, s_pickinfo.pickobjno, g_iklevel);
 				if (oldcursor != NULL) {
 					SetCursor(oldcursor);
 				}
@@ -8133,7 +8129,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				(s_pickinfo.buttonflag == PICK_SPA_Z)) {
 				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-				s_editmotionflag = s_model->IKRotateAxisDeltaPostIK(s_rotrec,
+				s_editmotionflag = s_model->IKRotateAxisDeltaPostIK(
 					g_limitdegflag,
 					&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno,
 					g_iklevel, s_ikcnt);
@@ -8147,7 +8143,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			if (s_pickinfo.buttonflag == PICK_CENTER) {
 				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-				s_model->FKBoneTraPostFK(s_rotrec, g_limitdegflag,
+				s_model->FKBoneTraPostFK(g_limitdegflag,
 					&s_editrange, s_curboneno);
 				s_editmotionflag = s_curboneno;
 
@@ -8163,7 +8159,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				(s_pickinfo.buttonflag == PICK_SPA_Z)) {
 				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-				s_model->FKBoneTraAxisPostFK(s_rotrec,
+				s_model->FKBoneTraAxisPostFK(
 					g_limitdegflag,
 					&s_editrange, s_curboneno);
 				s_editmotionflag = s_curboneno;
@@ -11881,7 +11877,7 @@ int AddBoneTra2(ChaVector3 diffvec)
 		return 0;
 	}
 
-	s_model->FKBoneTraUnderFK(s_rotrec, g_limitdegflag, &s_editrange, s_curboneno, diffvec);
+	s_model->FKBoneTraUnderFK(g_limitdegflag, &s_editrange, s_curboneno, diffvec);
 
 	s_editmotionflag = s_curboneno;
 
@@ -11921,7 +11917,7 @@ int AddBoneTra(int kind, float srctra)
 		return 0;
 	}
 
-	s_model->FKBoneTraAxisUnderFK(s_rotrec, 
+	s_model->FKBoneTraAxisUnderFK(
 		g_limitdegflag,
 		&s_editrange, s_curboneno, kind, srctra, s_ikselectmat);
 	s_editmotionflag = s_curboneno;
@@ -30515,7 +30511,7 @@ int OnMouseMoveFunc()
 						//CallF(CalcTargetPos(&targetpos), return 1);
 						CalcTargetPos(&targetpos);
 						if (s_ikkind == 0) {
-							s_editmotionflag = s_model->IKRotateUnderIK(s_rotrec, g_limitdegflag,
+							s_editmotionflag = s_model->IKRotateUnderIK(g_limitdegflag,
 								&s_editrange, s_pickinfo.pickobjno, targetpos, g_iklevel);
 
 							//ClearLimitedWM(s_model);//これが無いとIK時にグラフにおかしな値が入り　おかしな値がある時間に合わせると直る
@@ -30588,7 +30584,7 @@ int OnMouseMoveFunc()
 
 					if ((s_befdeltax * deltax) > 0.0f) {
 						if (s_ikkind == 0) {
-							s_editmotionflag = s_model->IKRotateAxisDeltaUnderIK(s_rotrec,
+							s_editmotionflag = s_model->IKRotateAxisDeltaUnderIK(
 								g_limitdegflag,
 								&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno,
 								deltax, g_iklevel, s_ikcnt, s_ikselectmat);
@@ -30639,7 +30635,7 @@ int OnMouseMoveFunc()
 
 					if ((s_befdeltax * deltax) > 0.0f) {
 						if (s_ikkind == 0) {
-							s_editmotionflag = s_model->IKRotateAxisDeltaUnderIK(s_rotrec,
+							s_editmotionflag = s_model->IKRotateAxisDeltaUnderIK(
 								g_limitdegflag,
 								&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno,
 								deltax, g_iklevel, s_ikcnt, s_ikselectmat);

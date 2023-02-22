@@ -78,18 +78,6 @@ typedef struct tag_physikrec
 }PHYSIKREC;
 
 
-typedef struct tag_ikrotrec
-{
-	ChaVector3 targetpos;
-	CQuaternion rotq;
-
-	//rotqの回転角度が1e-4より小さい場合にtrue. 
-	//ウェイトが小さいフレームにおいても　IKTargetが走るように記録する必要がある
-	bool lessthanthflag;
-
-}IKROTREC;
-
-
 #define MAXPHYSIKRECCNT		(60 * 60)
 
 //########################################
@@ -414,11 +402,12 @@ public:
  * @detail MameBake3Dにおいては、マニピュレータの中央の黄色をドラッグした時に呼ばれる。
  */
 
-	int IKRotateUnderIK(std::vector<IKROTREC>& rotrec, bool limitdegflag, CEditRange* erptr,
+	int IKRotateUnderIK(bool limitdegflag, CEditRange* erptr,
 		int srcboneno, ChaVector3 targetpos, int maxlevel);
-	int IKRotatePostIK(std::vector<IKROTREC>& rotrec, bool limitdegflag, CEditRange* erptr,
+	int IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 		int srcboneno, int maxlevel);
 
+	void ClearIKRotRec();
 
 	int IKRotate(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel, double directframe = -1.0);
 	int IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, 
@@ -461,10 +450,10 @@ public:
  * @return 成功したら０。
  * @detail MameBake3Dにおいては、マニピュレータのリングまたは球をドラッグした時に呼ばれる。
  */
-	int IKRotateAxisDeltaUnderIK(std::vector<IKROTREC>& rotrec, 
+	int IKRotateAxisDeltaUnderIK(
 		bool limitdegflag, CEditRange* erptr, 
 		int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat);
-	int IKRotateAxisDeltaPostIK(std::vector<IKROTREC>& rotrec, 
+	int IKRotateAxisDeltaPostIK(
 		bool limitdegflag, CEditRange* erptr, 
 		int axiskind, int srcboneno, int maxlevel, int ikcnt);
 
@@ -513,10 +502,10 @@ public:
  * @param (ChaVector3 addtra) IN 移動分のベクトル。
  * @return 成功したら０。
  */
-	int FKBoneTraUnderFK(std::vector<IKROTREC>& rotrec,
+	int FKBoneTraUnderFK(
 		bool limitdegflag, CEditRange* erptr,
 		int srcboneno, ChaVector3 addtra);
-	int FKBoneTraPostFK(std::vector<IKROTREC>& rotrec,
+	int FKBoneTraPostFK(
 		bool limitdegflag, CEditRange* erptr,
 		int srcboneno);
 
@@ -526,10 +515,10 @@ public:
 
 
 
-	int FKBoneTraAxisUnderFK(std::vector<IKROTREC>& rotrec,
+	int FKBoneTraAxisUnderFK(
 		bool limitdegflag, CEditRange* erptr,
 		int srcboneno, int axiskind, float delta, ChaMatrix selectmat);
-	int FKBoneTraAxisPostFK(std::vector<IKROTREC>& rotrec, 
+	int FKBoneTraAxisPostFK(
 		bool limitdegflag, CEditRange* erptr,
 		int srcboneno);
 	int FKBoneTraAxis(bool limitdegflag, int onlyoneflag, CEditRange* erptr, 
@@ -985,6 +974,8 @@ private:
 		int keyno, CBone* parentbone,
 		double curframe, double startframe, double applyframe,
 		CQuaternion rotq0, bool keynum1flag, bool postflag, bool fromiktarget);
+
+	void ClearIKRotRecReq(CBone* srcbone);
 
 
 	//int GetFreeThreadIndex();

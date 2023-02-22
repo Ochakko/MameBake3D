@@ -407,6 +407,8 @@ int CBone::InitParams()
 	m_iktargetflag = false;
 	m_iktargetpos = ChaVector3(0.0f, 0.0f, 0.0f);
 
+	m_ikrotrec.clear();
+
 	return 0;
 }
 

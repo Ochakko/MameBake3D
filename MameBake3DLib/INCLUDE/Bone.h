@@ -30,6 +30,25 @@ class CRigidElem;
 class CBtObject;
 class CModel;
 
+
+typedef struct tag_ikrotrec
+{
+	ChaVector3 targetpos;
+	CQuaternion rotq;
+
+	//rotqの回転角度が1e-4より小さい場合にtrue. 
+	//ウェイトが小さいフレームにおいても　IKTargetが走るように記録する必要がある
+	bool lessthanthflag;
+
+	void Init() {
+		targetpos = ChaVector3(0.0f, 0.0f, 0.0f);
+		rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		lessthanthflag = true;
+	};
+}IKROTREC;
+
+
+
 class CBone
 {
 public:
@@ -1280,6 +1299,31 @@ public: //accesser
 	void RestoreFbxNodePosture(FbxNode* pNode);
 
 
+	void ClearIKRotRec()
+	{
+		m_ikrotrec.clear();
+	}
+	void AddIKRotRec(IKROTREC srcrotrec)
+	{
+		m_ikrotrec.push_back(srcrotrec);
+	}
+	int GetIKRotRecSize()
+	{
+		return (int)m_ikrotrec.size();
+	}
+	IKROTREC GetIKRotRec(int srcindex)
+	{
+		if ((srcindex >= 0) && (srcindex < GetIKRotRecSize())) {
+			return m_ikrotrec[srcindex];
+		}
+		else {
+			IKROTREC norec;
+			norec.rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+			norec.targetpos = ChaVector3(0.0f, 0.0f, 0.0f);
+			norec.lessthanthflag = true;
+			return norec;
+		}
+	}
 
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
@@ -1438,6 +1482,9 @@ private:
 	bool m_ikstopflag;
 	bool m_iktargetflag;
 	ChaVector3 m_iktargetpos;
+
+	std::vector<IKROTREC> m_ikrotrec;
+
 
 	CBone* m_parent;
 	CBone* m_child;

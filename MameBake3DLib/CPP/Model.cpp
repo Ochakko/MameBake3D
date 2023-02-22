@@ -9220,7 +9220,27 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 	return 0;
 }
 
-int CModel::IKRotateUnderIK(std::vector<IKROTREC>& rotrec, bool limitdegflag, CEditRange* erptr,
+void CModel::ClearIKRotRec()
+{
+	ClearIKRotRecReq(GetTopBone());
+}
+
+void CModel::ClearIKRotRecReq(CBone* srcbone)
+{
+	if (srcbone) {
+
+		srcbone->ClearIKRotRec();
+
+		if (srcbone->GetChild()) {
+			ClearIKRotRecReq(srcbone->GetChild());
+		}
+		if (srcbone->GetBrother()) {
+			ClearIKRotRecReq(srcbone->GetBrother());
+		}
+	}
+}
+
+int CModel::IKRotateUnderIK(bool limitdegflag, CEditRange* erptr,
 	int srcboneno, ChaVector3 targetpos, int maxlevel)
 {
 
@@ -9357,14 +9377,12 @@ int CModel::IKRotateUnderIK(std::vector<IKROTREC>& rotrec, bool limitdegflag, CE
 					}
 
 
-					//マウスでドラッグするopeboneのrotqを保存
-					if (levelcnt == 0) {
-						IKROTREC currotrec;
-						currotrec.rotq = rotq0;
-						currotrec.targetpos = targetpos;
-						currotrec.lessthanthflag = false;
-						rotrec.push_back(currotrec);//!!!!!!!!!
-					}
+					//parentboneのrotqを保存
+					IKROTREC currotrec;
+					currotrec.rotq = rotq0;
+					currotrec.targetpos = targetpos;
+					currotrec.lessthanthflag = false;
+					parentbone->AddIKRotRec(currotrec);
 					
 					if (g_applyendflag == 1) {
 						//curmotinfo->curframeから最後までcurmotinfo->curframeの姿勢を適用
@@ -9381,13 +9399,11 @@ int CModel::IKRotateUnderIK(std::vector<IKROTREC>& rotrec, bool limitdegflag, CE
 					CQuaternion rotq0;
 					rotq0.SetAxisAndRot(rotaxis2, rotrad2);
 
-					if (levelcnt == 0) {
-						IKROTREC currotrec;
-						currotrec.rotq = rotq0;
-						currotrec.targetpos = targetpos;
-						currotrec.lessthanthflag = true;//!!!!!!!!!!!
-						rotrec.push_back(currotrec);//!!!!!!!!!
-					}
+					IKROTREC currotrec;
+					currotrec.rotq = rotq0;
+					currotrec.targetpos = targetpos;
+					currotrec.lessthanthflag = true;//!!!!!!!!!!!
+					parentbone->AddIKRotRec(currotrec);
 				}
 
 			}
@@ -9423,7 +9439,7 @@ int CModel::IKRotateUnderIK(std::vector<IKROTREC>& rotrec, bool limitdegflag, CE
 
 }
 
-int CModel::IKRotatePostIK(std::vector<IKROTREC>& rotrec, bool limitdegflag, CEditRange* erptr,
+int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 	int srcboneno, int maxlevel)
 {
 
@@ -9464,113 +9480,112 @@ int CModel::IKRotatePostIK(std::vector<IKROTREC>& rotrec, bool limitdegflag, CEd
 	//CBone* lastpar = firstbone->GetParent();
 	//int calcnum = 20;
 	int calcnum = 1;//今はtargetposを細かく刻んでいないので１で良い
+	int calccnt;
+	for (calccnt = 0; calccnt < calcnum; calccnt++) {
+		curbone = firstbone;
+		lastpar = curbone;
 
+		int levelcnt = 0;
+		float currate = g_ikrate;
 
-	std::vector<IKROTREC>::iterator itrrotrec;
-	for (itrrotrec = rotrec.begin(); itrrotrec != rotrec.end(); itrrotrec++) {
-		IKROTREC currotrec = *itrrotrec;
-		CQuaternion rotq0;
-		rotq0 = currotrec.rotq;
-		bool lessthanthflag = currotrec.lessthanthflag;
+		while (curbone && lastpar && ((maxlevel == 0) || (levelcnt < maxlevel)))
+		{
 
-		int calccnt;
-		for (calccnt = 0; calccnt < calcnum; calccnt++) {
-			curbone = firstbone;
-			lastpar = curbone;
+			//IKTarget()でフラグがリセットされるので　ループ先頭で　セットし直し
+			g_underIKRot = true;
 
-			int levelcnt = 0;
-			float currate = g_ikrate;
+			double firstframe = 0.0;
 
-			while (curbone && lastpar && ((maxlevel == 0) || (levelcnt < maxlevel)))
-			{
+			//CBone* parentbone = curbone->GetParent();
+			CBone* parentbone = lastpar->GetParent();
+			if (parentbone && (curbone->GetJointFPos() != parentbone->GetJointFPos())) {
+				int rotrecsize = parentbone->GetIKRotRecSize();
+				if (rotrecsize > 0) {
+					int rotrecno;
+					for (rotrecno = 0; rotrecno < rotrecsize; rotrecno++) {
+						IKROTREC currotrec = parentbone->GetIKRotRec(rotrecno);
+						CQuaternion rotq0 = currotrec.rotq;
+						bool lessthanthflag = currotrec.lessthanthflag;
 
-				//IKTarget()でフラグがリセットされるので　ループ先頭で　セットし直し
-				g_underIKRot = true;
+						UpdateMatrix(limitdegflag, &m_matWorld, &m_matVP);//curmp更新
 
-				double firstframe = 0.0;
+						CRigidElem* curre = GetRigidElem(lastpar->GetBoneNo());
+						if (curre && (curre->GetForbidRotFlag() != 0)) {
 
-				//CBone* parentbone = curbone->GetParent();
-				CBone* parentbone = lastpar->GetParent();
-				if (parentbone && (curbone->GetJointFPos() != parentbone->GetJointFPos())) {
-					UpdateMatrix(limitdegflag, &m_matWorld, &m_matVP);//curmp更新
+							//_ASSERT(0);
 
-					CRigidElem* curre = GetRigidElem(lastpar->GetBoneNo());
-					if (curre && (curre->GetForbidRotFlag() != 0)) {
-
-						//_ASSERT(0);
-
-						//回転禁止の場合処理をスキップ
-						if (parentbone) {
-							lastpar = parentbone;
+							//回転禁止の場合処理をスキップ
+							if (parentbone) {
+								lastpar = parentbone;
+							}
+							levelcnt++;
+							currate = (float)pow((double)g_ikrate, (double)g_ikfirst * (double)levelcnt);
+							break;//ikrotrec loopを抜けて　parentbone loopへ
 						}
-						levelcnt++;
-						currate = (float)pow((double)g_ikrate, (double)g_ikfirst * (double)levelcnt);
-						continue;
-					}
 
-					parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+						parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
 
-					if (keynum >= 2) {
-						int keyno = 0;
-						double curframe;
-						for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
-							if (curframe != applyframe) {
+						if (keynum >= 2) {
+							int keyno = 0;
+							double curframe;
+							for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
+								if (curframe != applyframe) {
 
-								if (lessthanthflag == false) {
-									bool keynum1flag = false;
-									bool postflag = true;
-									bool fromiktarget = false;
-									IKRotateOneFrame(limitdegflag, erptr,
-										keyno, parentbone,
-										curframe, startframe, applyframe,
-										rotq0, keynum1flag, postflag, fromiktarget);
-								}
-								else {
-									//マウスドラッグによる回転角度が1e-4より小さい場合にも
-									//IKTargetは実行
-									bool postflag = true;
-									IKTargetVec(limitdegflag, erptr, curframe, postflag);
+									if (lessthanthflag == false) {
+										bool keynum1flag = false;
+										bool postflag = true;
+										bool fromiktarget = false;
+										IKRotateOneFrame(limitdegflag, erptr,
+											keyno, parentbone,
+											curframe, startframe, applyframe,
+											rotq0, keynum1flag, postflag, fromiktarget);
+									}
+									else {
+										//マウスドラッグによる回転角度が1e-4より小さい場合にも
+										//IKTargetは実行
+										bool postflag = true;
+										IKTargetVec(limitdegflag, erptr, curframe, postflag);
+									}
 								}
 							}
+							keyno++;
 						}
-						keyno++;
-					}
-					//else {
-					//	bool keynum1flag = true;
-					//	IKRotateOneFrame(limitdegflag, erptr,
-					//		0, parentbone,
-					//		m_curmotinfo->curframe, startframe, applyframe,
-					//		rotq0, keynum1flag);
-					//}
-
-
-					if (g_applyendflag == 1) {
-						//curmotinfo->curframeから最後までcurmotinfo->curframeの姿勢を適用
-						int tolast;
-						for (tolast = (int)m_curmotinfo->curframe + 1; tolast < m_curmotinfo->frameleng; tolast++) {
-							(m_bonelist[0])->PasteRotReq(limitdegflag, m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
-						}
+						//else {
+						//	bool keynum1flag = true;
+						//	IKRotateOneFrame(limitdegflag, erptr,
+						//		0, parentbone,
+						//		m_curmotinfo->curframe, startframe, applyframe,
+						//		rotq0, keynum1flag);
+						//}
 					}
 				}
 
-				if (parentbone) {
-					lastpar = parentbone;
-
-					//check ikstopflag
-					if (parentbone->GetIKStopFlag()) {
-						break;
+				if (g_applyendflag == 1) {
+					//curmotinfo->curframeから最後までcurmotinfo->curframeの姿勢を適用
+					int tolast;
+					for (tolast = (int)m_curmotinfo->curframe + 1; tolast < m_curmotinfo->frameleng; tolast++) {
+						(m_bonelist[0])->PasteRotReq(limitdegflag, m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
 					}
 				}
-				levelcnt++;
-				currate = (float)pow((double)g_ikrate, (double)g_ikfirst * (double)levelcnt);
-
 			}
-		}
 
-		//絶対モードの場合
-		if ((calccnt == (calcnum - 1)) && g_absikflag && lastpar) {
-			AdjustBoneTra(limitdegflag, erptr, lastpar);
+			if (parentbone) {
+				lastpar = parentbone;
+
+				//check ikstopflag
+				if (parentbone->GetIKStopFlag()) {
+					break;
+				}
+			}
+			levelcnt++;
+			currate = (float)pow((double)g_ikrate, (double)g_ikfirst * (double)levelcnt);
+
 		}
+	}
+
+	//絶対モードの場合
+	if ((calccnt == (calcnum - 1)) && g_absikflag && lastpar) {
+		AdjustBoneTra(limitdegflag, erptr, lastpar);
 	}
 
 	g_underIKRot = false;//2023/01/14 parent limited or not
@@ -12047,7 +12062,7 @@ int CModel::IsMovableRot(bool limitdegflag, int srcmotid, double srcframe, doubl
 	return onlycheckIsMovable;
 }
 
-int CModel::IKRotateAxisDeltaUnderIK(std::vector<IKROTREC>& rotrec, 
+int CModel::IKRotateAxisDeltaUnderIK( 
 	bool limitdegflag, CEditRange* erptr, 
 	int axiskind, int srcboneno, float delta, int maxlevel, int ikcnt, ChaMatrix selectmat)
 {
@@ -12266,26 +12281,29 @@ int CModel::IKRotateAxisDeltaUnderIK(std::vector<IKROTREC>& rotrec,
 					}
 				}
 
-				//マウスでドラッグするボーンのlocalqを保存する
-				if (levelcnt == 0) {
-					IKROTREC currotrec;
-					currotrec.rotq = localq;
-					currotrec.targetpos = ChaVector3(0.0f, 0.0f, 0.0f);
-					currotrec.lessthanthflag = false;
-					rotrec.push_back(currotrec);
-				}
+				////parentboneのrotqを保存
+				IKROTREC currotrec;
+				currotrec.rotq = localq;
+				currotrec.targetpos = ChaVector3(0.0f, 0.0f, 0.0f);
+				currotrec.lessthanthflag = false;
+				aplybone->AddIKRotRec(currotrec);
 			}
 			else {
 				//rotqの回転角度が1e-4より小さい場合
 				//ウェイトが小さいフレームにおいても　IKTargetが走るように記録する必要がある
-				if (levelcnt == 0) {
-					IKROTREC currotrec;
-					currotrec.rotq = localq;
-					currotrec.targetpos = ChaVector3(0.0f, 0.0f, 0.0f);
-					currotrec.lessthanthflag = true;//!!!!!!!!!!!
-					rotrec.push_back(currotrec);//!!!!!!!!!
+				IKROTREC currotrec;
+				currotrec.rotq = localq;
+				currotrec.targetpos = ChaVector3(0.0f, 0.0f, 0.0f);
+				currotrec.lessthanthflag = true;//!!!!!!!!!!!
+				aplybone->AddIKRotRec(currotrec);
+			}
+
+			if (aplybone) {
+				if (aplybone->GetIKStopFlag() == true) {
+					break;
 				}
 			}
+
 
 			currate = (float)pow((double)g_ikrate, (double)g_ikfirst * (double)levelcnt);
 			lastbone = curbone;
@@ -12310,7 +12328,7 @@ int CModel::IKRotateAxisDeltaUnderIK(std::vector<IKROTREC>& rotrec,
 
 }
 
-int CModel::IKRotateAxisDeltaPostIK(std::vector<IKROTREC>& rotrec,
+int CModel::IKRotateAxisDeltaPostIK(
 	bool limitdegflag, CEditRange* erptr,
 	int axiskind, int srcboneno, int maxlevel, int ikcnt)
 {
@@ -12354,130 +12372,131 @@ int CModel::IKRotateAxisDeltaPostIK(std::vector<IKROTREC>& rotrec,
 		editboneforret = firstbone;
 	}
 
-	CQuaternion localq;
-	std::vector<IKROTREC>::iterator itrrotrec;
-	for (itrrotrec = rotrec.begin(); itrrotrec != rotrec.end(); itrrotrec++) {
-		IKROTREC currotrec = *itrrotrec;
-		localq = currotrec.rotq;
-		bool lessthanthflag = currotrec.lessthanthflag;
+	int calccnt;
+	for (calccnt = 0; calccnt < calcnum; calccnt++) {
+		curbone = firstbone;
+		if (!curbone) {
+			g_underIKRot = false;//2023/01/14 parent limited or not
+			return 0;
+		}
+		lastbone = curbone;
 
-		int calccnt;
-		for (calccnt = 0; calccnt < calcnum; calccnt++) {
-			curbone = firstbone;
-			if (!curbone) {
-				g_underIKRot = false;//2023/01/14 parent limited or not
-				return 0;
+		float currate = 1.0f;
+
+		double firstframe = 0.0;
+		int levelcnt = 0;
+
+		while (curbone && ((maxlevel == 0) || (levelcnt < maxlevel))) {
+
+			//IKTarget()でフラグがリセットされるので　ループ先頭で　セットし直し
+			g_underIKRot = true;
+
+
+			parentbone = curbone->GetParent();
+
+			//parentboneの無いcurboneをドラッグした時はbreakしない
+			if (!parentbone && (firstbone != curbone)) {
+				break;
 			}
-			lastbone = curbone;
 
-			float currate = 1.0f;
-
-			double firstframe = 0.0;
-			int levelcnt = 0;
-
-			while (curbone && ((maxlevel == 0) || (levelcnt < maxlevel))) {
-
-				//IKTarget()でフラグがリセットされるので　ループ先頭で　セットし直し
-				g_underIKRot = true;
-
-
-				parentbone = curbone->GetParent();
-
-				//parentboneの無いcurboneをドラッグした時はbreakしない
-				if (!parentbone && (firstbone != curbone)) {
-					break;
-				}
-
-				CRigidElem* curre = GetRigidElem(curbone->GetBoneNo());
-				if (curre && curre->GetForbidRotFlag() != 0) {
-					//回転禁止の場合処理をスキップ
-					currate = (float)pow((double)g_ikrate, (double)g_ikfirst * (double)levelcnt);
-					lastbone = curbone;
-					curbone = curbone->GetParent();
-					levelcnt++;
-					continue;
-				}
-
-				CBone* aplybone;
-				if (parentbone) {
-					aplybone = parentbone;
-				}
-				else {
-					aplybone = curbone;
-				}
-
-
-
-				aplybone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
-
-
-				if (keynum >= 2) {
-					int keyno = 0;
-					double curframe;
-					for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
-						if (curframe != applyframe) {
-							if (lessthanthflag == false) {
-								bool keynum1flag = false;
-								bool postflag = true;
-								bool fromiktarget = false;
-								IKRotateOneFrame(limitdegflag, erptr,
-									keyno, aplybone,
-									curframe, startframe, applyframe,
-									localq, keynum1flag, postflag, fromiktarget);
-							}
-							else {
-								//マウスドラッグによる回転角度が1e-4より小さい場合にも
-								//IKTargetは実行
-								bool postflag = true;
-								IKTargetVec(limitdegflag, erptr, curframe, postflag);
-							}
-						}
-						keyno++;
-					}
-				}
-				//else {
-				//	//CMotionPoint transmp;
-				//	//rotq.RotationMatrix(transmat);
-
-				//	bool keynum1flag = true;
-				//	IKRotateOneFrame(limitdegflag, erptr,
-				//		0, aplybone,
-				//		m_curmotinfo->curframe, startframe, applyframe,
-				//		localq, keynum1flag);
-				//}
-
-
-				if (aplybone) {
-					//check ikstopflag
-					if (aplybone->GetIKStopFlag()) {
-						break;
-					}
-				}
-
+			CRigidElem* curre = GetRigidElem(curbone->GetBoneNo());
+			if (curre && curre->GetForbidRotFlag() != 0) {
+				//回転禁止の場合処理をスキップ
 				currate = (float)pow((double)g_ikrate, (double)g_ikfirst * (double)levelcnt);
 				lastbone = curbone;
 				curbone = curbone->GetParent();
 				levelcnt++;
+				continue;
 			}
 
-			if (g_applyendflag == 1) {
-				//curmotinfo->curframeから最後までcurmotinfo->curframeの姿勢を適用
-				if (m_topbone) {
-					int tolast;
-					for (tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++) {
-						//(m_bonelist[0])->PasteRotReq(m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
-						m_topbone->PasteRotReq(limitdegflag, m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
+			CBone* aplybone;
+			if (parentbone) {
+				aplybone = parentbone;
+			}
+			else {
+				aplybone = curbone;
+			}
+
+			int rotrecsize = aplybone->GetIKRotRecSize();
+			if (rotrecsize > 0) {
+				int rotrecno;
+				for (rotrecno = 0; rotrecno < rotrecsize; rotrecno++) {
+					IKROTREC currotrec = aplybone->GetIKRotRec(rotrecno);
+					CQuaternion localq = currotrec.rotq;
+					bool lessthanthflag = currotrec.lessthanthflag;
+
+
+					aplybone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+
+
+					if (keynum >= 2) {
+						int keyno = 0;
+						double curframe;
+						for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
+							if (curframe != applyframe) {
+								if (lessthanthflag == false) {
+									bool keynum1flag = false;
+									bool postflag = true;
+									bool fromiktarget = false;
+									IKRotateOneFrame(limitdegflag, erptr,
+										keyno, aplybone,
+										curframe, startframe, applyframe,
+										localq, keynum1flag, postflag, fromiktarget);
+								}
+								else {
+									//マウスドラッグによる回転角度が1e-4より小さい場合にも
+									//IKTargetは実行
+									bool postflag = true;
+									IKTargetVec(limitdegflag, erptr, curframe, postflag);
+								}
+							}
+							keyno++;
+						}
 					}
+					//else {
+					//	//CMotionPoint transmp;
+					//	//rotq.RotationMatrix(transmat);
+
+					//	bool keynum1flag = true;
+					//	IKRotateOneFrame(limitdegflag, erptr,
+					//		0, aplybone,
+					//		m_curmotinfo->curframe, startframe, applyframe,
+					//		localq, keynum1flag);
+					//}
+				}
+			}
+			
+			if (aplybone) {
+				//check ikstopflag
+				if (aplybone->GetIKStopFlag()) {
+					break;
 				}
 			}
 
+			currate = (float)pow((double)g_ikrate, (double)g_ikfirst * (double)levelcnt);
+			lastbone = curbone;
+			curbone = curbone->GetParent();
+			levelcnt++;
 		}
 
-		//絶対モードの場合
-		if ((calccnt == (calcnum - 1)) && g_absikflag && lastbone) {
-			AdjustBoneTra(limitdegflag, erptr, lastbone);
+		if (g_applyendflag == 1) {
+			//curmotinfo->curframeから最後までcurmotinfo->curframeの姿勢を適用
+			if (m_topbone) {
+				int tolast;
+				for (tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++) {
+					//(m_bonelist[0])->PasteRotReq(m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
+					m_topbone->PasteRotReq(limitdegflag, m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
+				}
+			}
 		}
+
 	}
+
+	//絶対モードの場合
+	if ((calccnt == (calcnum - 1)) && g_absikflag && lastbone) {
+		AdjustBoneTra(limitdegflag, erptr, lastbone);
+	}
+	
 
 
 	g_underIKRot = false;//2023/01/14 parent limited or not
@@ -12911,7 +12930,7 @@ int CModel::FKRotate(bool limitdegflag, bool onretarget, int reqflag,
 	return curbone->GetBoneNo();
 }
 
-int CModel::FKBoneTraAxisUnderFK(std::vector<IKROTREC>& rotrec, 
+int CModel::FKBoneTraAxisUnderFK(
 	bool limitdegflag, CEditRange* erptr, int srcboneno, int axiskind, float delta, ChaMatrix selectmat)
 {
 	if ((srcboneno < 0) && !GetTopBone()) {
@@ -12949,12 +12968,12 @@ int CModel::FKBoneTraAxisUnderFK(std::vector<IKROTREC>& rotrec,
 	ChaVector3 addtra;
 	addtra = basevec * delta;
 
-	FKBoneTraUnderFK(rotrec, limitdegflag, erptr, srcboneno, addtra);
+	FKBoneTraUnderFK(limitdegflag, erptr, srcboneno, addtra);
 
 	return 0;
 }
 
-int CModel::FKBoneTraAxisPostFK(std::vector<IKROTREC>& rotrec,
+int CModel::FKBoneTraAxisPostFK(
 	bool limitdegflag, CEditRange* erptr, int srcboneno)
 {
 	if ((srcboneno < 0) && !GetTopBone()) {
@@ -12967,7 +12986,7 @@ int CModel::FKBoneTraAxisPostFK(std::vector<IKROTREC>& rotrec,
 		return 0;
 	}
 
-	FKBoneTraPostFK(rotrec, limitdegflag, erptr, srcboneno);
+	FKBoneTraPostFK(limitdegflag, erptr, srcboneno);
 
 	return 0;
 }
@@ -13013,7 +13032,7 @@ int CModel::FKBoneTraAxis(bool limitdegflag, int onlyoneflag, CEditRange* erptr,
 	return 0;
 }
 
-int CModel::FKBoneTraUnderFK(std::vector<IKROTREC>& rotrec,
+int CModel::FKBoneTraUnderFK(
 	bool limitdegflag, CEditRange* erptr,
 	int srcboneno, ChaVector3 addtra)
 {
@@ -13101,13 +13120,13 @@ int CModel::FKBoneTraUnderFK(std::vector<IKROTREC>& rotrec,
 	IKROTREC currotrec;
 	currotrec.rotq = CQuaternion(1.0f, 0.0f, 0.0f, 0.0f);
 	currotrec.targetpos = translation;
-	rotrec.push_back(currotrec);
-
+	currotrec.lessthanthflag = false;
+	curbone->AddIKRotRec(currotrec);
 
 	return curbone->GetBoneNo();
 }
 
-int CModel::FKBoneTraPostFK(std::vector<IKROTREC>& rotrec,
+int CModel::FKBoneTraPostFK(
 	bool limitdegflag, CEditRange* erptr,
 	int srcboneno)
 {
@@ -13138,40 +13157,41 @@ int CModel::FKBoneTraPostFK(std::vector<IKROTREC>& rotrec,
 	ChaMatrix dummyparentwm;
 	dummyparentwm.SetIdentity();//Req関数の最初の呼び出し時は　Identityを渡せばよい
 
+	int rotrecsize = curbone->GetIKRotRecSize();
+	if (rotrecsize > 0) {
+		int rotrecno;
+		for (rotrecno = 0; rotrecno < rotrecsize; rotrecno++) {
+			IKROTREC currotrec = curbone->GetIKRotRec(rotrecno);
+			ChaVector3 translation = currotrec.targetpos;
+			bool lessthanthflag = currotrec.lessthanthflag;
 
-	ChaVector3 translation = ChaVector3(0.0f, 0.0f, 0.0f);
-	std::vector<IKROTREC>::iterator itrrotrec;
-	for (itrrotrec = rotrec.begin(); itrrotrec != rotrec.end(); itrrotrec++) {
-		IKROTREC currotrec = *itrrotrec;
-		translation = currotrec.targetpos;
+			if (keynum >= 2) {
+				int keyno = 0;
+				double curframe;
+				for (curframe = (double)((int)(startframe + 0.0001)); curframe <= (double)((int)(endframe + 0.0001)); curframe += 1.0) {
+					if (curframe != (double)((int)(applyframe + 0.0001))) {
+						if (keyno == 0) {
+							firstframe = curframe;
+						}
 
-		if (keynum >= 2) {
-			int keyno = 0;
-			double curframe;
-			for (curframe = (double)((int)(startframe + 0.0001)); curframe <= (double)((int)(endframe + 0.0001)); curframe += 1.0) {
-				if (curframe != (double)((int)(applyframe + 0.0001))) {
-					if (keyno == 0) {
-						firstframe = curframe;
+						double changerate = (double)(*(g_motionbrush_value + (int)curframe));
+						ChaVector3 currenttranslation = translation * changerate;
+
+						curbone->AddBoneTraReq(limitdegflag, 0, m_curmotinfo->motid, curframe,
+							currenttranslation, dummyparentwm, dummyparentwm);
+
+						bool postflag = true;
+						IKTargetVec(limitdegflag, erptr, curframe, postflag);
 					}
-
-					double changerate = (double)(*(g_motionbrush_value + (int)curframe));
-					ChaVector3 currenttranslation = translation * changerate;
-
-					curbone->AddBoneTraReq(limitdegflag, 0, m_curmotinfo->motid, curframe, 
-						currenttranslation, dummyparentwm, dummyparentwm);
-
-					bool postflag = true;
-					IKTargetVec(limitdegflag, erptr, curframe, postflag);
+					keyno++;
 				}
-				keyno++;
 			}
+			//else {
+			//	translation = addtra;
+			//	curbone->AddBoneTraReq(limitdegflag, 0, m_curmotinfo->motid, startframe, translation, dummyparentwm, dummyparentwm);
+			//}
 		}
-		//else {
-		//	translation = addtra;
-		//	curbone->AddBoneTraReq(limitdegflag, 0, m_curmotinfo->motid, startframe, translation, dummyparentwm, dummyparentwm);
-		//}
 	}
-
 
 	return curbone->GetBoneNo();
 }
