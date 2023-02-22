@@ -71,6 +71,7 @@ bool g_VSync = false;
 int g_fpskind = 0;
 bool g_HighRpmMode = false;
 int g_UpdateMatrixThreads = 2;
+int g_lightflag = 1;
 
 int g_usephysik = 0;
 int g_ClearColorIndex = 0;
@@ -257,6 +258,7 @@ extern bool g_VSync;
 extern int g_fpskind;
 extern bool g_HighRpmMode;
 extern int g_UpdateMatrixThreads;
+extern int g_lightflag;
 
 extern int g_usephysik;
 extern int g_ClearColorIndex;

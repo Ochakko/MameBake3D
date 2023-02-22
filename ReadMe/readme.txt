@@ -16,6 +16,10 @@
 
 
 
+äJî≠ä¬ã´(2023/02/22éûì_)ÇÃïœçXï™ÇèëÇ´Ç‹Ç∑ÅB
+FBXSDKÇÕ2020.3.1(VC2019)
+
+
 äJî≠ä¬ã´(2021/03/29éûì_)ÇèëÇ´Ç‹Ç∑ÅB
 FBXSDKÇÕ2020.2(VC2019)
 Microsoft MultiThreadLibrary PPL.
@@ -220,55 +224,113 @@ data, docs, examples, Extras, src, testÇÃÉtÉHÉãÉ_ÇÇ‹ÇﬂÇŒÇØÇRDÇÃdisp4ÇÃÉtÉHÉãÉ_Ç
 ÇªÇµÇƒsrcÇÃÉtÉHÉãÉ_ÇÃñºëOÇBTSRCÇ…ÉäÉlÅ[ÉÄÇµÇ‹Ç∑ÅB
 
 
-éüÇ…DXUTÇÃÉ\Å[ÉXÇ…Ç¬Ç¢Çƒ
-DXUTÇÃÉ\Å[ÉXÇÕDirectXÇÃSDK (Microsoft DirectX SDK (June 2010))Ç…ì¸Ç¡ÇƒÇ¢Ç‹Ç∑ÅB
-DXUTÇÃÉtÉHÉãÉ_ÅiíÜÇ…CoreÉtÉHÉãÉ_Ç∆OptionalÉtÉHÉãÉ_Ç™ì¸Ç¡ÇƒÇ¢ÇÈÅjÇÇ‹ÇﬂÇŒÇØÇRDÇÃdisp4ÇÃÉtÉHÉãÉ_Ç…ÉRÉsÅ[ÇµÇ‹Ç∑ÅB
-
-DXUTÇÃD3DXÇÃïîï™ÇChaVecCalcÇ≈íuÇ´ä∑Ç¶Ç‹Ç∑ÅB
-[ DXUTÇÃíÜÇÃïKóvÇ»ÉwÉbÉ_ÉtÉ@ÉCÉãÇ≈ChaVecCalc.hÇÉCÉìÉNÉãÅ[ÉhÇµÇ‹Ç∑ÅB ]
-
-éËèáÇ∆ÇµÇƒÇÕ
-à»â∫ÇÃï∂éöóÒíuÇ´ä∑Ç¶ÇÇµÇ‹Ç∑ÅB
-D3DXVECTOR3 --> ChaVector3
-D3DXMATRIX --> ChaMatrix
-D3DXVec3 --> ChaVector3
-ChaMatrixA16 --> ChaMatrix
-D3DXQUATERNION --> CQuaternion
-LH( --> RH(
-
-ChaMatrixMultiplyÇÃïîï™ÇÅ@A = B * C;å`éÆÇ…èëÇ´ä∑Ç¶Ç‹Ç∑ÅB
-ChaVector3SubtractÇÃïîï™ÇÅ@A = B - C;å`éÆÇ…èëÇ´ä∑Ç¶Ç‹Ç∑ÅB
-
-CQuaternionRotationMatrixÇÃïîï™ÇÕ
-quaternion.RotationMatrix(matrix);å`éÆÇ…èëÇ´ä∑Ç¶Ç‹Ç∑ÅB
-
-DXUTmisc.cpp ÇÃDXUTTraceä÷êîÇÃreturnï∂ÇÃÇ∆Ç±ÇÎÇreturn hr;Ç…ÇµÇ‹Ç∑ÅB
-
-DXUT.cppÇÃCreateä÷êîÇÃ
-m_state.m_OverrideForceVsyncÇÃílÇ= 1Ç…ÇµÇ‹Ç∑ÅB
 
 
-ÇªÇµÇƒÇ«Ç§ÇµÇƒÇ‡D3DXÇ™ïKóvÇ»ïîï™ÇÕÇªÇÃÇÊÇ§Ç…ÉLÉÉÉXÉgÇµÇ‹Ç∑ÅB
-ó·Ç¶ÇŒSetMatrix((D3DXMATRIX*)&srcchamatrix);ÇÃÇÊÇ§Ç…ÉLÉÉÉXÉgÇµÇ‹Ç∑ÅB
-(const D3DXMATRIX*)Ç»Ç«ÇÃÇÊÇ§Ç…constÇ™ïKóvÇ»èÍèäÇ‡Ç†ÇËÇ‹Ç∑Ç™ÇªÇÍÇÕVisual StudioÇÃÉGÉâÅ[Çì«ÇÒÇ≈ëŒâûÇµÇƒÇ≠ÇæÇ≥Ç¢ÅB
-ÉÅÉìÉoïœêîÇ™ìØÇ∂Ç»ÇÃÇ≈ÉLÉÉÉXÉgÇµÇƒÇ‡ÇøÇ·ÇÒÇ∆ìÆÇ´Ç‹Ç∑ÅB
+DXUTÇ…Ç¬Ç¢ÇƒÅ@(2023/02/22)
+	DXUTÇÕGitHubÇÃMicrosoftÇÃDXUT11ÇÇŸÇ⁄ÇªÇÃÇ‹Ç‹égópÇ≈Ç´ÇÈÇÊÇ§Ç…Ç»ÇËÇ‹ÇµÇΩ
+
+	ïœçXïîï™ÇÕDXUT.cppÇÃDXUTRender3DEnvironment()
+		fpsêßå‰ÇÃÇΩÇﬂÇÃãLèqÇí«â¡
+
+		    if(g_VSync == true)
+		    {
+		        double oneframetime = 0.010;
+		        if (g_fpskind == 0)
+		        {
+		            oneframetime = 0.0020;
+		        }
+		        else if (g_fpskind == 1)
+		        {
+		            oneframetime = 0.010;
+		        }
+		        else if (g_fpskind == 2)
+		        {
+		            oneframetime = 1.0 / 60.0;
+		        }
+		        else if (g_fpskind == 3)
+		        {
+		            oneframetime = 1.0 / 30.0;
+		        }
+		        else if (g_fpskind == 4)
+		        {
+		            oneframetime = 1.0 / 15.0;
+		        }
+
+		        GetDXUTState().SetOverrideConstantFrameTime(true);
+		        GetDXUTState().SetOverrideConstantTimePerFrame(oneframetime);
+		        DXUTSetConstantFrameTime(true, oneframetime);
+		    }
+		    else
+		    {
+		        GetDXUTState().SetOverrideConstantFrameTime(false);
+		        GetDXUTState().SetOverrideConstantTimePerFrame(fElapsedTime);
+		        DXUTSetConstantFrameTime(true, fElapsedTime);
+		    }
 
 
-2018/01/22Ç…DXUTgui.cppÇí≤êÆÇµÇ‹ÇµÇΩÅB
-ÉÅÉCÉìÇ§à⁄ìÆÇÃÉXÉâÉCÉ_Å[Ç∆É`ÉFÉbÉNÉ{ÉbÉNÉXÇÉNÉäÉbÉNÇ∑ÇÈÇ∆ÇªÇÃîÕàÕäOÇÉNÉäÉbÉNÇ∑ÇÈÇ‹Ç≈
-GUIÇ™ï\é¶Ç≥ÇÍÇ»Ç¢ïsãÔçáÇâè¡Ç∑ÇÈÇΩÇﬂÇÃï“èWÇÇµÇ‹ÇµÇΩÅB
-DXUTgui.cppÇÃCDXUTSlider::HandleMouseÇ∆CDXUTCheckBox::HandleMouseÇÃ
-à»â∫ÇÃ2çsÇÉRÉÅÉìÉgÉAÉEÉgÇµÇ‹ÇµÇΩÅB
-if(!m_HasFocus)
-	m_pDialog->RequestFocus(this);
-è„ãLÇQçsÇÉRÉÅÉìÉgÉAÉEÉgÇ∑ÇÈÇ±Ç∆Ç≈GUIÇ™è¡Ç¶ÇÈè«èÛÇ™Ç»Ç≠Ç»ÇËÇ‹ÇµÇΩÅB
+		Presentïîï™ÇÕéüÇÃÇÊÇ§Ç…
+
+		    if (g_VSync) {
+		        hr = pSwapChain->Present(SyncInterval, dwFlags);
+		    }
+		    else {
+		        hr = pSwapChain->Present(0, 0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		    }
 
 
 
-2018/03/05
-DXUT.cppÇÃDXUTRender3DEnvironment10()ÇÃPresentÇÃâ”èäÇ
-hr = pSwapChain->Present(1, dwFlags);
-Ç…ÇµÇ‹ÇµÇΩÅB
+DXUTÇ…Ç¬Ç¢ÇƒÅ@(å√Ç¢ÉoÅ[ÉWÉáÉìÇ…Ç®ÇØÇÈãLèq)
+	éüÇ…DXUTÇÃÉ\Å[ÉXÇ…Ç¬Ç¢Çƒ
+	DXUTÇÃÉ\Å[ÉXÇÕDirectXÇÃSDK (Microsoft DirectX SDK (June 2010))Ç…ì¸Ç¡ÇƒÇ¢Ç‹Ç∑ÅB
+	DXUTÇÃÉtÉHÉãÉ_ÅiíÜÇ…CoreÉtÉHÉãÉ_Ç∆OptionalÉtÉHÉãÉ_Ç™ì¸Ç¡ÇƒÇ¢ÇÈÅjÇÇ‹ÇﬂÇŒÇØÇRDÇÃdisp4ÇÃÉtÉHÉãÉ_Ç…ÉRÉsÅ[ÇµÇ‹Ç∑ÅB
+
+	DXUTÇÃD3DXÇÃïîï™ÇChaVecCalcÇ≈íuÇ´ä∑Ç¶Ç‹Ç∑ÅB
+	[ DXUTÇÃíÜÇÃïKóvÇ»ÉwÉbÉ_ÉtÉ@ÉCÉãÇ≈ChaVecCalc.hÇÉCÉìÉNÉãÅ[ÉhÇµÇ‹Ç∑ÅB ]
+
+	éËèáÇ∆ÇµÇƒÇÕ
+	à»â∫ÇÃï∂éöóÒíuÇ´ä∑Ç¶ÇÇµÇ‹Ç∑ÅB
+	D3DXVECTOR3 --> ChaVector3
+	D3DXMATRIX --> ChaMatrix
+	D3DXVec3 --> ChaVector3
+	ChaMatrixA16 --> ChaMatrix
+	D3DXQUATERNION --> CQuaternion
+	LH( --> RH(
+
+	ChaMatrixMultiplyÇÃïîï™ÇÅ@A = B * C;å`éÆÇ…èëÇ´ä∑Ç¶Ç‹Ç∑ÅB
+	ChaVector3SubtractÇÃïîï™ÇÅ@A = B - C;å`éÆÇ…èëÇ´ä∑Ç¶Ç‹Ç∑ÅB
+
+	CQuaternionRotationMatrixÇÃïîï™ÇÕ
+	quaternion.RotationMatrix(matrix);å`éÆÇ…èëÇ´ä∑Ç¶Ç‹Ç∑ÅB
+
+	DXUTmisc.cpp ÇÃDXUTTraceä÷êîÇÃreturnï∂ÇÃÇ∆Ç±ÇÎÇreturn hr;Ç…ÇµÇ‹Ç∑ÅB
+
+	DXUT.cppÇÃCreateä÷êîÇÃ
+	m_state.m_OverrideForceVsyncÇÃílÇ= 1Ç…ÇµÇ‹Ç∑ÅB
+
+
+	ÇªÇµÇƒÇ«Ç§ÇµÇƒÇ‡D3DXÇ™ïKóvÇ»ïîï™ÇÕÇªÇÃÇÊÇ§Ç…ÉLÉÉÉXÉgÇµÇ‹Ç∑ÅB
+	ó·Ç¶ÇŒSetMatrix((D3DXMATRIX*)&srcchamatrix);ÇÃÇÊÇ§Ç…ÉLÉÉÉXÉgÇµÇ‹Ç∑ÅB
+	(const D3DXMATRIX*)Ç»Ç«ÇÃÇÊÇ§Ç…constÇ™ïKóvÇ»èÍèäÇ‡Ç†ÇËÇ‹Ç∑Ç™ÇªÇÍÇÕVisual StudioÇÃÉGÉâÅ[Çì«ÇÒÇ≈ëŒâûÇµÇƒÇ≠ÇæÇ≥Ç¢ÅB
+	ÉÅÉìÉoïœêîÇ™ìØÇ∂Ç»ÇÃÇ≈ÉLÉÉÉXÉgÇµÇƒÇ‡ÇøÇ·ÇÒÇ∆ìÆÇ´Ç‹Ç∑ÅB
+
+
+	2018/01/22Ç…DXUTgui.cppÇí≤êÆÇµÇ‹ÇµÇΩÅB
+	ÉÅÉCÉìÇ§à⁄ìÆÇÃÉXÉâÉCÉ_Å[Ç∆É`ÉFÉbÉNÉ{ÉbÉNÉXÇÉNÉäÉbÉNÇ∑ÇÈÇ∆ÇªÇÃîÕàÕäOÇÉNÉäÉbÉNÇ∑ÇÈÇ‹Ç≈
+	GUIÇ™ï\é¶Ç≥ÇÍÇ»Ç¢ïsãÔçáÇâè¡Ç∑ÇÈÇΩÇﬂÇÃï“èWÇÇµÇ‹ÇµÇΩÅB
+	DXUTgui.cppÇÃCDXUTSlider::HandleMouseÇ∆CDXUTCheckBox::HandleMouseÇÃ
+	à»â∫ÇÃ2çsÇÉRÉÅÉìÉgÉAÉEÉgÇµÇ‹ÇµÇΩÅB
+	if(!m_HasFocus)
+		m_pDialog->RequestFocus(this);
+	è„ãLÇQçsÇÉRÉÅÉìÉgÉAÉEÉgÇ∑ÇÈÇ±Ç∆Ç≈GUIÇ™è¡Ç¶ÇÈè«èÛÇ™Ç»Ç≠Ç»ÇËÇ‹ÇµÇΩÅB
+
+
+
+	2018/03/05
+	DXUT.cppÇÃDXUTRender3DEnvironment10()ÇÃPresentÇÃâ”èäÇ
+	hr = pSwapChain->Present(1, dwFlags);
+	Ç…ÇµÇ‹ÇµÇΩÅB
+
+
 
 
 

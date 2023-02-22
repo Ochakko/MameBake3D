@@ -2075,6 +2075,7 @@ CDXUTCheckBox* s_ApplyEndCheckBox = 0;
 //CDXUTCheckBox* s_AbsIKCheckBox = 0;
 CDXUTCheckBox* s_HighRpmCheckBox = 0;
 CDXUTCheckBox* s_BoneMarkCheckBox = 0;
+CDXUTCheckBox* s_LightingCheckBox = 0;
 CDXUTCheckBox* s_RigidMarkCheckBox = 0;
 //CDXUTCheckBox* s_PseudoLocalCheckBox = 0;
 //CDXUTCheckBox* s_WallScrapingIKCheckBox = 0;
@@ -2091,7 +2092,7 @@ CDXUTCheckBox* s_TPoseCheckBox = 0;
 //Left
 static CDXUTControl* s_ui_fpskind = 0;
 static CDXUTControl* s_ui_lightscale = 0;
-static CDXUTControl* s_ui_texlight = 0;
+static CDXUTControl* s_ui_lighting = 0;
 static CDXUTControl* s_ui_dispbone = 0;
 static CDXUTControl* s_ui_disprigid = 0;
 static CDXUTControl* s_ui_boneaxis = 0;
@@ -2263,7 +2264,7 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_NUM_LIGHTS_STATIC   7
 #define IDC_ACTIVE_LIGHT        8
 #define IDC_LIGHT_SCALE         9
-#define IDC_LIGHT_SCALE_STATIC  10
+#define IDC_LIGHTING  10
 
 #define IDC_COMBO_BONE			11
 #define IDC_FK_XP				12
@@ -3471,6 +3472,7 @@ void InitApp()
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
 	s_rotrec.clear();
+	g_lightflag = 1;
 
 	g_btcalccnt = 2.0;
 
@@ -3791,6 +3793,7 @@ void InitApp()
 	//s_AbsIKCheckBox = 0;
 	s_HighRpmCheckBox = 0;
 	s_BoneMarkCheckBox = 0;
+	s_LightingCheckBox = 0;
 	s_RigidMarkCheckBox = 0;
 	//s_PseudoLocalCheckBox = 0;
 	//s_WallScrapingIKCheckBox = 0;
@@ -3806,7 +3809,7 @@ void InitApp()
 	//Left
 	s_ui_fpskind = 0;
 	s_ui_lightscale = 0;
-	s_ui_texlight = 0;
+	s_ui_lighting = 0;
 	s_ui_dispbone = 0;
 	s_ui_disprigid = 0;
 	s_ui_boneaxis = 0;
@@ -8435,7 +8438,7 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 		g_fLightScale = (float)(g_SampleUI.GetSlider(IDC_LIGHT_SCALE)->GetValue() * 0.10f);
 
 		swprintf_s(sz, 100, L"Light : %0.2f", g_fLightScale);
-		//g_SampleUI.GetStatic( IDC_LIGHT_SCALE_STATIC )->SetText( sz );
+		//g_SampleUI.GetStatic( IDC_LIGHTING )->SetText( sz );
 		break;
 
 	case IDC_SL_IKFIRST:
@@ -22045,6 +22048,9 @@ int OnFrameUtCheckBox()
 	if (s_BoneMarkCheckBox) {
 		g_bonemarkflag = (int)s_BoneMarkCheckBox->GetChecked();
 	}
+	if (s_LightingCheckBox) {
+		g_lightflag = (int)s_LightingCheckBox->GetChecked();
+	}
 	if (s_RigidMarkCheckBox) {
 		g_rigidmarkflag = (int)s_RigidMarkCheckBox->GetChecked();
 	}
@@ -24707,12 +24713,13 @@ int CreateUtDialog()
 	g_VSync = false;
 
 
-	swprintf_s(sz, 100, L"Light Scale");
-	g_SampleUI.AddStatic(IDC_LIGHT_SCALE_STATIC, sz, iX0 + 25, iY += addh, ctrlxlen, 18);
-	s_ui_texlight = g_SampleUI.GetControl(IDC_LIGHT_SCALE_STATIC);
-	_ASSERT(s_ui_texlight);
-	s_dsutgui0.push_back(s_ui_texlight);//s_dsutgui1
-	s_dsutguiid0.push_back(IDC_LIGHT_SCALE_STATIC);//s_dsutgui1
+	swprintf_s(sz, 100, L"Lighting");
+	g_SampleUI.AddCheckBox(IDC_LIGHTING, sz, iX0 + 25, iY += addh, 
+		checkboxxlen, 16, (bool)g_lightflag, 0U, false, &s_LightingCheckBox);
+	s_ui_lighting = g_SampleUI.GetControl(IDC_LIGHTING);
+	_ASSERT(s_ui_lighting);
+	s_dsutgui0.push_back(s_ui_lighting);//s_dsutgui1
+	s_dsutguiid0.push_back(IDC_LIGHTING);//s_dsutgui1
 
 	g_SampleUI.AddSlider(IDC_LIGHT_SCALE, iX0 + 25, iY += addh, 100, ctrlh, 0, 20, (int)(g_fLightScale * 10.0f));
 	s_ui_lightscale = g_SampleUI.GetControl(IDC_LIGHT_SCALE);
@@ -24720,7 +24727,8 @@ int CreateUtDialog()
 	s_dsutgui0.push_back(s_ui_lightscale);
 	s_dsutguiid0.push_back(IDC_LIGHT_SCALE);
 
-	g_SampleUI.AddCheckBox(IDC_BMARK, L"DispBone", iX0 + 25, iY += addh, checkboxxlen, 16, true, 0U, false, &s_BoneMarkCheckBox);
+	g_SampleUI.AddCheckBox(IDC_BMARK, L"DispBone", iX0 + 25, iY += addh, 
+		checkboxxlen, 16, true, 0U, false, &s_BoneMarkCheckBox);
 	s_ui_dispbone = g_SampleUI.GetControl(IDC_BMARK);
 	_ASSERT(s_ui_dispbone);
 	s_dsutgui0.push_back(s_ui_dispbone);
@@ -27444,11 +27452,11 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 					OnRenderRefPose(pd3dImmediateContext, s_model);
 				}
 				else {
-					curmodel->OnRender(pd3dImmediateContext, lightflag, diffusemult, btflag);
+					curmodel->OnRender(pd3dImmediateContext, g_lightflag, diffusemult, btflag);
 				}
 			}
 			else {
-				curmodel->OnRender(pd3dImmediateContext, lightflag, diffusemult, btflag);
+				curmodel->OnRender(pd3dImmediateContext, g_lightflag, diffusemult, btflag);
 			}
 		}
 	}
