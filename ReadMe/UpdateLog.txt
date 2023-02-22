@@ -88,7 +88,7 @@
 	fpsコンボボックス追加
 		VSyncRefPosプレートメニューのVSyncチェックボックス廃止
 		DispAndLimitsプレートメニューの一番上に　fpsコンボボックス追加
-		ドロップダウンから　max500fps, 100fps, 60fps, 30fps, 15fpsを選ぶように
+		ドロップダウンから　free fps, 100fps, 60fps, 30fps, 15fpsを選ぶように
 
 
 

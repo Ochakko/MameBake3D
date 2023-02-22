@@ -2897,6 +2897,7 @@ void WINAPI DXUTRender3DEnvironment()
 
 
     //2023/02/21
+    if(g_VSync == true)
     {
         double oneframetime = 0.010;
         if (g_fpskind == 0)
@@ -2924,8 +2925,12 @@ void WINAPI DXUTRender3DEnvironment()
         GetDXUTState().SetOverrideConstantTimePerFrame(oneframetime);
         DXUTSetConstantFrameTime(true, oneframetime);
     }
-
-
+    else
+    {
+        GetDXUTState().SetOverrideConstantFrameTime(false);
+        GetDXUTState().SetOverrideConstantTimePerFrame(fElapsedTime);
+        DXUTSetConstantFrameTime(true, fElapsedTime);
+    }
 
 
     // Store the time for the app
@@ -3001,12 +3006,13 @@ void WINAPI DXUTRender3DEnvironment()
     UINT SyncInterval = GetDXUTState().GetCurrentDeviceSettings()->d3d11.SyncInterval;
 
     // Show the frame on the primary surface.
-    //if (g_VSync) {
+    if (g_VSync) {
         hr = pSwapChain->Present(SyncInterval, dwFlags);
-    //}
-    //else {
-    //    hr = pSwapChain->Present(0, 0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    //}
+    }
+    else {
+        hr = pSwapChain->Present(0, 0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    }
+
 
     if( DXGI_STATUS_OCCLUDED == hr )
     {

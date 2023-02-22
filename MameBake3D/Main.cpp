@@ -4618,7 +4618,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON);
-	CallF(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_VSync140ON.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_RefPos140ON.png", 0, 0), return S_FALSE);
 	//SpriteSwitch OFF
 	s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF);
@@ -4634,7 +4634,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF = new CMySprite(s_pdev);
 	_ASSERT(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF);
-	CallF(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_VSync140OFF.png", 0, 0), return S_FALSE);
+	CallF(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_RefPos140OFF.png", 0, 0), return S_FALSE);
 
 
 	//RigidSwitch ON
@@ -24692,7 +24692,7 @@ int CreateUtDialog()
 	CDXUTComboBox* pComboBoxFps = g_SampleUI.GetComboBox(IDC_COMBO_FPS);
 	pComboBoxFps->RemoveAllItems();
 	WCHAR strfpskind[256];
-	swprintf_s(strfpskind, 256, L"max500");
+	swprintf_s(strfpskind, 256, L"free fps");
 	pComboBoxFps->AddItem(strfpskind, ULongToPtr(0));
 	swprintf_s(strfpskind, 256, L"100fps");
 	pComboBoxFps->AddItem(strfpskind, ULongToPtr(1));
@@ -24702,9 +24702,9 @@ int CreateUtDialog()
 	pComboBoxFps->AddItem(strfpskind, ULongToPtr(3));
 	swprintf_s(strfpskind, 256, L"15fps");
 	pComboBoxFps->AddItem(strfpskind, ULongToPtr(4));
-	pComboBoxFps->SetSelectedByData(ULongToPtr(2));
-	g_fpskind = 2;
-	g_VSync = true;
+	pComboBoxFps->SetSelectedByData(ULongToPtr(0));
+	g_fpskind = 0;
+	g_VSync = false;
 
 
 	swprintf_s(sz, 100, L"Light Scale");
