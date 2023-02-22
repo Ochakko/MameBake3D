@@ -3017,7 +3017,7 @@ void s_dummyfunc()
 				SIZE_Y = 44;
 
 				//ボタンの配置開始位置
-				OFFSET_X = srctotalwidth / 3;
+				OFFSET_X = srctotalwidth / 3 + 80;
 			}
 			else {
 				//BOX_WIDTHとSIZE_Yは setButtonSizeでも変更出来る
@@ -3026,7 +3026,7 @@ void s_dummyfunc()
 				BOX_WIDTH = 26;
 				SIZE_Y = 30;
 
-				OFFSET_X = 0;
+				OFFSET_X = srctotalwidth / 4 + 30;
 			}
 
 

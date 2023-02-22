@@ -1,4 +1,4 @@
-﻿//--------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------------
 // File: DXUT.cpp
 //
 // Copyright (c) Microsoft Corporation.
@@ -294,7 +294,7 @@ public:
         m_state.m_OverrideAdapterOrdinal = -1;
         m_state.m_OverrideOutput = -1;
         //m_state.m_OverrideForceVsync = -1;//!!!!!! org
-		m_state.m_OverrideForceVsync = 1;//!!!!!! 1でデバイスを作成しておいてg_VSyncがfalseになったらPresent(0,0)に切り替える
+		m_state.m_OverrideForceVsync = 1;//!!!!!! 1?????????????g_VSync?false?????Present(0,0)??????
         //m_state.m_OverrideForceVsync = 0;//!!!!!!
         m_state.m_AutoChangeAdapter = true;
         m_state.m_ShowMsgBoxOnError = true;
@@ -2922,8 +2922,8 @@ void WINAPI DXUTRender3DEnvironment()
         }
 
         GetDXUTState().SetOverrideConstantFrameTime(true);
-        GetDXUTState().SetOverrideConstantTimePerFrame(oneframetime);
-        DXUTSetConstantFrameTime(true, oneframetime);
+        GetDXUTState().SetOverrideConstantTimePerFrame((float)oneframetime);
+        DXUTSetConstantFrameTime(true, (float)oneframetime);
     }
     else
     {

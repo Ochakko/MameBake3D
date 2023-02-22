@@ -2321,13 +2321,27 @@ int CModel::FillTimeLineOne(CBone* curbone, int lineno,
 		bool ikstopflag = curbone->GetIKStopFlag();
 		bool iktargetflag = curbone->GetIKTargetFlag();
 
-		WCHAR dispname[300] = { 0L };
+		WCHAR dispname[JOINTNAMELENG];
+		ZeroMemory(dispname, sizeof(WCHAR) * JOINTNAMELENG);
 		if (curbone->GetWBoneName()) {
-			wcscpy_s(dispname, 300, curbone->GetWBoneName());
+			size_t namelen = wcslen(curbone->GetWBoneName());
+			size_t cplen;
+			if (namelen < JOINTNAMELENG) {
+				cplen = namelen;
+			}
+			else {
+				
+				_ASSERT(0);
+
+				//タイムラインのnameとして　途中までしか登録されないので
+				//タイムラインにおける名前での検索は　みつからなくなる
+				cplen = JOINTNAMELENG - 1;
+			}
+			wcsncpy_s(dispname, JOINTNAMELENG, curbone->GetWBoneName(), cplen);
 		}
 		else {
 			_ASSERT(0);
-			wcscpy_s(dispname, 300, L"No Name");
+			wcscpy_s(dispname, JOINTNAMELENG, L"No Name");
 		}
 
 		//行を追加
@@ -4012,14 +4026,14 @@ CBone* CModel::CreateNewFbxBone(FbxNodeAttribute::EType type, FbxNode* curnode, 
 	ID3D11DeviceContext* pd3dImmediateContext = DXUTGetD3D11DeviceContext();
 	newbone->LoadCapsuleShape(m_pdev, pd3dImmediateContext);//!!!!!!!!!!!
 
-	char newbonename[256];
+	char newbonename[JOINTNAMELENG];
 	if (!curnode) {
 		//Rootボーン作成
-		strcpy_s(newbonename, 256, "Root");
+		strcpy_s(newbonename, JOINTNAMELENG, "Root");
 	}
 	else {
 		//通常のボーン作成
-		strcpy_s(newbonename, 256, curnode->GetName());
+		strcpy_s(newbonename, JOINTNAMELENG, curnode->GetName());
 	}
 	TermJointRepeats(newbonename);
 	newbone->SetName(newbonename);
@@ -4069,8 +4083,8 @@ CBone* CModel::CreateNewFbxBone(FbxNodeAttribute::EType type, FbxNode* curnode, 
 
 	if (parnode) {
 		//const char* parentbonename = parnode->GetName();
-		char parentbonename[256];
-		strcpy_s(parentbonename, 256, parnode->GetName());
+		char parentbonename[JOINTNAMELENG];
+		strcpy_s(parentbonename, JOINTNAMELENG, parnode->GetName());
 		TermJointRepeats(parentbonename);
 
 		CBone* parentbone = m_bonename[parentbonename];

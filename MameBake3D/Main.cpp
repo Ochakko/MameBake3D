@@ -1,27 +1,27 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 /*
-2016/04/22@à–¾•¶C³
-[IK‚É‚Â‚¢‚Ä]
-MameBake3D‚ÌIK•û–@‚Í‘Š‘ÎIK(SlerpIK)‚Æâ‘ÎIK(AbsIK)‚ª‚ ‚éB
+2016/04/22ã€€èª¬æ˜æ–‡ä¿®æ­£
+[IKã«ã¤ã„ã¦]
+MameBake3Dã®IKæ–¹æ³•ã¯ç›¸å¯¾IK(SlerpIK)ã¨çµ¶å¯¾IK(AbsIK)ãŒã‚ã‚‹ã€‚
 
-‘Š‘ÎIK‚Æ‚Í
-p¨“K—pƒ{[ƒ“‚Ìp¨‚Ì•Ï‰»•ª(•ÒW‘OŒã‚Å‚Ì•Ï‰»•ª)‚ğ
-ƒtƒŒ[ƒ€‚ÉŠÖ‚µ‚Ä•âŠÔ‚µA‚»‚ê‚ğ•ÒW‘O‚Ìp¨‚ÉŠ|‚¯Z‚·‚é•û–@‚Å‚ ‚éB
+ç›¸å¯¾IKã¨ã¯
+å§¿å‹¢é©ç”¨ãƒœãƒ¼ãƒ³ã®å§¿å‹¢ã®å¤‰åŒ–åˆ†(ç·¨é›†å‰å¾Œã§ã®å¤‰åŒ–åˆ†)ã‚’
+ãƒ•ãƒ¬ãƒ¼ãƒ ã«é–¢ã—ã¦è£œé–“ã—ã€ãã‚Œã‚’ç·¨é›†å‰ã®å§¿å‹¢ã«æ›ã‘ç®—ã™ã‚‹æ–¹æ³•ã§ã‚ã‚‹ã€‚
 
-â‘ÎIK‚Æ‚Í
-p¨“K—pƒ{[ƒ“‚Ìp¨‚ğ‚»‚Ì‚Ü‚Ü‘I‘ğƒtƒŒ[ƒ€‚É”½‰f‚·‚é•û–@‚Å‚ ‚éB
-â‘ÎIK‚Å•”•ª“I‚É“®‚©‚·ê‡A“K—p‚µ‚½•”•ª‚¾‚¯â‘Î“I‚Èp¨‚É‚È‚é‚Ì‚Åe‚ÌˆÊ’u‚â‰ñ“]‚Ì‰e‹¿‚àó‚¯‚È‚­‚È‚éB
-‘Ì‚Ì‚Â‚È‚ª‚Á‚½•”•ª‚Éâ‘ÎIK‚ğg—p‚µ‚Ä•ÒW‚·‚é‚ÆA‘Ì‚ª‘S‘ÌˆÚ“®‚µ‚½Û‚È‚Ç‚É•”•ª‚ª‚¿‚¬‚ê‚é‚Ì‚Å’ˆÓ‚µ‚Ä‚­‚¾‚³‚¢B
-â‘ÎIK‚Ìg‚¢‚Ç‚±‚ë‚Æ‚µ‚Ä‚ÍAƒƒPƒbƒgƒpƒ“ƒ`‚È‚Ç‚Ìƒƒ“ƒXƒLƒ“‚Å‚Í‚È‚¢•”ˆÊ‚Ö‚ÌƒOƒ[ƒoƒ‹À•WŒn‚Å‚ÌƒAƒjƒ[ƒVƒ‡ƒ“‚Å‚·B
+çµ¶å¯¾IKã¨ã¯
+å§¿å‹¢é©ç”¨ãƒœãƒ¼ãƒ³ã®å§¿å‹¢ã‚’ãã®ã¾ã¾é¸æŠãƒ•ãƒ¬ãƒ¼ãƒ ã«åæ˜ ã™ã‚‹æ–¹æ³•ã§ã‚ã‚‹ã€‚
+çµ¶å¯¾IKã§éƒ¨åˆ†çš„ã«å‹•ã‹ã™å ´åˆã€é©ç”¨ã—ãŸéƒ¨åˆ†ã ã‘çµ¶å¯¾çš„ãªå§¿å‹¢ã«ãªã‚‹ã®ã§è¦ªã®ä½ç½®ã‚„å›è»¢ã®å½±éŸ¿ã‚‚å—ã‘ãªããªã‚‹ã€‚
+ä½“ã®ã¤ãªãŒã£ãŸéƒ¨åˆ†ã«çµ¶å¯¾IKã‚’ä½¿ç”¨ã—ã¦ç·¨é›†ã™ã‚‹ã¨ã€ä½“ãŒå…¨ä½“ç§»å‹•ã—ãŸéš›ãªã©ã«éƒ¨åˆ†ãŒã¡ãã‚Œã‚‹ã®ã§æ³¨æ„ã—ã¦ãã ã•ã„ã€‚
+çµ¶å¯¾IKã®ä½¿ã„ã©ã“ã‚ã¨ã—ã¦ã¯ã€ãƒ­ã‚±ãƒƒãƒˆãƒ‘ãƒ³ãƒãªã©ã®ãƒ¯ãƒ³ã‚¹ã‚­ãƒ³ã§ã¯ãªã„éƒ¨ä½ã¸ã®ã‚°ãƒ­ãƒ¼ãƒãƒ«åº§æ¨™ç³»ã§ã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã§ã™ã€‚
 
 
-MameBake3D‚ÍƒfƒtƒHƒ‹ƒg‚Å‘Š‘ÎIK‚Å‚·B
+MameBake3Dã¯ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã§ç›¸å¯¾IKã§ã™ã€‚
 
-ƒƒCƒ“ƒEƒCƒ“ƒhƒE‚ÌSlerpIK‚ğØ‚éƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚ğƒIƒ“‚É‚·‚é‚Æ
-“K—p•ª‚Ìp¨‚Ì•âŠÔ‚ªØ‚ê‚éB
+ãƒ¡ã‚¤ãƒ³ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã®SlerpIKã‚’åˆ‡ã‚‹ãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã‚’ã‚ªãƒ³ã«ã™ã‚‹ã¨
+é©ç”¨åˆ†ã®å§¿å‹¢ã®è£œé–“ãŒåˆ‡ã‚Œã‚‹ã€‚
 
-ƒƒCƒ“ƒEƒCƒ“ƒhƒE‚Ìâ‘ÎIK‚ğƒIƒ“‚É‚·‚é‚Æ
-â‘ÎIK‚É‚È‚éB
+ãƒ¡ã‚¤ãƒ³ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã®çµ¶å¯¾IKã‚’ã‚ªãƒ³ã«ã™ã‚‹ã¨
+çµ¶å¯¾IKã«ãªã‚‹ã€‚
 
 */
 
@@ -29,22 +29,22 @@ MameBake3D‚ÍƒfƒtƒHƒ‹ƒg‚Å‘Š‘ÎIK‚Å‚·B
 /*
 
 //2021/02/24_1
-ŠJ”­‚Ì“r’†‚©‚ç
-“KØ‚Èƒpƒ‰ƒ[ƒ^’l‚ğ’T‚·‚½‚ß‚É
-previewflag 5, 6‚ÌÄ¶‚É‚Íƒpƒ‰ƒ[ƒ^‚ğŒˆ‚ß‘Å‚¿‚µ‚ÄÄ¶‚µ‚Ä‚¢‚½
+é–‹ç™ºã®é€”ä¸­ã‹ã‚‰
+é©åˆ‡ãªãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å€¤ã‚’æ¢ã™ãŸã‚ã«
+previewflag 5, 6ã®å†ç”Ÿæ™‚ã«ã¯ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’æ±ºã‚æ‰“ã¡ã—ã¦å†ç”Ÿã—ã¦ã„ãŸ
 
-‚»‚Ì‚½‚ßRigidParamdDialg‚Åİ’è‚µ‚½’l‚Í
-•¨—ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚É‚Íã‘‚«‚³‚ê‚Ä‚¢‚½
+ãã®ãŸã‚RigidParamdDialgã§è¨­å®šã—ãŸå€¤ã¯
+ç‰©ç†ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³æ™‚ã«ã¯ä¸Šæ›¸ãã•ã‚Œã¦ã„ãŸ
 
-¡‰ñARigidParamsDialog‚ğ‘O–Ê‚Éo‚·‚±‚Æ‚É‚È‚Á‚Ä
-previewflag 5 ‚ÌÄ¶‚É‚Íƒpƒ‰ƒ[ƒ^‚ğŒˆ‚ß‘Å‚¿‚ğ~‚ß‚½
-‚æ‚Á‚Ä‹““®‚ª•Ï‚í‚é‚©‚à‚µ‚ê‚È‚¢
+ä»Šå›ã€RigidParamsDialogã‚’å‰é¢ã«å‡ºã™ã“ã¨ã«ãªã£ã¦
+previewflag 5 ã®å†ç”Ÿæ™‚ã«ã¯ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’æ±ºã‚æ‰“ã¡ã‚’æ­¢ã‚ãŸ
+ã‚ˆã£ã¦æŒ™å‹•ãŒå¤‰ã‚ã‚‹ã‹ã‚‚ã—ã‚Œãªã„
 
-Œˆ‚ß‘Å‚¿‚Ì•”•ª‚Í
-ŠY“–ƒvƒƒOƒ‰ƒ€ŒÂŠ‚É
-//Œˆ‚ß‘Å‚¿
-‚Æ‚¢‚¤ƒRƒƒ“ƒg‚ğ‚µ‚Ä‚¨‚¢‚½‚Ì‚Å
-Œˆ‚ß‘Å‚¿ƒpƒ‰ƒ[ƒ^’l‚ğ’m‚è‚½‚¢ê‡‚É‚Í‚İ‚Ä‚­‚¾‚³‚¢
+æ±ºã‚æ‰“ã¡ã®éƒ¨åˆ†ã¯
+è©²å½“ãƒ—ãƒ­ã‚°ãƒ©ãƒ å€‹æ‰€ã«
+//æ±ºã‚æ‰“ã¡
+ã¨ã„ã†ã‚³ãƒ¡ãƒ³ãƒˆã‚’ã—ã¦ãŠã„ãŸã®ã§
+æ±ºã‚æ‰“ã¡ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å€¤ã‚’çŸ¥ã‚ŠãŸã„å ´åˆã«ã¯ã¿ã¦ãã ã•ã„
 
 */
 
@@ -52,19 +52,19 @@ previewflag 5 ‚ÌÄ¶‚É‚Íƒpƒ‰ƒ[ƒ^‚ğŒˆ‚ß‘Å‚¿‚ğ~‚ß‚½
 /*
 *
 * 2021/11/29
-3DƒEƒCƒ“ƒhƒE‚ÌPseudoLocal‚Ìƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚Í‰æ–Ê‚Éo‚È‚­‚È‚è‚Ü‚µ‚½
-PseudoLocalIK‚Íí‚ÉƒIƒ“‚É‚È‚è‚Ü‚·
+3Dã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã®PseudoLocalã®ãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã¯ç”»é¢ã«å‡ºãªããªã‚Šã¾ã—ãŸ
+PseudoLocalIKã¯å¸¸ã«ã‚ªãƒ³ã«ãªã‚Šã¾ã™
 
-3DƒEƒCƒ“ƒhƒE‚ÉV‚½‚ÉWallScrapingIKƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚ª‰Á‚í‚è‚Ü‚µ‚½
-•Ç‚·‚èIK‚ÌƒIƒ“‚ÆƒIƒt‚ğw’è‚·‚é‚½‚ß‚Ì‚à‚Ì‚Å‚·
-•Ç‚·‚èIK‚Æ‚Í
-§ŒÀŠp“x‚ğ‰z‚¦‚ÄIK‘€ì‚ğs‚¨‚¤‚Æ‚µ‚½ê‡‚É
-§ŒÀ‚É’B‚µ‚½¬•ªˆÈŠO‚Í•Ï‰»‚³‚¹‚éIK‚Ì‚±‚Æ‚Å‚·
-•Ç‚·‚èIK‚ğƒIƒ“‚É‚·‚é‚±‚Æ‚Å§ŒÀŠp“x‰º‚Å‚à“®‚©‚µ‚â‚·‚¢IK‘€ì‚ª‰Â”\‚Å‚·
-Œ¾‚¢•û‚ğ•Ï‚¦‚é‚Æ
-•Ç‚·‚èIK‚ğƒIƒt‚É‚·‚é‚ÆXYZ‚Ç‚ê‚©‚Ì²‚ª§ŒÀ’l‚É’B‚µ‚½ê‡‚ÉIK‚Å“®‚©‚·‚±‚Æ‚ª“ï‚µ‚­‚È‚è‚Ü‚·
+3Dã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã«æ–°ãŸã«WallScrapingIKãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ãŒåŠ ã‚ã‚Šã¾ã—ãŸ
+å£ã™ã‚ŠIKã®ã‚ªãƒ³ã¨ã‚ªãƒ•ã‚’æŒ‡å®šã™ã‚‹ãŸã‚ã®ã‚‚ã®ã§ã™
+å£ã™ã‚ŠIKã¨ã¯
+åˆ¶é™è§’åº¦ã‚’è¶Šãˆã¦IKæ“ä½œã‚’è¡ŒãŠã†ã¨ã—ãŸå ´åˆã«
+åˆ¶é™ã«é”ã—ãŸæˆåˆ†ä»¥å¤–ã¯å¤‰åŒ–ã•ã›ã‚‹IKã®ã“ã¨ã§ã™
+å£ã™ã‚ŠIKã‚’ã‚ªãƒ³ã«ã™ã‚‹ã“ã¨ã§åˆ¶é™è§’åº¦ä¸‹ã§ã‚‚å‹•ã‹ã—ã‚„ã™ã„IKæ“ä½œãŒå¯èƒ½ã§ã™
+è¨€ã„æ–¹ã‚’å¤‰ãˆã‚‹ã¨
+å£ã™ã‚ŠIKã‚’ã‚ªãƒ•ã«ã™ã‚‹ã¨XYZã©ã‚Œã‹ã®è»¸ãŒåˆ¶é™å€¤ã«é”ã—ãŸå ´åˆã«IKã§å‹•ã‹ã™ã“ã¨ãŒé›£ã—ããªã‚Šã¾ã™
 
-•â‘«FWallScrapingIK‚Ìg‚¢‚Ç‚±‚ë‚Æ‚µ‚Ä‚ÍRig‚É‚æ‚éw‚ÌŠJ•Â(‚»‚êˆÈŠO‚Ìg‚¢‚Ç‚±‚ë‚Í‚ ‚Ü‚èŠm”F‚³‚ê‚Ä‚¢‚È‚¢‚ª@w‚ÌŠJ•Â‚É‚Í•K{) (2022/10/27’Ç‹L)
+è£œè¶³ï¼šWallScrapingIKã®ä½¿ã„ã©ã“ã‚ã¨ã—ã¦ã¯Rigã«ã‚ˆã‚‹æŒ‡ã®é–‹é–‰(ãã‚Œä»¥å¤–ã®ä½¿ã„ã©ã“ã‚ã¯ã‚ã¾ã‚Šç¢ºèªã•ã‚Œã¦ã„ãªã„ãŒã€€æŒ‡ã®é–‹é–‰ã«ã¯å¿…é ˆ) (2022/10/27è¿½è¨˜)
 
 */
 
@@ -73,190 +73,190 @@ PseudoLocalIK‚Íí‚ÉƒIƒ“‚É‚È‚è‚Ü‚·
 *
 * 2022/08/13
 
-UpdateMatrix‚ğƒ}ƒ‹ƒ`ƒXƒŒƒbƒh‰»‚µ‚Ü‚µ‚½
+UpdateMatrixã‚’ãƒãƒ«ãƒã‚¹ãƒ¬ãƒƒãƒ‰åŒ–ã—ã¾ã—ãŸ
 
-3DƒEƒCƒ“ƒhƒE‚ÉV‚½‚Éhigh rpmƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚ÆUpdateMatrixThreadsƒXƒ‰ƒCƒ_[‚ª‰Á‚í‚è‚Ü‚µ‚½
-high rpmƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚ÆUpdateMatrixThreadsƒXƒ‰ƒCƒ_[‚ÍƒyƒA‚Åg‚¢‚Ü‚·B
+3Dã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã«æ–°ãŸã«high rpmãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã¨UpdateMatrixThreadsã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ãŒåŠ ã‚ã‚Šã¾ã—ãŸ
+high rpmãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã¨UpdateMatrixThreadsã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã¯ãƒšã‚¢ã§ä½¿ã„ã¾ã™ã€‚
 
-UpdateMatrixThreadsƒXƒ‰ƒCƒ_[‚ÍUpdateMatrixŒvZ‚ÌƒXƒŒƒbƒh‚Ì”‚ğw’è‚·‚é‚½‚ß‚Ì‚à‚Ì‚Å‚P‚©‚ç‚S‚Ü‚Å‚ ‚è‚Ü‚·
-ƒXƒŒƒbƒh‚Ì”‚Í‚Pƒ‚ƒfƒ‹‚ ‚½‚è‚ÌƒXƒŒƒbƒh”‚Å‚·
+UpdateMatrixThreadsã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã¯UpdateMatrixè¨ˆç®—æ™‚ã®ã‚¹ãƒ¬ãƒƒãƒ‰ã®æ•°ã‚’æŒ‡å®šã™ã‚‹ãŸã‚ã®ã‚‚ã®ã§ï¼‘ã‹ã‚‰ï¼”ã¾ã§ã‚ã‚Šã¾ã™
+ã‚¹ãƒ¬ãƒƒãƒ‰ã®æ•°ã¯ï¼‘ãƒ¢ãƒ‡ãƒ«ã‚ãŸã‚Šã®ã‚¹ãƒ¬ãƒƒãƒ‰æ•°ã§ã™
 
-high rpm‚ÍƒXƒŒƒbƒh‚ğ‚‰ñ“]‚³‚¹‚é‚©‚Ç‚¤‚©‚ğw’è‚µ‚Ü‚·
-ƒXƒŒƒbƒh”‚ğ‘‚â‚·‚¾‚¯‚Å‚Í•\¦‘¬“x‚Í‘¬‚­‚È‚ç‚È‚¢‚±‚Æ‚ª‘½‚¢
-ƒXƒŒƒbƒh”‚ğ“KØ‚É‘‚â‚µ‚Ähigh rpm‚ğƒIƒ“‚É‚·‚é‚Æ‚‘¬‰»‚·‚é‚±‚Æ‚ª‘½‚¢
-‚‘¬‰»‚·‚éê‡‚É‚Í‚»‚Ì•ªCPU‚Ì‰Ò“­—¦‚Í‚‚­‚È‚è‚Ü‚·
+high rpmã¯ã‚¹ãƒ¬ãƒƒãƒ‰ã‚’é«˜å›è»¢ã•ã›ã‚‹ã‹ã©ã†ã‹ã‚’æŒ‡å®šã—ã¾ã™
+ã‚¹ãƒ¬ãƒƒãƒ‰æ•°ã‚’å¢—ã‚„ã™ã ã‘ã§ã¯è¡¨ç¤ºé€Ÿåº¦ã¯é€Ÿããªã‚‰ãªã„ã“ã¨ãŒå¤šã„
+ã‚¹ãƒ¬ãƒƒãƒ‰æ•°ã‚’é©åˆ‡ã«å¢—ã‚„ã—ã¦high rpmã‚’ã‚ªãƒ³ã«ã™ã‚‹ã¨é«˜é€ŸåŒ–ã™ã‚‹ã“ã¨ãŒå¤šã„
+é«˜é€ŸåŒ–ã™ã‚‹å ´åˆã«ã¯ãã®åˆ†CPUã®ç¨¼åƒç‡ã¯é«˜ããªã‚Šã¾ã™
 
-high rpm‚ÌŒø‰Ê‚ÍƒvƒŒƒrƒ…[‚¾‚¯(1.0.0.31‚©‚çƒvƒŒƒrƒ…[‚¾‚¯‚É‚È‚è‚Ü‚µ‚½)
+high rpmã®åŠ¹æœã¯ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼æ™‚ã ã‘(1.0.0.31ã‹ã‚‰ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼æ™‚ã ã‘ã«ãªã‚Šã¾ã—ãŸ)
 */
 
 
 /*
 * 2022/10/27
 *
-* ƒ^ƒCƒ€ƒ‰ƒCƒ“‚Ì‘I‘ğ”ÍˆÍ‚ÌƒXƒ^[ƒg‚ÆƒGƒ“ƒh‚Ì‚½‚ß‚Ì•Ï”‚ª‰½í—Ş‚à‚ ‚Á‚Ä•ª‚©‚è‚Ã‚ç‚¢Œ
+* ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®é¸æŠç¯„å›²ã®ã‚¹ã‚¿ãƒ¼ãƒˆã¨ã‚¨ãƒ³ãƒ‰ã®ãŸã‚ã®å¤‰æ•°ãŒä½•ç¨®é¡ã‚‚ã‚ã£ã¦åˆ†ã‹ã‚Šã¥ã‚‰ã„ä»¶
 *
-* Ÿ‚Ì‚P‚©‚ç‚T‚Ì‚Tí—Ş‚à‚ ‚é
+* æ¬¡ã®ï¼‘ã‹ã‚‰ï¼•ã®ï¼•ç¨®é¡ã‚‚ã‚ã‚‹
 * 1, s_buttonselectstart, s_buttonselectend
 * 2, s_editrange
 * 3, g_motionbrush_startframe, g_motionbrush_endframe
 * 4, g_playingstart, g_playingend
 * 5, s_owpLTimeline->getShowPosTime(), s_owpLTimeline->getShowPosTime() + s_owpEulerGraph->getShowposWidth()
 *
-* ‚P‚Íƒƒ“ƒOƒ^ƒCƒ€ƒ‰ƒCƒ“‚ğƒ}ƒEƒX‚Å‘I‘ğ’†‚ÉƒZƒbƒg‚·‚é@ƒvƒŒƒrƒ…[‚ÉƒJ[ƒ\ƒ‹ƒCƒxƒ“ƒg‚ª‹N‚«‚Ä‚PƒtƒŒ[ƒ€‚¾‚¯‚Ì‘I‘ğ‚É‚È‚Á‚½‚Æ‚«‚ÉB–†
-* ‚Q‚à‚P‚Æ‚Ù‚Ú“¯‚¶‚¾‚ª@ƒ^ƒCƒ~ƒ“ƒO‚ª­‚µˆÙ‚È‚é@‚P‚Æ‚Q‚Í•Ğ•û‚©‚ç•Ğ•û‚Ö‘ŠŒİ‚ÉƒZƒbƒg‚µ‚ ‚¤‚±‚Æ‚ª‚ ‚é
-* ‚R‚Íƒƒ“ƒOƒ^ƒCƒ€ƒ‰ƒCƒ“‚ğƒ}ƒEƒX‚Å‘I‘ğI—¹‚µ‚½‚ÉMotionBrush‚ğì¬‚·‚é‚Æ‚«‚ÉƒZƒbƒg@ƒvƒŒƒrƒ…[’†‚à•Û‚µ‚Ä‚¢‚é‚±‚Æ‚ª‘½‚¢‚ªƒ^ƒCƒ€ƒ‰ƒCƒ“‘I‘ğI—¹‚Ü‚ÅB–†
-* ‚S‚ÍƒvƒŒƒrƒ…[‚É‚P‚ª•Û‚³‚ê‚È‚¢‚±‚Æ‚ğ‰ñ”ğ‚·‚é‚½‚ß‚É@ƒvƒŒƒrƒ…[‚ÌŠJn‚ÆI—¹‚É•Û‘¶‚ÆƒŒƒXƒgƒA‚ğ‚·‚é
-* ‚T‚Íƒ^ƒCƒ€ƒ‰ƒCƒ“‚ÉÀÛ‚É•\¦‚³‚ê‚Ä‚¢‚éŠÔ‚Ì”ÍˆÍ@getShowPosTime()‚Í•\¦ŠJn‚Ò‚Á‚½‚è‚Ì’l@getShowPoseTime() + getShowposWidth()‚ÍÀÛ‚Ì•\¦‚æ‚è­‚µŒã•û
+* ï¼‘ã¯ãƒ­ãƒ³ã‚°ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã‚’ãƒã‚¦ã‚¹ã§é¸æŠä¸­ã«ã‚»ãƒƒãƒˆã™ã‚‹ã€€ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼æ™‚ã«ã‚«ãƒ¼ã‚½ãƒ«ã‚¤ãƒ™ãƒ³ãƒˆãŒèµ·ãã¦ï¼‘ãƒ•ãƒ¬ãƒ¼ãƒ ã ã‘ã®é¸æŠã«ãªã£ãŸã¨ãã«æ›–æ˜§
+* ï¼’ã‚‚ï¼‘ã¨ã»ã¼åŒã˜ã ãŒã€€ã‚¿ã‚¤ãƒŸãƒ³ã‚°ãŒå°‘ã—ç•°ãªã‚‹ã€€ï¼‘ã¨ï¼’ã¯ç‰‡æ–¹ã‹ã‚‰ç‰‡æ–¹ã¸ç›¸äº’ã«ã‚»ãƒƒãƒˆã—ã‚ã†ã“ã¨ãŒã‚ã‚‹
+* ï¼“ã¯ãƒ­ãƒ³ã‚°ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã‚’ãƒã‚¦ã‚¹ã§é¸æŠçµ‚äº†ã—ãŸæ™‚ã«MotionBrushã‚’ä½œæˆã™ã‚‹ã¨ãã«ã‚»ãƒƒãƒˆã€€ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼ä¸­ã‚‚ä¿æŒã—ã¦ã„ã‚‹ã“ã¨ãŒå¤šã„ãŒã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³é¸æŠçµ‚äº†ã¾ã§æ›–æ˜§
+* ï¼”ã¯ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼æ™‚ã«ï¼‘ãŒä¿æŒã•ã‚Œãªã„ã“ã¨ã‚’å›é¿ã™ã‚‹ãŸã‚ã«ã€€ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼ã®é–‹å§‹æ™‚ã¨çµ‚äº†æ™‚ã«ä¿å­˜ã¨ãƒ¬ã‚¹ãƒˆã‚¢ã‚’ã™ã‚‹
+* ï¼•ã¯ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã«å®Ÿéš›ã«è¡¨ç¤ºã•ã‚Œã¦ã„ã‚‹æ™‚é–“ã®ç¯„å›²ã€€getShowPosTime()ã¯è¡¨ç¤ºé–‹å§‹ã´ã£ãŸã‚Šã®å€¤ã€€getShowPoseTime() + getShowposWidth()ã¯å®Ÿéš›ã®è¡¨ç¤ºã‚ˆã‚Šå°‘ã—å¾Œæ–¹
 *
-* ‚P‚©‚ç‚T‚ğ—p“r‚É‚æ‚èg‚¢•ª‚¯‚é
-* i‚±‚ñ‚È‚±‚Æ‚É‚È‚Á‚½‚Ì‚Í@ƒvƒŒƒrƒ…[‚É@‚PƒtƒŒ[ƒ€‚¾‚¯‚Ì‘I‘ğó‘Ô‚É‚È‚é‚±‚Æ‚ª‘å‚«‚¢j
+* ï¼‘ã‹ã‚‰ï¼•ã‚’ç”¨é€”ã«ã‚ˆã‚Šä½¿ã„åˆ†ã‘ã‚‹
+* ï¼ˆã“ã‚“ãªã“ã¨ã«ãªã£ãŸã®ã¯ã€€ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼æ™‚ã«ã€€ï¼‘ãƒ•ãƒ¬ãƒ¼ãƒ ã ã‘ã®é¸æŠçŠ¶æ…‹ã«ãªã‚‹ã“ã¨ãŒå¤§ãã„ï¼‰
 *
 */
 
 
 /*
 * 2022/12/30
-* IKFK@‚Æ@ƒIƒCƒ‰[ƒOƒ‰ƒt‚É•\¦‚·‚éî•ñ‚É‚Â‚¢‚Ä
-* ‰ñ“]‘€ì‚ÍIK(q‹ŸƒWƒ‡ƒCƒ“ƒg‚ğƒhƒ‰ƒbƒO‚µ‚ÄeƒWƒ‡ƒCƒ“ƒg’†S‚É‰ñ“])
-* ˆÚ“®‘€ì‚ÆŠg‘å‘€ì‚ÍFK(‘€ì‚·‚éƒWƒ‡ƒCƒ“ƒg©‘Ì‚ğƒhƒ‰ƒbƒO‚µ‚Ä@‘€ì‚·‚éƒWƒ‡ƒCƒ“ƒg©‘Ì‚Ìó‘Ô‚ğ•ÒW)
+* IKFKã€€ã¨ã€€ã‚ªã‚¤ãƒ©ãƒ¼ã‚°ãƒ©ãƒ•ã«è¡¨ç¤ºã™ã‚‹æƒ…å ±ã«ã¤ã„ã¦
+* å›è»¢æ“ä½œã¯IK(å­ä¾›ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã‚’ãƒ‰ãƒ©ãƒƒã‚°ã—ã¦è¦ªã‚¸ãƒ§ã‚¤ãƒ³ãƒˆä¸­å¿ƒã«å›è»¢)
+* ç§»å‹•æ“ä½œã¨æ‹¡å¤§æ“ä½œã¯FK(æ“ä½œã™ã‚‹ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆè‡ªä½“ã‚’ãƒ‰ãƒ©ãƒƒã‚°ã—ã¦ã€€æ“ä½œã™ã‚‹ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆè‡ªä½“ã®çŠ¶æ…‹ã‚’ç·¨é›†)
 *
-* ã‹L‚ÌIK‚ÆFK‚ÌØ‚è‘Ö‚¦‚Í@‰ñ“]AˆÚ“®AŠg‘å‚ÉŠÖ‚·‚é@’¼Š´“I‘€ì‚ÉŠî‚Ã‚­‚à‚Ì‚Æv‚Á‚Ä‚¢‚é
+* ä¸Šè¨˜ã®IKã¨FKã®åˆ‡ã‚Šæ›¿ãˆã¯ã€€å›è»¢ã€ç§»å‹•ã€æ‹¡å¤§ã«é–¢ã™ã‚‹ã€€ç›´æ„Ÿçš„æ“ä½œã«åŸºã¥ãã‚‚ã®ã¨æ€ã£ã¦ã„ã‚‹
 *
-* ‰ñ“]AˆÚ“®AŠg‘å‚ğØ‚è‘Ö‚¦‚é‚Æ@ƒIƒCƒ‰[ƒOƒ‰ƒt‚É•\¦‚·‚éƒWƒ‡ƒCƒ“ƒgî•ñ‚à•Ï‚í‚é
-* ‰ñ“]‚Ì‚É‚Í@‘I‘ğ‚µ‚Ä‚¢‚éƒWƒ‡ƒCƒ“ƒg‚Ìe‚ÌƒWƒ‡ƒCƒ“ƒg‚ÌƒIƒCƒ‰[Šp‚ğ•\¦
-* ˆÚ“®AŠg‘å‚É‚Í@‘I‘ğ‚µ‚Ä‚¢‚éƒWƒ‡ƒCƒ“ƒg©g‚Ì@ˆÚ“®‚Ü‚½‚ÍŠg‘åî•ñ‚ğ•\¦
-* ƒOƒ‰ƒtã’i¶‘¤‚É@Ô‚¢š‚Å@‘€ì‚·‚éƒWƒ‡ƒCƒ“ƒg‚Ì–¼‘O‚ğ•\¦
+* å›è»¢ã€ç§»å‹•ã€æ‹¡å¤§ã‚’åˆ‡ã‚Šæ›¿ãˆã‚‹ã¨ã€€ã‚ªã‚¤ãƒ©ãƒ¼ã‚°ãƒ©ãƒ•ã«è¡¨ç¤ºã™ã‚‹ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆæƒ…å ±ã‚‚å¤‰ã‚ã‚‹
+* å›è»¢ã®æ™‚ã«ã¯ã€€é¸æŠã—ã¦ã„ã‚‹ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®è¦ªã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®ã‚ªã‚¤ãƒ©ãƒ¼è§’ã‚’è¡¨ç¤º
+* ç§»å‹•ã€æ‹¡å¤§æ™‚ã«ã¯ã€€é¸æŠã—ã¦ã„ã‚‹ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆè‡ªèº«ã®ã€€ç§»å‹•ã¾ãŸã¯æ‹¡å¤§æƒ…å ±ã‚’è¡¨ç¤º
+* ã‚°ãƒ©ãƒ•ä¸Šæ®µå·¦å´ã«ã€€èµ¤ã„å­—ã§ã€€æ“ä½œã™ã‚‹ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®åå‰ã‚’è¡¨ç¤º
 *
 */
 
 /*
 * 2022/12/30
-* ƒIƒCƒ‰[Šp‚Ì”’l‚Í@Mayaƒ‰ƒCƒN(‚±‚¿‚ç‚ÅƒeƒXƒg‚µ‚½‚Uí—Ş‚Ù‚Ç‚Ìfbx‚Å‚ÍMaya‚Æˆê’v)‚È@‚Pí—Ş‚ÌƒIƒCƒ‰[Šp
-* ƒIƒCƒ‰[Šp‚Í‚Pí—Ş‚¾‚ª@‰ñ“]AˆÚ“®AŠg‘å‚·‚éÛ‚Ìƒ}ƒjƒsƒ…ƒŒ[ƒ^‚Ì²‚Í@‚Sí—Ş
-* ƒ}ƒjƒsƒ…ƒŒ[ƒ^²‚Sí‚Í@BONEAXIS_CURRENT, BONEAXIS_PARENT, BONEAXIS_GLOBAL, BONEAXIS_BINDPOSE
-* BONEAXIS_BINDPOSE‚Í¡‰ñV‹K
-* –{—ˆ‚Í@“¯‚¶p¨‚Å‚àŒvZ‚Ì²‚ªˆÙ‚È‚é‚ÆƒIƒCƒ‰[Šp‚àˆÙ‚È‚é(‚¾‚ªƒIƒCƒ‰[Šp‚Í‚Pí—Ş‚Ì•\¦‚É‚µ‚Ä‚¢‚é)
-* ƒIƒCƒ‰[ŠpŒvZ‚Ì²‚ÍBONEAXIS_BINDPOSE‚Æ“¯“™(GLOBALˆÈŠO‚Ìê‡‚É‚Í@²‚ÉƒJƒŒƒ“ƒgƒ{[ƒ“‚Ìp¨‚ğŠ|‚¯‚Ä•\¦)
-* ‘€ì’†A‘€ìŒã‚É‚àŠeí²‚ÍƒuƒŒ‚È‚¢‚±‚Æ‚ğŠm”F
+* ã‚ªã‚¤ãƒ©ãƒ¼è§’ã®æ•°å€¤ã¯ã€€Mayaãƒ©ã‚¤ã‚¯(ã“ã¡ã‚‰ã§ãƒ†ã‚¹ãƒˆã—ãŸï¼–ç¨®é¡ã»ã©ã®fbxã§ã¯Mayaã¨ä¸€è‡´)ãªã€€ï¼‘ç¨®é¡ã®ã‚ªã‚¤ãƒ©ãƒ¼è§’
+* ã‚ªã‚¤ãƒ©ãƒ¼è§’ã¯ï¼‘ç¨®é¡ã ãŒã€€å›è»¢ã€ç§»å‹•ã€æ‹¡å¤§ã™ã‚‹éš›ã®ãƒãƒ‹ãƒ”ãƒ¥ãƒ¬ãƒ¼ã‚¿ã®è»¸ã¯ã€€ï¼”ç¨®é¡
+* ãƒãƒ‹ãƒ”ãƒ¥ãƒ¬ãƒ¼ã‚¿è»¸ï¼”ç¨®ã¯ã€€BONEAXIS_CURRENT, BONEAXIS_PARENT, BONEAXIS_GLOBAL, BONEAXIS_BINDPOSE
+* BONEAXIS_BINDPOSEã¯ä»Šå›æ–°è¦
+* æœ¬æ¥ã¯ã€€åŒã˜å§¿å‹¢ã§ã‚‚è¨ˆç®—æ™‚ã®è»¸ãŒç•°ãªã‚‹ã¨ã‚ªã‚¤ãƒ©ãƒ¼è§’ã‚‚ç•°ãªã‚‹(ã ãŒã‚ªã‚¤ãƒ©ãƒ¼è§’ã¯ï¼‘ç¨®é¡ã®è¡¨ç¤ºã«ã—ã¦ã„ã‚‹)
+* ã‚ªã‚¤ãƒ©ãƒ¼è§’è¨ˆç®—æ™‚ã®è»¸ã¯BONEAXIS_BINDPOSEã¨åŒç­‰(GLOBALä»¥å¤–ã®å ´åˆã«ã¯ã€€è»¸ã«ã‚«ãƒ¬ãƒ³ãƒˆãƒœãƒ¼ãƒ³ã®å§¿å‹¢ã‚’æ›ã‘ã¦è¡¨ç¤º)
+* æ“ä½œä¸­ã€æ“ä½œå¾Œã«ã‚‚å„ç¨®è»¸ã¯ãƒ–ãƒ¬ãªã„ã“ã¨ã‚’ç¢ºèª
 *
 *
-* 2023/01/08’Ç‹L
-* ‰½\‰ñ‚àIK‚É²‚ªƒuƒŒ‚È‚¢ƒeƒXƒg‚ğ‚µ‚½
-* ”ñí‚É‚ä‚Á‚­‚è“®‚©‚·ƒeƒXƒg‚à‰½‰ñ‚à‚µ‚½
-* ‚»‚Ì“à‚P‰ñ‚¾‚¯²‚ª”÷–­‚ÉƒuƒŒ‚½‚±‚Æ‚ª‚ ‚Á‚½‚Ì‚Å”O‚Ì‚½‚ß‚Éƒƒ‚
-* ‚Ç‚Ì‚æ‚¤‚ÉƒuƒŒ‚½‚©‚Æ‚¢‚¤‚Æ
-* CQauternion‚ÆChaMatrix‚Ìinverse()ŠÖ”‚ÌÅ‰‚Ì•”•ª‚ÅIsInit(), IsInitMat()‚ğŒÄ‚Ño‚µ
-* Identityó‘Ô‚Å‚ ‚é‚Æ‚«‚É‚Í@ŒvZ‚¹‚¸‚ÉIdentity‚ğ•Ô‚·‚æ‚¤‚É‚µ‚½’¼Œã‚É‹N‚«‚½
-* ‚æ‚Á‚Ä@‚à‚µ–â‘è‚ª‚ ‚é‚Æ‚·‚ê‚Î@IsInit, IsInitMat“à‚É‚¨‚¯‚é@“¯’l‚Æ‚İ‚È‚··ˆÙ‚Ìè‡’l‚É–â‘è‚ª‚ ‚é(‚Æv‚¤)
-* ¡Œã@IsInit, IsInitMat“à‚Åg—p‚·‚éè‡’l‚Í’²®‚·‚é‰Â”\«‚ª‚ ‚é
+* 2023/01/08è¿½è¨˜
+* ä½•åå›ã‚‚IKæ™‚ã«è»¸ãŒãƒ–ãƒ¬ãªã„ãƒ†ã‚¹ãƒˆã‚’ã—ãŸ
+* éå¸¸ã«ã‚†ã£ãã‚Šå‹•ã‹ã™ãƒ†ã‚¹ãƒˆã‚‚ä½•å›ã‚‚ã—ãŸ
+* ãã®å†…ï¼‘å›ã ã‘è»¸ãŒå¾®å¦™ã«ãƒ–ãƒ¬ãŸã“ã¨ãŒã‚ã£ãŸã®ã§å¿µã®ãŸã‚ã«ãƒ¡ãƒ¢
+* ã©ã®ã‚ˆã†ã«ãƒ–ãƒ¬ãŸã‹ã¨ã„ã†ã¨
+* CQauternionã¨ChaMatrixã®inverse()é–¢æ•°ã®æœ€åˆã®éƒ¨åˆ†ã§IsInit(), IsInitMat()ã‚’å‘¼ã³å‡ºã—
+* IdentityçŠ¶æ…‹ã§ã‚ã‚‹ã¨ãã«ã¯ã€€è¨ˆç®—ã›ãšã«Identityã‚’è¿”ã™ã‚ˆã†ã«ã—ãŸç›´å¾Œã«èµ·ããŸ
+* ã‚ˆã£ã¦ã€€ã‚‚ã—å•é¡ŒãŒã‚ã‚‹ã¨ã™ã‚Œã°ã€€IsInit, IsInitMatå†…ã«ãŠã‘ã‚‹ã€€åŒå€¤ã¨ã¿ãªã™å·®ç•°ã®é–¾å€¤ã«å•é¡ŒãŒã‚ã‚‹(ã¨æ€ã†)
+* ä»Šå¾Œã€€IsInit, IsInitMatå†…ã§ä½¿ç”¨ã™ã‚‹é–¾å€¤ã¯èª¿æ•´ã™ã‚‹å¯èƒ½æ€§ãŒã‚ã‚‹
 *
 */
 
 /*
 * 2023/01/10
-* Šeíp¨ŒvZ‚ÌParent‚ÌLimitedp¨‚Ìg‚¢•û‚É‚Â‚¢‚Äƒƒ‚
+* å„ç¨®å§¿å‹¢è¨ˆç®—æ™‚ã®Parentã®Limitedå§¿å‹¢ã®ä½¿ã„æ–¹ã«ã¤ã„ã¦ãƒ¡ãƒ¢
 *
-* currentworldmat‚Æ‚µ‚ÄGetWorldMat(ƒ‚[ƒVƒ‡ƒ“Œ³ƒf[ƒ^)‚ğg—p‚·‚éê‡
-* e‚Æ‚µ‚ÄŠ|‚©‚Á‚Ä‚¢‚é‚Ì‚Í@Limited‚Å‚Í‚È‚¢•’Ê‚ÌGetParent()->GetWorldMat‚Å‚ ‚é‚©‚ç
-* ƒ[ƒJƒ‹s—ñ‚Í@’Êí’Ê‚è@localmat = GetWorldMat() * ChaMatrixInv(GetParent()->GetWorldMat())‚Æ‚È‚é
+* currentworldmatã¨ã—ã¦GetWorldMat(ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³å…ƒãƒ‡ãƒ¼ã‚¿)ã‚’ä½¿ç”¨ã™ã‚‹å ´åˆ
+* è¦ªã¨ã—ã¦æ›ã‹ã£ã¦ã„ã‚‹ã®ã¯ã€€Limitedã§ã¯ãªã„æ™®é€šã®GetParent()->GetWorldMatã§ã‚ã‚‹ã‹ã‚‰
+* ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã¯ã€€é€šå¸¸é€šã‚Šã€€localmat = GetWorldMat() * ChaMatrixInv(GetParent()->GetWorldMat())ã¨ãªã‚‹
 *
-* ŒÃ‚¢ƒ[ƒJƒ‹s—ñ‚É‚¨‚¢‚Ä@ŒÃ‚¢scale‚âtraanim‚ğ‹‚ß‚é@
-* •Ê“r‹‚ß‚½neweul‚É@§ŒÀ‚ğŠ|‚¯‚Ä@ŒÃ‚¢scale, traanim‚Æ‚ ‚í‚¹‚Ä@V‚µ‚¢newlocalmat‚ğ‹‚ß‚é
+* å¤ã„ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—ã«ãŠã„ã¦ã€€å¤ã„scaleã‚„traanimã‚’æ±‚ã‚ã‚‹ã€€
+* åˆ¥é€”æ±‚ã‚ãŸneweulã«ã€€åˆ¶é™ã‚’æ›ã‘ã¦ã€€å¤ã„scale, traanimã¨ã‚ã‚ã›ã¦ã€€æ–°ã—ã„newlocalmatã‚’æ±‚ã‚ã‚‹
 *
-* V‚µ‚¢newlocal‚ğƒOƒ[ƒoƒ‹‚É‚·‚é‚½‚ß‚ÉŠ|‚¯‚ées—ñ‚Í@GetParent()->GetCalclatedLimitedWM()‚Å‚ ‚é
+* æ–°ã—ã„newlocalã‚’ã‚°ãƒ­ãƒ¼ãƒãƒ«ã«ã™ã‚‹ãŸã‚ã«æ›ã‘ã‚‹è¦ªè¡Œåˆ—ã¯ã€€GetParent()->GetCalclatedLimitedWM()ã§ã‚ã‚‹
 *
-* ‚»‚µ‚ÄV‚µ‚¢ƒOƒ[ƒoƒ‹s—ñ‚Í@m_curmp‚ÉƒZƒbƒg‚·‚é‚©‚à‚µ‚­‚Í@SetLimitedWorldMat‚ÉƒZƒbƒg‚·‚é
+* ãã—ã¦æ–°ã—ã„ã‚°ãƒ­ãƒ¼ãƒãƒ«è¡Œåˆ—ã¯ã€€m_curmpã«ã‚»ãƒƒãƒˆã™ã‚‹ã‹ã‚‚ã—ãã¯ã€€SetLimitedWorldMatã«ã‚»ãƒƒãƒˆã™ã‚‹
 *
-* ‚½‚¾‚µIK‘€ì‚É‚ÍŒ³ƒf[ƒ^‚ÉŠi”[‚·‚é‚Ì‚Å@parentwm‚É‚ÍLimited‚ğg‚¤
+* ãŸã ã—IKæ“ä½œæ™‚ã«ã¯å…ƒãƒ‡ãƒ¼ã‚¿ã«æ ¼ç´ã™ã‚‹ã®ã§ã€€parentwmã«ã¯Limitedã‚’ä½¿ã†
 */
 
 
 /*
 * 2023/01/18
-* ’Êíƒ‚[ƒVƒ‡ƒ“‚Æ•¨—ƒVƒ~ƒ…‚Ì‘ŠŒİ•ÏŠ·‚É‚Â‚¢‚Ä
-* ’Êíƒ‚[ƒVƒ‡ƒ“‚Ì²‚ğ•ÏX‚µ‚½‚Ì‚Å@•¨—„‘Ì‚Ì²‚Æˆê’v‚µ‚Ä‚¢‚È‚¢ó‘Ô‚ª‘±‚¢‚Ä‚¢‚½
-* •¨—„‘Ì‚Ì²‚ğ@•ÏX‚µ‚½’Êíƒ‚[ƒVƒ‡ƒ“‚Ì²‚Æ‡‚í‚¹‚é‚±‚Æ‚Å@ˆ—‚ªŠÈ’P‚É‚È‚Á‚½
-* „‘Ì‚Ì²‚Í@GetCapsulemat(“à•”‚ÅCalcAxisMatX_RigidBobdy‚Ìdir2xflag = false)‚É‚æ‚Á‚Ä‹‚ß‚ç‚ê‚é
-*  (2023/01/27C³ : GetCapsulemat‚Í GetNodeMat‚É‚µ‚½@BindPose—L‚èƒf[ƒ^‚ÅƒeƒXƒg‚µ‚ÄC³‚µ‚½)
+* é€šå¸¸ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã¨ç‰©ç†ã‚·ãƒŸãƒ¥ã®ç›¸äº’å¤‰æ›ã«ã¤ã„ã¦
+* é€šå¸¸ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®è»¸ã‚’å¤‰æ›´ã—ãŸã®ã§ã€€ç‰©ç†å‰›ä½“ã®è»¸ã¨ä¸€è‡´ã—ã¦ã„ãªã„çŠ¶æ…‹ãŒç¶šã„ã¦ã„ãŸ
+* ç‰©ç†å‰›ä½“ã®è»¸ã‚’ã€€å¤‰æ›´ã—ãŸé€šå¸¸ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®è»¸ã¨åˆã‚ã›ã‚‹ã“ã¨ã§ã€€å‡¦ç†ãŒç°¡å˜ã«ãªã£ãŸ
+* å‰›ä½“ã®è»¸ã¯ã€€GetCapsulemat(å†…éƒ¨ã§CalcAxisMatX_RigidBobdyã®dir2xflag = false)ã«ã‚ˆã£ã¦æ±‚ã‚ã‚‰ã‚Œã‚‹
+*  (2023/01/27ä¿®æ­£ : GetCapsulematã¯ GetNodeMatã«ã—ãŸã€€BindPoseæœ‰ã‚Šãƒ‡ãƒ¼ã‚¿ã§ãƒ†ã‚¹ãƒˆã—ã¦ä¿®æ­£ã—ãŸ)
 *
-* ’Êíƒ‚[ƒVƒ‡ƒ“-->•¨—ƒ‚[ƒVƒ‡ƒ“•ÏŠ·FMotion2Bt()
-* •¨—ƒ‚[ƒVƒ‡ƒ“-->’Êíƒ‚[ƒVƒ‡ƒ“•ÏŠ·FSetBtMotion()
-* ã‹L—¼•û‚Ì•ÏŠ·‚É‚¨‚¢‚Ä@²‚ğ‡‚í‚¹‚½‚±‚Æ‚É‚æ‚è‰ñ“]î•ñ‚ª‚»‚Ì‚Ü‚Ü‚Ì’l‚Å@‚â‚èæ‚è‚Å‚«‚é‚æ‚¤‚É‚È‚Á‚½
+* é€šå¸¸ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³-->ç‰©ç†ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³å¤‰æ›ï¼šMotion2Bt()
+* ç‰©ç†ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³-->é€šå¸¸ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³å¤‰æ›ï¼šSetBtMotion()
+* ä¸Šè¨˜ä¸¡æ–¹ã®å¤‰æ›ã«ãŠã„ã¦ã€€è»¸ã‚’åˆã‚ã›ãŸã“ã¨ã«ã‚ˆã‚Šå›è»¢æƒ…å ±ãŒãã®ã¾ã¾ã®å€¤ã§ã€€ã‚„ã‚Šå–ã‚Šã§ãã‚‹ã‚ˆã†ã«ãªã£ãŸ
 *
-* •ÏX‚É‚æ‚è•¨—ƒVƒ~ƒ…‚ª‚æ‚èˆÀ’è‚µ‚½‚Ì‚Å@¡‚Ü‚Å‚Ìİ’è‚Ì‚Ü‚Ü‚¾‚Æ@“®‚«‚ªd‚­‚È‚Á‚½
-* _‚ç‚©‚¢“®‚«‚É‚·‚é‚½‚ß‚É@
-* @g_btcalccnt‚Ì‰Šú’l‚ğ‚R‚©‚ç‚P@‰ñ“]ƒoƒl‚ÌƒXƒ‰ƒCƒ_[”ÍˆÍ‚ğ[0, 1]@STOP_CFM‚Ì’l‚ğ‚O‚©‚ç0.5@‚É•ÏX
-*   setEquiliburiumPointŒÄ‚Ño‚µ‚Í@ƒIƒuƒWƒFƒNƒgì¬‚Ì‚İ
-* @ƒTƒ“ƒvƒ‹‚Ìd—Í’l‚à@‘å•‚É¬‚³‚­İ’è
-* •\¦‰ñ”fpsˆË‘¶‚Å“®‚«‚ªd‚­‚È‚Á‚½‚è_‚ç‚©‚­‚È‚Á‚½‚è‚·‚é
-* ƒ‚[ƒVƒ‡ƒ“Ä¶ƒXƒs[ƒh‚É‚æ‚Á‚Ä‚à@•¨—ƒVƒ~ƒ…Œ‹‰Ê‚Í‘å‚«‚­•Ï‚í‚è‚Ü‚·@SpeedƒXƒ‰ƒCƒ_[‚Å’²®
+* å¤‰æ›´ã«ã‚ˆã‚Šç‰©ç†ã‚·ãƒŸãƒ¥ãŒã‚ˆã‚Šå®‰å®šã—ãŸã®ã§ã€€ä»Šã¾ã§ã®è¨­å®šã®ã¾ã¾ã ã¨ã€€å‹•ããŒç¡¬ããªã£ãŸ
+* æŸ”ã‚‰ã‹ã„å‹•ãã«ã™ã‚‹ãŸã‚ã«ã€€
+* ã€€g_btcalccntã®åˆæœŸå€¤ã‚’ï¼“ã‹ã‚‰ï¼‘ã€€å›è»¢ãƒãƒã®ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ç¯„å›²ã‚’[0, 1]ã€€STOP_CFMã®å€¤ã‚’ï¼ã‹ã‚‰0.5ã€€ã«å¤‰æ›´
+*   setEquiliburiumPointå‘¼ã³å‡ºã—ã¯ã€€ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆä½œæˆæ™‚ã®ã¿
+* ã€€ã‚µãƒ³ãƒ—ãƒ«ã®é‡åŠ›å€¤ã‚‚ã€€å¤§å¹…ã«å°ã•ãè¨­å®š
+* è¡¨ç¤ºå›æ•°fpsä¾å­˜ã§å‹•ããŒç¡¬ããªã£ãŸã‚ŠæŸ”ã‚‰ã‹ããªã£ãŸã‚Šã™ã‚‹
+* ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿã‚¹ãƒ”ãƒ¼ãƒ‰ã«ã‚ˆã£ã¦ã‚‚ã€€ç‰©ç†ã‚·ãƒŸãƒ¥çµæœã¯å¤§ããå¤‰ã‚ã‚Šã¾ã™ã€€Speedã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã§èª¿æ•´
 *
 * 2023/01/19
-* C³
-* „‘Ì‚Ìƒ‚[ƒVƒ‡ƒ“‚Ì²‚Í@dir2xflag=false‚¾‚ª@„‘Ì‚ÌƒRƒŠƒWƒ‡ƒ“Œ`ó‚Ì²‚Ídir2xflag=true‚É‚µ‚È‚¢‚Æ@“–‚½‚è”»’è‚ª‚¸‚ê‚½‚Ì‚ÅC³
-* ƒRƒŠƒWƒ‡ƒ“Œ`ó‚ÌŒü‚«‚à³í‚É‚È‚Á‚½
-* boxingƒTƒ“ƒvƒ‹‚ÌBtCalcCntƒXƒ‰ƒCƒ_[‚Í‚P‚Å‚Í‚È‚­‚R‚É‚µ‚È‚¢‚Æ@‚±‚¿‚ç‚Å‚Í–_‚ªƒvƒ‹ƒvƒ‹‚µ‚½
+* ä¿®æ­£
+* å‰›ä½“ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®è»¸ã¯ã€€dir2xflag=falseã ãŒã€€å‰›ä½“ã®ã‚³ãƒªã‚¸ãƒ§ãƒ³å½¢çŠ¶ã®è»¸ã¯dir2xflag=trueã«ã—ãªã„ã¨ã€€å½“ãŸã‚Šåˆ¤å®šãŒãšã‚ŒãŸã®ã§ä¿®æ­£
+* ã‚³ãƒªã‚¸ãƒ§ãƒ³å½¢çŠ¶ã®å‘ãã‚‚æ­£å¸¸ã«ãªã£ãŸ
+* boxingã‚µãƒ³ãƒ—ãƒ«ã®BtCalcCntã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã¯ï¼‘ã§ã¯ãªãï¼“ã«ã—ãªã„ã¨ã€€ã“ã¡ã‚‰ã§ã¯æ£’ãŒãƒ—ãƒ«ãƒ—ãƒ«ã—ãŸ
 *
 */
 
 /*
 * 2023/01/21
-* •¨—ƒVƒ~ƒ…‚Ì“®‚«‚ªŠi’i‚É_‚ç‚©‚­@‚©‚Â@§ŒÀŠp“x‚ªŒø‚­‚æ‚¤‚É
+* ç‰©ç†ã‚·ãƒŸãƒ¥ã®å‹•ããŒæ ¼æ®µã«æŸ”ã‚‰ã‹ãã€€ã‹ã¤ã€€åˆ¶é™è§’åº¦ãŒåŠ¹ãã‚ˆã†ã«
 *
-* ‚È‚º„‚ÌbulletPhysics‚¾‚¯“®‚«‚ªd‚¢‚Ì‚©‚Æ‚¸‚Á‚Æ‚¨‚©‚µ‚¢‚Æv‚Á‚Ä‚¢‚½‚Ì‚¾‚ª@Œ´ˆö”»–¾•‰ğŒˆ
+* ãªãœç§ã®bulletPhysicsã ã‘å‹•ããŒç¡¬ã„ã®ã‹ã¨ãšã£ã¨ãŠã‹ã—ã„ã¨æ€ã£ã¦ã„ãŸã®ã ãŒã€€åŸå› åˆ¤æ˜ï¼†è§£æ±º
 *
-* CBtObject::SetEquilibriumPoint(„‘Ìì¬‚ÉŒÄ‚Ño‚·ŠÖ”)“à‚É‚Ä@setAngularLowerLimit‚ÆsetAngularUpperLimit‚ğŒÄ‚Ño‚µ‚Ä‚¢‚é
-* ‚±‚Ì‚Æ‚«‚Ìif•¶‚ª@‰½”NŠÔ‚É‚à“n‚Á‚ÄŠÔˆá‚Á‚Ä‚¢‚½
-* Œ»İ‚ÌŠp“x‚©‚ç“®‚©‚È‚¢‚æ‚¤‚É‚·‚é•”•ª‚ª@’Êí‚ÌƒVƒ~ƒ…‚É—LŒø‚É‚È‚Á‚Ä‚¢‚½
-* C³‚µ‚½
-* ‰ñ“]ƒoƒl‚ÌƒXƒ‰ƒCƒ_[”ÍˆÍ‚ÍŒ³‚É–ß‚µ‚½@g_btcalccnt‚Ì‰Šú’l‚Í‚Q‚É‚µ‚½
+* CBtObject::SetEquilibriumPoint(å‰›ä½“ä½œæˆæ™‚ã«å‘¼ã³å‡ºã™é–¢æ•°)å†…ã«ã¦ã€€setAngularLowerLimitã¨setAngularUpperLimitã‚’å‘¼ã³å‡ºã—ã¦ã„ã‚‹
+* ã“ã®ã¨ãã®ifæ–‡ãŒã€€ä½•å¹´é–“ã«ã‚‚æ¸¡ã£ã¦é–“é•ã£ã¦ã„ãŸ
+* ç¾åœ¨ã®è§’åº¦ã‹ã‚‰å‹•ã‹ãªã„ã‚ˆã†ã«ã™ã‚‹éƒ¨åˆ†ãŒã€€é€šå¸¸ã®ã‚·ãƒŸãƒ¥æ™‚ã«æœ‰åŠ¹ã«ãªã£ã¦ã„ãŸ
+* ä¿®æ­£ã—ãŸ
+* å›è»¢ãƒãƒã®ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ç¯„å›²ã¯å…ƒã«æˆ»ã—ãŸã€€g_btcalccntã®åˆæœŸå€¤ã¯ï¼’ã«ã—ãŸ
 *
-* •¨—ƒVƒ~ƒ…‚Ì“®‚«‚ªŠi’i‚É_‚ç‚©‚­@‚©‚Â@§ŒÀŠp“x‚ªŒø‚­‚æ‚¤‚É‚È‚Á‚½
-* ‚Æ“¯‚É
-* •¨—ƒVƒ~ƒ…‚ğ‚·‚éê‡‚É‚Í@ƒwƒA[ƒWƒ‡ƒCƒ“ƒg‚É§ŒÀŠp“x(*.lmtƒtƒ@ƒCƒ‹)‚ğİ’è‚µ@LimitEulƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚Éƒ`ƒFƒbƒN‚ğ“ü‚ê‚é‚±‚Æ‚ª•K—v‚É‚È‚Á‚½@
+* ç‰©ç†ã‚·ãƒŸãƒ¥ã®å‹•ããŒæ ¼æ®µã«æŸ”ã‚‰ã‹ãã€€ã‹ã¤ã€€åˆ¶é™è§’åº¦ãŒåŠ¹ãã‚ˆã†ã«ãªã£ãŸ
+* ã¨åŒæ™‚ã«
+* ç‰©ç†ã‚·ãƒŸãƒ¥ã‚’ã™ã‚‹å ´åˆã«ã¯ã€€ãƒ˜ã‚¢ãƒ¼ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã«åˆ¶é™è§’åº¦(*.lmtãƒ•ã‚¡ã‚¤ãƒ«)ã‚’è¨­å®šã—ã€€LimitEulãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã«ãƒã‚§ãƒƒã‚¯ã‚’å…¥ã‚Œã‚‹ã“ã¨ãŒå¿…è¦ã«ãªã£ãŸã€€
 *
-* ƒTƒ“ƒvƒ‹‚Ì•¨—İ’è‚àXV
+* ã‚µãƒ³ãƒ—ãƒ«ã®ç‰©ç†è¨­å®šã‚‚æ›´æ–°
 *
 */
 
 /*
 * 2023/01/21
-* ŒvZ‚³‚ê‚È‚¢ƒtƒŒ[ƒ€‚ªo—ˆ‚éöİ“I•s‹ï‡‚ğ‰ğŒˆ
+* è¨ˆç®—ã•ã‚Œãªã„ãƒ•ãƒ¬ãƒ¼ãƒ ãŒå‡ºæ¥ã‚‹æ½œåœ¨çš„ä¸å…·åˆã‚’è§£æ±º
 *
-* ŠÔ‚Ídouble‚Å‚ ‚é‚ª@(int)‚ÉŠÛ‚ß‚½’š“x‚ÌƒtƒŒ[ƒ€‚É‚µ‚©ƒf[ƒ^‚ª–³‚¢‚à‚Ì‚ª‚¢‚­‚Â‚©‚ ‚é
-* CBone::GetMotionPoint()‚ÆCBone::GetWorldMat()‚ÆCBone::SetWorldMat()‚ÆCBone::GetLimitedWorldMat()‚Í’š“x‚ÌƒtƒŒ[ƒ€‚É‚µ‚©ƒf[ƒ^‚ª–³‚¢
-* ‚»‚ê‚ç‚ğŒÄ‚Ño‚·Û‚É‚Í@’š“x‚ÌŠÔ‚ğ“n‚³‚È‚¯‚ê‚Î‚È‚ç‚È‚¢
+* æ™‚é–“ã¯doubleã§ã‚ã‚‹ãŒã€€(int)ã«ä¸¸ã‚ãŸä¸åº¦ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã«ã—ã‹ãƒ‡ãƒ¼ã‚¿ãŒç„¡ã„ã‚‚ã®ãŒã„ãã¤ã‹ã‚ã‚‹
+* CBone::GetMotionPoint()ã¨CBone::GetWorldMat()ã¨CBone::SetWorldMat()ã¨CBone::GetLimitedWorldMat()ã¯ä¸åº¦ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã«ã—ã‹ãƒ‡ãƒ¼ã‚¿ãŒç„¡ã„
+* ãã‚Œã‚‰ã‚’å‘¼ã³å‡ºã™éš›ã«ã¯ã€€ä¸åº¦ã®æ™‚é–“ã‚’æ¸¡ã•ãªã‘ã‚Œã°ãªã‚‰ãªã„
 *
-* ˆê•û‚Å@ƒvƒŒƒrƒ…[‚É‚Í
-* ¬”‚ÌŠÔ‚Ì‘OŒã‚Ìƒf[ƒ^‚ğ•âŠÔ‚µ‚Ä@ŠŠ‚ç‚©‚É•\¦(SpeedƒXƒ‰ƒCƒ_[‚Ì’l‚ğ¬‚³‚­‚µ‚ÄÄ¶‚µ‚Ä‚à•âŠÔ‚µ‚Ä“®‚­)‚·‚é
-* ŠŠ‚ç‚©‚É•\¦‚·‚é‚½‚ß‚ÌŠÖ”‚É‚Í@¬”‚ÌŠÔ‚ğ“n‚·
-* ‚»‚ê‚ç‚Í@CBone::UpdateMatrix()‚ÆCBone::GetCalclatedLimitedWM()‚Å‚ ‚é
+* ä¸€æ–¹ã§ã€€ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼æ™‚ã«ã¯
+* å°æ•°ã®æ™‚é–“ã®å‰å¾Œã®ãƒ‡ãƒ¼ã‚¿ã‚’è£œé–“ã—ã¦ã€€æ»‘ã‚‰ã‹ã«è¡¨ç¤º(Speedã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã®å€¤ã‚’å°ã•ãã—ã¦å†ç”Ÿã—ã¦ã‚‚è£œé–“ã—ã¦å‹•ã)ã™ã‚‹
+* æ»‘ã‚‰ã‹ã«è¡¨ç¤ºã™ã‚‹ãŸã‚ã®é–¢æ•°ã«ã¯ã€€å°æ•°ã®æ™‚é–“ã‚’æ¸¡ã™
+* ãã‚Œã‚‰ã¯ã€€CBone::UpdateMatrix()ã¨CBone::GetCalclatedLimitedWM()ã§ã‚ã‚‹
 *
 */
 
 /*
 * 2023/01/22
-* 1.1.0.11‚©‚çhipsˆÈŠO‚ÌƒWƒ‡ƒCƒ“ƒg‚Ì‰ñ“]‚ÉˆÚ“®ƒAƒjƒ‚à‰ñ“]‚µ‚Ä‚¢‚½
-* ‚µ‚©‚µ
-* ˆÚ“®‚Ì‰ñ“]‚Í@”÷–­‚ÈŒë·‚ğ¶‚¶‚é
-* ‚»‚µ‚Ä‘€ì‚Ì“x‚É@‚»‚ÌŒë·‚ª’~Ï‚µ‚Ä‚¢‚½
-* ‚æ‚Á‚Ä
-* •K—v‚È‚¾‚¯@ˆÚ“®ƒAƒjƒ‚ğ‰ñ“]‚·‚é‚±‚Æ‚É‚·‚é
-* ‚RDƒEƒCƒ“ƒhƒE‚ÌGUI‚ÌVSync‚Ì—×‚É@TRotƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚ğ’Ç‰Á
-* TRot‚Éƒ`ƒFƒbƒN‚ğ“ü‚ê‚½‚Æ‚«‚Ì‚İ@hipsˆÈŠO‚ÌƒWƒ‡ƒCƒ“ƒg‚ÌˆÚ“®ƒAƒjƒ‚ğ‰ñ“]‚·‚é
-* hips‚ÌˆÚ“®ƒAƒjƒ‚Íí‚É‰ñ“]‚·‚é
-* ƒfƒtƒHƒ‹ƒgó‘Ô‚ÅTRotƒ`ƒFƒbƒN‚ÍƒIƒt
+* 1.1.0.11ã‹ã‚‰hipsä»¥å¤–ã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®å›è»¢æ™‚ã«ç§»å‹•ã‚¢ãƒ‹ãƒ¡ã‚‚å›è»¢ã—ã¦ã„ãŸ
+* ã—ã‹ã—
+* ç§»å‹•ã®å›è»¢ã¯ã€€å¾®å¦™ãªèª¤å·®ã‚’ç”Ÿã˜ã‚‹
+* ãã—ã¦æ“ä½œã®åº¦ã«ã€€ãã®èª¤å·®ãŒè“„ç©ã—ã¦ã„ãŸ
+* ã‚ˆã£ã¦
+* å¿…è¦ãªæ™‚ã ã‘ã€€ç§»å‹•ã‚¢ãƒ‹ãƒ¡ã‚’å›è»¢ã™ã‚‹ã“ã¨ã«ã™ã‚‹
+* ï¼“Dã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã®GUIã®VSyncã®éš£ã«ã€€TRotãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã‚’è¿½åŠ 
+* TRotã«ãƒã‚§ãƒƒã‚¯ã‚’å…¥ã‚ŒãŸã¨ãã®ã¿ã€€hipsä»¥å¤–ã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®ç§»å‹•ã‚¢ãƒ‹ãƒ¡ã‚’å›è»¢ã™ã‚‹
+* hipsã®ç§»å‹•ã‚¢ãƒ‹ãƒ¡ã¯å¸¸ã«å›è»¢ã™ã‚‹
+* ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆçŠ¶æ…‹ã§TRotãƒã‚§ãƒƒã‚¯ã¯ã‚ªãƒ•
 *
 *
-* LimitEul‚Éƒ`ƒFƒbƒN‚ğ‚µ‚Ä‚¢‚éó‘Ô‚Å@ŒÀŠE‚ğ’´‚¦‚é‚æ‚¤‚ÉIK‰ñ“]‚ğƒKƒ`ƒƒƒKƒ`ƒƒ‚µ‚Ä‚¢‚é‚Æ
-* ƒIƒCƒ‰[ƒOƒ‰ƒt‚ªƒMƒUƒMƒU‚É‚È‚é
-* ŠÉ˜aô‚Æ‚µ‚Ä
-* toppos‚ÌƒtƒŒ[ƒ€‚É‚¨‚¢‚Ä@æ‚É‰Â“®ƒ`ƒFƒbƒN‚ğ‚µ‚Ä@–³‘Ê‚É“®‚©‚³‚È‚¢‚æ‚¤‚É‚µ‚½
-* X‚È‚é‘Îô‚Æ‚µ‚Ä‚Í
-* ToolWindow‚Ì•½ŠŠ‰»ƒ{ƒ^ƒ“‚ğ‰Ÿ‚·‚±‚Æ
-* ŠÖŒW‚Ì‚È‚¢ƒWƒ‡ƒCƒ“ƒg‚Ü‚Å•½ŠŠ‰»‚·‚é‚Æ@“®‚«‚ª•Ï‚í‚é‚±‚Æ‚ª‚ ‚é‚Ì‚Å
-* •½ŠŠ‰»ƒ{ƒ^ƒ“‚ğ@all, Parent One, Parent Deeper‚Ì‚Rí—Ş‚É‘‚â‚µ‚½
-* •½ŠŠ‰»‹@”\‚Å@ƒKƒEƒVƒAƒ“‚ğ‘I‚Ñ@ƒtƒBƒ‹ƒ^[”‚Æ‚µ‚Ä‚P‚P‚ğ‘I‚Ô‚Æ@‚©‚È‚èŒø‰Ê‚ª‚ ‚é
+* LimitEulã«ãƒã‚§ãƒƒã‚¯ã‚’ã—ã¦ã„ã‚‹çŠ¶æ…‹ã§ã€€é™ç•Œã‚’è¶…ãˆã‚‹ã‚ˆã†ã«IKå›è»¢ã‚’ã‚¬ãƒãƒ£ã‚¬ãƒãƒ£ã—ã¦ã„ã‚‹ã¨
+* ã‚ªã‚¤ãƒ©ãƒ¼ã‚°ãƒ©ãƒ•ãŒã‚®ã‚¶ã‚®ã‚¶ã«ãªã‚‹
+* ç·©å’Œç­–ã¨ã—ã¦
+* topposã®ãƒ•ãƒ¬ãƒ¼ãƒ ã«ãŠã„ã¦ã€€å…ˆã«å¯å‹•ãƒã‚§ãƒƒã‚¯ã‚’ã—ã¦ã€€ç„¡é§„ã«å‹•ã‹ã•ãªã„ã‚ˆã†ã«ã—ãŸ
+* æ›´ãªã‚‹å¯¾ç­–ã¨ã—ã¦ã¯
+* ToolWindowã®å¹³æ»‘åŒ–ãƒœã‚¿ãƒ³ã‚’æŠ¼ã™ã“ã¨
+* é–¢ä¿‚ã®ãªã„ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã¾ã§å¹³æ»‘åŒ–ã™ã‚‹ã¨ã€€å‹•ããŒå¤‰ã‚ã‚‹ã“ã¨ãŒã‚ã‚‹ã®ã§
+* å¹³æ»‘åŒ–ãƒœã‚¿ãƒ³ã‚’ã€€all, Parent One, Parent Deeperã®ï¼“ç¨®é¡ã«å¢—ã‚„ã—ãŸ
+* å¹³æ»‘åŒ–æ©Ÿèƒ½ã§ã€€ã‚¬ã‚¦ã‚·ã‚¢ãƒ³ã‚’é¸ã³ã€€ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼æ•°ã¨ã—ã¦ï¼‘ï¼‘ã‚’é¸ã¶ã¨ã€€ã‹ãªã‚ŠåŠ¹æœãŒã‚ã‚‹
 *
 *
 */
@@ -264,158 +264,158 @@ high rpm‚ÌŒø‰Ê‚ÍƒvƒŒƒrƒ…[‚¾‚¯(1.0.0.31‚©‚çƒvƒŒƒrƒ…[‚¾‚¯‚É‚È‚è‚Ü‚µ‚½)
 /*
 * 2023/01/26
 *
-* §ŒÀŠp“x{ƒvƒŒƒrƒ…[ --> OK
-* §ŒÀŠp“x{hips IK ‚ÌƒeƒXƒg
-* 	0_VRoid_Winter_B1“Ç‚İ‚İ-->hips‚Ì‰ñ“]‚ğ‘S•”ƒtƒŒ[ƒ€p¨‰Šú‰»-->
-* 	hips‚ğLinierƒuƒ‰ƒV‚Åtoppos100“‚ÅY²‚Q‰ñ“]-->
-* 	LimitEulƒ`ƒFƒbƒN-->‚PƒtƒŒ[ƒ€‚¾‚¯‘I‘ğ-->hips‚ğ‰ñ“]-->qƒWƒ‡ƒCƒ“ƒg‚ª‚Ë‚¶‚ê‚½-->
-* 	LimitEulƒ`ƒFƒbƒNƒIƒ“ƒIƒt‚Å’¼‚Á‚½
-* LimitWM‚Ì–¢XV‚ªŒ´ˆöHI
-* ‘Îô‚Æ‚µ‚Ä@IK‰ñ“]ŠÖ”‚ÌŒÄ‚Ño‚µŒã‚É@LimitEulƒ`ƒFƒbƒN‚Ìˆ— --> OK@
+* åˆ¶é™è§’åº¦ï¼‹ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼ --> OK
+* åˆ¶é™è§’åº¦ï¼‹hips IK ã®ãƒ†ã‚¹ãƒˆ
+* 	0_VRoid_Winter_B1èª­ã¿è¾¼ã¿-->hipsã®å›è»¢ã‚’å…¨éƒ¨ãƒ•ãƒ¬ãƒ¼ãƒ å§¿å‹¢åˆæœŸåŒ–-->
+* 	hipsã‚’Linierãƒ–ãƒ©ã‚·ã§toppos100ï¼…ã§Yè»¸ï¼’å›è»¢-->
+* 	LimitEulãƒã‚§ãƒƒã‚¯-->ï¼‘ãƒ•ãƒ¬ãƒ¼ãƒ ã ã‘é¸æŠ-->hipsã‚’å›è»¢-->å­ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆãŒã­ã˜ã‚ŒãŸ-->
+* 	LimitEulãƒã‚§ãƒƒã‚¯ã‚ªãƒ³ã‚ªãƒ•ã§ç›´ã£ãŸ
+* LimitWMã®æœªæ›´æ–°ãŒåŸå› ï¼Ÿï¼
+* å¯¾ç­–ã¨ã—ã¦ã€€IKå›è»¢é–¢æ•°ã®å‘¼ã³å‡ºã—å¾Œã«ã€€LimitEulãƒã‚§ãƒƒã‚¯æ™‚ã®å‡¦ç† --> OKã€€
 *
-* X‚ÉƒeƒXƒg
-* LimitEul‚Éƒ`ƒFƒbƒN‚ğ“ü‚ê‚Ä@IKRot‚·‚éê‡
-* §ŒÀŠp“x“à‚Ép¨‚ªû‚Ü‚é•”•ª‚Í@ƒIƒŠƒWƒiƒ‹‚Ìp¨î•ñ‚ªã‘‚«‚³‚ê‚é
-* §ŒÀŠp“x“à‚Ép¨‚ªû‚Ü‚ç‚È‚¢•”•ª‚Í@ƒIƒŠƒWƒiƒ‹‚Ìp¨î•ñ‚Ì‚Ü‚Ü
+* æ›´ã«ãƒ†ã‚¹ãƒˆ
+* LimitEulã«ãƒã‚§ãƒƒã‚¯ã‚’å…¥ã‚Œã¦ã€€IKRotã™ã‚‹å ´åˆ
+* åˆ¶é™è§’åº¦å†…ã«å§¿å‹¢ãŒåã¾ã‚‹éƒ¨åˆ†ã¯ã€€ã‚ªãƒªã‚¸ãƒŠãƒ«ã®å§¿å‹¢æƒ…å ±ãŒä¸Šæ›¸ãã•ã‚Œã‚‹
+* åˆ¶é™è§’åº¦å†…ã«å§¿å‹¢ãŒåã¾ã‚‰ãªã„éƒ¨åˆ†ã¯ã€€ã‚ªãƒªã‚¸ãƒŠãƒ«ã®å§¿å‹¢æƒ…å ±ã®ã¾ã¾
 *
-* ‚æ‚Á‚Ä@§ŒÀ‚Å‚±‚êˆÈã“®‚©‚È‚­‚È‚Á‚Ä‚¢‚é‚Ì‚É@ƒ}ƒEƒXƒhƒ‰ƒbƒO‚ğ‘±‚¯‚é‚Æ
-* LimitEulƒ`ƒFƒbƒN‚ğŠO‚µ‚½‚Æ‚«‚É@ƒIƒCƒ‰[Šp‚É‚Í@’i·‚ªo—ˆ‚Ä‚¢‚é
-* ‚±‚ê‚Íã‚Éà–¾‚µ‚½’Ê‚è‚Å‚ ‚è@Œ»İ‚Ìd—l
+* ã‚ˆã£ã¦ã€€åˆ¶é™ã§ã“ã‚Œä»¥ä¸Šå‹•ã‹ãªããªã£ã¦ã„ã‚‹ã®ã«ã€€ãƒã‚¦ã‚¹ãƒ‰ãƒ©ãƒƒã‚°ã‚’ç¶šã‘ã‚‹ã¨
+* LimitEulãƒã‚§ãƒƒã‚¯ã‚’å¤–ã—ãŸã¨ãã«ã€€ã‚ªã‚¤ãƒ©ãƒ¼è§’ã«ã¯ã€€æ®µå·®ãŒå‡ºæ¥ã¦ã„ã‚‹
+* ã“ã‚Œã¯ä¸Šã«èª¬æ˜ã—ãŸé€šã‚Šã§ã‚ã‚Šã€€ç¾åœ¨ã®ä»•æ§˜
 *
-* §ŒÀ‚Åƒhƒ‰ƒbƒO‚µ‚Ä‚à“®‚©‚È‚­‚È‚Á‚½‚ç@‚·‚®‚Éƒhƒ‰ƒbƒO‚ğ‚â‚ß‚é‚Ì‚ªƒRƒcHI
+* åˆ¶é™ã§ãƒ‰ãƒ©ãƒƒã‚°ã—ã¦ã‚‚å‹•ã‹ãªããªã£ãŸã‚‰ã€€ã™ãã«ãƒ‰ãƒ©ãƒƒã‚°ã‚’ã‚„ã‚ã‚‹ã®ãŒã‚³ãƒ„ï¼Ÿï¼
 *
 * ###############
-* 2023/01/27’Ç‹L
+* 2023/01/27è¿½è¨˜
 * ###############
-* LimitEulƒ`ƒFƒbƒN‚Ìˆ—‚ªd‚·‚¬‚½‚Ì‚Å@‘Îô‚ğÅ“K‰»
-* CBone::SetWorldMat(), CBone::SetWorldMatFrom*() ‚ğC³‚µ‚Ä‘Î‰
-* CBone::SetWorldMat*()‚ÅLimitedWM‚ÌXV‚Æ@ismovable==0‚ÌqƒWƒ‡ƒCƒ“ƒg‚Ö‚ÌÄ‹Aˆ—‚ğ’Ç‰Á
-* §ŒÀŠp“x“à‚Ép¨‚ªû‚Ü‚ç‚È‚¢ê‡‚Ìˆ—‚Í@LimitedWM‚ğƒZƒbƒg‚·‚é‚±‚Æ‚É‚µ‚½
+* LimitEulãƒã‚§ãƒƒã‚¯æ™‚ã®å‡¦ç†ãŒé‡ã™ããŸã®ã§ã€€å¯¾ç­–ã‚’æœ€é©åŒ–
+* CBone::SetWorldMat(), CBone::SetWorldMatFrom*() ã‚’ä¿®æ­£ã—ã¦å¯¾å¿œ
+* CBone::SetWorldMat*()ã§LimitedWMã®æ›´æ–°ã¨ã€€ismovable==0æ™‚ã®å­ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã¸ã®å†å¸°å‡¦ç†ã‚’è¿½åŠ 
+* åˆ¶é™è§’åº¦å†…ã«å§¿å‹¢ãŒåã¾ã‚‰ãªã„å ´åˆã®å‡¦ç†ã¯ã€€LimitedWMã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã“ã¨ã«ã—ãŸ
 *
 */
 
 /*
 * 2021/01/27
 *
-* •¨—‚Ì“®‚«‚ğ‰ü—Ç‚µ‚È‚ª‚çƒ\[ƒX‚ğ‚¢‚¶‚Á‚Ä‚¢‚½‚Ì‚Å‚·‚ª
-* “¯‚¶ƒvƒƒOƒ‰ƒ€‚Å‚à@ãY—í‚É_‚ç‚©‚­”¯‚Ì–Ñ‚ª—h‚ê‚é‚Æ@ƒMƒNƒVƒƒƒN—h‚ê‚é‚Æ‚ ‚è‚Ü‚µ‚½
-* ‚Ç‚¤‚â‚ç@fps‚ª100’ö“xo‚Ä‚¢‚é‚Æ‚«‚É‚Í@_‚ç‚©‚¢‚Å‚·‚ª@80’ö“x‚Ì‚É‚Í‚à‚¤ƒMƒNƒVƒƒƒN‚·‚é‚æ‚¤‚Å‚·
-* UpdateThreadsƒXƒ‰ƒCƒ_‚Æhigh rpmƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚Å@‚È‚ñ‚Æ‚©@‚P‚O‚Ofps‚ğo‚é‚æ‚¤‚É‚µ‚ÄƒeƒXƒg‚µ‚Ä‚¢‚Ü‚·
+* ç‰©ç†ã®å‹•ãã‚’æ”¹è‰¯ã—ãªãŒã‚‰ã‚½ãƒ¼ã‚¹ã‚’ã„ã˜ã£ã¦ã„ãŸã®ã§ã™ãŒ
+* åŒã˜ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã§ã‚‚ã€€ç¶ºéº—ã«æŸ”ã‚‰ã‹ãé«ªã®æ¯›ãŒæºã‚Œã‚‹æ™‚ã¨ã€€ã‚®ã‚¯ã‚·ãƒ£ã‚¯æºã‚Œã‚‹æ™‚ã¨ã‚ã‚Šã¾ã—ãŸ
+* ã©ã†ã‚„ã‚‰ã€€fpsãŒ100ç¨‹åº¦å‡ºã¦ã„ã‚‹ã¨ãã«ã¯ã€€æŸ”ã‚‰ã‹ã„ã§ã™ãŒã€€80ç¨‹åº¦ã®æ™‚ã«ã¯ã‚‚ã†ã‚®ã‚¯ã‚·ãƒ£ã‚¯ã™ã‚‹ã‚ˆã†ã§ã™
+* UpdateThreadsã‚¹ãƒ©ã‚¤ãƒ€ã¨high rpmãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã§ã€€ãªã‚“ã¨ã‹ã€€ï¼‘ï¼ï¼fpsã‚’å‡ºã‚‹ã‚ˆã†ã«ã—ã¦ãƒ†ã‚¹ãƒˆã—ã¦ã„ã¾ã™
 *
-* 100fps‚ğo‚·‚½‚ß‚É@H•v‚·‚é‚±‚Æ‚Æ‚µ‚Ä‚Í@ã‹L‚ÌUpdateThreads‚Æhigh rpm‚Ì‘¼‚É
-* “Ç‚İ‚İƒ‚ƒfƒ‹‚Ì”‚ğo—ˆ‚é‚¾‚¯Œ¸‚ç‚·‚±‚Æ‚Å‚·
-* “Ç‚İ‚ñ‚Å‚¢‚éƒ‚ƒfƒ‹•ª@Ä¶•¨—ˆ—‚ª“¯‚É‘–‚é‚©‚ç‚Å‚·
+* 100fpsã‚’å‡ºã™ãŸã‚ã«ã€€å·¥å¤«ã™ã‚‹ã“ã¨ã¨ã—ã¦ã¯ã€€ä¸Šè¨˜ã®UpdateThreadsã¨high rpmã®ä»–ã«
+* èª­ã¿è¾¼ã¿ãƒ¢ãƒ‡ãƒ«ã®æ•°ã‚’å‡ºæ¥ã‚‹ã ã‘æ¸›ã‚‰ã™ã“ã¨ã§ã™
+* èª­ã¿è¾¼ã‚“ã§ã„ã‚‹ãƒ¢ãƒ‡ãƒ«åˆ†ã€€å†ç”Ÿç‰©ç†å‡¦ç†ãŒåŒæ™‚ã«èµ°ã‚‹ã‹ã‚‰ã§ã™
 *
-* ƒ‚[ƒVƒ‡ƒ“fbs‚ğ“Ç‚İ‚Ş‚Æƒ‚ƒfƒ‹ƒf[ƒ^‚ªì¬‚³‚ê‚Ü‚·
-* ‚±‚Ìƒ‚[ƒVƒ‡ƒ“‚Ìƒ‚ƒfƒ‹ƒf[ƒ^‚Í@Œ`ó‚Ìƒ‚ƒfƒ‹ƒf[ƒ^‚ÉƒŠƒ^[ƒQƒbƒg‚µ‚½Œã‚É‚Ííœ‚·‚é‚±‚Æ‚ğ‚¨Š©‚ß‚µ‚Ü‚·
-* ‚»‚Ì‚æ‚¤‚É‚·‚é‚±‚Æ‚Å@“¯‚É“®‚­ƒ‚ƒfƒ‹”‚ğŒ¸‚ç‚·‚±‚Æ‚ªo—ˆ‚Ä@fps‚ªã¸‚µ‚Ü‚·
+* ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³fbsã‚’èª­ã¿è¾¼ã‚€ã¨ãƒ¢ãƒ‡ãƒ«ãƒ‡ãƒ¼ã‚¿ãŒä½œæˆã•ã‚Œã¾ã™
+* ã“ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ¢ãƒ‡ãƒ«ãƒ‡ãƒ¼ã‚¿ã¯ã€€å½¢çŠ¶ã®ãƒ¢ãƒ‡ãƒ«ãƒ‡ãƒ¼ã‚¿ã«ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆã—ãŸå¾Œã«ã¯å‰Šé™¤ã™ã‚‹ã“ã¨ã‚’ãŠå‹§ã‚ã—ã¾ã™
+* ãã®ã‚ˆã†ã«ã™ã‚‹ã“ã¨ã§ã€€åŒæ™‚ã«å‹•ããƒ¢ãƒ‡ãƒ«æ•°ã‚’æ¸›ã‚‰ã™ã“ã¨ãŒå‡ºæ¥ã¦ã€€fpsãŒä¸Šæ˜‡ã—ã¾ã™
 *
-* ƒvƒƒOƒ‰ƒ€‚Ì‰ü—Ç‚Ì•û‚Í
-* „‘Ì‚ÆƒRƒŠƒWƒ‡ƒ“‚É—]Œv‚Èƒ‚[ƒVƒ‡ƒ“‚Ìp¨‚ªŠ|‚©‚Á‚Ä‚¢‚½‚Ì‚ğ’¼‚µ‚Ü‚µ‚½
-* ‚±‚¿‚ç‚ÌŠÂ‹«‚Å‚Í@‰½‚à‚µ‚Ä‚¢‚È‚¢‚Ì‚É@’µ‚Ë•Ô‚Á‚½‚è‚·‚éŒ»Û‚ª@ŒƒŒ¸‚µ‚Ü‚µ‚½
-* ‚±‚Ì‚æ‚¤‚É’Pƒ‰»o—ˆ‚é‚Ì‚Í@•¨—‚Æƒ‚[ƒVƒ‡ƒ“‚Ì²‡‚í‚¹‚ªo—ˆ‚Ä‚¢‚é‚©‚ç‚Å‚·(diffŒvZ‚Å‚Í‚È‚­‚È‚Á‚½‚©‚ç)
+* ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã®æ”¹è‰¯ã®æ–¹ã¯
+* å‰›ä½“ã¨ã‚³ãƒªã‚¸ãƒ§ãƒ³ã«ä½™è¨ˆãªãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®å§¿å‹¢ãŒæ›ã‹ã£ã¦ã„ãŸã®ã‚’ç›´ã—ã¾ã—ãŸ
+* ã“ã¡ã‚‰ã®ç’°å¢ƒã§ã¯ã€€ä½•ã‚‚ã—ã¦ã„ãªã„ã®ã«ã€€è·³ã­è¿”ã£ãŸã‚Šã™ã‚‹ç¾è±¡ãŒã€€æ¿€æ¸›ã—ã¾ã—ãŸ
+* ã“ã®ã‚ˆã†ã«å˜ç´”åŒ–å‡ºæ¥ã‚‹ã®ã¯ã€€ç‰©ç†ã¨ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®è»¸åˆã‚ã›ãŒå‡ºæ¥ã¦ã„ã‚‹ã‹ã‚‰ã§ã™(diffè¨ˆç®—ã§ã¯ãªããªã£ãŸã‹ã‚‰)
 */
 
 /*
 * 2023/01/28
 *
-* •¨—‚Ì“®‚«‚ğ_‚ç‚©‚­‚·‚éC³‚ğ‚µ‚½Œã‚Ìƒo[ƒWƒ‡ƒ“‚É‚¨‚¢‚Ä
-* •¨—ƒVƒ~ƒ…‚É‚Í@LimitEulƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚Éƒ`ƒFƒbƒN‚ğ“ü‚ê‚Ä‚©‚ç@ƒVƒ~ƒ…‚ğ‚·‚é‚±‚Æ‚ª•K{‚É‚È‚Á‚½
+* ç‰©ç†ã®å‹•ãã‚’æŸ”ã‚‰ã‹ãã™ã‚‹ä¿®æ­£ã‚’ã—ãŸå¾Œã®ãƒãƒ¼ã‚¸ãƒ§ãƒ³ã«ãŠã„ã¦
+* ç‰©ç†ã‚·ãƒŸãƒ¥æ™‚ã«ã¯ã€€LimitEulãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã«ãƒã‚§ãƒƒã‚¯ã‚’å…¥ã‚Œã¦ã‹ã‚‰ã€€ã‚·ãƒŸãƒ¥ã‚’ã™ã‚‹ã“ã¨ãŒå¿…é ˆã«ãªã£ãŸ
 *
-* •¨—ƒVƒ~ƒ…‚ÌŠp“x§ŒÀ‚Í@LimitEulƒ`ƒFƒbƒN‚É“­‚­
-* ‚»‚ÌÛ‚É‚Í@§ŒÀŠp“x‚ğİ’è‚·‚é‚¾‚¯‚Å@ÀÛ‚Ìˆ—‚Í@bulletPhysics‚É”C‚¹‚Ä‚¢‚é
-* •¨—ƒVƒ~ƒ…‚ÌŠp“x§ŒÀ‚Ìd•û‚Í@Šp“xƒNƒ‰ƒ“ƒv‚Å‚Í‚È‚­@s‚«‚·‚¬‚½‚ç–ß‚é—Í‚ª“­‚­‚æ‚¤‚È§ŒÀ‚Ì‚æ‚¤‚¾
+* ç‰©ç†ã‚·ãƒŸãƒ¥æ™‚ã®è§’åº¦åˆ¶é™ã¯ã€€LimitEulãƒã‚§ãƒƒã‚¯æ™‚ã«åƒã
+* ãã®éš›ã«ã¯ã€€åˆ¶é™è§’åº¦ã‚’è¨­å®šã™ã‚‹ã ã‘ã§ã€€å®Ÿéš›ã®å‡¦ç†ã¯ã€€bulletPhysicsã«ä»»ã›ã¦ã„ã‚‹
+* ç‰©ç†ã‚·ãƒŸãƒ¥ã®è§’åº¦åˆ¶é™ã®ä»•æ–¹ã¯ã€€è§’åº¦ã‚¯ãƒ©ãƒ³ãƒ—ã§ã¯ãªãã€€è¡Œãã™ããŸã‚‰æˆ»ã‚‹åŠ›ãŒåƒãã‚ˆã†ãªåˆ¶é™ã®ã‚ˆã†ã 
 *
-* ‚»‚Ì‚æ‚¤‚È•¨—ƒVƒ~ƒ…‚ÌŠp“x§ŒÀ‚È‚Ì‚Å
-* BT RECƒ{ƒ^ƒ“‚Å@•¨—ƒVƒ~ƒ…‚ğƒxƒCƒN‚µ‚½ê‡
-* LimitEul‚ğƒ`ƒFƒbƒN‚µ‚Ä‚ÌÄ¶‚É@“®‚«‚ªƒJƒNƒJƒN‚µ‚Ä‚¢‚½(ƒVƒ~ƒ…‚É‚ÍŠŠ‚ç‚©‚¾‚Á‚½‚Ì‚É)
+* ãã®ã‚ˆã†ãªç‰©ç†ã‚·ãƒŸãƒ¥ã®è§’åº¦åˆ¶é™ãªã®ã§
+* BT RECãƒœã‚¿ãƒ³ã§ã€€ç‰©ç†ã‚·ãƒŸãƒ¥ã‚’ãƒ™ã‚¤ã‚¯ã—ãŸå ´åˆ
+* LimitEulã‚’ãƒã‚§ãƒƒã‚¯ã—ã¦ã®å†ç”Ÿæ™‚ã«ã€€å‹•ããŒã‚«ã‚¯ã‚«ã‚¯ã—ã¦ã„ãŸ(ã‚·ãƒŸãƒ¥æ™‚ã«ã¯æ»‘ã‚‰ã‹ã ã£ãŸã®ã«)
 *
-* ƒxƒCƒN‚µ‚½•¨—‚ªƒJƒNƒJƒN‚µ‚È‚¢‚æ‚¤‚É
-* ‰Â“®‚©‚Ç‚¤‚©‚ğƒ`ƒFƒbƒN‚·‚é•”•ª‚É‚¨‚¢‚Ä
-* GetBtForce() == 1‚Ìê‡‚É‚Í@ismovable = 1‚Æ‚µ‚Äˆµ‚¤‚æ‚¤‚É‚µ‚½
+* ãƒ™ã‚¤ã‚¯ã—ãŸç‰©ç†ãŒã‚«ã‚¯ã‚«ã‚¯ã—ãªã„ã‚ˆã†ã«
+* å¯å‹•ã‹ã©ã†ã‹ã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹éƒ¨åˆ†ã«ãŠã„ã¦
+* GetBtForce() == 1ã®å ´åˆã«ã¯ã€€ismovable = 1ã¨ã—ã¦æ‰±ã†ã‚ˆã†ã«ã—ãŸ
 *
-* ‚±‚ÌC³‚É‚æ‚Á‚Ä
-* •¨—ƒVƒ~ƒ…‚ÌƒxƒCƒNŒ‹‰ÊÄ¶‚ª@ƒVƒ~ƒ…‚Æ“¯‚¶“®‚«‚É‚È‚Á‚½
+* ã“ã®ä¿®æ­£ã«ã‚ˆã£ã¦
+* ç‰©ç†ã‚·ãƒŸãƒ¥ã®ãƒ™ã‚¤ã‚¯çµæœå†ç”ŸãŒã€€ã‚·ãƒŸãƒ¥æ™‚ã¨åŒã˜å‹•ãã«ãªã£ãŸ
 *
 */
 
 /*
 * 2023/01/28
 *
-* ã‹L‚Å•\Œ»‚µ‚Ä‚¢‚½ƒJƒNƒJƒN‚Æ‚Í•Ê‚ÌƒJƒNƒJƒN‚Ì‚±‚Æ
+* ä¸Šè¨˜ã§è¡¨ç¾ã—ã¦ã„ãŸã‚«ã‚¯ã‚«ã‚¯ã¨ã¯åˆ¥ã®ã‚«ã‚¯ã‚«ã‚¯ã®ã“ã¨
 *
-* •¨—ƒVƒ~ƒ…‚É@•¨—ƒVƒ~ƒ…‚ğw’è‚µ‚Ä‚¢‚È‚¢ƒ{[ƒ“‚Ìp¨‚ª@ƒJƒNƒJƒN‚µ‚Ä‚¢‚½
-* Œ´ˆö‚Í@Kinematicw’è‚µ‚Ä‚¢‚éƒ{[ƒ“‚Ì•¨—‚Ìp¨‚ğ@ƒ‚[ƒVƒ‡ƒ“‚Ìp¨‚É“K—p‚µ‚Ä‚¢‚½‚±‚Æ‚¾‚Á‚½
+* ç‰©ç†ã‚·ãƒŸãƒ¥æ™‚ã«ã€€ç‰©ç†ã‚·ãƒŸãƒ¥ã‚’æŒ‡å®šã—ã¦ã„ãªã„ãƒœãƒ¼ãƒ³ã®å§¿å‹¢ãŒã€€ã‚«ã‚¯ã‚«ã‚¯ã—ã¦ã„ãŸ
+* åŸå› ã¯ã€€KinematicæŒ‡å®šã—ã¦ã„ã‚‹ãƒœãƒ¼ãƒ³ã®ç‰©ç†ã®å§¿å‹¢ã‚’ã€€ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®å§¿å‹¢ã«é©ç”¨ã—ã¦ã„ãŸã“ã¨ã ã£ãŸ
 *
-* CBone::GetBtKinFlag() != 0‚Ìê‡‚É‚Í
-* •¨—‚Ìp¨‚ğ“K—p‚¹‚¸‚É@ƒ‚[ƒVƒ‡ƒ“‚ÌGetLimitedWorldMat‚ğ“K—p‚µ‚½
+* CBone::GetBtKinFlag() != 0ã®å ´åˆã«ã¯
+* ç‰©ç†ã®å§¿å‹¢ã‚’é©ç”¨ã›ãšã«ã€€ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®GetLimitedWorldMatã‚’é©ç”¨ã—ãŸ
 *
-* öİ“I‚ÈŠp“x§ŒÀ‚Ì–â‘è‚É‚à‘Î‰
-* Šp“x§ŒÀ‚ÌƒIƒCƒ‰[Šp‚ğ@CBone‚Å‚Í‚È‚­@CMotionPoint‚ÅŠÔî•ñ‚Æ‹¤‚Éˆµ‚¤‚±‚Æ‚É‚µ‚½
-* GetLimitedLoalEul, SetLimitedLocalEul’Ç‰Á
+* æ½œåœ¨çš„ãªè§’åº¦åˆ¶é™æ™‚ã®å•é¡Œã«ã‚‚å¯¾å¿œ
+* è§’åº¦åˆ¶é™æ™‚ã®ã‚ªã‚¤ãƒ©ãƒ¼è§’ã‚’ã€€CBoneã§ã¯ãªãã€€CMotionPointã§æ™‚é–“æƒ…å ±ã¨å…±ã«æ‰±ã†ã“ã¨ã«ã—ãŸ
+* GetLimitedLoalEul, SetLimitedLocalEulè¿½åŠ 
 *
 */
 
 /*
 * 2023/01/29
 *
-* 1.1.0.13‚Ì§ŒÀŠp“x
+* 1.1.0.13ã®åˆ¶é™è§’åº¦
 *
-* 1.1.0.13‚Æ‚µ‚Äo—ˆ‚é‚±‚Æ
-* Šù‘¶‚Ìƒ‚[ƒVƒ‡ƒ“‚Ì‰Â“®”ÍˆÍ‚ğ@ƒ{ƒ^ƒ“‚P‚Â‚Å§ŒÀŠp“x‚Æ‚µ‚Äİ’è
-* ‰Â“®”ÍˆÍ‚ğ‰z‚¦‚È‚¢‚æ‚¤‚É@ƒvƒŒƒrƒ…[‚ÆIK‚ğ§ŒÀ‰Â”\
-* §ŒÀŠp“x‚ÌApply‚É‚Â‚¢‚Ä‚Í@•¨—ƒVƒ~ƒ…‘ÎÛƒ{[ƒ“‚É—LŒø
+* 1.1.0.13ã¨ã—ã¦å‡ºæ¥ã‚‹ã“ã¨
+* æ—¢å­˜ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®å¯å‹•ç¯„å›²ã‚’ã€€ãƒœã‚¿ãƒ³ï¼‘ã¤ã§åˆ¶é™è§’åº¦ã¨ã—ã¦è¨­å®š
+* å¯å‹•ç¯„å›²ã‚’è¶Šãˆãªã„ã‚ˆã†ã«ã€€ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼ã¨IKã‚’åˆ¶é™å¯èƒ½
+* åˆ¶é™è§’åº¦ã®Applyã«ã¤ã„ã¦ã¯ã€€ç‰©ç†ã‚·ãƒŸãƒ¥å¯¾è±¡ãƒœãƒ¼ãƒ³ã«æœ‰åŠ¹
 *
-* 1.1.0.13‚Æ‚µ‚Äo—ˆ‚È‚¢‚±‚Æ
-* §ŒÀŠp“x‚ğİ’è‚µ‚½Œã‚É@Šp“x‚ği‚è‚Ş‚æ‚¤‚È’l‚ğApply‚µ‚½ê‡
-* Šp“x‚ği‚è‚ñ‚¾ƒ{[ƒ“‚Ìq‹Ÿƒ{[ƒ“‚ÌIK‚ª“®‚©‚È‚­‚È‚èo—ˆ‚È‚¢
-* i‚è‚ñ‚Å‚ÌƒvƒŒƒrƒ…[‚Ío—ˆ‚é‚ª@i‚è‚ñ‚Å‚Ìq‹Ÿƒ{[ƒ“IK‚ªo—ˆ‚È‚¢
+* 1.1.0.13ã¨ã—ã¦å‡ºæ¥ãªã„ã“ã¨
+* åˆ¶é™è§’åº¦ã‚’è¨­å®šã—ãŸå¾Œã«ã€€è§’åº¦ã‚’çµã‚Šè¾¼ã‚€ã‚ˆã†ãªå€¤ã‚’Applyã—ãŸå ´åˆ
+* è§’åº¦ã‚’çµã‚Šè¾¼ã‚“ã ãƒœãƒ¼ãƒ³ã®å­ä¾›ãƒœãƒ¼ãƒ³ã®IKãŒå‹•ã‹ãªããªã‚Šå‡ºæ¥ãªã„
+* çµã‚Šè¾¼ã‚“ã§ã®ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼ã¯å‡ºæ¥ã‚‹ãŒã€€çµã‚Šè¾¼ã‚“ã§ã®å­ä¾›ãƒœãƒ¼ãƒ³IKãŒå‡ºæ¥ãªã„
 *
-* ‚Â‚Ü‚è
-* ƒIƒŠƒWƒiƒ‹ƒ‚[ƒVƒ‡ƒ“‚©‚ç@‚Í‚İo‚³‚È‚¢‚æ‚¤‚É@§ŒÀ‚·‚é‚±‚Æ‚Ío—ˆ‚é‚ª
-* ƒIƒŠƒWƒiƒ‹ƒ‚[ƒVƒ‡ƒ“‚æ‚è‚à@i‚è‚Ş‚æ‚¤‚É@§ŒÀ‚·‚é‚±‚Æ‚ªo—ˆ‚È‚¢
+* ã¤ã¾ã‚Š
+* ã‚ªãƒªã‚¸ãƒŠãƒ«ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‹ã‚‰ã€€ã¯ã¿å‡ºã•ãªã„ã‚ˆã†ã«ã€€åˆ¶é™ã™ã‚‹ã“ã¨ã¯å‡ºæ¥ã‚‹ãŒ
+* ã‚ªãƒªã‚¸ãƒŠãƒ«ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚ˆã‚Šã‚‚ã€€çµã‚Šè¾¼ã‚€ã‚ˆã†ã«ã€€åˆ¶é™ã™ã‚‹ã“ã¨ãŒå‡ºæ¥ãªã„
 *
 *
 *
-* 1.1.0.13ˆÈ~‚Ì‰Û‘è‚É‚Â‚¢‚Ä
+* 1.1.0.13ä»¥é™ã®èª²é¡Œã«ã¤ã„ã¦
 *
-* Œ»İ‚Ìd—l‚Æ‚µ‚Ä
-* ƒIƒŠƒWƒiƒ‹‚Ìƒ‚[ƒVƒ‡ƒ“‚ÆŠp“x§ŒÀ‚ğ{‚µ‚½ƒ‚[ƒVƒ‡ƒ“‚Ì‚Qí—Ş•Û‚µ‚Ä‚¢‚é
-* –â‘è‚É‚È‚Á‚Ä‚¢‚é‚Ì‚Í
-* IK‚ÉŠp“x§ŒÀ‚ğ‚µ‚½ƒ‚[ƒVƒ‡ƒ“‚ğ@ƒIƒŠƒWƒiƒ‹‚Ìƒ‚[ƒVƒ‡ƒ“‚ÉƒxƒCƒN‚·‚é•”•ª
+* ç¾åœ¨ã®ä»•æ§˜ã¨ã—ã¦
+* ã‚ªãƒªã‚¸ãƒŠãƒ«ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã¨è§’åº¦åˆ¶é™ã‚’æ–½ã—ãŸãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ï¼’ç¨®é¡ä¿æŒã—ã¦ã„ã‚‹
+* å•é¡Œã«ãªã£ã¦ã„ã‚‹ã®ã¯
+* IKæ™‚ã«è§’åº¦åˆ¶é™ã‚’ã—ãŸãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’ã€€ã‚ªãƒªã‚¸ãƒŠãƒ«ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã«ãƒ™ã‚¤ã‚¯ã™ã‚‹éƒ¨åˆ†
 *
-* ƒ[ƒJƒ‹‰ñ“]‚ğ‹‚ß‚é‚É
-* e‚Ìp¨‚Æ‚µ‚Ä@ƒIƒŠƒWƒiƒ‹‚ÆŠp“x§ŒÀ‚Æ‚Ç‚¿‚ç‚ªŠ|‚©‚Á‚Ä‚¢‚é‚©@‚Ç‚¿‚ç‚ğŠ|‚¯‚é‚©‚ª“ï‚µ‚­‚È‚Á‚Ä‚¢‚é
-* ‘€ì‚ª‰î“ü‚·‚é‚Ì‚Å@—]Œv‚É“ï‚µ‚­‚È‚Á‚Ä‚¢‚é
+* ãƒ­ãƒ¼ã‚«ãƒ«å›è»¢ã‚’æ±‚ã‚ã‚‹æ™‚ã«
+* è¦ªã®å§¿å‹¢ã¨ã—ã¦ã€€ã‚ªãƒªã‚¸ãƒŠãƒ«ã¨è§’åº¦åˆ¶é™ã¨ã©ã¡ã‚‰ãŒæ›ã‹ã£ã¦ã„ã‚‹ã‹ã€€ã©ã¡ã‚‰ã‚’æ›ã‘ã‚‹ã‹ãŒé›£ã—ããªã£ã¦ã„ã‚‹
+* æ“ä½œãŒä»‹å…¥ã™ã‚‹ã®ã§ã€€ä½™è¨ˆã«é›£ã—ããªã£ã¦ã„ã‚‹
 *
-* ‰ğŒˆˆÄ‚Æ‚µ‚Ä‚Í
-* ƒIƒŠƒWƒiƒ‹‚ÉŠp“x§ŒÀ‚ğƒxƒCƒN‚·‚é‚Ì‚Í‚â‚ß‚Ä
-* ƒIƒŠƒWƒiƒ‹‚Æ•ÒWŒ‹‰Ê‚Ì‚æ‚¤‚É•ª‚¯‚é
-* ƒIƒŠƒWƒiƒ‹‚É‚ÍƒIƒŠƒWƒiƒ‹‚Ìes—ñ‚ğŠ|‚¯‚é
-* •ÒWŒ‹‰Ê‚É‚Í•ÒWŒ‹‰Ê‚Ìes—ñ‚ğŠ|‚¯‚é
-* ‚Æ‚¢‚¤‚æ‚¤‚É–¾Šm‚É‚·‚é
-* (‰Â”\‚È‚ç‚Î)
+* è§£æ±ºæ¡ˆã¨ã—ã¦ã¯
+* ã‚ªãƒªã‚¸ãƒŠãƒ«ã«è§’åº¦åˆ¶é™ã‚’ãƒ™ã‚¤ã‚¯ã™ã‚‹ã®ã¯ã‚„ã‚ã¦
+* ã‚ªãƒªã‚¸ãƒŠãƒ«ã¨ç·¨é›†çµæœã®ã‚ˆã†ã«åˆ†ã‘ã‚‹
+* ã‚ªãƒªã‚¸ãƒŠãƒ«ã«ã¯ã‚ªãƒªã‚¸ãƒŠãƒ«ã®è¦ªè¡Œåˆ—ã‚’æ›ã‘ã‚‹
+* ç·¨é›†çµæœã«ã¯ç·¨é›†çµæœã®è¦ªè¡Œåˆ—ã‚’æ›ã‘ã‚‹
+* ã¨ã„ã†ã‚ˆã†ã«æ˜ç¢ºã«ã™ã‚‹
+* (å¯èƒ½ãªã‚‰ã°)
 *
 *
 */
 
 
 /*
-* 2023/02/01@1.1.0.14‚ÉŒü‚¯‚Ä
+* 2023/02/01ã€€1.1.0.14ã«å‘ã‘ã¦
 *
-* WorldMat‚ÆLimitedWorldMat‚ğ•ÊX‚Éˆµ‚¤‚æ‚¤‚É
-* •ÊX‚Éˆµ‚¤‚±‚Æ‚É‚æ‚è@ƒ[ƒJƒ‹p¨‚ÌŒvZ‚ªŠm’è‚·‚é
-* 1.1.0.13‚Ì‚Æ‚«‚É‚Ío—ˆ‚È‚©‚Á‚½§ŒÀŠp“x‚ğŠù‘¶ƒ‚[ƒVƒ‡ƒ“‚ÌŠp“x‚æ‚è‚ài‚è‚ñ‚Å@q‚ÌIK‚ª‰Â”\
+* WorldMatã¨LimitedWorldMatã‚’åˆ¥ã€…ã«æ‰±ã†ã‚ˆã†ã«
+* åˆ¥ã€…ã«æ‰±ã†ã“ã¨ã«ã‚ˆã‚Šã€€ãƒ­ãƒ¼ã‚«ãƒ«å§¿å‹¢ã®è¨ˆç®—ãŒç¢ºå®šã™ã‚‹
+* 1.1.0.13ã®ã¨ãã«ã¯å‡ºæ¥ãªã‹ã£ãŸåˆ¶é™è§’åº¦ã‚’æ—¢å­˜ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®è§’åº¦ã‚ˆã‚Šã‚‚çµã‚Šè¾¼ã‚“ã§ã€€å­ã®IKãŒå¯èƒ½
 *
-* Ø‚è‘Ö‚¦‚ÍCBone::GetWorldMat, CBone::SetWorldMat“à‚Å@g_limitdegflag‚ğ‚İ‚Ä@ØŠ·‚¦
-* ŒÄ‚Ño‚·‘¤‚Í@CMotionPoint::SetCalcLimitedWM‚ÌƒZƒbƒg‚ğˆÓ¯‚·‚é‚­‚ç‚¢
+* åˆ‡ã‚Šæ›¿ãˆã¯CBone::GetWorldMat, CBone::SetWorldMatå†…ã§ã€€g_limitdegflagã‚’ã¿ã¦ã€€åˆ‡æ›ãˆ
+* å‘¼ã³å‡ºã™å´ã¯ã€€CMotionPoint::SetCalcLimitedWMã®ã‚»ãƒƒãƒˆã‚’æ„è­˜ã™ã‚‹ãã‚‰ã„
 *
-* §ŒÀŠp“x‚ğ•ÏX‚µ‚½ê‡‚É‚Í
-* CBone::SetWorldMat“à‚Å@§ŒÀˆ—‚ğs‚¤‚Ì‚Å
-* CBone::GetWorldMat‚µ‚½‚à‚Ì‚ğ@CBone::SetWorldMat‚É“n‚·‚¾‚¯‚Å—Ç‚¢
+* åˆ¶é™è§’åº¦ã‚’å¤‰æ›´ã—ãŸå ´åˆã«ã¯
+* CBone::SetWorldMatå†…ã§ã€€åˆ¶é™å‡¦ç†ã‚’è¡Œã†ã®ã§
+* CBone::GetWorldMatã—ãŸã‚‚ã®ã‚’ã€€CBone::SetWorldMatã«æ¸¡ã™ã ã‘ã§è‰¯ã„
 *
-* ‚Ü‚¾“r’†
-* ƒ‚[ƒVƒ‡ƒ“‚Ìp¨‚É@ƒ‚ƒfƒ‹‚ÌˆÊ’u‚ğ@“K—p‚µ‚Ä‚¢‚È‚¢
+* ã¾ã é€”ä¸­
+* ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®å§¿å‹¢ã«ã€€ãƒ¢ãƒ‡ãƒ«ã®ä½ç½®ã‚’ã€€é©ç”¨ã—ã¦ã„ãªã„
 *
 */
 
@@ -423,78 +423,78 @@ high rpm‚ÌŒø‰Ê‚ÍƒvƒŒƒrƒ…[‚¾‚¯(1.0.0.31‚©‚çƒvƒŒƒrƒ…[‚¾‚¯‚É‚È‚è‚Ü‚µ‚½)
 /*
 * 2023/02/05
 *
-* 1.1.0.14‚Ì@#### —\’è (plans) ####
+* 1.1.0.14ã®ã€€#### äºˆå®š (plans) ####
 *
-* [ WorldMat‚ÆLimitedWorldMat‚ğ•ÊX‚Éˆµ‚¤‚æ‚¤‚É‚È‚Á‚½‚±‚Æ‚Ö‚Ì‘Î‰ ]
-* (‘Î‰‚Å‚«‚½‚ç@‚±‚Ìƒƒ‚‚ÌŠY“–€–Ú‚É@(Ï)ƒ}[ƒN‚ğ•t‚¯‚Ä‚¢‚«‚Ü‚·)
-* (‚±‚Ìƒƒ‚‚Ì€–Ú‚É‘S•”(Ï)‚ª•t‚¢‚½‚ç@ƒo[ƒWƒ‡ƒ“‚Í1.2.0.10‚É‚µ‚Ü‚·)
+* [ WorldMatã¨LimitedWorldMatã‚’åˆ¥ã€…ã«æ‰±ã†ã‚ˆã†ã«ãªã£ãŸã“ã¨ã¸ã®å¯¾å¿œ ]
+* (å¯¾å¿œã§ããŸã‚‰ã€€ã“ã®ãƒ¡ãƒ¢ã®è©²å½“é …ç›®ã«ã€€(æ¸ˆ)ãƒãƒ¼ã‚¯ã‚’ä»˜ã‘ã¦ã„ãã¾ã™)
+* (ã“ã®ãƒ¡ãƒ¢ã®é …ç›®ã«å…¨éƒ¨(æ¸ˆ)ãŒä»˜ã„ãŸã‚‰ã€€ãƒãƒ¼ã‚¸ãƒ§ãƒ³ã¯1.2.0.10ã«ã—ã¾ã™)
 *
-* 0, ƒ‚ƒfƒ‹‚ÌˆÊ’u‚ğ“K—p@(Ï 2023/02/02)
+* 0, ãƒ¢ãƒ‡ãƒ«ã®ä½ç½®ã‚’é©ç”¨ã€€(æ¸ˆ 2023/02/02)
 *
-* 1, UpdateMatrix‚Ìƒ}ƒ‹ƒ`ƒXƒŒƒbƒh•œŠˆ(ˆê“I‚ÉƒVƒ“ƒOƒ‹ƒXƒŒƒbƒh‚É‚µ‚Ä‚¢‚é)@(Ï 2023/02/02)
+* 1, UpdateMatrixã®ãƒãƒ«ãƒã‚¹ãƒ¬ãƒƒãƒ‰å¾©æ´»(ä¸€æ™‚çš„ã«ã‚·ãƒ³ã‚°ãƒ«ã‚¹ãƒ¬ãƒƒãƒ‰ã«ã—ã¦ã„ã‚‹)ã€€(æ¸ˆ 2023/02/02)
 *
-* 2, WorldMat --> LimitedWorldMat, LimitedWorldMat --> WorldMat ‚ÌƒRƒs[‚Ì‚½‚ß‚Ìƒ{ƒ^ƒ“’Ç‰Á@(Ï 2023/02/04)
-*	§ŒÀŠp“x‚ğ•ÏX‚·‚éÛ@‚Ü‚½‚Í@LimitEul‚ğƒIƒ“‚É‚µ‚½Û@©“®“I‚ÉWorldMat-->LimitedWorldMat‚ğs‚¢@‚»‚Ì‚¤‚¦‚Å§ŒÀ‚µ’¼‚·(Ï 2023/02/03)
+* 2, WorldMat --> LimitedWorldMat, LimitedWorldMat --> WorldMat ã®ã‚³ãƒ”ãƒ¼ã®ãŸã‚ã®ãƒœã‚¿ãƒ³è¿½åŠ ã€€(æ¸ˆ 2023/02/04)
+*	åˆ¶é™è§’åº¦ã‚’å¤‰æ›´ã™ã‚‹éš›ã€€ã¾ãŸã¯ã€€LimitEulã‚’ã‚ªãƒ³ã«ã—ãŸéš›ã€€è‡ªå‹•çš„ã«WorldMat-->LimitedWorldMatã‚’è¡Œã„ã€€ãã®ã†ãˆã§åˆ¶é™ã—ç›´ã™(æ¸ˆ 2023/02/03)
 *
-* 	LimitedWorldMat-->WorldMat‚ÌƒRƒs[‚à©“®‰»
-* 		LimitEul‚Éƒ`ƒFƒbƒN‚ğ“ü‚ê‚Ä‚ÌIK‘€ì‚ÌŒ‹‰Ê‚Í@•ÒW•”•ª‚ğ©“®“I‚É@Šp“x§ŒÀ–³‚µp¨‚ÉƒRƒs[‚·‚é (2023/02/04)
+* 	LimitedWorldMat-->WorldMatã®ã‚³ãƒ”ãƒ¼ã‚‚è‡ªå‹•åŒ–
+* 		LimitEulã«ãƒã‚§ãƒƒã‚¯ã‚’å…¥ã‚Œã¦ã®IKæ“ä½œã®çµæœã¯ã€€ç·¨é›†éƒ¨åˆ†ã‚’è‡ªå‹•çš„ã«ã€€è§’åº¦åˆ¶é™ç„¡ã—å§¿å‹¢ã«ã‚³ãƒ”ãƒ¼ã™ã‚‹ (2023/02/04)
 *
-* 	LimitedWorldMat‚Ì‘SƒtƒŒ[ƒ€‚ğWorldMat‚ÉƒRƒs[‚·‚é‹@”\‚É‚Â‚¢‚Ä‚Í@ƒ{ƒ^ƒ“‚ğV‹K’Ç‰Á@(2023/02/04)
-*		L2Wƒ{ƒ^ƒ“‚ğ’Ç‰Á
-*
-*
-* 3, ƒRƒs[‚ÌÛ‚Étemp‚É©“®ƒoƒbƒNƒAƒbƒv@(Ï 2023/02/05)
-*		ƒAƒ“ƒhƒDƒŠƒhƒD‚Å‘Î‰
-*
-* 4, ƒoƒbƒNƒAƒbƒv‚©‚ç‚Ì•œŒ³ƒc[ƒ‹ƒ{ƒ^ƒ“@(Ï 2023/02/05)
-*		ƒAƒ“ƒhƒDƒŠƒhƒD‚Å‘Î‰
-*
-* 5, ƒAƒ“ƒhƒDƒŠƒhƒD‚ÌLimitedWorldMat‘Î‰@(Ï 2023/02/05)
-*
-* 6, ƒRƒs[ƒy[ƒXƒg‚ÌLimitedWorldMat‘Î‰@(Ï 2023/02/05)
-*		ƒRƒs[‚É‚Í@LimitEul‚ÌƒIƒ“ƒIƒt‚ğ‚İ‚Ä@ŠY“–‚·‚é•û‚Ìp¨‚ğƒRƒs[
-*		ƒy[ƒXƒg‚É‚à@LimitEul‚ÌƒIƒ“ƒIƒt‚ğ‚İ‚Ä@ŠY“–‚·‚é•û‚Öƒy[ƒXƒg
-*		ƒy[ƒXƒg‚É@limited‚Ì•û‚Öƒy[ƒXƒg‚µ‚½ê‡@unlimited‚Ö‚àƒy[ƒXƒg@X‚É@limited‚É§ŒÀ‚ğŠ|‚¯’¼‚·
-*
-* 7, ƒvƒƒWƒFƒNƒg•Û‘¶‚É@LimitedWorldMat—p‚Ìƒtƒ@ƒCƒ‹‚à•Û‘¶@“Ç‚İ‚İ‚É‚»‚ê‚ğƒ[ƒh@(Ï 2023/02/06)
-*		LimitedWorld‚Ö‚Ì•ÒWŒ‹‰Ê‚ğWorld‚ÖƒxƒCƒN‚·‚é•”•ª‚ğ©“®‰»‚µ‚½‚Ì‚Å
-*		WorldMat‚ğ“Ç‚İ‚ñ‚Å@LimitEul‚ğƒIƒ“‚É‚·‚ê‚Î@LimitedWorld‚Í•œŒ³‚³‚ê‚é
-*		‚æ‚Á‚Ä@LimitedWorld‚ğ@•Êƒtƒ@ƒCƒ‹‚Æ‚µ‚Ä•Û‘¶‚·‚é•K—v‚Í–³‚­‚È‚Á‚½
-*
-* ‚»‚Ì‘¼
-* 	ƒIƒCƒ‰[ŠpŒvZ‰ü‘P@(Ï 2023/02/03)
-* 		GetBefEul()ŠÖ”‰»
-* 		0ƒtƒŒ[ƒ€‚Æ1ƒtƒŒ[ƒ€‚ÌŒvZ‚ğ‰ü‘P
-* 		–³‘Ê‚É180“x•Ï‰»‚µ‚ÄŒã‚ÌƒtƒŒ[ƒ€‚ÌƒIƒCƒ‰[Šp‚ª‚»‚Ì‚Ü‚Ü‚É‚È‚é•s‹ï‡C³
-*
-* 	§ŒÀŠp“xİ’èƒ{ƒ^ƒ“‚Ì‰ü‘P@(Ï 2023/02/03)
-* 		FromCurrentMotionƒ{ƒ^ƒ“, FromAllRetargetedMotionsƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½Û‚É
-* 		•¨—ƒVƒ~ƒ…ƒ{[ƒ“‚Ìİ’è‚Íã‘‚«‚µ‚È‚¢‚æ‚¤‚ÉC³
-*
-* 	ƒTƒ“ƒvƒ‹XV@
-* 		Test/0_VRoid_Winter_B3@’Ç‰Á(2023/02/04)
-* 			ƒIƒCƒ‰[ŠpŒvZ‰ü‘P
-*
-* 	ƒIƒCƒ‰[Šp•â³‚ÌC³(2023/02/04)
-* 		“–‚½‚è‘O‚Ì‚±‚Æ‚¾‚ª@XYZEul(180, 0, 180)‚ÆXYZEul(0, 0, 0)‚Íˆá‚¤p¨
-* 		360“x‚Ìƒvƒ‰ƒXƒ}ƒCƒiƒX‚Í—L‚è‚¾‚ª@180“x‚Ìƒvƒ‰ƒXƒ}ƒCƒiƒX‚Í@ˆá‚¤p¨‚É‚·‚é‚±‚Æ
-* 		ƒmƒCƒY‘Îô‚Æ‚µ‚Ä+-180“x‚Í—L‚è“¾‚é‚ª
-* 		“¯‚¶p¨‚Ì•Ê•\Œ»‚Æ‚µ‚Ä‚Ì+-180“x‚Í@XYZEul(0, 180, 0)‚ğXYZEul(180, 0, 180)‚É‚·‚éˆÈŠO‚Év‚¢‚Â‚©‚È‚¢
-* 		360‚Ìƒvƒ‰ƒXƒ}ƒCƒiƒX‚É–ß‚µ‚Ä@Q2EulXYZusingQ()‚ÌŒãˆ—‚Æ‚µ‚Ä•â³‚ğs‚¤
-*
-* @IKRotate, IKRotateAxisDelta‚ÌŒãˆ—‚Æ‚µ‚Ä‚Ìp¨ŒvZ‚µ’¼‚µ‚ğƒRƒƒ“ƒgƒAƒEƒg(2023/02/04)
-* @	p¨ŒvZ‚ª‚¤‚Ü‚­‹@”\‚·‚é‚æ‚¤‚É‚È‚Á‚½‚Ì‚Å•K—v‚È‚­‚È‚è@IK‘€ì‚‘¬‰»
-*
-* 	‚P‰ñ–Ú‚Ì•¨—ƒVƒ~ƒ…‚ÅLimitEul‚Éƒ`ƒFƒbƒN‚ğ“ü‚ê‚Ä‚à§ŒÀ‚ªŒø‚©‚È‚¢•s‹ï‡C³(2023/02/06)
-* 		’²¸’†
-*		•¡”ƒ‚ƒfƒ‹“¯ƒVƒ~ƒ…
-*		•¨—‚Ì§ŒÀŠp“xİ’è‚ÉŠÖ‚µ‚Ä@İ’è‚Ì‘O‚É‚µ‚Ä‚¢‚½‰¼‚Ìİ’è(§ŒÀ–³‚µ)‚ğƒRƒƒ“ƒgƒAƒEƒg‚µ‚½‚ç’¼‚Á‚½
+* 	LimitedWorldMatã®å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’WorldMatã«ã‚³ãƒ”ãƒ¼ã™ã‚‹æ©Ÿèƒ½ã«ã¤ã„ã¦ã¯ã€€ãƒœã‚¿ãƒ³ã‚’æ–°è¦è¿½åŠ ã€€(2023/02/04)
+*		L2Wãƒœã‚¿ãƒ³ã‚’è¿½åŠ 
 *
 *
-* 	§ŒÀŠp“x‚Ì’l‚ÌƒAƒ“ƒhƒDƒŠƒhƒD‚ğ@‚·‚é‚©‚µ‚È‚¢‚©H
-* 		•K—v‚¾‚Á‚½‚Ì‚Å‘Î‰@(2023/02/05)
+* 3, ã‚³ãƒ”ãƒ¼ã®éš›ã«tempã«è‡ªå‹•ãƒãƒƒã‚¯ã‚¢ãƒƒãƒ—ã€€(æ¸ˆ 2023/02/05)
+*		ã‚¢ãƒ³ãƒ‰ã‚¥ãƒªãƒ‰ã‚¥ã§å¯¾å¿œ
 *
-* @limited‚É‘Î‚µ‚Ä‚Ìp¨‰Šú‰»A•½ŠŠ‰»A•âŠÔ‚É‚Â‚¢‚Ä‚à@IK•ÒW‚Æ“¯—l‚É@Œ‹‰Ê‚ğunlimited‚ÖƒRƒs[‚·‚é(2023/02/05)
+* 4, ãƒãƒƒã‚¯ã‚¢ãƒƒãƒ—ã‹ã‚‰ã®å¾©å…ƒãƒ„ãƒ¼ãƒ«ãƒœã‚¿ãƒ³ã€€(æ¸ˆ 2023/02/05)
+*		ã‚¢ãƒ³ãƒ‰ã‚¥ãƒªãƒ‰ã‚¥ã§å¯¾å¿œ
+*
+* 5, ã‚¢ãƒ³ãƒ‰ã‚¥ãƒªãƒ‰ã‚¥ã®LimitedWorldMatå¯¾å¿œã€€(æ¸ˆ 2023/02/05)
+*
+* 6, ã‚³ãƒ”ãƒ¼ãƒšãƒ¼ã‚¹ãƒˆã®LimitedWorldMatå¯¾å¿œã€€(æ¸ˆ 2023/02/05)
+*		ã‚³ãƒ”ãƒ¼æ™‚ã«ã¯ã€€LimitEulã®ã‚ªãƒ³ã‚ªãƒ•ã‚’ã¿ã¦ã€€è©²å½“ã™ã‚‹æ–¹ã®å§¿å‹¢ã‚’ã‚³ãƒ”ãƒ¼
+*		ãƒšãƒ¼ã‚¹ãƒˆæ™‚ã«ã‚‚ã€€LimitEulã®ã‚ªãƒ³ã‚ªãƒ•ã‚’ã¿ã¦ã€€è©²å½“ã™ã‚‹æ–¹ã¸ãƒšãƒ¼ã‚¹ãƒˆ
+*		ãƒšãƒ¼ã‚¹ãƒˆæ™‚ã«ã€€limitedã®æ–¹ã¸ãƒšãƒ¼ã‚¹ãƒˆã—ãŸå ´åˆã€€unlimitedã¸ã‚‚ãƒšãƒ¼ã‚¹ãƒˆã€€æ›´ã«ã€€limitedã«åˆ¶é™ã‚’æ›ã‘ç›´ã™
+*
+* 7, ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆä¿å­˜æ™‚ã«ã€€LimitedWorldMatç”¨ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‚‚ä¿å­˜ã€€èª­ã¿è¾¼ã¿æ™‚ã«ãã‚Œã‚’ãƒ­ãƒ¼ãƒ‰ã€€(æ¸ˆ 2023/02/06)
+*		LimitedWorldã¸ã®ç·¨é›†çµæœã‚’Worldã¸ãƒ™ã‚¤ã‚¯ã™ã‚‹éƒ¨åˆ†ã‚’è‡ªå‹•åŒ–ã—ãŸã®ã§
+*		WorldMatã‚’èª­ã¿è¾¼ã‚“ã§ã€€LimitEulã‚’ã‚ªãƒ³ã«ã™ã‚Œã°ã€€LimitedWorldã¯å¾©å…ƒã•ã‚Œã‚‹
+*		ã‚ˆã£ã¦ã€€LimitedWorldã‚’ã€€åˆ¥ãƒ•ã‚¡ã‚¤ãƒ«ã¨ã—ã¦ä¿å­˜ã™ã‚‹å¿…è¦ã¯ç„¡ããªã£ãŸ
+*
+* ãã®ä»–
+* 	ã‚ªã‚¤ãƒ©ãƒ¼è§’è¨ˆç®—æ”¹å–„ã€€(æ¸ˆ 2023/02/03)
+* 		GetBefEul()é–¢æ•°åŒ–
+* 		0ãƒ•ãƒ¬ãƒ¼ãƒ ã¨1ãƒ•ãƒ¬ãƒ¼ãƒ ã®è¨ˆç®—ã‚’æ”¹å–„
+* 		ç„¡é§„ã«180åº¦å¤‰åŒ–ã—ã¦å¾Œã®ãƒ•ãƒ¬ãƒ¼ãƒ ã®ã‚ªã‚¤ãƒ©ãƒ¼è§’ãŒãã®ã¾ã¾ã«ãªã‚‹ä¸å…·åˆä¿®æ­£
+*
+* 	åˆ¶é™è§’åº¦è¨­å®šãƒœã‚¿ãƒ³ã®æ”¹å–„ã€€(æ¸ˆ 2023/02/03)
+* 		FromCurrentMotionãƒœã‚¿ãƒ³, FromAllRetargetedMotionsãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ãŸéš›ã«
+* 		ç‰©ç†ã‚·ãƒŸãƒ¥ãƒœãƒ¼ãƒ³ã®è¨­å®šã¯ä¸Šæ›¸ãã—ãªã„ã‚ˆã†ã«ä¿®æ­£
+*
+* 	ã‚µãƒ³ãƒ—ãƒ«æ›´æ–°ã€€
+* 		Test/0_VRoid_Winter_B3ã€€è¿½åŠ (2023/02/04)
+* 			ã‚ªã‚¤ãƒ©ãƒ¼è§’è¨ˆç®—æ”¹å–„
+*
+* 	ã‚ªã‚¤ãƒ©ãƒ¼è§’è£œæ­£ã®ä¿®æ­£(2023/02/04)
+* 		å½“ãŸã‚Šå‰ã®ã“ã¨ã ãŒã€€XYZEul(180, 0, 180)ã¨XYZEul(0, 0, 0)ã¯é•ã†å§¿å‹¢
+* 		360åº¦ã®ãƒ—ãƒ©ã‚¹ãƒã‚¤ãƒŠã‚¹ã¯æœ‰ã‚Šã ãŒã€€180åº¦ã®ãƒ—ãƒ©ã‚¹ãƒã‚¤ãƒŠã‚¹ã¯ã€€é•ã†å§¿å‹¢ã«ã™ã‚‹ã“ã¨
+* 		ãƒã‚¤ã‚ºå¯¾ç­–ã¨ã—ã¦+-180åº¦ã¯æœ‰ã‚Šå¾—ã‚‹ãŒ
+* 		åŒã˜å§¿å‹¢ã®åˆ¥è¡¨ç¾ã¨ã—ã¦ã®+-180åº¦ã¯ã€€XYZEul(0, 180, 0)ã‚’XYZEul(180, 0, 180)ã«ã™ã‚‹ä»¥å¤–ã«æ€ã„ã¤ã‹ãªã„
+* 		360ã®ãƒ—ãƒ©ã‚¹ãƒã‚¤ãƒŠã‚¹ã«æˆ»ã—ã¦ã€€Q2EulXYZusingQ()ã®å¾Œå‡¦ç†ã¨ã—ã¦è£œæ­£ã‚’è¡Œã†
+*
+* ã€€IKRotate, IKRotateAxisDeltaã®å¾Œå‡¦ç†ã¨ã—ã¦ã®å§¿å‹¢è¨ˆç®—ã—ç›´ã—ã‚’ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ(2023/02/04)
+* ã€€	å§¿å‹¢è¨ˆç®—ãŒã†ã¾ãæ©Ÿèƒ½ã™ã‚‹ã‚ˆã†ã«ãªã£ãŸã®ã§å¿…è¦ãªããªã‚Šã€€IKæ“ä½œé«˜é€ŸåŒ–
+*
+* 	ï¼‘å›ç›®ã®ç‰©ç†ã‚·ãƒŸãƒ¥ã§LimitEulã«ãƒã‚§ãƒƒã‚¯ã‚’å…¥ã‚Œã¦ã‚‚åˆ¶é™ãŒåŠ¹ã‹ãªã„ä¸å…·åˆä¿®æ­£(2023/02/06)
+* 		èª¿æŸ»ä¸­
+*		è¤‡æ•°ãƒ¢ãƒ‡ãƒ«åŒæ™‚ã‚·ãƒŸãƒ¥æ™‚
+*		ç‰©ç†ã®åˆ¶é™è§’åº¦è¨­å®šã«é–¢ã—ã¦ã€€è¨­å®šã®å‰ã«ã—ã¦ã„ãŸä»®ã®è¨­å®š(åˆ¶é™ç„¡ã—)ã‚’ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆã—ãŸã‚‰ç›´ã£ãŸ
+*
+*
+* 	åˆ¶é™è§’åº¦ã®å€¤ã®ã‚¢ãƒ³ãƒ‰ã‚¥ãƒªãƒ‰ã‚¥ã‚’ã€€ã™ã‚‹ã‹ã—ãªã„ã‹ï¼Ÿ
+* 		å¿…è¦ã ã£ãŸã®ã§å¯¾å¿œã€€(2023/02/05)
+*
+* ã€€limitedã«å¯¾ã—ã¦ã®å§¿å‹¢åˆæœŸåŒ–ã€å¹³æ»‘åŒ–ã€è£œé–“ã«ã¤ã„ã¦ã‚‚ã€€IKç·¨é›†ã¨åŒæ§˜ã«ã€€çµæœã‚’unlimitedã¸ã‚³ãƒ”ãƒ¼ã™ã‚‹(2023/02/05)
 *
 */
 
@@ -502,59 +502,59 @@ high rpm‚ÌŒø‰Ê‚ÍƒvƒŒƒrƒ…[‚¾‚¯(1.0.0.31‚©‚çƒvƒŒƒrƒ…[‚¾‚¯‚É‚È‚è‚Ü‚µ‚½)
 * 2023/02/08
 * EditMot 1.2.0.10 RC11
 *
-* §ŒÀŠp“x‚ÌƒxƒCƒN‚Ìd—l‚ğ•ÏX
-*	§ŒÀ–³‚µ‚Æ§ŒÀ—L‚Æ‚ª¬İ‚·‚é‚±‚Æ‚É‹Nˆö‚·‚éŒë·‚ğ‰ğŒˆ
-*	§ŒÀŠp“x‚ª‚æ‚èˆÀ’è
-*	•ÒW•”•ª‚¾‚¯‚ÌƒxƒCƒN(LimitedWorld-- > World)‚ªˆÀ’è
+* åˆ¶é™è§’åº¦ã®ãƒ™ã‚¤ã‚¯ã®ä»•æ§˜ã‚’å¤‰æ›´
+*	åˆ¶é™ç„¡ã—ã¨åˆ¶é™æœ‰ã¨ãŒæ··åœ¨ã™ã‚‹ã“ã¨ã«èµ·å› ã™ã‚‹èª¤å·®ã‚’è§£æ±º
+*	åˆ¶é™è§’åº¦ãŒã‚ˆã‚Šå®‰å®š
+*	ç·¨é›†éƒ¨åˆ†ã ã‘ã®ãƒ™ã‚¤ã‚¯(LimitedWorld-- > World)ãŒå®‰å®š
 *
-* L2Wƒ{ƒ^ƒ“’Ç‰Á
-*	LimitEulƒIƒ“‚É‰Ÿ‚·‚Æ@‘SƒtƒŒ[ƒ€§ŒÀŠp“x•tƒ‚[ƒVƒ‡ƒ“‚ğƒIƒŠƒWƒiƒ‹ƒ‚[ƒVƒ‡ƒ“‚ÉƒxƒCƒN
-*	LimitEulƒIƒ“‚ÌIK•ÒWAp¨‰Šú‰»A•½ŠŠ‰»A•âŠÔ‘€ì‚ÉŠÖ‚µ‚Ä‚Í@©“®“I‚É•ÒW•”•ª‚¾‚¯ƒxƒCƒN
+* L2Wãƒœã‚¿ãƒ³è¿½åŠ 
+*	LimitEulã‚ªãƒ³æ™‚ã«æŠ¼ã™ã¨ã€€å…¨ãƒ•ãƒ¬ãƒ¼ãƒ åˆ¶é™è§’åº¦ä»˜ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’ã‚ªãƒªã‚¸ãƒŠãƒ«ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã«ãƒ™ã‚¤ã‚¯
+*	LimitEulã‚ªãƒ³æ™‚ã®IKç·¨é›†ã€å§¿å‹¢åˆæœŸåŒ–ã€å¹³æ»‘åŒ–ã€è£œé–“æ“ä½œã«é–¢ã—ã¦ã¯ã€€è‡ªå‹•çš„ã«ç·¨é›†éƒ¨åˆ†ã ã‘ãƒ™ã‚¤ã‚¯
 *
-* •¨—ƒVƒ~ƒ…•s‹ï‡C³
-*	•¡”ƒ‚ƒfƒ‹‚ğ“Ç‚İ‚ñ‚ÅƒVƒ~ƒ…‚·‚éê‡‚É@‚P‰ñ–Ú‚ÌƒVƒ~ƒ…‚É§ŒÀŠp“x‚ªŒø‚©‚È‚¢‚±‚Æ‚ª‚ ‚Á‚½‚Ì‚ğC³
+* ç‰©ç†ã‚·ãƒŸãƒ¥ä¸å…·åˆä¿®æ­£
+*	è¤‡æ•°ãƒ¢ãƒ‡ãƒ«ã‚’èª­ã¿è¾¼ã‚“ã§ã‚·ãƒŸãƒ¥ã™ã‚‹å ´åˆã«ã€€ï¼‘å›ç›®ã®ã‚·ãƒŸãƒ¥æ™‚ã«åˆ¶é™è§’åº¦ãŒåŠ¹ã‹ãªã„ã“ã¨ãŒã‚ã£ãŸã®ã‚’ä¿®æ­£
 *
-* IK‘€ì‚‘¬‰»
-*	§ŒÀŠp“x‚ÌŒvZ‚ÉŒë·‚ª‚ ‚Á‚½‚Æ‚«‚Ì‘Îô‚ª–³‚­‚È‚è‚‘¬‰»
+* IKæ“ä½œé«˜é€ŸåŒ–
+*	åˆ¶é™è§’åº¦ã®è¨ˆç®—ã«èª¤å·®ãŒã‚ã£ãŸã¨ãã®å¯¾ç­–ãŒç„¡ããªã‚Šé«˜é€ŸåŒ–
 *
-* ƒIƒCƒ‰[ŠpŒvZC³
-* @—á‚¦‚Î
-* @LimitEulƒIƒt‚Å‚O“x‚©‚ç‚W‚O‚O“x‚Ü‚Å‰ñ“]‚µ@LimitEulƒIƒ“‚Å‚O“x‚©‚ç‚S‚T‚O“x(‚P‰ñ“]Œã­‚µ‰ñ“]‚µ‚½‚Æ‚±‚ë)‚Ü‚Å‚É§ŒÀ‚·‚é‚±‚Æ‚à‰Â”\‚É
-* @(ƒeƒXƒgƒWƒ‡ƒCƒ“ƒg‚Ì‰ñ“]‚ğp¨‰Šú‰»‚Å‰Šú‰»‚µ‚Ä‚©‚çƒeƒXƒg‚µ‚Ü‚µ‚½)
+* ã‚ªã‚¤ãƒ©ãƒ¼è§’è¨ˆç®—ä¿®æ­£
+* ã€€ä¾‹ãˆã°
+* ã€€LimitEulã‚ªãƒ•ã§ï¼åº¦ã‹ã‚‰ï¼˜ï¼ï¼åº¦ã¾ã§å›è»¢ã—ã€€LimitEulã‚ªãƒ³ã§ï¼åº¦ã‹ã‚‰ï¼”ï¼•ï¼åº¦(ï¼‘å›è»¢å¾Œå°‘ã—å›è»¢ã—ãŸã¨ã“ã‚)ã¾ã§ã«åˆ¶é™ã™ã‚‹ã“ã¨ã‚‚å¯èƒ½ã«
+* ã€€(ãƒ†ã‚¹ãƒˆã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®å›è»¢ã‚’å§¿å‹¢åˆæœŸåŒ–ã§åˆæœŸåŒ–ã—ã¦ã‹ã‚‰ãƒ†ã‚¹ãƒˆã—ã¾ã—ãŸ)
 *
-* 1000fps‚Å•¨—ƒVƒ~ƒ…‚ğ‚µ‚½‚ç@ƒVƒ~ƒ…ŠJn‚É—‚ê‚é‚Ì‚ğC³
-* 	ƒƒ“ƒOƒ^ƒCƒ€ƒ‰ƒCƒ“‚ğxƒ{ƒ^ƒ“‚Å•Â‚¶‚é‚Æ@•\¦‚ª‚·‚²‚­‘¬‚­‚È‚è‚Ü‚·
-* 	1000fpsˆÈão‚½‚Ì‚Å‚·‚ª—‚ê‚Ü‚µ‚½
-* 	‰Šú‰»‰ñ”‚ğfpsˆË‘¶‚É‚·‚é‚±‚Æ‚Å‰ğŒˆ
+* 1000fpsã§ç‰©ç†ã‚·ãƒŸãƒ¥ã‚’ã—ãŸã‚‰ã€€ã‚·ãƒŸãƒ¥é–‹å§‹æ™‚ã«ä¹±ã‚Œã‚‹ã®ã‚’ä¿®æ­£
+* 	ãƒ­ãƒ³ã‚°ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã‚’xãƒœã‚¿ãƒ³ã§é–‰ã˜ã‚‹ã¨ã€€è¡¨ç¤ºãŒã™ã”ãé€Ÿããªã‚Šã¾ã™
+* 	1000fpsä»¥ä¸Šå‡ºãŸã®ã§ã™ãŒä¹±ã‚Œã¾ã—ãŸ
+* 	åˆæœŸåŒ–å›æ•°ã‚’fpsä¾å­˜ã«ã™ã‚‹ã“ã¨ã§è§£æ±º
 *
-* ‘€ì‘ÎÛƒ{[ƒ“(target bone)ƒEƒCƒ“ƒhƒE‚Ì•‚ğL‚­
-* 	ToolWindow‚Ì‘€ì‘ÎÛƒ{[ƒ“ƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½‚Æ‚«‚ÌƒEƒCƒ“ƒhƒE‚Ì•‚ğ’²®
+* æ“ä½œå¯¾è±¡ãƒœãƒ¼ãƒ³(target bone)ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã®å¹…ã‚’åºƒã
+* 	ToolWindowã®æ“ä½œå¯¾è±¡ãƒœãƒ¼ãƒ³ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ãŸã¨ãã®ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã®å¹…ã‚’èª¿æ•´
 *
-* TroubleShootingƒhƒLƒ…ƒƒ“ƒg’Ç‰Á
+* TroubleShootingãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒˆè¿½åŠ 
 * 	Documents/TroubleShooting/What_is_L2WButton.docx
 * 	Documents/TroubleShooting/BecomeJaggedEulerGraph_OnIK.docx
 *	Documents/Troubleshooting/ACaseThatTranslationOfResultOfRetargetDontMove.docx
-* @Documents/Troubleshooting/ACaseThatPhysicsHairTooFluffy.docx
+* ã€€Documents/Troubleshooting/ACaseThatPhysicsHairTooFluffy.docx
 *
-* ƒŠƒtƒ@ƒNƒ^ƒŠƒ“ƒO (2023/02/07)
-* @ƒOƒ[ƒoƒ‹•Ï”‚ÌƒIƒ“ƒIƒt‚Å‹²‚ñ‚Å‚Ì‹@”\Ø‚è‘Ö‚¦‚ğ‚â‚ß‚Ä@ˆø”‚Æ‚µ‚Ä“n‚·‚±‚Æ‚É
-* @ƒ^ƒCƒ~ƒ“ƒOˆË‘¶(•À—ñ‰»‚à‚ ‚è“¾‚é)‚Ìöİ“I•s‹ï‡‚ğ‰ğÁ
+* ãƒªãƒ•ã‚¡ã‚¯ã‚¿ãƒªãƒ³ã‚° (2023/02/07)
+* ã€€ã‚°ãƒ­ãƒ¼ãƒãƒ«å¤‰æ•°ã®ã‚ªãƒ³ã‚ªãƒ•ã§æŒŸã‚“ã§ã®æ©Ÿèƒ½åˆ‡ã‚Šæ›¿ãˆã‚’ã‚„ã‚ã¦ã€€å¼•æ•°ã¨ã—ã¦æ¸¡ã™ã“ã¨ã«
+* ã€€ã‚¿ã‚¤ãƒŸãƒ³ã‚°ä¾å­˜(ä¸¦åˆ—åŒ–ã‚‚ã‚ã‚Šå¾—ã‚‹)ã®æ½œåœ¨çš„ä¸å…·åˆã‚’è§£æ¶ˆ
 *
-* p¨‰Šú‰»ƒ{ƒ^ƒ“C³(2023/02/08)
-* @ˆÚ“®, ƒXƒP[ƒ‹‚Ì‰Šú‰»‚ÌÛ‚É‚Í@‘€ì‘ÎÛƒWƒ‡ƒCƒ“ƒg‚Æ‚µ‚Ä‘I‘ğ‚µ‚Ä‚¢‚éƒWƒ‡ƒCƒ“ƒg‚»‚Ì‚à‚Ì‚Éˆ—
-* @‰ñ“]‚Ì‰Šú‰»‚ÌÛ‚É‚Í@‘I‘ğ‚µ‚Ä‚¢‚éƒWƒ‡ƒCƒ“ƒg‚Ì‚P‚Âe‚ÌƒWƒ‡ƒCƒ“ƒg‚ğˆ—
+* å§¿å‹¢åˆæœŸåŒ–ãƒœã‚¿ãƒ³ä¿®æ­£(2023/02/08)
+* ã€€ç§»å‹•, ã‚¹ã‚±ãƒ¼ãƒ«ã®åˆæœŸåŒ–ã®éš›ã«ã¯ã€€æ“ä½œå¯¾è±¡ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã¨ã—ã¦é¸æŠã—ã¦ã„ã‚‹ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆãã®ã‚‚ã®ã«å‡¦ç†
+* ã€€å›è»¢ã®åˆæœŸåŒ–ã®éš›ã«ã¯ã€€é¸æŠã—ã¦ã„ã‚‹ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®ï¼‘ã¤è¦ªã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã‚’å‡¦ç†
 *
-* ƒ‚[ƒVƒ‡ƒ“‚ğŠÜ‚Ü‚È‚¢fbx‚ÉŠÖ‚·‚éC³
-* @ƒ‚[ƒVƒ‡ƒ“‚ğŠÜ‚Ü‚È‚¢fbx‚É@ƒ‚[ƒVƒ‡ƒ“‚ğƒŠƒ^[ƒQƒbƒg‚µ‚½‚Æ‚«‚É@“®‚«‚ª‚¨‚©‚µ‚­‚È‚é•s‹ï‡C³
-* 	ˆê‰‘Î‰‚µ‚Ü‚µ‚½‚ª@ƒ‚[ƒVƒ‡ƒ“‚ğŠÜ‚Ü‚È‚¢fbx‚Í@ˆê“xƒvƒƒWƒFƒNƒg•Û‘¶‚µ‚Ä@“Ç‚İ‚ñ‚Å‚©‚çg‚¤‚±‚Æ‚ğ„§
+* ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å«ã¾ãªã„fbxã«é–¢ã™ã‚‹ä¿®æ­£
+* ã€€ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å«ã¾ãªã„fbxã«ã€€ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆã—ãŸã¨ãã«ã€€å‹•ããŒãŠã‹ã—ããªã‚‹ä¸å…·åˆä¿®æ­£
+* 	ä¸€å¿œå¯¾å¿œã—ã¾ã—ãŸãŒã€€ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å«ã¾ãªã„fbxã¯ã€€ä¸€åº¦ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆä¿å­˜ã—ã¦ã€€èª­ã¿è¾¼ã‚“ã§ã‹ã‚‰ä½¿ã†ã“ã¨ã‚’æ¨å¥¨
 *
-* ƒTƒ“ƒvƒ‹XV@
+* ã‚µãƒ³ãƒ—ãƒ«æ›´æ–°ã€€
 *	Test/0_VRoid_Winter_B3
 *
-* YouTubeƒ`ƒƒƒ“ƒlƒ‹
+* YouTubeãƒãƒ£ãƒ³ãƒãƒ«
 *	https://www.youtube.com/@ochakkolab
 *
-* ‚¨‚¿‚á‚Á‚±LAB
+* ãŠã¡ã‚ƒã£ã“LAB
 *	https://ochakkolab.jp/
 *
 *
@@ -563,211 +563,221 @@ high rpm‚ÌŒø‰Ê‚ÍƒvƒŒƒrƒ…[‚¾‚¯(1.0.0.31‚©‚çƒvƒŒƒrƒ…[‚¾‚¯‚É‚È‚è‚Ü‚µ‚½)
 
 /*
 * 2023/02/14
-* EditMot 1.2.0.11‚ÖŒü‚¯‚Ä
+* EditMot 1.2.0.11ã¸å‘ã‘ã¦
 *
-* ƒ‚[ƒVƒ‡ƒ“‚ğ‚½‚È‚¢fbx‘Î‰
-* ‚P‰ñ–Ú‚Ì“Ç‚İ‚İŒã@‚»‚Ì‚Ü‚Üì‹Æ‚ğ‘±‚¯‚Ä‚à@OK‚É‚È‚Á‚½
+* ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’æŒãŸãªã„fbxå¯¾å¿œ
+* ï¼‘å›ç›®ã®èª­ã¿è¾¼ã¿å¾Œã€€ãã®ã¾ã¾ä½œæ¥­ã‚’ç¶šã‘ã¦ã‚‚ã€€OKã«ãªã£ãŸ
 *
-* CreateIndexedMotionPoint‚ª@‹@”\‚µ‚È‚­‚È‚Á‚Ä‚¢‚½H‚Ì‚ğC³
-* •`‰æ‘¬“x‚Ìƒ{ƒgƒ‹ƒlƒbƒN‚Í@ƒƒ“ƒOƒ^ƒCƒ€ƒ‰ƒCƒ“•`‰æ‚È‚Ì‚Å@fps‚Í•Ï‚í‚ç‚È‚¢H
-* ƒ‚[ƒVƒ‡ƒ“Ä¶’†‚É@ƒƒ“ƒOƒ^ƒCƒ€ƒ‰ƒCƒ“ƒEƒCƒ“ƒhƒE‚ğxƒ{ƒ^ƒ“‚Å•Â‚¶‚½ê‡@
-* 1.2.0.10‚Í1000fps’ö‚¾‚Á‚½‚Ì‚ª@2000fps’ö‚É‚È‚Á‚½
-* (‚±‚¿‚ç‚ÌŠÂ‹«‚É‚Ä)
-*
-*
-* ƒŠƒtƒ@ƒNƒ^ƒŠƒ“ƒO
-* @RotBoneQReq, RotAndTraBoneQReq‚ÌÄ‹A‚Ìd•û‚ª•ª‚©‚è‚É‚­‚©‚Á‚½‚Ì‚ÅC³
-* @@directset = true‚Å setchildflag = 1‚ÌŠÖ”‚ª‘«‚è‚Ä‚È‚©‚Á‚½‚Ì‚ªŒ´ˆöHI
-*
-* @@UpdateCurrentWM, UpdateParentWM‚Æ‚¢‚¤‚Q‚Â‚Ìdirectset‚ÅÄ‹Aˆ—‚·‚éŠÖ”V‹K
-*
-* @@directset = true‚Å setchildflag = 1ˆ—•”•ª‚ğã‹L‚Q‚Â‚ÌŠÖ”‚Å’u‚«Š·‚¦
-*   @CBone::SetWorldMat“à‚ÌƒOƒ[ƒoƒ‹•Ï”‚É‚æ‚é‹@”\‘I‘ğ‚ğÄ‚Ñ”p~
-*
-* @CopyWorldToLimitedWorld, CopyLimitedWorldToWorld, PasteMotionPoint‚É‚Â‚¢‚Ä‚àã‹L‚Æ“¯—l‚ÌC³
-*
-* ŒvZ¸“x–â‘è
-* @Çó
-* @@IKƒ}ƒEƒX‚ğ‹t•ûŒü‚És‚Á‚½‚è—ˆ‚½‚èŒƒ‚µ‚­ƒKƒ`ƒƒƒKƒ`ƒƒ‚â‚é‚Æ
-* @@ƒOƒ‰ƒt‚ªƒMƒUƒMƒU‚É‚È‚é‚Î‚©‚è‚Å‚Í‚È‚­@²‚ªƒuƒŒ‚é‚±‚Æ‚Ü‚Å‚ ‚Á‚½
-*
-* @Œ´ˆö
-* @@SSE2‚É‚æ‚éŒvZ‚ÅŒë·‚ª’~Ï‚µ‚½‚½‚ß‚Ì‚æ‚¤‚¾
-* @@—á‚¦‚Î@ƒXƒP[ƒ‹•ÒW‚µ‚Ä‚¢‚È‚¢‚Ì‚É@ƒXƒP[ƒ‹’l1.0‚Å‚ ‚é‚×‚«‚Æ‚±‚ë‚ª@0.96‚É‚È‚Á‚Ä‚¢‚½‚è‚µ‚½
-*
-* @‘Îô
-* @@ChaVecCalc.cpp‚ÌSSE2•”•ª‚ğ@doubleŒvZ‚É–ß‚µ‚½
-* @@•ÒW‚ÌŒJ‚è•Ô‚µ‚É‚æ‚è@ƒXƒP[ƒ‹’l‚ª‹¶‚Á‚Ä‚¢‚­‚Ì‚Å@ƒƒ“ƒ^ƒbƒ`‚Å‰Šú‰»‚·‚éƒ{ƒ^ƒ“‚ğ’Ç‰Á
-* @@ToolWindow-->"ScaleAllInit(ƒMƒUƒMƒU‚µ‚½‚ç‰Ÿ‚·)"ƒ{ƒ^ƒ“
-* @@‚±‚Ìƒ{ƒ^ƒ“‚Í@‘SƒtƒŒ[ƒ€‚ğ‘I‘ğŒã@ToolWindow-->p¨‰Šú‰» init-->AllBones-->InitScale‚ğÀs‚·‚é‚Ì‚Æ“¯‚¶‹@”\‚ğ‚Â
-* @@ƒMƒUƒMƒU‚·‚é‘O‚Ü‚ÅUndo‚ğÀs‚µ‚Ä‚©‚ç@"ScaleAllInit(ƒMƒUƒMƒU‚µ‚½‚ç‰Ÿ‚·)"ƒ{ƒ^ƒ“‚ğ‰Ÿ‚·
-*
-* @‘ÎôŒ‹‰Ê
-* @@ToolWindow-->"ScaleAllInit(ƒMƒUƒMƒU‚µ‚½‚ç‰Ÿ‚·)"ƒ{ƒ^ƒ“ ‚É‚æ‚è@ƒOƒ‰ƒt‚ÌƒMƒUƒMƒU‚ÌŒ‚Í‰ğŒˆ
+* CreateIndexedMotionPointãŒã€€æ©Ÿèƒ½ã—ãªããªã£ã¦ã„ãŸï¼Ÿã®ã‚’ä¿®æ­£
+* æç”»é€Ÿåº¦ã®ãƒœãƒˆãƒ«ãƒãƒƒã‚¯ã¯ã€€ãƒ­ãƒ³ã‚°ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³æç”»ãªã®ã§ã€€fpsã¯å¤‰ã‚ã‚‰ãªã„ï¼Ÿ
+* ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿä¸­ã«ã€€ãƒ­ãƒ³ã‚°ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã‚’xãƒœã‚¿ãƒ³ã§é–‰ã˜ãŸå ´åˆã€€
+* 1.2.0.10ã¯1000fpsç¨‹ã ã£ãŸã®ãŒã€€2000fpsç¨‹ã«ãªã£ãŸ
+* (ã“ã¡ã‚‰ã®ç’°å¢ƒã«ã¦)
 *
 *
-*   ‘Îô‚»‚Ì‚Q
-* @@ƒXƒP[ƒ‹’l‚Ì©“®•Û‹@”\‚Æ‚µ‚Ä@ƒ[ƒJƒ‹SRT‘g‚İ—§‚Ä‚ÌÅŒã‚Ì’iŠK‚Å@ƒXƒP[ƒ‹‚¾‚¯ŒvZ‚µ’¼‚·‚±‚Æ‚É‚µ‚½
-* @@ChaVecCalc.cpp‚Ì@ChaMatrixKeepScale()‚É‚Ä‘Î‰
+* ãƒªãƒ•ã‚¡ã‚¯ã‚¿ãƒªãƒ³ã‚°
+* ã€€RotBoneQReq, RotAndTraBoneQReqã®å†å¸°ã®ä»•æ–¹ãŒåˆ†ã‹ã‚Šã«ãã‹ã£ãŸã®ã§ä¿®æ­£
+* ã€€ã€€directset = trueã§ setchildflag = 1ã®é–¢æ•°ãŒè¶³ã‚Šã¦ãªã‹ã£ãŸã®ãŒåŸå› ï¼Ÿï¼
 *
-* @‘ÎôŒ‹‰Ê‚»‚Ì‚Q
-* @@X‚ÉƒMƒUƒMƒU‚É‚È‚è‚É‚­‚­‚È‚Á‚½(‚ª@Š®‘S‚Å‚Í‚È‚¢‚Ì‚Å@ScaleAllInitƒ{ƒ^ƒ“‚Íc‚µ‚Ä‚¨‚­)
-* @@
+* ã€€ã€€UpdateCurrentWM, UpdateParentWMã¨ã„ã†ï¼’ã¤ã®directsetã§å†å¸°å‡¦ç†ã™ã‚‹é–¢æ•°æ–°è¦
 *
-* ƒMƒUƒOƒ‰ƒt‚ÉŠÖ‚·‚é’²¸
-* @ã‹L‚Ì‘Îô‚ğ‚µ‚½‚Æ‚±‚ë@LimitEulƒIƒt‚Ü‚½‚ÍLimitEul‚ÆWallScrapingIKƒIƒ“‚Ì‚Æ‚«‚É‚Í
-* @IK‚ÌƒIƒCƒ‰[ƒOƒ‰ƒt‚ÍƒMƒUƒMƒU‚µ‚È‚­‚È‚Á‚½
-* @‚µ‚©‚µ@LimitEulƒIƒ“‚ÅWallScrapingIKƒIƒt‚Ì@ƒOƒ‰ƒt‚ª¬‚³‚­”g‘Å‚ÂŒ»Û‚ªo‚é
-* @‚±‚Ì”g‘Å‚¿‚Í@ŒvZŒë·‚Ì’~Ï‚Å‚Í‚È‚­@§ŒÀŠp“x‚¬‚è‚¬‚è‚Å@~‚Ü‚Á‚½‚è“®‚¢‚½‚è‚·‚é‚±‚Æ‚É‚æ‚é‚æ‚¤‚¾
-* @IK‚É‚æ‚è@XYZ‚Ì‚¤‚¿‚Ì‚Ç‚ê‚©‚ª§ŒÀ‚Éˆø‚ÁŠ|‚©‚é‚ÆXYZ‘S‚Ä‚ª“®‚©‚È‚¢‚Ì‚Å@”g‘Å‚Â‚Ì‚Å‚ ‚ë‚¤
-* @‚»‚Ìª‹’‚Æ‚µ‚Ä‚Í@
-* @§ŒÀŠp“x‚ğƒIƒt‚É‚µ‚½‚Æ‚«‚É‚Í@”g‘Å‚½‚È‚¢‚±‚Æ
-* @§ŒÀŠp“x‚Æ•Ç‚·‚èIK‚ğ—¼•ûƒIƒ“‚É‚µ‚½‚É‚à@”g‘Å‚½‚È‚¢‚±‚Æ
-* @‚»‚µ‚Ä@CBone::SetWorldMat()‚É‚¨‚¢‚Ä@
-* @ismoving == 0‚Ì‚Æ‚«‚Ìˆ—‚ğ•Ï‚¦‚é‚±‚Æ‚Å@”g‘Å‚¿‚ÌÇó‚ª•Ï‚í‚é‚©‚ç‚Å‚ ‚é
+* ã€€ã€€directset = trueã§ setchildflag = 1å‡¦ç†éƒ¨åˆ†ã‚’ä¸Šè¨˜ï¼’ã¤ã®é–¢æ•°ã§ç½®ãæ›ãˆ
+*   ã€€CBone::SetWorldMatå†…ã®ã‚°ãƒ­ãƒ¼ãƒãƒ«å¤‰æ•°ã«ã‚ˆã‚‹æ©Ÿèƒ½é¸æŠã‚’å†ã³å»ƒæ­¢
 *
+* ã€€CopyWorldToLimitedWorld, CopyLimitedWorldToWorld, PasteMotionPointã«ã¤ã„ã¦ã‚‚ä¸Šè¨˜ã¨åŒæ§˜ã®ä¿®æ­£
 *
-* LimitEulƒIƒ“‚Å‚ÌIKRotŒã‚É©“®ƒtƒBƒ‹ƒ^[(2023/02/13)
-* 	IKRotI—¹@LimitEulƒIƒ“‚Å@•ÒWƒ{[ƒ“‚ª‚ ‚Á‚½ê‡
-* 	ƒOƒ‰ƒt‚ª”g‘Å‚Â‚±‚Æ‚Í•ª‚©‚Á‚Ä‚¢‚é‚Ì‚Å(XYZ‚Ç‚ê‚©‚P‚Â‚Å‚à§ŒÀ‚ÉŠ|‚©‚é‚Æ@XYZ‘S‚Ä“®‚©‚È‚­‚È‚é‚½‚ß)
-* 	©“®‚Å@ƒtƒBƒ‹ƒ^[‚ğŠ|‚¯‚Ä@ŠŠ‚ç‚©‚É
+* è¨ˆç®—ç²¾åº¦å•é¡Œ
+* ã€€ç—‡çŠ¶
+* ã€€ã€€IKæ™‚ãƒã‚¦ã‚¹ã‚’é€†æ–¹å‘ã«è¡Œã£ãŸã‚Šæ¥ãŸã‚Šæ¿€ã—ãã‚¬ãƒãƒ£ã‚¬ãƒãƒ£ã‚„ã‚‹ã¨
+* ã€€ã€€ã‚°ãƒ©ãƒ•ãŒã‚®ã‚¶ã‚®ã‚¶ã«ãªã‚‹ã°ã‹ã‚Šã§ã¯ãªãã€€è»¸ãŒãƒ–ãƒ¬ã‚‹ã“ã¨ã¾ã§ã‚ã£ãŸ
 *
+* ã€€åŸå› 
+* ã€€ã€€SSE2ã«ã‚ˆã‚‹è¨ˆç®—ã§èª¤å·®ãŒè“„ç©ã—ãŸãŸã‚ã®ã‚ˆã†ã 
+* ã€€ã€€ä¾‹ãˆã°ã€€ã‚¹ã‚±ãƒ¼ãƒ«ç·¨é›†ã—ã¦ã„ãªã„ã®ã«ã€€ã‚¹ã‚±ãƒ¼ãƒ«å€¤1.0ã§ã‚ã‚‹ã¹ãã¨ã“ã‚ãŒã€€0.96ã«ãªã£ã¦ã„ãŸã‚Šã—ãŸ
 *
-* ScaleAllInit(ƒMƒUƒMƒU‚µ‚½‚ç‰Ÿ‚·ƒ{ƒ^ƒ“)‰Ÿ‰º‚É
-*	ŠŠ‚ç‚©‚É‚·‚é‚½‚ß‚ÌƒtƒBƒ‹ƒ^[‚àŒÄ‚Ô‚±‚Æ‚É(2023/02/13)
+* ã€€å¯¾ç­–
+* ã€€ã€€ChaVecCalc.cppã®SSE2éƒ¨åˆ†ã‚’ã€€doubleè¨ˆç®—ã«æˆ»ã—ãŸ
+* ã€€ã€€ç·¨é›†ã®ç¹°ã‚Šè¿”ã—ã«ã‚ˆã‚Šã€€ã‚¹ã‚±ãƒ¼ãƒ«å€¤ãŒç‹‚ã£ã¦ã„ãã®ã§ã€€ãƒ¯ãƒ³ã‚¿ãƒƒãƒã§åˆæœŸåŒ–ã™ã‚‹ãƒœã‚¿ãƒ³ã‚’è¿½åŠ 
+* ã€€ã€€ToolWindow-->"ScaleAllInit(ã‚®ã‚¶ã‚®ã‚¶ã—ãŸã‚‰æŠ¼ã™)"ãƒœã‚¿ãƒ³
+* ã€€ã€€ã“ã®ãƒœã‚¿ãƒ³ã¯ã€€å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’é¸æŠå¾Œã€€ToolWindow-->å§¿å‹¢åˆæœŸåŒ– init-->AllBones-->InitScaleã‚’å®Ÿè¡Œã™ã‚‹ã®ã¨åŒã˜æ©Ÿèƒ½ã‚’æŒã¤
+* ã€€ã€€ã‚®ã‚¶ã‚®ã‚¶ã™ã‚‹å‰ã¾ã§Undoã‚’å®Ÿè¡Œã—ã¦ã‹ã‚‰ã€€"ScaleAllInit(ã‚®ã‚¶ã‚®ã‚¶ã—ãŸã‚‰æŠ¼ã™)"ãƒœã‚¿ãƒ³ã‚’æŠ¼ã™
 *
-*
-* ƒXƒvƒ‰ƒCƒgƒ{ƒ^ƒ“‚Æ‚µ‚ÄSmoothƒ{ƒ^ƒ“‚ğ’Ç‰Á(2023/02/13)
-* @ƒƒ“ƒ{ƒ^ƒ“‚Å@‘I‘ğƒtƒŒ[ƒ€@‘I‘ğƒWƒ‡ƒCƒ“ƒg(IKŠK‘w”‚QˆÈã‚Ìê‡‚Ídeeper)@•½ŠŠ‰»1‰ñ
+* ã€€å¯¾ç­–çµæœ
+* ã€€ã€€ToolWindow-->"ScaleAllInit(ã‚®ã‚¶ã‚®ã‚¶ã—ãŸã‚‰æŠ¼ã™)"ãƒœã‚¿ãƒ³ ã«ã‚ˆã‚Šã€€ã‚°ãƒ©ãƒ•ã®ã‚®ã‚¶ã‚®ã‚¶ã®ä»¶ã¯è§£æ±º
 *
 *
-* •½ŠŠ‰»‹@”\‚ÌƒfƒoƒbƒO(2023/02/13)
-* @Às‚·‚é‚½‚Ñ‚Éƒs[ƒN‚ªŒã‚ë‚É‚¸‚ê‚½‚è@‚¢‚ë‚¢‚ë•Ï‚¾‚Á‚½‚Ì‚ğ’¼‚µ‚Ü‚µ‚½
+*   å¯¾ç­–ãã®ï¼’
+* ã€€ã€€ã‚¹ã‚±ãƒ¼ãƒ«å€¤ã®è‡ªå‹•ä¿æŒæ©Ÿèƒ½ã¨ã—ã¦ã€€ãƒ­ãƒ¼ã‚«ãƒ«SRTçµ„ã¿ç«‹ã¦ã®æœ€å¾Œã®æ®µéšã§ã€€ã‚¹ã‚±ãƒ¼ãƒ«ã ã‘è¨ˆç®—ã—ç›´ã™ã“ã¨ã«ã—ãŸ
+* ã€€ã€€ChaVecCalc.cppã®ã€€ChaMatrixKeepScale()ã«ã¦å¯¾å¿œ
+*
+* ã€€å¯¾ç­–çµæœãã®ï¼’
+* ã€€ã€€æ›´ã«ã‚®ã‚¶ã‚®ã‚¶ã«ãªã‚Šã«ãããªã£ãŸ(ãŒã€€å®Œå…¨ã§ã¯ãªã„ã®ã§ã€€ScaleAllInitãƒœã‚¿ãƒ³ã¯æ®‹ã—ã¦ãŠã)
+* ã€€ã€€
+*
+* ã‚®ã‚¶ã‚°ãƒ©ãƒ•ã«é–¢ã™ã‚‹èª¿æŸ»
+* ã€€ä¸Šè¨˜ã®å¯¾ç­–ã‚’ã—ãŸã¨ã“ã‚ã€€LimitEulã‚ªãƒ•ã¾ãŸã¯LimitEulã¨WallScrapingIKã‚ªãƒ³ã®ã¨ãã«ã¯
+* ã€€IKæ™‚ã®ã‚ªã‚¤ãƒ©ãƒ¼ã‚°ãƒ©ãƒ•ã¯ã‚®ã‚¶ã‚®ã‚¶ã—ãªããªã£ãŸ
+* ã€€ã—ã‹ã—ã€€LimitEulã‚ªãƒ³ã§WallScrapingIKã‚ªãƒ•ã®æ™‚ã€€ã‚°ãƒ©ãƒ•ãŒå°ã•ãæ³¢æ‰“ã¤ç¾è±¡ãŒå‡ºã‚‹
+* ã€€ã“ã®æ³¢æ‰“ã¡ã¯ã€€è¨ˆç®—èª¤å·®ã®è“„ç©ã§ã¯ãªãã€€åˆ¶é™è§’åº¦ãã‚Šãã‚Šã§ã€€æ­¢ã¾ã£ãŸã‚Šå‹•ã„ãŸã‚Šã™ã‚‹ã“ã¨ã«ã‚ˆã‚‹ã‚ˆã†ã 
+* ã€€IKã«ã‚ˆã‚Šã€€XYZã®ã†ã¡ã®ã©ã‚Œã‹ãŒåˆ¶é™ã«å¼•ã£æ›ã‹ã‚‹ã¨XYZå…¨ã¦ãŒå‹•ã‹ãªã„ã®ã§ã€€æ³¢æ‰“ã¤ã®ã§ã‚ã‚ã†
+* ã€€ãã®æ ¹æ‹ ã¨ã—ã¦ã¯ã€€
+* ã€€åˆ¶é™è§’åº¦ã‚’ã‚ªãƒ•ã«ã—ãŸã¨ãã«ã¯ã€€æ³¢æ‰“ãŸãªã„ã“ã¨
+* ã€€åˆ¶é™è§’åº¦ã¨å£ã™ã‚ŠIKã‚’ä¸¡æ–¹ã‚ªãƒ³ã«ã—ãŸæ™‚ã«ã‚‚ã€€æ³¢æ‰“ãŸãªã„ã“ã¨
+* ã€€ãã—ã¦ã€€CBone::SetWorldMat()ã«ãŠã„ã¦ã€€
+* ã€€ismoving == 0ã®ã¨ãã®å‡¦ç†ã‚’å¤‰ãˆã‚‹ã“ã¨ã§ã€€æ³¢æ‰“ã¡ã®ç—‡çŠ¶ãŒå¤‰ã‚ã‚‹ã‹ã‚‰ã§ã‚ã‚‹
+*
+*
+* LimitEulã‚ªãƒ³ã§ã®IKRotå¾Œã«è‡ªå‹•ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼(2023/02/13)
+* 	IKRotçµ‚äº†æ™‚ã€€LimitEulã‚ªãƒ³ã§ã€€ç·¨é›†ãƒœãƒ¼ãƒ³ãŒã‚ã£ãŸå ´åˆ
+* 	ã‚°ãƒ©ãƒ•ãŒæ³¢æ‰“ã¤ã“ã¨ã¯åˆ†ã‹ã£ã¦ã„ã‚‹ã®ã§(XYZã©ã‚Œã‹ï¼‘ã¤ã§ã‚‚åˆ¶é™ã«æ›ã‹ã‚‹ã¨ã€€XYZå…¨ã¦å‹•ã‹ãªããªã‚‹ãŸã‚)
+* 	è‡ªå‹•ã§ã€€ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼ã‚’æ›ã‘ã¦ã€€æ»‘ã‚‰ã‹ã«
+*
+*
+* ScaleAllInit(ã‚®ã‚¶ã‚®ã‚¶ã—ãŸã‚‰æŠ¼ã™ãƒœã‚¿ãƒ³)æŠ¼ä¸‹æ™‚ã«
+*	æ»‘ã‚‰ã‹ã«ã™ã‚‹ãŸã‚ã®ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼ã‚‚å‘¼ã¶ã“ã¨ã«(2023/02/13)
+*
+*
+* ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆãƒœã‚¿ãƒ³ã¨ã—ã¦Smoothãƒœã‚¿ãƒ³ã‚’è¿½åŠ (2023/02/13)
+* ã€€ãƒ¯ãƒ³ãƒœã‚¿ãƒ³ã§ã€€é¸æŠãƒ•ãƒ¬ãƒ¼ãƒ ã€€é¸æŠã‚¸ãƒ§ã‚¤ãƒ³ãƒˆ(IKéšå±¤æ•°ï¼’ä»¥ä¸Šã®å ´åˆã¯deeper)ã€€å¹³æ»‘åŒ–1å›
+*
+*
+* å¹³æ»‘åŒ–æ©Ÿèƒ½ã®ãƒ‡ãƒãƒƒã‚°(2023/02/13)
+* ã€€å®Ÿè¡Œã™ã‚‹ãŸã³ã«ãƒ”ãƒ¼ã‚¯ãŒå¾Œã‚ã«ãšã‚ŒãŸã‚Šã€€ã„ã‚ã„ã‚å¤‰ã ã£ãŸã®ã‚’ç›´ã—ã¾ã—ãŸ
 *
 * 
-* ‚æ‚­g‚¤ƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚ğƒXƒvƒ‰ƒCƒgƒ{ƒ^ƒ“‰»(2023/02/14)
-* @LimitEulƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚ğ@LimitEulƒXƒvƒ‰ƒCƒgƒ{ƒ^ƒ“‚É
-* @ŠÖ˜A‚Å@WallScrapingIKƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚à@ScrapingƒXƒvƒ‰ƒCƒgƒ{ƒ^ƒ“‚É
+* ã‚ˆãä½¿ã†ãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã‚’ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆãƒœã‚¿ãƒ³åŒ–(2023/02/14)
+* ã€€LimitEulãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã‚’ã€€LimitEulã‚¹ãƒ—ãƒ©ã‚¤ãƒˆãƒœã‚¿ãƒ³ã«
+* ã€€é–¢é€£ã§ã€€WallScrapingIKãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã‚‚ã€€Scrapingã‚¹ãƒ—ãƒ©ã‚¤ãƒˆãƒœã‚¿ãƒ³ã«
 * 
 * 
-* ƒŠƒ^[ƒQƒbƒgƒEƒCƒ“ƒhƒE‚Ì‚æ‚­g‚¤ƒ{ƒ^ƒ“‚ğã•û‚É”z’u(2023/02/14)
-* @convertƒ{ƒ^ƒ“, LoadRtgFileƒ{ƒ^ƒ“ƒ{ƒ^ƒ“‚ğ@ã•û‚É”z’u
-* @rtgƒtƒ@ƒCƒ‹g—p‚É‚Í@ˆê”Ô‰º‚Ü‚ÅƒXƒNƒ[ƒ‹‚µ‚È‚­‚Ä‚à‘€ìo—ˆ‚é‚æ‚¤‚É
-* 	SaveRtgFileƒ{ƒ^ƒ“‚Í@İ’è‚µI‚í‚Á‚Ä‚©‚ç‰Ÿ‚·‚Ì‚Å@ˆê”Ô‰º‚Ì‚Ü‚Ü
+* ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã®ã‚ˆãä½¿ã†ãƒœã‚¿ãƒ³ã‚’ä¸Šæ–¹ã«é…ç½®(2023/02/14)
+* ã€€convertãƒœã‚¿ãƒ³, LoadRtgFileãƒœã‚¿ãƒ³ãƒœã‚¿ãƒ³ã‚’ã€€ä¸Šæ–¹ã«é…ç½®
+* ã€€rtgãƒ•ã‚¡ã‚¤ãƒ«ä½¿ç”¨æ™‚ã«ã¯ã€€ä¸€ç•ªä¸‹ã¾ã§ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ã—ãªãã¦ã‚‚æ“ä½œå‡ºæ¥ã‚‹ã‚ˆã†ã«
+* 	SaveRtgFileãƒœã‚¿ãƒ³ã¯ã€€è¨­å®šã—çµ‚ã‚ã£ã¦ã‹ã‚‰æŠ¼ã™ã®ã§ã€€ä¸€ç•ªä¸‹ã®ã¾ã¾
 * 
 * 
-* 4KTVÚ‘±@‹N“®‚É@ƒEƒCƒ“ƒhƒE‘å@‚ğ‘I‚ñ‚¾ê‡(2023/02/14)
-* @ƒ‚ƒfƒ‹ƒpƒlƒ‹‚Æƒ‚[ƒVƒ‡ƒ“ƒpƒlƒ‹‚ğ@ƒtƒŒ[ƒ€‚É‘g‚İ‚ñ‚Å•\¦
+* 4KTVæ¥ç¶šæ™‚ã€€èµ·å‹•æ™‚ã«ã€€ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦å¤§ã€€ã‚’é¸ã‚“ã å ´åˆ(2023/02/14)
+* ã€€ãƒ¢ãƒ‡ãƒ«ãƒ‘ãƒãƒ«ã¨ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‘ãƒãƒ«ã‚’ã€€ãƒ•ãƒ¬ãƒ¼ãƒ ã«çµ„ã¿è¾¼ã‚“ã§è¡¨ç¤º
 * 
 * 
-* fbx‚ÉƒoƒCƒ“ƒhƒ|[ƒY‚ÆƒWƒ‡ƒCƒ“ƒg‚ÌŒü‚«‚ªİ’è‚³‚ê‚Ä‚¢‚Ä‚à‘‚«o‚µ‚ª³í‚É(2023/02/16)
+* fbxã«ãƒã‚¤ãƒ³ãƒ‰ãƒãƒ¼ã‚ºã¨ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®å‘ããŒè¨­å®šã•ã‚Œã¦ã„ã¦ã‚‚æ›¸ãå‡ºã—ãŒæ­£å¸¸ã«(2023/02/16)
 * 
 * 
-* ƒeƒXƒg‚Æ‚µ‚ÄƒvƒƒWƒFƒNƒgİ’è‚Ì•‚“®¬”“_ˆ—‚ğ@precise‚É‚µ‚Ä‚İ‚Ä‚¢‚é‚Æ‚±‚ë
+* ãƒ†ã‚¹ãƒˆã¨ã—ã¦ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆè¨­å®šã®æµ®å‹•å°æ•°ç‚¹å‡¦ç†ã‚’ã€€preciseã«ã—ã¦ã¿ã¦ã„ã‚‹ã¨ã“ã‚
 *
 *
-* ƒTƒ“ƒvƒ‹XV
-* @Test/0_VRoid_Winter_B4
+* ã‚µãƒ³ãƒ—ãƒ«æ›´æ–°
+* ã€€Test/0_VRoid_Winter_B4
 *
 *
-* ƒgƒ‰ƒuƒ‹ƒVƒ…[ƒeƒBƒ“ƒOC³
-* @BecomeJaggedEulerGraph_OnIK.docx‚ğC³
-* @ACaseThatTranslationOfResultOfRetargetDontMove.docx‚ğíœ
+* ãƒˆãƒ©ãƒ–ãƒ«ã‚·ãƒ¥ãƒ¼ãƒ†ã‚£ãƒ³ã‚°ä¿®æ­£
+* ã€€BecomeJaggedEulerGraph_OnIK.docxã‚’ä¿®æ­£
+* ã€€ACaseThatTranslationOfResultOfRetargetDontMove.docxã‚’å‰Šé™¤
 *
 */
 
 /*
-* 2023/02/21
-* EditMot 1.2.0.12‚ÖŒü‚¯‚Ä
+* 2023/02/22
+* EditMot 1.2.0.12 RC1
 * 
-* 	ƒ‚ƒfƒ‹ƒpƒlƒ‹Aƒ‚[ƒVƒ‡ƒ“ƒpƒlƒ‹‚Ì‘I‘ğ‚ªƒVƒ“ƒOƒ‹ƒNƒŠƒbƒN‚Åo—ˆ‚é‚æ‚¤‚É
-* 		4KƒtƒŒ[ƒ€‘g‚İ‚İ‚É@ƒ_ƒuƒ‹ƒNƒŠƒbƒN‚µ‚È‚¢‚Æ‘I‘ğ•ÏX‚Å‚«‚È‚©‚Á‚½•s‹ï‡C³
+* 	ãƒ¢ãƒ‡ãƒ«ãƒ‘ãƒãƒ«ã€ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‘ãƒãƒ«ã®é¸æŠãŒã‚·ãƒ³ã‚°ãƒ«ã‚¯ãƒªãƒƒã‚¯ã§å‡ºæ¥ã‚‹ã‚ˆã†ã«
+* 		4Kãƒ•ãƒ¬ãƒ¼ãƒ çµ„ã¿è¾¼ã¿æ™‚ã«ã€€ãƒ€ãƒ–ãƒ«ã‚¯ãƒªãƒƒã‚¯ã—ãªã„ã¨é¸æŠå¤‰æ›´ã§ããªã‹ã£ãŸä¸å…·åˆä¿®æ­£
 *
-* 	ƒ‚ƒfƒ‹ƒpƒlƒ‹Aƒ‚[ƒVƒ‡ƒ“ƒpƒlƒ‹@ƒXƒNƒ[ƒ‹ƒo[‘Î‰
-* 		‘I‘ğ•ÏX‚µ‚Ä‚à@ƒrƒ…[ˆÊ’u‚ªc‚é‚æ‚¤‚É
+* 	ãƒ¢ãƒ‡ãƒ«ãƒ‘ãƒãƒ«ã€ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‘ãƒãƒ«ã€€ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼å¯¾å¿œ
+* 		é¸æŠå¤‰æ›´ã—ã¦ã‚‚ã€€ãƒ“ãƒ¥ãƒ¼ä½ç½®ãŒæ®‹ã‚‹ã‚ˆã†ã«
 *
-* 	ƒ‚ƒfƒ‹ƒpƒlƒ‹Aƒ‚[ƒVƒ‡ƒ“ƒpƒlƒ‹@•\¦–¼‚ğ‚R‚OšØ‚è‹l‚ß
-* 		‰E‘¤‚Ìƒ{ƒ^ƒ“‚É@•\¦–¼‚ª”í‚ç‚È‚¢‚æ‚¤‚É@30š‚Ü‚Å‚Ì•\¦‚É
+* 	ãƒ¢ãƒ‡ãƒ«ãƒ‘ãƒãƒ«ã€ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‘ãƒãƒ«ã€€è¡¨ç¤ºåã‚’ï¼“ï¼å­—åˆ‡ã‚Šè©°ã‚
+* 		å³å´ã®ãƒœã‚¿ãƒ³ã«ã€€è¡¨ç¤ºåãŒè¢«ã‚‰ãªã„ã‚ˆã†ã«ã€€30å­—ã¾ã§ã®è¡¨ç¤ºã«
 *
-* 	OrgWindow‚Ìì¬“r’†‚É@w’è‚ÆˆÙ‚È‚éêŠ‚ª@”’‚¢lŠp‚Å•\¦‚³‚ê‚é•s‹ï‡‚ÌŒ´ˆö‚í‚©‚é
-* 		OrgWindow‚É@WindowParts‚ğaddParts‚·‚éÛ‚É@addParts“à‚Å@ƒƒ“ƒo‚É‘Î‚µ‚ÄautoResize‚ğ‚æ‚Ô•K—v‚ª‚ ‚Á‚½
+* 	OrgWindowã®ä½œæˆé€”ä¸­ã«ã€€æŒ‡å®šã¨ç•°ãªã‚‹å ´æ‰€ãŒã€€ç™½ã„å››è§’ã§è¡¨ç¤ºã•ã‚Œã‚‹ä¸å…·åˆã®åŸå› ã‚ã‹ã‚‹
+* 		OrgWindowã«ã€€WindowPartsã‚’addPartsã™ã‚‹éš›ã«ã€€addPartså†…ã§ã€€ãƒ¡ãƒ³ãƒã«å¯¾ã—ã¦autoResizeã‚’ã‚ˆã¶å¿…è¦ãŒã‚ã£ãŸ
 *
-* 	ƒƒ“ƒOƒ^ƒCƒ€ƒ‰ƒCƒ“‚ÌƒvƒŒƒCƒ„[ƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚â‚·‚¢‚æ‚¤‚É’†‰›Šñ‚¹
-* 		4Kƒ‚[ƒh‚Ì‚Æ‚«‚É@ƒ{ƒ^ƒ“‚ğ’†‰›Šñ‚¹
+* 	ãƒ­ãƒ³ã‚°ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ã‚„ã™ã„ã‚ˆã†ã«ä¸­å¤®å¯„ã›
+* 		4Kãƒ¢ãƒ¼ãƒ‰ã®ã¨ãã«ã€€ãƒœã‚¿ãƒ³ã‚’ä¸­å¤®å¯„ã›
 *
-* 	ƒvƒŒƒCƒ„[ƒ{ƒ^ƒ“‚ğ@‘å‚«‚­@ƒVƒ“ƒvƒ‹‚É
-* 		ƒOƒ‰ƒt‚ÌƒWƒ‡ƒCƒ“ƒg–¼‚à‘å‚«‚­
-*
-*
-* 	refpos‹@”\ƒuƒ‰ƒbƒVƒ…ƒAƒbƒv
-* 		ƒtƒŒ[ƒ€”ÍˆÍ‚ğ‘I‘ğŒã@‘–‚éŠG‚ÌƒXƒvƒ‰ƒCƒgƒ{ƒ^ƒ“‚ğ‰Ÿ‚·‚Æ@ƒŠƒtƒ@ƒŒƒ“ƒXƒ|[ƒY‹@”\‚ªƒIƒ“
-* 			RefPos And VSyncƒvƒŒ[ƒgƒƒjƒ…[‚Ì@GUIƒXƒ‰ƒCƒ_[‚Å@•`‰æƒtƒŒ[ƒ€ŠÔŠu‚Æ“§–¾“x‚ğw’è
-* 		ƒŠƒtƒ@ƒŒƒ“ƒXƒ|[ƒY‚Ì•`‰æ”‚ğ@ƒXƒ‰ƒCƒ_[w’èƒtƒŒ[ƒ€ŠÔŠu‚Å‘½”•`‰æ@(ˆÈ‘O‚Íw’è‚µ‚½‚P‚Â‚¾‚¯‚¾‚Á‚½)
-* 		ƒŠƒtƒ@ƒŒƒ“ƒXƒ|[ƒY‚Ì“§–¾“x‚ğ@toppos‚©‚ç—£‚ê‚é‚Ù‚Ç”–‚­‚µ‚Ä@“®‚«‚ğŠ´‚¶‚é‚æ‚¤‚É
-* 		toppos‚Ì‘I‘ğƒWƒ‡ƒCƒ“ƒgˆÊ’u‚É@Ô‚¢ŠÛƒ}[ƒN‚ğ•`‰æ@(ƒWƒ‡ƒCƒ“ƒg•`‰æ‚ğƒIƒt‚É‚µ‚Ä‚¢‚Ä‚à)
-* 		‘I‘ğƒWƒ‡ƒCƒ“ƒgˆÊ’u‚Ì‹OÕ‚ª@ƒ‚ƒfƒ‹•`‰æ‚É‚æ‚Á‚Ä‰B‚³‚ê‚È‚¢‚æ‚¤‚É•`‰æ@
+* 	ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒœã‚¿ãƒ³ã‚’ã€€å¤§ããã€€ã‚·ãƒ³ãƒ—ãƒ«ã«
+* 		ã‚°ãƒ©ãƒ•ã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆåã‚‚å¤§ãã
 *
 *
-* 	ˆÊ’uƒRƒ“ƒXƒgƒŒƒCƒ“ƒg‹@”\
-* 		•¨—‚Å‚Í‚È‚­@•’Ê‚É”Šw‚ÆIKƒ^[ƒQƒbƒg‚É‚æ‚é@ˆÊ’uƒRƒ“ƒXƒgƒŒƒCƒ“ƒg
-* 		ƒWƒ‡ƒCƒ“ƒg‰EƒNƒŠƒbƒN‚Åƒƒjƒ…[‚ğo‚µ‚Ä@PosConstraint‚ğƒIƒ“ƒIƒt
-* 		ƒIƒ“‚É‚·‚é‚Æ@ˆÚ“®‰ñ“]‘€ì‚ÌÛ‚É@ƒIƒ“‚É‚µ‚½‚Ì‚»‚ÌƒWƒ‡ƒCƒ“ƒg‚ÌˆÊ’u‚ğ–Ú•W‚É@ˆÊ’uC³
-* 		ˆÊ’uC³‚Ì‚½‚ß‚Ì‰ñ“]‚Í@IKStopFlag‚ªİ’è‚³‚ê‚Ä‚¢‚éƒWƒ‡ƒCƒ“ƒg‚Å~‚Ü‚é
-*
-* 		IKStopFlag‚Í@Œ»İ‚Í@©“®İ’è@UpperLeg‚Ü‚½‚ÍUpperArm‚ª–¼‘O‚ÉŠÜ‚Ü‚ê‚éƒWƒ‡ƒCƒ“ƒg‚ÉƒZƒbƒg‚³‚ê‚é
-*
-*
-* 		ˆÊ’uC³‚Ì‚½‚ß‚Ì‰ñ“]‚ª@‚Ë‚¶‚ê‚È‚¢‚æ‚¤‚É@‰ñ“]‚Ì²‚Í@ƒJƒƒ‰‚ÌŒü‚«‚É‚àˆË‘¶‚·‚é
-* 			ƒJƒƒ‰²‚ÆƒJƒƒ‰²‚É‚’¼‚È²‚ÉŠÖ‚µ‚Ä‰ñ“]‚µ‚ÄIKƒ^[ƒQƒbƒg‚·‚é‚±‚Æ‚É‚æ‚è@‘O‚æ‚è‚àˆÀ’è
+* 	refposæ©Ÿèƒ½ãƒ–ãƒ©ãƒƒã‚·ãƒ¥ã‚¢ãƒƒãƒ—
+* 		ãƒ•ãƒ¬ãƒ¼ãƒ ç¯„å›²ã‚’é¸æŠå¾Œã€€èµ°ã‚‹çµµã®ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆãƒœã‚¿ãƒ³ã‚’æŠ¼ã™ã¨ã€€ãƒªãƒ•ã‚¡ãƒ¬ãƒ³ã‚¹ãƒãƒ¼ã‚ºæ©Ÿèƒ½ãŒã‚ªãƒ³
+* 			RefPos And VSyncãƒ—ãƒ¬ãƒ¼ãƒˆãƒ¡ãƒ‹ãƒ¥ãƒ¼ã®ã€€GUIã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã§ã€€æç”»ãƒ•ãƒ¬ãƒ¼ãƒ é–“éš”ã¨é€æ˜åº¦ã‚’æŒ‡å®š
+* 		ãƒªãƒ•ã‚¡ãƒ¬ãƒ³ã‚¹ãƒãƒ¼ã‚ºã®æç”»æ•°ã‚’ã€€ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼æŒ‡å®šãƒ•ãƒ¬ãƒ¼ãƒ é–“éš”ã§å¤šæ•°æç”»ã€€(ä»¥å‰ã¯æŒ‡å®šã—ãŸï¼‘ã¤ã ã‘ã ã£ãŸ)
+* 		ãƒªãƒ•ã‚¡ãƒ¬ãƒ³ã‚¹ãƒãƒ¼ã‚ºã®é€æ˜åº¦ã‚’ã€€topposã‹ã‚‰é›¢ã‚Œã‚‹ã»ã©è–„ãã—ã¦ã€€å‹•ãã‚’æ„Ÿã˜ã‚‹ã‚ˆã†ã«
+* 		topposã®é¸æŠã‚¸ãƒ§ã‚¤ãƒ³ãƒˆä½ç½®ã«ã€€èµ¤ã„ä¸¸ãƒãƒ¼ã‚¯ã‚’æç”»ã€€(ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆæç”»ã‚’ã‚ªãƒ•ã«ã—ã¦ã„ã¦ã‚‚)
+* 		é¸æŠã‚¸ãƒ§ã‚¤ãƒ³ãƒˆä½ç½®ã®è»Œè·¡ãŒã€€ãƒ¢ãƒ‡ãƒ«æç”»ã«ã‚ˆã£ã¦éš ã•ã‚Œãªã„ã‚ˆã†ã«æç”»ã€€
 *
 *
-* 		Œø‰Ê‚ª•ª‚©‚è‚â‚·‚¢g‚¢•û‚Æ‚µ‚Ä‚Í
-* 			Hand‚ÌPos Constraint‚ğƒIƒ“‚É‚µ‚Ä‚©‚ç@ˆê”Ô‰E‚Ìã‚©‚ç‚Q”Ôª‚ÌƒAƒCƒRƒ“‚ÅˆÚ“®ƒ‚[ƒh‚É‚µ‚Ä@Hips‚ğˆÚ“®
+* 	ä½ç½®ã‚³ãƒ³ã‚¹ãƒˆãƒ¬ã‚¤ãƒ³ãƒˆæ©Ÿèƒ½
+* 		ç‰©ç†ã§ã¯ãªãã€€æ™®é€šã«æ•°å­¦ã¨IKã‚¿ãƒ¼ã‚²ãƒƒãƒˆã«ã‚ˆã‚‹ã€€ä½ç½®ã‚³ãƒ³ã‚¹ãƒˆãƒ¬ã‚¤ãƒ³ãƒˆ
+* 		ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆå³ã‚¯ãƒªãƒƒã‚¯ã§ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‚’å‡ºã—ã¦ã€€PosConstraintã‚’ã‚ªãƒ³ã‚ªãƒ•
+* 		ã‚ªãƒ³ã«ã™ã‚‹ã¨ã€€ç§»å‹•å›è»¢æ“ä½œã®éš›ã«ã€€ã‚ªãƒ³ã«ã—ãŸæ™‚ã®ãã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®ä½ç½®ã‚’ç›®æ¨™ã«ã€€ä½ç½®ä¿®æ­£
+* 		ä½ç½®ä¿®æ­£ã®ãŸã‚ã®å›è»¢ã¯ã€€IKStopFlagãŒè¨­å®šã•ã‚Œã¦ã„ã‚‹ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã§æ­¢ã¾ã‚‹
 *
-* 		Pos ConstraintƒIƒ“ƒIƒt‚ÌƒRƒc
-* 			‘z’è‚Æ‚µ‚Ä‚Í@Hand ‚Æ Foot ‚ÌƒWƒ‡ƒCƒ“ƒg‚Ég‚¤
-* 				•â‘«F
-* 					‚RDƒEƒCƒ“ƒhƒE‚Ìˆê”Ô‰E‚Ì—ñ‚Ìã‚©‚ç‚R‚Â‚Ìƒ{ƒ^ƒ“‚Å@‰ñ“]@ˆÚ“®@ƒXƒP[ƒ‹‚ğØ‚è‘Ö‚¦‚é
-* 					‰ñ“]‚Ì‚É‚Í@ƒIƒCƒ‰[ƒOƒ‰ƒt‚Ìã’i‚ÌƒWƒ‡ƒCƒ“ƒg–¼‚É‚Í@‘I‘ğƒWƒ‡ƒCƒ“ƒg‚Ì‚P‚ÂeƒWƒ‡ƒCƒ“ƒg‚Ì–¼‘O‚ª•\¦‚³‚ê‚é
-* 					ˆÚ“®@ƒXƒP[ƒ‹‚Ì‚É‚Í@‘I‘ğƒWƒ‡ƒCƒ“ƒg‚Ì–¼‘O‚ª•\¦‚³‚ê‚é
+* 		IKStopFlagã¯ã€€ç¾åœ¨ã¯ã€€è‡ªå‹•è¨­å®šã€€UpperLegã¾ãŸã¯UpperArmãŒåå‰ã«å«ã¾ã‚Œã‚‹ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã«ã‚»ãƒƒãƒˆã•ã‚Œã‚‹
 *
-* 					‰ñ“]ƒ‚[ƒh‚Ìê‡‚É@LowerLeg‚ÆLowerArm‚Æ•\¦‚³‚ê‚Ä‚¢‚éƒWƒ‡ƒCƒ“ƒg‚Ì@Pos Constraint‚ª–³“ï‚Èg‚¢•û
-* 					ÀÛ‚Ì‘I‘ğƒWƒ‡ƒCƒ“ƒg‚Æ‚µ‚Ä‚Í@Foot‚ÆHand
 *
-* 			İ’èƒWƒ‡ƒCƒ“ƒgü•Ó‚É‚Í@ƒWƒ‡ƒCƒ“ƒg‚ª–§W‚µ‚Ä‚¢‚é‚±‚Æ‚ª‚ ‚é‚Ì‚Å
-* 			İ’èƒWƒ‡ƒCƒ“ƒg‚Ìe‚ğƒNƒŠƒbƒN‚µ‚Ä‚©‚ç@‰º–îˆóƒL[‚Å@‚»‚Ìq‹Ÿ‚ğ‘I‘ğ‚µ@
-* 			ƒ}ƒEƒX‚ğ@ƒWƒ‡ƒCƒ“ƒg‚É[‚Ä‚Ä@¬‚³‚¢‰©F‚¢lŠp‚ªŒõ‚Á‚½‚Æ‚«‚É@‰EƒNƒŠƒbƒN‚·‚é‚ÆŠÔˆá‚¢‚ª­‚È‚¢
+* 		ä½ç½®ä¿®æ­£ã®ãŸã‚ã®å›è»¢ãŒã€€ã­ã˜ã‚Œãªã„ã‚ˆã†ã«ã€€å›è»¢ã®è»¸ã¯ã€€ã‚«ãƒ¡ãƒ©ã®å‘ãã«ã‚‚ä¾å­˜ã™ã‚‹
+* 			ã‚«ãƒ¡ãƒ©è»¸ã¨ã‚«ãƒ¡ãƒ©è»¸ã«å‚ç›´ãªè»¸ã«é–¢ã—ã¦å›è»¢ã—ã¦IKã‚¿ãƒ¼ã‚²ãƒƒãƒˆã™ã‚‹ã“ã¨ã«ã‚ˆã‚Šã€€å‰ã‚ˆã‚Šã‚‚å®‰å®š
+*
+*
+* 		åŠ¹æœãŒåˆ†ã‹ã‚Šã‚„ã™ã„ä½¿ã„æ–¹ã¨ã—ã¦ã¯
+* 			Handã®Pos Constraintã‚’ã‚ªãƒ³ã«ã—ã¦ã‹ã‚‰ã€€ä¸€ç•ªå³ã®ä¸Šã‹ã‚‰ï¼’ç•ªæ ¹ã®ã‚¢ã‚¤ã‚³ãƒ³ã§ç§»å‹•ãƒ¢ãƒ¼ãƒ‰ã«ã—ã¦ã€€Hipsã‚’ç§»å‹•
+*
+* 		Pos Constraintã‚ªãƒ³ã‚ªãƒ•ã®ã‚³ãƒ„
+* 			æƒ³å®šã¨ã—ã¦ã¯ã€€Hand ã¨ Foot ã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã«ä½¿ã†
+* 				è£œè¶³ï¼š
+* 					ï¼“Dã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã®ä¸€ç•ªå³ã®åˆ—ã®ä¸Šã‹ã‚‰ï¼“ã¤ã®ãƒœã‚¿ãƒ³ã§ã€€å›è»¢ã€€ç§»å‹•ã€€ã‚¹ã‚±ãƒ¼ãƒ«ã‚’åˆ‡ã‚Šæ›¿ãˆã‚‹
+* 					å›è»¢ã®æ™‚ã«ã¯ã€€ã‚ªã‚¤ãƒ©ãƒ¼ã‚°ãƒ©ãƒ•ã®ä¸Šæ®µã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆåã«ã¯ã€€é¸æŠã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®ï¼‘ã¤è¦ªã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®åå‰ãŒè¡¨ç¤ºã•ã‚Œã‚‹
+* 					ç§»å‹•ã€€ã‚¹ã‚±ãƒ¼ãƒ«ã®æ™‚ã«ã¯ã€€é¸æŠã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®åå‰ãŒè¡¨ç¤ºã•ã‚Œã‚‹
+*
+* 					å›è»¢ãƒ¢ãƒ¼ãƒ‰ã®å ´åˆã«ã€€LowerLegã¨LowerArmã¨è¡¨ç¤ºã•ã‚Œã¦ã„ã‚‹ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®ã€€Pos ConstraintãŒç„¡é›£ãªä½¿ã„æ–¹
+* 					å®Ÿéš›ã®é¸æŠã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã¨ã—ã¦ã¯ã€€Footã¨Hand
+*
+* 			è¨­å®šã‚¸ãƒ§ã‚¤ãƒ³ãƒˆå‘¨è¾ºã«ã¯ã€€ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆãŒå¯†é›†ã—ã¦ã„ã‚‹ã“ã¨ãŒã‚ã‚‹ã®ã§
+* 			è¨­å®šã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®è¦ªã‚’ã‚¯ãƒªãƒƒã‚¯ã—ã¦ã‹ã‚‰ã€€ä¸‹çŸ¢å°ã‚­ãƒ¼ã§ã€€ãã®å­ä¾›ã‚’é¸æŠã—ã€€
+* 			ãƒã‚¦ã‚¹ã‚’ã€€ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã«å……ã¦ã¦ã€€å°ã•ã„é»„è‰²ã„å››è§’ãŒå…‰ã£ãŸã¨ãã«ã€€å³ã‚¯ãƒªãƒƒã‚¯ã™ã‚‹ã¨é–“é•ã„ãŒå°‘ãªã„
 *		
-*			ƒcƒŠ[ƒ~ƒ…[‚ÌƒWƒ‡ƒCƒ“ƒg€–Ú‰EƒNƒŠƒbƒN‚Å‚à@ƒIƒ“ƒIƒt—p‚Ìƒƒjƒ…[‚ªo‚é
-*				ƒcƒŠ[ƒrƒ…[‰EƒNƒŠƒbƒN‚Åİ’è‚µ‚½•û‚ª@•ª‚©‚è‚â‚·‚¢
-* 
-*		ƒ}ƒEƒXƒhƒ‰ƒbƒO‚É‚æ‚é‰ñ“]Šp“x‚ªè‡’l–¢–‚Ìê‡C³
-*			‰ñ“]Šp“x‚ªè‡’l–¢–‚Ìê‡‚É@PosConstraint‚ª‹@”\‚µ‚Ä‚¢‚È‚©‚Á‚½‚Ì‚ğC³
-*			è‡’l–¢–‚Ìê‡‚É‚à@IKROTREC‚ğ•Û‘¶‚µ‚Ä@PosConstraint‚¾‚¯Às
-*			ƒuƒ‰ƒV‚ÌƒEƒFƒCƒgƒJ[ƒu‚ª¬‚³‚¢•”•ª‚Å@ƒRƒ“ƒXƒgƒŒƒCƒ“ƒg‚ª‚¨‚©‚µ‚©‚Á‚½‚Ì‚ª’¼‚Á‚½
-* 
-* 
-* 		PosConstraint‚Ìİ’è‚Ì•Û‘¶‚Í@‚Ü‚¾@‚µ‚Ä‚¢‚È‚¢
+*			############################################################################
+*			ãƒ„ãƒªãƒ¼ãƒ“ãƒ¥ãƒ¼ã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆé …ç›®å³ã‚¯ãƒªãƒƒã‚¯ã§ã‚‚ã€€ã‚ªãƒ³ã‚ªãƒ•ç”¨ã®ãƒ¡ãƒ‹ãƒ¥ãƒ¼ãŒå‡ºã‚‹
+*				ãƒ„ãƒªãƒ¼ãƒ“ãƒ¥ãƒ¼å³ã‚¯ãƒªãƒƒã‚¯ã§è¨­å®šã—ãŸæ–¹ãŒã€€ã©ã“ã«è¨­å®šã™ã‚‹ã®ã‹ãŒã€€åˆ†ã‹ã‚Šã‚„ã™ã„
+*			############################################################################
 *
 * 
-*	¶ƒyƒCƒ“‚ÌƒcƒŠ[ƒrƒ…[ƒAƒbƒvƒf[ƒg
-*	@ƒcƒŠ[ƒrƒ…[‚Ì–¼‘O‚Ì‰E‚É@
-* 		IKStopFlag‚Æ‚µ‚ÄUNICODE‚Ìi“ü‹Ö~ƒ}[ƒN
-* 		ConstraintFlag‚Æ‚µ‚ÄUNICODE‚Ìˆê’â~ƒ}[ƒN‚ğ•\¦
-*		ƒEƒCƒ“ƒhƒE‘åƒ‚[ƒh‚Ì‚Æ‚«‚Ì@ƒcƒŠ[ƒrƒ…[‚Ì‘å‚«‚³‚ğ‘å‚«‚­@ƒtƒHƒ“ƒg‚à‘å‚«‚­
+*		ãƒã‚¦ã‚¹ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹å›è»¢è§’åº¦ãŒé–¾å€¤æœªæº€ã®å ´åˆä¿®æ­£
+*			å›è»¢è§’åº¦ãŒé–¾å€¤æœªæº€ã®å ´åˆã«ã€€PosConstraintãŒæ©Ÿèƒ½ã—ã¦ã„ãªã‹ã£ãŸã®ã‚’ä¿®æ­£
+*			é–¾å€¤æœªæº€ã®å ´åˆã«ã‚‚ã€€IKROTRECã‚’ä¿å­˜ã—ã¦ã€€PosConstraintã ã‘å®Ÿè¡Œ
+*			ãƒ–ãƒ©ã‚·ã®ã‚¦ã‚§ã‚¤ãƒˆã‚«ãƒ¼ãƒ–ãŒå°ã•ã„éƒ¨åˆ†ã§ã€€ã‚³ãƒ³ã‚¹ãƒˆãƒ¬ã‚¤ãƒ³ãƒˆãŒãŠã‹ã—ã‹ã£ãŸã®ãŒç›´ã£ãŸ
+* 
+* 
+* 		PosConstraintã®è¨­å®šã®ä¿å­˜ã¯ã€€ã¾ã ã€€ã—ã¦ã„ãªã„
+*
+* 
+*	IK Stopãƒ•ãƒ©ã‚°ã®ã‚ªãƒ³ã‚ªãƒ•ã«é–¢ã—ã¦ã‚‚ã€€ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆå³ã‚¯ãƒªãƒƒã‚¯ã§è¨­å®šå¯èƒ½ã«
+* 
+* 
+*	å·¦ãƒšã‚¤ãƒ³ã®ãƒ„ãƒªãƒ¼ãƒ“ãƒ¥ãƒ¼ã‚¢ãƒƒãƒ—ãƒ‡ãƒ¼ãƒˆ
+*	ã€€ãƒ„ãƒªãƒ¼ãƒ“ãƒ¥ãƒ¼ã®åå‰ã®å³ã«ã€€
+* 		IKStopFlagã¨ã—ã¦UNICODEã®é€²å…¥ç¦æ­¢ãƒãƒ¼ã‚¯
+* 		ConstraintFlagã¨ã—ã¦UNICODEã®ä¸€æ™‚åœæ­¢ãƒãƒ¼ã‚¯ã‚’è¡¨ç¤º
+*		ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦å¤§ãƒ¢ãƒ¼ãƒ‰ã®ã¨ãã®ã€€ãƒ„ãƒªãƒ¼ãƒ“ãƒ¥ãƒ¼ã®å¤§ãã•ã‚’å¤§ããã€€ãƒ•ã‚©ãƒ³ãƒˆã‚‚å¤§ãã
 * 
 *
-* 	ƒ}ƒEƒX‚É‚æ‚éIK‘€ì‚ÌƒŒƒXƒ|ƒ“ƒX‚ğŒüã
-* 		ƒ}ƒEƒX‘€ì’†‚ÌŠÖ”@*UnderIK, *UnderFK‚Æ ‘I‘ğƒtƒŒ[ƒ€‘S‘Ì‚ÌŒvZ‚ğ‚·‚éŠÖ” *PostIK, *PostFK‚Æ‚É•ª‚¯‚½
-* 		‘€ì’†‚ÌƒŒƒXƒ|ƒ“ƒX‘å•Œüã@‚½‚¾‚µ@‘€ìŒã‚ÌŒãˆ—’†‚Í@ƒEƒFƒCƒgƒJ[ƒ\ƒ‹@
-*		ƒ}ƒEƒX‚Ìƒhƒ‰ƒbƒO‘€ì‚ªŒy‚­‚Ä@’·‚¢ŠÔƒhƒ‰ƒbƒO‰Â”\‚¾‚ª
-* 		ƒhƒ‰ƒbƒOŠÔ‚ª’·‚¢‚Ù‚Ç@‚»‚ÌŒã‚ÌƒEƒFƒCƒgƒJ[ƒ\ƒ‹‚à’·‚¢
+* 	ãƒã‚¦ã‚¹ã«ã‚ˆã‚‹IKæ“ä½œã®ãƒ¬ã‚¹ãƒãƒ³ã‚¹ã‚’å‘ä¸Š
+* 		ãƒã‚¦ã‚¹æ“ä½œä¸­ã®é–¢æ•°ã€€*UnderIK, *UnderFKã¨ é¸æŠãƒ•ãƒ¬ãƒ¼ãƒ å…¨ä½“ã®è¨ˆç®—ã‚’ã™ã‚‹é–¢æ•° *PostIK, *PostFKã¨ã«åˆ†ã‘ãŸ
+* 		æ“ä½œä¸­ã®ãƒ¬ã‚¹ãƒãƒ³ã‚¹å¤§å¹…å‘ä¸Šã€€ãŸã ã—ã€€æ“ä½œå¾Œã®å¾Œå‡¦ç†ä¸­ã¯ã€€ã‚¦ã‚§ã‚¤ãƒˆã‚«ãƒ¼ã‚½ãƒ«ã€€
+*		ãƒã‚¦ã‚¹ã®ãƒ‰ãƒ©ãƒƒã‚°æ“ä½œãŒè»½ãã¦ã€€é•·ã„æ™‚é–“ãƒ‰ãƒ©ãƒƒã‚°å¯èƒ½ã ãŒ
+* 		ãƒ‰ãƒ©ãƒƒã‚°æ™‚é–“ãŒé•·ã„ã»ã©ã€€ãã®å¾Œã®ã‚¦ã‚§ã‚¤ãƒˆã‚«ãƒ¼ã‚½ãƒ«ã‚‚é•·ã„
 * 
 * 
-*	fpsƒRƒ“ƒ{ƒ{ƒbƒNƒX’Ç‰Á
-*		VSyncRefPosƒvƒŒ[ƒgƒƒjƒ…[‚ÌVSyncƒ`ƒFƒbƒNƒ{ƒbƒNƒX”p~
-*		DispAndLimitsƒvƒŒ[ƒgƒƒjƒ…[‚Ìˆê”Ôã‚É@fpsƒRƒ“ƒ{ƒ{ƒbƒNƒX’Ç‰Á
-*		ƒhƒƒbƒvƒ_ƒEƒ“‚©‚ç@max500fps, 100fps, 60fps, 30fps, 15fps‚ğ‘I‚Ô‚æ‚¤‚É
+*	fpsã‚³ãƒ³ãƒœãƒœãƒƒã‚¯ã‚¹è¿½åŠ 
+*		VSyncRefPosãƒ—ãƒ¬ãƒ¼ãƒˆãƒ¡ãƒ‹ãƒ¥ãƒ¼ã®VSyncãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹å»ƒæ­¢
+*		DispAndLimitsãƒ—ãƒ¬ãƒ¼ãƒˆãƒ¡ãƒ‹ãƒ¥ãƒ¼ã®ä¸€ç•ªä¸Šã«ã€€fpsã‚³ãƒ³ãƒœãƒœãƒƒã‚¯ã‚¹è¿½åŠ 
+*		ãƒ‰ãƒ­ãƒƒãƒ—ãƒ€ã‚¦ãƒ³ã‹ã‚‰ã€€max500fps, 100fps, 60fps, 30fps, 15fpsã‚’é¸ã¶ã‚ˆã†ã«
+* 
+* 
+*	ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒœã‚¿ãƒ³ã‚’æ›´ã«å¾®å¦™ã«ä¸­å¤®å¯„ã›
+*		å‡ºæ¥ã‚‹ã ã‘æŠ¼ã—ã‚„ã™ã
 * 
 * 
 */
@@ -796,7 +806,7 @@ high rpm‚ÌŒø‰Ê‚ÍƒvƒŒƒrƒ…[‚¾‚¯(1.0.0.31‚©‚çƒvƒŒƒrƒ…[‚¾‚¯‚É‚È‚è‚Ü‚µ‚½)
 #include <mqoobject.h>
 
 //#include <OrgWindow.h>
-//InfoWindow‚ÅOrgWindow‚ğinclude‚µ‚Ä‚¢‚é
+//InfoWindowã§OrgWindowã‚’includeã—ã¦ã„ã‚‹
 #include <InfoWindow.h>
 
 #define DBGH
@@ -887,7 +897,7 @@ high rpm‚ÌŒø‰Ê‚ÍƒvƒŒƒrƒ…[‚¾‚¯(1.0.0.31‚©‚çƒvƒŒƒrƒ…[‚¾‚¯‚É‚È‚è‚Ü‚µ‚½)
 #include <Windows.h>
 
 
-//gdi‚Ì’†‚Åbyte‚Æ‚¢‚¤std::byte‚Æ”í‚é–¼‘O‚ğg‚¤‚Ì‚Åusing namespace std‚æ‚è‚à‘O‚Åinclude
+//gdiã®ä¸­ã§byteã¨ã„ã†std::byteã¨è¢«ã‚‹åå‰ã‚’ä½¿ã†ã®ã§using namespace stdã‚ˆã‚Šã‚‚å‰ã§include
 #include <gdiplus.h>
 
 
@@ -1070,7 +1080,7 @@ float g_initcusak = 70.0f;
 float g_l_dmp = 0.50f;
 float g_a_dmp = 0.50f;
 
-int g_previewFlag = 0;			// ƒvƒŒƒrƒ…[ƒtƒ‰ƒO
+int g_previewFlag = 0;			// ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼ãƒ•ãƒ©ã‚°
 
 int g_applyendflag = 0;
 int g_slerpoffflag = 0;
@@ -1233,7 +1243,7 @@ static POINT s_restorecursorpos;
 static int s_currentctrlid = -1;
 static HWND s_currentctrlhwnd = 0;
 //#define SUBMENUNUM	10
-//static int g_currentsubmenuid = 0;//global‚Ö
+//static int g_currentsubmenuid = 0;//globalã¸
 static int s_currentsubmenuitemid = 0;
 static HWND s_ofhwnd = 0;
 static HWND s_messageboxhwnd = 0;
@@ -1244,14 +1254,14 @@ static HWND s_getfilenametreeview = 0;
 static int s_getsym_retmode = 0;
 
 
-static int s_wmlbuttonup = 0;//ƒQ[ƒ€ƒpƒbƒh—pƒtƒ‰ƒO
-static bool s_utBrushRepeatsFlag = false;//UTDialog‚ÌBrushRepeatsƒXƒ‰ƒCƒ_[’l•ÏX
-static bool s_utApplyRateFlag = false;//UTDialog‚ÌApplyRateƒXƒ‰ƒCƒ_[’l•ÏX
-static bool s_BrushMirrorUCheckBoxFlag = false;//UTDialog‚Ì
-static bool s_BrushMirrorVCheckBoxFlag = false;//UTDialog‚Ì
-static bool s_IfMirrorVDiv2CheckBoxFlag = false;//UTDialog‚Ì
-static bool s_LimitDegCheckBoxFlag = false;//UTDialog‚Ì
-static bool s_WallScrapingCheckBoxFlag = false;//UTDialog‚Ì
+static int s_wmlbuttonup = 0;//ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰ç”¨ãƒ•ãƒ©ã‚°
+static bool s_utBrushRepeatsFlag = false;//UTDialogã®BrushRepeatsã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼å€¤å¤‰æ›´
+static bool s_utApplyRateFlag = false;//UTDialogã®ApplyRateã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼å€¤å¤‰æ›´
+static bool s_BrushMirrorUCheckBoxFlag = false;//UTDialogã®
+static bool s_BrushMirrorVCheckBoxFlag = false;//UTDialogã®
+static bool s_IfMirrorVDiv2CheckBoxFlag = false;//UTDialogã®
+static bool s_LimitDegCheckBoxFlag = false;//UTDialogã®
+static bool s_WallScrapingCheckBoxFlag = false;//UTDialogã®
 
 typedef struct tag_enumdist
 {
@@ -1356,7 +1366,7 @@ extern void OrgWinGUI::DestroyEulKeys();
 extern void OrgWinGUI::InitKeys();
 extern void OrgWinGUI::DestroyKeys();
 
-extern HANDLE g_hEvent; //è“®ƒŠƒZƒbƒgƒCƒxƒ“ƒg
+extern HANDLE g_hEvent; //æ‰‹å‹•ãƒªã‚»ãƒƒãƒˆã‚¤ãƒ™ãƒ³ãƒˆ
 
 
 
@@ -1422,7 +1432,7 @@ static map<int, int> s_customrigmenuindex;
 
 static int s_forcenewaxis = 0;
 static int s_doneinit = 0;
-//static int s_underselectingframe = 0;//global‚É•ÏX
+//static int s_underselectingframe = 0;//globalã«å¤‰æ›´
 static double s_buttonselectstart = 0.0;
 static double s_buttonselectend = 0.0;
 static int s_buttonselecttothelast = 0;
@@ -1497,7 +1507,7 @@ static double s_time = 0.0;
 //static double s_difftime = 0.0;
 static int s_ikkind = 0;
 
-//PICKRANGE‚ğ‘å‚«‚­‚·‚é‚ÆƒWƒ‡ƒCƒ“ƒg‚Å‚Í‚È‚­‹^—ƒ{[ƒ“ƒhƒ‰ƒbƒO‚Ü‚Å‰Â”\‚É‚È‚é‚ªAƒ}ƒjƒsƒ…ƒŒ[ƒ^‚ÌƒŠƒ“ƒO‚Ìpick‚ª“ï‚µ‚­‚È‚é
+//PICKRANGEã‚’å¤§ããã™ã‚‹ã¨ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã§ã¯ãªãç–‘ä¼¼ãƒœãƒ¼ãƒ³ãƒ‰ãƒ©ãƒƒã‚°ã¾ã§å¯èƒ½ã«ãªã‚‹ãŒã€ãƒãƒ‹ãƒ”ãƒ¥ãƒ¬ãƒ¼ã‚¿ã®ãƒªãƒ³ã‚°ã®pickãŒé›£ã—ããªã‚‹
 #define PICKRANGE	16
 static UIPICKINFO s_pickinfo;
 static vector<TLELEM> s_tlarray;
@@ -1790,7 +1800,7 @@ static OWP_Button* s_rtgfileload = 0;
 static OrgWindow* s_layerWnd = 0;
 static OWP_LayerTable* s_owpLayerTable = 0;
 
-static bool s_closeFlag = false;			// I—¹ƒtƒ‰ƒO
+static bool s_closeFlag = false;			// çµ‚äº†ãƒ•ãƒ©ã‚°
 static bool s_closetoolFlag = false;
 static bool s_closeobjFlag = false;
 static bool s_closemodelFlag = false;
@@ -1804,26 +1814,26 @@ static bool s_GcloseFlag = false;
 static bool s_undoFlag = false;
 static bool s_redoFlag = false;
 static bool s_undoredoFromPlayerButton = false;
-static bool s_copyFlag = false;			// ƒRƒs[ƒtƒ‰ƒO
-static bool s_copyLW2WFlag = false;			//Limited2World ƒxƒCƒNƒtƒ‰ƒO
+static bool s_copyFlag = false;			// ã‚³ãƒ”ãƒ¼ãƒ•ãƒ©ã‚°
+static bool s_copyLW2WFlag = false;			//Limited2World ãƒ™ã‚¤ã‚¯ãƒ•ãƒ©ã‚°
 static bool s_changelimitangleFlag = false;
 static bool s_zeroFrameFlag = false;
 //static bool s_oneFrameFlag = false;
 static bool s_selCopyHisotryFlag = false;
 static bool s_symcopyFlag = false;
 static bool s_undersymcopyFlag = false;
-static bool s_cutFlag = false;			// ƒJƒbƒgƒtƒ‰ƒO
-static bool s_pasteFlag = false;			// ƒy[ƒXƒgƒtƒ‰ƒO
-static bool s_cursorFlag = false;			// ƒJ[ƒ\ƒ‹ˆÚ“®ƒtƒ‰ƒO
-static bool s_selectFlag = false;			// ƒL[‘I‘ğƒtƒ‰ƒO
-static bool s_keyShiftFlag = false;		// ƒL[ˆÚ“®ƒtƒ‰ƒO
-static bool s_deleteFlag = false;		// ƒL[íœƒtƒ‰ƒO
+static bool s_cutFlag = false;			// ã‚«ãƒƒãƒˆãƒ•ãƒ©ã‚°
+static bool s_pasteFlag = false;			// ãƒšãƒ¼ã‚¹ãƒˆãƒ•ãƒ©ã‚°
+static bool s_cursorFlag = false;			// ã‚«ãƒ¼ã‚½ãƒ«ç§»å‹•ãƒ•ãƒ©ã‚°
+static bool s_selectFlag = false;			// ã‚­ãƒ¼é¸æŠãƒ•ãƒ©ã‚°
+static bool s_keyShiftFlag = false;		// ã‚­ãƒ¼ç§»å‹•ãƒ•ãƒ©ã‚°
+static bool s_deleteFlag = false;		// ã‚­ãƒ¼å‰Šé™¤ãƒ•ãƒ©ã‚°
 static bool s_motpropFlag = false;
 static bool s_markFlag = false;
 static bool s_selboneFlag = false;
 static bool s_initmpFlag = false;
 static int  s_filterState = 0;
-static bool s_smoothFlag = false;//s_spsmoothƒ{ƒ^ƒ“—p
+static bool s_smoothFlag = false;//s_spsmoothãƒœã‚¿ãƒ³ç”¨
 static bool s_filternodlg = false;
 static bool s_delmodelFlag = false;
 static bool s_delallmodelFlag = false;
@@ -1842,7 +1852,7 @@ static bool s_btresetFlag = false;
 static bool s_LcloseFlag = false;
 static bool s_LnextkeyFlag = false;
 static bool s_LbefkeyFlag = false;
-static bool s_LcursorFlag = false;			// ƒJ[ƒ\ƒ‹ˆÚ“®ƒtƒ‰ƒO
+static bool s_LcursorFlag = false;			// ã‚«ãƒ¼ã‚½ãƒ«ç§»å‹•ãƒ•ãƒ©ã‚°
 static bool s_LupFlag = false;
 static bool s_LstartFlag = false;
 static bool s_LstopFlag = false;
@@ -1852,7 +1862,7 @@ static bool s_retargetguiFlag = false;
 
 static int s_calclimitedwmState = 0;
 
-static bool s_EcursorFlag = false;			// ƒJ[ƒ\ƒ‹ˆÚ“®ƒtƒ‰ƒO
+static bool s_EcursorFlag = false;			// ã‚«ãƒ¼ã‚½ãƒ«ç§»å‹•ãƒ•ãƒ©ã‚°
 
 
 static bool s_timelineRUpFlag = false;
@@ -1878,15 +1888,15 @@ static bool s_dispconvbone = false;
 
 static bool s_Ldispmw = true;
 
-static double s_keyShiftTime = 0.0;			// ƒL[ˆÚ“®—Ê
-static list<KeyInfo> s_copyKeyInfoList;	// ƒRƒs[‚³‚ê‚½ƒL[î•ñƒŠƒXƒg
+static double s_keyShiftTime = 0.0;			// ã‚­ãƒ¼ç§»å‹•é‡
+static list<KeyInfo> s_copyKeyInfoList;	// ã‚³ãƒ”ãƒ¼ã•ã‚ŒãŸã‚­ãƒ¼æƒ…å ±ãƒªã‚¹ãƒˆ
 
 //static multimap<CBone*, CMotionPoint> s_copymotmap;
 typedef struct tag_cpelem
 {
 	CBone* bone;
 	CMotionPoint mp;
-	//ChaVector3 localscale;//mp‚Ìmat‚ÉŠ|‚¯Z‚µ‚Ä‚¨‚­
+	//ChaVector3 localscale;//mpã®matã«æ›ã‘ç®—ã—ã¦ãŠã
 }CPELEM2;
 static vector<CPELEM2> s_copymotvec;
 static vector<CPELEM2> s_pastemotvec;
@@ -1899,8 +1909,8 @@ static int LoadCPIFile(HISTORYELEM* srcdstelem);
 //static bool LoadTBOFile();
 
 
-static list<KeyInfo> s_deletedKeyInfoList;	// íœ‚³‚ê‚½ƒL[î•ñƒŠƒXƒg
-static list<KeyInfo> s_selectKeyInfoList;	// ƒRƒs[‚³‚ê‚½ƒL[î•ñƒŠƒXƒg
+static list<KeyInfo> s_deletedKeyInfoList;	// å‰Šé™¤ã•ã‚ŒãŸã‚­ãƒ¼æƒ…å ±ãƒªã‚¹ãƒˆ
+static list<KeyInfo> s_selectKeyInfoList;	// ã‚³ãƒ”ãƒ¼ã•ã‚ŒãŸã‚­ãƒ¼æƒ…å ±ãƒªã‚¹ãƒˆ
 
 static CEditRange s_editrange;
 static CEditRange* s_editrangehistory = 0;
@@ -1910,7 +1920,7 @@ static CEditRange s_previewrange;
 
 
 
-//ID_RMENU_0‚ğ‘«‚µ‚Äg‚¤
+//ID_RMENU_0ã‚’è¶³ã—ã¦ä½¿ã†
 #define MENUOFFSET_SETCONVBONEMODEL		(100)
 #define MENUOFFSET_SETCONVBONEBVH		(MENUOFFSET_SETCONVBONEMODEL + 100)
 #define MENUOFFSET_SETCONVBONE			(MENUOFFSET_SETCONVBONEBVH + 100)
@@ -2194,13 +2204,13 @@ std::vector<void*> g_keypool;//allocate KEYPOOLBLKLEN Key at onse and pool
 
 void OnDSUpdate();
 static void OnDSMouseHereApeal();
-static void OnArrowKey();//DSŠÖ”‚ÅƒL[ƒ{[ƒh‚Ì–îˆóƒL[‚É‘Î‰
+static void OnArrowKey();//DSé–¢æ•°ã§ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã®çŸ¢å°ã‚­ãƒ¼ã«å¯¾å¿œ
 
 
 static void CalcTotalBound();
 
 
-//IKRotate—p
+//IKRotateç”¨
 static std::vector<IKROTREC> s_rotrec;
 
 
@@ -2255,6 +2265,7 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define ID_RMENU_KINEMATIC_OFF_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 14)
 
 #define ID_RMENU_IKTARGET (ID_RMENU_PHYSICSCONSTRAINT + 15)
+#define ID_RMENU_IKSTOP (ID_RMENU_PHYSICSCONSTRAINT + 16)
 
 #define IDC_TOGGLEFULLSCREEN    1
 #define IDC_TOGGLEREF           3
@@ -2700,10 +2711,10 @@ static int SetJointPair2ConvBoneWnd();
 static int InitJointPair2ConvBoneWnd();
 
 
-//static int ConvBoneConvert();//--> RetargetMotion()‚É‰ü–¼
+//static int ConvBoneConvert();//--> RetargetMotion()ã«æ”¹å
 static int RetargetMotion();
 
-//MameBake3DLib‚ÌRetarget.h, Retarget.cpp‚ÖˆÚ“®
+//MameBake3DLibã®Retarget.h, Retarget.cppã¸ç§»å‹•
 //static void ConvBoneConvertReq(CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate);
 //static int ConvBoneRotation(int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate);
 
@@ -2818,17 +2829,17 @@ static int FindModelIndex(CModel* srcmodel);
 
 static std::wstring ReplaceString
 (
-	std::wstring String1  // ’u‚«Š·‚¦‘ÎÛ
-	, std::wstring String2  // ŒŸõ‘ÎÛ
-	, std::wstring String3  // ’u‚«Š·‚¦‚é“à—e
+	std::wstring String1  // ç½®ãæ›ãˆå¯¾è±¡
+	, std::wstring String2  // æ¤œç´¢å¯¾è±¡
+	, std::wstring String3  // ç½®ãæ›ãˆã‚‹å†…å®¹
 );
 
 
 std::wstring ReplaceString
 (
-	std::wstring String1  // ’u‚«Š·‚¦‘ÎÛ
-	, std::wstring String2  // ŒŸõ‘ÎÛ
-	, std::wstring String3  // ’u‚«Š·‚¦‚é“à—e
+	std::wstring String1  // ç½®ãæ›ãˆå¯¾è±¡
+	, std::wstring String2  // æ¤œç´¢å¯¾è±¡
+	, std::wstring String3  // ç½®ãæ›ãˆã‚‹å†…å®¹
 )
 {
 	std::wstring::size_type  Pos(String1.find(String2));
@@ -2903,16 +2914,16 @@ int RegistKey()
 				if( dwret == REG_CREATED_NEW_KEY ){
 					lret = RegSetValueExA( s_hkey, "registkey", 0, REG_SZ, (LPBYTE)(dlg.m_regkey), sizeof(char) * 36 );
 					if( lret != ERROR_SUCCESS ){
-						::MessageBoxA( NULL, "ƒGƒ‰[@F@ƒŒƒWƒXƒg‚É¸”s‚µ‚Ü‚µ‚½B", "ƒŒƒWƒXƒgƒGƒ‰[", MB_OK );
+						::MessageBoxA( NULL, "ã‚¨ãƒ©ãƒ¼ã€€ï¼šã€€ãƒ¬ã‚¸ã‚¹ãƒˆã«å¤±æ•—ã—ã¾ã—ãŸã€‚", "ãƒ¬ã‚¸ã‚¹ãƒˆã‚¨ãƒ©ãƒ¼", MB_OK );
 					}
 					RegCloseKey( s_hkey );
-					::MessageBoxA( NULL, "¬Œ÷@F@ƒŒƒWƒXƒg‚É¬Œ÷‚µ‚Ü‚µ‚½B", "ƒŒƒWƒXƒg¬Œ÷", MB_OK );
+					::MessageBoxA( NULL, "æˆåŠŸã€€ï¼šã€€ãƒ¬ã‚¸ã‚¹ãƒˆã«æˆåŠŸã—ã¾ã—ãŸã€‚", "ãƒ¬ã‚¸ã‚¹ãƒˆæˆåŠŸ", MB_OK );
 				}else{
-					::MessageBoxA( NULL, "ƒGƒ‰[@F@ƒŒƒWƒXƒg‚É¸”s‚µ‚Ü‚µ‚½B", "ƒŒƒWƒXƒgƒGƒ‰[", MB_OK );
+					::MessageBoxA( NULL, "ã‚¨ãƒ©ãƒ¼ã€€ï¼šã€€ãƒ¬ã‚¸ã‚¹ãƒˆã«å¤±æ•—ã—ã¾ã—ãŸã€‚", "ãƒ¬ã‚¸ã‚¹ãƒˆã‚¨ãƒ©ãƒ¼", MB_OK );
 				}
 			}
 		}else{
-			::MessageBoxA( NULL, "ƒGƒ‰[@F@•s³‚ÈƒŒƒWƒXƒgƒL[‚Å‚·B", "ƒŒƒWƒXƒgƒGƒ‰[", MB_OK );
+			::MessageBoxA( NULL, "ã‚¨ãƒ©ãƒ¼ã€€ï¼šã€€ä¸æ­£ãªãƒ¬ã‚¸ã‚¹ãƒˆã‚­ãƒ¼ã§ã™ã€‚", "ãƒ¬ã‚¸ã‚¹ãƒˆã‚¨ãƒ©ãƒ¼", MB_OK );
 		}
 	*/
 	return 0;
@@ -2957,7 +2968,7 @@ INT WINAPI wWinMain(
 	_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
 	_In_ LPWSTR lpCmdLine,
-	_In_ int nShowCmd)//SAL•t‚«
+	_In_ int nShowCmd)//SALä»˜ã
 {
 	// Enable run-time memory check for debug builds.
 #if defined(DEBUG) | defined(_DEBUG)
@@ -2995,7 +3006,7 @@ INT WINAPI wWinMain(
 	LoadIniFile();
 
 
-	//s_appcnt‚ÌƒZƒbƒgBCheckResolution()‚æ‚è‚à‘O
+	//s_appcntã®ã‚»ãƒƒãƒˆã€‚CheckResolution()ã‚ˆã‚Šã‚‚å‰
 	s_appcnt = 0;
 	s_launchbyc4 = 0;
 	int    i;
@@ -3004,7 +3015,7 @@ INT WINAPI wWinMain(
 	LPWSTR* lplpszArgs;
 	lplpszArgs = CommandLineToArgvW(GetCommandLine(), &nArgs);
 	for (i = 0; i < nArgs; i++) {
-		//wsprintf(szBuf, TEXT("%d”Ô–Ú‚Ìˆø”"), i + 1);
+		//wsprintf(szBuf, TEXT("%dç•ªç›®ã®å¼•æ•°"), i + 1);
 		//MessageBox(NULL, lplpszArgs[i], szBuf, MB_OK);
 		if (wcscmp(lplpszArgs[i], L"-progno") == 0) {
 			s_launchbyc4 = 1;
@@ -3039,26 +3050,26 @@ INT WINAPI wWinMain(
 	OpenDbgFile(s_appcnt);
 
 
-	//2K TV or 4K TV. Create*Window()‚æ‚è‚à‘O
+	//2K TV or 4K TV. Create*Window()ã‚ˆã‚Šã‚‚å‰
 	int chkresult = CheckResolution();
-	if (chkresult != 0) {//‘å¬‘I‘ğƒ_ƒCƒAƒƒO‚ÅƒLƒƒƒ“ƒZƒ‹ƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½ê‡‚ÍƒAƒvƒŠI—¹
+	if (chkresult != 0) {//å¤§å°é¸æŠãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã§ã‚­ãƒ£ãƒ³ã‚»ãƒ«ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ãŸå ´åˆã¯ã‚¢ãƒ—ãƒªçµ‚äº†
 		return 0;
 	}
 
 	if (g_4kresolution) {
-		s_dispmodel = true;//!!!!!!!!!!!!!!!!! modelpanel‚Ìdispflag
-		s_dispmotion = true;//!!!!!!!!!!!!!!!! motionpanel‚Ìdispflag
+		s_dispmodel = true;//!!!!!!!!!!!!!!!!! modelpanelã®dispflag
+		s_dispmotion = true;//!!!!!!!!!!!!!!!! motionpanelã®dispflag
 	}
 	else {
-		s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanel‚Ìdispflag
-		s_dispmotion = false;//!!!!!!!!!!!!!!!! motionpanel‚Ìdispflag
+		s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanelã®dispflag
+		s_dispmotion = false;//!!!!!!!!!!!!!!!! motionpanelã®dispflag
 	}
 
-	s_copyKeyInfoList.clear();	// ƒRƒs[‚³‚ê‚½ƒL[î•ñƒŠƒXƒg
+	s_copyKeyInfoList.clear();	// ã‚³ãƒ”ãƒ¼ã•ã‚ŒãŸã‚­ãƒ¼æƒ…å ±ãƒªã‚¹ãƒˆ
 	s_copymotvec.clear();
 	s_pastemotvec.clear();
-	s_deletedKeyInfoList.clear();	// íœ‚³‚ê‚½ƒL[î•ñƒŠƒXƒg
-	s_selectKeyInfoList.clear();	// ƒRƒs[‚³‚ê‚½ƒL[î•ñƒŠƒXƒg
+	s_deletedKeyInfoList.clear();	// å‰Šé™¤ã•ã‚ŒãŸã‚­ãƒ¼æƒ…å ±ãƒªã‚¹ãƒˆ
+	s_selectKeyInfoList.clear();	// ã‚³ãƒ”ãƒ¼ã•ã‚ŒãŸã‚­ãƒ¼æƒ…å ±ãƒªã‚¹ãƒˆ
 
 
 	//DXUTSetCallbackDeviceChanging(ModifyDeviceSettings);
@@ -3098,7 +3109,7 @@ INT WINAPI wWinMain(
 	::SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_TIME_CRITICAL);
 
 	//#############################
-	//SetTreadAffinity‚Íƒqƒ“ƒg‚Å‚µ‚©‚È‚¢
+	//SetTreadAffinityã¯ãƒ’ãƒ³ãƒˆã§ã—ã‹ãªã„
 	//#############################
 	//SYSTEM_INFO sys;
 	//::GetSystemInfo(&sys);
@@ -3249,7 +3260,7 @@ INT WINAPI wWinMain(
 	//if (!s_eventhook) {
 	HRESULT hr1 = CoInitialize(NULL);
 	if (FAILED(hr1)) {
-		//‚·‚Å‚É‰Šú‰»Ï‚È‚¾‚¯‚ÅƒGƒ‰[ƒŠƒ^[ƒ“‚·‚é‚Ì‚Å‚»‚Ì‚Ü‚Ü‘±s‚·‚é
+		//ã™ã§ã«åˆæœŸåŒ–æ¸ˆãªã ã‘ã§ã‚¨ãƒ©ãƒ¼ãƒªã‚¿ãƒ¼ãƒ³ã™ã‚‹ã®ã§ãã®ã¾ã¾ç¶šè¡Œã™ã‚‹
 		//_ASSERT(0);
 		//return 1;
 	}
@@ -3318,7 +3329,7 @@ int CheckResolution()
 	g_4kresolution = false;
 
 	/*
-	//Šî€‚Æ‚·‚é‘å‚«‚³@mainwindow‚Ì‘å‚«‚³
+	//åŸºæº–ã¨ã™ã‚‹å¤§ãã•ã€€mainwindowã®å¤§ãã•
 	(1216 + 450) * 2, (950 - MAINMENUAIMBARH) * 2
 	*/
 
@@ -3334,9 +3345,9 @@ int CheckResolution()
 				CSelectLSDlg dlg;
 				int dlgret = (int)dlg.DoModal();
 				if (dlgret != IDOK) {
-					return 1;//ƒLƒƒƒ“ƒZƒ‹ƒ{ƒ^ƒ“‚ÍƒAƒvƒŠI—¹
+					return 1;//ã‚­ãƒ£ãƒ³ã‚»ãƒ«ãƒœã‚¿ãƒ³ã¯ã‚¢ãƒ—ãƒªçµ‚äº†
 				}
-				BOOL selectL = dlg.GetIsLarge();//4K‰Â”\‚Ìê‡‚É‚Í‘å¬‚ğ‘I‘ğ‰Â”\
+				BOOL selectL = dlg.GetIsLarge();//4Kå¯èƒ½ã®å ´åˆã«ã¯å¤§å°ã‚’é¸æŠå¯èƒ½
 				if (selectL == TRUE) {
 					g_4kresolution = true;//!!!!!!!!!!!!!!!!
 
@@ -3503,11 +3514,11 @@ void InitApp()
 	s_fps100index = 0;
 	s_avrgfps = 0.0;
 
-	s_utBrushRepeatsFlag = false;//UTDialog‚ÌBrushRepeatsƒXƒ‰ƒCƒ_[’l•ÏX
-	s_utApplyRateFlag = false;//UTDialog‚ÌApplyRateƒXƒ‰ƒCƒ_[’l•ÏX
-	s_BrushMirrorUCheckBoxFlag = false;//UTDialog‚Ì
-	s_BrushMirrorVCheckBoxFlag = false;//UTDialog‚Ì
-	s_IfMirrorVDiv2CheckBoxFlag = false;//UTDialog‚Ì
+	s_utBrushRepeatsFlag = false;//UTDialogã®BrushRepeatsã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼å€¤å¤‰æ›´
+	s_utApplyRateFlag = false;//UTDialogã®ApplyRateã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼å€¤å¤‰æ›´
+	s_BrushMirrorUCheckBoxFlag = false;//UTDialogã®
+	s_BrushMirrorVCheckBoxFlag = false;//UTDialogã®
+	s_IfMirrorVDiv2CheckBoxFlag = false;//UTDialogã®
 	s_LimitDegCheckBoxFlag = false;
 	s_WallScrapingCheckBoxFlag = false;
 
@@ -3541,7 +3552,7 @@ void InitApp()
 	s_befprogressmodelcnt = 0;
 
 
-	//g_ClearColorIndex = 0;//inifile‚Å“Ç‚İ‚İ
+	//g_ClearColorIndex = 0;//inifileã§èª­ã¿è¾¼ã¿
 	//g_ClearColor[BGCOL_MAX][4] = {
 	//	{0.0f, 0.0f, 0.0f, 1.0f},
 	//	{1.0f, 1.0f, 1.0f, 1.0f},
@@ -3599,8 +3610,8 @@ void InitApp()
 	s_dispmw = true;
 	s_disptool = true;
 	s_dispobj = false;
-	s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanel‚Ìdispflag
-	s_dispmotion = false;//!!!!!!!!!!!!!!!! motionpanel‚Ìdispflag
+	s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanelã®dispflag
+	s_dispmotion = false;//!!!!!!!!!!!!!!!! motionpanelã®dispflag
 	s_dispground = true;
 	s_dispselect = true;
 	//s_displightarrow = true;
@@ -3609,7 +3620,7 @@ void InitApp()
 	s_oprigflag = 0;
 
 	s_tkeyflag = 0;//bone twist
-	s_closeFlag = false;			// I—¹ƒtƒ‰ƒO
+	s_closeFlag = false;			// çµ‚äº†ãƒ•ãƒ©ã‚°
 	s_closetoolFlag = false;
 	s_closeobjFlag = false;
 	s_closemodelFlag = false;
@@ -3623,7 +3634,7 @@ void InitApp()
 	s_undoFlag = false;
 	s_redoFlag = false;
 	s_undoredoFromPlayerButton = false;
-	s_copyFlag = false;			// ƒRƒs[ƒtƒ‰ƒO
+	s_copyFlag = false;			// ã‚³ãƒ”ãƒ¼ãƒ•ãƒ©ã‚°
 	s_copyLW2WFlag = false;
 	s_changelimitangleFlag = false;
 	s_zeroFrameFlag = false;
@@ -3631,12 +3642,12 @@ void InitApp()
 	s_selCopyHisotryFlag = false;
 	s_symcopyFlag = false;
 	s_undersymcopyFlag = false;
-	s_cutFlag = false;			// ƒJƒbƒgƒtƒ‰ƒO
-	s_pasteFlag = false;			// ƒy[ƒXƒgƒtƒ‰ƒO
-	s_cursorFlag = false;			// ƒJ[ƒ\ƒ‹ˆÚ“®ƒtƒ‰ƒO
-	s_selectFlag = false;			// ƒL[‘I‘ğƒtƒ‰ƒO
-	s_keyShiftFlag = false;		// ƒL[ˆÚ“®ƒtƒ‰ƒO
-	s_deleteFlag = false;		// ƒL[íœƒtƒ‰ƒO
+	s_cutFlag = false;			// ã‚«ãƒƒãƒˆãƒ•ãƒ©ã‚°
+	s_pasteFlag = false;			// ãƒšãƒ¼ã‚¹ãƒˆãƒ•ãƒ©ã‚°
+	s_cursorFlag = false;			// ã‚«ãƒ¼ã‚½ãƒ«ç§»å‹•ãƒ•ãƒ©ã‚°
+	s_selectFlag = false;			// ã‚­ãƒ¼é¸æŠãƒ•ãƒ©ã‚°
+	s_keyShiftFlag = false;		// ã‚­ãƒ¼ç§»å‹•ãƒ•ãƒ©ã‚°
+	s_deleteFlag = false;		// ã‚­ãƒ¼å‰Šé™¤ãƒ•ãƒ©ã‚°
 	s_motpropFlag = false;
 	s_markFlag = false;
 	s_selboneFlag = false;
@@ -3652,12 +3663,12 @@ void InitApp()
 	s_LcloseFlag = false;
 	s_LnextkeyFlag = false;
 	s_LbefkeyFlag = false;
-	s_LcursorFlag = false;			// ƒJ[ƒ\ƒ‹ˆÚ“®ƒtƒ‰ƒO
+	s_LcursorFlag = false;			// ã‚«ãƒ¼ã‚½ãƒ«ç§»å‹•ãƒ•ãƒ©ã‚°
 	s_LupFlag = false;
 	s_LstartFlag = false;
 	s_LstopFlag = false;
 	//s_LstopDoneCount = 0;
-	s_EcursorFlag = false;			// ƒJ[ƒ\ƒ‹ˆÚ“®ƒtƒ‰ƒO
+	s_EcursorFlag = false;			// ã‚«ãƒ¼ã‚½ãƒ«ç§»å‹•ãƒ•ãƒ©ã‚°
 	s_timelineRUpFlag = false;
 	s_timelinembuttonFlag = false;
 	s_delmodelFlag = false;
@@ -3679,7 +3690,7 @@ void InitApp()
 	::GetTempPathW(MAX_PATH, s_temppath);
 	_ASSERT(s_temppath[0]);
 	s_cptfilename.clear();
-	GetCPTFileName(s_cptfilename);//s_temppathƒZƒbƒg‚æ‚èŒãB‰‰ñB
+	GetCPTFileName(s_cptfilename);//s_temppathã‚»ãƒƒãƒˆã‚ˆã‚Šå¾Œã€‚åˆå›ã€‚
 
 
 	InitDSValues();
@@ -3871,7 +3882,7 @@ void InitApp()
 
 	bool bsuccess1 = false;
 	bool bsuccess2 = false;
-	if ((s_appcnt == 0) && (s_launchbyc4 == 0)) {//C4‚©‚ç‹N“®‚É‚ÍƒQ[ƒ€ƒpƒbƒh–¢‘Î‰B//2021/08/30
+	if ((s_appcnt == 0) && (s_launchbyc4 == 0)) {//C4ã‹ã‚‰èµ·å‹•æ™‚ã«ã¯ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰æœªå¯¾å¿œã€‚//2021/08/30
 		bsuccess1 = StartDS4();
 	}
 	else {
@@ -4056,7 +4067,7 @@ void InitApp()
 		ZeroMemory(&s_spguisw, sizeof(SPGUISW) * SPGUISWNUM);
 		int spgno;
 		for (spgno = 0; spgno < SPGUISWNUM; spgno++) {
-			s_spguisw[spgno].state = true;//‰‰ñ‚ÌGUISetVisible‚Å”½“]‚µ‚Äfalse‚É‚È‚é
+			s_spguisw[spgno].state = true;//åˆå›ã®GUISetVisibleã§åè»¢ã—ã¦falseã«ãªã‚‹
 		}
 	}
 	{
@@ -4125,9 +4136,9 @@ void InitApp()
 	{
 		char strtitle[256];
 		strcpy_s(strtitle, 256, "BpPiyo");
-		s_bpWorld = new BPWorld(NULL, s_matWorld, strtitle, // ƒEƒBƒ“ƒhƒE‚Ìƒ^ƒCƒgƒ‹
-			460, 460,         // ƒEƒBƒ“ƒhƒE‚Ì•‚Æ‚‚³ [pixels]
-			NULL);    // ƒ‚ƒjƒ^ƒŠƒ“ƒO—pŠÖ”‚Ö‚Ìƒ|ƒCƒ“ƒ^  
+		s_bpWorld = new BPWorld(NULL, s_matWorld, strtitle, // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚¿ã‚¤ãƒˆãƒ«
+			460, 460,         // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®å¹…ã¨é«˜ã• [pixels]
+			NULL);    // ãƒ¢ãƒ‹ã‚¿ãƒªãƒ³ã‚°ç”¨é–¢æ•°ã¸ã®ãƒã‚¤ãƒ³ã‚¿  
 		_ASSERT(s_bpWorld);
 
 
@@ -4135,7 +4146,7 @@ void InitApp()
 		//s_bpWorld->enableFixedTimeStep(false);
 		//s_bpWorld->setTimeStep(0.015);// seconds
 		s_bpWorld->setGlobalERP(btScalar(g_erp));// ERP
-		//s_bpWorld->start();// ƒEƒBƒ“ƒhƒE‚ğ•\¦‚µ‚ÄCƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚ğŠJn‚·‚é
+		//s_bpWorld->start();// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’è¡¨ç¤ºã—ã¦ï¼Œã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ã‚’é–‹å§‹ã™ã‚‹
 		s_btWorld = s_bpWorld->getDynamicsWorld();
 		s_bpWorld->setNumThread(g_numthread);
 	}
@@ -4219,7 +4230,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	//}
 	//hr = D3DX10CreateFont(pd3dDevice, 15, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
 	//	OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
-	//	L"MS ƒSƒVƒbƒN", &g_pFont);
+	//	L"MS ã‚´ã‚·ãƒƒã‚¯", &g_pFont);
 	//	//L"Arial", &g_pFont10);
 	//if (FAILED(hr)) {
 	//	_ASSERT(0);
@@ -4991,7 +5002,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 
 	SetSpSel3DParams();
 	SetSpAimBarParams();
-	SetSpMenuAimBarParams();//CreateMainMenuAimBarWnd‚æ‚è‚àŒã
+	SetSpMenuAimBarParams();//CreateMainMenuAimBarWndã‚ˆã‚Šã‚‚å¾Œ
 	SetSpAxisParams();
 	SetSpUndoParams();
 	SetSpGUISWParams();
@@ -5007,7 +5018,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpScrapingSWParams();
 	//SetSpBtParams();
 	SetSpMouseHereParams();
-	SetSpMouseCenterParams();//SetSpCamParams‚æ‚è‚àŒã‚ÅŒÄ‚Ô@ˆÊ’u‚ğQÆ‚µ‚Ä‚¢‚é‚©‚ç
+	SetSpMouseCenterParams();//SetSpCamParamsã‚ˆã‚Šã‚‚å¾Œã§å‘¼ã¶ã€€ä½ç½®ã‚’å‚ç…§ã—ã¦ã„ã‚‹ã‹ã‚‰
 
 
 	//g_HUD.SetLocation(pBackBufferSurfaceDesc->Width - 170, 0);
@@ -5172,9 +5183,9 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 
 
 	//#######################################################################
-	// UTDXDialog‚ÌƒfƒXƒgƒ‰ƒNƒ^‚Å@RemoveAllControlls‚ªŒÄ‚Î‚ê‚Ädelete‚³‚ê‚é
-	// ‚±‚±‚Ådelete‚µ‚Ä‚µ‚Ü‚¤‚ÆARemoveAllControlls‚ÅƒGƒ‰[‚É‚È‚é
-	// ƒRƒƒ“ƒgƒAƒEƒg‚·‚é
+	// UTDXDialogã®ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã§ã€€RemoveAllControllsãŒå‘¼ã°ã‚Œã¦deleteã•ã‚Œã‚‹
+	// ã“ã“ã§deleteã—ã¦ã—ã¾ã†ã¨ã€RemoveAllControllsã§ã‚¨ãƒ©ãƒ¼ã«ãªã‚‹
+	// ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆã™ã‚‹
 	//#######################################################################
 	//if (s_ui_lightscale) {
 	//	delete s_ui_lightscale;
@@ -6410,14 +6421,14 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 				if (g_previewFlag <= 3) {
 					OnFramePreviewNormal(&nextframe, &difftime);
 				}
-				else if (g_previewFlag == 4) {//BT‚Ì•¨—
+				else if (g_previewFlag == 4) {//BTã®ç‰©ç†
 					OnFramePreviewBt(&nextframe, &difftime);
 				}
-				else if (g_previewFlag == 5) {//ƒ‰ƒOƒh[ƒ‹
+				else if (g_previewFlag == 5) {//ãƒ©ã‚°ãƒ‰ãƒ¼ãƒ«
 					//OnFramePreviewRagdoll(&nextframe, &difftime);
 
 
-					//ƒ‰ƒOƒh[ƒ‹‹x~’†
+					//ãƒ©ã‚°ãƒ‰ãƒ¼ãƒ«ä¼‘æ­¢ä¸­
 					_ASSERT(0);
 					OnFramePreviewNormal(&nextframe, &difftime);
 				}
@@ -6447,7 +6458,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 
 		if (s_spretargetsw[1].state == true) {
 			bool updateonlycheckeul = true;
-			OnFrameAngleLimit(updateonlycheckeul);//2022/12/30 AngleLimitDlg‚Ìcheck’l‚ÌƒŠƒAƒ‹ƒ^ƒCƒ€XV‚Ì‚½‚ß
+			OnFrameAngleLimit(updateonlycheckeul);//2022/12/30 AngleLimitDlgã®checkå€¤ã®ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ æ›´æ–°ã®ãŸã‚
 		}
 
 
@@ -6618,49 +6629,49 @@ void OnRenderNowLoading()
 		int nIndex
 	);
 
-	@ƒVƒXƒeƒ€ƒJƒ‰[‚ÌƒCƒ“ƒfƒbƒNƒX‚Ü‚½‚Í’è‹`‚³‚ê‚Ä‚¢‚é’è”–¼‚ğw’è‚µ‚Ü‚·B
-	@’è‹`‚³‚ê‚Ä‚¢‚éƒVƒXƒeƒ€ƒJƒ‰[‚ÍˆÈ‰º‚Ì’Ê‚è‚Å‚·Bd•¡‚µ‚Ä‚¢‚é’è”‚à‚ ‚è‚Ü‚·‚Ì‚ÅAƒCƒ“ƒfƒbƒNƒX‚à•\‹L‚µ‚Ä‚¢‚Ü‚·B
+	ã€€ã‚·ã‚¹ãƒ†ãƒ ã‚«ãƒ©ãƒ¼ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã¾ãŸã¯å®šç¾©ã•ã‚Œã¦ã„ã‚‹å®šæ•°åã‚’æŒ‡å®šã—ã¾ã™ã€‚
+	ã€€å®šç¾©ã•ã‚Œã¦ã„ã‚‹ã‚·ã‚¹ãƒ†ãƒ ã‚«ãƒ©ãƒ¼ã¯ä»¥ä¸‹ã®é€šã‚Šã§ã™ã€‚é‡è¤‡ã—ã¦ã„ã‚‹å®šæ•°ã‚‚ã‚ã‚Šã¾ã™ã®ã§ã€ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚‚è¡¨è¨˜ã—ã¦ã„ã¾ã™ã€‚
 
-	’è”	 	“à—e
-	COLOR_SCROLLBAR	0	ƒXƒNƒ[ƒ‹ƒo[‚ÌŠDF‚Ì—ÌˆæB
+	å®šæ•°	 	å†…å®¹
+	COLOR_SCROLLBAR	0	ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼ã®ç°è‰²ã®é ˜åŸŸã€‚
 	COLOR_DESKTOP
-	COLOR_BACKGROUND	1	ƒfƒXƒNƒgƒbƒv‚ÌFB
-	COLOR_ACTIVECAPTION	2	ƒAƒNƒeƒBƒu‚ÈƒEƒBƒ“ƒhƒE‚Ìƒ^ƒCƒgƒ‹ƒo[‚ÌFB
-	ƒOƒ‰ƒf[ƒVƒ‡ƒ“‚ª—LŒø‚Èê‡‚ÍƒOƒ‰ƒf[ƒVƒ‡ƒ“‚Ì¶‘¤‚ÌFB
-	COLOR_INACTIVECAPTION	3	”ñƒAƒNƒeƒBƒu‚ÈƒEƒBƒ“ƒhƒE‚Ìƒ^ƒCƒgƒ‹ƒo[‚ÌFB
-	ƒOƒ‰ƒf[ƒVƒ‡ƒ“‚ª—LŒø‚Èê‡‚ÍƒOƒ‰ƒf[ƒVƒ‡ƒ“‚Ì¶‘¤‚ÌFB
-	COLOR_MENU	4	ƒƒjƒ…[‚Ì”wŒiFB
-	COLOR_WINDOW	5	ƒEƒBƒ“ƒhƒE‚Ì”wŒiFB
-	COLOR_WINDOWFRAME	6	ƒEƒBƒ“ƒhƒEƒtƒŒ[ƒ€‚ÌFB
-	COLOR_MENUTEXT	7	ƒƒjƒ…[“à‚ÌƒeƒLƒXƒg‚ÌFB
-	COLOR_WINDOWTEXT	8	ƒEƒBƒ“ƒhƒE“à‚ÌƒeƒLƒXƒg‚ÌFB
-	COLOR_CAPTIONTEXT	9	ƒLƒƒƒvƒVƒ‡ƒ“AƒTƒCƒYƒ{ƒbƒNƒXAƒXƒNƒ[ƒ‹ƒo[‚Ì–îˆóƒ{ƒbƒNƒX“à‚ÌƒeƒLƒXƒg‚ÌFB
-	COLOR_ACTIVEBORDER	10	ƒAƒNƒeƒBƒu‚ÈƒEƒBƒ“ƒhƒE‚Ì‹«ŠEü‚ÌFB
-	COLOR_INACTIVEBORDER	11	”ñƒAƒNƒeƒBƒu‚ÈƒEƒBƒ“ƒhƒE‚Ì‹«ŠEü‚ÌFB
-	COLOR_APPWORKSPACE	12	MDIƒEƒBƒ“ƒhƒE‚Ì”wŒiFB
-	COLOR_HIGHLIGHT	13	ƒRƒ“ƒgƒ[ƒ‹‚Å‘I‘ğ‚³‚ê‚½‚Ì”½“]FB
-	COLOR_HIGHLIGHTTEXT	14	ƒRƒ“ƒgƒ[ƒ‹‚Å‘I‘ğ‚³‚ê‚½‚ÌƒeƒLƒXƒg‚ÌFB
+	COLOR_BACKGROUND	1	ãƒ‡ã‚¹ã‚¯ãƒˆãƒƒãƒ—ã®è‰²ã€‚
+	COLOR_ACTIVECAPTION	2	ã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚¿ã‚¤ãƒˆãƒ«ãƒãƒ¼ã®è‰²ã€‚
+	ã‚°ãƒ©ãƒ‡ãƒ¼ã‚·ãƒ§ãƒ³ãŒæœ‰åŠ¹ãªå ´åˆã¯ã‚°ãƒ©ãƒ‡ãƒ¼ã‚·ãƒ§ãƒ³ã®å·¦å´ã®è‰²ã€‚
+	COLOR_INACTIVECAPTION	3	éã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚¿ã‚¤ãƒˆãƒ«ãƒãƒ¼ã®è‰²ã€‚
+	ã‚°ãƒ©ãƒ‡ãƒ¼ã‚·ãƒ§ãƒ³ãŒæœ‰åŠ¹ãªå ´åˆã¯ã‚°ãƒ©ãƒ‡ãƒ¼ã‚·ãƒ§ãƒ³ã®å·¦å´ã®è‰²ã€‚
+	COLOR_MENU	4	ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã®èƒŒæ™¯è‰²ã€‚
+	COLOR_WINDOW	5	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®èƒŒæ™¯è‰²ã€‚
+	COLOR_WINDOWFRAME	6	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ•ãƒ¬ãƒ¼ãƒ ã®è‰²ã€‚
+	COLOR_MENUTEXT	7	ãƒ¡ãƒ‹ãƒ¥ãƒ¼å†…ã®ãƒ†ã‚­ã‚¹ãƒˆã®è‰²ã€‚
+	COLOR_WINDOWTEXT	8	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…ã®ãƒ†ã‚­ã‚¹ãƒˆã®è‰²ã€‚
+	COLOR_CAPTIONTEXT	9	ã‚­ãƒ£ãƒ—ã‚·ãƒ§ãƒ³ã€ã‚µã‚¤ã‚ºãƒœãƒƒã‚¯ã‚¹ã€ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼ã®çŸ¢å°ãƒœãƒƒã‚¯ã‚¹å†…ã®ãƒ†ã‚­ã‚¹ãƒˆã®è‰²ã€‚
+	COLOR_ACTIVEBORDER	10	ã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®å¢ƒç•Œç·šã®è‰²ã€‚
+	COLOR_INACTIVEBORDER	11	éã‚¢ã‚¯ãƒ†ã‚£ãƒ–ãªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®å¢ƒç•Œç·šã®è‰²ã€‚
+	COLOR_APPWORKSPACE	12	MDIã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®èƒŒæ™¯è‰²ã€‚
+	COLOR_HIGHLIGHT	13	ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã§é¸æŠã•ã‚ŒãŸæ™‚ã®åè»¢è‰²ã€‚
+	COLOR_HIGHLIGHTTEXT	14	ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã§é¸æŠã•ã‚ŒãŸæ™‚ã®ãƒ†ã‚­ã‚¹ãƒˆã®è‰²ã€‚
 	COLOR_3DFACE
-	COLOR_BTNFACE	15	3D•\¦‹y‚Ñƒ_ƒCƒAƒƒOƒ{ƒbƒNƒX‚Ì”wŒiFB
+	COLOR_BTNFACE	15	3Dè¡¨ç¤ºåŠã³ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒœãƒƒã‚¯ã‚¹ã®èƒŒæ™¯è‰²ã€‚
 	COLOR_3DSHADOW
-	COLOR_BTNSHADOW	16	3D•\¦‚Ì‰e‚ÌFB
-	COLOR_GRAYTEXT	17	–³Œø‚ÌƒeƒLƒXƒg‚ÌFB
-	COLOR_BTNTEXT	18	ƒvƒbƒVƒ…ƒ{ƒ^ƒ“‚ÌƒeƒLƒXƒg‚ÌFB
-	COLOR_INACTIVECAPTIONTEXT	19	”ñƒAƒNƒeƒBƒuƒEƒBƒ“ƒhƒE‚ÌƒLƒƒƒvƒVƒ‡ƒ“‚ÌƒeƒLƒXƒgFB
+	COLOR_BTNSHADOW	16	3Dè¡¨ç¤ºã®å½±ã®è‰²ã€‚
+	COLOR_GRAYTEXT	17	ç„¡åŠ¹ã®ãƒ†ã‚­ã‚¹ãƒˆã®è‰²ã€‚
+	COLOR_BTNTEXT	18	ãƒ—ãƒƒã‚·ãƒ¥ãƒœã‚¿ãƒ³ã®ãƒ†ã‚­ã‚¹ãƒˆã®è‰²ã€‚
+	COLOR_INACTIVECAPTIONTEXT	19	éã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚­ãƒ£ãƒ—ã‚·ãƒ§ãƒ³ã®ãƒ†ã‚­ã‚¹ãƒˆè‰²ã€‚
 	COLOR_3DHILIGHT
 	COLOR_3DHIGHLIGHT
 	COLOR_BTNHILIGHT
-	COLOR_BTNHIGHLIGHT	20	3D•\¦‚ÌƒnƒCƒ‰ƒCƒgFB
-	COLOR_3DDKSHADOW	21	3D•\¦‚ÌˆÃ‚¢‰e‚ÌFB
-	COLOR_3DLIGHT	22	3D•\¦‚ÌŒõ‚ÌFB
-	COLOR_INFOTEXT	23	ƒc[ƒ‹ƒ`ƒbƒv‚ÌƒeƒLƒXƒgFB
-	COLOR_INFOBK	24	ƒc[ƒ‹ƒ`ƒbƒv‚Ì”wŒiFB
-	-	25	•s–¾
-	COLOR_HOTLIGHT	26	ƒnƒCƒp[ƒŠƒ“ƒN‚³‚ê‚½ƒAƒCƒeƒ€‚ÌFB
-	COLOR_GRADIENTACTIVECAPTION	27	ƒAƒNƒeƒBƒuƒEƒBƒ“ƒhƒE‚Ìƒ^ƒCƒgƒ‹ƒo[‚ÌƒOƒ‰ƒf[ƒVƒ‡ƒ“‰E‘¤‚ÌFB
-	COLOR_GRADIENTINACTIVECAPTION	28	”ñƒAƒNƒeƒBƒuƒEƒBƒ“ƒhƒE‚Ìƒ^ƒCƒgƒ‹ƒo[‚ÌƒOƒ‰ƒf[ƒVƒ‡ƒ“‰E‘¤‚ÌFB
-	COLOR_MENUHILIGHT	29	ƒnƒCƒ‰ƒCƒg‚³‚ê‚½ƒƒjƒ…[ƒAƒCƒeƒ€‚ÌFB
-	COLOR_MENUBAR	29	ƒƒjƒ…[ƒo[‚Ì”wŒiFB
+	COLOR_BTNHIGHLIGHT	20	3Dè¡¨ç¤ºã®ãƒã‚¤ãƒ©ã‚¤ãƒˆè‰²ã€‚
+	COLOR_3DDKSHADOW	21	3Dè¡¨ç¤ºã®æš—ã„å½±ã®è‰²ã€‚
+	COLOR_3DLIGHT	22	3Dè¡¨ç¤ºã®å…‰ã®è‰²ã€‚
+	COLOR_INFOTEXT	23	ãƒ„ãƒ¼ãƒ«ãƒãƒƒãƒ—ã®ãƒ†ã‚­ã‚¹ãƒˆè‰²ã€‚
+	COLOR_INFOBK	24	ãƒ„ãƒ¼ãƒ«ãƒãƒƒãƒ—ã®èƒŒæ™¯è‰²ã€‚
+	-	25	ä¸æ˜
+	COLOR_HOTLIGHT	26	ãƒã‚¤ãƒ‘ãƒ¼ãƒªãƒ³ã‚¯ã•ã‚ŒãŸã‚¢ã‚¤ãƒ†ãƒ ã®è‰²ã€‚
+	COLOR_GRADIENTACTIVECAPTION	27	ã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚¿ã‚¤ãƒˆãƒ«ãƒãƒ¼ã®ã‚°ãƒ©ãƒ‡ãƒ¼ã‚·ãƒ§ãƒ³å³å´ã®è‰²ã€‚
+	COLOR_GRADIENTINACTIVECAPTION	28	éã‚¢ã‚¯ãƒ†ã‚£ãƒ–ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚¿ã‚¤ãƒˆãƒ«ãƒãƒ¼ã®ã‚°ãƒ©ãƒ‡ãƒ¼ã‚·ãƒ§ãƒ³å³å´ã®è‰²ã€‚
+	COLOR_MENUHILIGHT	29	ãƒã‚¤ãƒ©ã‚¤ãƒˆã•ã‚ŒãŸãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‚¢ã‚¤ãƒ†ãƒ ã®è‰²ã€‚
+	COLOR_MENUBAR	29	ãƒ¡ãƒ‹ãƒ¥ãƒ¼ãƒãƒ¼ã®èƒŒæ™¯è‰²ã€‚
 	 */
 
 
@@ -6671,7 +6682,7 @@ void OnRenderNowLoading()
 	::GetClientRect(s_3dwnd, &rect);
 	brush = CreateSolidBrush(BLACK_BRUSH);
 	//brush = CreateSolidBrush(RGB(64, 128, 256));
-	//brush = ::GetSysColorBrush(COLOR_HIGHLIGHT);//•‚ÆÂ‚Å‚¿‚ç‚­‚Â
+	//brush = ::GetSysColorBrush(COLOR_HIGHLIGHT);//é»’ã¨é’ã§ã¡ã‚‰ãã¤
 	//brush = ::GetSysColorBrush(COLOR_HIGHLIGHT);
 	::FillRect(hdc, &rect, brush);
 	::DeleteObject(brush);
@@ -6692,7 +6703,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 	}
 
 
-	//OnRenderNowLoading‚à‰½‚à–³‚µ‚¾‚Ædevice->Present‚ÅŒÅ‚Ü‚éB OnRenderNowLoading‚ğ“ü‚ê‚é‚Æ‚RDƒ‚ƒfƒ‹•\¦‚ª‚¿‚ç‚Â‚­B‚æ‚Á‚Ä’Êí•`‰æ‚·‚éB
+	//OnRenderNowLoadingã‚‚ä½•ã‚‚ç„¡ã—ã ã¨device->Presentã§å›ºã¾ã‚‹ã€‚ OnRenderNowLoadingã‚’å…¥ã‚Œã‚‹ã¨ï¼“Dãƒ¢ãƒ‡ãƒ«è¡¨ç¤ºãŒã¡ã‚‰ã¤ãã€‚ã‚ˆã£ã¦é€šå¸¸æç”»ã™ã‚‹ã€‚
 	//if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) || (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
 	//	//OnRenderNowLoading();
 	//	return;
@@ -6955,15 +6966,15 @@ void PrepairUndo()
 		return;
 	}
 
-	//ƒŠƒ^[ƒQƒbƒgƒoƒbƒ`’†‚ÍSaveUndo‚µ‚È‚¢
-	//ƒ‚ƒfƒ‹íœAƒ‚[ƒVƒ‡ƒ“íœ‚ÍSaveUndo‚µ‚È‚¢
-	//UndoRedoƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½ê‡‚É‚ÍSaveUndo‚µ‚È‚¢
+	//ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒãƒƒãƒä¸­ã¯SaveUndoã—ãªã„
+	//ãƒ¢ãƒ‡ãƒ«å‰Šé™¤æ™‚ã€ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³å‰Šé™¤æ™‚ã¯SaveUndoã—ãªã„
+	//UndoRedoãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ãŸå ´åˆã«ã¯SaveUndoã—ãªã„
 
 	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (s_underdelmodel == 0) &&
 		(s_underdelmotion == 0) && (s_undoFlag == false) && (s_redoFlag == false)) {
-		//2022/09/13 ‘I‘ğ”ÍˆÍ‚¾‚¯‚ğƒAƒ“ƒhƒDƒŠƒhƒD‚·‚é‚æ‚¤‚É‚µ‚½
-		//‚»‚Ì‰e‹¿‚Å‘I‘ğ”ÍˆÍ‚Ì–¢•ÒWó‘Ô‚à•Û‘¶‚·‚é•K—v‚ª¶‚¶‚½
-		//‚æ‚Á‚ÄŸ‚Ìif•¶‚ÍƒRƒƒ“ƒgƒAƒEƒg
+		//2022/09/13 é¸æŠç¯„å›²ã ã‘ã‚’ã‚¢ãƒ³ãƒ‰ã‚¥ãƒªãƒ‰ã‚¥ã™ã‚‹ã‚ˆã†ã«ã—ãŸ
+		//ãã®å½±éŸ¿ã§é¸æŠç¯„å›²ã®æœªç·¨é›†çŠ¶æ…‹ã‚‚ä¿å­˜ã™ã‚‹å¿…è¦ãŒç”Ÿã˜ãŸ
+		//ã‚ˆã£ã¦æ¬¡ã®ifæ–‡ã¯ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
 		//if ((s_editmotionflag >= 0) || (g_btsimurecflag == true)) {
 
 		if (s_model) {
@@ -6980,7 +6991,7 @@ void PrepairUndo()
 			brushstate.wallscrapingikflag = g_wallscrapingikflag;
 			brushstate.brushrepeats = g_brushrepeats;
 
-			HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));//’·‚¢ƒtƒŒ[ƒ€‚Ì•Û‘¶‚Í”•bŠÔ‚ª‚©‚©‚é‚±‚Æ‚ª‚ ‚é‚Ì‚Å»ŒvƒJ[ƒ\ƒ‹‚É‚·‚é
+			HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));//é•·ã„ãƒ•ãƒ¬ãƒ¼ãƒ ã®ä¿å­˜ã¯æ•°ç§’æ™‚é–“ãŒã‹ã‹ã‚‹ã“ã¨ãŒã‚ã‚‹ã®ã§ç ‚æ™‚è¨ˆã‚«ãƒ¼ã‚½ãƒ«ã«ã™ã‚‹
 
 			bool allframeflag;
 			if ((s_copyLW2WFlag == true) || (s_changelimitangleFlag == true) ||
@@ -6993,7 +7004,7 @@ void PrepairUndo()
 			s_model->SaveUndoMotion(g_limitdegflag, s_curboneno, s_curbaseno,
 				&s_editrange, (double)g_applyrate, brushstate, allframeflag);
 
-			SetCursor(oldcursor);//ƒJ[ƒ\ƒ‹‚ğŒ³‚É–ß‚·
+			SetCursor(oldcursor);//ã‚«ãƒ¼ã‚½ãƒ«ã‚’å…ƒã«æˆ»ã™
 
 		}
 		s_editmotionflag = -1;
@@ -7016,7 +7027,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 	}
 
 	////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	////DXUT‚ÌƒXƒ‰ƒCƒ_[‚Ìƒ}ƒEƒXƒAƒbƒv‚ğ•ß‚Ü‚¦‚½‚©‚Á‚½
+	////DXUTã®ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ã®ãƒã‚¦ã‚¹ã‚¢ãƒƒãƒ—ã‚’æ•ã¾ãˆãŸã‹ã£ãŸ
 	////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//if (uMsg == WM_NOTIFY) {
 	//	int c;
@@ -7073,7 +7084,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		}
 
 		//if (curbone && curbone->GetParent()) {
-		//2023/02/08 opebone‚Éparent‚ğƒZƒbƒg‚·‚é‚Ì‚Í@IKRot‚Ì‚Æ‚«‚¾‚¯
+		//2023/02/08 opeboneã«parentã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã®ã¯ã€€IKRotã®ã¨ãã ã‘
 		if (curbone && curbone->GetParent() && (s_ikkind == 0)) {
 			opebone = curbone->GetParent();
 		}
@@ -7143,7 +7154,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONE)) && (menuid <= (ID_RMENU_0 + s_maxboneno + 1 + MENUOFFSET_SETCONVBONE))) {
 			if (menuid == (ID_RMENU_0 + 0 + MENUOFFSET_SETCONVBONE)) {
-				//–¢İ’è
+				//æœªè¨­å®š
 				s_bvhbone_bone[s_bvhbone_cbno] = 0;
 				CBone* modelbone = s_modelbone_bone[s_bvhbone_cbno];
 				_ASSERT(modelbone);
@@ -7261,6 +7272,18 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				refreshTimeline(*s_owpTimeline);
 			}
 		}
+		else if (menuid == (ID_RMENU_IKSTOP + MENUOFFSET_BONERCLICK)) {
+			//toggle
+			if (curbone->GetIKStopFlag() == false) {
+				curbone->SetIKStopFlag(true);
+			}
+			else {
+				curbone->SetIKStopFlag(false);
+			}
+			if (s_owpTimeline) {
+				refreshTimeline(*s_owpTimeline);
+			}
+		}
 		//else if (menuid == (ID_RMENU_KINEMATIC_ON_LOWER + MENUOFFSET_BONERCLICK)) {
 		//	if (s_model && curbone) {
 		//		s_model->SetKinematicTmpLower(curbone, true);
@@ -7344,19 +7367,19 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		//	}
 		//}
 		else if (menuid == (ID_RMENU_0 + MENUOFFSET_BONERCLICK)) {
-			//V‹K
+			//æ–°è¦
 			GUIMenuSetVisible(-1, -1);
 			int currigno = -1;
 			DispCustomRigDlg(currigno);
 		}
 		else if ((menuid >= (ID_RMENU_0 + MAXRIGNUM + MENUOFFSET_BONERCLICK)) && (menuid < (ID_RMENU_0 + MAXRIGNUM * 2 + MENUOFFSET_BONERCLICK))) {
-			//İ’è
+			//è¨­å®š
 			GUIMenuSetVisible(-1, -1);
 			int currigno = s_customrigmenuindex[menuid - (ID_RMENU_0 + MAXRIGNUM) - MENUOFFSET_BONERCLICK];
 			DispCustomRigDlg(currigno);
 		}
 		else if ((menuid >= (ID_RMENU_0 + MAXRIGNUM * 2 + MENUOFFSET_BONERCLICK)) && (menuid < (ID_RMENU_0 + MAXRIGNUM * 3 + MENUOFFSET_BONERCLICK))) {
-			//Às
+			//å®Ÿè¡Œ
 			int currigno = s_customrigmenuindex[menuid - (ID_RMENU_0 + MAXRIGNUM * 2) - MENUOFFSET_BONERCLICK];
 			Bone2CustomRig(currigno);
 			if (s_customrigbone) {
@@ -7364,7 +7387,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			}
 		}
 		else if ((menuid >= (ID_RMENU_0 + MAXRIGNUM * 3 + MENUOFFSET_BONERCLICK)) && (menuid < (ID_RMENU_0 + MAXRIGNUM * 4 + MENUOFFSET_BONERCLICK))) {
-			//íœ(–³Œø‰»)
+			//å‰Šé™¤(ç„¡åŠ¹åŒ–)
 			int currigno = s_customrigmenuindex[menuid - (ID_RMENU_0 + MAXRIGNUM * 3) - MENUOFFSET_BONERCLICK];
 			InvalidateCustomRig(currigno);
 		}
@@ -7440,8 +7463,8 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		else {
 			switch (menuid) {
 			case ID_40047:
-				// "•ÒWE•ÏŠ·"
-				// "ƒ{[ƒ“²‚ğX‚ÉÄŒvZ"
+				// "ç·¨é›†ãƒ»å¤‰æ›"
+				// "ãƒœãƒ¼ãƒ³è»¸ã‚’Xã«å†è¨ˆç®—"
 				ActivatePanel(0);
 				//RecalcBoneAxisX(0);
 				RecalcAxisX_All();
@@ -7639,7 +7662,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag,
 					&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 
-				//ClearLimitedWM(s_model);//‚±‚ê‚ª–³‚¢‚ÆIK‚ÉƒOƒ‰ƒt‚É‚¨‚©‚µ‚È’l‚ª“ü‚è@‚¨‚©‚µ‚È’l‚ª‚ ‚éŠÔ‚É‡‚í‚¹‚é‚Æ’¼‚é
+				//ClearLimitedWM(s_model);//ã“ã‚ŒãŒç„¡ã„ã¨IKæ™‚ã«ã‚°ãƒ©ãƒ•ã«ãŠã‹ã—ãªå€¤ãŒå…¥ã‚Šã€€ãŠã‹ã—ãªå€¤ãŒã‚ã‚‹æ™‚é–“ã«åˆã‚ã›ã‚‹ã¨ç›´ã‚‹
 				//UpdateEditedEuler();
 			}
 		}
@@ -7689,11 +7712,11 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		s_rotrec.clear();
 
 		//!!!!!!!!!!!!!!!!!!!!!!!!!!
-		//DS device‚ª‚ ‚Á‚Ä‚àAƒ}ƒEƒX‚ğ•¹—p‚·‚éê‡‚ª‚ ‚é‚Ì‚Åƒ}ƒEƒX‚ÌSetCapture‚ÆReleaseCapture‚Í•K—v
+		//DS deviceãŒã‚ã£ã¦ã‚‚ã€ãƒã‚¦ã‚¹ã‚’ä½µç”¨ã™ã‚‹å ´åˆãŒã‚ã‚‹ã®ã§ãƒã‚¦ã‚¹ã®SetCaptureã¨ReleaseCaptureã¯å¿…è¦
 		//!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 		//if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
-			//DS device‚ª–³‚¢ê‡
+			//DS deviceãŒç„¡ã„å ´åˆ
 		SetCapture(s_3dwnd);
 		//}
 		//SetCapture( s_3dwnd );
@@ -7764,7 +7787,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				s_spikmodesw[0].state = true;
 				s_spikmodesw[1].state = false;
 				s_spikmodesw[2].state = false;
-				SetLTimelineMark(s_curboneno);//ƒOƒ‰ƒt‚Ì‘€ìƒWƒ‡ƒCƒ“ƒg–¼•\¦‚à
+				SetLTimelineMark(s_curboneno);//ã‚°ãƒ©ãƒ•ã®æ“ä½œã‚¸ãƒ§ã‚¤ãƒ³ãƒˆåè¡¨ç¤ºã‚‚
 				refreshEulerGraph();
 			}
 			else if (pickikmodeflag == 2) {
@@ -7772,7 +7795,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				s_spikmodesw[0].state = false;
 				s_spikmodesw[1].state = true;
 				s_spikmodesw[2].state = false;
-				SetLTimelineMark(s_curboneno);//ƒOƒ‰ƒt‚Ì‘€ìƒWƒ‡ƒCƒ“ƒg–¼•\¦‚à
+				SetLTimelineMark(s_curboneno);//ã‚°ãƒ©ãƒ•ã®æ“ä½œã‚¸ãƒ§ã‚¤ãƒ³ãƒˆåè¡¨ç¤ºã‚‚
 				refreshEulerGraph();
 			}
 			else if (pickikmodeflag == 3) {
@@ -7780,7 +7803,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				s_spikmodesw[0].state = false;
 				s_spikmodesw[1].state = false;
 				s_spikmodesw[2].state = true;
-				SetLTimelineMark(s_curboneno);//ƒOƒ‰ƒt‚Ì‘€ìƒWƒ‡ƒCƒ“ƒg–¼•\¦‚à
+				SetLTimelineMark(s_curboneno);//ã‚°ãƒ©ãƒ•ã®æ“ä½œã‚¸ãƒ§ã‚¤ãƒ³ãƒˆåè¡¨ç¤ºã‚‚
 				refreshEulerGraph();
 			}
 		}
@@ -7832,7 +7855,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		if (pickrigflag == 1) {
 
 
-			//ŠJ‚¢‚Ä‚¢‚éİ’èƒ_ƒCƒAƒƒO‚ğ•Â‚¶‚È‚¢‚ÆAİ’èƒ_ƒCƒAƒƒO‚Ìrigbone‚ÆV‚½‚Èrigbone‚ªˆÙ‚È‚Á‚Ä‚µ‚Ü‚¢AApplyƒ{ƒ^ƒ“‚ÅˆÙ‚È‚éƒŠƒO‚ğ•Û‘¶‚·‚é‚±‚Æ‚ª‚ ‚é
+			//é–‹ã„ã¦ã„ã‚‹è¨­å®šãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’é–‰ã˜ãªã„ã¨ã€è¨­å®šãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®rigboneã¨æ–°ãŸãªrigboneãŒç•°ãªã£ã¦ã—ã¾ã„ã€Applyãƒœã‚¿ãƒ³ã§ç•°ãªã‚‹ãƒªã‚°ã‚’ä¿å­˜ã™ã‚‹ã“ã¨ãŒã‚ã‚‹
 			if (s_customrigdlg) {
 				DestroyWindow(s_customrigdlg);
 				s_customrigdlg = 0;
@@ -7841,22 +7864,22 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 			if (s_oprigflag == 1) {
 
-				//ƒIƒ“‚¾‚Á‚½Rig‚ğƒIƒt‚É‚·‚é
+				//ã‚ªãƒ³ã ã£ãŸRigã‚’ã‚ªãƒ•ã«ã™ã‚‹
 				RollbackCurBoneNo();
 				ToggleRig();
 				oprigdoneflag = 1;
 
-				s_curboneno = -1;//Sprite Menu‚æ‚èŒã‚ÅBRigidì¬‚É‘I‘ğÏs_curboneno‚ª•K—vB
+				s_curboneno = -1;//Sprite Menuã‚ˆã‚Šå¾Œã§ã€‚Rigidä½œæˆã«é¸æŠæ¸ˆs_curbonenoãŒå¿…è¦ã€‚
 			}
 			else {
 
-				//ƒIƒt‚¾‚Á‚½ƒŠƒO‚ğƒIƒ“‚É‚·‚é
+				//ã‚ªãƒ•ã ã£ãŸãƒªã‚°ã‚’ã‚ªãƒ³ã«ã™ã‚‹
 				RollbackCurBoneNo();
 
 				ToggleRig();
 				oprigdoneflag = 1;
-				//s_oprigflag == 1 ‚Ì‚Æ‚«‚Ìpickrigflag == 0@‚¾‚©‚ç@rig‚ÍƒIƒ“
-				//s_curboneno ‚Í‚»‚Ì‚Ü‚Ü
+				//s_oprigflag == 1 ã®ã¨ãã®pickrigflag == 0ã€€ã ã‹ã‚‰ã€€rigã¯ã‚ªãƒ³
+				//s_curboneno ã¯ãã®ã¾ã¾
 			}
 		}
 
@@ -7870,7 +7893,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			GUIMenuSetVisible(s_platemenukind, nextplateno);
 		}
 
-		//s_curboneno = -1;//Sprite Menu‚æ‚èŒã‚ÅBRigidì¬‚É‘I‘ğÏs_curboneno‚ª•K—vB
+		//s_curboneno = -1;//Sprite Menuã‚ˆã‚Šå¾Œã§ã€‚Rigidä½œæˆã«é¸æŠæ¸ˆs_curbonenoãŒå¿…è¦ã€‚
 
 		int spckind = 0;
 		if (s_spguisw[SPGUISW_CAMERA_AND_IK].state && ((spckind = PickSpCam(ptCursor)) != 0)) {
@@ -7910,12 +7933,12 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 						ChangeCurrentBone();
 
 
-						//if (s_model->GetInitAxisMatX() == 0){//OnAnimMenu‚ÉˆÚ“®
+						//if (s_model->GetInitAxisMatX() == 0){//OnAnimMenuã«ç§»å‹•
 						//	s_owpLTimeline->setCurrentTime(0.0, true);
 						//	s_owpEulerGraph->setCurrentTime(0.0, false);
 						//	s_model->SetMotionFrame(0.0);
 						//	s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
-						//	//‚±‚±‚ÅAxisMatX‚Ì‰Šú‰»
+						//	//ã“ã“ã§AxisMatXã®åˆæœŸåŒ–
 						//	s_model->CreateBtObject(1);
 						//	s_model->CalcBtAxismat(2);//2
 						//	s_model->SetInitAxisMatX(1);
@@ -7923,7 +7946,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 						s_pickinfo.buttonflag = PICK_CENTER;//!!!!!!!!!!!!!
 
-						//CModel::PickBone“à‚ÅƒZƒbƒg
+						//CModel::PickBoneå†…ã§ã‚»ãƒƒãƒˆ
 						//s_pickinfo.firstdiff.x = (float)s_pickinfo.clickpos.x - s_pickinfo.objscreen.x;
 						//s_pickinfo.firstdiff.y = (float)s_pickinfo.clickpos.y - s_pickinfo.objscreen.y;
 
@@ -8027,7 +8050,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		}
 
 
-		//pick‚Åƒ{[ƒ“‘I‘ğ‚ª•Ï‚í‚ç‚È‚©‚Á‚½‚Æ‚«Bƒ‚[ƒVƒ‡ƒ“ƒtƒŒ[ƒ€‘I‘ğ‚ğ‚µ‚½ê‡‚È‚ÇB
+		//pickã§ãƒœãƒ¼ãƒ³é¸æŠãŒå¤‰ã‚ã‚‰ãªã‹ã£ãŸã¨ãã€‚ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãƒ•ãƒ¬ãƒ¼ãƒ é¸æŠã‚’ã—ãŸå ´åˆãªã©ã€‚
 		if ((s_curboneno <= 0) && (s_saveboneno > 0)) {
 			s_curboneno = s_saveboneno;
 		}
@@ -8042,7 +8065,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		//if (s_model && (s_pickinfo.pickobjno >= 0) && (g_previewFlag == 5)){
 		if (s_model && (g_previewFlag == 5)) {
 			if ((s_pickinfo.pickobjno >= 0)) {// && 
-				//((s_spguisw[SPGUISW_CAMERA_AND_IK].state == false)) || (PickSpBt(ptCursor) == 0))){//•¨—IK’†‚ÅƒWƒ‡ƒCƒ“ƒg‚ğƒNƒŠƒbƒN‚µ‚Ä‚¢‚ÄAApplyƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚Ä‚¢‚È‚¢‚Æ‚«
+				//((s_spguisw[SPGUISW_CAMERA_AND_IK].state == false)) || (PickSpBt(ptCursor) == 0))){//ç‰©ç†IKä¸­ã§ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã‚’ã‚¯ãƒªãƒƒã‚¯ã—ã¦ã„ã¦ã€Applyãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ã¦ã„ãªã„ã¨ã
 				StartBt(s_model, TRUE, 1, 1);
 				//s_model->BulletSimulationStart();
 			}
@@ -8079,18 +8102,18 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 
 		//!!!!!!!!!!!!!!!!!!!!!!!!!!
-		//DS device‚ª‚ ‚Á‚Ä‚àAƒ}ƒEƒX‚ğ•¹—p‚·‚é‚±‚Æ‚ª‚ ‚é‚Ì‚Åƒ}ƒEƒX‚ÌSetCapture‚ÆReleaseCapture‚Í•K—v
+		//DS deviceãŒã‚ã£ã¦ã‚‚ã€ãƒã‚¦ã‚¹ã‚’ä½µç”¨ã™ã‚‹ã“ã¨ãŒã‚ã‚‹ã®ã§ãƒã‚¦ã‚¹ã®SetCaptureã¨ReleaseCaptureã¯å¿…è¦
 		//!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 		//if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
-			//DS device‚ª–³‚¢ê‡
+			//DS deviceãŒç„¡ã„å ´åˆ
 		ReleaseCapture();
 		//}
 		//ReleaseCapture();
 
 
 
-		//ƒ}ƒEƒX‚É‚æ‚éIK‚ÆFK‚ÌŒãˆ—@applyframeˆÈŠO‚ÌƒtƒŒ[ƒ€‚Ìˆ—
+		//ãƒã‚¦ã‚¹ã«ã‚ˆã‚‹IKã¨FKã®å¾Œå‡¦ç†ã€€applyframeä»¥å¤–ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã®å‡¦ç†
 		if ((s_ikkind == 0) && (s_editmotionflag >= 0)){
 			if (s_pickinfo.buttonflag == PICK_CENTER) {
 				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
@@ -8152,7 +8175,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		}
 
 
-		s_wmlbuttonup = 1;//ƒQ[ƒ€ƒpƒbƒh—pƒtƒ‰ƒO
+		s_wmlbuttonup = 1;//ã‚²ãƒ¼ãƒ ãƒ‘ãƒƒãƒ‰ç”¨ãƒ•ãƒ©ã‚°
 
 		s_befdeltax = 0.0f;
 
@@ -8170,9 +8193,9 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 
 		//2023/02/13
-		//IKRotI—¹@LimitEulƒIƒ“‚Å@•ÒWƒ{[ƒ“‚ª‚ ‚Á‚½ê‡
-		//ƒOƒ‰ƒt‚ª”g‘Å‚Â‚±‚Æ‚Í•ª‚©‚Á‚Ä‚¢‚é‚Ì‚Å(XYZ‚Ç‚ê‚©‚P‚Â‚Å‚à§ŒÀ‚ÉŠ|‚©‚é‚Æ@XYZ‘S‚Ä“®‚©‚È‚­‚È‚é‚½‚ß)
-		//©“®‚Å@ƒtƒBƒ‹ƒ^[‚ğŠ|‚¯‚Ä@ŠŠ‚ç‚©‚É‚·‚é
+		//IKRotçµ‚äº†æ™‚ã€€LimitEulã‚ªãƒ³ã§ã€€ç·¨é›†ãƒœãƒ¼ãƒ³ãŒã‚ã£ãŸå ´åˆ
+		//ã‚°ãƒ©ãƒ•ãŒæ³¢æ‰“ã¤ã“ã¨ã¯åˆ†ã‹ã£ã¦ã„ã‚‹ã®ã§(XYZã©ã‚Œã‹ï¼‘ã¤ã§ã‚‚åˆ¶é™ã«æ›ã‹ã‚‹ã¨ã€€XYZå…¨ã¦å‹•ã‹ãªããªã‚‹ãŸã‚)
+		//è‡ªå‹•ã§ã€€ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼ã‚’æ›ã‘ã¦ã€€æ»‘ã‚‰ã‹ã«ã™ã‚‹
 		if ((s_ikkind == 0) && (g_limitdegflag == true) && (s_editmotionflag >= 0)) {
 			int callnum = 1;
 			CallFilterFunc(callnum);
@@ -8182,7 +8205,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		if ((s_undoFlag == false) && (s_redoFlag == false)) {
 
 			//2023/02/04
-			//LimitEul‚Éƒ`ƒFƒbƒN‚ğ“ü‚ê‚Ä•ÒW‚µ‚½ƒ‚[ƒVƒ‡ƒ“•”•ª‚ğ@Šp“x§ŒÀ–³‚µ‚Ìp¨‚ÉƒxƒCƒN‚·‚é
+			//LimitEulã«ãƒã‚§ãƒƒã‚¯ã‚’å…¥ã‚Œã¦ç·¨é›†ã—ãŸãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³éƒ¨åˆ†ã‚’ã€€è§’åº¦åˆ¶é™ç„¡ã—ã®å§¿å‹¢ã«ãƒ™ã‚¤ã‚¯ã™ã‚‹
 			if ((g_limitdegflag == true) && (s_editmotionflag >= 0)) {
 				bool allframeflag = false;
 				bool setcursorflag = true;
@@ -8202,7 +8225,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			s_onragdollik = 0;
 
 			if ((s_editmotionflag >= 0) || (g_btsimurecflag == true)) {
-				PrepairUndo();//‚RDƒEƒCƒ“ƒhƒE‚Å‚Ì•ÒWŒãó‘Ô•Û‘¶‚ğ‘z’è		
+				PrepairUndo();//ï¼“Dã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã§ã®ç·¨é›†å¾ŒçŠ¶æ…‹ä¿å­˜ã‚’æƒ³å®š		
 			}
 
 		}
@@ -8386,7 +8409,7 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 	{
 		if (g_motionbrush_numframe < 10) {
 			WCHAR strmes[1024] = { 0L };
-			swprintf_s(strmes, 1024, L"•¡”ƒtƒŒ[ƒ€‚ğ‘I‘ğ‚µ‚Ä‚©‚çÄs‚µ‚Ä‚­‚¾‚³‚¢B\nRetry after selecting frames range.");
+			swprintf_s(strmes, 1024, L"è¤‡æ•°ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’é¸æŠã—ã¦ã‹ã‚‰å†è©¦è¡Œã—ã¦ãã ã•ã„ã€‚\nRetry after selecting frames range.");
 			::DSMessageBox(NULL, strmes, L"error!!!", MB_OK);
 		}
 		else {
@@ -8430,7 +8453,7 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 	case IDC_STOP_BT:
 	case IDC_PHYSICS_IK_STOP:
 		StopBt();
-		//g_limitdegflag = s_savelimitdegflag;//StopBt“à‚ÅŒÄ‚Ô
+		//g_limitdegflag = s_savelimitdegflag;//StopBtå†…ã§å‘¼ã¶
 		break;
 
 	case IDC_LIGHT_SCALE:
@@ -8486,46 +8509,46 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 	case IDC_BRUSH_MIRROR_U:
 		if (s_BrushMirrorUCheckBox) {
 			g_brushmirrorUflag = (int)s_BrushMirrorUCheckBox->GetChecked();
-			if (s_editmotionflag < 0) {//IK’†‚Å‚È‚¢‚Æ‚«
+			if (s_editmotionflag < 0) {//IKä¸­ã§ãªã„ã¨ã
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-				if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+				if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 					_ASSERT(0);
-					::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+					::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 					PostQuitMessage(result);
 				}
-				//PrepairUndo();//•Û‘¶‚ÍOnFrameUtCheckBox‚É‚Ä
+				//PrepairUndo();//ä¿å­˜ã¯OnFrameUtCheckBoxã«ã¦
 			}
-			s_BrushMirrorUCheckBoxFlag = true;//UTDialog‚Ì
+			s_BrushMirrorUCheckBoxFlag = true;//UTDialogã®
 		}
 		break;
 	case IDC_BRUSH_MIRROR_V:
 		if (s_BrushMirrorVCheckBox) {
 			g_brushmirrorVflag = (int)s_BrushMirrorVCheckBox->GetChecked();
-			if (s_editmotionflag < 0) {//IK’†‚Å‚È‚¢‚Æ‚«
+			if (s_editmotionflag < 0) {//IKä¸­ã§ãªã„ã¨ã
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-				if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+				if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 					_ASSERT(0);
-					::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+					::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 					PostQuitMessage(result);
 				}
-				//PrepairUndo();//•Û‘¶‚ÍOnFrameUtCheckBox‚É‚Ä
+				//PrepairUndo();//ä¿å­˜ã¯OnFrameUtCheckBoxã«ã¦
 			}
-			s_BrushMirrorVCheckBoxFlag = true;//UTDialog‚Ì
+			s_BrushMirrorVCheckBoxFlag = true;//UTDialogã®
 		}
 		break;
 	case IDC_BRUSH_MIRROR_V_DIV2:
 		if (s_IfMirrorVDiv2CheckBox) {
-			if (s_editmotionflag < 0) {//IK’†‚Å‚È‚¢‚Æ‚«
+			if (s_editmotionflag < 0) {//IKä¸­ã§ãªã„ã¨ã
 				g_ifmirrorVDiv2flag = (int)s_IfMirrorVDiv2CheckBox->GetChecked();
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-				if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+				if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 					_ASSERT(0);
-					::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+					::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 					PostQuitMessage(result);
 				}
-				//PrepairUndo();//•Û‘¶‚ÍOnFrameUtCheckBox‚É‚Ä
+				//PrepairUndo();//ä¿å­˜ã¯OnFrameUtCheckBoxã«ã¦
 			}
-			s_IfMirrorVDiv2CheckBoxFlag = true;//UTDialog‚Ì
+			s_IfMirrorVDiv2CheckBoxFlag = true;//UTDialogã®
 		}
 		break;
 	case IDC_SL_BRUSHREPEATS:
@@ -8533,17 +8556,17 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 		g_brushrepeats = (int)(g_SampleUI.GetSlider(IDC_SL_BRUSHREPEATS)->GetValue());
 		swprintf_s(sz, 100, L"Brush Repeats : %d", g_brushrepeats);
 		g_SampleUI.GetStatic(IDC_STATIC_BRUSHREPEATS)->SetText(sz);
-		if (s_editmotionflag < 0) {//IK’†‚Å‚È‚¢‚Æ‚«
+		if (s_editmotionflag < 0) {//IKä¸­ã§ãªã„ã¨ã
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+			if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 				_ASSERT(0);
-				::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+				::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 				PostQuitMessage(result);
 			}
 		}
-		if (nEvent == EVENT_SLIDER_VALUE_CHANGED_UP) {//ƒ}ƒEƒXƒAƒbƒv‚ÌƒCƒxƒ“ƒg
+		if (nEvent == EVENT_SLIDER_VALUE_CHANGED_UP) {//ãƒã‚¦ã‚¹ã‚¢ãƒƒãƒ—ã®ã‚¤ãƒ™ãƒ³ãƒˆ
 		//if (nEvent == EVENT_SLIDER_RELEASEDCAPTURE) {
-			s_utBrushRepeatsFlag = true;//PrepairUndo();//•Û‘¶‚ÍOnFrameUtCheckBox‚É‚Ä
+			s_utBrushRepeatsFlag = true;//PrepairUndo();//ä¿å­˜ã¯OnFrameUtCheckBoxã«ã¦
 		}
 		break;
 	case IDC_SL_APPLYRATE:
@@ -8555,17 +8578,17 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 		OnTimeLineSelectFromSelectedKey();
 		DisplayApplyRateText();
 		SetShowPosTime();//2022/10/22
-		if (s_editmotionflag < 0) {//IK’†‚Å‚È‚¢‚Æ‚«
+		if (s_editmotionflag < 0) {//IKä¸­ã§ãªã„ã¨ã
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+			if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 				_ASSERT(0);
-				::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+				::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 				PostQuitMessage(result);
 			}
 		}
-		if (nEvent == EVENT_SLIDER_VALUE_CHANGED_UP) {//ƒ}ƒEƒXƒAƒbƒv‚ÌƒCƒxƒ“ƒg
+		if (nEvent == EVENT_SLIDER_VALUE_CHANGED_UP) {//ãƒã‚¦ã‚¹ã‚¢ãƒƒãƒ—ã®ã‚¤ãƒ™ãƒ³ãƒˆ
 		//if (nEvent == EVENT_SLIDER_RELEASEDCAPTURE){
-			s_utApplyRateFlag = true;//PrepairUndo();//•Û‘¶‚ÍOnFrameUtCheckBox‚É‚Ä
+			s_utApplyRateFlag = true;//PrepairUndo();//ä¿å­˜ã¯OnFrameUtCheckBoxã«ã¦
 		}
 		break;
 
@@ -8595,9 +8618,9 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 			g_motionbrush_method = (int)PtrToUlong(pComboBox->GetSelectedData());
 			if (s_editmotionflag < 0) {
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-				if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+				if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 					_ASSERT(0);
-					::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+					::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 					PostQuitMessage(result);
 				}
 			}
@@ -9431,16 +9454,16 @@ int SetBaseDir()
 		return 1;
 	}
 
-	//*.exe‚Ì“ª
+	//*.exeã®é ­
 	*lasten = 0;
 
 	WCHAR* last2en = 0;
 	WCHAR* last3en = 0;
 	WCHAR* last4en = 0;
-	last2en = wcsrchr(filename, TEXT('\\'));//Release, Debug‚Ì“ª‚Ì‰~‚©‚Ç‚¤‚©’²‚×‚é
+	last2en = wcsrchr(filename, TEXT('\\'));//Release, Debugã®é ­ã®å††ã‹ã©ã†ã‹èª¿ã¹ã‚‹
 	if (last2en) {
 		*last2en = 0;
-		last3en = wcsrchr(filename, TEXT('\\'));//Release, Debug‚©‚Ç‚¤‚©’²‚×‚éƒtƒHƒ‹ƒ_‚Ì‘O‚ÉƒtƒHƒ‹ƒ_‚ª‚ ‚é‚©‚Ç‚¤‚©
+		last3en = wcsrchr(filename, TEXT('\\'));//Release, Debugã‹ã©ã†ã‹èª¿ã¹ã‚‹ãƒ•ã‚©ãƒ«ãƒ€ã®å‰ã«ãƒ•ã‚©ãƒ«ãƒ€ãŒã‚ã‚‹ã‹ã©ã†ã‹
 		if (last3en) {
 			if ((wcscmp(last2en + 1, L"debug") == 0) ||
 				(wcscmp(last2en + 1, L"Debug") == 0) ||
@@ -9451,7 +9474,7 @@ int SetBaseDir()
 				) {
 
 				*last3en = 0;
-				last4en = wcsrchr(filename, TEXT('\\'));//x64‚©‚Ç‚¤‚©’²‚×‚éƒtƒHƒ‹ƒ_‚Ì‘O‚ÉƒtƒHƒ‹ƒ_‚ª‚ ‚é‚©‚Ç‚¤‚©
+				last4en = wcsrchr(filename, TEXT('\\'));//x64ã‹ã©ã†ã‹èª¿ã¹ã‚‹ãƒ•ã‚©ãƒ«ãƒ€ã®å‰ã«ãƒ•ã‚©ãƒ«ãƒ€ãŒã‚ã‚‹ã‹ã©ã†ã‹
 				if (last4en) {
 					if (wcscmp(last3en + 1, L"x64") != 0) {
 						*last3en = TEXT('\\');
@@ -9469,7 +9492,7 @@ int SetBaseDir()
 	wcscpy_s(g_basedir, MAX_PATH, filename);
 	g_basedir[MAX_PATH - 1] = 0L;
 	leng = wcslen(g_basedir);
-	if ((leng >= 1) && (leng <= (MAX_PATH - 2))) {//‚P•¶š’Ç‰Á•ª‚ğl—¶
+	if ((leng >= 1) && (leng <= (MAX_PATH - 2))) {//ï¼‘æ–‡å­—è¿½åŠ åˆ†ã‚’è€ƒæ…®
 		if (wcscmp(g_basedir + leng - 1, L"\\") != 0) {
 			wcscat_s(g_basedir, MAX_PATH, L"\\");
 		}
@@ -9580,8 +9603,8 @@ int OpenREFile()
 	int renum = s_model->GetRigidElemInfoSize();
 	if (renum > 0) {
 
-		//RgidElemFile‚ÌLoad‚É‚µ‚Ä‚¢‚é
-		//if (s_model && (renum == 1)) {//‰‰ñ‚Ìref“Ç‚İ‚İŒã‚ÉRigidElem‚ğì¬
+		//RgidElemFileã®Loadæ™‚ã«ã—ã¦ã„ã‚‹
+		//if (s_model && (renum == 1)) {//åˆå›ã®refèª­ã¿è¾¼ã¿å¾Œã«RigidElemã‚’ä½œæˆ
 		//	int chkret;
 		//	chkret = s_model->CreateRigidElem();
 		//	_ASSERT(!chkret);
@@ -9716,7 +9739,7 @@ void FindF(std::vector<wstring>& out, const wstring& directory, const wstring& f
 				size_t patternleng = wcslen(pattern);
 				if ((patternleng > 0) && (pathleng > 0) && (pathleng < MAX_PATH) && (pathleng > patternleng)) {
 					WCHAR chkterm = *(pfind + patternleng);
-					if (chkterm == 0L) {//pattern‚ÌŸ‚Ì•¶š‚ªNULL‚Ìê‡
+					if (chkterm == 0L) {//patternã®æ¬¡ã®æ–‡å­—ãŒNULLã®å ´åˆ
 						out.push_back(fullFileName);
 					}
 				}
@@ -9744,7 +9767,7 @@ int CALLBACK BrowseCallbackProc(HWND   hWnd, UINT   uMsg, LPARAM lParam, LPARAM 
 
 	switch (uMsg) {
 
-		// ‰ŠúƒfƒBƒŒƒNƒgƒŠ‚Ìİ’è
+		// åˆæœŸãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®è¨­å®š
 	case BFFM_INITIALIZED:
 		firstdir[0] = 0L;
 		GetBatchHistoryDir(firstdir, MAX_PATH);
@@ -9753,26 +9776,26 @@ int CALLBACK BrowseCallbackProc(HWND   hWnd, UINT   uMsg, LPARAM lParam, LPARAM 
 			SendMessage(hWnd, BFFM_SETEXPANDED, (WPARAM)TRUE, (LPARAM)firstdir);
 		}
 		else {
-			// ƒhƒLƒ…ƒƒ“ƒg‚ª‰ŠúƒtƒHƒ‹ƒ_
+			// ãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒˆãŒåˆæœŸãƒ•ã‚©ãƒ«ãƒ€
 			if (lpData) {
 				SendMessage(hWnd, BFFM_SETSELECTION, (WPARAM)TRUE, (LPARAM)lpData);
 				SendMessage(hWnd, BFFM_SETEXPANDED, (WPARAM)TRUE, (LPARAM)lpData);
 			}
 		}
-		//‰ŠúƒtƒHƒ‹ƒ_iƒhƒLƒ…ƒƒ“ƒgj‚ğ“WŠJ
+		//åˆæœŸãƒ•ã‚©ãƒ«ãƒ€ï¼ˆãƒ‰ã‚­ãƒ¥ãƒ¡ãƒ³ãƒˆï¼‰ã‚’å±•é–‹
 		//SendMessage(hWnd, BFFM_SETEXPANDED, (WPARAM)TRUE, (LPARAM)lpData);
 		break;
 
-		// –³Œø‚ÈƒtƒHƒ‹ƒ_–¼‚ğ“ü—Í‚³‚ê‚½ê‡
+		// ç„¡åŠ¹ãªãƒ•ã‚©ãƒ«ãƒ€åã‚’å…¥åŠ›ã•ã‚ŒãŸå ´åˆ
 	case BFFM_VALIDATEFAILED:
-		MessageBox(NULL, L"–³Œø‚ÈƒtƒHƒ‹ƒ_–¼‚Å‚·", L"", MB_OK);
+		MessageBox(NULL, L"ç„¡åŠ¹ãªãƒ•ã‚©ãƒ«ãƒ€åã§ã™", L"", MB_OK);
 		return TRUE;
 	}
 	return FALSE;
 }
 
 
-//########### retarget batch@‚±‚±‚©‚ç
+//########### retarget batchã€€ã“ã“ã‹ã‚‰
 
 int RetargetFile(char* fbxpath)
 {
@@ -9840,7 +9863,7 @@ unsigned __stdcall ThreadFunc_Retarget(LPVOID lpThreadParam)
 
 	int outcnt;
 	for (outcnt = 0; outcnt < outnum; outcnt++) {
-		//FBXƒtƒ@ƒCƒ‹
+		//FBXãƒ•ã‚¡ã‚¤ãƒ«
 		char fbxpath[MAX_PATH] = { 0 };
 		WideCharToMultiByte(CP_UTF8, 0, s_retargetout[outcnt].c_str(), -1, fbxpath, MAX_PATH, NULL, NULL);
 		//strcat_s(fbxpath, MAX_PATH, ".fbx");
@@ -9903,7 +9926,7 @@ int RetargetBatch()
 	s_convbone_model_batch_selindex = s_curmodelmenuindex;
 
 
-	s_saveretargetmodel = s_curmodelmenuindex;//I—¹‚ÉOnModelMenu‚ğŒÄ‚Ô‚½‚ß‚É•Û‘¶
+	s_saveretargetmodel = s_curmodelmenuindex;//çµ‚äº†æ™‚ã«OnModelMenuã‚’å‘¼ã¶ãŸã‚ã«ä¿å­˜
 
 
 	BROWSEINFO bi;
@@ -9919,9 +9942,9 @@ int RetargetBatch()
 	//	SHGetMalloc(&pMalloc);
 	//	if (SUCCEEDED(SHGetSpecialFolderLocation(s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl)))
 	//	{
-	//		// ƒpƒX‚É•ÏŠ·‚·‚é
+	//		// ãƒ‘ã‚¹ã«å¤‰æ›ã™ã‚‹
 	//		SHGetPathFromIDList(pidl, selectname);
-	//		// æ“¾‚µ‚½IDL‚ğ‰ğ•ú‚·‚é (CoTaskMemFree‚Å‚à‰Â)
+	//		// å–å¾—ã—ãŸIDLã‚’è§£æ”¾ã™ã‚‹ (CoTaskMemFreeã§ã‚‚å¯)
 	//		pMalloc->Free(pidl);
 	//		//SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
 	//	}
@@ -9931,10 +9954,10 @@ int RetargetBatch()
 	bi.hwndOwner = s_3dwnd;
 	bi.pidlRoot = NULL;//!!!!!!!
 	bi.pszDisplayName = dispname;
-	//bi.lpszTitle = L"•Û‘¶ƒtƒHƒ‹ƒ_‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢B";
+	//bi.lpszTitle = L"ä¿å­˜ãƒ•ã‚©ãƒ«ãƒ€ã‚’é¸æŠã—ã¦ãã ã•ã„ã€‚";
 	bi.lpszTitle = L"SelectDirectoryForBatch";
 	//bi.ulFlags = BIF_EDITBOX | BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
-	bi.ulFlags = BIF_RETURNONLYFSDIRS;// | BIF_NEWDIALOGSTYLE;//BIF_NEWDIALOGSTYLE‚ğw’è‚·‚é‚ÆŒÅ‚Ü‚é@“ä
+	bi.ulFlags = BIF_RETURNONLYFSDIRS;// | BIF_NEWDIALOGSTYLE;//BIF_NEWDIALOGSTYLEã‚’æŒ‡å®šã™ã‚‹ã¨å›ºã¾ã‚‹ã€€è¬
 	bi.lpfn = BrowseCallbackProc;
 	bi.lParam = 0;
 	bi.iImage = iImage;
@@ -9953,7 +9976,7 @@ int RetargetBatch()
 	s_getfilenametreeview = 0;
 
 	if (curlpidl) {
-		//::DSMessageBox( m_hWnd, dispname, "ƒtƒHƒ‹ƒ_[–¼", MB_OK );
+		//::DSMessageBox( m_hWnd, dispname, "ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼å", MB_OK );
 
 		BOOL bret;
 		bret = SHGetPathFromIDList(curlpidl, selectname);
@@ -10012,7 +10035,7 @@ int RetargetBatch()
 				0, &threadaddr1);
 
 
-			//WiatFor‚µ‚È‚¢ê‡‚É‚Íæ‚É•Â‚¶‚Ä‚àOK
+			//WiatForã—ãªã„å ´åˆã«ã¯å…ˆã«é–‰ã˜ã¦ã‚‚OK
 			if ((s_retargethandle1 != 0) && (s_retargethandle1 != INVALID_HANDLE_VALUE)) {
 				CloseHandle(s_retargethandle1);
 			}
@@ -10020,17 +10043,17 @@ int RetargetBatch()
 		}
 	}
 
-	//InterlockedExchange(&g_retargetbatchflag, 0);//ƒXƒŒƒbƒh‚ğ—§‚Ä‚Ä‚·‚®‚Éo‚Ä‚¢‚­‚Ì‚Å‚±‚±‚Å‚Íƒtƒ‰ƒO‚Í‚»‚Ì‚Ü‚Ü
+	//InterlockedExchange(&g_retargetbatchflag, 0);//ã‚¹ãƒ¬ãƒƒãƒ‰ã‚’ç«‹ã¦ã¦ã™ãã«å‡ºã¦ã„ãã®ã§ã“ã“ã§ã¯ãƒ•ãƒ©ã‚°ã¯ãã®ã¾ã¾
 
 
-	//ChangeLimitDegFlag(s_savelimitdegflag, true, true);//OnFrameBatchThread()‚Ås‚¤‚Ì‚Å@‚±‚±‚Å‚ÍŒÄ‚Î‚È‚¢
+	//ChangeLimitDegFlag(s_savelimitdegflag, true, true);//OnFrameBatchThread()ã§è¡Œã†ã®ã§ã€€ã“ã“ã§ã¯å‘¼ã°ãªã„
 
 
 	return 0;
 }
 
 
-//########## retarget batch ‚±‚±‚Ü‚Å
+//########## retarget batch ã“ã“ã¾ã§
 
 
 unsigned __stdcall ThreadFunc_Bvh2Fbx(LPVOID lpThreadParam)
@@ -10055,7 +10078,7 @@ unsigned __stdcall ThreadFunc_Bvh2Fbx(LPVOID lpThreadParam)
 
 		InterlockedExchange(&s_progresscnt, (LONG)outcnt);
 
-		//bvhƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚Ş
+		//bvhãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿è¾¼ã‚€
 		CBVHFile* bvhfile = new CBVHFile();
 		if (!bvhfile) {
 			//g_bvh2fbxbatchflag = 0;
@@ -10072,7 +10095,7 @@ unsigned __stdcall ThreadFunc_Bvh2Fbx(LPVOID lpThreadParam)
 			break;
 		}
 
-		//FBXƒtƒ@ƒCƒ‹‚É‘‚«o‚·
+		//FBXãƒ•ã‚¡ã‚¤ãƒ«ã«æ›¸ãå‡ºã™
 		char fbxpath[MAX_PATH] = { 0 };
 		WideCharToMultiByte(CP_UTF8, 0, s_bvh2fbxout[outcnt].c_str(), -1, fbxpath, MAX_PATH, NULL, NULL);
 		strcat_s(fbxpath, MAX_PATH, ".fbx");
@@ -10154,9 +10177,9 @@ int BVH2FBXBatch()
 	//	SHGetMalloc(&pMalloc);
 	//	if (SUCCEEDED(SHGetSpecialFolderLocation(s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl)))
 	//	{
-	//		// ƒpƒX‚É•ÏŠ·‚·‚é
+	//		// ãƒ‘ã‚¹ã«å¤‰æ›ã™ã‚‹
 	//		SHGetPathFromIDList(pidl, selectname);
-	//		// æ“¾‚µ‚½IDL‚ğ‰ğ•ú‚·‚é (CoTaskMemFree‚Å‚à‰Â)
+	//		// å–å¾—ã—ãŸIDLã‚’è§£æ”¾ã™ã‚‹ (CoTaskMemFreeã§ã‚‚å¯)
 	//		pMalloc->Free(pidl);
 	//		//SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
 	//	}
@@ -10166,10 +10189,10 @@ int BVH2FBXBatch()
 	bi.hwndOwner = s_3dwnd;
 	bi.pidlRoot = NULL;//!!!!!!!
 	bi.pszDisplayName = dispname;
-	//bi.lpszTitle = L"•Û‘¶ƒtƒHƒ‹ƒ_‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢B";
+	//bi.lpszTitle = L"ä¿å­˜ãƒ•ã‚©ãƒ«ãƒ€ã‚’é¸æŠã—ã¦ãã ã•ã„ã€‚";
 	bi.lpszTitle = L"SelectDirectoryForBatch";
 	//bi.ulFlags = BIF_EDITBOX | BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
-	bi.ulFlags = BIF_RETURNONLYFSDIRS;// | BIF_NEWDIALOGSTYLE;//BIF_NEWDIALOGSTYLE‚ğw’è‚·‚é‚ÆŒÅ‚Ü‚é@“ä
+	bi.ulFlags = BIF_RETURNONLYFSDIRS;// | BIF_NEWDIALOGSTYLE;//BIF_NEWDIALOGSTYLEã‚’æŒ‡å®šã™ã‚‹ã¨å›ºã¾ã‚‹ã€€è¬
 	bi.lpfn = BrowseCallbackProc;
 	bi.lParam = 0;
 	bi.iImage = iImage;
@@ -10188,7 +10211,7 @@ int BVH2FBXBatch()
 	s_getfilenametreeview = 0;
 
 	if (curlpidl) {
-		//::DSMessageBox( m_hWnd, dispname, "ƒtƒHƒ‹ƒ_[–¼", MB_OK );
+		//::DSMessageBox( m_hWnd, dispname, "ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼å", MB_OK );
 
 		BOOL bret;
 		bret = SHGetPathFromIDList(curlpidl, selectname);
@@ -10241,7 +10264,7 @@ int BVH2FBXBatch()
 				(void*)0,
 				0, &threadaddr1);
 
-			//WiatFor‚µ‚È‚¢ê‡‚É‚Íæ‚É•Â‚¶‚Ä‚àOK
+			//WiatForã—ãªã„å ´åˆã«ã¯å…ˆã«é–‰ã˜ã¦ã‚‚OK
 			if (s_bvh2fbxhandle1 && (s_bvh2fbxhandle1 != INVALID_HANDLE_VALUE)) {
 				CloseHandle(s_bvh2fbxhandle1);
 			}
@@ -10268,7 +10291,7 @@ int BVH2FBX()
 	MoveMemory(savepath, g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
 
 
-	//bvhƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚Ş
+	//bvhãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿è¾¼ã‚€
 	CBVHFile bvhfile;
 	int ret;
 	ret = bvhfile.LoadBVHFile(s_3dwnd, g_tmpmqopath, g_tmpmqomult);
@@ -10279,7 +10302,7 @@ int BVH2FBX()
 
 	Savebvh2FBXHistory(savepath);
 
-	//FBXƒtƒ@ƒCƒ‹‚É‘‚«o‚·
+	//FBXãƒ•ã‚¡ã‚¤ãƒ«ã«æ›¸ãå‡ºã™
 	char fbxpath[MAX_PATH] = { 0 };
 	WideCharToMultiByte(CP_UTF8, 0, g_tmpmqopath, -1, fbxpath, MAX_PATH, NULL, NULL);
 	strcat_s(fbxpath, MAX_PATH, ".fbx");
@@ -10299,12 +10322,12 @@ int OpenFile()
 	s_nowloading = true;
 
 
-	//‘å‚«‚¢ƒtƒŒ[ƒ€ˆê‚Ì‚Ü‚Ü¬‚³‚¢ƒtƒŒ[ƒ€’·‚Ìƒf[ƒ^‚ğ“Ç‚İ‚ñ‚¾‚ÉƒGƒ‰[‚É‚È‚ç‚È‚¢‚æ‚¤‚ÉB
+	//å¤§ãã„ãƒ•ãƒ¬ãƒ¼ãƒ ä¸€ã®ã¾ã¾å°ã•ã„ãƒ•ãƒ¬ãƒ¼ãƒ é•·ã®ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚“ã æ™‚ã«ã‚¨ãƒ©ãƒ¼ã«ãªã‚‰ãªã„ã‚ˆã†ã«ã€‚
 	InitTimelineSelection();
 
 
 
-	//CurrentDirectory‚ªMameMedia‚É‚È‚Á‚Ä‚¢‚½‚Æ‚«‚É‚ÍTestƒfƒBƒŒƒNƒgƒŠ‚É•Ï‚¦‚é
+	//CurrentDirectoryãŒMameMediaã«ãªã£ã¦ã„ãŸã¨ãã«ã¯Testãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰ãˆã‚‹
 	WCHAR curdir[MAX_PATH] = { 0L };
 	ZeroMemory(curdir, sizeof(WCHAR) * MAX_PATH);
 	GetCurrentDirectory(MAX_PATH, curdir);
@@ -10408,8 +10431,8 @@ int OpenFile()
 
 		if (result != 0) {
 			WCHAR strerror[MAX_PATH * 2] = { 0L };
-			swprintf_s(strerror, MAX_PATH * 2, L"%s ‚Ì\n“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½B", g_tmpmqopath);
-			MessageBox(s_mainhwnd, strerror, L"ƒGƒ‰[", MB_OK);
+			swprintf_s(strerror, MAX_PATH * 2, L"%s ã®\nèª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸã€‚", g_tmpmqopath);
+			MessageBox(s_mainhwnd, strerror, L"ã‚¨ãƒ©ãƒ¼", MB_OK);
 			s_nowloading = false;
 			return 1;
 		}
@@ -10448,7 +10471,7 @@ int OpenFile()
 				}
 				//}
 				//else {
-				//	//ÅI‚ÌFBX‚É‘Î‚µ‚Ä‚Ì‚İinittimeline‚ğ‚·‚é
+				//	//æœ€çµ‚ã®FBXã«å¯¾ã—ã¦ã®ã¿inittimelineã‚’ã™ã‚‹
 				//	OpenFBXFile(0, 1);
 				//}
 				s_filterindex = 1;
@@ -10469,8 +10492,8 @@ int OpenFile()
 
 			if (result != 0) {
 				WCHAR strerror[MAX_PATH * 2] = { 0L };
-				swprintf_s(strerror, MAX_PATH * 2, L"%s ‚Ì\n“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½B", g_tmpmqopath);
-				MessageBox(s_mainhwnd, strerror, L"ƒGƒ‰[", MB_OK);
+				swprintf_s(strerror, MAX_PATH * 2, L"%s ã®\nèª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸã€‚", g_tmpmqopath);
+				MessageBox(s_mainhwnd, strerror, L"ã‚¨ãƒ©ãƒ¼", MB_OK);
 				s_nowloading = false;
 				return 1;
 			}
@@ -10483,8 +10506,8 @@ int OpenFile()
 			}
 			else {
 				WCHAR strerror[MAX_PATH * 2] = { 0L };
-				swprintf_s(strerror, MAX_PATH * 2, L"%s ‚Ì\n“Ç‚İ‚İ‚É¸”s‚µ‚Ü‚µ‚½B", g_tmpmqopath);
-				MessageBox(s_mainhwnd, strerror, L"ƒGƒ‰[", MB_OK);
+				swprintf_s(strerror, MAX_PATH * 2, L"%s ã®\nèª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸã€‚", g_tmpmqopath);
+				MessageBox(s_mainhwnd, strerror, L"ã‚¨ãƒ©ãƒ¼", MB_OK);
 				s_nowloading = false;
 				return 1;
 			}
@@ -10503,7 +10526,7 @@ CModel* OpenMQOFile()
 	ID3D11DeviceContext* pd3dImmediateContext = DXUTGetD3D11DeviceContext();
 
 
-	//‘å‚«‚¢ƒtƒŒ[ƒ€ˆê‚Ì‚Ü‚Ü¬‚³‚¢ƒtƒŒ[ƒ€’·‚Ìƒf[ƒ^‚ğ“Ç‚İ‚ñ‚¾‚ÉƒGƒ‰[‚É‚È‚ç‚È‚¢‚æ‚¤‚ÉB
+	//å¤§ãã„ãƒ•ãƒ¬ãƒ¼ãƒ ä¸€ã®ã¾ã¾å°ã•ã„ãƒ•ãƒ¬ãƒ¼ãƒ é•·ã®ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚“ã æ™‚ã«ã‚¨ãƒ©ãƒ¼ã«ãªã‚‰ãªã„ã‚ˆã†ã«ã€‚
 	InitTimelineSelection();
 
 
@@ -10688,7 +10711,7 @@ CModel* OpenFBXFile(bool dorefreshtl, int skipdefref, int inittimelineflag)
 	}
 
 
-	//‘å‚«‚¢ƒtƒŒ[ƒ€ˆê‚Ì‚Ü‚Ü¬‚³‚¢ƒtƒŒ[ƒ€’·‚Ìƒf[ƒ^‚ğ“Ç‚İ‚ñ‚¾‚ÉƒGƒ‰[‚É‚È‚ç‚È‚¢‚æ‚¤‚ÉB
+	//å¤§ãã„ãƒ•ãƒ¬ãƒ¼ãƒ ä¸€ã®ã¾ã¾å°ã•ã„ãƒ•ãƒ¬ãƒ¼ãƒ é•·ã®ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚“ã æ™‚ã«ã‚¨ãƒ©ãƒ¼ã«ãªã‚‰ãªã„ã‚ˆã†ã«ã€‚
 	InitTimelineSelection();
 
 
@@ -10768,7 +10791,7 @@ CModel* OpenFBXFile(bool dorefreshtl, int skipdefref, int inittimelineflag)
 	newmodel->SetBtWorld(s_btWorld);
 	FbxScene* pScene = 0;
 	FbxImporter* pImporter = 0;
-	//skipdefref FBX’P‘Ì“Ç‚İ‚İ‚Ìê‡‚É‚Ídefault_ref.ref‚Í‘¶İ‚µ‚È‚¢B‚»‚Ìê‡skipdefref‚É‚Í‚O‚ª‘ã“ü‚³‚êACModel::LoadFBX“à‚Ådefault_ref.ref‚Ì’†‚Åƒƒ‚ƒŠ‚©‚çƒfƒtƒHƒ‹ƒg’l‚ªİ’è‚³‚ê‚é
+	//skipdefref FBXå˜ä½“èª­ã¿è¾¼ã¿ã®å ´åˆã«ã¯default_ref.refã¯å­˜åœ¨ã—ãªã„ã€‚ãã®å ´åˆskipdefrefã«ã¯ï¼ãŒä»£å…¥ã•ã‚Œã€CModel::LoadFBXå†…ã§default_ref.refã®ä¸­ã§ãƒ¡ãƒ¢ãƒªã‹ã‚‰ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆå€¤ãŒè¨­å®šã•ã‚Œã‚‹
 	int ret;
 	BOOL motioncachebatchflag = FALSE;
 	ret = newmodel->LoadFBX(skipdefref, s_pdev, pd3dImmediateContext, g_tmpmqopath, modelfolder, g_tmpmqomult, s_psdk, &pImporter, &pScene, s_forcenewaxis, motioncachebatchflag);
@@ -10861,13 +10884,13 @@ CModel* OpenFBXFile(bool dorefreshtl, int skipdefref, int inittimelineflag)
 	}
 
 	//if( s_model->GetMotInfoSize() >= 2 ){
-	//	OnDelMotion( 0 );//‰Šúó‘Ô‚Ìƒ_ƒ~[ƒ‚[ƒVƒ‡ƒ“‚ğíœ
+	//	OnDelMotion( 0 );//åˆæœŸçŠ¶æ…‹ã®ãƒ€ãƒŸãƒ¼ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å‰Šé™¤
 	//}
 
 //::MessageBox(s_mainhwnd, L"check 2", L"check!!!", MB_OK);
 
-	//OnAnimMenu‚ÅCreateRigidElem‚ğŒÄ‚Ô‘O‚ÉAdefault_ref.ref‚ğ“Ç‚Ş
-	if (skipdefref == 1) {//ƒvƒƒWƒFƒNƒgƒtƒ@ƒCƒ‹‚©‚çŒÄ‚Î‚ê‚ÄA‚©‚ÂAdefault_ref.ref‚ª‘¶İ‚·‚éê‡
+	//OnAnimMenuã§CreateRigidElemã‚’å‘¼ã¶å‰ã«ã€default_ref.refã‚’èª­ã‚€
+	if (skipdefref == 1) {//ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰å‘¼ã°ã‚Œã¦ã€ã‹ã¤ã€default_ref.refãŒå­˜åœ¨ã™ã‚‹å ´åˆ
 		if (s_model->GetMotInfoSize() > 0) {
 			MOTINFO* firstmi = s_model->GetMotInfo(1);
 			if (firstmi) {
@@ -10894,7 +10917,7 @@ CModel* OpenFBXFile(bool dorefreshtl, int skipdefref, int inittimelineflag)
 	//::MessageBox(s_mainhwnd, L"check 3", L"check!!!", MB_OK);
 
 
-		//if (inittimelineflag == 1)//inittimelineflag ‚Í ÅŒã‚ÌƒLƒƒƒ‰‚Ì‚É‚P
+		//if (inittimelineflag == 1)//inittimelineflag ã¯ æœ€å¾Œã®ã‚­ãƒ£ãƒ©ã®æ™‚ã«ï¼‘
 	{
 		int lastmotid = -1;
 		int motnum = s_model->GetMotInfoSize();
@@ -10910,7 +10933,7 @@ CModel* OpenFBXFile(bool dorefreshtl, int skipdefref, int inittimelineflag)
 				lastmotid = curmi->motid;
 				s_model->SetCurrentMotion(lastmotid);
 				//OnAddMotion(curmi->motid, (motno == 0));
-				OnAddMotion(curmi->motid, (motno == (motnum - 1)));//ÅŒã‚Ìƒ‚[ƒVƒ‡ƒ“!!!!!! 2021/08/19
+				OnAddMotion(curmi->motid, (motno == (motnum - 1)));//æœ€å¾Œã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³!!!!!! 2021/08/19
 
 				if (s_nowloading && s_3dwnd) {
 					OnRenderNowLoading();
@@ -10991,9 +11014,9 @@ CModel* OpenFBXFile(bool dorefreshtl, int skipdefref, int inittimelineflag)
 	DispModelPanel();
 
 
-	//OnAnimMenu‚ÅŒÄ‚Ô
+	//OnAnimMenuã§å‘¼ã¶
 	//if (skipdefref == 0) {
-	//	s_model->CreateBtObject(1);//‰‰ñ
+	//	s_model->CreateBtObject(1);//åˆå›
 	//	s_model->CalcBoneEul(-1);
 	//}
 
@@ -11015,7 +11038,7 @@ CModel* OpenFBXFile(bool dorefreshtl, int skipdefref, int inittimelineflag)
 
 	{
 		//2022/11/23
-		//VRoid‚Ì”¯‚Ì–ÑƒWƒ‡ƒCƒ“ƒg‚ª‘½‚­@Šç‚ª‚İ‚¦‚È‚­‚È‚é‚Ì‚Å@“Ç‚İ‚İ‚É©“®“I‚É@“ª‚ÌƒWƒ‡ƒCƒ“ƒgƒ}[ƒN‚ğƒXƒLƒbƒvİ’è
+		//VRoidã®é«ªã®æ¯›ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆãŒå¤šãã€€é¡”ãŒã¿ãˆãªããªã‚‹ã®ã§ã€€èª­ã¿è¾¼ã¿æ™‚ã«è‡ªå‹•çš„ã«ã€€é ­ã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆãƒãƒ¼ã‚¯ã‚’ã‚¹ã‚­ãƒƒãƒ—è¨­å®š
 		CBone* vroidheadjoint = s_model->GetBoneByName("J_Bip_C_Head");
 		if (!vroidheadjoint) {
 			vroidheadjoint = s_model->GetBoneByName("J_Bip_C_Head_Joint");
@@ -11041,7 +11064,7 @@ CModel* OpenFBXFile(bool dorefreshtl, int skipdefref, int inittimelineflag)
 	//############################
 	//############################
 
-		//“Ç‚İ‚İˆ—‚ª¬Œ÷‚µ‚Ä‚©‚ç—š—ğ‚ğ•Û‘¶‚·‚éBfbxƒtƒ@ƒCƒ‹B
+		//èª­ã¿è¾¼ã¿å‡¦ç†ãŒæˆåŠŸã—ã¦ã‹ã‚‰å±¥æ­´ã‚’ä¿å­˜ã™ã‚‹ã€‚fbxãƒ•ã‚¡ã‚¤ãƒ«ã€‚
 	size_t savepathlen;
 	fbxpath0[MAX_PATH - 1] = 0L;
 	savepathlen = wcslen(fbxpath0);
@@ -11078,7 +11101,7 @@ CModel* OpenFBXFile(bool dorefreshtl, int skipdefref, int inittimelineflag)
 int InitCurMotion(int selectflag, double expandmotion)
 {
 
-	//ƒ‚[ƒVƒ‡ƒ“‰Šú‰»‚Íunlimited‚É‘Î‚µ‚Äs‚¤
+	//ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³åˆæœŸåŒ–ã¯unlimitedã«å¯¾ã—ã¦è¡Œã†
 	bool limitdegflag = false;
 
 
@@ -11101,7 +11124,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 						}
 					}
 				}
-				else if (expandmotion > 0) {//ƒ‚[ƒVƒ‡ƒ“’·‚ğ’·‚­‚µ‚½Û‚ÉA’·‚­‚È‚Á‚½•ª‚Ì‰Šú‰»‚ğ‚·‚é
+				else if (expandmotion > 0) {//ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³é•·ã‚’é•·ãã—ãŸéš›ã«ã€é•·ããªã£ãŸåˆ†ã®åˆæœŸåŒ–ã‚’ã™ã‚‹
 					double oldframeleng = expandmotion;
 
 					//if (topbone) {
@@ -11139,9 +11162,9 @@ int InitCurMotion(int selectflag, double expandmotion)
 				}
 
 
-				////LimitEul‚ğ•\¦‚É‚Í@world‚Ö‚Ì•ÏX‚ğlimited‚É”½‰f‚³‚¹‚é
+				////LimitEulã‚’è¡¨ç¤ºæ™‚ã«ã¯ã€€worldã¸ã®å¤‰æ›´ã‚’limitedã«åæ˜ ã•ã›ã‚‹
 				//if (g_limitdegflag == true) {
-				//	bool allframeflag = true;//‘SƒtƒŒ[ƒ€
+				//	bool allframeflag = true;//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ 
 				//	bool setcursorflag = false;
 				//	bool onpasteflag = false;
 				//	CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, s_editmotionflag, onpasteflag);
@@ -11169,22 +11192,22 @@ int AddTimeLine(int newmotid, bool dorefreshtl)
 
 		if (!s_owpTimeline) {
 			//OWP_Timeline* owpTimeline = 0;
-			//ƒ^ƒCƒ€ƒ‰ƒCƒ“‚ÌGUIƒp[ƒc‚ğ¶¬
+			//ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®GUIãƒ‘ãƒ¼ãƒ„ã‚’ç”Ÿæˆ
 			bool shortlabel = false;
 			s_owpTimeline = new OWP_Timeline(shortlabel, L"testmotion", 100.0, 4.0);
-			s_owpTimeline->setDispKeyFlag(false);//‚‘¬‰»‚Ì‚½‚ßkey•\¦–³‚µ
+			s_owpTimeline->setDispKeyFlag(false);//é«˜é€ŸåŒ–ã®ãŸã‚keyè¡¨ç¤ºç„¡ã—
 
-			// ƒJ[ƒ\ƒ‹ˆÚ“®‚ÌƒCƒxƒ“ƒgƒŠƒXƒi[‚É
-			// ƒJ[ƒ\ƒ‹ˆÚ“®ƒtƒ‰ƒOcursorFlag‚ğƒIƒ“‚É‚·‚éƒ‰ƒ€ƒ_ŠÖ”‚ğ“o˜^‚·‚é
+			// ã‚«ãƒ¼ã‚½ãƒ«ç§»å‹•æ™‚ã®ã‚¤ãƒ™ãƒ³ãƒˆãƒªã‚¹ãƒŠãƒ¼ã«
+			// ã‚«ãƒ¼ã‚½ãƒ«ç§»å‹•ãƒ•ãƒ©ã‚°cursorFlagã‚’ã‚ªãƒ³ã«ã™ã‚‹ãƒ©ãƒ ãƒ€é–¢æ•°ã‚’ç™»éŒ²ã™ã‚‹
 			s_owpTimeline->setCursorListener([]() {
 				if (s_model) {
 					s_cursorFlag = true;
 				}
 				});
 
-			// ƒL[‘I‘ğ‚ÌƒCƒxƒ“ƒgƒŠƒXƒi[‚É
-			// ƒL[‘I‘ğƒtƒ‰ƒOselectFlag‚ğƒIƒ“‚É‚·‚éƒ‰ƒ€ƒ_ŠÖ”‚ğ“o˜^‚·‚é
-			//s_owpTimeline->setSelectListener([](){ s_selectFlag = true; });//LTimeline‚ÖˆÚ“®
+			// ã‚­ãƒ¼é¸æŠæ™‚ã®ã‚¤ãƒ™ãƒ³ãƒˆãƒªã‚¹ãƒŠãƒ¼ã«
+			// ã‚­ãƒ¼é¸æŠãƒ•ãƒ©ã‚°selectFlagã‚’ã‚ªãƒ³ã«ã™ã‚‹ãƒ©ãƒ ãƒ€é–¢æ•°ã‚’ç™»éŒ²ã™ã‚‹
+			//s_owpTimeline->setSelectListener([](){ s_selectFlag = true; });//LTimelineã¸ç§»å‹•
 
 			s_owpTimeline->setMouseRUpListener([]() {
 				if (s_model) {
@@ -11192,8 +11215,8 @@ int AddTimeLine(int newmotid, bool dorefreshtl)
 				}
 				});
 
-			//// ƒL[ˆÚ“®‚ÌƒCƒxƒ“ƒgƒŠƒXƒi[‚É
-			//// ƒL[ˆÚ“®ƒtƒ‰ƒOkeyShiftFlag‚ğƒIƒ“‚É‚µ‚ÄAƒL[ˆÚ“®—Ê‚ğƒRƒs[‚·‚éƒ‰ƒ€ƒ_ŠÖ”‚ğ“o˜^‚·‚é
+			//// ã‚­ãƒ¼ç§»å‹•æ™‚ã®ã‚¤ãƒ™ãƒ³ãƒˆãƒªã‚¹ãƒŠãƒ¼ã«
+			//// ã‚­ãƒ¼ç§»å‹•ãƒ•ãƒ©ã‚°keyShiftFlagã‚’ã‚ªãƒ³ã«ã—ã¦ã€ã‚­ãƒ¼ç§»å‹•é‡ã‚’ã‚³ãƒ”ãƒ¼ã™ã‚‹ãƒ©ãƒ ãƒ€é–¢æ•°ã‚’ç™»éŒ²ã™ã‚‹
 			//s_owpTimeline->setKeyShiftListener([]() {
 			//	if (s_model) {
 			//		s_keyShiftFlag = true;
@@ -11201,24 +11224,24 @@ int AddTimeLine(int newmotid, bool dorefreshtl)
 			//	}
 			//});
 
-			//// ƒL[íœ‚ÌƒCƒxƒ“ƒgƒŠƒXƒi[‚É
-			//// íœ‚³‚ê‚½ƒL[î•ñ‚ğƒXƒ^ƒbƒN‚·‚éƒ‰ƒ€ƒ_ŠÖ”‚ğ“o˜^‚·‚é
+			//// ã‚­ãƒ¼å‰Šé™¤æ™‚ã®ã‚¤ãƒ™ãƒ³ãƒˆãƒªã‚¹ãƒŠãƒ¼ã«
+			//// å‰Šé™¤ã•ã‚ŒãŸã‚­ãƒ¼æƒ…å ±ã‚’ã‚¹ã‚¿ãƒƒã‚¯ã™ã‚‹ãƒ©ãƒ ãƒ€é–¢æ•°ã‚’ç™»éŒ²ã™ã‚‹
 			s_owpTimeline->setKeyDeleteListener([](const KeyInfo& keyInfo) {
 				//s_deletedKeyInfoList.push_back(keyInfo);
 				});
 
 
-			//ƒEƒBƒ“ƒhƒE‚Éƒ^ƒCƒ€ƒ‰ƒCƒ“‚ğŠÖ˜A•t‚¯‚é
+			//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã‚’é–¢é€£ä»˜ã‘ã‚‹
 			s_timelineWnd->addParts(*s_owpTimeline);
 
 
-			//‚PƒNƒŠƒbƒN–Ú–â‘è‘Î‰
+			//ï¼‘ã‚¯ãƒªãƒƒã‚¯ç›®å•é¡Œå¯¾å¿œ
 			s_timelineWnd->refreshPosAndSize();//2022/09/20
 
 
 			//		s_owpTimeline->timeSize = 4.0;
-			//		s_owpTimeline->callRewrite();						//Ä•`‰æ
-			//		s_owpTimeline->setRewriteOnChangeFlag(true);		//Ä•`‰æ—v‹‚ğÄŠJ
+			//		s_owpTimeline->callRewrite();						//å†æç”»
+			//		s_owpTimeline->setRewriteOnChangeFlag(true);		//å†æç”»è¦æ±‚ã‚’å†é–‹
 		}
 
 		if (s_owpTimeline) {
@@ -11253,7 +11276,7 @@ int AddTimeLine(int newmotid, bool dorefreshtl)
 				bool shortlabel = true;
 				s_owpLTimeline = new OWP_Timeline(shortlabel, L"EditRangeTimeLine");
 				s_owpLTimeline->setDispKeyFlag(true);
-				//s_LtimelineWnd->addParts(*s_owpLTimeline);//playerbutton‚æ‚èŒã
+				//s_LtimelineWnd->addParts(*s_owpLTimeline);//playerbuttonã‚ˆã‚Šå¾Œ
 				s_LTSeparator->addParts1(*s_owpLTimeline);
 				s_owpLTimeline->setCursorListener([]() {
 					if (s_model) {
@@ -11278,7 +11301,7 @@ int AddTimeLine(int newmotid, bool dorefreshtl)
 					});
 				s_owpLTimeline->setMouseWheelListener([]() {
 					if (s_model) {
-						if ((g_keybuf['S'] & 0x80) == 0) {//Scroll ‚Ì S
+						if ((g_keybuf['S'] & 0x80) == 0) {//Scroll ã® S
 							if (s_timelinewheelFlag == false) {
 								s_timelinewheelFlag = true;
 								s_timelineshowposFlag = false;
@@ -11330,7 +11353,7 @@ int AddTimeLine(int newmotid, bool dorefreshtl)
 
 
 
-				//2022/09/20 ‚PƒNƒŠƒbƒN–Ú‚ª‚¨‚©‚µ‚­‚È‚é•s‹ï‡‚ğ‰ğÁ
+				//2022/09/20 ï¼‘ã‚¯ãƒªãƒƒã‚¯ç›®ãŒãŠã‹ã—ããªã‚‹ä¸å…·åˆã‚’è§£æ¶ˆ
 				s_LtimelineWnd->setPos(WindowPos(s_toolwidth, s_2ndposy));
 				s_LtimelineWnd->setSizeMin(OrgWinGUI::WindowSize(100, 100));
 				s_LtimelineWnd->setSize(WindowSize(s_longtimelinewidth, s_longtimelineheight));
@@ -11339,7 +11362,7 @@ int AddTimeLine(int newmotid, bool dorefreshtl)
 			}
 		}
 
-		//ƒ^ƒCƒ€ƒ‰ƒCƒ“‚ÌƒL[‚ğİ’è
+		//ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®ã‚­ãƒ¼ã‚’è¨­å®š
 		if (s_owpTimeline) {
 			if (dorefreshtl) {
 				refreshTimeline(*s_owpTimeline);
@@ -11358,10 +11381,10 @@ int AddTimeLine(int newmotid, bool dorefreshtl)
 
 int UpdateEditedEuler()
 {
-	//ƒIƒCƒ‰[ƒOƒ‰ƒt‚ÌƒL[‚ğì¬‚µ‚È‚¨‚·ê‡‚É‚ÍrefreshEulerGraph()
+	//ã‚ªã‚¤ãƒ©ãƒ¼ã‚°ãƒ©ãƒ•ã®ã‚­ãƒ¼ã‚’ä½œæˆã—ãªãŠã™å ´åˆã«ã¯refreshEulerGraph()
 
 
-	//ƒc[ƒ‹ƒ{ƒ^ƒ“‚©‚ç‚àŒÄ‚Ô
+	//ãƒ„ãƒ¼ãƒ«ãƒœã‚¿ãƒ³ã‹ã‚‰ã‚‚å‘¼ã¶
 	//if (s_pickinfo.buttonflag == 0) {
 	//	return 0;
 	//}
@@ -11375,7 +11398,7 @@ int UpdateEditedEuler()
 	//}
 
 
-	//‘I‘ğó‘Ô‚ª‚È‚¢ê‡‚É‚Ítopbone‚ÌƒIƒCƒ‰[ƒOƒ‰ƒt‚ğ•\¦‚·‚éB
+	//é¸æŠçŠ¶æ…‹ãŒãªã„å ´åˆã«ã¯topboneã®ã‚ªã‚¤ãƒ©ãƒ¼ã‚°ãƒ©ãƒ•ã‚’è¡¨ç¤ºã™ã‚‹ã€‚
 	if (s_curboneno < 0) {
 		CBone* topbone = s_model->GetTopBone();
 		if (topbone) {
@@ -11388,7 +11411,7 @@ int UpdateEditedEuler()
 	if (opebone) {
 		CBone* parentbone = opebone->GetParent();
 		if (s_ikkind == 0) {
-			//ikkind ‚ªROT(0)‚Ìê‡‚ÍIK@‚»‚êˆÈŠO‚ÌMV, SCALE‚Ìê‡‚É‚ÍFK
+			//ikkind ãŒROT(0)ã®å ´åˆã¯IKã€€ãã‚Œä»¥å¤–ã®MV, SCALEã®å ´åˆã«ã¯FK
 			if (parentbone) {
 				opebone = parentbone;
 			}
@@ -11403,7 +11426,7 @@ int UpdateEditedEuler()
 			int minfirstflag, maxfirstflag;
 			bool isset = false;
 
-			//refreshEulerGraph‚Í‘S”ÍˆÍ‚Åmin‚Æmax‚ğİ’èBUpdateEditedEuler‚Ístartframe‚©‚çendframe‚Ü‚ÅB
+			//refreshEulerGraphã¯å…¨ç¯„å›²ã§minã¨maxã‚’è¨­å®šã€‚UpdateEditedEulerã¯startframeã‹ã‚‰endframeã¾ã§ã€‚
 			s_owpEulerGraph->getEulMinMax(&isset, &minval, &maxval);
 			if (isset == true) {
 				minfirstflag = 0;
@@ -11473,14 +11496,14 @@ int UpdateEditedEuler()
 
 				CMotionPoint* curmp = opebone->GetMotionPoint(curmi->motid, (double)curtime);
 				if (curmp) {
-					if (s_ikkind == 0) {//‰ñ“]
+					if (s_ikkind == 0) {//å›è»¢
 						//opebone->GetWorldMat(curmi->motid, (double)curtime, 0, &cureul);
 						cureul = opebone->GetLocalEul(g_limitdegflag, curmi->motid, (double)curtime, 0);
 					}
-					else if (s_ikkind == 1) {//ˆÚ“®
+					else if (s_ikkind == 1) {//ç§»å‹•
 						cureul = opebone->CalcLocalTraAnim(g_limitdegflag, curmi->motid, (double)curtime);
 					}
-					else if (s_ikkind == 2) {//ƒXƒP[ƒ‹
+					else if (s_ikkind == 2) {//ã‚¹ã‚±ãƒ¼ãƒ«
 						cureul = opebone->CalcLocalScaleAnim(g_limitdegflag, curmi->motid, (double)curtime);
 					}
 				}
@@ -11539,8 +11562,8 @@ int UpdateEditedEuler()
 					scalemax = maxval;
 				}
 				else {
-					//Euler‚ª‘S‚Ä‚O@—á‚¦‚Î‘SƒtƒŒ[ƒ€‚ğ‘I‘ğ‚µ‚Äƒc[ƒ‹‚Ìp¨‰Šú‰»‚ğÀs‚µ‚½Œã‚È‚Ç
-					//‰¼‚Ìmin‚Æmax‚ğw’è
+					//EulerãŒå…¨ã¦ï¼ã€€ä¾‹ãˆã°å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’é¸æŠã—ã¦ãƒ„ãƒ¼ãƒ«ã®å§¿å‹¢åˆæœŸåŒ–ã‚’å®Ÿè¡Œã—ãŸå¾Œãªã©
+					//ä»®ã®minã¨maxã‚’æŒ‡å®š
 					scalemin = minval;
 					scalemax = maxval + 10.0;
 				}
@@ -11578,7 +11601,7 @@ int UpdateEditedEuler()
 int refreshEulerGraph()
 {
 
-	//ƒIƒCƒ‰[ƒOƒ‰ƒt‚ÌƒL[‚ğì¬‚µ‚È‚¨‚³‚È‚¢ê‡‚ÍUpdateEditedEuler()
+	//ã‚ªã‚¤ãƒ©ãƒ¼ã‚°ãƒ©ãƒ•ã®ã‚­ãƒ¼ã‚’ä½œæˆã—ãªãŠã•ãªã„å ´åˆã¯UpdateEditedEuler()
 
 	if (!s_model || !s_owpLTimeline || !s_owpEulerGraph) {
 		return 0;
@@ -11595,9 +11618,9 @@ int refreshEulerGraph()
 
 		//if (!g_motionbrush_value || (g_motionbrush_frameleng != frameleng)) {
 		int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-		if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+		if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 			_ASSERT(0);
-			::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+			::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 			PostQuitMessage(result);
 		}
 		//}
@@ -11605,8 +11628,8 @@ int refreshEulerGraph()
 		//int result = CreateMotionBrush(0, (double)(frameleng - 1), true);
 		//_ASSERT(result == 0);
 
-		s_owpEulerGraph->setDispScale(1.0);//”{—¦‰Šú‰»
-		s_owpEulerGraph->setDispOffset(0.0);//ˆÊ’uƒIƒtƒZƒbƒg
+		s_owpEulerGraph->setDispScale(1.0);//å€ç‡åˆæœŸåŒ–
+		s_owpEulerGraph->setDispOffset(0.0);//ä½ç½®ã‚ªãƒ•ã‚»ãƒƒãƒˆ
 
 		s_owpEulerGraph->deleteKey();
 		s_owpEulerGraph->deleteLine();
@@ -11617,7 +11640,7 @@ int refreshEulerGraph()
 		s_owpEulerGraph->newLine(0, 0, _T("S"));
 
 		//s_owpLTimeline->setMaxTime( s_model->m_curmotinfo->frameleng - 1.0 );
-		s_owpEulerGraph->setMaxTime(s_model->GetCurMotInfo()->frameleng);//¶’[‚Ì‚Pƒ}ƒX‚ğ‘I‚ñ‚¾ó‘Ô‚ªƒtƒŒ[ƒ€‚O‚ğ‘I‚ñ‚¾ó‘Ô‚¾‚©‚ç@-1 ‚µ‚È‚¢B
+		s_owpEulerGraph->setMaxTime(s_model->GetCurMotInfo()->frameleng);//å·¦ç«¯ã®ï¼‘ãƒã‚¹ã‚’é¸ã‚“ã çŠ¶æ…‹ãŒãƒ•ãƒ¬ãƒ¼ãƒ ï¼ã‚’é¸ã‚“ã çŠ¶æ…‹ã ã‹ã‚‰ã€€-1 ã—ãªã„ã€‚
 
 
 
@@ -11626,7 +11649,7 @@ int refreshEulerGraph()
 			if (opebone) {
 				CBone* parentbone = opebone->GetParent();
 				if (s_ikkind == 0) {
-					//ikkind ‚ªROT(0)‚Ìê‡‚ÍIK@‚»‚êˆÈŠO‚ÌMV, SCALE‚Ìê‡‚É‚ÍFK
+					//ikkind ãŒROT(0)ã®å ´åˆã¯IKã€€ãã‚Œä»¥å¤–ã®MV, SCALEã®å ´åˆã«ã¯FK
 					if (parentbone) {
 						opebone = parentbone;
 					}
@@ -11656,16 +11679,16 @@ int refreshEulerGraph()
 
 						CMotionPoint* curmp = opebone->GetMotionPoint(curmi->motid, (double)curtime);
 						if (curmp) {
-							if (s_ikkind == 0) {//‰ñ“]
+							if (s_ikkind == 0) {//å›è»¢
 								//opebone->GetWorldMat(curmi->motid, (double)curtime, 0, &cureul);
 								cureul = opebone->GetLocalEul(g_limitdegflag,
 									curmi->motid, (double)curtime, 0);
 							}
-							else if (s_ikkind == 1) {//ˆÚ“®
+							else if (s_ikkind == 1) {//ç§»å‹•
 								cureul = opebone->CalcLocalTraAnim(g_limitdegflag,
 									curmi->motid, (double)curtime);
 							}
-							else if (s_ikkind == 2) {//ƒXƒP[ƒ‹
+							else if (s_ikkind == 2) {//ã‚¹ã‚±ãƒ¼ãƒ«
 								cureul = opebone->CalcLocalScaleAnim(g_limitdegflag,
 									curmi->motid, (double)curtime);
 							}
@@ -11727,8 +11750,8 @@ int refreshEulerGraph()
 							scalemax = maxval;
 						}
 						else {
-							//Euler‚ª‘S‚Ä‚O@—á‚¦‚Î‘SƒtƒŒ[ƒ€‚ğ‘I‘ğ‚µ‚Äƒc[ƒ‹‚Ìp¨‰Šú‰»‚ğÀs‚µ‚½Œã‚È‚Ç
-							//‰¼‚Ìmin‚Æmax‚ğw’è
+							//EulerãŒå…¨ã¦ï¼ã€€ä¾‹ãˆã°å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’é¸æŠã—ã¦ãƒ„ãƒ¼ãƒ«ã®å§¿å‹¢åˆæœŸåŒ–ã‚’å®Ÿè¡Œã—ãŸå¾Œãªã©
+							//ä»®ã®minã¨maxã‚’æŒ‡å®š
 							scalemin = minval;
 							scalemax = maxval + 10.0;
 						}
@@ -11763,7 +11786,7 @@ int refreshEulerGraph()
 }
 
 
-//ƒ^ƒCƒ€ƒ‰ƒCƒ“‚Éƒ‚[ƒVƒ‡ƒ“ƒf[ƒ^‚ÌƒL[‚ğİ’è‚·‚é
+//ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã«ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‡ãƒ¼ã‚¿ã®ã‚­ãƒ¼ã‚’è¨­å®šã™ã‚‹
 void refreshTimeline(OWP_Timeline& timeline) {
 
 	if (!s_model || !s_owpLTimeline || !s_owpEulerGraph) {
@@ -11777,7 +11800,7 @@ void refreshTimeline(OWP_Timeline& timeline) {
 	int saveshowposline = timeline.getShowPosLine();
 
 
-	//•‚ğİ’è
+	//æ™‚åˆ»å¹…ã‚’è¨­å®š
 	if (s_model && (s_model->GetCurMotInfo())) {
 		timeline.setMaxTime(s_model->GetCurMotInfo()->frameleng);
 
@@ -11791,7 +11814,7 @@ void refreshTimeline(OWP_Timeline& timeline) {
 		//s_owpLTimeline->newKey( s_strmark, 0.0, 0 );
 
 		//s_owpLTimeline->setMaxTime( s_model->m_curmotinfo->frameleng - 1.0 );
-		s_owpLTimeline->setMaxTime(s_model->GetCurMotInfo()->frameleng);//¶’[‚Ì‚Pƒ}ƒX‚ğ‘I‚ñ‚¾ó‘Ô‚ªƒtƒŒ[ƒ€‚O‚ğ‘I‚ñ‚¾ó‘Ô‚¾‚©‚ç@-1 ‚µ‚È‚¢B
+		s_owpLTimeline->setMaxTime(s_model->GetCurMotInfo()->frameleng);//å·¦ç«¯ã®ï¼‘ãƒã‚¹ã‚’é¸ã‚“ã çŠ¶æ…‹ãŒãƒ•ãƒ¬ãƒ¼ãƒ ï¼ã‚’é¸ã‚“ã çŠ¶æ…‹ã ã‹ã‚‰ã€€-1 ã—ãªã„ã€‚
 
 
 		int itime;
@@ -11800,7 +11823,7 @@ void refreshTimeline(OWP_Timeline& timeline) {
 		}
 	}
 
-	//‚·‚×‚Ä‚Ìs‚ğƒNƒŠƒA
+	//ã™ã¹ã¦ã®è¡Œã‚’ã‚¯ãƒªã‚¢
 	timeline.deleteKey();
 	timeline.deleteLine();
 
@@ -11816,7 +11839,7 @@ void refreshTimeline(OWP_Timeline& timeline) {
 		timeline.newLine(0, 0, false, false, label);
 	}
 
-	//‘I‘ğ‚ğİ’è
+	//é¸æŠæ™‚åˆ»ã‚’è¨­å®š
 	timeline.setCurrentLine(0);
 	s_owpLTimeline->setCurrentTime(1.0, true);
 	//timeline.setCurrentTime(0.0);
@@ -11927,7 +11950,7 @@ int AddBoneScale2(ChaVector3 diffvec)
 
 	if (fabs(diffvec.x) >= fabs(diffvec.y)) {
 		if (fabs(diffvec.x) >= fabs(diffvec.z)) {
-			//xÅ‘å
+			//xæœ€å¤§
 			if (diffvec.x >= 0.0) {
 				scaleval = upval;
 			}
@@ -11936,7 +11959,7 @@ int AddBoneScale2(ChaVector3 diffvec)
 			}
 		}
 		else {
-			//zÅ‘å
+			//zæœ€å¤§
 			if (diffvec.z >= 0.0) {
 				scaleval = upval;
 			}
@@ -11947,7 +11970,7 @@ int AddBoneScale2(ChaVector3 diffvec)
 	}
 	else {
 		if (fabs(diffvec.y) >= fabs(diffvec.z)) {
-			//yÅ‘å
+			//yæœ€å¤§
 			if (diffvec.y >= 0.0) {
 				scaleval = upval;
 			}
@@ -11956,7 +11979,7 @@ int AddBoneScale2(ChaVector3 diffvec)
 			}
 		}
 		else {
-			//zÅ‘å
+			//zæœ€å¤§
 			if (diffvec.z >= 0.0) {
 				scaleval = upval;
 			}
@@ -12206,7 +12229,7 @@ int AddMotion(const WCHAR* wfilename, double srcmotleng)
 	int motnum = (int)s_tlarray.size();
 	if (motnum >= MAXMOTIONNUM) {
 		::DSMessageBox(s_3dwnd, L"Can't Load More.", L"error!!!", MB_OK);
-		//DSMessageBox( s_3dwnd, L"‚±‚êˆÈãƒ‚[ƒVƒ‡ƒ“‚ğ“Ç‚İ‚ß‚Ü‚¹‚ñB", L"ƒ‚[ƒVƒ‡ƒ“”‚ª‘½‚·‚¬‚Ü‚·B", MB_OK );
+		//DSMessageBox( s_3dwnd, L"ã“ã‚Œä»¥ä¸Šãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’èª­ã¿è¾¼ã‚ã¾ã›ã‚“ã€‚", L"ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³æ•°ãŒå¤šã™ãã¾ã™ã€‚", MB_OK );
 		return 0;
 	}
 
@@ -12251,7 +12274,7 @@ int AddMotion(const WCHAR* wfilename, double srcmotleng)
 
 
 	//2023/02/11
-	//OnAnimMenu‚æ‚è‚à‘O : OnAnimMenu()-->CalcBoneEul‚æ‚è‚à‘O
+	//OnAnimMenuã‚ˆã‚Šã‚‚å‰ : OnAnimMenu()-->CalcBoneEulã‚ˆã‚Šã‚‚å‰
 	InitCurMotion(0, 0);
 
 	int selindex = (int)s_tlarray.size() - 1;
@@ -12318,7 +12341,7 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 
 	s_underselectmotion = true;
 
-	//‘å‚«‚¢ƒtƒŒ[ƒ€ˆê‚Ì‚Ü‚Ü¬‚³‚¢ƒtƒŒ[ƒ€’·‚Ìƒf[ƒ^‚ğ“Ç‚İ‚ñ‚¾‚ÉƒGƒ‰[‚É‚È‚ç‚È‚¢‚æ‚¤‚ÉB
+	//å¤§ãã„ãƒ•ãƒ¬ãƒ¼ãƒ ä¸€ã®ã¾ã¾å°ã•ã„ãƒ•ãƒ¬ãƒ¼ãƒ é•·ã®ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚“ã æ™‚ã«ã‚¨ãƒ©ãƒ¼ã«ãªã‚‰ãªã„ã‚ˆã†ã«ã€‚
 	InitTimelineSelection();
 
 	if (!s_model) {
@@ -12400,7 +12423,7 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 			}
 
 
-			//2023/01/29 ‰‰ñ•¨—Ä¶‚Ì‚½‚ß‚É•K—v
+			//2023/01/29 åˆå›ç‰©ç†å†ç”Ÿã®ãŸã‚ã«å¿…è¦
 			//s_savelimitdegflag = g_limitdegflag;
 			//g_limitdegflag = true;
 			//ClearLimitedWM(s_model);
@@ -12420,7 +12443,7 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 	}
 
 	if (s_owpTimeline && dorefreshflag) {
-		//ƒ^ƒCƒ€ƒ‰ƒCƒ“‚ÌƒL[‚ğİ’è
+		//ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®ã‚­ãƒ¼ã‚’è¨­å®š
 		refreshTimeline(*s_owpTimeline);
 		//s_owpTimeline->setCurrentTime( 0.0 );
 		s_owpTimeline->setCurrentTime(1.0);
@@ -12468,13 +12491,13 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 	s_underselectmotion = false;
 
 
-	if (s_model->GetInitAxisMatX() == 0) {//OnAnimMenu‚ÉˆÚ“®
+	if (s_model->GetInitAxisMatX() == 0) {//OnAnimMenuã«ç§»å‹•
 		s_owpLTimeline->setCurrentTime(0.0, true);
 		s_owpEulerGraph->setCurrentTime(0.0, false);
 		s_model->SetMotionFrame(0.0);
 		ChaMatrix tmpwm = s_model->GetWorldMat();
 		s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
-		//‚±‚±‚ÅAxisMatX‚Ì‰Šú‰»
+		//ã“ã“ã§AxisMatXã®åˆæœŸåŒ–
 		s_model->CreateBtObject(g_limitdegflag, 1);
 		s_model->CalcBtAxismat(2);//2
 		s_model->SetInitAxisMatX(1);
@@ -12590,7 +12613,7 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 		}
 	}
 	//else {
-		//‘å‚«‚¢ƒtƒŒ[ƒ€ˆÊ’u‚Ì‚Ü‚Ü¬‚³‚¢ƒtƒŒ[ƒ€’·‚Ìƒf[ƒ^‚ğ“Ç‚İ‚ñ‚¾‚ÉƒGƒ‰[‚É‚È‚ç‚È‚¢‚æ‚¤‚ÉB
+		//å¤§ãã„ãƒ•ãƒ¬ãƒ¼ãƒ ä½ç½®ã®ã¾ã¾å°ã•ã„ãƒ•ãƒ¬ãƒ¼ãƒ é•·ã®ãƒ‡ãƒ¼ã‚¿ã‚’èª­ã¿è¾¼ã‚“ã æ™‚ã«ã‚¨ãƒ©ãƒ¼ã«ãªã‚‰ãªã„ã‚ˆã†ã«ã€‚
 	InitTimelineSelection();
 	//}
 
@@ -12658,7 +12681,7 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 	//if (!g_bvh2fbxbatchflag && !g_motioncachebatchflag && !g_retargetbatchflag) {
 	//if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
 	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
-		CreateConvBoneWnd();//!!!!!!!!!!!!! ƒ‚ƒfƒ‹‘I‘ğ•ÏX‚É‚æ‚èƒŠƒ^[ƒQƒbƒgƒEƒCƒ“ƒhƒEì‚è’¼‚µ
+		CreateConvBoneWnd();//!!!!!!!!!!!!! ãƒ¢ãƒ‡ãƒ«é¸æŠå¤‰æ›´ã«ã‚ˆã‚Šãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ä½œã‚Šç›´ã—
 	}
 
 	SetMainWindowTitle();
@@ -12816,7 +12839,7 @@ int OnImpMenu(int selindex)
 int OnDelMotion(int delmenuindex, bool ondelbutton)//default : ondelbutton = false
 {
 	//if (s_underdelmotion == true) {
-	//	//Ä“ü–h~
+	//	//å†å…¥é˜²æ­¢
 	//	return 0;
 	//}
 
@@ -12896,7 +12919,7 @@ int OnDelModel(int delmenuindex, bool ondelbutton)//default : ondelbutton == fal
 	}
 
 	if (mdlnum == 1) {
-		OnDelAllModel();//psdk rootnode‰Šú‰»
+		OnDelAllModel();//psdk rootnodeåˆæœŸåŒ–
 		//s_underdelmodel = false;
 		return 0;
 	}
@@ -13073,7 +13096,7 @@ int AddModelBound(MODELBOUND* mb, MODELBOUND* addmb)
 
 int refreshModelPanel()
 {
-	//‚·‚×‚Ä‚Ìs‚ğƒNƒŠƒA
+	//ã™ã¹ã¦ã®è¡Œã‚’ã‚¯ãƒªã‚¢
 	s_owpLayerTable->deleteLine();
 
 	WCHAR label[256];
@@ -13162,7 +13185,7 @@ float CalcSelectScale(CBone* curboneptr)
 	//	}
 	//}
 	//else {
-	//	//s_selectscale‚ÌŒvZ‚Í‚µ‚È‚¢Bs_selectscale‚Í‘O‰ñ‚ÌŒvZ’l‚ğg—pB
+	//	//s_selectscaleã®è¨ˆç®—ã¯ã—ãªã„ã€‚s_selectscaleã¯å‰å›ã®è¨ˆç®—å€¤ã‚’ä½¿ç”¨ã€‚
 	//}
 
 	return s_selectscale;
@@ -13201,7 +13224,7 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 		}
 
 
-		CalcSelectScale(curboneptr);//s_selectscale‚ÉƒZƒbƒg
+		CalcSelectScale(curboneptr);//s_selectscaleã«ã‚»ãƒƒãƒˆ
 
 		ChaMatrix scalemat;
 		ChaMatrixIdentity(&scalemat);
@@ -13355,7 +13378,7 @@ int CalcTargetPos(ChaVector3* dstpos)
 	ChaVector3 start3d, end3d;
 	CalcPickRay(&start3d, &end3d);
 
-	//ƒJƒƒ‰‚Ì–Ê‚ÆƒŒƒC‚Æ‚ÌŒğ“_(targetpos)‚ğ‹‚ß‚éB
+	//ã‚«ãƒ¡ãƒ©ã®é¢ã¨ãƒ¬ã‚¤ã¨ã®äº¤ç‚¹(targetpos)ã‚’æ±‚ã‚ã‚‹ã€‚
 	ChaVector3 sb, se, n;
 	sb = s_pickinfo.objworld - start3d;
 	se = end3d - start3d;
@@ -13374,11 +13397,11 @@ int CalcPickRay(ChaVector3* startptr, ChaVector3* endptr)
 	s_pickinfo.diffmouse.y = (float)(s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y);
 
 	ChaVector3 mousesc;
-	//ˆÈ‰º2sB‘Š‘ÎˆÊ’u‚Å“®‚©‚·‚±‚Æ‚ª‚Å‚«‚é‚ªAƒ}ƒEƒX‚ª‰Â“®‚Åƒ{[ƒ“‚ª‰Â“®‚Å‚È‚¢‚æ‚¤‚ÈˆÊ’u‚Ö‚Ì‘€ì‚ª‚ ‚é‚ÆA‚»‚ÌŒã‚Ì‘€ì‚ÆŒ‹‰Ê‚ÌŠÖŒW‚ª•s©‘R‚É‚İ‚¦‚éB
+	//ä»¥ä¸‹2è¡Œã€‚ç›¸å¯¾ä½ç½®ã§å‹•ã‹ã™ã“ã¨ãŒã§ãã‚‹ãŒã€ãƒã‚¦ã‚¹ãŒå¯å‹•ã§ãƒœãƒ¼ãƒ³ãŒå¯å‹•ã§ãªã„ã‚ˆã†ãªä½ç½®ã¸ã®æ“ä½œãŒã‚ã‚‹ã¨ã€ãã®å¾Œã®æ“ä½œã¨çµæœã®é–¢ä¿‚ãŒä¸è‡ªç„¶ã«ã¿ãˆã‚‹ã€‚
 	mousesc.x = s_pickinfo.objscreen.x + s_pickinfo.diffmouse.x;
 	mousesc.y = s_pickinfo.objscreen.y + s_pickinfo.diffmouse.y;
 
-	//ˆÈ‰º‚QsBí‚Éƒ}ƒEƒXˆÊ’u‚ğ–Ú•W‚É‚·‚éB
+	//ä»¥ä¸‹ï¼’è¡Œã€‚å¸¸ã«ãƒã‚¦ã‚¹ä½ç½®ã‚’ç›®æ¨™ã«ã™ã‚‹ã€‚
 	//mousesc.x = s_pickinfo.mousepos.x;
 	//mousesc.y = s_pickinfo.mousepos.y;
 	mousesc.z = s_pickinfo.objscreen.z;
@@ -13465,25 +13488,25 @@ int CalcPickRay(ChaVector3* startptr, ChaVector3* endptr)
 ////		break;
 ////	case WM_NOTIFY:
 /////*
-////WM_NOTIFYƒƒbƒZ[ƒW‚ÍA•W€‚ÌƒRƒ“ƒgƒ[ƒ‹‚âƒ†[ƒU[‚Ì‘€ì‚É‚æ‚é‚³‚Ü‚´‚Ü‚È’Ê’mƒƒbƒZ[ƒW‚ª‘—‚ç‚ê‚½‚Æ‚«‚É‘—‚ç‚ê‚Ä‚«‚Ü‚·B
-////lParam‚É‚ÍOFNOTIFY\‘¢‘Ì‚ÌƒAƒhƒŒƒX‚ª“ü‚Á‚Ä‚¢‚Ä‚±‚ê‚ğ’²‚×‚é‚Æ’Ê’mƒƒbƒZ[ƒW‚Ìí—Ş‚ª‚í‚©‚è‚Ü‚·B
-////‚±‚Ì\‘¢‘Ì‚Ìà–¾‚Í‚±‚±‚Å‚ÍÈ—ª‚µ‚Ü‚·B’Ê’mƒƒbƒZ[ƒW‚Æ‚µ‚Ä‚ÍA
-////CDN_INITDONE          ƒ_ƒCƒAƒƒO”z’u‚ªI‚í‚Á‚½‚±‚Æ‚ğ’m‚ç‚¹‚Ü‚·B
-////CDN_FILEOK            ‚n‚jƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚±‚Æ‚ğ’m‚ç‚¹‚Ü‚·B
-////CDN_FOLDERCHANGE      ŠJ‚¢‚Ä‚¢‚éƒtƒHƒ‹ƒ_‚ª•Ï‚í‚Á‚½‚±‚Æ‚ğ’m‚ç‚¹‚Ü‚·B
-////CDN_HELP              ‚g‚d‚k‚oƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚±‚Æ‚ğ’m‚ç‚¹‚Ü‚·B
-////CDN_SELCHANGE         •Ê‚Ìƒtƒ@ƒCƒ‹‚ª‘I‚Î‚ê‚½‚±‚Æ‚ğ’m‚ç‚¹‚Ü‚·B
-////CDN_SHAREVIOLATION    ‹¤—Lˆá”½‚ª”­¶‚µ‚½‚±‚Æ‚ğ’m‚ç‚¹‚Ü‚·B
-////CDN_TYPECHANGE        ƒtƒ@ƒCƒ‹‚Ìí—Ş‚ª•ÏX‚³‚ê‚½‚±‚Æ‚ğ’m‚ç‚¹‚Ü‚·B
-////‚Ü‚½Aƒ_ƒCƒAƒƒO‚Ìó‘Ô‚ğ’m‚é‚½‚ß‚É‚ÍŸ‚Ì‚æ‚¤‚ÈƒƒbƒZ[ƒW‚ğ‘—‚è‚Ü‚·B
-////‚»‚ê‚¼‚ê‚ÌƒƒbƒZ[ƒW‚É‚Â‚¢‚Ä‚ÍŠe©‚Å’²‚×‚Ä‚­‚¾‚³‚¢i¡‰ñ‚±‚ê‚Î‚Á‚©Aè”²‚«‚¾‚Æ‚¢‚¤‚Ì‚ª‚Î‚ê‚Ä‚µ‚Ü‚¤jB
-////CDM_GETFILEPATH       ‘I‘ğ‚³‚ê‚Ä‚¢‚éƒtƒ@ƒCƒ‹‚ÌƒpƒXiƒtƒHƒ‹ƒ_–¼{ƒtƒ@ƒCƒ‹–¼j‚ğæ“¾‚µ‚Ü‚·B
-////CDM_GETSPEC           ‘I‘ğ‚³‚ê‚Ä‚¢‚éƒtƒ@ƒCƒ‹‚Ìƒtƒ@ƒCƒ‹–¼‚¾‚¯‚ğæ“¾‚µ‚Ü‚·B
-////CDM_GETFOLDERPATH     Œ»İ‚ÌƒtƒHƒ‹ƒ_‚ÌƒpƒX‚ğæ“¾‚µ‚Ü‚·B
-////CDM_GETFOLDERIDLIST   Œ»İ‚ÌƒtƒHƒ‹ƒ_‚ÌItem-ID-List‚ğæ“¾‚µ‚Ü‚·B
-////CDM_HIDECONTROL       w’è‚µ‚½ƒRƒ“ƒgƒ[ƒ‹‚ğ‰B‚µ‚Ü‚·B
-////CDM_SETCONTROLTEXT    w’è‚µ‚½ƒRƒ“ƒgƒ[ƒ‹‚ÉƒeƒLƒXƒg‚ğİ’è‚µ‚Ü‚·B
-////CDM_SETDEFEXT         •\¦‚·‚éƒtƒ@ƒCƒ‹‚ÌŠg’£q‚ğİ’è‚µ‚Ü‚·B*/
+////WM_NOTIFYãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã¯ã€æ¨™æº–ã®ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚„ãƒ¦ãƒ¼ã‚¶ãƒ¼ã®æ“ä½œã«ã‚ˆã‚‹ã•ã¾ã–ã¾ãªé€šçŸ¥ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãŒé€ã‚‰ã‚ŒãŸã¨ãã«é€ã‚‰ã‚Œã¦ãã¾ã™ã€‚
+////lParamã«ã¯OFNOTIFYæ§‹é€ ä½“ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ãŒå…¥ã£ã¦ã„ã¦ã“ã‚Œã‚’èª¿ã¹ã‚‹ã¨é€šçŸ¥ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®ç¨®é¡ãŒã‚ã‹ã‚Šã¾ã™ã€‚
+////ã“ã®æ§‹é€ ä½“ã®èª¬æ˜ã¯ã“ã“ã§ã¯çœç•¥ã—ã¾ã™ã€‚é€šçŸ¥ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã¨ã—ã¦ã¯ã€
+////CDN_INITDONE          ãƒ€ã‚¤ã‚¢ãƒ­ã‚°é…ç½®ãŒçµ‚ã‚ã£ãŸã“ã¨ã‚’çŸ¥ã‚‰ã›ã¾ã™ã€‚
+////CDN_FILEOK            ï¼¯ï¼«ãƒœã‚¿ãƒ³ãŒæŠ¼ã•ã‚ŒãŸã“ã¨ã‚’çŸ¥ã‚‰ã›ã¾ã™ã€‚
+////CDN_FOLDERCHANGE      é–‹ã„ã¦ã„ã‚‹ãƒ•ã‚©ãƒ«ãƒ€ãŒå¤‰ã‚ã£ãŸã“ã¨ã‚’çŸ¥ã‚‰ã›ã¾ã™ã€‚
+////CDN_HELP              ï¼¨ï¼¥ï¼¬ï¼°ãƒœã‚¿ãƒ³ãŒæŠ¼ã•ã‚ŒãŸã“ã¨ã‚’çŸ¥ã‚‰ã›ã¾ã™ã€‚
+////CDN_SELCHANGE         åˆ¥ã®ãƒ•ã‚¡ã‚¤ãƒ«ãŒé¸ã°ã‚ŒãŸã“ã¨ã‚’çŸ¥ã‚‰ã›ã¾ã™ã€‚
+////CDN_SHAREVIOLATION    å…±æœ‰é•åãŒç™ºç”Ÿã—ãŸã“ã¨ã‚’çŸ¥ã‚‰ã›ã¾ã™ã€‚
+////CDN_TYPECHANGE        ãƒ•ã‚¡ã‚¤ãƒ«ã®ç¨®é¡ãŒå¤‰æ›´ã•ã‚ŒãŸã“ã¨ã‚’çŸ¥ã‚‰ã›ã¾ã™ã€‚
+////ã¾ãŸã€ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®çŠ¶æ…‹ã‚’çŸ¥ã‚‹ãŸã‚ã«ã¯æ¬¡ã®ã‚ˆã†ãªãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’é€ã‚Šã¾ã™ã€‚
+////ãã‚Œãã‚Œã®ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã«ã¤ã„ã¦ã¯å„è‡ªã§èª¿ã¹ã¦ãã ã•ã„ï¼ˆä»Šå›ã“ã‚Œã°ã£ã‹ã€æ‰‹æŠœãã ã¨ã„ã†ã®ãŒã°ã‚Œã¦ã—ã¾ã†ï¼‰ã€‚
+////CDM_GETFILEPATH       é¸æŠã•ã‚Œã¦ã„ã‚‹ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‘ã‚¹ï¼ˆãƒ•ã‚©ãƒ«ãƒ€åï¼‹ãƒ•ã‚¡ã‚¤ãƒ«åï¼‰ã‚’å–å¾—ã—ã¾ã™ã€‚
+////CDM_GETSPEC           é¸æŠã•ã‚Œã¦ã„ã‚‹ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ•ã‚¡ã‚¤ãƒ«åã ã‘ã‚’å–å¾—ã—ã¾ã™ã€‚
+////CDM_GETFOLDERPATH     ç¾åœ¨ã®ãƒ•ã‚©ãƒ«ãƒ€ã®ãƒ‘ã‚¹ã‚’å–å¾—ã—ã¾ã™ã€‚
+////CDM_GETFOLDERIDLIST   ç¾åœ¨ã®ãƒ•ã‚©ãƒ«ãƒ€ã®Item-ID-Listã‚’å–å¾—ã—ã¾ã™ã€‚
+////CDM_HIDECONTROL       æŒ‡å®šã—ãŸã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚’éš ã—ã¾ã™ã€‚
+////CDM_SETCONTROLTEXT    æŒ‡å®šã—ãŸã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã«ãƒ†ã‚­ã‚¹ãƒˆã‚’è¨­å®šã—ã¾ã™ã€‚
+////CDM_SETDEFEXT         è¡¨ç¤ºã™ã‚‹ãƒ•ã‚¡ã‚¤ãƒ«ã®æ‹¡å¼µå­ã‚’è¨­å®šã—ã¾ã™ã€‚*/
 ////		loword = LOWORD(wp);
 ////		hiword = HIWORD(wp);
 ////
@@ -13761,21 +13784,21 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 
 		if (s_filterindex == 5) {
-			//bvh2FBX‚Ì’P‘Ìƒtƒ@ƒCƒ‹—š—ğ
+			//bvh2FBXã®å˜ä½“ãƒ•ã‚¡ã‚¤ãƒ«å±¥æ­´
 			std::vector<wstring> vecopenfilename;
 			GetbvhHistoryDir(vecopenfilename);
 
 			SetDlgHistory(hDlgWnd, vecopenfilename);
 		}
 		else if (s_filterindex == 7) {
-			//retarget file‚Ì’P‘Ìƒtƒ@ƒCƒ‹—š—ğ
+			//retarget fileã®å˜ä½“ãƒ•ã‚¡ã‚¤ãƒ«å±¥æ­´
 			std::vector<wstring> vecopenfilename;
 			GetRtgHistoryDir(vecopenfilename);
 
 			SetDlgHistory(hDlgWnd, vecopenfilename);
 		}
 		else {
-			//cha, fbxƒtƒ@ƒCƒ‹—š—ğ
+			//cha, fbxãƒ•ã‚¡ã‚¤ãƒ«å±¥æ­´
 			std::vector<wstring> vecopenfilename;
 			GetchaHistoryDir(vecopenfilename, s_filter_cha);
 
@@ -14040,13 +14063,13 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				s_filter_cha = 1;
 
 				if (s_filterindex == 5) {
-					//bvh2FBX‚Ì’P‘Ìƒtƒ@ƒCƒ‹—š—ğ
+					//bvh2FBXã®å˜ä½“ãƒ•ã‚¡ã‚¤ãƒ«å±¥æ­´
 					std::vector<wstring> vecopenfilename;
 					GetbvhHistoryDir(vecopenfilename);
 					SetDlgHistory(hDlgWnd, vecopenfilename);
 				}
 				else {
-					//cha, fbxƒtƒ@ƒCƒ‹—š—ğ
+					//cha, fbxãƒ•ã‚¡ã‚¤ãƒ«å±¥æ­´
 					std::vector<wstring> vecopenfilename;
 					GetchaHistoryDir(vecopenfilename, s_filter_cha);
 					SetDlgHistory(hDlgWnd, vecopenfilename);
@@ -14063,13 +14086,13 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				s_filter_cha = 2;
 
 				if (s_filterindex == 5) {
-					//bvh2FBX‚Ì’P‘Ìƒtƒ@ƒCƒ‹—š—ğ
+					//bvh2FBXã®å˜ä½“ãƒ•ã‚¡ã‚¤ãƒ«å±¥æ­´
 					std::vector<wstring> vecopenfilename;
 					GetbvhHistoryDir(vecopenfilename);
 					SetDlgHistory(hDlgWnd, vecopenfilename);
 				}
 				else {
-					//cha, fbxƒtƒ@ƒCƒ‹—š—ğ
+					//cha, fbxãƒ•ã‚¡ã‚¤ãƒ«å±¥æ­´
 					std::vector<wstring> vecopenfilename;
 					GetchaHistoryDir(vecopenfilename, s_filter_cha);
 					SetDlgHistory(hDlgWnd, vecopenfilename);
@@ -14083,7 +14106,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
 				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), BM_SETSTATE, TRUE, 0);
 
-				//Retarget file‚Ì’P‘Ìƒtƒ@ƒCƒ‹—š—ğ
+				//Retarget fileã®å˜ä½“ãƒ•ã‚¡ã‚¤ãƒ«å±¥æ­´
 				std::vector<wstring> vecopenfilename;
 				GetRtgHistoryDir(vecopenfilename);
 				SetDlgHistory(hDlgWnd, vecopenfilename);
@@ -14366,11 +14389,11 @@ LRESULT CALLBACK RetargetBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM 
 		SetDlgItemTextW(s_retargetbatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
 		hProg = GetDlgItem(s_retargetbatchwnd, IDC_PROGRESS1);
 		if (hProg) {
-			//ƒvƒƒOƒŒƒXƒo[‚Ì”ÍˆÍ         
+			//ãƒ—ãƒ­ã‚°ãƒ¬ã‚¹ãƒãƒ¼ã®ç¯„å›²         
 			SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, 100));
-			//ƒXƒeƒbƒv‚Ì”ÍˆÍ‚ğİ’è 
+			//ã‚¹ãƒ†ãƒƒãƒ—ã®ç¯„å›²ã‚’è¨­å®š 
 			SendMessage(hProg, PBM_SETSTEP, 1, 0);
-			//Œ»İˆÊ’u‚ğİ’è  
+			//ç¾åœ¨ä½ç½®ã‚’è¨­å®š  
 			SendMessage(hProg, PBM_SETPOS, 0, 0);
 		}
 
@@ -14438,11 +14461,11 @@ LRESULT CALLBACK ProgressDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		SetDlgItemTextW(s_progresswnd, IDC_STRBVH2FBXBATCH, strnumcnt);
 		hProg = GetDlgItem(s_progresswnd, IDC_PROGRESS1);
 		if (hProg) {
-			//ƒvƒƒOƒŒƒXƒo[‚Ì”ÍˆÍ         
+			//ãƒ—ãƒ­ã‚°ãƒ¬ã‚¹ãƒãƒ¼ã®ç¯„å›²         
 			SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, 100));
-			//ƒXƒeƒbƒv‚Ì”ÍˆÍ‚ğİ’è 
+			//ã‚¹ãƒ†ãƒƒãƒ—ã®ç¯„å›²ã‚’è¨­å®š 
 			SendMessage(hProg, PBM_SETSTEP, 1, 0);
-			//Œ»İˆÊ’u‚ğİ’è  
+			//ç¾åœ¨ä½ç½®ã‚’è¨­å®š  
 			SendMessage(hProg, PBM_SETPOS, 0, 0);
 		}
 
@@ -14487,11 +14510,11 @@ LRESULT CALLBACK ProgressDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		//		//HWND hProg;
 		//		hProg = GetDlgItem(s_progresswnd, IDC_PROGRESS1);
 		//		if (hProg) {
-		//			//ƒvƒƒOƒŒƒXƒo[‚Ì”ÍˆÍ‚ğ0-300‚É‚·‚é           
+		//			//ãƒ—ãƒ­ã‚°ãƒ¬ã‚¹ãƒãƒ¼ã®ç¯„å›²ã‚’0-300ã«ã™ã‚‹           
 		//			SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_progressnum));
-		//			//Œ»İˆÊ’u‚ğİ’è  
+		//			//ç¾åœ¨ä½ç½®ã‚’è¨­å®š  
 		//			SendMessage(hProg, PBM_SETPOS, (s_progresscnt + 1), 0);
-		//			//ƒXƒeƒbƒv‚Ì”ÍˆÍ‚ğİ’è 
+		//			//ã‚¹ãƒ†ãƒƒãƒ—ã®ç¯„å›²ã‚’è¨­å®š 
 		//			//SendMessage(hProg, PBM_SETSTEP, 1, 0);
 		//		}
 		//		UpdateWindow(s_progresswnd);
@@ -14536,11 +14559,11 @@ LRESULT CALLBACK bvh2FbxBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM l
 		SetDlgItemTextW(s_bvh2fbxbatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
 		hProg = GetDlgItem(s_bvh2fbxbatchwnd, IDC_PROGRESS1);
 		if (hProg) {
-			//ƒvƒƒOƒŒƒXƒo[‚Ì”ÍˆÍ         
+			//ãƒ—ãƒ­ã‚°ãƒ¬ã‚¹ãƒãƒ¼ã®ç¯„å›²         
 			SendMessage(hProg, PBM_SETRANGE, (WPARAM)0, MAKELPARAM(0, s_bvh2fbxnum));
-			//ƒXƒeƒbƒv‚Ì”ÍˆÍ‚ğİ’è 
+			//ã‚¹ãƒ†ãƒƒãƒ—ã®ç¯„å›²ã‚’è¨­å®š 
 			SendMessage(hProg, PBM_SETSTEP, 1, 0);
-			//Œ»İˆÊ’u‚ğİ’è  
+			//ç¾åœ¨ä½ç½®ã‚’è¨­å®š  
 			SendMessage(hProg, PBM_SETPOS, 0, 0);
 		}
 
@@ -15166,37 +15189,37 @@ int CreateModelPanel()
 
 	s_modelpanel.panel = new OrgWindow(
 		istopmost,
-		clsname,		//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-		GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
-		//WindowPos(s_toolwidth, MAINMENUAIMBARH),		//ˆÊ’u
+		clsname,		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+		GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
+		//WindowPos(s_toolwidth, MAINMENUAIMBARH),		//ä½ç½®
 		s_modelpanelpos,
-		WindowSize(s_modelwindowwidth, s_modelwindowheight),	//ƒTƒCƒY
-		L"ModelPanel",	//ƒ^ƒCƒgƒ‹
-		//s_mainhwnd,					//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
+		WindowSize(s_modelwindowwidth, s_modelwindowheight),	//ã‚µã‚¤ã‚º
+		L"ModelPanel",	//ã‚¿ã‚¤ãƒˆãƒ«
+		//s_mainhwnd,					//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
 		//false,
 		parentwnd,
-		true,					//•\¦E”ñ•\¦ó‘Ô
-		//70,50,70,				//ƒJƒ‰[
-		0, 0, 0,				//ƒJƒ‰[
-		true,					//•Â‚¶‚ç‚ê‚é‚©”Û‚©
-		true);					//ƒTƒCƒY•ÏX‚Ì‰Â”Û
+		true,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+		//70,50,70,				//ã‚«ãƒ©ãƒ¼
+		0, 0, 0,				//ã‚«ãƒ©ãƒ¼
+		true,					//é–‰ã˜ã‚‰ã‚Œã‚‹ã‹å¦ã‹
+		true);					//ã‚µã‚¤ã‚ºå¤‰æ›´ã®å¯å¦
 	if (!s_modelpanel.panel) {
 		_ASSERT(0);
 		return 1;
 	}
 
-	s_modelpanel.panel->setVisible(false);//ì¬’†
+	s_modelpanel.panel->setVisible(false);//ä½œæˆä¸­
 
-	s_modelpanel.panel->setSizeMin(WindowSize(150, 150));		// Å¬ƒTƒCƒY‚ğİ’è
+	s_modelpanel.panel->setSizeMin(WindowSize(150, 150));		// æœ€å°ã‚µã‚¤ã‚ºã‚’è¨­å®š
 
 
-	//ƒXƒNƒ[ƒ‹ƒEƒCƒ“ƒhƒE
+	//ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦
 	s_modelpanel.scroll = new OWP_ScrollWnd(L"ModelPanelScroll");
 	if (!s_modelpanel.scroll) {
 		_ASSERT(0);
 		return 1;
 	}
-	//—v‘f”‚ª•Ï‚í‚Á‚½‚Æ‚«‚É‚Íw’è‚µ–Y‚ê‚È‚¢‚æ‚¤‚ÉIII
+	//è¦ç´ æ•°ãŒå¤‰ã‚ã£ãŸã¨ãã«ã¯æŒ‡å®šã—å¿˜ã‚Œãªã„ã‚ˆã†ã«ï¼ï¼ï¼
 	s_modelpanel.scroll->setLineDataSize(modelnum + 3);
 	s_modelpanel.scroll->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight - 30));
 	s_modelpanel.panel->addParts(*(s_modelpanel.scroll));
@@ -15220,8 +15243,8 @@ int CreateModelPanel()
 			}
 		}
 
-		//s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel, false);									// ƒZƒpƒŒ[ƒ^1i‹«ŠEü‚É‚æ‚é‰¡•ûŒü2•ªŠ„j
-		s_modelpanel.separator = new OWP_Separator(s_modelpanel.panel, true);									// ƒZƒpƒŒ[ƒ^1i‹«ŠEü‚É‚æ‚é‰¡•ûŒü2•ªŠ„j
+		//s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel, false);									// ã‚»ãƒ‘ãƒ¬ãƒ¼ã‚¿1ï¼ˆå¢ƒç•Œç·šã«ã‚ˆã‚‹æ¨ªæ–¹å‘2åˆ†å‰²ï¼‰
+		s_modelpanel.separator = new OWP_Separator(s_modelpanel.panel, true);									// ã‚»ãƒ‘ãƒ¬ãƒ¼ã‚¿1ï¼ˆå¢ƒç•Œç·šã«ã‚ˆã‚‹æ¨ªæ–¹å‘2åˆ†å‰²ï¼‰
 		if (!s_modelpanel.separator) {
 			_ASSERT(0);
 			return 1;
@@ -15229,8 +15252,8 @@ int CreateModelPanel()
 		s_modelpanel.separator->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight));
 		s_modelpanel.separator->setPos(OrgWinGUI::WindowPos(0, 0));
 		
-		// ƒZƒpƒŒ[ƒ^2i‹«ŠEü‚É‚æ‚é‰¡•ûŒü2•ªŠ„j
-		s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, true);									// ƒZƒpƒŒ[ƒ^2i‹«ŠEü‚É‚æ‚é‰¡•ûŒü2•ªŠ„j
+		// ã‚»ãƒ‘ãƒ¬ãƒ¼ã‚¿2ï¼ˆå¢ƒç•Œç·šã«ã‚ˆã‚‹æ¨ªæ–¹å‘2åˆ†å‰²ï¼‰
+		s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, true);									// ã‚»ãƒ‘ãƒ¬ãƒ¼ã‚¿2ï¼ˆå¢ƒç•Œç·šã«ã‚ˆã‚‹æ¨ªæ–¹å‘2åˆ†å‰²ï¼‰
 		if (!s_modelpanel.separator2) {
 			_ASSERT(0);
 			return 1;
@@ -15308,20 +15331,20 @@ int CreateModelPanel()
 
 		s_modelpanel.delbutton[modelcnt]->setButtonListener([modelcnt]() {
 			if (s_model) {
-				if ((modelcnt < s_modelindex.size()) && (s_modelindex.size() >= 2)) {//‘S•”Á‚·‚Æ‚«‚ÍƒƒCƒ“ƒƒjƒ…[‚©‚ç
+				if ((modelcnt < s_modelindex.size()) && (s_modelindex.size() >= 2)) {//å…¨éƒ¨æ¶ˆã™ã¨ãã¯ãƒ¡ã‚¤ãƒ³ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‹ã‚‰
 					CModel* curmodel = s_modelindex[modelcnt].modelptr;
-					if ((s_underdelmotion == false) && (s_opedelmotioncnt < 0) && //Motioníœ‚Æ“¯‚Í‹Ö~ 
+					if ((s_underdelmotion == false) && (s_opedelmotioncnt < 0) && //Motionå‰Šé™¤ã¨åŒæ™‚ã¯ç¦æ­¢ 
 						(s_opedelmodelcnt < 0) && curmodel && !s_underdelmodel) {
 						s_underdelmodel = true;
 						//bool ondelbutton = true;
-						//OnDelModel(modelcnt, ondelbutton);//s_modelpanel.modelindex‚Ís_model‚Ìindex‚È‚Ì‚Åˆá‚¤
+						//OnDelModel(modelcnt, ondelbutton);//s_modelpanel.modelindexã¯s_modelã®indexãªã®ã§é•ã†
 
-						//‚±‚±‚ÅOnDelModel‚ğŒÄ‚Ô‚ÆOrgWindow‚ÌŠÖ”‚ğÀs’†‚ÉparentWindow‚ªNULL‚É‚È‚é‚È‚Ç‚µ‚ÄƒGƒ‰[‚É‚È‚é.ƒtƒ‰ƒO‚ğ—§‚Ä‚Äƒ‹[ƒv‚ÅŒÄ‚Ô
+						//ã“ã“ã§OnDelModelã‚’å‘¼ã¶ã¨OrgWindowã®é–¢æ•°ã‚’å®Ÿè¡Œä¸­ã«parentWindowãŒNULLã«ãªã‚‹ãªã©ã—ã¦ã‚¨ãƒ©ãƒ¼ã«ãªã‚‹.ãƒ•ãƒ©ã‚°ã‚’ç«‹ã¦ã¦ãƒ«ãƒ¼ãƒ—ã§å‘¼ã¶
 						s_opedelmodelcnt = modelcnt;
 
-						s_model = 0;//ƒJƒŒƒ“ƒgƒ‚ƒfƒ‹‚É‰e‹¿‚µ‚È‚¢‚æ‚¤‚É
+						s_model = 0;//ã‚«ãƒ¬ãƒ³ãƒˆãƒ¢ãƒ‡ãƒ«ã«å½±éŸ¿ã—ãªã„ã‚ˆã†ã«
 
-						Sleep(100);//ƒ{ƒ^ƒ“˜A‘Å‚Åƒƒjƒ…[‚Ìƒ‚[ƒVƒ‡ƒ“”‚ªÀÛ‚æ‚èŒ¸‚é‚±‚Æ‚ª‚ ‚Á‚½‚Ì‚Å
+						Sleep(100);//ãƒœã‚¿ãƒ³é€£æ‰“ã§ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³æ•°ãŒå®Ÿéš›ã‚ˆã‚Šæ¸›ã‚‹ã“ã¨ãŒã‚ã£ãŸã®ã§
 					}
 				}
 			}
@@ -15337,7 +15360,7 @@ int CreateModelPanel()
 					//OnModelMenu(true, s_modelpanel.modelindex, 1);
 					//s_modelpanel.panel->callRewrite();
 
-					//‚±‚±‚ÅOnModelMenu‚ğŒÄ‚Ô‚ÆOrgWindow‚ÌŠÖ”‚ğÀs’†‚ÉparentWindow‚ªNULL‚É‚È‚é‚È‚Ç‚µ‚ÄƒGƒ‰[‚É‚È‚é.ƒtƒ‰ƒO‚ğ—§‚Ä‚Äƒ‹[ƒv‚ÅŒÄ‚Ô
+					//ã“ã“ã§OnModelMenuã‚’å‘¼ã¶ã¨OrgWindowã®é–¢æ•°ã‚’å®Ÿè¡Œä¸­ã«parentWindowãŒNULLã«ãªã‚‹ãªã©ã—ã¦ã‚¨ãƒ©ãƒ¼ã«ãªã‚‹.ãƒ•ãƒ©ã‚°ã‚’ç«‹ã¦ã¦ãƒ«ãƒ¼ãƒ—ã§å‘¼ã¶
 					s_underselectmodel = true;
 					s_opeselectmodelcnt = curindex;
 				}
@@ -15372,13 +15395,13 @@ int CreateModelPanel()
 	s_rcmodelpanel.right = s_modelpanelpos.x + s_modelwindowwidth;
 
 	//if (g_4kresolution) {
-	//	//4K‚Í@ƒtƒŒ[ƒ€‘g‚İ‚İ•\¦
+	//	//4Kæ™‚ã¯ã€€ãƒ•ãƒ¬ãƒ¼ãƒ çµ„ã¿è¾¼ã¿è¡¨ç¤º
 	//	s_modelpanel.panel->setVisible(true);
-	//	s_dispmodel = true;//!!!!!!!!!!!!!!!!! modelpanel‚Ìdispflag
+	//	s_dispmodel = true;//!!!!!!!!!!!!!!!!! modelpanelã®dispflag
 	//}
 	//else {
 		s_modelpanel.panel->setVisible(false);
-		s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanel‚Ìdispflag
+		s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanelã®dispflag
 	//}
 
 	return 0;
@@ -15484,26 +15507,26 @@ int CreateMotionPanel()
 
 	s_motionpanel.panel = new OrgWindow(
 		istopmost,
-		clsname,		//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-		GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
-		s_motionpanelpos,		//ˆÊ’u
-		WindowSize(s_motionwindowwidth, s_motionwindowheight),	//ƒTƒCƒY
-		L"MotionPanel",	//ƒ^ƒCƒgƒ‹
-		//s_mainhwnd,					//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
+		clsname,		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+		GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
+		s_motionpanelpos,		//ä½ç½®
+		WindowSize(s_motionwindowwidth, s_motionwindowheight),	//ã‚µã‚¤ã‚º
+		L"MotionPanel",	//ã‚¿ã‚¤ãƒˆãƒ«
+		//s_mainhwnd,					//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
 		//false,
 		parentwnd,
-		true,					//•\¦E”ñ•\¦ó‘Ô
-		//70, 50, 70,				//ƒJƒ‰[
-		0, 0, 0,				//ƒJƒ‰[
-		true,					//•Â‚¶‚ç‚ê‚é‚©”Û‚©
-		true);					//ƒTƒCƒY•ÏX‚Ì‰Â”Û
+		true,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+		//70, 50, 70,				//ã‚«ãƒ©ãƒ¼
+		0, 0, 0,				//ã‚«ãƒ©ãƒ¼
+		true,					//é–‰ã˜ã‚‰ã‚Œã‚‹ã‹å¦ã‹
+		true);					//ã‚µã‚¤ã‚ºå¤‰æ›´ã®å¯å¦
 	if (!s_motionpanel.panel) {
 		_ASSERT(0);
 		return 1;
 	}
 
 
-	s_motionpanel.panel->setSizeMin(WindowSize(150, 150));		// Å¬ƒTƒCƒY‚ğİ’è
+	s_motionpanel.panel->setSizeMin(WindowSize(150, 150));		// æœ€å°ã‚µã‚¤ã‚ºã‚’è¨­å®š
 
 
 
@@ -15527,20 +15550,20 @@ int CreateMotionPanel()
 			}
 		}
 
-		//ƒXƒNƒ[ƒ‹ƒEƒCƒ“ƒhƒE
+		//ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦
 		s_motionpanel.scroll = new OWP_ScrollWnd(L"MotionPanelScroll");
 		if (!s_motionpanel.scroll) {
 			_ASSERT(0);
 			return 1;
 		}
-		//—v‘f”‚ª•Ï‚í‚Á‚½‚Æ‚«‚É‚Íw’è‚µ–Y‚ê‚È‚¢‚æ‚¤‚ÉIII
+		//è¦ç´ æ•°ãŒå¤‰ã‚ã£ãŸã¨ãã«ã¯æŒ‡å®šã—å¿˜ã‚Œãªã„ã‚ˆã†ã«ï¼ï¼ï¼
 		s_motionpanel.scroll->setLineDataSize(motionnum + 3);
 		s_motionpanel.scroll->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight - 30));
 		s_motionpanel.panel->addParts(*(s_motionpanel.scroll));
 		s_motionpanel.panel->setPos(s_motionpanelpos);
 		s_motionpanel.scroll->setPos(WindowPos(0, 30));
 
-		s_motionpanel.separator = new OWP_Separator(s_motionpanel.panel, false);									// ƒZƒpƒŒ[ƒ^1i‹«ŠEü‚É‚æ‚é‰¡•ûŒü2•ªŠ„j
+		s_motionpanel.separator = new OWP_Separator(s_motionpanel.panel, false);									// ã‚»ãƒ‘ãƒ¬ãƒ¼ã‚¿1ï¼ˆå¢ƒç•Œç·šã«ã‚ˆã‚‹æ¨ªæ–¹å‘2åˆ†å‰²ï¼‰
 		if (!s_motionpanel.separator) {
 			_ASSERT(0);
 			return 1;
@@ -15582,7 +15605,7 @@ int CreateMotionPanel()
 
 	}
 
-	s_motionpanel.panel->setVisible(false);//ì¬’†”ñ•\¦
+	s_motionpanel.panel->setVisible(false);//ä½œæˆä¸­éè¡¨ç¤º
 	
 
 ////////////
@@ -15596,16 +15619,16 @@ int CreateMotionPanel()
 		int delmenuindex = 0;
 		for (delmenuindex = 0; delmenuindex < s_model->GetMotInfoSize(); delmenuindex++) {
 			s_motionpanel.delbutton[delmenuindex]->setButtonListener([delmenuindex]() {
-				if ((s_underdelmodel == false) && (s_opedelmodelcnt < 0) && //Modelíœ‚Æ“¯‚Í‹Ö~
-					(s_opedelmotioncnt < 0) && !s_underdelmotion && s_model && (s_model->GetMotInfoSize() >= 2)) {//‘S•”Á‚·‚Æ‚«‚ÍƒƒCƒ“ƒƒjƒ…[‚©‚ç
+				if ((s_underdelmodel == false) && (s_opedelmodelcnt < 0) && //Modelå‰Šé™¤ã¨åŒæ™‚ã¯ç¦æ­¢
+					(s_opedelmotioncnt < 0) && !s_underdelmotion && s_model && (s_model->GetMotInfoSize() >= 2)) {//å…¨éƒ¨æ¶ˆã™ã¨ãã¯ãƒ¡ã‚¤ãƒ³ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‹ã‚‰
 					s_opedelmotioncnt = delmenuindex;
 					s_underdelmotion = true;
 					//bool ondelbutton = true;
 					//OnDelMotion(delmenuindex, ondelbutton);
 
-					//‚±‚±‚ÅOnDelMotion‚ğŒÄ‚Ô‚ÆOrgWindow‚ÌŠÖ”‚ğÀs’†‚ÉparentWindow‚ªNULL‚É‚È‚é‚È‚Ç‚µ‚ÄƒGƒ‰[‚É‚È‚é.ƒtƒ‰ƒO‚ğ—§‚Ä‚Äƒ‹[ƒv‚ÅŒÄ‚Ô
+					//ã“ã“ã§OnDelMotionã‚’å‘¼ã¶ã¨OrgWindowã®é–¢æ•°ã‚’å®Ÿè¡Œä¸­ã«parentWindowãŒNULLã«ãªã‚‹ãªã©ã—ã¦ã‚¨ãƒ©ãƒ¼ã«ãªã‚‹.ãƒ•ãƒ©ã‚°ã‚’ç«‹ã¦ã¦ãƒ«ãƒ¼ãƒ—ã§å‘¼ã¶
 
-					Sleep(100);//ƒ{ƒ^ƒ“˜A‘Å‚Åƒƒjƒ…[‚Ìƒ‚[ƒVƒ‡ƒ“”‚ªÀÛ‚æ‚èŒ¸‚é‚±‚Æ‚ª‚ ‚Á‚½‚Ì‚Å
+					Sleep(100);//ãƒœã‚¿ãƒ³é€£æ‰“ã§ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³æ•°ãŒå®Ÿéš›ã‚ˆã‚Šæ¸›ã‚‹ã“ã¨ãŒã‚ã£ãŸã®ã§
 				}
 				});
 		}
@@ -15622,7 +15645,7 @@ int CreateMotionPanel()
 					//OnAnimMenu(true, motionindex, 1);
 					//s_motionpanel.panel->callRewrite();
 
-					//‚±‚±‚ÅOnAnimMenu‚ğŒÄ‚Ô‚ÆOrgWindow‚ÌŠÖ”‚ğÀs’†‚ÉparentWindow‚ªNULL‚É‚È‚é‚È‚Ç‚µ‚ÄƒGƒ‰[‚É‚È‚é.ƒtƒ‰ƒO‚ğ—§‚Ä‚Äƒ‹[ƒv‚ÅŒÄ‚Ô
+					//ã“ã“ã§OnAnimMenuã‚’å‘¼ã¶ã¨OrgWindowã®é–¢æ•°ã‚’å®Ÿè¡Œä¸­ã«parentWindowãŒNULLã«ãªã‚‹ãªã©ã—ã¦ã‚¨ãƒ©ãƒ¼ã«ãªã‚‹.ãƒ•ãƒ©ã‚°ã‚’ç«‹ã¦ã¦ãƒ«ãƒ¼ãƒ—ã§å‘¼ã¶
 				}
 			}
 		});
@@ -15637,13 +15660,13 @@ int CreateMotionPanel()
 	s_rcmotionpanel.right = s_motionpanelpos.x + s_motionwindowwidth;
 
 	if (g_4kresolution) {
-		//4K‚Í@ƒtƒŒ[ƒ€‘g‚İ‚İ•\¦
+		//4Kæ™‚ã¯ã€€ãƒ•ãƒ¬ãƒ¼ãƒ çµ„ã¿è¾¼ã¿è¡¨ç¤º
 		s_motionpanel.panel->setVisible(true);
-		s_dispmotion = true;//!!!!!!!!!!!!!!!!! motionpanel‚Ìdispflag
+		s_dispmotion = true;//!!!!!!!!!!!!!!!!! motionpanelã®dispflag
 	}
 	else {
 		s_motionpanel.panel->setVisible(false);
-		s_dispmotion = false;//!!!!!!!!!!!!!!!!! motionpanel‚Ìdispflag
+		s_dispmotion = false;//!!!!!!!!!!!!!!!!! motionpanelã®dispflag
 	}
 
 
@@ -15752,7 +15775,7 @@ int CreateConvBoneWnd()
 
 	if (!s_model) {
 		_ASSERT(0);
-		::MessageBox(s_mainhwnd, L"modelƒƒjƒ…[‚Åmodel‚ğ‘I‘ğ‚µ‚Ä‰º‚³‚¢", L"model not selected !!!", MB_OK);
+		::MessageBox(s_mainhwnd, L"modelãƒ¡ãƒ‹ãƒ¥ãƒ¼ã§modelã‚’é¸æŠã—ã¦ä¸‹ã•ã„", L"model not selected !!!", MB_OK);
 		return 0;
 	}
 	s_convbone_model = s_model;
@@ -15774,26 +15797,26 @@ int CreateConvBoneWnd()
 
 	s_convboneWnd = new OrgWindow(
 		0,
-		L"convbone0",		//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-		GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
-		WindowPos(windowposx, s_sidemenuheight),		//ˆÊ’u
-		WindowSize(s_sidewidth, s_sideheight),	//ƒTƒCƒY
-		L"ConvBoneWnd",	//ƒ^ƒCƒgƒ‹
-		s_mainhwnd,					//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
-		false,					//•\¦E”ñ•\¦ó‘Ô
-		//true,					//•\¦E”ñ•\¦ó‘Ô
-		//70, 50, 70,				//ƒJƒ‰[
-		0, 0, 0,				//ƒJƒ‰[
-		true,					//•Â‚¶‚ç‚ê‚é‚©”Û‚©
-		true);					//ƒTƒCƒY•ÏX‚Ì‰Â”Û
+		L"convbone0",		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+		GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
+		WindowPos(windowposx, s_sidemenuheight),		//ä½ç½®
+		WindowSize(s_sidewidth, s_sideheight),	//ã‚µã‚¤ã‚º
+		L"ConvBoneWnd",	//ã‚¿ã‚¤ãƒˆãƒ«
+		s_mainhwnd,					//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
+		false,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+		//true,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+		//70, 50, 70,				//ã‚«ãƒ©ãƒ¼
+		0, 0, 0,				//ã‚«ãƒ©ãƒ¼
+		true,					//é–‰ã˜ã‚‰ã‚Œã‚‹ã‹å¦ã‹
+		true);					//ã‚µã‚¤ã‚ºå¤‰æ›´ã®å¯å¦
 
-	s_convboneWnd->setSizeMin(WindowSize(150, 150));		// Å¬ƒTƒCƒY‚ğİ’è
+	s_convboneWnd->setSizeMin(WindowSize(150, 150));		// æœ€å°ã‚µã‚¤ã‚ºã‚’è¨­å®š
 
-	//ƒXƒNƒ[ƒ‹ƒEƒCƒ“ƒhƒE
+	//ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦
 	s_convboneSCWnd = new OWP_ScrollWnd(L"ConvBoneScWnd");
 	//s_convboneSCWnd->setLineDataSize(s_convbonenum + 4);
 	//2023/02/14
-	//—v‘f”‚ª•Ï‚í‚Á‚½‚Æ‚«‚É‚Íw’è‚µ–Y‚ê‚È‚¢‚æ‚¤‚ÉIII
+	//è¦ç´ æ•°ãŒå¤‰ã‚ã£ãŸã¨ãã«ã¯æŒ‡å®šã—å¿˜ã‚Œãªã„ã‚ˆã†ã«ï¼ï¼ï¼
 	s_convboneSCWnd->setLineDataSize(s_convbonenum + 8);
 	s_convboneWnd->addParts(*s_convboneSCWnd);
 
@@ -15827,7 +15850,7 @@ int CreateConvBoneWnd()
 	_ASSERT(cbno == s_convbonenum);
 
 
-	s_convbonesp = new OWP_Separator(s_convboneWnd, false, 0.5, true);									// ƒZƒpƒŒ[ƒ^1i‹«ŠEü‚É‚æ‚é‰¡•ûŒü2•ªŠ„j
+	s_convbonesp = new OWP_Separator(s_convboneWnd, false, 0.5, true);									// ã‚»ãƒ‘ãƒ¬ãƒ¼ã‚¿1ï¼ˆå¢ƒç•Œç·šã«ã‚ˆã‚‹æ¨ªæ–¹å‘2åˆ†å‰²ï¼‰
 
 	//s_cbselmodel = new OWP_Button(L"SelectShapeModel");
 	WCHAR strtext[256] = { 0L };
@@ -15872,16 +15895,16 @@ int CreateConvBoneWnd()
 
 
 	//2023/02/14
-	//convertÀsArtgƒtƒ@ƒCƒ‹“Ç‚İ‚İƒ{ƒ^ƒ“‚Í
-	//ƒ{[ƒ“–¼‘Î‰•\‚æ‚è‚à@ã‚É”z’u
-	//ˆê”Ô‰º‚Ü‚ÅƒXƒNƒ[ƒ‹‚µ‚È‚­‚Ä‚à@‘€ì‚Å‚«‚é‚±‚Æ‚ª‘½‚­‚È‚é‚æ‚¤‚É
+	//convertå®Ÿè¡Œã€rtgãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿ãƒœã‚¿ãƒ³ã¯
+	//ãƒœãƒ¼ãƒ³åå¯¾å¿œè¡¨ã‚ˆã‚Šã‚‚ã€€ä¸Šã«é…ç½®
+	//ä¸€ç•ªä¸‹ã¾ã§ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ã—ãªãã¦ã‚‚ã€€æ“ä½œã§ãã‚‹ã“ã¨ãŒå¤šããªã‚‹ã‚ˆã†ã«
 	s_convbonesp->addParts1(*s_convboneconvert);
 	s_dsretargetctrls.push_back(s_convboneconvert);
 	s_convbonesp->addParts2(*s_rtgfileload);
 	s_dsretargetctrls.push_back(s_rtgfileload);
 
 	//2023/02/14
-	//‹«–Ú‚É@‹ó”’
+	//å¢ƒç›®ã«ã€€ç©ºç™½
 	s_convbonesp->addParts1(*s_convbonespace1);
 	s_convbonesp->addParts2(*s_convbonespace2);
 
@@ -15894,11 +15917,11 @@ int CreateConvBoneWnd()
 	}
 
 	//2023/02/14
-	//‹«–Ú‚É@‹ó”’
+	//å¢ƒç›®ã«ã€€ç©ºç™½
 	s_convbonesp->addParts1(*s_convbonespace3);
 	s_convbonesp->addParts2(*s_convbonespace4);
 
-	//Rtgƒtƒ@ƒCƒ‹•Û‘¶ƒ{ƒ^ƒ“‚Í@İ’è‚µI‚í‚Á‚Ä‚©‚ç‰Ÿ‚·‚Ì‚Å@ˆê”Ô‰º‚Ì‚Ü‚Ü
+	//Rtgãƒ•ã‚¡ã‚¤ãƒ«ä¿å­˜ãƒœã‚¿ãƒ³ã¯ã€€è¨­å®šã—çµ‚ã‚ã£ã¦ã‹ã‚‰æŠ¼ã™ã®ã§ã€€ä¸€ç•ªä¸‹ã®ã¾ã¾
 	s_convbonesp->addParts1(*s_rtgfilesave);
 	s_dsretargetctrls.push_back(s_rtgfilesave);
 	s_convbonesp->addParts2(*s_convbonespace5);
@@ -15967,7 +15990,7 @@ int CreateConvBoneWnd()
 	s_convboneWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_convboneWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
 
-	//‚PƒNƒŠƒbƒN–Ú–â‘è‘Î‰
+	//ï¼‘ã‚¯ãƒªãƒƒã‚¯ç›®å•é¡Œå¯¾å¿œ
 	s_convboneWnd->refreshPosAndSize();//2022/09/20
 
 
@@ -16066,7 +16089,7 @@ int SetConvBoneBvh()
 
 
 	//###############################
-	//joint‘Î‰•\ƒŠƒZƒbƒg 2022/09/13
+	//jointå¯¾å¿œè¡¨ãƒªã‚»ãƒƒãƒˆ 2022/09/13
 	//###############################
 	InitJointPair2ConvBoneWnd();
 
@@ -16205,7 +16228,7 @@ int SetConvBone(int cbno)
 	menuid = rmenu->TrackPopupMenu(pt);
 	//if ((menuid >= ID_RMENU_0) && (menuid <= (ID_RMENU_0 + maxboneno + 1))){
 	//	if (menuid == (ID_RMENU_0 + 0)){
-	//		//–¢İ’è
+	//		//æœªè¨­å®š
 	//		s_bvhbone_bone[cbno] = 0;
 	//		CBone* modelbone = s_modelbone_bone[cbno];
 	//		_ASSERT(modelbone);
@@ -16355,7 +16378,7 @@ int SaveMotionNameListFile()
 	WCHAR* pext;
 	pext = wcsstr(g_tmpmqopath, L".mnl");
 	if (!pext) {
-		ZeroMemory(g_tmpmqopath, sizeof(WCHAR) * MAX_PATH);//ˆÙ‚È‚éŠg’£q‚Ìƒtƒ@ƒCƒ‹–¼‚ªc‚Á‚Ä‚¢‚éê‡‚ª‚ ‚é‚©‚ç
+		ZeroMemory(g_tmpmqopath, sizeof(WCHAR) * MAX_PATH);//ç•°ãªã‚‹æ‹¡å¼µå­ã®ãƒ•ã‚¡ã‚¤ãƒ«åãŒæ®‹ã£ã¦ã„ã‚‹å ´åˆãŒã‚ã‚‹ã‹ã‚‰
 	}
 
 	if (GetOpenFileNameW(&ofn) == IDOK) {
@@ -16418,19 +16441,19 @@ int SaveRetargetFile()
 	WCHAR* pext;
 	pext = wcsstr(g_tmpmqopath, L".rtg");
 	if (!pext) {
-		ZeroMemory(g_tmpmqopath, sizeof(WCHAR) * MAX_PATH);//ˆÙ‚È‚éŠg’£q‚Ìƒtƒ@ƒCƒ‹–¼‚ªc‚Á‚Ä‚¢‚éê‡‚ª‚ ‚é‚©‚ç
+		ZeroMemory(g_tmpmqopath, sizeof(WCHAR) * MAX_PATH);//ç•°ãªã‚‹æ‹¡å¼µå­ã®ãƒ•ã‚¡ã‚¤ãƒ«åãŒæ®‹ã£ã¦ã„ã‚‹å ´åˆãŒã‚ã‚‹ã‹ã‚‰
 	}
 
 	if (GetOpenFileNameW(&ofn) == IDOK) {
 
-		MoveMemory(savepath, g_tmpmqopath, sizeof(WCHAR) * MAX_PATH);//MULTIPATH‚Å‚Í‚È‚¢
+		MoveMemory(savepath, g_tmpmqopath, sizeof(WCHAR) * MAX_PATH);//MULTIPATHã§ã¯ãªã„
 
 		CRetargetFile rtgfile;
 		result = rtgfile.WriteRetargetFile(g_tmpmqopath, s_convbone_model, s_convbone_bvh, s_convbonemap);
 	}
 
 
-	//—š—ğ‚ğ•Û‘¶
+	//å±¥æ­´ã‚’ä¿å­˜
 	if ((result == 0) && (savepath[0] != 0L)) {
 		SaveRtgHistory(savepath);
 	}
@@ -16507,7 +16530,7 @@ int LoadRetargetFile(WCHAR* srcfilename)
 		MoveMemory(savepath, g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
 
 
-		//rtgƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚Ş
+		//rtgãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿è¾¼ã‚€
 		CRetargetFile rtgfile;
 		result = rtgfile.LoadRetargetFile(g_tmpmqopath, s_convbone_model, s_convbone_bvh, s_convbonemap);
 		if (result == 0) {
@@ -16545,8 +16568,8 @@ int LoadRetargetFile(WCHAR* srcfilename)
 		//InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
 
-		//ƒtƒ@ƒCƒ‹–¼w’è‚Í‚»‚Ì‚Ü‚ÜŠJ‚­
-		//ƒoƒbƒ`‚©‚ç‚àŒÄ‚Î‚ê‚é
+		//ãƒ•ã‚¡ã‚¤ãƒ«åæŒ‡å®šæ™‚ã¯ãã®ã¾ã¾é–‹ã
+		//ãƒãƒƒãƒã‹ã‚‰ã‚‚å‘¼ã°ã‚Œã‚‹
 
 		CRetargetFile rtgfile;
 		result = rtgfile.LoadRetargetFile(srcfilename, s_convbone_model, s_convbone_bvh, s_convbonemap);
@@ -16747,7 +16770,7 @@ int StopBt()
 
 	//g_previewFlag = 0;
 
-	//2022/11/07 btrecI—¹‚É‚à@timeline•\¦‚ğ³í‚É‚·‚é‚½‚ß‚É@playerbutton‚Ìpreviewstop‚Æ“¯‚¶ˆ—‚ğ‚·‚é
+	//2022/11/07 btrecçµ‚äº†æ™‚ã«ã‚‚ã€€timelineè¡¨ç¤ºã‚’æ­£å¸¸ã«ã™ã‚‹ãŸã‚ã«ã€€playerbuttonã®previewstopã¨åŒã˜å‡¦ç†ã‚’ã™ã‚‹
 	s_LstopFlag = true; s_LcursorFlag = true; g_previewFlag = 0;
 
 
@@ -16771,23 +16794,23 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	//previewmode‚ªglobal‚È‚Ì‚Åmodel‚²‚Æ‚Éƒ‚[ƒh‚ğİ’è‚·‚é‚æ‚¤‚É‚Í‚È‚Á‚Ä‚¢‚È‚¢B
-	//‚Ğ‚Æ‚Ü‚¸A‘Sƒ‚ƒfƒ‹‚Ö‚Ì“K—p‚Æ‚¢‚¤Œ`‚ğ‚Æ‚Á‚ÄƒGƒ‰[‚É‚È‚ç‚È‚¢‚æ‚¤‚É‚·‚éB
+	//previewmodeãŒglobalãªã®ã§modelã”ã¨ã«ãƒ¢ãƒ¼ãƒ‰ã‚’è¨­å®šã™ã‚‹ã‚ˆã†ã«ã¯ãªã£ã¦ã„ãªã„ã€‚
+	//ã²ã¨ã¾ãšã€å…¨ãƒ¢ãƒ‡ãƒ«ã¸ã®é©ç”¨ã¨ã„ã†å½¢ã‚’ã¨ã£ã¦ã‚¨ãƒ©ãƒ¼ã«ãªã‚‰ãªã„ã‚ˆã†ã«ã™ã‚‹ã€‚
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-	double curframe = 1.0;//‰Šú’lAstart‚Ì—h‚ê‚É‰e‹¿H
+	double curframe = 1.0;//åˆæœŸå€¤ã€startæ™‚ã®æºã‚Œã«å½±éŸ¿ï¼Ÿ
 
 	if (flag == 1) {
-		//‚Ü‚¸•¨—IK‚ğ’â~‚·‚éB
-		//ƒvƒŒƒrƒ…[‚ğ~‚ß‚È‚¢‚Ætimeline‚ÍƒXƒ^[ƒgƒtƒŒ[ƒ€‚É‚È‚é‚ªp¨‚ªƒXƒ^[ƒgƒtƒŒ[ƒ€‚É‚È‚ç‚È‚¢B
-		//flag == 0‚ÅŒÄ‚Ô‚ÆƒVƒ~ƒ…‚ª“®‚©‚È‚¢B
+		//ã¾ãšç‰©ç†IKã‚’åœæ­¢ã™ã‚‹ã€‚
+		//ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼ã‚’æ­¢ã‚ãªã„ã¨timelineã¯ã‚¹ã‚¿ãƒ¼ãƒˆãƒ•ãƒ¬ãƒ¼ãƒ ã«ãªã‚‹ãŒå§¿å‹¢ãŒã‚¹ã‚¿ãƒ¼ãƒˆãƒ•ãƒ¬ãƒ¼ãƒ ã«ãªã‚‰ãªã„ã€‚
+		//flag == 0ã§å‘¼ã¶ã¨ã‚·ãƒŸãƒ¥ãŒå‹•ã‹ãªã„ã€‚
 
 		vector<MODELELEM>::iterator itrmodel;
 		for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 			CModel* pmodel = itrmodel->modelptr;
 			if (pmodel) {
-				//‘Sƒ‚ƒfƒ‹ƒVƒ~ƒ…’â~
+				//å…¨ãƒ¢ãƒ‡ãƒ«ã‚·ãƒŸãƒ¥åœæ­¢
 				pmodel->BulletSimulationStop();
 			}
 		}
@@ -16824,19 +16847,19 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 	if (isfirstmodel == TRUE) {
 		if ((flag == 0) && (g_previewFlag != 4)) {
-			//F9ƒL[
+			//F9ã‚­ãƒ¼
 			g_previewFlag = 4;
 			createflag = 1;
 			resetflag = 0;//2021/06/18
 		}
 		else if (flag == 1) {
-			//F10ƒL[
+			//F10ã‚­ãƒ¼
 			g_previewFlag = 5;
 			createflag = 1;
 			resetflag = 0;//2021/06/18
 		}
 		else if (flag == 2) {
-			//spaceƒL[
+			//spaceã‚­ãƒ¼
 			if (g_previewFlag == 4) {
 				createflag = 1;//2021/06/18
 				resetflag = 1;
@@ -16860,14 +16883,14 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 		if (pmodel) {
 
 			//if ((flag == 0) && (g_previewFlag != 4)){
-				//F9ƒL[
+				//F9ã‚­ãƒ¼
 			if (btcntzero == 1) {
 				pmodel->ZeroBtCnt();
 				pmodel->SetCreateBtFlag(false);
 			}
 			//}
 			//else if (flag == 1){
-			//	//F10ƒL[
+			//	//F10ã‚­ãƒ¼
 			//	if (btcntzero == 1){
 			//		curmodel->ZeroBtCnt();
 			//		curmodel->SetCreateBtFlag(false);
@@ -16921,15 +16944,15 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 			if ((g_previewFlag == 4) || (g_previewFlag == 5)) {
 
 				if (g_previewFlag == 4) {
-					//curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindex‚ğmodel‚²‚Æ‚É‚Â•K—v‚ ‚èIII
-					pmodel->SetCurrentRigidElem(s_reindexmap[pmodel]);//s_curreindex‚ğmodel‚²‚Æ‚É‚Â•K—v‚ ‚èIII
+					//curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexã‚’modelã”ã¨ã«æŒã¤å¿…è¦ã‚ã‚Šï¼ï¼ï¼
+					pmodel->SetCurrentRigidElem(s_reindexmap[pmodel]);//s_curreindexã‚’modelã”ã¨ã«æŒã¤å¿…è¦ã‚ã‚Šï¼ï¼ï¼
 
-					//Œˆ‚ß‘Å‚¿
-					s_btWorld->setGravity(btVector3(0.0f, -9.8f, 0.0f)); // d—Í‰Á‘¬“x‚Ìİ’è
+					//æ±ºã‚æ‰“ã¡
+					s_btWorld->setGravity(btVector3(0.0f, -9.8f, 0.0f)); // é‡åŠ›åŠ é€Ÿåº¦ã®è¨­å®š
 
 
 
-					//s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // d—Í‰Á‘¬“x‚Ìİ’è
+					//s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // é‡åŠ›åŠ é€Ÿåº¦ã®è¨­å®š
 					s_bpWorld->setGlobalERP(btScalar(g_erp));// ERP
 
 
@@ -16938,8 +16961,8 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					//curmodel->SetAllKData(-1, s_curreindex, 3, 3, 1000.0, 30.0);
 
 
-					//Œˆ‚ß‘Å‚¿
-					//curmodel->SetAllMassDataByBoneLeng(-1, s_curreindex, 30.0);//!!!!!!!! Mass©“®İ’è’† !!!!!
+					//æ±ºã‚æ‰“ã¡
+					//curmodel->SetAllMassDataByBoneLeng(-1, s_curreindex, 30.0);//!!!!!!!! Massè‡ªå‹•è¨­å®šä¸­ !!!!!
 
 
 					pmodel->SetMotionFrame(curframe);
@@ -16955,7 +16978,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					ChaMatrix tmpwm = pmodel->GetWorldMat();
 					pmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 
-					//curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindex‚ğmodel‚²‚Æ‚É‚Â•K—v‚ ‚èIIIre‚Ì“à—e‚ğ•Ï‚¦‚Ä‚©‚çŒÄ‚Ô
+					//curmodel->SetCurrentRigidElem(s_curreindex);//s_curreindexã‚’modelã”ã¨ã«æŒã¤å¿…è¦ã‚ã‚Šï¼ï¼ï¼reã®å†…å®¹ã‚’å¤‰ãˆã¦ã‹ã‚‰å‘¼ã¶
 					//s_curreindex = 1;
 					pmodel->SetMotionSpeed(g_dspeed);
 				}
@@ -16963,13 +16986,13 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					s_rectime = 0.0;
 					s_reccnt = 0;
 
-					pmodel->SetCurrentRigidElem(s_rgdindexmap[pmodel]);//s_rgdindex‚ğmodel‚²‚Æ‚É‚Â•K—v‚ ‚èIII
+					pmodel->SetCurrentRigidElem(s_rgdindexmap[pmodel]);//s_rgdindexã‚’modelã”ã¨ã«æŒã¤å¿…è¦ã‚ã‚Šï¼ï¼ï¼
 
-					s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // d—Í‰Á‘¬“x‚Ìİ’è
+					s_btWorld->setGravity(btVector3(0.0, 0.0, 0.0)); // é‡åŠ›åŠ é€Ÿåº¦ã®è¨­å®š
 
 					//s_bpWorld->setGlobalERP(btScalar(g_erp));// ERP
 
-				//ƒ‰ƒOƒh[ƒ‹‚Ì‚ÌERP‚ÍŒˆ‚ß‘Å‚¿
+				//ãƒ©ã‚°ãƒ‰ãƒ¼ãƒ«ã®æ™‚ã®ERPã¯æ±ºã‚æ‰“ã¡
 					s_bpWorld->setGlobalERP(0.0);// ERP
 					//s_bpWorld->setGlobalERP(1.0);// ERP
 					//s_bpWorld->setGlobalERP(0.2);// ERP
@@ -17013,7 +17036,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 					//curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 1000.0, 0.1);
 
-					//Œˆ‚ß‘Å‚¿
+					//æ±ºã‚æ‰“ã¡
 					pmodel->SetAllKData(-1, s_rgdindexmap[pmodel], 3, 3, 1500.0, 30.0);
 
 					//curmodel->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
@@ -17024,7 +17047,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 
 
-				//ƒ‰ƒOƒh[ƒ‹‚Ì‚Ìƒoƒl‚ÍŒˆ‚ß‘Å‚¿
+				//ãƒ©ã‚°ãƒ‰ãƒ¼ãƒ«ã®æ™‚ã®ãƒãƒã¯æ±ºã‚æ‰“ã¡
 					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 1e4, 10.0);
 					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 230.0, 30.0);
 					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 600.0, 60.0);
@@ -17058,7 +17081,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					//s_model->SetAllMassData(-1, s_rgdindex, 30.0);
 					//s_model->SetAllKData(-1, s_rgdindex, 3, 3, 800.0, 30.0);
 */
-//Œˆ‚ß‘Å‚¿
+//æ±ºã‚æ‰“ã¡
 					pmodel->SetAllMassDataByBoneLeng(-1, s_rgdindexmap[pmodel], 30.0);
 
 					//curmodel->SetAllMassData(-1, s_rgdindex, 1.0);
@@ -17118,13 +17141,13 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 		}
 	}
 
-	//curmodel : ˆø”‚Å“n‚³‚ê‚½model
+	//curmodel : å¼•æ•°ã§æ¸¡ã•ã‚ŒãŸmodel
 	if (s_model && (curmodel == s_model)) {
-		PrepairUndo();//•¨—REC—l‚É•Û‘¶
+		PrepairUndo();//ç‰©ç†RECæ§˜ã«ä¿å­˜
 	}
 
 
-	//‘Sƒ‚ƒfƒ‹ƒVƒ~ƒ…ŠJn
+	//å…¨ãƒ¢ãƒ‡ãƒ«ã‚·ãƒŸãƒ¥é–‹å§‹
 	vector<MODELELEM>::iterator itrmodel4;
 	for (itrmodel4 = s_modelindex.begin(); itrmodel4 != s_modelindex.end(); itrmodel4++) {
 		CModel* pmodel4 = itrmodel4->modelptr;
@@ -17150,7 +17173,7 @@ int RigidElem2WndParam()
 	}
 
 
-	//ƒ_ƒCƒAƒƒO‚Ì”’l‚Íƒƒjƒ…[‚Å‘I‘ğ’†‚Ì‚à‚Ì
+	//ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®æ•°å€¤ã¯ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã§é¸æŠä¸­ã®ã‚‚ã®
 	s_model->SetCurrentRigidElem(s_reindexmap[s_model]);
 
 
@@ -17198,7 +17221,7 @@ int RigidElem2WndParam()
 				s_btgSlider->setValue(btg);
 			}
 			else {
-				//rigid elem‚ªì¬‚³‚ê‚Ä‚¢‚È‚¢‚Æ‚«
+				//rigid elemãŒä½œæˆã•ã‚Œã¦ã„ãªã„ã¨ã
 				s_sphrateSlider->setValue(1.0);
 				s_boxzSlider->setValue(1.0);
 				s_massSlider->setValue(1.0);
@@ -17217,7 +17240,7 @@ int RigidElem2WndParam()
 			}
 		}
 		else {
-			//rigid elem‚ªì¬‚³‚ê‚Ä‚¢‚È‚¢‚Æ‚«
+			//rigid elemãŒä½œæˆã•ã‚Œã¦ã„ãªã„ã¨ã
 			s_sphrateSlider->setValue(1.0);
 			s_boxzSlider->setValue(1.0);
 			s_massSlider->setValue(1.0);
@@ -17238,7 +17261,7 @@ int RigidElem2WndParam()
 	}
 	else {
 		WCHAR noname[256];
-		wcscpy_s(noname, 256, L"BoneNameFnot selected");
+		wcscpy_s(noname, 256, L"BoneNameï¼šnot selected");
 		s_namelabel->setName(noname);
 	}
 	if (s_model) {
@@ -17249,7 +17272,7 @@ int RigidElem2WndParam()
 
 
 
-	//Ä¶’†AƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“’†‚Ö‚Ì‘Î‰BŒ³‚Ìó‘Ô‚É–ß‚·B
+	//å†ç”Ÿä¸­ã€ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ä¸­ã¸ã®å¯¾å¿œã€‚å…ƒã®çŠ¶æ…‹ã«æˆ»ã™ã€‚
 	if (g_previewFlag != 5) {
 		s_model->SetCurrentRigidElem(s_reindexmap[s_model]);
 	}
@@ -17277,7 +17300,7 @@ int SetRigidLeng()
 	CBtObject* curbto = s_model->FindBtObject(s_curboneno);
 	if (curbto) {
 		WCHAR curlabel[512];
-		swprintf_s(curlabel, 512, L"BonaNameF%s", curbto->GetEndBone()->GetWBoneName());
+		swprintf_s(curlabel, 512, L"BonaNameï¼š%s", curbto->GetEndBone()->GetWBoneName());
 		if (s_namelabel) {
 			s_namelabel->setName(curlabel);
 		}
@@ -17290,13 +17313,13 @@ int SetRigidLeng()
 	}
 	else {
 		WCHAR curlabel[512];
-		wcscpy_s(curlabel, 512, L"BoneNameFnot selected");
+		wcscpy_s(curlabel, 512, L"BoneNameï¼šnot selected");
 		if (s_namelabel) {
 			s_namelabel->setName(curlabel);
 		}
 
 		WCHAR curlabel2[256];
-		wcscpy_s(curlabel2, 256, L"BoneLengthFnot selected");
+		wcscpy_s(curlabel2, 256, L"BoneLengthï¼šnot selected");
 		if (s_lenglabel) {
 			s_lenglabel->setName(curlabel2);
 		}
@@ -17456,7 +17479,7 @@ int SaveProject()
 			ChaMatrix tmpwm = curmodel->GetWorldMat();
 			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 
-			//‚±‚±‚ÅAxisMatX‚Ì‰Šú‰»
+			//ã“ã“ã§AxisMatXã®åˆæœŸåŒ–
 			curmodel->CreateBtObject(g_limitdegflag, 1);
 			curmodel->CalcBtAxismat(2);//2
 			curmodel->SetInitAxisMatX(1);
@@ -17471,7 +17494,7 @@ int SaveProject()
 	int result = chafile.WriteChaFile(g_bakelimiteulonsave, s_bpWorld, s_projectdir, s_projectname,
 		s_modelindex, (float)g_dspeed);
 	if (result) {
-		::MessageBox(s_mainhwnd, L"•Û‘¶‚É¸”s‚µ‚Ü‚µ‚½B", L"Error", MB_OK);
+		::MessageBox(s_mainhwnd, L"ä¿å­˜ã«å¤±æ•—ã—ã¾ã—ãŸã€‚", L"Error", MB_OK);
 		ChangeLimitDegFlag(s_savelimitdegflag, true, true);
 		//g_limitdegflag = s_savelimitdegflag;
 		//if (s_LimitDegCheckBox) {
@@ -17481,7 +17504,7 @@ int SaveProject()
 	}
 
 
-	//‘‚«‚İˆ—‚ª¬Œ÷‚µ‚Ä‚©‚ç—š—ğ‚ğ•Û‘¶‚·‚éBchaƒtƒ@ƒCƒ‹‚¾‚¯B
+	//æ›¸ãè¾¼ã¿å‡¦ç†ãŒæˆåŠŸã—ã¦ã‹ã‚‰å±¥æ­´ã‚’ä¿å­˜ã™ã‚‹ã€‚chaãƒ•ã‚¡ã‚¤ãƒ«ã ã‘ã€‚
 	size_t savepathlen;
 	saveprojpath[MAX_PATH - 1] = 0L;
 	savepathlen = wcslen(saveprojpath);
@@ -17563,9 +17586,9 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					if (SUCCEEDED(SHGetMalloc(&pMalloc))) {
 						if (SUCCEEDED(SHGetSpecialFolderLocation(s_3dwnd, CSIDL_DESKTOPDIRECTORY, &pidl)))
 						{
-							// ƒpƒX‚É•ÏŠ·‚·‚é
+							// ãƒ‘ã‚¹ã«å¤‰æ›ã™ã‚‹
 							SHGetPathFromIDList(pidl, s_projectdir);
-							// æ“¾‚µ‚½IDL‚ğ‰ğ•ú‚·‚é (CoTaskMemFree‚Å‚à‰Â)
+							// å–å¾—ã—ãŸIDLã‚’è§£æ”¾ã™ã‚‹ (CoTaskMemFreeã§ã‚‚å¯)
 							pMalloc->Free(pidl);
 							SetDlgItemText(hDlgWnd, IDC_DIRNAME, s_projectdir);
 						}
@@ -17630,10 +17653,10 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			bi.hwndOwner = hDlgWnd;
 			bi.pidlRoot = NULL;//!!!!!!!
 			bi.pszDisplayName = dispname;
-			//bi.lpszTitle = L"•Û‘¶ƒtƒHƒ‹ƒ_‚ğ‘I‘ğ‚µ‚Ä‚­‚¾‚³‚¢B";
+			//bi.lpszTitle = L"ä¿å­˜ãƒ•ã‚©ãƒ«ãƒ€ã‚’é¸æŠã—ã¦ãã ã•ã„ã€‚";
 			bi.lpszTitle = L"SelectDirectoryForSave";
 			//bi.ulFlags = BIF_EDITBOX | BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE;
-			bi.ulFlags = BIF_RETURNONLYFSDIRS;// | BIF_NEWDIALOGSTYLE;//BIF_NEWDIALOGSTYLE‚ğw’è‚·‚é‚ÆŒÅ‚Ü‚é@“ä
+			bi.ulFlags = BIF_RETURNONLYFSDIRS;// | BIF_NEWDIALOGSTYLE;//BIF_NEWDIALOGSTYLEã‚’æŒ‡å®šã™ã‚‹ã¨å›ºã¾ã‚‹ã€€è¬
 			bi.lpfn = NULL;
 			bi.lParam = 0;
 			bi.iImage = iImage;
@@ -17653,7 +17676,7 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			s_getfilenametreeview = 0;
 
 			if (curlpidl) {
-				//::DSMessageBox( m_hWnd, dispname, "ƒtƒHƒ‹ƒ_[–¼", MB_OK );
+				//::DSMessageBox( m_hWnd, dispname, "ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼å", MB_OK );
 
 				BOOL bret;
 				bret = SHGetPathFromIDList(curlpidl, selectname);
@@ -17699,11 +17722,11 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 int OpenChaFile()
 {
 
-	//g_tmpmqopath‚ÍƒvƒƒWƒFƒNƒg“Ç‚İ‚İ‚ÉƒvƒƒWƒFƒNƒgƒtƒ@ƒCƒ‹“à‚É‹Lq‚³‚ê‚Ä‚¢‚éƒtƒ@ƒCƒ‹–¼‚É•Ï‚í‚Á‚Ä‚¢‚­‚Ì‚Åæ‚É•Û‘¶‚µ‚Ä‚¨‚­B
+	//g_tmpmqopathã¯ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆèª­ã¿è¾¼ã¿æ™‚ã«ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆãƒ•ã‚¡ã‚¤ãƒ«å†…ã«è¨˜è¿°ã•ã‚Œã¦ã„ã‚‹ãƒ•ã‚¡ã‚¤ãƒ«åã«å¤‰ã‚ã£ã¦ã„ãã®ã§å…ˆã«ä¿å­˜ã—ã¦ãŠãã€‚
 	WCHAR saveprojpath[MAX_PATH] = { 0L };
 	wcscpy_s(saveprojpath, MAX_PATH, g_tmpmqopath);
 
-	//æ‚É—š—ğ‚ğ•Û‘¶‚·‚éBchaƒtƒ@ƒCƒ‹‚¾‚¯B
+	//å…ˆã«å±¥æ­´ã‚’ä¿å­˜ã™ã‚‹ã€‚chaãƒ•ã‚¡ã‚¤ãƒ«ã ã‘ã€‚
 	size_t savepathlen;
 	saveprojpath[MAX_PATH - 1] = 0L;
 	savepathlen = wcslen(saveprojpath);
@@ -17748,9 +17771,9 @@ int OpenChaFile()
 		}
 	}
 	else {
-		//s_chasavename‚ÍXV‚µ‚È‚¢
+		//s_chasavenameã¯æ›´æ–°ã—ãªã„
 	}
-	//”O‚Ì‚½‚ß‚ÉI’[
+	//å¿µã®ãŸã‚ã«çµ‚ç«¯
 	s_chasavename[64 - 1] = 0L;
 
 
@@ -17774,15 +17797,15 @@ int OpenChaFile()
 	if (!s_bpWorld) {
 		//ChaMatrix inimat;
 		//ChaMatrixIdentity( &inimat );
-		//s_bpWorld = new BPWorld(NULL, inimat, "BtPiyo", // ƒEƒBƒ“ƒhƒE‚Ìƒ^ƒCƒgƒ‹
-		//				460, 460,         // ƒEƒBƒ“ƒhƒE‚Ì•‚Æ‚‚³ [pixels]
-		//				NULL);    // ƒ‚ƒjƒ^ƒŠƒ“ƒO—pŠÖ”‚Ö‚Ìƒ|ƒCƒ“ƒ^  
+		//s_bpWorld = new BPWorld(NULL, inimat, "BtPiyo", // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚¿ã‚¤ãƒˆãƒ«
+		//				460, 460,         // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®å¹…ã¨é«˜ã• [pixels]
+		//				NULL);    // ãƒ¢ãƒ‹ã‚¿ãƒªãƒ³ã‚°ç”¨é–¢æ•°ã¸ã®ãƒã‚¤ãƒ³ã‚¿  
 		//_ASSERT( s_bpWorld );
 		char strtitle[256];
 		strcpy_s(strtitle, 256, "BpPiyo");
-		s_bpWorld = new BPWorld(NULL, s_matWorld, strtitle, // ƒEƒBƒ“ƒhƒE‚Ìƒ^ƒCƒgƒ‹
-			460, 460,         // ƒEƒBƒ“ƒhƒE‚Ì•‚Æ‚‚³ [pixels]
-			NULL);    // ƒ‚ƒjƒ^ƒŠƒ“ƒO—pŠÖ”‚Ö‚Ìƒ|ƒCƒ“ƒ^  
+		s_bpWorld = new BPWorld(NULL, s_matWorld, strtitle, // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚¿ã‚¤ãƒˆãƒ«
+			460, 460,         // ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®å¹…ã¨é«˜ã• [pixels]
+			NULL);    // ãƒ¢ãƒ‹ã‚¿ãƒªãƒ³ã‚°ç”¨é–¢æ•°ã¸ã®ãƒã‚¤ãƒ³ã‚¿  
 		_ASSERT(s_bpWorld);
 
 
@@ -17790,7 +17813,7 @@ int OpenChaFile()
 		//s_bpWorld->enableFixedTimeStep(false);
 		//s_bpWorld->setTimeStep(0.015);// seconds
 		s_bpWorld->setGlobalERP(btScalar(g_erp));// ERP
-									   //s_bpWorld->start();// ƒEƒBƒ“ƒhƒE‚ğ•\¦‚µ‚ÄCƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚ğŠJn‚·‚é
+									   //s_bpWorld->start();// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’è¡¨ç¤ºã—ã¦ï¼Œã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ã‚’é–‹å§‹ã™ã‚‹
 		s_btWorld = s_bpWorld->getDynamicsWorld();
 		s_bpWorld->setNumThread(g_numthread);
 
@@ -17838,9 +17861,9 @@ int OnSetMotSpeed()
 		return 0;
 	}
 
-	//SetMotionSpeed() : ƒ‚[ƒVƒ‡ƒ“‚²‚Æ‚ÌƒXƒs[ƒh
-	//SetTmpMotSpeed() : ƒ‚[ƒVƒ‡ƒ“‚ª•Ï‚í‚Á‚Ä‚àƒXƒ‰ƒCƒ_[w’è‚ÌƒXƒs[ƒh
-	//ƒ‚[ƒVƒ‡ƒ“‚ª•Ï‚í‚Á‚Ä‚àƒXƒ‰ƒCƒ_[w’è‚ÌƒXƒs[ƒh‚ğˆÛ‚·‚é‚æ‚¤‚É‚·‚é
+	//SetMotionSpeed() : ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã”ã¨ã®ã‚¹ãƒ”ãƒ¼ãƒ‰
+	//SetTmpMotSpeed() : ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãŒå¤‰ã‚ã£ã¦ã‚‚ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼æŒ‡å®šã®ã‚¹ãƒ”ãƒ¼ãƒ‰
+	//ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãŒå¤‰ã‚ã£ã¦ã‚‚ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼æŒ‡å®šã®ã‚¹ãƒ”ãƒ¼ãƒ‰ã‚’ç¶­æŒã™ã‚‹ã‚ˆã†ã«ã™ã‚‹
 	//g_dspeed = s_model->GetCurMotInfo()->speed;
 	g_dspeed = s_model->GetTmpMotSpeed();
 	size_t modelno;
@@ -18880,7 +18903,7 @@ int PickSpRigidSW(POINT srcpos)
 	}
 
 	//spguisw
-	if (kind == 0) {//ƒJƒGƒ‹ƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚Ä‚¢‚È‚¢‚Æ‚«
+	if (kind == 0) {//ã‚«ã‚¨ãƒ«ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ã¦ã„ãªã„ã¨ã
 		int starty = s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y - 14;
 		int endy = starty + 28;
 
@@ -19242,7 +19265,7 @@ int PickSpRig(POINT srcpos)
 	int starty = s_sprig[SPRIG_INACTIVE].dispcenter.y - (int)s_spsize / 2;
 	int endy = starty + (int)s_spsize;
 
-	//SPRIG_INACTIVE‚ÆSPRIG_ACTIVE‚Í“¯‚¶ˆÊ’u‚È‚Ì‚Å“–‚½‚è”»’è‚Í‚P‰ñ‚Å—Ç‚¢
+	//SPRIG_INACTIVEã¨SPRIG_ACTIVEã¯åŒã˜ä½ç½®ãªã®ã§å½“ãŸã‚Šåˆ¤å®šã¯ï¼‘å›ã§è‰¯ã„
 	if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
 		int startx = s_sprig[SPRIG_INACTIVE].dispcenter.x - (int)s_spsize / 2;
 		int endx = startx + (int)s_spsize;
@@ -19263,14 +19286,14 @@ int PickSpCpLW2W(POINT srcpos)
 		return 0;
 	}
 	if (g_previewFlag != 0) {
-		//preview’†‚Í@‰Ÿ‚³‚È‚¢
+		//previewä¸­ã¯ã€€æŠ¼ã•ãªã„
 		return 0;
 	}
 
 	int starty = s_spcplw2w.dispcenter.y - (int)s_spsize / 2;
 	int endy = starty + (int)s_spsize;
 
-	//SPRIG_INACTIVE‚ÆSPRIG_ACTIVE‚Í“¯‚¶ˆÊ’u‚È‚Ì‚Å“–‚½‚è”»’è‚Í‚P‰ñ‚Å—Ç‚¢
+	//SPRIG_INACTIVEã¨SPRIG_ACTIVEã¯åŒã˜ä½ç½®ãªã®ã§å½“ãŸã‚Šåˆ¤å®šã¯ï¼‘å›ã§è‰¯ã„
 	if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
 		int startx = s_spcplw2w.dispcenter.x - (int)s_spsize / 2;
 		int endx = startx + (int)s_spsize;
@@ -19291,14 +19314,14 @@ int PickSpSmooth(POINT srcpos)
 		return 0;
 	}
 	if (g_previewFlag != 0) {
-		//preview’†‚Í@‰Ÿ‚³‚È‚¢
+		//previewä¸­ã¯ã€€æŠ¼ã•ãªã„
 		return 0;
 	}
 
 	int starty = s_spsmooth.dispcenter.y - (int)s_spsize / 2;
 	int endy = starty + (int)s_spsize;
 
-	//SPRIG_INACTIVE‚ÆSPRIG_ACTIVE‚Í“¯‚¶ˆÊ’u‚È‚Ì‚Å“–‚½‚è”»’è‚Í‚P‰ñ‚Å—Ç‚¢
+	//SPRIG_INACTIVEã¨SPRIG_ACTIVEã¯åŒã˜ä½ç½®ãªã®ã§å½“ãŸã‚Šåˆ¤å®šã¯ï¼‘å›ã§è‰¯ã„
 	if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
 		int startx = s_spsmooth.dispcenter.x - (int)s_spsize / 2;
 		int endx = startx + (int)s_spsize;
@@ -19586,10 +19609,10 @@ int CreateTimeLineMark(int topboneno)
 		SetTimelineMark();
 
 		s_owpTimeline->callRewrite();
-		s_owpTimeline->setRewriteOnChangeFlag(true);		//Ä•`‰æ—v‹‚ğÄŠJ
+		s_owpTimeline->setRewriteOnChangeFlag(true);		//å†æç”»è¦æ±‚ã‚’å†é–‹
 
 		s_owpLTimeline->callRewrite();
-		s_owpLTimeline->setRewriteOnChangeFlag(true);		//Ä•`‰æ—v‹‚ğÄŠJ
+		s_owpLTimeline->setRewriteOnChangeFlag(true);		//å†æç”»è¦æ±‚ã‚’å†é–‹
 	}
 	return 0;
 }
@@ -19610,7 +19633,7 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 
 	if ((srcstart < 0.0) || (srcend < 0.0)) {
 		//_ASSERT(0);
-		return 2;//ƒtƒŒ[ƒ€,ƒtƒŒ[ƒ€’·”ÍˆÍŠO‚Í 2 ‚ğ•Ô‚·
+		return 2;//ãƒ•ãƒ¬ãƒ¼ãƒ ,ãƒ•ãƒ¬ãƒ¼ãƒ é•·ç¯„å›²å¤–ã¯ 2 ã‚’è¿”ã™
 	}
 	if (srcstart > srcend) {
 		double tmp = srcstart;
@@ -19631,7 +19654,7 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 	int frameleng = (int)s_model->GetCurMotInfo()->frameleng;
 	if ((frameleng <= 0) || (frameleng > 100000)) {
 		//_ASSERT(0);
-		return 2;//ƒtƒŒ[ƒ€,ƒtƒŒ[ƒ€’·”ÍˆÍŠO‚Í 2 ‚ğ•Ô‚·
+		return 2;//ãƒ•ãƒ¬ãƒ¼ãƒ ,ãƒ•ãƒ¬ãƒ¼ãƒ é•·ç¯„å›²å¤–ã¯ 2 ã‚’è¿”ã™
 	}
 
 	g_motionbrush_startframe = startframe;
@@ -19647,13 +19670,13 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 		g_motionbrush_applyframe = endframe;
 	}
 	else {
-		g_motionbrush_applyframe = (double)((int)(startframe + (endframe - startframe) * (g_applyrate / 100.0)));//editrange‚Æ“¯‚¶®
+		g_motionbrush_applyframe = (double)((int)(startframe + (endframe - startframe) * (g_applyrate / 100.0)));//editrangeã¨åŒã˜å¼
 	}
 
 
 	if ((g_motionbrush_applyframe < 0) || (g_motionbrush_applyframe > endframe)) {
 		//_ASSERT(0);
-		return 2;//ƒtƒŒ[ƒ€,ƒtƒŒ[ƒ€’·”ÍˆÍŠO‚Í 2 ‚ğ•Ô‚·
+		return 2;//ãƒ•ãƒ¬ãƒ¼ãƒ ,ãƒ•ãƒ¬ãƒ¼ãƒ é•·ç¯„å›²å¤–ã¯ 2 ã‚’è¿”ã™
 	}
 
 	g_motionbrush_value = (float*)malloc(sizeof(float) * (g_motionbrush_frameleng + 1));
@@ -19678,7 +19701,7 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 		s_onselectplugin = 1;
 
 
-		//‚±‚Ìif•¶‚Íƒvƒ‰ƒOƒCƒ““à‚É‚à„§
+		//ã“ã®ifæ–‡ã¯ãƒ—ãƒ©ã‚°ã‚¤ãƒ³å†…ã«ã‚‚æ¨å¥¨
 		if ((g_motionbrush_startframe >= 0.0) && (g_motionbrush_startframe < 1e5) &&
 			(g_motionbrush_endframe >= g_motionbrush_startframe) && (g_motionbrush_endframe < 1e5) &&
 			(g_motionbrush_applyframe >= g_motionbrush_startframe) && (g_motionbrush_applyframe <= g_motionbrush_endframe) &&
@@ -19693,7 +19716,7 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 					ret = (s_plugin + pluginno)->CreateMotionBrush(g_motionbrush_startframe, g_motionbrush_endframe, g_motionbrush_applyframe, g_motionbrush_frameleng, g_brushrepeats, g_brushmirrorUflag, g_brushmirrorVflag, g_ifmirrorVDiv2flag, tempvalue);
 					if ((ret != 0) && (ret != 2)) {
 						_ASSERT(0);
-						::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+						::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 						PostQuitMessage(ret);
 					}
 				}
@@ -19720,8 +19743,8 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 
 		}
 		else {
-			//Œãˆ—‚Ì‚½‚ß‚Éreturn‚¹‚¸‚Éret‚ÉƒZƒbƒg‚·‚é
-			ret = 2;//ƒtƒŒ[ƒ€,ƒtƒŒ[ƒ€’·”ÍˆÍŠO‚Í 2 ‚ğ•Ô‚·
+			//å¾Œå‡¦ç†ã®ãŸã‚ã«returnã›ãšã«retã«ã‚»ãƒƒãƒˆã™ã‚‹
+			ret = 2;//ãƒ•ãƒ¬ãƒ¼ãƒ ,ãƒ•ãƒ¬ãƒ¼ãƒ é•·ç¯„å›²å¤–ã¯ 2 ã‚’è¿”ã™
 		}
 
 		s_onselectplugin = 0;
@@ -19733,7 +19756,7 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 		tempvalue = 0;
 	}
 
-	if (onrefreshflag == false) {//RefreshŠÖ”ˆÈŠO‚©‚çŒÄ‚Ño‚µ‚½‚Æ‚«
+	if (onrefreshflag == false) {//Refreshé–¢æ•°ä»¥å¤–ã‹ã‚‰å‘¼ã³å‡ºã—ãŸã¨ã
 
 		if (s_owpTimeline)
 			s_owpTimeline->setMaxTime(frameleng);//!!!!!!!!!!!!!!!!!!!!!
@@ -19770,7 +19793,7 @@ int SetTimelineMark()
 	}
 
 
-	s_owpTimeline->setRewriteOnChangeFlag(false);		//Ä•`‰æ—v‹‚ğÄŠJ
+	s_owpTimeline->setRewriteOnChangeFlag(false);		//å†æç”»è¦æ±‚ã‚’å†é–‹
 
 
 //	s_owpTimeline->deleteKey();
@@ -19812,7 +19835,7 @@ int SetTimelineMark()
 	//}
 
 	s_owpTimeline->callRewrite();
-	s_owpTimeline->setRewriteOnChangeFlag(true);		//Ä•`‰æ—v‹‚ğÄŠJ
+	s_owpTimeline->setRewriteOnChangeFlag(true);		//å†æç”»è¦æ±‚ã‚’å†é–‹
 
 	return 0;
 }
@@ -19853,7 +19876,7 @@ int SetLTimelineMark(int curboneno)
 		if (opebone) {
 			CBone* parentbone = opebone->GetParent();
 			if (s_ikkind == 0) {
-				//ikkind ‚ªROT(0)‚Ìê‡‚ÍIK@‚»‚êˆÈŠO‚ÌMV, SCALE‚Ìê‡‚É‚ÍFK
+				//ikkind ãŒROT(0)ã®å ´åˆã¯IKã€€ãã‚Œä»¥å¤–ã®MV, SCALEã®å ´åˆã«ã¯FK
 				if (parentbone) {
 					opebone = parentbone;
 				}
@@ -19895,7 +19918,7 @@ int SetLTimelineMark(int curboneno)
 	}
 
 	s_owpLTimeline->callRewrite();
-	s_owpTimeline->setRewriteOnChangeFlag(true);		//Ä•`‰æ—v‹‚ğÄŠJ
+	s_owpTimeline->setRewriteOnChangeFlag(true);		//å†æç”»è¦æ±‚ã‚’å†é–‹
 
 	return 0;
 }
@@ -19983,7 +20006,7 @@ int ExportFBXFile()
 		ChaMatrix tmpwm = s_model->GetWorldMat();
 		s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 
-		//‚±‚±‚ÅAxisMatX‚Ì‰Šú‰»
+		//ã“ã“ã§AxisMatXã®åˆæœŸåŒ–
 		s_model->CreateBtObject(g_limitdegflag, 1);
 		s_model->CalcBtAxismat(2);//2
 		s_model->SetInitAxisMatX(1);
@@ -20169,7 +20192,7 @@ int RollBackEditRange(int prevrangeFlag, int nextrangeFlag)
 	int curindex = s_editrangehistoryno;
 
 	if (prevrangeFlag && (s_editrange.IsSameStartAndEnd())) {
-		//prevƒ{ƒ^ƒ“‚Ì‚Æ‚«@”ÍˆÍ‚ª‰ğœ‚³‚ê‚Ä‚¢‚éê‡‚ÍŒ»ó•œ‹A‚Ì‚½‚ßƒCƒ“ƒfƒbƒNƒX‚Í‚»‚Ì‚Ü‚Ü
+		//prevãƒœã‚¿ãƒ³ã®ã¨ãã€€ç¯„å›²ãŒè§£é™¤ã•ã‚Œã¦ã„ã‚‹å ´åˆã¯ç¾çŠ¶å¾©å¸°ã®ãŸã‚ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã¯ãã®ã¾ã¾
 		if ((s_editrangehistory + curindex)->GetSetFlag() == 1) {
 			findindex = curindex;
 		}
@@ -20315,7 +20338,7 @@ int Bone2AngleLimit()
 	CBone* curbone;
 	curbone = s_model->GetBoneByID(s_curboneno);
 
-	//ƒIƒCƒ‰[ƒOƒ‰ƒt‚Ì•\¦‚Æ‡‚í‚¹‚é‚½‚ß‚É‘I‘ğƒWƒ‡ƒCƒ“ƒg‚Ì‚PŠK‘we‚ÌƒWƒ‡ƒCƒ“ƒg‚ğˆµ‚¤ //2021/11/17
+	//ã‚ªã‚¤ãƒ©ãƒ¼ã‚°ãƒ©ãƒ•ã®è¡¨ç¤ºã¨åˆã‚ã›ã‚‹ãŸã‚ã«é¸æŠã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®ï¼‘éšå±¤è¦ªã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã‚’æ‰±ã† //2021/11/17
 	if (curbone) {
 		if (curbone->GetParent()) {
 			s_anglelimitbone = curbone->GetParent();
@@ -20350,7 +20373,7 @@ int Bone2AngleLimit()
 		InitAngleLimit(&s_anglelimit);
 	}
 
-	////setcheckflag == 0‚Ì‚Æ‚«‚É‚Íƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚Ìó‘Ô‚ğ•Ï‚¦‚¸‚É•œŒ³‚·‚é
+	////setcheckflag == 0ã®ã¨ãã«ã¯ãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã®çŠ¶æ…‹ã‚’å¤‰ãˆãšã«å¾©å…ƒã™ã‚‹
 	//if (setcheckflag == 0) {
 	//	s_anglelimit.applyeul[AXIS_X] = saveal.applyeul[AXIS_X];
 	//	s_anglelimit.applyeul[AXIS_Y] = saveal.applyeul[AXIS_Y];
@@ -20600,10 +20623,10 @@ int AngleLimit2Dlg(HWND hDlgWnd, bool updateonlycheckeul)
 			wcscpy_s(strcombo, 256, L"GlobalBoneAxis");
 			SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_ADDSTRING, 0, (LPARAM)strcombo);
 			SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_SETCURSEL, s_anglelimit.boneaxiskind, 0);
-			EnableWindow(GetDlgItem(hDlgWnd, IDC_BONEAXIS), FALSE);//ŒÅ’è’l
+			EnableWindow(GetDlgItem(hDlgWnd, IDC_BONEAXIS), FALSE);//å›ºå®šå€¤
 
 
-			//“ü—ÍƒtƒB[ƒ‹ƒh‚ğ–ˆƒtƒŒ[ƒ€XV‚·‚é‚Æ@“ü—Í‚Å‚«‚È‚¢‚Ì‚Å@updateonlycheckeul‚Ì‚Æ‚«‚É‚ÍXV‚µ‚È‚¢
+			//å…¥åŠ›ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã‚’æ¯ãƒ•ãƒ¬ãƒ¼ãƒ æ›´æ–°ã™ã‚‹ã¨ã€€å…¥åŠ›ã§ããªã„ã®ã§ã€€updateonlycheckeulã®ã¨ãã«ã¯æ›´æ–°ã—ãªã„
 			InitAngleLimitEditInt(hDlgWnd, IDC_EDIT_XL, s_anglelimit.lower[AXIS_X]);
 			InitAngleLimitEditInt(hDlgWnd, IDC_EDIT_XU, s_anglelimit.upper[AXIS_X]);
 
@@ -20679,7 +20702,7 @@ int AngleLimit2Dlg(HWND hDlgWnd, bool updateonlycheckeul)
 	return 0;
 }
 
-int AngleDlg2AngleLimit(HWND hDlgWnd)//2022/12/05 ƒGƒ‰[“ü—Í’Ê’mƒ_ƒCƒAƒƒO‚ào‚·
+int AngleDlg2AngleLimit(HWND hDlgWnd)//2022/12/05 ã‚¨ãƒ©ãƒ¼å…¥åŠ›é€šçŸ¥ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚‚å‡ºã™
 {
 	int result_xl, result_xu;
 	int result_yl, result_yu;
@@ -20704,36 +20727,36 @@ int AngleDlg2AngleLimit(HWND hDlgWnd)//2022/12/05 ƒGƒ‰[“ü—Í’Ê’mƒ_ƒCƒAƒƒO‚ào‚·
 
 	result_xl = GetAngleLimitEditInt(hDlgWnd, IDC_EDIT_XL, &val_xl);
 	if (result_xl != 0) {
-		::MessageBox(s_mainhwnd, L"AngleLimitDlg‚ÌXLower‚Ì“ü—Í’l‚ª•s³‚Å‚·B", L"“ü—Í‚µ’¼‚µ‚Ä‚­‚¾‚³‚¢B", MB_OK);
+		::MessageBox(s_mainhwnd, L"AngleLimitDlgã®XLowerã®å…¥åŠ›å€¤ãŒä¸æ­£ã§ã™ã€‚", L"å…¥åŠ›ã—ç›´ã—ã¦ãã ã•ã„ã€‚", MB_OK);
 		errorflag = true;
 	}
 	result_xu = GetAngleLimitEditInt(hDlgWnd, IDC_EDIT_XU, &val_xu);
 	if (result_xu != 0) {
-		::MessageBox(s_mainhwnd, L"AngleLimitDlg‚ÌXUpper‚Ì“ü—Í’l‚ª•s³‚Å‚·B", L"“ü—Í‚µ’¼‚µ‚Ä‚­‚¾‚³‚¢B", MB_OK);
+		::MessageBox(s_mainhwnd, L"AngleLimitDlgã®XUpperã®å…¥åŠ›å€¤ãŒä¸æ­£ã§ã™ã€‚", L"å…¥åŠ›ã—ç›´ã—ã¦ãã ã•ã„ã€‚", MB_OK);
 		errorflag = true;
 	}
 
 
 	result_yl = GetAngleLimitEditInt(hDlgWnd, IDC_EDIT_YL, &val_yl);
 	if (result_yl != 0) {
-		::MessageBox(s_mainhwnd, L"AngleLimitDlg‚ÌYLower‚Ì“ü—Í’l‚ª•s³‚Å‚·B", L"“ü—Í‚µ’¼‚µ‚Ä‚­‚¾‚³‚¢B", MB_OK);
+		::MessageBox(s_mainhwnd, L"AngleLimitDlgã®YLowerã®å…¥åŠ›å€¤ãŒä¸æ­£ã§ã™ã€‚", L"å…¥åŠ›ã—ç›´ã—ã¦ãã ã•ã„ã€‚", MB_OK);
 		errorflag = true;
 	}
 	result_yu = GetAngleLimitEditInt(hDlgWnd, IDC_EDIT_YU, &val_yu);
 	if (result_yu != 0) {
-		::MessageBox(s_mainhwnd, L"AngleLimitDlg‚ÌYUpper‚Ì“ü—Í’l‚ª•s³‚Å‚·B", L"“ü—Í‚µ’¼‚µ‚Ä‚­‚¾‚³‚¢B", MB_OK);
+		::MessageBox(s_mainhwnd, L"AngleLimitDlgã®YUpperã®å…¥åŠ›å€¤ãŒä¸æ­£ã§ã™ã€‚", L"å…¥åŠ›ã—ç›´ã—ã¦ãã ã•ã„ã€‚", MB_OK);
 		errorflag = true;
 	}
 
 
 	result_zl = GetAngleLimitEditInt(hDlgWnd, IDC_EDIT_ZL, &val_zl);
 	if (result_zl != 0) {
-		::MessageBox(s_mainhwnd, L"AngleLimitDlg‚ÌZLower‚Ì“ü—Í’l‚ª•s³‚Å‚·B", L"“ü—Í‚µ’¼‚µ‚Ä‚­‚¾‚³‚¢B", MB_OK);
+		::MessageBox(s_mainhwnd, L"AngleLimitDlgã®ZLowerã®å…¥åŠ›å€¤ãŒä¸æ­£ã§ã™ã€‚", L"å…¥åŠ›ã—ç›´ã—ã¦ãã ã•ã„ã€‚", MB_OK);
 		errorflag = true;
 	}
 	result_zu = GetAngleLimitEditInt(hDlgWnd, IDC_EDIT_ZU, &val_zu);
 	if (result_zu != 0) {
-		::MessageBox(s_mainhwnd, L"AngleLimitDlg‚ÌZUpper‚Ì“ü—Í’l‚ª•s³‚Å‚·B", L"“ü—Í‚µ’¼‚µ‚Ä‚­‚¾‚³‚¢B", MB_OK);
+		::MessageBox(s_mainhwnd, L"AngleLimitDlgã®ZUpperã®å…¥åŠ›å€¤ãŒä¸æ­£ã§ã™ã€‚", L"å…¥åŠ›ã—ç›´ã—ã¦ãã ã•ã„ã€‚", MB_OK);
 		errorflag = true;
 	}
 
@@ -20761,7 +20784,7 @@ int CopyLimitedWorldToWorld(CModel* srcmodel, bool allframeflag, bool setcursorf
 {
 	HCURSOR oldcursor = NULL;
 	if (setcursorflag) {
-		//refreshEUlerGraphˆ—‚ÍŠÔ‚ª‚©‚©‚é‚±‚Æ‚ª‚ ‚é‚Ì‚Å»ŒvƒJ[ƒ\ƒ‹‚É‚·‚é
+		//refreshEUlerGraphå‡¦ç†ã¯æ™‚é–“ãŒã‹ã‹ã‚‹ã“ã¨ãŒã‚ã‚‹ã®ã§ç ‚æ™‚è¨ˆã‚«ãƒ¼ã‚½ãƒ«ã«ã™ã‚‹
 		oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 	}
 
@@ -20831,7 +20854,7 @@ int CopyLimitedWorldToWorld(CModel* srcmodel, bool allframeflag, bool setcursorf
 	}
 
 	if (setcursorflag && (oldcursor != NULL)) {
-		//ƒJ[ƒ\ƒ‹‚ğŒ³‚É–ß‚·
+		//ã‚«ãƒ¼ã‚½ãƒ«ã‚’å…ƒã«æˆ»ã™
 		SetCursor(oldcursor);
 	}
 
@@ -20842,7 +20865,7 @@ int CopyLimitedWorldToWorld(CModel* srcmodel, bool allframeflag, bool setcursorf
 int CopyWorldToLimitedWorld(CModel* srcmodel)
 {
 
-	//ŒÄ‚Ño‚µŒ³‚Å SetCursor »Œv‚µ‚Ä‚¢‚é
+	//å‘¼ã³å‡ºã—å…ƒã§ SetCursor ç ‚æ™‚è¨ˆã—ã¦ã„ã‚‹
 
 	if (srcmodel) {
 		ChaMatrix tmpwm = srcmodel->GetWorldMat();
@@ -20869,7 +20892,7 @@ int CopyWorldToLimitedWorld(CModel* srcmodel)
 int ApplyNewLimitsToWM(CModel* srcmodel)
 {
 
-	//ŒÄ‚Ño‚µŒ³‚Å SetCursor »Œv‚µ‚Ä‚¢‚é
+	//å‘¼ã³å‡ºã—å…ƒã§ SetCursor ç ‚æ™‚è¨ˆã—ã¦ã„ã‚‹
 
 	if (srcmodel) {
 		ChaMatrix tmpwm = srcmodel->GetWorldMat();
@@ -20926,7 +20949,7 @@ int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag)//default :
 {
 	HCURSOR oldcursor = NULL;
 	if (setcursorflag) {
-		//refreshEUlerGraphˆ—‚ÍŠÔ‚ª‚©‚©‚é‚±‚Æ‚ª‚ ‚é‚Ì‚Å»ŒvƒJ[ƒ\ƒ‹‚É‚·‚é
+		//refreshEUlerGraphå‡¦ç†ã¯æ™‚é–“ãŒã‹ã‹ã‚‹ã“ã¨ãŒã‚ã‚‹ã®ã§ç ‚æ™‚è¨ˆã‚«ãƒ¼ã‚½ãƒ«ã«ã™ã‚‹
 		oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 	}
 
@@ -20957,18 +20980,18 @@ int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag)//default :
 	//	s_model->CalcBoneEul(curmotid);
 	//}
 
-	//“Ç‚İ‚İ‚È‚¨‚µFlower‚Æupper‚Í‘å¬ŠÖŒW‚Å“ü‚ê‘Ö‚í‚é‚±‚Æ‚ª‚ ‚é‚½‚ß“K—pŒã“Ç‚İ‚İ‚È‚¨‚·B
+	//èª­ã¿è¾¼ã¿ãªãŠã—ï¼šlowerã¨upperã¯å¤§å°é–¢ä¿‚ã§å…¥ã‚Œæ›¿ã‚ã‚‹ã“ã¨ãŒã‚ã‚‹ãŸã‚é©ç”¨å¾Œèª­ã¿è¾¼ã¿ãªãŠã™ã€‚
 	Bone2AngleLimit();
 	//AngleLimit2Dlg(s_anglelimitdlg);
 	ChangeCurrentBone();
 
-	//UpdateEditedEuler();//select‚µ‚½”ÍˆÍ‚Ì‚İ
-	refreshEulerGraph();//ƒ‚[ƒVƒ‡ƒ“‘S‘Ì
+	//UpdateEditedEuler();//selectã—ãŸç¯„å›²ã®ã¿
+	refreshEulerGraph();//ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³å…¨ä½“
 
 	//s_underanglelimithscroll = 0;
 
 	if (setcursorflag && (oldcursor != NULL)) {
-		//ƒJ[ƒ\ƒ‹‚ğŒ³‚É–ß‚·
+		//ã‚«ãƒ¼ã‚½ãƒ«ã‚’å…ƒã«æˆ»ã™
 		SetCursor(oldcursor);
 	}
 
@@ -21008,7 +21031,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		switch (LOWORD(wp)) {
 		case IDC_BONEAXIS:
 
-			//lmtƒtƒ@ƒCƒ‹‚É‚æ‚éŒÅ’è’l
+			//lmtãƒ•ã‚¡ã‚¤ãƒ«ã«ã‚ˆã‚‹å›ºå®šå€¤
 
 			//{
 			//	int combono = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_BONEAXIS), CB_GETCURSEL, 0, 0);
@@ -21021,45 +21044,45 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		case IDC_APPLYONE:
 		{
 			s_changelimitangleFlag = true;
-			PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+			PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
 			int result1 = 0;
-			result1 = AngleDlg2AngleLimit(hDlgWnd);//ƒGƒ‰[“ü—Í’Ê’mƒ_ƒCƒAƒƒO‚ào‚·
+			result1 = AngleDlg2AngleLimit(hDlgWnd);//ã‚¨ãƒ©ãƒ¼å…¥åŠ›é€šçŸ¥ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚‚å‡ºã™
 			if (result1 == 0) {
 				UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE_ONE);
 			}
 
-			PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+			PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 			s_changelimitangleFlag = false;
 		}
 		break;
 		case IDC_APPLYDEEPER:
 		{
 			s_changelimitangleFlag = true;
-			PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+			PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
 			int result1 = 0;
-			result1 = AngleDlg2AngleLimit(hDlgWnd);//ƒGƒ‰[“ü—Í’Ê’mƒ_ƒCƒAƒƒO‚ào‚·
+			result1 = AngleDlg2AngleLimit(hDlgWnd);//ã‚¨ãƒ©ãƒ¼å…¥åŠ›é€šçŸ¥ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚‚å‡ºã™
 			if (result1 == 0) {
 				UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE_DEEPER);
 			}
 
-			PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+			PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 			s_changelimitangleFlag = false;
 		}
 		break;
 		case IDC_APPLYALL:
 		{
 			s_changelimitangleFlag = true;
-			PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+			PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
 			int result1 = 0;
-			result1 = AngleDlg2AngleLimit(hDlgWnd);//ƒGƒ‰[“ü—Í’Ê’mƒ_ƒCƒAƒƒO‚ào‚·
+			result1 = AngleDlg2AngleLimit(hDlgWnd);//ã‚¨ãƒ©ãƒ¼å…¥åŠ›é€šçŸ¥ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚‚å‡ºã™
 			if (result1 == 0) {
 				UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE_ALL);
 			}
 
-			PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+			PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 			s_changelimitangleFlag = false;
 		}
 		break;
@@ -21084,13 +21107,13 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 						curmi = s_model->GetCurMotInfo();
 						if (curmi) {
 							s_changelimitangleFlag = true;
-							PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+							PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
 							symbone->SetAngleLimit(g_limitdegflag, symanglelimit);
 
 							UpdateAfterEditAngleLimit(eLIM2BONE_NONE);
 
-							PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+							PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 							s_changelimitangleFlag = false;
 						}
 					}
@@ -21113,7 +21136,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 						if (curmi) {
 
 							s_changelimitangleFlag = true;
-							PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+							PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
 							ANGLELIMIT anglelimit = symbone->GetAngleLimit(g_limitdegflag, 0);
 							ANGLELIMIT symanglelimit = anglelimit;
@@ -21130,7 +21153,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 							AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 							UpdateWindow(s_anglelimitdlg);
 
-							PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+							PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 							s_changelimitangleFlag = false;
 
 						}
@@ -21153,7 +21176,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 			//paste button
 			if (s_anglelimitbone && s_anglelimitdlg) {
 				s_changelimitangleFlag = true;
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
 				s_anglelimit = s_anglelimitcopy;
 				UpdateAfterEditAngleLimit(eLIM2BONE_LIM2BONE_ONE);
@@ -21161,7 +21184,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
 
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 				s_changelimitangleFlag = false;
 
 			}
@@ -21174,7 +21197,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		{
 			if (s_model && s_anglelimitdlg) {
 				s_changelimitangleFlag = true;
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
 				bool excludebt = false;
 				s_model->ResetAngleLimit(excludebt, 180);
@@ -21185,7 +21208,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
 
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 				s_changelimitangleFlag = false;
 
 			}
@@ -21195,7 +21218,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		{
 			if (s_model && s_anglelimitdlg) {
 				s_changelimitangleFlag = true;
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
 				bool excludebt = false;
 				s_model->ResetAngleLimit(excludebt, 0);
@@ -21206,7 +21229,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
 
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 				s_changelimitangleFlag = false;
 
 			}
@@ -21216,7 +21239,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		{
 			if (s_model && s_anglelimitdlg) {
 				s_changelimitangleFlag = true;
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
 				s_model->AngleLimitReplace180to170();
 
@@ -21226,7 +21249,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
 
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 				s_changelimitangleFlag = false;
 
 			}
@@ -21241,9 +21264,9 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				if (curmi) {
 
 					s_changelimitangleFlag = true;
-					PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+					PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
-					//’·‚¢ƒtƒŒ[ƒ€‚Ìˆ—‚Í”•bŠÔ‚ª‚©‚©‚é‚±‚Æ‚ª‚ ‚é‚Ì‚Å»ŒvƒJ[ƒ\ƒ‹‚É‚·‚é
+					//é•·ã„ãƒ•ãƒ¬ãƒ¼ãƒ ã®å‡¦ç†ã¯æ•°ç§’æ™‚é–“ãŒã‹ã‹ã‚‹ã“ã¨ãŒã‚ã‚‹ã®ã§ç ‚æ™‚è¨ˆã‚«ãƒ¼ã‚½ãƒ«ã«ã™ã‚‹
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 					//s_savelimitdegflag = g_limitdegflag;
@@ -21254,17 +21277,17 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					//}
 
 
-					//ƒ‚[ƒVƒ‡ƒ“‚©‚ç‚Ìİ’è‚Ì‘O‚É@‚Ü‚¸‚Íƒ[ƒ‰Šú‰»‚·‚é
+					//ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‹ã‚‰ã®è¨­å®šã®å‰ã«ã€€ã¾ãšã¯ã‚¼ãƒ­åˆæœŸåŒ–ã™ã‚‹
 					bool excludebt = true;
 					s_model->ResetAngleLimit(excludebt, 0);
 					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
 
-					//g_limitdegflag‚ÉŠÖ‚í‚ç‚¸@Šù‘¶ƒ‚[ƒVƒ‡ƒ“‚Ì§ŒÀ–³‚µ‚Ìp¨‚ğŒ³‚Éİ’è
-					s_model->AdditiveCurrentToAngleLimit();//“à•”‚Å‘SƒtƒŒ[ƒ€•ªˆ—
+					//g_limitdegflagã«é–¢ã‚ã‚‰ãšã€€æ—¢å­˜ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®åˆ¶é™ç„¡ã—ã®å§¿å‹¢ã‚’å…ƒã«è¨­å®š
+					s_model->AdditiveCurrentToAngleLimit();//å†…éƒ¨ã§å…¨ãƒ•ãƒ¬ãƒ¼ãƒ åˆ†å‡¦ç†
 
 
-					//ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeul‚Í‚±‚ê‚æ‚èŒã‚ÅŒÄ‚Î‚ê‚éUpdateAfterEditAngleLimit‚Å
+					//ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeulã¯ã“ã‚Œã‚ˆã‚Šå¾Œã§å‘¼ã°ã‚Œã‚‹UpdateAfterEditAngleLimitã§
 					//g_limitdegflag = s_savelimitdegflag;
 					//if (s_LimitDegCheckBox) {
 					//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -21277,10 +21300,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 					UpdateWindow(s_anglelimitdlg);
 
-					//ƒJ[ƒ\ƒ‹‚ğŒ³‚É–ß‚·
+					//ã‚«ãƒ¼ã‚½ãƒ«ã‚’å…ƒã«æˆ»ã™
 					SetCursor(oldcursor);
 
-					PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+					PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 					s_changelimitangleFlag = false;
 
 				}
@@ -21296,10 +21319,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				curmi = s_model->GetCurMotInfo();
 				if (curmi) {
 					s_changelimitangleFlag = true;
-					PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+					PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
 
-					//’·‚¢ƒtƒŒ[ƒ€‚Ìˆ—‚Í”•bŠÔ‚ª‚©‚©‚é‚±‚Æ‚ª‚ ‚é‚Ì‚Å»ŒvƒJ[ƒ\ƒ‹‚É‚·‚é
+					//é•·ã„ãƒ•ãƒ¬ãƒ¼ãƒ ã®å‡¦ç†ã¯æ•°ç§’æ™‚é–“ãŒã‹ã‹ã‚‹ã“ã¨ãŒã‚ã‚‹ã®ã§ç ‚æ™‚è¨ˆã‚«ãƒ¼ã‚½ãƒ«ã«ã™ã‚‹
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 
@@ -21310,16 +21333,16 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
 					//}
 
-					//ƒ‚[ƒVƒ‡ƒ“‚©‚ç‚Ìİ’è‚Ì‘O‚É@‚Ü‚¸‚Íƒ[ƒ‰Šú‰»‚·‚é
+					//ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‹ã‚‰ã®è¨­å®šã®å‰ã«ã€€ã¾ãšã¯ã‚¼ãƒ­åˆæœŸåŒ–ã™ã‚‹
 					bool excludebt = true;
 					s_model->ResetAngleLimit(excludebt, 0);
 					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
-					//g_limitdegflag‚ÉŠÖ‚í‚ç‚¸@Šù‘¶ƒ‚[ƒVƒ‡ƒ“‚Ì§ŒÀ–³‚µ‚Ìp¨‚ğŒ³‚Éİ’è
-					s_model->AdditiveAllMotionsToAngleLimit();//“à•”‚Å‘Sƒ‚[ƒVƒ‡ƒ“‘SƒtƒŒ[ƒ€•ªˆ—
+					//g_limitdegflagã«é–¢ã‚ã‚‰ãšã€€æ—¢å­˜ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®åˆ¶é™ç„¡ã—ã®å§¿å‹¢ã‚’å…ƒã«è¨­å®š
+					s_model->AdditiveAllMotionsToAngleLimit();//å†…éƒ¨ã§å…¨ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³å…¨ãƒ•ãƒ¬ãƒ¼ãƒ åˆ†å‡¦ç†
 
 
-					//ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeul‚Í‚±‚ê‚æ‚èŒã‚ÅŒÄ‚Î‚ê‚éUpdateAfterEditAngleLimit‚Å
+					//ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeulã¯ã“ã‚Œã‚ˆã‚Šå¾Œã§å‘¼ã°ã‚Œã‚‹UpdateAfterEditAngleLimitã§
 
 					bool setcursorflag = false;
 					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, setcursorflag);
@@ -21332,10 +21355,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 					UpdateWindow(s_anglelimitdlg);
 
-					//ƒJ[ƒ\ƒ‹‚ğŒ³‚É–ß‚·
+					//ã‚«ãƒ¼ã‚½ãƒ«ã‚’å…ƒã«æˆ»ã™
 					SetCursor(oldcursor);
 
-					PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+					PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 					s_changelimitangleFlag = false;
 
 				}
@@ -21348,10 +21371,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		{
 			if (s_model && s_anglelimitdlg && s_anglelimitbone) {
 				s_changelimitangleFlag = true;
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
 				bool excludebt = false;
-				s_model->ResetAngleLimit(excludebt, 180, s_anglelimitbone);//2022/12/05 curboneˆø”’Ç‰Á
+				s_model->ResetAngleLimit(excludebt, 180, s_anglelimitbone);//2022/12/05 curboneå¼•æ•°è¿½åŠ 
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
@@ -21359,7 +21382,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
 
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 				s_changelimitangleFlag = false;
 
 			}
@@ -21369,10 +21392,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		{
 			if (s_model && s_anglelimitdlg && s_anglelimitbone) {
 				s_changelimitangleFlag = true;
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
 				bool excludebt = false;
-				s_model->ResetAngleLimit(excludebt, 0, s_anglelimitbone);//2022/12/05 curboneˆø”’Ç‰Á
+				s_model->ResetAngleLimit(excludebt, 0, s_anglelimitbone);//2022/12/05 curboneå¼•æ•°è¿½åŠ 
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
@@ -21380,7 +21403,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
 
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 				s_changelimitangleFlag = false;
 
 			}
@@ -21390,10 +21413,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		{
 			if (s_model && s_anglelimitdlg && s_anglelimitbone) {
 				s_changelimitangleFlag = true;
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
 
-				s_model->AngleLimitReplace180to170(s_anglelimitbone);//2022/12/05 curboneˆø”’Ç‰Á
+				s_model->AngleLimitReplace180to170(s_anglelimitbone);//2022/12/05 curboneå¼•æ•°è¿½åŠ 
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
@@ -21401,7 +21424,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 				UpdateWindow(s_anglelimitdlg);
 
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 				s_changelimitangleFlag = false;
 
 			}
@@ -21415,10 +21438,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				curmi = s_model->GetCurMotInfo();
 				if (curmi) {
 					s_changelimitangleFlag = true;
-					PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+					PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
 
-					//’·‚¢ƒtƒŒ[ƒ€‚Ìˆ—‚Í”•bŠÔ‚ª‚©‚©‚é‚±‚Æ‚ª‚ ‚é‚Ì‚Å»ŒvƒJ[ƒ\ƒ‹‚É‚·‚é
+					//é•·ã„ãƒ•ãƒ¬ãƒ¼ãƒ ã®å‡¦ç†ã¯æ•°ç§’æ™‚é–“ãŒã‹ã‹ã‚‹ã“ã¨ãŒã‚ã‚‹ã®ã§ç ‚æ™‚è¨ˆã‚«ãƒ¼ã‚½ãƒ«ã«ã™ã‚‹
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 					s_savelimitdegflag = g_limitdegflag;
@@ -21434,10 +21457,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 						s_model->SetMotionFrame(curframe);
 						ChaMatrix tmpwm = s_model->GetWorldMat();
 						s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
-						s_model->AdditiveCurrentToAngleLimit(s_anglelimitbone);//2022/12/05 curboneˆø”’Ç‰Á
+						s_model->AdditiveCurrentToAngleLimit(s_anglelimitbone);//2022/12/05 curboneå¼•æ•°è¿½åŠ 
 					}
 
-					ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeul‚Í‚±‚ê‚æ‚èŒã‚ÅŒÄ‚Î‚ê‚éUpdateAfterEditAngleLimit‚Å
+					ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeulã¯ã“ã‚Œã‚ˆã‚Šå¾Œã§å‘¼ã°ã‚Œã‚‹UpdateAfterEditAngleLimitã§
 
 					bool setcursorflag = false;
 					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, setcursorflag);
@@ -21447,10 +21470,10 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					UpdateWindow(s_anglelimitdlg);
 
 
-					//ƒJ[ƒ\ƒ‹‚ğŒ³‚É–ß‚·
+					//ã‚«ãƒ¼ã‚½ãƒ«ã‚’å…ƒã«æˆ»ã™
 					SetCursor(oldcursor);
 
-					PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+					PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 					s_changelimitangleFlag = false;
 
 				}
@@ -21790,13 +21813,13 @@ int ChangeCurrentBone()
 			//}
 
 
-			//‘I‘ğƒ{[ƒ“‚É•ÏX‚ª—L‚Á‚½ê‡
+			//é¸æŠãƒœãƒ¼ãƒ³ã«å¤‰æ›´ãŒæœ‰ã£ãŸå ´åˆ
 			if ((s_befbone != curbone) || (s_befmodel != s_model)) {
 				//if (s_owpTimeline) {
 					//refreshTimeline(*s_owpTimeline);
 
 				refreshEulerGraph();
-				//s_tum.UpdateEditedEuler(refreshEulerGraph);//”ñƒuƒƒbƒLƒ“ƒO
+				//s_tum.UpdateEditedEuler(refreshEulerGraph);//éãƒ–ãƒ­ãƒƒã‚­ãƒ³ã‚°
 
 
 				//}
@@ -21822,26 +21845,26 @@ int ChangeWallScrapingIKFlag(bool srcflag)
 {
 	g_wallscrapingikflag = srcflag;
 	s_spscraping.state = srcflag;
-	s_WallScrapingCheckBoxFlag = true;//!!!!! •›ì—p‚Æ‚µ‚Ä@SaveUndoMotion‚ª“­‚­
+	s_WallScrapingCheckBoxFlag = true;//!!!!! å‰¯ä½œç”¨ã¨ã—ã¦ã€€SaveUndoMotionãŒåƒã
 
 	return 0;
 }
 
 int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 {
-	//ˆ—’†‚Éƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚Ìó‘Ô‚ğ•Ï‚¦‚é‚±‚Æ‚ªo—ˆ‚È‚¢‚æ‚¤‚É@»ŒvƒJ[ƒ\ƒ‹‚É‚·‚é
+	//å‡¦ç†ä¸­ã«ãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã®çŠ¶æ…‹ã‚’å¤‰ãˆã‚‹ã“ã¨ãŒå‡ºæ¥ãªã„ã‚ˆã†ã«ã€€ç ‚æ™‚è¨ˆã‚«ãƒ¼ã‚½ãƒ«ã«ã™ã‚‹
 	HCURSOR oldcursor = NULL;
 	oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 
 	g_limitdegflag = srcflag;
 	//if (setcheckflag && s_LimitDegCheckBox) {
-	//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);//!!!!! •›ì—p‚Æ‚µ‚Ä@SaveUndoMotion‚ª“­‚­
+	//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);//!!!!! å‰¯ä½œç”¨ã¨ã—ã¦ã€€SaveUndoMotionãŒåƒã
 	//}
 
 	s_splimiteul.state = srcflag;
 	if (setcheckflag) {
-		s_LimitDegCheckBoxFlag = true;//!!!!! •›ì—p‚Æ‚µ‚Ä@SaveUndoMotion‚ª“­‚­
+		s_LimitDegCheckBoxFlag = true;//!!!!! å‰¯ä½œç”¨ã¨ã—ã¦ã€€SaveUndoMotionãŒåƒã
 	}
 
 	if (updateeulflag) {
@@ -21877,7 +21900,7 @@ int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 	//}
 
 	if (oldcursor != NULL) {
-		//ƒJ[ƒ\ƒ‹‚ğŒ³‚É–ß‚·
+		//ã‚«ãƒ¼ã‚½ãƒ«ã‚’å…ƒã«æˆ»ã™
 		SetCursor(oldcursor);
 	}
 
@@ -21892,7 +21915,7 @@ int OnFrameKeyboard()
 	MoveMemory(g_savekeybuf, g_keybuf, sizeof(BYTE) * 256);
 
 	if (GetKeyboardState((PBYTE)g_keybuf) == FALSE) {
-		//¸”s‚µ‚½ê‡‚É‚ÍƒSƒ~‚ª“ü‚ç‚È‚¢‚æ‚¤‚É‰Šú‰»
+		//å¤±æ•—ã—ãŸå ´åˆã«ã¯ã‚´ãƒŸãŒå…¥ã‚‰ãªã„ã‚ˆã†ã«åˆæœŸåŒ–
 		//MoveMemory(g_savekeybuf, g_keybuf, sizeof(BYTE) * 256);
 		ZeroMemory(g_keybuf, sizeof(BYTE) * 256);
 	}
@@ -21931,7 +21954,7 @@ int OnFrameKeyboard()
 	//end of BoneTwist on MouseWheel 
 	if ((s_tkeyflag != 0) && (s_editmotionflag >= 0) && ((g_keybuf['T'] & 0x80) == 0)) {
 		s_tkeyflag = 0;
-		PrepairUndo();//ƒcƒCƒXƒg•Û‘¶
+		PrepairUndo();//ãƒ„ã‚¤ã‚¹ãƒˆä¿å­˜
 	}
 
 	/*
@@ -21966,7 +21989,7 @@ int OnFrameKeyboard()
 
 
 	//####################################################################################################################
-	//Undo,Redo‚ÌRedo‚ÌƒRƒ}ƒ“ƒhƒL[‚ªCtrl + Shift + Z‚È‚Ì‚Å,@MButton—p‚ÌƒL[‚Æ‚µ‚ÄCtrl + Shift‚Íg‚¦‚È‚¢BƒRƒƒ“ƒgƒAƒEƒg@2022/01/11
+	//Undo,Redoã®Redoã®ã‚³ãƒãƒ³ãƒ‰ã‚­ãƒ¼ãŒCtrl + Shift + Zãªã®ã§,ã€€MButtonç”¨ã®ã‚­ãƒ¼ã¨ã—ã¦Ctrl + Shiftã¯ä½¿ãˆãªã„ã€‚ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆã€€2022/01/11
 	//####################################################################################################################
 	//if (g_ctrlshiftkeyformb == false) {
 	//	if ((g_keybuf[VK_CONTROL] & 0x80) && (g_keybuf[VK_SHIFT] & 0x80)) {
@@ -22078,7 +22101,7 @@ int OnFrameUtCheckBox()
 		if (s_model && s_model->GetCurMotInfo() && (g_limitdegflag != s_beflimitdegflag)) {
 			////s_model->CalcBoneEul(s_model->GetCurMotInfo()->motid);
 			////refreshEulerGraph();
-			//////s_tum.UpdateEditedEuler(refreshEulerGraph);//”ñƒuƒƒbƒLƒ“ƒO
+			//////s_tum.UpdateEditedEuler(refreshEulerGraph);//éãƒ–ãƒ­ãƒƒã‚­ãƒ³ã‚°
 
 			//ChangeLimitDegFlag(g_limitdegflag, false, true);
 			PrepairUndo();
@@ -22120,7 +22143,7 @@ int OnFrameUtCheckBox()
 	}
 
 
-	if (s_utBrushRepeatsFlag) {//’l‚ª•Ï‚í‚Á‚Ä@‚©‚Â@ƒ}ƒEƒXƒAƒbƒv‚Ì‚Æ‚«
+	if (s_utBrushRepeatsFlag) {//å€¤ãŒå¤‰ã‚ã£ã¦ã€€ã‹ã¤ã€€ãƒã‚¦ã‚¹ã‚¢ãƒƒãƒ—ã®ã¨ã
 		//WCHAR sz[100] = { 0L };
 		//g_brushrepeats = (int)(g_SampleUI.GetSlider(IDC_SL_BRUSHREPEATS)->GetValue());
 		//swprintf_s(sz, 100, L"Brush Repeats : %d", g_brushrepeats);
@@ -22130,10 +22153,10 @@ int OnFrameUtCheckBox()
 		}
 		save_brushrepeats = g_brushrepeats;
 
-		s_utBrushRepeatsFlag = false;//OnGUIEvent‚ÌBrushRepaetsƒXƒ‰ƒCƒ_[
+		s_utBrushRepeatsFlag = false;//OnGUIEventã®BrushRepaetsã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼
 	}
 
-	if (s_utApplyRateFlag) {//’l‚ª•Ï‚í‚Á‚Ä@‚©‚Â@ƒ}ƒEƒXƒAƒbƒv‚Ì‚Æ‚«
+	if (s_utApplyRateFlag) {//å€¤ãŒå¤‰ã‚ã£ã¦ã€€ã‹ã¤ã€€ãƒã‚¦ã‚¹ã‚¢ãƒƒãƒ—ã®ã¨ã
 		//WCHAR sz[100] = { 0L };
 		//g_applyrate = g_SampleUI.GetSlider(IDC_SL_APPLYRATE)->GetValue();
 		//CEditRange::SetApplyRate((double)g_applyrate);
@@ -22144,7 +22167,7 @@ int OnFrameUtCheckBox()
 		}
 		save_applyrate = g_applyrate;
 
-		s_utApplyRateFlag = false;//OnGUIEvent‚ÌApplyRateƒXƒ‰ƒCƒ_[
+		s_utApplyRateFlag = false;//OnGUIEventã®ApplyRateã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼
 	}
 
 
@@ -22154,7 +22177,7 @@ int OnFrameUtCheckBox()
 int OnFrameAngleLimit(bool updateonlycheckeul)
 {
 	if (s_anglelimitdlg) {
-		if (s_model && (s_underanglelimithscroll == 0)) {//HScroll’†‚É’l‚ğæ“¾‚µ‚Äİ’è‚·‚é‚ÆƒXƒ‰ƒCƒ_[‚ª“®‚©‚È‚¢‚©‚ç
+		if (s_model && (s_underanglelimithscroll == 0)) {//HScrollä¸­ã«å€¤ã‚’å–å¾—ã—ã¦è¨­å®šã™ã‚‹ã¨ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼ãŒå‹•ã‹ãªã„ã‹ã‚‰
 			//s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);//commentout
 
 
@@ -22199,7 +22222,7 @@ int OnFramePreviewStop()
 		}
 	}
 
-	//s_tum.UpdateMatrix(s_modelindex, &s_matVP);//ƒuƒƒbƒLƒ“ƒO
+	//s_tum.UpdateMatrix(s_modelindex, &s_matVP);//ãƒ–ãƒ­ãƒƒã‚­ãƒ³ã‚°
 
 	return 0;
 }
@@ -22253,16 +22276,16 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 
 
 
-	//s_tum.UpdateMatrix(s_modelindex, &s_matVP);//ƒuƒƒbƒLƒ“ƒO
+	//s_tum.UpdateMatrix(s_modelindex, &s_matVP);//ãƒ–ãƒ­ãƒƒã‚­ãƒ³ã‚°
 
 
 	//if (s_anglelimitdlg) {
 	//	UpdateEditedEuler();
-	//	//s_tum.UpdateEditedEuler(UpdateEditedEuler);//”ñƒuƒƒbƒLƒ“ƒO
+	//	//s_tum.UpdateEditedEuler(UpdateEditedEuler);//éãƒ–ãƒ­ãƒƒã‚­ãƒ³ã‚°
 	//}
 
 
-	//playerButton‚Ìonefpsƒ{ƒ^ƒ“
+	//playerButtonã®onefpsãƒœã‚¿ãƒ³
 	if (s_onefps == 1) {
 		Sleep(1000);//1fps
 	}
@@ -22322,7 +22345,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 	//CModel* curmodel = s_model;
 
 
-	//ˆÀ’è‚Ì‚½‚ß‚É@ƒVƒ~ƒ…ŠJn‚Ìp¨‚Å@ƒLƒlƒ}ƒeƒBƒbƒN‚µ‚Ä‚¢‚é‰ñ”
+	//å®‰å®šã®ãŸã‚ã«ã€€ã‚·ãƒŸãƒ¥é–‹å§‹æ™‚ã®å§¿å‹¢ã§ã€€ã‚­ãƒãƒãƒ†ã‚£ãƒƒã‚¯ã—ã¦ã„ã‚‹å›æ•°
 	int initterm;
 	initterm = max(10, (int)(s_avrgfps * 0.1));
 
@@ -22393,7 +22416,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 			if ((curmodel->GetBtCnt() != 0) && (loopstartflag == 1)) {
 				curmodel->ZeroBtCnt();
-				//StartBt(curmodel, TRUE, 2, 1);//flag = 2 --> resetflag = 1  //’Z‚¢ƒŠƒ^[ƒQƒbƒgƒ‚ƒfƒ‹‚ª•p”É‚ÉŒÄ‚Ño‚µd‚·‚¬‚é‚µ‘¼‚Ìƒ‚ƒfƒ‹‚à—h‚ê‚È‚­‚È‚éBì‚è’¼‚³‚È‚­‚Ä‚à—Ç‚¢‚Ì‚ÅƒRƒƒ“ƒgƒAƒEƒg.@2022/01/11
+				//StartBt(curmodel, TRUE, 2, 1);//flag = 2 --> resetflag = 1  //çŸ­ã„ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ¢ãƒ‡ãƒ«ãŒé »ç¹ã«å‘¼ã³å‡ºã—é‡ã™ãã‚‹ã—ä»–ã®ãƒ¢ãƒ‡ãƒ«ã‚‚æºã‚Œãªããªã‚‹ã€‚ä½œã‚Šç›´ã•ãªãã¦ã‚‚è‰¯ã„ã®ã§ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ.ã€€2022/01/11
 			}
 			else {
 				//UpdateBtSimu(*pnextframe, curmodel);
@@ -22411,7 +22434,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 	if (s_model && (recstopflag == true)) {
 		StopBt();
 		s_model->ApplyPhysIkRec(g_limitdegflag);
-		PrepairUndo();//•¨—REC—p•Û‘¶
+		PrepairUndo();//ç‰©ç†RECç”¨ä¿å­˜
 		g_btsimurecflag = false;
 	}
 	else {
@@ -22424,7 +22447,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 				if (curmodel && curmodel->GetCurMotInfo()) {
 					//curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
 					ChaMatrix tmpwm = curmodel->GetWorldMat();
-					curmodel->SetBtMotion(g_limitdegflag, 0, 0, *pnextframe, &tmpwm, &s_matVP);//‘æˆêˆø”‚Í•¨—IK—p
+					curmodel->SetBtMotion(g_limitdegflag, 0, 0, *pnextframe, &tmpwm, &s_matVP);//ç¬¬ä¸€å¼•æ•°ã¯ç‰©ç†IKç”¨
 
 					//60 x 60 frames limit : 60 sec limit
 					if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
@@ -22442,11 +22465,11 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 	//if (s_anglelimitdlg) {
 	//	UpdateEditedEuler();
-	//	//s_tum.UpdateEditedEuler(UpdateEditedEuler);//”ñƒuƒƒbƒLƒ“ƒO
+	//	//s_tum.UpdateEditedEuler(UpdateEditedEuler);//éãƒ–ãƒ­ãƒƒã‚­ãƒ³ã‚°
 	//}
 
 
-	//playerButton‚Ìonefpsƒ{ƒ^ƒ“
+	//playerButtonã®onefpsãƒœã‚¿ãƒ³
 	if (s_onefps == 1) {
 		Sleep(1000);//1fps
 	}
@@ -22558,13 +22581,13 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 //				ChaMatrix tmpwm = curmodel->GetWorldMat();
 //				curmodel->Motion2Bt(firstflag, *pnextframe, &tmpwm, &s_matVP, s_curboneno);
 //			}
-//			curmodel->SetBtEquilibriumPoint();//•K—v
+//			curmodel->SetBtEquilibriumPoint();//å¿…è¦
 //
 //			if (curmodel->GetBtCnt() == 0) {
 //				s_rectime = 0.0;
 //				s_reccnt = 0;
 //				s_model->PhysIKRec(s_rectime);
-//				SetKinematicToHand(curmodel, true);//w‚ª•Ï‚É‚È‚ç‚È‚¢‚æ‚¤‚É
+//				SetKinematicToHand(curmodel, true);//æŒ‡ãŒå¤‰ã«ãªã‚‰ãªã„ã‚ˆã†ã«
 //			}
 //		}
 //		else {
@@ -22579,8 +22602,8 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 //
 //	}
 //
-//	//physics mv‚Ìê‡AƒNƒŠƒbƒN‚µ‚Ä‚¢‚È‚¢‚Æ‚«‚É‚Í’¼‰º‚Ìif•¶“à‚ğŒÄ‚Î‚È‚¢B
-//	//physics rot‚Ìê‡AƒNƒŠƒbƒN‚µ‚Ä‚¢‚È‚­‚Ä‚à’¼‰º‚Ìif•¶“à‚ğŒÄ‚ñ‚¾‚Ù‚¤‚ª„‘Ì‚ª‚ä‚ç‚ä‚ç‚µ‚È‚¢B
+//	//physics mvã®å ´åˆã€ã‚¯ãƒªãƒƒã‚¯ã—ã¦ã„ãªã„ã¨ãã«ã¯ç›´ä¸‹ã®ifæ–‡å†…ã‚’å‘¼ã°ãªã„ã€‚
+//	//physics rotã®å ´åˆã€ã‚¯ãƒªãƒƒã‚¯ã—ã¦ã„ãªãã¦ã‚‚ç›´ä¸‹ã®ifæ–‡å†…ã‚’å‘¼ã‚“ã ã»ã†ãŒå‰›ä½“ãŒã‚†ã‚‰ã‚†ã‚‰ã—ãªã„ã€‚
 //	if((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))){
 //		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 //		POINT ptCursor;
@@ -22591,7 +22614,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 //		ChaVector3 tmpsc;
 //		curmodel->TransformBone(s_pickinfo.winx, s_pickinfo.winy, s_curboneno, &s_pickinfo.objworld, &tmpsc, &s_pickinfo.objscreen);
 //
-//		if (s_oprigflag == 0) {//Rig‘€ì‚Å‚Í‚È‚¢‚Æ‚«
+//		if (s_oprigflag == 0) {//Rigæ“ä½œã§ã¯ãªã„ã¨ã
 //			ChaVector3 targetpos(0.0f, 0.0f, 0.0f);
 //			CallF(CalcTargetPos(&targetpos), return 1);
 //
@@ -22620,10 +22643,10 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 //			}
 //			else {
 //				//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//				//­‚µ‚¸‚Â“®‚©‚³‚È‚¢‚Æ‰ó‚ê‚â‚·‚¢
+//				//å°‘ã—ãšã¤å‹•ã‹ã•ãªã„ã¨å£Šã‚Œã‚„ã™ã„
 //				//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //				int ikmaxlevel = 0;
-//				ChaVector3 diffvec = (targetpos - s_pickinfo.objworld) * 0.2;//PhysicsMVŠÖ”“à‚Å‚³‚ç‚Ég_physicsmvrate‚ªŠ|‚¯‚ç‚ê‚éB
+//				ChaVector3 diffvec = (targetpos - s_pickinfo.objworld) * 0.2;//PhysicsMVé–¢æ•°å†…ã§ã•ã‚‰ã«g_physicsmvrateãŒæ›ã‘ã‚‰ã‚Œã‚‹ã€‚
 //				curmodel->PhysicsMV(&s_editrange, s_pickinfo.pickobjno, diffvec);
 //			}
 //		}
@@ -22669,7 +22692,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 //		curmodel->UpdateMatrix(&tmpwm, &s_matVP, true);
 //		curmodel->PlusPlusBtCnt();
 //
-//		//ƒhƒ‰ƒbƒO’†‚¾‚¯‹L˜^
+//		//ãƒ‰ãƒ©ãƒƒã‚°ä¸­ã ã‘è¨˜éŒ²
 //		if ((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))) {
 //			//60 x 30 frames limit : 30 sec limit
 //			if ((curmodel->GetBtCnt() > g_prepcntonphysik) && (s_reccnt < MAXPHYSIKRECCNT)) {
@@ -22680,14 +22703,14 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 //		}
 //	}
 //
-//	s_bpWorld->clientMoveAndDisplay();//tmpkinematic•”•ª‚Ìbulletî•ñ•ÏX‚ªSetBtMotion“à‚Å¶‚¶‚é‚Ì‚ÅA‚à‚¤ˆê‰ñƒVƒ~ƒ…‚ğ‚Ü‚í‚·B
+//	s_bpWorld->clientMoveAndDisplay();//tmpkinematicéƒ¨åˆ†ã®bulletæƒ…å ±å¤‰æ›´ãŒSetBtMotionå†…ã§ç”Ÿã˜ã‚‹ã®ã§ã€ã‚‚ã†ä¸€å›ã‚·ãƒŸãƒ¥ã‚’ã¾ã‚ã™ã€‚
 //
 //
 //	s_befunderikflag = s_underikflag;
 //
 //	//if (s_anglelimitdlg) {
 //	//	UpdateEditedEuler();
-//	//	//s_tum.UpdateEditedEuler(UpdateEditedEuler);//”ñƒuƒƒbƒLƒ“ƒO
+//	//	//s_tum.UpdateEditedEuler(UpdateEditedEuler);//éãƒ–ãƒ­ãƒƒã‚­ãƒ³ã‚°
 //	//}
 //
 //
@@ -22696,7 +22719,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 int OnFrameCloseFlag()
 {
-	// I—¹ƒtƒ‰ƒO‚ğŠm”F
+	// çµ‚äº†ãƒ•ãƒ©ã‚°ã‚’ç¢ºèª
 
 	if (s_closeFlag) {
 		s_closeFlag = false;
@@ -22795,7 +22818,7 @@ int OnFrameCloseFlag()
 int GetCurrentBoneFromTimeline(int* dstboneno)
 {
 	if (s_model && s_owpTimeline) {
-		int curlineno = s_owpTimeline->getCurrentLine();// ‘I‘ğs
+		int curlineno = s_owpTimeline->getCurrentLine();// é¸æŠè¡Œ
 		if (curlineno >= 0) {
 			*dstboneno = s_lineno2boneno[curlineno];//*(&s_curboneno)
 			SetLTimelineMark(s_curboneno);
@@ -22815,9 +22838,9 @@ int TimelineCursorToMotion()
 
 		GetCurrentBoneFromTimeline(&s_curboneno);
 
-		// ƒJ[ƒ\ƒ‹ˆÊ’u‚ğp¨‚É”½‰fB
+		// ã‚«ãƒ¼ã‚½ãƒ«ä½ç½®ã‚’å§¿å‹¢ã«åæ˜ ã€‚
 		if (g_previewFlag == 0) {//underchecking
-			double curframe = s_owpTimeline->getCurrentTime();// ‘I‘ğ
+			double curframe = s_owpTimeline->getCurrentTime();// é¸æŠæ™‚åˆ»
 
 			vector<MODELELEM>::iterator itrmodel;
 			for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
@@ -22834,17 +22857,17 @@ int TimelineCursorToMotion()
 
 int OnFrameTimeLineWnd()
 {
-	// ƒJ[ƒ\ƒ‹ˆÚ“®ƒtƒ‰ƒO‚ğŠm”F //////////////////////////////////////////////////
+	// ã‚«ãƒ¼ã‚½ãƒ«ç§»å‹•ãƒ•ãƒ©ã‚°ã‚’ç¢ºèª //////////////////////////////////////////////////
 
 
 	if (g_previewFlag != 0) {//underchecking
 
 		if (g_preciseOnPreviewToo) {
-			//2022/10/27 Ä¶’†‚Å‚à‘I‘ğƒWƒ‡ƒCƒ“ƒg•ÏXˆ—‚Í‚·‚é
+			//2022/10/27 å†ç”Ÿä¸­ã§ã‚‚é¸æŠã‚¸ãƒ§ã‚¤ãƒ³ãƒˆå¤‰æ›´å‡¦ç†ã¯ã™ã‚‹
 			GetCurrentBoneFromTimeline(&s_curboneno);
 		}
 
-		//ƒJƒŒƒ“ƒgƒtƒŒ[ƒ€‚Ì‚PƒtƒŒ[ƒ€‚ğ‘I‘ğó‘Ô‚É‚µ‚Ä‚µ‚Ü‚¤‚Ì‚Åfalse‚É‚·‚é
+		//ã‚«ãƒ¬ãƒ³ãƒˆãƒ•ãƒ¬ãƒ¼ãƒ ã®ï¼‘ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’é¸æŠçŠ¶æ…‹ã«ã—ã¦ã—ã¾ã†ã®ã§falseã«ã™ã‚‹
 		s_cursorFlag = false;
 		s_LcursorFlag = false;
 		s_keyShiftFlag = false;
@@ -22865,12 +22888,12 @@ int OnFrameTimeLineWnd()
 				OnTimeLineButtonSelectFromSelectStartEnd(s_buttonselecttothelast);
 				SetShowPosTime();
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-				if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+				if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 					_ASSERT(0);
-					::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+					::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 					PostQuitMessage(result);
 				}
-				PrepairUndo();//LTimeline‚Ì‘I‘ğŒã‚©‚Â•ÒW‘O‚Ì•Û‘¶‚ğ‘z’è
+				PrepairUndo();//LTimelineã®é¸æŠå¾Œã‹ã¤ç·¨é›†å‰ã®ä¿å­˜ã‚’æƒ³å®š
 				g_underselectingframe = 0;
 			}
 		}
@@ -22887,12 +22910,12 @@ int OnFrameTimeLineWnd()
 			OnTimeLineButtonSelectFromSelectStartEnd(s_buttonselecttothelast);
 			SetShowPosTime();
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+			if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 				_ASSERT(0);
-				::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+				::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 				PostQuitMessage(result);
 			}
-			PrepairUndo();//LTimeline‚Ì‘I‘ğŒã‚©‚Â•ÒW‘O‚Ì•Û‘¶‚ğ‘z’è
+			PrepairUndo();//LTimelineã®é¸æŠå¾Œã‹ã¤ç·¨é›†å‰ã®ä¿å­˜ã‚’æƒ³å®š
 			g_underselectingframe = 0;
 		}
 		s_firstkeyFlag = false;
@@ -22910,12 +22933,12 @@ int OnFrameTimeLineWnd()
 			OnTimeLineButtonSelectFromSelectStartEnd(s_buttonselecttothelast);
 			SetShowPosTime();
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+			if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 				_ASSERT(0);
-				::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+				::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 				PostQuitMessage(result);
 			}
-			PrepairUndo();//LTimeline‚Ì‘I‘ğŒã‚©‚Â•ÒW‘O‚Ì•Û‘¶‚ğ‘z’è
+			PrepairUndo();//LTimelineã®é¸æŠå¾Œã‹ã¤ç·¨é›†å‰ã®ä¿å­˜ã‚’æƒ³å®š
 			g_underselectingframe = 0;
 		}
 		s_lastkeyFlag = false;
@@ -22937,12 +22960,12 @@ int OnFrameTimeLineWnd()
 			DisplayApplyRateText();
 			SetShowPosTime();
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+			if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 				_ASSERT(0);
-				::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+				::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 				PostQuitMessage(result);
 			}
-			PrepairUndo();//LTimeline‚Ì‘I‘ğŒã‚©‚Â•ÒW‘O‚Ì•Û‘¶‚ğ‘z’è
+			PrepairUndo();//LTimelineã®é¸æŠå¾Œã‹ã¤ç·¨é›†å‰ã®ä¿å­˜ã‚’æƒ³å®š
 
 			g_underselectingframe = 0;
 		}
@@ -22984,8 +23007,8 @@ int OnFrameTimeLineWnd()
 	}
 
 
-	//selectFlag‚Í@ƒ^ƒCƒ€ƒ‰ƒCƒ“‘I‘ğ”ÍˆÍ‚ª‚PƒtƒŒ[ƒ€‚Å‚à•Ï‚í‚é‚Ætrue‚É‚È‚é
-	if (s_selectFlag) {//selectFlag‚ÆLupFlag‚Í–{—ˆ‚Í•Ê•¨@‚µ‚©‚µLup‚Ì‚Æ‚«‚¾‚¯ˆ—‚·‚é‚à‚Ì‚ª‚ ‚é
+	//selectFlagã¯ã€€ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³é¸æŠç¯„å›²ãŒï¼‘ãƒ•ãƒ¬ãƒ¼ãƒ ã§ã‚‚å¤‰ã‚ã‚‹ã¨trueã«ãªã‚‹
+	if (s_selectFlag) {//selectFlagã¨LupFlagã¯æœ¬æ¥ã¯åˆ¥ç‰©ã€€ã—ã‹ã—Lupã®ã¨ãã ã‘å‡¦ç†ã™ã‚‹ã‚‚ã®ãŒã‚ã‚‹
 		if (s_owpLTimeline) {
 			s_selectFlag = false;
 			s_selectKeyInfoList.clear();
@@ -22996,19 +23019,19 @@ int OnFrameTimeLineWnd()
 			s_buttonselectend = s_editrange.GetEndFrame();
 
 
-			if (s_mbuttoncnt != 0) {//2023/01/09 mbutton + wheel‚Å‘I‘ğ‚ğŒp‘±‚·‚é‚½‚ß s_mbuttoncnt == 0‚Ì‚Æ‚«‚É‚Í‰Šú‰»‚µ‚È‚¢
+			if (s_mbuttoncnt != 0) {//2023/01/09 mbutton + wheelã§é¸æŠã‚’ç¶™ç¶šã™ã‚‹ãŸã‚ s_mbuttoncnt == 0ã®ã¨ãã«ã¯åˆæœŸåŒ–ã—ãªã„
 				g_underselectingframe = 0;
 			}
 
 
 			//_ASSERT(0);
 
-			if (s_LupFlag) {//selectFlag‚ÆLupFlag‚Í–{—ˆ‚Í•Ê•¨@‚µ‚©‚µLup‚Ì‚Æ‚«‚¾‚¯ˆ—‚·‚é‚à‚Ì‚ª‚ ‚é
+			if (s_LupFlag) {//selectFlagã¨LupFlagã¯æœ¬æ¥ã¯åˆ¥ç‰©ã€€ã—ã‹ã—Lupã®ã¨ãã ã‘å‡¦ç†ã™ã‚‹ã‚‚ã®ãŒã‚ã‚‹
 				if (s_editmotionflag < 0) {
 					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+					if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 						_ASSERT(0);
-						::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+						::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 						PostQuitMessage(result);
 					}
 				}
@@ -23022,10 +23045,10 @@ int OnFrameTimeLineWnd()
 					CEditRange::SetApplyRate((double)g_applyrate);
 
 					if (s_undoredoFromPlayerButton == false) {
-						PrepairUndo();//LTimeline‚Ì‘I‘ğŒã‚©‚Â•ÒW‘O‚Ì•Û‘¶‚ğ‘z’è
+						PrepairUndo();//LTimelineã®é¸æŠå¾Œã‹ã¤ç·¨é›†å‰ã®ä¿å­˜ã‚’æƒ³å®š
 					}
 					else {
-						//playerbutton‚©‚ç‚Ìundoredo‚É‚Í@SaveUndoMotion‚µ‚È‚¢
+						//playerbuttonã‹ã‚‰ã®undoredoæ™‚ã«ã¯ã€€SaveUndoMotionã—ãªã„
 						s_undoredoFromPlayerButton = false;
 					}
 
@@ -23038,8 +23061,8 @@ int OnFrameTimeLineWnd()
 		if (s_owpLTimeline) {
 			if (g_previewFlag == 0) {
 				//###################################################
-				//prevrange nextrange‚Í@undo redoˆ—‚É•Ï‚í‚è‚Ü‚µ‚½
-				//‘I‘ğ”ÍˆÍ‚¾‚¯‚Ì@—š—ğ‹@”\‚Í@ƒRƒƒ“ƒgƒAƒEƒg
+				//prevrange nextrangeã¯ã€€undo redoå‡¦ç†ã«å¤‰ã‚ã‚Šã¾ã—ãŸ
+				//é¸æŠç¯„å›²ã ã‘ã®ã€€å±¥æ­´æ©Ÿèƒ½ã¯ã€€ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
 				//###################################################
 				//if (s_prevrangeFlag || s_nextrangeFlag) {
 				//	RollBackEditRange(s_prevrangeFlag, s_nextrangeFlag);
@@ -23062,13 +23085,13 @@ int OnFrameTimeLineWnd()
 				//		//s_editmotionflag = s_curboneno;
 				//		s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
 				//		CEditRange::SetApplyRate((double)g_applyrate);
-				//		PrepairUndo();//LTimeline‚Ì‘I‘ğŒã‚©‚Â•ÒW‘O‚Ì•Û‘¶‚ğ‘z’è
+				//		PrepairUndo();//LTimelineã®é¸æŠå¾Œã‹ã¤ç·¨é›†å‰ã®ä¿å­˜ã‚’æƒ³å®š
 				//	}
 
 				//}
 			}
 			else {
-				//Ä¶ƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚Æ‚«
+				//å†ç”Ÿãƒœã‚¿ãƒ³ãŒæŠ¼ã•ã‚ŒãŸã¨ã
 				//_ASSERT(0);
 				s_buttonselectstart = s_editrange.GetStartFrame();
 				s_buttonselectend = s_editrange.GetEndFrame();
@@ -23076,9 +23099,9 @@ int OnFrameTimeLineWnd()
 				//_ASSERT(0);
 
 				int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-				if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+				if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 					_ASSERT(0);
-					::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+					::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 					PostQuitMessage(result);
 				}
 
@@ -23102,7 +23125,7 @@ int OnFrameTimeLineWnd()
 
 		if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
 			if (g_previewFlag == 0) {//underchecking
-				double curframe = s_owpLTimeline->getCurrentTime();// ‘I‘ğ
+				double curframe = s_owpLTimeline->getCurrentTime();// é¸æŠæ™‚åˆ»
 				vector<MODELELEM>::iterator itrmodel;
 				for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 					CModel* curmodel = itrmodel->modelptr;
@@ -23114,14 +23137,14 @@ int OnFrameTimeLineWnd()
 		}
 
 		//bool updateonlycheckeul = true;
-		//OnFrameAngleLimit(updateonlycheckeul);//2022/12/30 commentout OnFrameUserMove()‚É‚Ä–ˆƒtƒŒ[ƒ€updateonlycheckeul = true‚ÅŒÄ‚Ño‚· 
+		//OnFrameAngleLimit(updateonlycheckeul);//2022/12/30 commentout OnFrameUserMove()ã«ã¦æ¯ãƒ•ãƒ¬ãƒ¼ãƒ updateonlycheckeul = trueã§å‘¼ã³å‡ºã™ 
 
 		s_LcursorFlag = false;
 	}
 
 
 	if (s_LstopFlag) {
-		//’â~ƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚Æ‚«
+		//åœæ­¢ãƒœã‚¿ãƒ³ãŒæŠ¼ã•ã‚ŒãŸã¨ã
 		//_ASSERT(0);
 		//s_buttonselectstart = s_editrange.GetStartFrame();
 		//s_buttonselectend = s_editrange.GetEndFrame();
@@ -23140,7 +23163,7 @@ int OnFrameTimeLineWnd()
 		//_ASSERT(0);
 
 		if (s_owpLTimeline && s_owpEulerGraph) {
-			//ƒvƒŒƒrƒ…[Œã‚É@CallRewrite --> InvalidateRect --> draw()‚ğŒÄ‚Ô‚½‚ß
+			//ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼å¾Œã«ã€€CallRewrite --> InvalidateRect --> draw()ã‚’å‘¼ã¶ãŸã‚
 			double currenttime = s_owpLTimeline->getCurrentTime();
 			s_owpLTimeline->setCurrentTime(currenttime, false, true);
 			s_owpEulerGraph->setCurrentTime(currenttime, false, true);
@@ -23152,7 +23175,7 @@ int OnFrameTimeLineWnd()
 
 
 
-	// ƒL[ˆÚ“®ƒtƒ‰ƒO‚ğŠm”F ///////////////////////////////////////////////////////////
+	// ã‚­ãƒ¼ç§»å‹•ãƒ•ãƒ©ã‚°ã‚’ç¢ºèª ///////////////////////////////////////////////////////////
 	//if (s_keyShiftFlag){
 	s_keyShiftFlag = false;
 	//}
@@ -23168,13 +23191,13 @@ int OnFrameMouseButton()
 		g_ctrlshiftkeyformb = false;
 	}
 	if (s_timelinewheelFlag || (g_underselectingframe && ((g_keybuf['A'] & 0x80) || (g_keybuf['D'] & 0x80)))) {
-		//if (s_timelinewheelFlag || (g_underselectingframe == 1) || (g_underselectingframe == 2)) {//wheeldelta‚Ì’l‚Íæ“¾Œã‚àÁ‚¦‚È‚¢d—l‚Ì‚½‚ß‚±‚ÌğŒ‚¾‚Æ~‚Ü‚ç‚È‚­‚È‚é
-		s_timelinewheelFlag = false;//OnTimeLineWheel‚ÌŒã‚ë‚É‚·‚é‚ÆƒzƒC[ƒ‹‚µ‚È‚¢HHH
+		//if (s_timelinewheelFlag || (g_underselectingframe == 1) || (g_underselectingframe == 2)) {//wheeldeltaã®å€¤ã¯å–å¾—å¾Œã‚‚æ¶ˆãˆãªã„ä»•æ§˜ã®ãŸã‚ã“ã®æ¡ä»¶ã ã¨æ­¢ã¾ã‚‰ãªããªã‚‹
+		s_timelinewheelFlag = false;//OnTimeLineWheelã®å¾Œã‚ã«ã™ã‚‹ã¨ãƒ›ã‚¤ãƒ¼ãƒ«ã—ãªã„ï¼Ÿï¼Ÿï¼Ÿ
 		OnTimeLineWheel();
 	}
 
 	if (s_timelineshowposFlag) {
-		s_timelineshowposFlag = false;//ˆÈ‰º‚Ìˆ—‚ÌŒã‚É‚·‚é‚ÆƒzƒC[ƒ‹‚µ‚È‚¢HHH
+		s_timelineshowposFlag = false;//ä»¥ä¸‹ã®å‡¦ç†ã®å¾Œã«ã™ã‚‹ã¨ãƒ›ã‚¤ãƒ¼ãƒ«ã—ãªã„ï¼Ÿï¼Ÿï¼Ÿ
 
 		if (s_owpLTimeline) {
 			s_owpLTimeline->WheelShowPosTime();
@@ -23182,7 +23205,7 @@ int OnFrameMouseButton()
 		if (s_owpEulerGraph) {
 			s_owpEulerGraph->WheelShowPosTime();
 			refreshEulerGraph();
-			//s_tum.UpdateEditedEuler(refreshEulerGraph);//”ñƒuƒƒbƒLƒ“ƒO
+			//s_tum.UpdateEditedEuler(refreshEulerGraph);//éãƒ–ãƒ­ãƒƒã‚­ãƒ³ã‚°
 		}
 
 	}
@@ -23204,7 +23227,7 @@ int OnFrameToolWnd()
 {
 
 
-	//‘€ì‘ÎÛƒ{[ƒ“‚Ís_selbonedlg::GetCpVec()‚É‚Äæ“¾B
+	//æ“ä½œå¯¾è±¡ãƒœãƒ¼ãƒ³ã¯s_selbonedlg::GetCpVec()ã«ã¦å–å¾—ã€‚
 
 	if (s_selboneFlag) {
 		if (s_model && s_owpTimeline && s_owpLTimeline) {
@@ -23250,9 +23273,9 @@ int OnFrameToolWnd()
 			MOTINFO* curmi = s_model->GetCurMotInfo();
 			if (curmi) {
 
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚Ì‘O‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã®å‰ã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 
-				//’·‚¢ƒtƒŒ[ƒ€‚Ìˆ—‚Í”•bŠÔ‚ª‚©‚©‚é‚±‚Æ‚ª‚ ‚é‚Ì‚Å»ŒvƒJ[ƒ\ƒ‹‚É‚·‚é
+				//é•·ã„ãƒ•ãƒ¬ãƒ¼ãƒ ã®å‡¦ç†ã¯æ•°ç§’æ™‚é–“ãŒã‹ã‹ã‚‹ã“ã¨ãŒã‚ã‚‹ã®ã§ç ‚æ™‚è¨ˆã‚«ãƒ¼ã‚½ãƒ«ã«ã™ã‚‹
 				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 				double motleng = curmi->frameleng;
@@ -23266,7 +23289,7 @@ int OnFrameToolWnd()
 
 
 				//2023/02/13
-				//ƒtƒBƒ‹ƒ^[‚ÅŠŠ‚ç‚©‚É
+				//ãƒ•ã‚£ãƒ«ã‚¿ãƒ¼ã§æ»‘ã‚‰ã‹ã«
 				int callnum = 1;
 				CallFilterFunc(callnum);
 
@@ -23280,10 +23303,10 @@ int OnFrameToolWnd()
 				}
 				refreshEulerGraph();
 
-				//ƒJ[ƒ\ƒ‹‚ğŒ³‚É–ß‚·
+				//ã‚«ãƒ¼ã‚½ãƒ«ã‚’å…ƒã«æˆ»ã™
 				SetCursor(oldcursor);
 
-				PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏXŒã‚É‘SƒtƒŒ[ƒ€•Û‘¶
+				PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´å¾Œã«å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ä¿å­˜
 			}
 		}
 		s_scaleAllInitFlag = false;
@@ -23371,7 +23394,7 @@ int OnFrameToolWnd()
 	if ((s_opedelmodelcnt >= 0) && (s_underdelmodel == true)) {
 		int modelcnt = s_opedelmodelcnt;
 		bool ondelbutton = true;
-		OnDelModel(modelcnt, ondelbutton);//s_modelpanel.modelindex‚Ís_model‚Ìindex‚È‚Ì‚Åˆá‚¤
+		OnDelModel(modelcnt, ondelbutton);//s_modelpanel.modelindexã¯s_modelã®indexãªã®ã§é•ã†
 
 		s_opedelmodelcnt = -1;
 		s_underdelmodel = false;
@@ -23443,14 +23466,14 @@ int OnFrameToolWnd()
 
 			int operatingjointno = s_model->GetTopBone()->GetBoneNo();
 
-			PrepairUndo();//‘SƒtƒŒ[ƒ€•ÏX‚·‚é‚Ì‚Å@•ÏX‘O‚É‚à•Û‘¶
+			PrepairUndo();//å…¨ãƒ•ãƒ¬ãƒ¼ãƒ å¤‰æ›´ã™ã‚‹ã®ã§ã€€å¤‰æ›´å‰ã«ã‚‚ä¿å­˜
 
 			bool allframeflag = true;
 			bool setcursorflag = true;
 			bool onpasteflag = false;
 			CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
 
-			PrepairUndo();//•ÏXŒã‚ğ•Û‘¶
+			PrepairUndo();//å¤‰æ›´å¾Œã‚’ä¿å­˜
 
 			refreshEulerGraph();
 		}
@@ -23471,12 +23494,12 @@ int OnFrameToolWnd()
 			}
 
 			if (!s_copymotvec.empty()) {
-				//“Y•tƒtƒHƒ‹ƒ_‚Ìƒtƒ@ƒCƒ‹‚É‹L˜^
+				//æ·»ä»˜ãƒ•ã‚©ãƒ«ãƒ€ã®ãƒ•ã‚¡ã‚¤ãƒ«ã«è¨˜éŒ²
 				WCHAR retcptfilename[MAX_PATH] = { 0L };
 				int result = WriteCPTFile(retcptfilename);
 				_ASSERT(result == 0);
 				int result2 = WriteCPIFile(retcptfilename);//cp info
-				//_ASSERT(result2 == 0);//DoModal cancel‚É‚Íresult2 == 1
+				//_ASSERT(result2 == 0);//DoModal cancelæ™‚ã«ã¯result2 == 1
 			}
 
 			//s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
@@ -23512,12 +23535,12 @@ int OnFrameToolWnd()
 			}
 
 			if (!s_copymotvec.empty()) {
-				//“Y•tƒtƒHƒ‹ƒ_‚Ìƒtƒ@ƒCƒ‹‚É‹L˜^
+				//æ·»ä»˜ãƒ•ã‚©ãƒ«ãƒ€ã®ãƒ•ã‚¡ã‚¤ãƒ«ã«è¨˜éŒ²
 				WCHAR retcptfilename[MAX_PATH] = { 0L };
 				int result = WriteCPTFile(retcptfilename);
 				_ASSERT(result == 0);
 				int result2 = WriteCPIFile(retcptfilename);//cp info
-				//_ASSERT(result2 == 0);//DoModal cancel‚É‚Íresult2 == 1
+				//_ASSERT(result2 == 0);//DoModal cancelæ™‚ã«ã¯result2 == 1
 			}
 
 			if (s_copyhistorydlg.GetCreatedFlag() == true) {
@@ -23533,7 +23556,7 @@ int OnFrameToolWnd()
 
 	if (s_pasteFlag) {
 
-		//“Y•tƒtƒ@ƒCƒ‹‚ğ“Ç‚İæ‚Á‚Äs_pastemotvec‚ÉŠi”[‚·‚é
+		//æ·»ä»˜ãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿å–ã£ã¦s_pastemotvecã«æ ¼ç´ã™ã‚‹
 		s_pastemotvec.clear();
 		bool result;
 		result = LoadCPTFile();
@@ -23556,7 +23579,7 @@ int OnFrameToolWnd()
 
 			//double curmaxframe = s_model->m_curmotinfo->frameleng;
 
-			//ƒRƒs[‚³‚ê‚½ƒL[‚Ìæ“ª‚ğ‹‚ß‚é
+			//ã‚³ãƒ”ãƒ¼ã•ã‚ŒãŸã‚­ãƒ¼ã®å…ˆé ­æ™‚åˆ»ã‚’æ±‚ã‚ã‚‹
 			double copyStartTime = DBL_MAX;
 			double copyEndTime = 0;
 			vector<CPELEM2>::iterator itrcp;
@@ -23584,7 +23607,7 @@ int OnFrameToolWnd()
 					//}else{
 					//	PasteMotionPointJustInTerm(copyStartTime, copyEndTime, startframe, endframe);
 
-					//	//ƒRƒs[Œ³‚ÌÅIƒtƒŒ[ƒ€‚Ìp¨‚ğƒRƒs[æ‚Ìc‚è‚ÌƒtƒŒ[ƒ€‚Éƒy[ƒXƒg
+					//	//ã‚³ãƒ”ãƒ¼å…ƒã®æœ€çµ‚ãƒ•ãƒ¬ãƒ¼ãƒ ã®å§¿å‹¢ã‚’ã‚³ãƒ”ãƒ¼å…ˆã®æ®‹ã‚Šã®ãƒ•ãƒ¬ãƒ¼ãƒ ã«ãƒšãƒ¼ã‚¹ãƒˆ
 					//	PasteMotionPointAfterCopyEnd(copyStartTime, copyEndTime, startframe, endframe);
 					//}
 				}
@@ -23615,10 +23638,10 @@ int OnFrameToolWnd()
 				double oldframeleng = s_model->GetCurMotInfo()->frameleng;
 
 				s_owpTimeline->setMaxTime(s_tmpmotframeleng);
-				s_model->ChangeMotFrameLeng(s_model->GetCurMotInfo()->motid, s_tmpmotframeleng);//‚Í‚İo‚½mp‚àíœ
+				s_model->ChangeMotFrameLeng(s_model->GetCurMotInfo()->motid, s_tmpmotframeleng);//ã¯ã¿å‡ºãŸmpã‚‚å‰Šé™¤
 				InitCurMotion(0, oldframeleng);
 
-				//ƒƒjƒ…[‘‚«Š·‚¦, timeline update
+				//ãƒ¡ãƒ‹ãƒ¥ãƒ¼æ›¸ãæ›ãˆ, timeline update
 				OnAnimMenu(true, s_motmenuindexmap[s_model]);
 			}
 		}
@@ -23630,7 +23653,7 @@ int OnFrameToolWnd()
 		if (s_model && s_model->GetCurMotInfo()) {
 			s_savelimitdegflag = g_limitdegflag;
 			ChangeLimitDegFlag(false, true, true);
-			s_saveretargetmodel = s_curmodelmenuindex;//I—¹‚ÉOnModelMenu‚ğŒÄ‚Ô‚½‚ß‚É•Û‘¶
+			s_saveretargetmodel = s_curmodelmenuindex;//çµ‚äº†æ™‚ã«OnModelMenuã‚’å‘¼ã¶ãŸã‚ã«ä¿å­˜
 
 			RetargetMotion();
 
@@ -23642,13 +23665,13 @@ int OnFrameToolWnd()
 	}
 
 
-	if (s_filterState != 0) {//ToolWindow‚Ì•½ŠŠ‰»ƒ{ƒ^ƒ“—p
+	if (s_filterState != 0) {//ToolWindowã®å¹³æ»‘åŒ–ãƒœã‚¿ãƒ³ç”¨
 		FilterFunc();
 		s_filterState = 0;
 		s_filternodlg = false;
 	}
 
-	if (s_smoothFlag) {//s_spsmoothƒ{ƒ^ƒ“—p
+	if (s_smoothFlag) {//s_spsmoothãƒœã‚¿ãƒ³ç”¨
 		if (s_model && s_model->GetCurMotInfo()) {
 			//PrepairUndo();
 
@@ -23700,14 +23723,14 @@ int OnFrameToolWnd()
 		/***
 		if( s_model && s_owpTimeline && s_model->m_curmotinfo){
 		s_owpTimeline->deleteKey();
-		//motionpoint‚Ìdelete‚Ídelete Listener‚Å‚·‚éB
+		//motionpointã®deleteã¯delete Listenerã§ã™ã‚‹ã€‚
 		s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
 		}
 		***/
 	}
 
 
-	// íœ‚³‚ê‚½ƒL[î•ñ‚ÌƒXƒ^ƒbƒN‚ğŠm”F ////////////////////////////////////////////
+	// å‰Šé™¤ã•ã‚ŒãŸã‚­ãƒ¼æƒ…å ±ã®ã‚¹ã‚¿ãƒƒã‚¯ã‚’ç¢ºèª ////////////////////////////////////////////
 	for (; s_deletedKeyInfoList.begin() != s_deletedKeyInfoList.end();
 		s_deletedKeyInfoList.pop_front()) {
 		/***
@@ -23861,9 +23884,9 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 						//	parentbone, curmotid, newframe, dummyq, parentwm, parentwm);
 
 
-						//•ÒWƒWƒ‡ƒCƒ“ƒg‚Ì“à‚Ì
-						//ˆê”Ôƒ‹[ƒg‚É‹ß‚¢ƒWƒ‡ƒCƒ“ƒg‚Ìe‚ÌƒWƒ‡ƒCƒ“ƒg‚Ìs—ñ‚ğ@q‹Ÿ‚ÉŠ|‚¯‚é‚½‚ß
-						//Ä‹A‚ğŠ|‚¯‚é
+						//ç·¨é›†ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®å†…ã®
+						//ä¸€ç•ªãƒ«ãƒ¼ãƒˆã«è¿‘ã„ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®è¦ªã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®è¡Œåˆ—ã‚’ã€€å­ä¾›ã«æ›ã‘ã‚‹ãŸã‚
+						//å†å¸°ã‚’æ›ã‘ã‚‹
 						bool setbroflag = false;
 						srcbone->UpdateParentWMReq(g_limitdegflag, setbroflag,
 							curmotid, newframe, parentwm, parentwm);
@@ -23909,7 +23932,7 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 		}
 	}
 
-	////ˆÚ“®‚µ‚È‚¢ƒ{[ƒ“‚Ì‚½‚ß‚Ìˆ—
+	////ç§»å‹•ã—ãªã„ãƒœãƒ¼ãƒ³ã®ãŸã‚ã®å‡¦ç†
 	int operatingjointno = 0;
 	for (dstframe = (double)((int)(startframe + 0.0001)); dstframe <= (double)((int)(endframe + 0.0001)); dstframe += 1.0) {
 		double dstrate = (dstframe - startframe) / dstleng;
@@ -23929,10 +23952,10 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 
 
 	//2023/02/05
-	//limited‚Éƒy[ƒXƒg‚µ‚½ê‡‚É‚Í@ƒy[ƒXƒg‚µ‚½‚à‚Ì‚Æ“¯‚¶‚à‚Ì‚ğunlimited‚É‚àƒy[ƒXƒg
-	//X‚É@limited‚É@Œ»İ‚Ì§ŒÀŠp“x‚ğ“K—p‚·‚é
+	//limitedã«ãƒšãƒ¼ã‚¹ãƒˆã—ãŸå ´åˆã«ã¯ã€€ãƒšãƒ¼ã‚¹ãƒˆã—ãŸã‚‚ã®ã¨åŒã˜ã‚‚ã®ã‚’unlimitedã«ã‚‚ãƒšãƒ¼ã‚¹ãƒˆ
+	//æ›´ã«ã€€limitedã«ã€€ç¾åœ¨ã®åˆ¶é™è§’åº¦ã‚’é©ç”¨ã™ã‚‹
 	//
-	//ƒy[ƒXƒg”ÍˆÍ‚ÌƒIƒCƒ‰[Šp‚ÍPasteMotionPoint()-->SetWorldMat()-->CalcLocalEulXYZ()‚ÅŒvZÏ
+	//ãƒšãƒ¼ã‚¹ãƒˆç¯„å›²ã®ã‚ªã‚¤ãƒ©ãƒ¼è§’ã¯PasteMotionPoint()-->SetWorldMat()-->CalcLocalEulXYZ()ã§è¨ˆç®—æ¸ˆ
 	//
 	if (g_limitdegflag == true) {
 		bool allframeflag = false;
@@ -23954,7 +23977,7 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 	//	}
 	//}
 
-	////ˆÚ“®‚µ‚È‚¢ƒ{[ƒ“‚Ì‚½‚ß‚Ìˆ—
+	////ç§»å‹•ã—ãªã„ãƒœãƒ¼ãƒ³ã®ãŸã‚ã®å‡¦ç†
 	//for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++){
 	//	CBone* srcbone = itrcp->bone;
 	//	if (srcbone){
@@ -23986,7 +24009,7 @@ int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, doubl
 		}
 	}
 
-	//ˆÚ“®‚µ‚È‚¢ƒ{[ƒ“‚Ì‚½‚ß‚Ìˆ—
+	//ç§»å‹•ã—ãªã„ãƒœãƒ¼ãƒ³ã®ãŸã‚ã®å‡¦ç†
 	for (newframe = (double)((int)(copyEndTime - copyStartTime + startframe + 0.1)); newframe <= endframe; newframe += 1.0) {
 		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
 			CBone* srcbone = itrcp->bone;
@@ -24015,13 +24038,13 @@ void DispProgressCalcLimitedWM()
 	LONG befmodelcnt = InterlockedAdd(&s_befprogressmodelcnt, 0);
 
 	if ((framenum != 0) && (modelnum != 0) &&
-		((framenum != befframenum) || (curframe != befcurframe) || (modelnum != befmodelnum) || (modelcnt != befmodelcnt))) {//‚¿‚ç‚Â‚©‚È‚¢‚æ‚¤‚É•ÏX‚ª‚ ‚Á‚½‚Æ‚«‚¾‚¯
+		((framenum != befframenum) || (curframe != befcurframe) || (modelnum != befmodelnum) || (modelcnt != befmodelcnt))) {//ã¡ã‚‰ã¤ã‹ãªã„ã‚ˆã†ã«å¤‰æ›´ãŒã‚ã£ãŸã¨ãã ã‘
 		//if ((curframe % 25) == 0) {
 		if (s_progresswnd) {
 			HWND hProg2;
 			hProg2 = GetDlgItem(s_progresswnd, IDC_PROGRESS1);
 			if (hProg2) {
-				//Œ»İˆÊ’u‚ğİ’è 
+				//ç¾åœ¨ä½ç½®ã‚’è¨­å®š 
 				int curpercent = (int)((double)curframe / (double)framenum * 100.0);
 				curpercent = min(100, curpercent);
 				curpercent = max(0, curpercent);
@@ -24054,7 +24077,7 @@ int OnFrameBatchThread()
 		LONG beffbxnum = InterlockedAdd(&s_befbvh2fbxnum, 0);
 		LONG beffbxcnt = InterlockedAdd(&s_befbvh2fbxcnt, 0);
 		if (s_bvh2fbxbatchwnd && (fbxnum > 0) &&
-			((fbxnum != beffbxnum) || (fbxcnt != beffbxcnt))) {//‚¿‚ç‚Â‚©‚È‚¢‚æ‚¤‚É•ÏX‚ª‚ ‚Á‚½‚Æ‚«‚¾‚¯
+			((fbxnum != beffbxnum) || (fbxcnt != beffbxcnt))) {//ã¡ã‚‰ã¤ã‹ãªã„ã‚ˆã†ã«å¤‰æ›´ãŒã‚ã£ãŸã¨ãã ã‘
 			WCHAR strnumcnt[1024] = { 0L };
 			swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", (fbxcnt + 1), fbxnum);
 			SetDlgItemTextW(s_bvh2fbxbatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
@@ -24062,10 +24085,10 @@ int OnFrameBatchThread()
 			if (s_bvh2fbxbatchwnd) {
 				HWND hProg = GetDlgItem(s_bvh2fbxbatchwnd, IDC_PROGRESS1);
 				if (hProg) {
-					//Œ»İˆÊ’u‚ğİ’è
+					//ç¾åœ¨ä½ç½®ã‚’è¨­å®š
 					int percent = (int)((double)fbxcnt / (double)fbxnum * 100.0);
 					SendMessage(hProg, PBM_SETPOS, percent, 0);
-					//ƒXƒeƒbƒv‚Ì”ÍˆÍ‚ğİ’è 
+					//ã‚¹ãƒ†ãƒƒãƒ—ã®ç¯„å›²ã‚’è¨­å®š 
 					//SendMessage(hProg, PBM_SETSTEP, 1, 0);
 				}
 				UpdateWindow(s_bvh2fbxbatchwnd);
@@ -24074,12 +24097,12 @@ int OnFrameBatchThread()
 		InterlockedExchange(&s_befbvh2fbxnum, fbxnum);
 		InterlockedExchange(&s_befbvh2fbxcnt, fbxcnt);
 	}
-	else if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 2) || (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 3)) {//2‚Íƒ_ƒCƒAƒƒO‚Å‚ÌƒLƒƒƒ“ƒZƒ‹
+	else if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 2) || (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 3)) {//2ã¯ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã§ã®ã‚­ãƒ£ãƒ³ã‚»ãƒ«
 		InterlockedExchange(&g_bvh2fbxbatchflag, (LONG)0);
 		if (s_bvh2fbxbatchwnd) {
 			SendMessage(s_bvh2fbxbatchwnd, WM_CLOSE, 0, 0);
 		}
-		InterlockedExchange(&g_bvh2fbxbatchflag, (LONG)0);//WM_CLOSE‚Å•Ï‚í‚é‰Â”\«‚ ‚è
+		InterlockedExchange(&g_bvh2fbxbatchflag, (LONG)0);//WM_CLOSEã§å¤‰ã‚ã‚‹å¯èƒ½æ€§ã‚ã‚Š
 		InterlockedExchange(&s_bvh2fbxcnt, 0);
 		InterlockedExchange(&s_bvh2fbxnum, 0);
 		InterlockedExchange(&s_befbvh2fbxnum, 0);
@@ -24098,7 +24121,7 @@ int OnFrameBatchThread()
 		LONG befretargetnum = InterlockedAdd(&s_befretargetnum, 0);
 		LONG befretargetcnt = InterlockedAdd(&s_befretargetcnt, 0);
 		if (s_retargetbatchwnd && (retargetnum > 0) &&
-			((retargetnum != befretargetnum) || (retargetcnt != befretargetcnt))) {//‚¿‚ç‚Â‚©‚È‚¢‚æ‚¤‚É•ÏX‚ª‚ ‚Á‚½‚Æ‚«‚¾‚¯
+			((retargetnum != befretargetnum) || (retargetcnt != befretargetcnt))) {//ã¡ã‚‰ã¤ã‹ãªã„ã‚ˆã†ã«å¤‰æ›´ãŒã‚ã£ãŸã¨ãã ã‘
 			WCHAR strnumcnt[1024] = { 0L };
 			swprintf_s(strnumcnt, 1024, L"%d / %d (cnt / num)", retargetcnt, retargetnum);
 			SetDlgItemTextW(s_retargetbatchwnd, IDC_STRBVH2FBXBATCH, strnumcnt);
@@ -24106,10 +24129,10 @@ int OnFrameBatchThread()
 			if (s_retargetbatchwnd) {
 				HWND hProg = GetDlgItem(s_retargetbatchwnd, IDC_PROGRESS1);
 				if (hProg) {
-					//Œ»İˆÊ’u‚ğİ’è
+					//ç¾åœ¨ä½ç½®ã‚’è¨­å®š
 					int percent = (int)((double)retargetcnt / (double)retargetnum * 100.0);
 					SendMessage(hProg, PBM_SETPOS, percent, 0);
-					//ƒXƒeƒbƒv‚Ì”ÍˆÍ‚ğİ’è 
+					//ã‚¹ãƒ†ãƒƒãƒ—ã®ç¯„å›²ã‚’è¨­å®š 
 					//SendMessage(hProg, PBM_SETSTEP, 1, 0);
 				}
 				UpdateWindow(s_retargetbatchwnd);
@@ -24118,12 +24141,12 @@ int OnFrameBatchThread()
 		InterlockedExchange(&s_befretargetnum, retargetnum);
 		InterlockedExchange(&s_befretargetcnt, retargetcnt);
 	}
-	else if ((InterlockedAdd(&g_retargetbatchflag, 0) == 2) || (InterlockedAdd(&g_retargetbatchflag, 0) == 3)) {//2‚Íƒ_ƒCƒAƒƒO‚Å‚ÌƒLƒƒƒ“ƒZƒ‹
+	else if ((InterlockedAdd(&g_retargetbatchflag, 0) == 2) || (InterlockedAdd(&g_retargetbatchflag, 0) == 3)) {//2ã¯ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã§ã®ã‚­ãƒ£ãƒ³ã‚»ãƒ«
 		InterlockedExchange(&g_retargetbatchflag, (LONG)0);
 		if (s_retargetbatchwnd) {
 			SendMessage(s_retargetbatchwnd, WM_CLOSE, 0, 0);
 		}
-		InterlockedExchange(&g_retargetbatchflag, (LONG)0);//WM_CLOSE‚Å•Ï‚í‚é‰Â”\«‚ ‚è
+		InterlockedExchange(&g_retargetbatchflag, (LONG)0);//WM_CLOSEã§å¤‰ã‚ã‚‹å¯èƒ½æ€§ã‚ã‚Š
 		InterlockedExchange(&s_retargetcnt, 0);
 		InterlockedExchange(&s_retargetnum, 0);
 		InterlockedExchange(&s_befretargetnum, 0);
@@ -24145,7 +24168,7 @@ int OnFrameStartPreview(double curtime, double* psavetime)
 	//normal preview start
 	if (s_calclimitedwmState == 2) {
 
-		//2022/08/12 ƒŠƒAƒ‹ƒ^ƒCƒ€ŒvZ‚É•ÏX
+		//2022/08/12 ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ è¨ˆç®—ã«å¤‰æ›´
 
 		//if (InterlockedAdd(&g_calclimitedwmflag, 0) == 1) {//under threadfunc working
 		//	DispProgressCalcLimitedWM();
@@ -24159,13 +24182,13 @@ int OnFrameStartPreview(double curtime, double* psavetime)
 	}
 	if (s_calclimitedwmState == 1) {
 		s_calclimitedwmState = 2;
-		//CalcLimitedWorldMat();//2022/08/12 ƒŠƒAƒ‹ƒ^ƒCƒ€ŒvZ‚É•ÏX
+		//CalcLimitedWorldMat();//2022/08/12 ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ è¨ˆç®—ã«å¤‰æ›´
 	}
 
 	//preview to backword
 	if (s_calclimitedwmState == 22) {
 
-		//2022/08/12 ƒŠƒAƒ‹ƒ^ƒCƒ€ŒvZ‚É•ÏX
+		//2022/08/12 ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ è¨ˆç®—ã«å¤‰æ›´
 
 		//if (InterlockedAdd(&g_calclimitedwmflag, 0) == 1) {//under threadfunc working
 		//	DispProgressCalcLimitedWM();
@@ -24179,7 +24202,7 @@ int OnFrameStartPreview(double curtime, double* psavetime)
 	}
 	if (s_calclimitedwmState == 11) {
 		s_calclimitedwmState = 22;
-		//CalcLimitedWorldMat();//2022/08/12 ƒŠƒAƒ‹ƒ^ƒCƒ€ŒvZ‚É•ÏX
+		//CalcLimitedWorldMat();//2022/08/12 ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ è¨ˆç®—ã«å¤‰æ›´
 	}
 
 
@@ -24194,7 +24217,7 @@ int OnFrameStartPreview(double curtime, double* psavetime)
 	}
 	if (s_calclimitedwmState == 102) {
 
-		//2022/08/12 ƒŠƒAƒ‹ƒ^ƒCƒ€ŒvZ‚É•ÏX
+		//2022/08/12 ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ è¨ˆç®—ã«å¤‰æ›´
 
 		//if (InterlockedAdd(&g_calclimitedwmflag, 0) == 1) {//under threadfunc working
 		//	DispProgressCalcLimitedWM();
@@ -24206,12 +24229,12 @@ int OnFrameStartPreview(double curtime, double* psavetime)
 	}
 	if (s_calclimitedwmState == 101) {
 		s_calclimitedwmState = 102;
-		//CalcLimitedWorldMat();//2022/08/12 ƒŠƒAƒ‹ƒ^ƒCƒ€ŒvZ‚É•ÏX
+		//CalcLimitedWorldMat();//2022/08/12 ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ è¨ˆç®—ã«å¤‰æ›´
 		*psavetime = curtime;
 	}
 	if (s_calclimitedwmState == 1001) {
 		s_calclimitedwmState = 102;
-		//CalcLimitedWorldMat();//2022/08/12 ƒŠƒAƒ‹ƒ^ƒCƒ€ŒvZ‚É•ÏX
+		//CalcLimitedWorldMat();//2022/08/12 ãƒªã‚¢ãƒ«ã‚¿ã‚¤ãƒ è¨ˆç®—ã«å¤‰æ›´
 		g_btsimurecflag = true;//rec flag
 		*psavetime = curtime;
 	}
@@ -24223,7 +24246,7 @@ int OnFrameStartPreview(double curtime, double* psavetime)
 
 int OnSpriteUndo()
 {
-	static bool s_underoperation = false;//Ä“ü‹Ö~—p
+	static bool s_underoperation = false;//å†å…¥ç¦æ­¢ç”¨
 	if (s_underoperation == true) {
 		return 0;
 	}
@@ -24250,7 +24273,7 @@ int OnSpriteUndo()
 			0, &s_curboneno, &s_curbaseno,
 			&tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
 
-		RollbackBrushState(brushstate);//ƒuƒ‰ƒVƒpƒ‰ƒ[ƒ^•œŒ³
+		RollbackBrushState(brushstate);//ãƒ–ãƒ©ã‚·ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¾©å…ƒ
 
 		undodoneflag = true;
 	}
@@ -24262,7 +24285,7 @@ int OnSpriteUndo()
 			1, &s_curboneno, &s_curbaseno,
 			&tmpselectstart, &tmpselectend, &tmpapplyrate, &brushstate);//!!!!!!!!!!!
 
-		RollbackBrushState(brushstate);//ƒuƒ‰ƒVƒpƒ‰ƒ[ƒ^•œŒ³
+		RollbackBrushState(brushstate);//ãƒ–ãƒ©ã‚·ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å¾©å…ƒ
 
 		undodoneflag = true;
 	}
@@ -24295,7 +24318,7 @@ int OnSpriteUndo()
 		}
 		else {
 			if (s_model) {
-				//ƒƒjƒ…[‘‚«Š·‚¦, timeline update
+				//ãƒ¡ãƒ‹ãƒ¥ãƒ¼æ›¸ãæ›ãˆ, timeline update
 				OnAnimMenu(true, s_motmenuindexmap[s_model], 0);
 			}
 		}
@@ -24323,42 +24346,42 @@ int OnSpriteUndo()
 			s_buttonselectend = min((curmi->frameleng - 1.0), s_buttonselectend);
 
 
-			//’ˆÓFapplyrate‚Íbrushstate‚É‚Í“ü‚Á‚Ä‚¢‚È‚¢
+			//æ³¨æ„ï¼šapplyrateã¯brushstateã«ã¯å…¥ã£ã¦ã„ãªã„
 			g_applyrate = (int)tmpapplyrate;
 			CEditRange::SetApplyRate((double)g_applyrate);
 
 			OnTimeLineButtonSelectFromSelectStartEnd(0);
-			SetShowPosTime();//CreateMotionBrush‚æ‚è‘O‚ÅŒÄ‚Î‚È‚¢‚Æ@TopPos‚ğ•Ï‚¦‚½Œã‚ÌUndoRedo‚Å@•`‰æ‚ª‚¸‚ê‚é‚±‚Æ‚ª‚ ‚é
+			SetShowPosTime();//CreateMotionBrushã‚ˆã‚Šå‰ã§å‘¼ã°ãªã„ã¨ã€€TopPosã‚’å¤‰ãˆãŸå¾Œã®UndoRedoã§ã€€æç”»ãŒãšã‚Œã‚‹ã“ã¨ãŒã‚ã‚‹
 
 			DisplayApplyRateText();
 
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+			if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 				_ASSERT(0);
-				::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+				::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 				PostQuitMessage(result);
 			}
 
-			//SetShowPosTime();//CreateMotionBrush‚æ‚è‘O‚ÅŒÄ‚Î‚È‚¢‚Æ@TopPos‚ğ•Ï‚¦‚½Œã‚ÌUndoRedo‚Å@•`‰æ‚ª‚¸‚ê‚é‚±‚Æ‚ª‚ ‚é
+			//SetShowPosTime();//CreateMotionBrushã‚ˆã‚Šå‰ã§å‘¼ã°ãªã„ã¨ã€€TopPosã‚’å¤‰ãˆãŸå¾Œã®UndoRedoã§ã€€æç”»ãŒãšã‚Œã‚‹ã“ã¨ãŒã‚ã‚‹
 
 			SavePlayingStartEnd();
 
 
 			//##############################################
 			//2023/02/05
-			//§ŒÀŠp“x’l‚ÆCMotionPoint‚ğŠÛ‚²‚Æ•œŒ³‚·‚é‚Ì‚Å
-			//limited‚ÌŒvZ‚µ’¼‚µ‚Ì•K—v‚È‚µ
+			//åˆ¶é™è§’åº¦å€¤ã¨CMotionPointã‚’ä¸¸ã”ã¨å¾©å…ƒã™ã‚‹ã®ã§
+			//limitedã®è¨ˆç®—ã—ç›´ã—ã®å¿…è¦ãªã—
 			//##############################################
 			//#########################################################################
 			//2022/12/06
-			//•Û‘¶‚Æ‚Í§ŒÀŠp“x‚ªˆÙ‚È‚Á‚Ä‚¢‚é‰Â”\«‚ª‚ ‚é‚Ì‚Å@§ŒÀŠp“x‚Ì‚½‚ß‚ÉÄŒvZ
+			//ä¿å­˜æ™‚ã¨ã¯åˆ¶é™è§’åº¦ãŒç•°ãªã£ã¦ã„ã‚‹å¯èƒ½æ€§ãŒã‚ã‚‹ã®ã§ã€€åˆ¶é™è§’åº¦ã®ãŸã‚ã«å†è¨ˆç®—
 			//#########################################################################
 			//if (g_limitdegflag == true) {
 			//	ClearLimitedWM(s_model);
 			//	ApplyNewLimitsToWM(s_model);//2022/12/18
 			//}
 
-			//limited‚Ö‚Ì•ÏX‚ğ@world‚É”½‰f
+			//limitedã¸ã®å¤‰æ›´ã‚’ã€€worldã«åæ˜ 
 			if (g_limitdegflag == true) {
 				bool allframeflag = false;
 				bool setcursorflag = false;
@@ -24378,7 +24401,7 @@ int OnSpriteUndo()
 	}
 
 
-	//select•œŒ³
+	//selectå¾©å…ƒ
 	//s_pickinfo.buttonflag = PICK_CENTER;
 	s_pickinfo.pickobjno = s_curboneno;
 
@@ -24399,14 +24422,14 @@ int OnSpriteUndo()
 }
 int OnFrameUndo(bool fromds, int fromdskind)
 {
-	static bool s_underoperation = false;//Ä“ü‹Ö~—p
+	static bool s_underoperation = false;//å†å…¥ç¦æ­¢ç”¨
 	if (s_underoperation == true) {
 		return 0;
 	}
 	s_underoperation = true;
 
 
-	//2022/11/07 playerbutton‚Ìprevrange, nextrange‚É@undo, redo‚Æ‚µ‚Ä‘Î‰
+	//2022/11/07 playerbuttonã®prevrange, nextrangeã«ã€€undo, redoã¨ã—ã¦å¯¾å¿œ
 
 
 	if (s_undoFlag == true) {
@@ -24647,9 +24670,9 @@ int CreateUtDialog()
 	if (g_4kresolution) {
 
 		//2022/11/08
-		//4KTV‚ÅƒEƒCƒ“ƒhƒE‘å‚ğ‘I‚ñ‚¾ê‡@ƒRƒ“ƒ{ƒ{ƒbƒNƒX‚ÍŒ©Ø‚ê‚È‚¢‚æ‚¤‚É@ˆê”Ôã‚É”z’u
+		//4KTVã§ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦å¤§ã‚’é¸ã‚“ã å ´åˆã€€ã‚³ãƒ³ãƒœãƒœãƒƒã‚¯ã‚¹ã¯è¦‹åˆ‡ã‚Œãªã„ã‚ˆã†ã«ã€€ä¸€ç•ªä¸Šã«é…ç½®
 
-		g_SampleUI.AddComboBox(IDC_COMBO_IKLEVEL, iX0 + 35, 20, ctrlxlen, ctrlh);//Combo‚Ì—v‘f‚ªŒ©Ø‚ê‚È‚¢‚æ‚¤‚É‚È‚é‚×‚­ã•û‚É”z’u
+		g_SampleUI.AddComboBox(IDC_COMBO_IKLEVEL, iX0 + 35, 20, ctrlxlen, ctrlh);//Comboã®è¦ç´ ãŒè¦‹åˆ‡ã‚Œãªã„ã‚ˆã†ã«ãªã‚‹ã¹ãä¸Šæ–¹ã«é…ç½®
 		s_ui_iklevel = g_SampleUI.GetControl(IDC_COMBO_IKLEVEL);
 		_ASSERT(s_ui_iklevel);
 		s_dsutgui0.push_back(s_ui_iklevel);
@@ -24690,7 +24713,7 @@ int CreateUtDialog()
 	}
 
 
-	g_SampleUI.AddComboBox(IDC_COMBO_FPS, iX0 + 25, iY, ctrlxlen, ctrlh);//Combo‚Ì—v‘f‚ªŒ©Ø‚ê‚È‚¢‚æ‚¤‚É‚È‚é‚×‚­ã•û‚É”z’u
+	g_SampleUI.AddComboBox(IDC_COMBO_FPS, iX0 + 25, iY, ctrlxlen, ctrlh);//Comboã®è¦ç´ ãŒè¦‹åˆ‡ã‚Œãªã„ã‚ˆã†ã«ãªã‚‹ã¹ãä¸Šæ–¹ã«é…ç½®
 	s_ui_fpskind = g_SampleUI.GetControl(IDC_COMBO_FPS);
 	_ASSERT(s_ui_fpskind);
 	s_dsutgui0.push_back(s_ui_fpskind);
@@ -24755,7 +24778,7 @@ int CreateUtDialog()
 
 	if (g_4kresolution == false) {
 		//2022/11/08
-		//4KTV‚Å‚Í‚È‚¢ê‡@ƒRƒ“ƒ{ƒ{ƒbƒNƒX‚ÍƒRƒ“ƒpƒNƒg‚ÉŒ©Ø‚ê‚È‚¢’ö“x‚Éã‚É”z’u@(g_4kresolution == true‚Íãq)
+		//4KTVã§ã¯ãªã„å ´åˆã€€ã‚³ãƒ³ãƒœãƒœãƒƒã‚¯ã‚¹ã¯ã‚³ãƒ³ãƒ‘ã‚¯ãƒˆã«è¦‹åˆ‡ã‚Œãªã„ç¨‹åº¦ã«ä¸Šã«é…ç½®ã€€(g_4kresolution == trueæ™‚ã¯ä¸Šè¿°)
 
 		g_SampleUI.AddComboBox(IDC_COMBO_IKLEVEL, iX0 + 25, iY += addh, ctrlxlen, ctrlh);
 		s_ui_iklevel = g_SampleUI.GetControl(IDC_COMBO_IKLEVEL);
@@ -24816,12 +24839,12 @@ int CreateUtDialog()
 		iX0 = s_mainwidth / 2 - 180 - 180 - 40;
 	}
 	else {
-		//‚»‚Ì‚Ü‚Ü‘±‚«
+		//ãã®ã¾ã¾ç¶šã
 		//iY += addh;
 		iX0 = 0;
 	}
 
-	{//2-->1ˆÚ“®
+	{//2-->1ç§»å‹•
 		swprintf_s(sz, 100, L"UpdateThreads : %d", g_UpdateMatrixThreads);
 		//g_SampleUI.AddStatic(IDC_STATIC_NUMTHREAD, sz, iX0, iY += addh2, ctrlxlen, ctrlh);
 		g_SampleUI.AddStatic(IDC_STATIC_UMTHREADS, sz, iX0 + 35, iY += addh, ctrlxlen, 18);
@@ -24882,7 +24905,7 @@ int CreateUtDialog()
 
 	}
 
-	{//3-->1ˆÚ“®
+	{//3-->1ç§»å‹•
 		swprintf_s(sz, 100, L"EditRate : %.3f", g_physicsmvrate);
 		//g_SampleUI.AddStatic(IDC_STATIC_PHYSICS_MV_SLIDER, sz, iX0, iY += addh, ctrlxlen, ctrlh);
 		g_SampleUI.AddStatic(IDC_STATIC_PHYSICS_MV_SLIDER, sz, iX0 + 35, iY += addh, ctrlxlen, 18);
@@ -24919,8 +24942,8 @@ int CreateUtDialog()
 		brushmethody = 56;
 	}
 
-	{// 1-->2ˆÚ“®
-		g_SampleUI.AddComboBox(IDC_COMBO_MOTIONBRUSH_METHOD, startx - 15, brushmethody, ctrlxlen + 25, ctrlh);//ƒhƒƒbƒvƒ_ƒEƒ“ƒŠƒXƒg‚ª‘S•”•\¦‚³‚ê‚é‚æ‚¤‚Éã•û‚É”z’u
+	{// 1-->2ç§»å‹•
+		g_SampleUI.AddComboBox(IDC_COMBO_MOTIONBRUSH_METHOD, startx - 15, brushmethody, ctrlxlen + 25, ctrlh);//ãƒ‰ãƒ­ãƒƒãƒ—ãƒ€ã‚¦ãƒ³ãƒªã‚¹ãƒˆãŒå…¨éƒ¨è¡¨ç¤ºã•ã‚Œã‚‹ã‚ˆã†ã«ä¸Šæ–¹ã«é…ç½®
 		s_ui_motionbrush = g_SampleUI.GetControl(IDC_COMBO_MOTIONBRUSH_METHOD);
 		_ASSERT(s_ui_motionbrush);
 		s_dsutgui1.push_back(s_ui_motionbrush);
@@ -25086,7 +25109,7 @@ int CreateUtDialog()
 		startx = s_mainwidth - 150;
 	}
 
-	{//ExperimentalV‹K
+	{//Experimentalæ–°è¦
 		//g_SampleUI.AddCheckBox(IDC_VSYNC, L"VSync", startx, iY + addh, checkboxxlen / 2, 16, g_VSync, 0U, false, &s_VSyncCheckBox);
 		//s_ui_vsync = g_SampleUI.GetControl(IDC_VSYNC);
 		//_ASSERT(s_ui_vsync);
@@ -25124,7 +25147,7 @@ int CreateUtDialog()
 	}
 
 
-	//if (g_usephysik == 1) {//EditMot%d.iniƒtƒ@ƒCƒ‹‚ğ•ÒW‚µ‚ÄUsePhysIK‚É‚P‚ğw’è‚µ‚½‚Ì‚İ‚ÌƒIƒvƒVƒ‡ƒ“‹@”\i—‚ê‚â‚·‚¢B­‚µ‚¾‚¯“®‚©‚µ‚Ä•¨—“I‚ÈƒmƒCƒY‚ğ‰Á‚¦‚éˆÊ‚Ì–ğ‚É‚Í—§‚Â‚©‚à‚µ‚ê‚È‚¢‚Ì‚ÅƒIƒvƒVƒ‡ƒ“‚Æ‚µ‚Äc‚·Bj
+	//if (g_usephysik == 1) {//EditMot%d.iniãƒ•ã‚¡ã‚¤ãƒ«ã‚’ç·¨é›†ã—ã¦UsePhysIKã«ï¼‘ã‚’æŒ‡å®šã—ãŸæ™‚ã®ã¿ã®ã‚ªãƒ—ã‚·ãƒ§ãƒ³æ©Ÿèƒ½ï¼ˆä¹±ã‚Œã‚„ã™ã„ã€‚å°‘ã—ã ã‘å‹•ã‹ã—ã¦ç‰©ç†çš„ãªãƒã‚¤ã‚ºã‚’åŠ ãˆã‚‹ä½ã®å½¹ã«ã¯ç«‹ã¤ã‹ã‚‚ã—ã‚Œãªã„ã®ã§ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã¨ã—ã¦æ®‹ã™ã€‚ï¼‰
 	//	iY += 10;
 	//	g_SampleUI.AddButton(IDC_PHYSICS_IK, L"PhysRotStart", startx, iY += addh, 100, ctrlh);
 	//	s_ui_physrotstart = g_SampleUI.GetControl(IDC_PHYSICS_IK);
@@ -25163,18 +25186,18 @@ int CreateTimelineWnd()
 
 	s_timelineWnd = new OrgWindow(
 		0,
-		L"TimeLine",				//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-		GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
-		//WindowPos(0, 0),		//ˆÊ’u
-		//WindowSize(400, 600),	//ƒTƒCƒY
-		WindowPos(0, MAINMENUAIMBARH),		//ˆÊ’u
-		WindowSize(s_timelinewidth, s_timelineheight),	//ƒTƒCƒY 
-		//WindowSize(150,540),	//ƒTƒCƒY
-		L"TimeLine",				//ƒ^ƒCƒgƒ‹
-		s_mainhwnd,					//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
-		true,					//•\¦E”ñ•\¦ó‘Ô
-		//70, 50, 70);				//ƒJƒ‰[
-		0, 0, 0);				//ƒJƒ‰[
+		L"TimeLine",				//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+		GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
+		//WindowPos(0, 0),		//ä½ç½®
+		//WindowSize(400, 600),	//ã‚µã‚¤ã‚º
+		WindowPos(0, MAINMENUAIMBARH),		//ä½ç½®
+		WindowSize(s_timelinewidth, s_timelineheight),	//ã‚µã‚¤ã‚º 
+		//WindowSize(150,540),	//ã‚µã‚¤ã‚º
+		L"TimeLine",				//ã‚¿ã‚¤ãƒˆãƒ«
+		s_mainhwnd,					//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
+		true,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+		//70, 50, 70);				//ã‚«ãƒ©ãƒ¼
+		0, 0, 0);				//ã‚«ãƒ©ãƒ¼
 
 	s_rctreewnd.right = s_timelinewidth;
 	s_rctreewnd.bottom = s_timelineheight;
@@ -25182,8 +25205,8 @@ int CreateTimelineWnd()
 	s_timelineWnd->callRewrite();
 
 
-	// ƒEƒBƒ“ƒhƒE‚Ì•Â‚¶‚éƒ{ƒ^ƒ“‚ÌƒCƒxƒ“ƒgƒŠƒXƒi[‚É
-	// I—¹ƒtƒ‰ƒOcloseFlag‚ğƒIƒ“‚É‚·‚éƒ‰ƒ€ƒ_ŠÖ”‚ğ“o˜^‚·‚é
+	// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®é–‰ã˜ã‚‹ãƒœã‚¿ãƒ³ã®ã‚¤ãƒ™ãƒ³ãƒˆãƒªã‚¹ãƒŠãƒ¼ã«
+	// çµ‚äº†ãƒ•ãƒ©ã‚°closeFlagã‚’ã‚ªãƒ³ã«ã™ã‚‹ãƒ©ãƒ ãƒ€é–¢æ•°ã‚’ç™»éŒ²ã™ã‚‹
 	s_timelineWnd->setCloseListener([]() {
 		if (s_model) {
 			s_closeFlag = true;
@@ -25191,10 +25214,10 @@ int CreateTimelineWnd()
 		});
 
 
-	// ƒEƒBƒ“ƒhƒE‚ÌƒL[ƒ{[ƒhƒCƒxƒ“ƒgƒŠƒXƒi[‚É
-	// ƒRƒs[/ƒJƒbƒg/ƒy[ƒXƒgƒtƒ‰ƒOcopyFlag/cutFlag/pasteFlag‚ğƒIƒ“‚É‚·‚éƒ‰ƒ€ƒ_ŠÖ”‚ğ“o˜^‚·‚é
-	// ƒRƒs[“™‚ÌƒL[ƒ{[ƒh‚ğg—p‚·‚éˆ—‚ÍƒL[ƒ{[ƒhƒCƒxƒ“ƒgƒŠƒXƒi[‚ğg—p‚µ‚È‚­‚Ä‚à
-	// ƒƒCƒ“ƒ‹[ƒv“à‚Åƒ}ƒCƒtƒŒ[ƒ€ƒL[ó‘Ô‚ğŠÄ‹‚·‚é‚±‚Æ‚Åì¬‰Â”\‚Å‚ ‚éB
+	// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã‚¤ãƒ™ãƒ³ãƒˆãƒªã‚¹ãƒŠãƒ¼ã«
+	// ã‚³ãƒ”ãƒ¼/ã‚«ãƒƒãƒˆ/ãƒšãƒ¼ã‚¹ãƒˆãƒ•ãƒ©ã‚°copyFlag/cutFlag/pasteFlagã‚’ã‚ªãƒ³ã«ã™ã‚‹ãƒ©ãƒ ãƒ€é–¢æ•°ã‚’ç™»éŒ²ã™ã‚‹
+	// ã‚³ãƒ”ãƒ¼ç­‰ã®ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã‚’ä½¿ç”¨ã™ã‚‹å‡¦ç†ã¯ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã‚¤ãƒ™ãƒ³ãƒˆãƒªã‚¹ãƒŠãƒ¼ã‚’ä½¿ç”¨ã—ãªãã¦ã‚‚
+	// ãƒ¡ã‚¤ãƒ³ãƒ«ãƒ¼ãƒ—å†…ã§ãƒã‚¤ãƒ•ãƒ¬ãƒ¼ãƒ ã‚­ãƒ¼çŠ¶æ…‹ã‚’ç›£è¦–ã™ã‚‹ã“ã¨ã§ä½œæˆå¯èƒ½ã§ã‚ã‚‹ã€‚
 	s_timelineWnd->setKeyboardEventListener([](const KeyboardEvent& e) {
 		if (s_model) {
 			if (e.ctrlKey && !e.repeat && e.onDown) {
@@ -25255,17 +25278,17 @@ int CreateLongTimelineWnd()
 
 	s_LtimelineWnd = new OrgWindow(
 		0,
-		L"EditRangeTimeLine",				//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-		GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
-		//WindowPos( 250, 825 ),		//ˆÊ’u
-		//WindowPos(200, 645),		//ˆÊ’u
-		WindowPos(s_toolwidth, s_2ndposy),		//ˆÊ’u
-		WindowSize(s_longtimelinewidth, s_longtimelineheight),	//ƒTƒCƒY
-		L"EditRangeTimeLine",				//ƒ^ƒCƒgƒ‹
-		s_mainhwnd,					//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
-		true,					//•\¦E”ñ•\¦ó‘Ô
-		//70, 50, 70);				//ƒJƒ‰[
-		0, 0, 0);				//ƒJƒ‰[
+		L"EditRangeTimeLine",				//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+		GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
+		//WindowPos( 250, 825 ),		//ä½ç½®
+		//WindowPos(200, 645),		//ä½ç½®
+		WindowPos(s_toolwidth, s_2ndposy),		//ä½ç½®
+		WindowSize(s_longtimelinewidth, s_longtimelineheight),	//ã‚µã‚¤ã‚º
+		L"EditRangeTimeLine",				//ã‚¿ã‚¤ãƒˆãƒ«
+		s_mainhwnd,					//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
+		true,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+		//70, 50, 70);				//ã‚«ãƒ©ãƒ¼
+		0, 0, 0);				//ã‚«ãƒ©ãƒ¼
 
 	s_rcltwnd.bottom = s_longtimelineheight;
 	s_rcltwnd.right = s_longtimelinewidth;
@@ -25277,7 +25300,7 @@ int CreateLongTimelineWnd()
 	/////////
 	s_owpPlayerButton = new OWP_PlayerButton(s_longtimelinewidth);
 	//s_owpPlayerButton->setButtonSize(20);
-	s_LtimelineWnd->addParts(*s_owpPlayerButton);//owp_timeline‚æ‚è‘O
+	s_LtimelineWnd->addParts(*s_owpPlayerButton);//owp_timelineã‚ˆã‚Šå‰
 
 	s_owpPlayerButton->setFrontPlayButtonListener([]() {
 		if (s_model) {
@@ -25393,10 +25416,10 @@ int CreateLongTimelineWnd()
 	//		////s_LtimelineWnd->setDoneFlag(1);
 
 	//		RollbackCurBoneNo();//2022/11/07
-	//		s_undoFlag = true;//2022/11/02 ‘I‘ğ”ÍˆÍ‚¾‚¯‚Ì—š—ğ‚ğ‚â‚ß‚Ä@ƒAƒ“ƒhƒD‚É
+	//		s_undoFlag = true;//2022/11/02 é¸æŠç¯„å›²ã ã‘ã®å±¥æ­´ã‚’ã‚„ã‚ã¦ã€€ã‚¢ãƒ³ãƒ‰ã‚¥ã«
 
-	//		//2022/11/27 playerbutton‚©‚çundoredo‚·‚é‚Æ@s_LupFlag‚Æs_selectFlag‚ªtrue‚É‚È‚è@PrepairUndo‚ªŒÄ‚Î‚ê‚é
-	//		//undoredoŒ‹‰Ê‚ª@SaveUndoMotion‚³‚ê‚È‚¢‚æ‚¤‚É@s_undoredoFromPlayerButtonƒtƒ‰ƒO‚ğ—§‚Ä‚é
+	//		//2022/11/27 playerbuttonã‹ã‚‰undoredoã™ã‚‹ã¨ã€€s_LupFlagã¨s_selectFlagãŒtrueã«ãªã‚Šã€€PrepairUndoãŒå‘¼ã°ã‚Œã‚‹
+	//		//undoredoçµæœãŒã€€SaveUndoMotionã•ã‚Œãªã„ã‚ˆã†ã«ã€€s_undoredoFromPlayerButtonãƒ•ãƒ©ã‚°ã‚’ç«‹ã¦ã‚‹
 	//		s_undoredoFromPlayerButton = true;
 	//	}
 	//	});
@@ -25406,42 +25429,42 @@ int CreateLongTimelineWnd()
 	//		////s_LtimelineWnd->setDoneFlag(1);
 
 	//		RollbackCurBoneNo();//2022/11/07
-	//		s_redoFlag = true;//2022/11/02 ‘I‘ğ”ÍˆÍ‚¾‚¯‚Ì—š—ğ‚ğ‚â‚ß‚Ä@ƒŠƒhƒD‚É
+	//		s_redoFlag = true;//2022/11/02 é¸æŠç¯„å›²ã ã‘ã®å±¥æ­´ã‚’ã‚„ã‚ã¦ã€€ãƒªãƒ‰ã‚¥ã«
 
-	//		//2022/11/27 playerbutton‚©‚çundoredo‚·‚é‚Æ@s_LupFlag‚Æs_selectFlag‚ªtrue‚É‚È‚è@PrepairUndo‚ªŒÄ‚Î‚ê‚é
-	//		//undoredoŒ‹‰Ê‚ª@SaveUndoMotion‚³‚ê‚È‚¢‚æ‚¤‚É@s_undoredoFromPlayerButtonƒtƒ‰ƒO‚ğ—§‚Ä‚é
+	//		//2022/11/27 playerbuttonã‹ã‚‰undoredoã™ã‚‹ã¨ã€€s_LupFlagã¨s_selectFlagãŒtrueã«ãªã‚Šã€€PrepairUndoãŒå‘¼ã°ã‚Œã‚‹
+	//		//undoredoçµæœãŒã€€SaveUndoMotionã•ã‚Œãªã„ã‚ˆã†ã«ã€€s_undoredoFromPlayerButtonãƒ•ãƒ©ã‚°ã‚’ç«‹ã¦ã‚‹
 	//		s_undoredoFromPlayerButton = true;
 	//	}
 	//	});
 	//s_owpPlayerButton->setPlusDispButtonListener([]() {
 	//	if (s_model && s_owpEulerGraph) {
 	//		s_owpEulerGraph->PlusDisp();
-	//		s_owpEulerGraph->MinusOffset();//ã‚É“®‚©‚·‚É‚ÍƒIƒtƒZƒbƒg‚ğŒ¸‚ç‚·
-	//		s_owpEulerGraph->MinusOffset();//ã‚É“®‚©‚·‚É‚ÍƒIƒtƒZƒbƒg‚ğŒ¸‚ç‚·
-	//		s_owpEulerGraph->MinusOffset();//ã‚É“®‚©‚·‚É‚ÍƒIƒtƒZƒbƒg‚ğŒ¸‚ç‚·
-	//		//s_owpEulerGraph->MinusOffset();//ã‚É“®‚©‚·‚É‚ÍƒIƒtƒZƒbƒg‚ğŒ¸‚ç‚·
+	//		s_owpEulerGraph->MinusOffset();//ä¸Šã«å‹•ã‹ã™ã«ã¯ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’æ¸›ã‚‰ã™
+	//		s_owpEulerGraph->MinusOffset();//ä¸Šã«å‹•ã‹ã™ã«ã¯ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’æ¸›ã‚‰ã™
+	//		s_owpEulerGraph->MinusOffset();//ä¸Šã«å‹•ã‹ã™ã«ã¯ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’æ¸›ã‚‰ã™
+	//		//s_owpEulerGraph->MinusOffset();//ä¸Šã«å‹•ã‹ã™ã«ã¯ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’æ¸›ã‚‰ã™
 	//		//s_LtimelineWnd->setDoneFlag(1);
 	//	}
 	//	});
 	//s_owpPlayerButton->setMinusDispButtonListener([]() {
 	//	if (s_model && s_owpEulerGraph) {
 	//		s_owpEulerGraph->MinusDisp();
-	//		s_owpEulerGraph->PlusOffset();//‰º‚É“®‚©‚·‚É‚ÍƒIƒtƒZƒbƒg‚ğ‘‚â‚·
-	//		s_owpEulerGraph->PlusOffset();//‰º‚É“®‚©‚·‚É‚ÍƒIƒtƒZƒbƒg‚ğ‘‚â‚·
-	//		s_owpEulerGraph->PlusOffset();//‰º‚É“®‚©‚·‚É‚ÍƒIƒtƒZƒbƒg‚ğ‘‚â‚·
-	//		//s_owpEulerGraph->PlusOffset();//‰º‚É“®‚©‚·‚É‚ÍƒIƒtƒZƒbƒg‚ğ‘‚â‚·
+	//		s_owpEulerGraph->PlusOffset();//ä¸‹ã«å‹•ã‹ã™ã«ã¯ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’å¢—ã‚„ã™
+	//		s_owpEulerGraph->PlusOffset();//ä¸‹ã«å‹•ã‹ã™ã«ã¯ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’å¢—ã‚„ã™
+	//		s_owpEulerGraph->PlusOffset();//ä¸‹ã«å‹•ã‹ã™ã«ã¯ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’å¢—ã‚„ã™
+	//		//s_owpEulerGraph->PlusOffset();//ä¸‹ã«å‹•ã‹ã™ã«ã¯ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’å¢—ã‚„ã™
 	//		//s_LtimelineWnd->setDoneFlag(1);
 	//	}
 	//	});
 	//s_owpPlayerButton->setPlusOffsetDispButtonListener([]() {
 	//	if (s_model && s_owpEulerGraph) {
-	//		s_owpEulerGraph->MinusOffset();//ã‚É“®‚©‚·‚É‚ÍƒIƒtƒZƒbƒg‚ğŒ¸‚ç‚·
+	//		s_owpEulerGraph->MinusOffset();//ä¸Šã«å‹•ã‹ã™ã«ã¯ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’æ¸›ã‚‰ã™
 	//		//s_LtimelineWnd->setDoneFlag(1);
 	//	}
 	//	});
 	//s_owpPlayerButton->setMinusOffsetDispButtonListener([]() {
 	//	if (s_model && s_owpEulerGraph) {
-	//		s_owpEulerGraph->PlusOffset();//‰º‚É“®‚©‚·‚É‚ÍƒIƒtƒZƒbƒg‚ğ‘‚â‚·
+	//		s_owpEulerGraph->PlusOffset();//ä¸‹ã«å‹•ã‹ã™ã«ã¯ã‚ªãƒ•ã‚»ãƒƒãƒˆã‚’å¢—ã‚„ã™
 	//		//s_LtimelineWnd->setDoneFlag(1);
 	//	}
 	//	});
@@ -25454,7 +25477,7 @@ int CreateLongTimelineWnd()
 
 
 	//###################################
-	//s_owpLTimeline‚ÌŠÖ˜Aƒ‰ƒ€ƒ_‚ğƒRƒƒ“ƒg‚Æ‚µ‚ÄƒRƒsƒy
+	//s_owpLTimelineã®é–¢é€£ãƒ©ãƒ ãƒ€ã‚’ã‚³ãƒ¡ãƒ³ãƒˆã¨ã—ã¦ã‚³ãƒ”ãƒš
 	//###################################
 	//s_owpLTimeline->setCursorListener([]() { s_LcursorFlag = true; });
 	//s_owpLTimeline->setSelectListener([]() { s_selectFlag = true; });
@@ -25472,7 +25495,7 @@ int CreateLongTimelineWnd()
 	//});
 
 	//####################################
-	//s_LtimelineWnd‚Ìƒ‰ƒ€ƒ_@s_owpLTimeline‚Å‚Í‚È‚¢B
+	//s_LtimelineWndã®ãƒ©ãƒ ãƒ€ã€€s_owpLTimelineã§ã¯ãªã„ã€‚
 	//####################################
 	s_LtimelineWnd->setCloseListener([]() {
 		if (s_model) {
@@ -25517,17 +25540,17 @@ int CreateDmpAnimWnd()
 
 	s_dmpanimWnd = new OrgWindow(
 		0,
-		_T("dampAnimWindow"),		//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-		GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
+		_T("dampAnimWindow"),		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+		GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
 		WindowPos(windowposx, s_sidemenuheight),
-		WindowSize(s_sidewidth, s_sideheight),		//ƒTƒCƒY
-		_T("AnimOfDumping"),	//ƒ^ƒCƒgƒ‹
-		s_mainhwnd,	//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
-		false,					//•\¦E”ñ•\¦ó‘Ô
-		//70, 50, 70,				//ƒJƒ‰[
-		0, 0, 0,				//ƒJƒ‰[
-		true,					//•Â‚¶‚ç‚ê‚é‚©”Û‚©
-		true);					//ƒTƒCƒY•ÏX‚Ì‰Â”Û
+		WindowSize(s_sidewidth, s_sideheight),		//ã‚µã‚¤ã‚º
+		_T("AnimOfDumping"),	//ã‚¿ã‚¤ãƒˆãƒ«
+		s_mainhwnd,	//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
+		false,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+		//70, 50, 70,				//ã‚«ãƒ©ãƒ¼
+		0, 0, 0,				//ã‚«ãƒ©ãƒ¼
+		true,					//é–‰ã˜ã‚‰ã‚Œã‚‹ã‹å¦ã‹
+		true);					//ã‚µã‚¤ã‚ºå¤‰æ›´ã®å¯å¦
 
 	s_dmpgroupcheck = new OWP_CheckBoxA(L"SetToAllRigidsMeansToSetToSameGroup", 0);
 	s_dmpanimLlabel = new OWP_Label(L"posSpringDumpingPerFrame");
@@ -25569,7 +25592,7 @@ int CreateDmpAnimWnd()
 				float val = (float)s_dmpanimLSlider->getValue();
 				curre->SetDampanimL(val);
 			}
-			s_dmpanimWnd->callRewrite();						//Ä•`‰æ
+			s_dmpanimWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_dmpanimASlider->setCursorListener([]() {
@@ -25579,7 +25602,7 @@ int CreateDmpAnimWnd()
 				float val = (float)s_dmpanimASlider->getValue();
 				curre->SetDampanimA(val);
 			}
-			s_dmpanimWnd->callRewrite();						//Ä•`‰æ
+			s_dmpanimWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_dmpanimB->setButtonListener([]() {
@@ -25604,7 +25627,7 @@ int CreateDmpAnimWnd()
 	s_dmpanimWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_dmpanimWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
 
-	//‚PƒNƒŠƒbƒN–Ú–â‘è‘Î‰
+	//ï¼‘ã‚¯ãƒªãƒƒã‚¯ç›®å•é¡Œå¯¾å¿œ
 	s_dmpanimWnd->refreshPosAndSize();//2022/09/20
 
 	s_dmpanimWnd->callRewrite();
@@ -25626,20 +25649,20 @@ int CreateMainMenuAimBarWnd()
 
 	s_mainmenuaimbarWnd = new OrgWindow(
 		0,
-		_T("MainMenuAimBarWnd"),		//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-		GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
-								//WindowPos(100, 200),		//ˆÊ’u
+		_T("MainMenuAimBarWnd"),		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+		GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
+								//WindowPos(100, 200),		//ä½ç½®
 		WindowPos(0, 0),
-		//WindowSize(450,880),		//ƒTƒCƒY
-		//WindowSize(450,680),		//ƒTƒCƒY
-		//WindowSize(450, 760),		//ƒTƒCƒY
-		WindowSize(windowposx, MAINMENUAIMBARH),		//ƒTƒCƒY
-		_T("MainMenuAimBarWnd"),	//ƒ^ƒCƒgƒ‹
-		s_mainhwnd,	//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
-		true,					//•\¦E”ñ•\¦ó‘Ô
-		//70, 50, 70,				//ƒJƒ‰[
-		0, 0, 0,				//ƒJƒ‰[
-		true, true);					//ƒTƒCƒY•ÏX‚Ì‰Â”Û
+		//WindowSize(450,880),		//ã‚µã‚¤ã‚º
+		//WindowSize(450,680),		//ã‚µã‚¤ã‚º
+		//WindowSize(450, 760),		//ã‚µã‚¤ã‚º
+		WindowSize(windowposx, MAINMENUAIMBARH),		//ã‚µã‚¤ã‚º
+		_T("MainMenuAimBarWnd"),	//ã‚¿ã‚¤ãƒˆãƒ«
+		s_mainhwnd,	//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
+		true,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+		//70, 50, 70,				//ã‚«ãƒ©ãƒ¼
+		0, 0, 0,				//ã‚«ãƒ©ãƒ¼
+		true, true);					//ã‚µã‚¤ã‚ºå¤‰æ›´ã®å¯å¦
 
 
 
@@ -25670,11 +25693,11 @@ int CreateMainMenuAimBarWnd()
 	s_mainmenuaimbarWnd->setSize(WindowSize(windowposx, MAINMENUAIMBARH));
 	s_rcmainmenuaimbarwnd.right = windowposx;
 
-	//‚PƒNƒŠƒbƒN–Ú–â‘è‘Î‰
+	//ï¼‘ã‚¯ãƒªãƒƒã‚¯ç›®å•é¡Œå¯¾å¿œ
 	s_mainmenuaimbarWnd->refreshPosAndSize();//2022/09/20
 
 
-	s_mainmenuaimbarWnd->callRewrite();						//Ä•`‰æ
+	s_mainmenuaimbarWnd->callRewrite();						//å†æç”»
 
 
 	return 0;
@@ -25685,20 +25708,20 @@ int CreateSideMenuWnd()
 {
 	s_sidemenuWnd = new OrgWindow(
 		0,
-		_T("SideMenuWindow"),		//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-		GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
-								//WindowPos(100, 200),		//ˆÊ’u
+		_T("SideMenuWindow"),		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+		GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
+								//WindowPos(100, 200),		//ä½ç½®
 		WindowPos(0, 0),
-		//WindowSize(450,880),		//ƒTƒCƒY
-		//WindowSize(450,680),		//ƒTƒCƒY
-		//WindowSize(450, 760),		//ƒTƒCƒY
-		WindowSize(s_sidemenuwidth, s_sidemenuheight),		//ƒTƒCƒY
-		_T("SideMenu"),	//ƒ^ƒCƒgƒ‹
-		s_mainhwnd,	//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
-		true,					//•\¦E”ñ•\¦ó‘Ô
-		//70, 50, 70,				//ƒJƒ‰[
-		0, 0, 0,				//ƒJƒ‰[
-		true, true);					//ƒTƒCƒY•ÏX‚Ì‰Â”Û
+		//WindowSize(450,880),		//ã‚µã‚¤ã‚º
+		//WindowSize(450,680),		//ã‚µã‚¤ã‚º
+		//WindowSize(450, 760),		//ã‚µã‚¤ã‚º
+		WindowSize(s_sidemenuwidth, s_sidemenuheight),		//ã‚µã‚¤ã‚º
+		_T("SideMenu"),	//ã‚¿ã‚¤ãƒˆãƒ«
+		s_mainhwnd,	//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
+		true,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+		//70, 50, 70,				//ã‚«ãƒ©ãƒ¼
+		0, 0, 0,				//ã‚«ãƒ©ãƒ¼
+		true, true);					//ã‚µã‚¤ã‚ºå¤‰æ›´ã®å¯å¦
 
 
 	s_sidemenusp = new OWP_Separator(s_sidemenuWnd, true, 0.5, true);
@@ -25732,27 +25755,27 @@ int CreateSideMenuWnd()
 			s_platemenukind = 1;
 			GUIMenuSetVisible(s_platemenukind, 1);
 		}
-		s_sidemenuWnd->callRewrite();						//Ä•`‰æ
+		s_sidemenuWnd->callRewrite();						//å†æç”»
 		});
 	s_sidemenu_limiteul->setButtonListener([]() {
 		if (s_model && (s_curboneno >= 0)) {
 			s_platemenukind = 2;
 			GUIMenuSetVisible(s_platemenukind, 2);
 		}
-		s_sidemenuWnd->callRewrite();						//Ä•`‰æ
+		s_sidemenuWnd->callRewrite();						//å†æç”»
 		});
 	s_sidemenu_copyhistory->setButtonListener([]() {
 		if (s_model && (s_curboneno >= 0)) {
 			s_selCopyHisotryFlag = true;
 		}
-		s_sidemenuWnd->callRewrite();						//Ä•`‰æ
+		s_sidemenuWnd->callRewrite();						//å†æç”»
 		});
 	s_sidemenu_retarget->setButtonListener([]() {
 		if (s_model && (s_curboneno >= 0)) {
 			s_platemenukind = 2;
 			GUIMenuSetVisible(s_platemenukind, 1);
 		}
-		s_sidemenuWnd->callRewrite();						//Ä•`‰æ
+		s_sidemenuWnd->callRewrite();						//å†æç”»
 		});
 
 
@@ -25772,11 +25795,11 @@ int CreateSideMenuWnd()
 	s_rcsidemenuwnd.bottom = s_sidemenuheight;
 	s_rcsidemenuwnd.right = s_sidemenuwidth;
 
-	//‚PƒNƒŠƒbƒN–Ú–â‘è‘Î‰
+	//ï¼‘ã‚¯ãƒªãƒƒã‚¯ç›®å•é¡Œå¯¾å¿œ
 	s_sidemenuWnd->refreshPosAndSize();//2022/09/20
 
 
-	s_sidemenuWnd->callRewrite();						//Ä•`‰æ
+	s_sidemenuWnd->callRewrite();						//å†æç”»
 
 
 	return 0;
@@ -25795,16 +25818,16 @@ int CreatePlaceFolderWnd()
 
 	s_placefolderWnd = new OrgWindow(
 		0,
-		_T("PlaceFolderWindow"),		//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-		GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
+		_T("PlaceFolderWindow"),		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+		GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
 		WindowPos(windowposx, s_sidemenuheight),
-		WindowSize(s_sidewidth, s_sideheight),		//ƒTƒCƒY
-		_T("PlaceFolderWindow"),	//ƒ^ƒCƒgƒ‹
-		s_mainhwnd,	//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
-		true,					//•\¦E”ñ•\¦ó‘Ô
-		//70, 50, 70,				//ƒJƒ‰[
-		0, 0, 0,				//ƒJƒ‰[
-		true, true);					//ƒTƒCƒY•ÏX‚Ì‰Â”Û
+		WindowSize(s_sidewidth, s_sideheight),		//ã‚µã‚¤ã‚º
+		_T("PlaceFolderWindow"),	//ã‚¿ã‚¤ãƒˆãƒ«
+		s_mainhwnd,	//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
+		true,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+		//70, 50, 70,				//ã‚«ãƒ©ãƒ¼
+		0, 0, 0,				//ã‚«ãƒ©ãƒ¼
+		true, true);					//ã‚µã‚¤ã‚ºå¤‰æ›´ã®å¯å¦
 
 	s_placefolderlabel_1 = new OWP_Label(L"After Loading Model Data,");
 	s_placefolderlabel_2 = new OWP_Label(L"Click Frog Button, Change Plate Menu,");
@@ -25819,11 +25842,11 @@ int CreatePlaceFolderWnd()
 	s_placefolderWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_placefolderWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
 
-	//‚PƒNƒŠƒbƒN–Ú–â‘è‘Î‰
+	//ï¼‘ã‚¯ãƒªãƒƒã‚¯ç›®å•é¡Œå¯¾å¿œ
 	s_placefolderWnd->refreshPosAndSize();//2022/09/20
 
 
-	s_placefolderWnd->callRewrite();						//Ä•`‰æ
+	s_placefolderWnd->callRewrite();						//å†æç”»
 
 	s_placefolderWnd->setVisible(false);
 
@@ -25837,20 +25860,20 @@ int CreateRigidWnd()
 	/////////
 	//s_rigidWnd = new OrgWindow(
 	//	0,
-	//	_T("RigidWindow"),		//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-	//	GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
-	//							//WindowPos(100, 200),		//ˆÊ’u
+	//	_T("RigidWindow"),		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+	//	GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
+	//							//WindowPos(100, 200),		//ä½ç½®
 	//	WindowPos(1216, 48),
-	//	//WindowSize(450,880),		//ƒTƒCƒY
-	//	//WindowSize(450,680),		//ƒTƒCƒY
-	//	//WindowSize(450, 760),		//ƒTƒCƒY
-	//	WindowSize(450, 780),		//ƒTƒCƒY
-	//	_T("„‘Ìİ’èƒEƒBƒ“ƒhƒE"),	//ƒ^ƒCƒgƒ‹
-	//	s_mainhwnd,	//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
-	//	true,					//•\¦E”ñ•\¦ó‘Ô
-	//	70, 50, 70,				//ƒJƒ‰[
-	//	true,					//•Â‚¶‚ç‚ê‚é‚©”Û‚©
-	//	true);					//ƒTƒCƒY•ÏX‚Ì‰Â”Û
+	//	//WindowSize(450,880),		//ã‚µã‚¤ã‚º
+	//	//WindowSize(450,680),		//ã‚µã‚¤ã‚º
+	//	//WindowSize(450, 760),		//ã‚µã‚¤ã‚º
+	//	WindowSize(450, 780),		//ã‚µã‚¤ã‚º
+	//	_T("å‰›ä½“è¨­å®šã‚¦ã‚£ãƒ³ãƒ‰ã‚¦"),	//ã‚¿ã‚¤ãƒˆãƒ«
+	//	s_mainhwnd,	//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
+	//	true,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+	//	70, 50, 70,				//ã‚«ãƒ©ãƒ¼
+	//	true,					//é–‰ã˜ã‚‰ã‚Œã‚‹ã‹å¦ã‹
+	//	true);					//ã‚µã‚¤ã‚ºå¤‰æ›´ã®å¯å¦
 
 	s_dsrigidctrls.clear();
 
@@ -25864,16 +25887,16 @@ int CreateRigidWnd()
 
 	s_rigidWnd = new OrgWindow(
 		0,
-		_T("RigidWindow"),		//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-		GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
+		_T("RigidWindow"),		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+		GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
 		WindowPos(windowposx, s_sidemenuheight),
-		WindowSize(s_sidewidth, s_sideheight),		//ƒTƒCƒY
-		_T("RigidWindow"),	//ƒ^ƒCƒgƒ‹
-		s_mainhwnd,	//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
-		true,					//•\¦E”ñ•\¦ó‘Ô
-		//70, 50, 70,				//ƒJƒ‰[
-		0, 0, 0,				//ƒJƒ‰[
-		true, true);					//ƒTƒCƒY•ÏX‚Ì‰Â”Û
+		WindowSize(s_sidewidth, s_sideheight),		//ã‚µã‚¤ã‚º
+		_T("RigidWindow"),	//ã‚¿ã‚¤ãƒˆãƒ«
+		s_mainhwnd,	//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
+		true,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+		//70, 50, 70,				//ã‚«ãƒ©ãƒ¼
+		0, 0, 0,				//ã‚«ãƒ©ãƒ¼
+		true, true);					//ã‚µã‚¤ã‚ºå¤‰æ›´ã®å¯å¦
 
 	bool limitradionamelen = false;
 
@@ -25890,7 +25913,7 @@ int CreateRigidWnd()
 	s_massspacelabel = new OWP_Label(L"(Space4)");
 	s_validSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
 	s_skipB = new OWP_Button(L"ToAll");
-	s_rigidskip = new OWP_CheckBoxA(L"Valid/Invalid (—LŒø/–³Œø)", 1);
+	s_rigidskip = new OWP_CheckBoxA(L"Valid/Invalid (æœ‰åŠ¹/ç„¡åŠ¹)", 1);
 	s_forbidSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
 	s_forbidB = new OWP_Button(L"ToAll");
 	s_forbidrot = new OWP_CheckBoxA(L"ForbidRot", 0);
@@ -26148,7 +26171,7 @@ int CreateRigidWnd()
 				float val = (float)s_sphrateSlider->getValue();
 				curre->SetSphrate(val);
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_boxzSlider->setCursorListener([]() {
@@ -26158,7 +26181,7 @@ int CreateRigidWnd()
 				float val = (float)s_boxzSlider->getValue();
 				curre->SetBoxzrate(val);
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 
@@ -26169,7 +26192,7 @@ int CreateRigidWnd()
 				float val = (float)s_massSlider->getValue();
 				curre->SetMass(val);
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 
@@ -26180,7 +26203,7 @@ int CreateRigidWnd()
 				float val = (float)s_ldmpSlider->getValue();
 				curre->SetLDamping(val);
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_admpSlider->setCursorListener([]() {
@@ -26190,7 +26213,7 @@ int CreateRigidWnd()
 				float val = (float)s_admpSlider->getValue();
 				curre->SetADamping(val);
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 
@@ -26201,7 +26224,7 @@ int CreateRigidWnd()
 				float val = (float)s_lkSlider->getValue();
 				curre->SetCusLk(val);
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_akSlider->setCursorListener([]() {
@@ -26211,7 +26234,7 @@ int CreateRigidWnd()
 				float val = (float)s_akSlider->getValue();
 				curre->SetCusAk(val);
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 
@@ -26223,7 +26246,7 @@ int CreateRigidWnd()
 				float val = (float)s_restSlider->getValue();
 				curre->SetRestitution(val);
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_fricSlider->setCursorListener([]() {
@@ -26233,7 +26256,7 @@ int CreateRigidWnd()
 				float val = (float)s_fricSlider->getValue();
 				curre->SetFriction(val);
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_rigidskip->setButtonListener([]() {
@@ -26248,7 +26271,7 @@ int CreateRigidWnd()
 					curre->SetSkipflag(0);
 				}
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_skipB->setButtonListener([]() {
@@ -26288,7 +26311,7 @@ int CreateRigidWnd()
 					curre->SetForbidRotFlag(1);
 				}
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_forbidB->setButtonListener([]() {
@@ -26313,13 +26336,13 @@ int CreateRigidWnd()
 	//	if (s_model){
 	//		s_model->EnableAllRigidElem(s_reindexmap[s_model]);
 	//	}
-	//	s_rigidWnd->callRewrite();						//Ä•`‰æ
+	//	s_rigidWnd->callRewrite();						//å†æç”»
 	//});
 	//s_allrigiddisableB->setButtonListener([](){
 	//	if (s_model){
 	//		s_model->DisableAllRigidElem(s_reindexmap[s_model]);
 	//	}
-	//	s_rigidWnd->callRewrite();						//Ä•`‰æ
+	//	s_rigidWnd->callRewrite();						//å†æç”»
 	//});
 
 
@@ -26339,7 +26362,7 @@ int CreateRigidWnd()
 				}
 			}
 		}
-		s_rigidWnd->callRewrite();						//Ä•`‰æ
+		s_rigidWnd->callRewrite();						//å†æç”»
 		});
 
 	s_btgSlider->setCursorListener([]() {
@@ -26349,7 +26372,7 @@ int CreateRigidWnd()
 			if (curre) {
 				curre->SetBtg(btg);
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_btgscSlider->setCursorListener([]() {
@@ -26360,7 +26383,7 @@ int CreateRigidWnd()
 				tmpinfo.btgscale = btgsc;
 				s_model->SetRigidElemInfo(s_reindexmap[s_model], tmpinfo);
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 
@@ -26371,7 +26394,7 @@ int CreateRigidWnd()
 				int val = s_colradio->getSelectIndex();
 				curre->SetColtype(val);
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_colB->setButtonListener([]() {
@@ -26399,7 +26422,7 @@ int CreateRigidWnd()
 				int val = s_lkradio->getSelectIndex();
 				curre->SetLKindex(val);
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_akradio->setSelectListener([]() {
@@ -26409,7 +26432,7 @@ int CreateRigidWnd()
 				int val = s_akradio->getSelectIndex();
 				curre->SetAKindex(val);
 			}
-			s_rigidWnd->callRewrite();						//Ä•`‰æ
+			s_rigidWnd->callRewrite();						//å†æç”»
 		}
 		});
 
@@ -26592,11 +26615,11 @@ int CreateRigidWnd()
 	s_rigidWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_rigidWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
 
-	//‚PƒNƒŠƒbƒN–Ú–â‘è‘Î‰
+	//ï¼‘ã‚¯ãƒªãƒƒã‚¯ç›®å•é¡Œå¯¾å¿œ
 	s_rigidWnd->refreshPosAndSize();//2022/09/20
 
 
-	s_rigidWnd->callRewrite();						//Ä•`‰æ
+	s_rigidWnd->callRewrite();						//å†æç”»
 	s_rigidWnd->setVisible(false);
 
 	s_rcrigidwnd.top = s_sidemenuheight;
@@ -26625,17 +26648,17 @@ int CreateImpulseWnd()
 	//////////
 	s_impWnd = new OrgWindow(
 		0,
-		_T("ImpulseWindow"),		//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-		GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
+		_T("ImpulseWindow"),		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+		GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
 		WindowPos(windowposx, s_sidemenuheight),
-		WindowSize(s_sidewidth, s_sideheight),		//ƒTƒCƒY
-		_T("ImpulseWindow"),	//ƒ^ƒCƒgƒ‹
-		s_mainhwnd,	//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
-		false,					//•\¦E”ñ•\¦ó‘Ô
-		//70, 50, 70,				//ƒJƒ‰[
-		0, 0, 0,				//ƒJƒ‰[
-		true,					//•Â‚¶‚ç‚ê‚é‚©”Û‚©
-		true);					//ƒTƒCƒY•ÏX‚Ì‰Â”Û
+		WindowSize(s_sidewidth, s_sideheight),		//ã‚µã‚¤ã‚º
+		_T("ImpulseWindow"),	//ã‚¿ã‚¤ãƒˆãƒ«
+		s_mainhwnd,	//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
+		false,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+		//70, 50, 70,				//ã‚«ãƒ©ãƒ¼
+		0, 0, 0,				//ã‚«ãƒ©ãƒ¼
+		true,					//é–‰ã˜ã‚‰ã‚Œã‚‹ã‹å¦ã‹
+		true);					//ã‚µã‚¤ã‚ºå¤‰æ›´ã®å¯å¦
 
 	s_impgroupcheck = new OWP_CheckBoxA(L"SetToAllRigidSMeansToSetSameGroup", 0);
 
@@ -26689,7 +26712,7 @@ int CreateImpulseWnd()
 			if (s_model) {
 				s_model->SetImp(s_curboneno, 2, val);
 			}
-			s_impWnd->callRewrite();						//Ä•`‰æ
+			s_impWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_impySlider->setCursorListener([]() {
@@ -26698,7 +26721,7 @@ int CreateImpulseWnd()
 			if (s_model) {
 				s_model->SetImp(s_curboneno, 1, val);
 			}
-			s_impWnd->callRewrite();						//Ä•`‰æ
+			s_impWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_impxSlider->setCursorListener([]() {
@@ -26707,14 +26730,14 @@ int CreateImpulseWnd()
 			if (s_model) {
 				s_model->SetImp(s_curboneno, 0, val);
 			}
-			s_impWnd->callRewrite();						//Ä•`‰æ
+			s_impWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_impscaleSlider->setCursorListener([]() {
 		if (s_model) {
 			float scale = (float)s_impscaleSlider->getValue();
 			g_impscale = scale;
-			s_impWnd->callRewrite();						//Ä•`‰æ
+			s_impWnd->callRewrite();						//å†æç”»
 		}
 		});
 	s_impallB->setButtonListener([]() {
@@ -26742,7 +26765,7 @@ int CreateImpulseWnd()
 	s_impWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_impWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
 
-	//‚PƒNƒŠƒbƒN–Ú–â‘è‘Î‰
+	//ï¼‘ã‚¯ãƒªãƒƒã‚¯ç›®å•é¡Œå¯¾å¿œ
 	s_impWnd->refreshPosAndSize();//2022/09/20
 
 	s_impWnd->callRewrite();
@@ -26767,17 +26790,17 @@ int CreateGPlaneWnd()
 	//////////
 	s_gpWnd = new OrgWindow(
 		0,
-		_T("GPlaneWindow"),		//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-		GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
-		WindowPos(windowposx, s_sidemenuheight),		//ˆÊ’u
-		WindowSize(s_sidewidth, s_sideheight),		//ƒTƒCƒY
-		_T("GroudOfPhysics"),	//ƒ^ƒCƒgƒ‹
-		s_mainhwnd,	//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
-		false,					//•\¦E”ñ•\¦ó‘Ô
-		//70, 50, 70,				//ƒJƒ‰[
-		0, 0, 0,				//ƒJƒ‰[
-		true,					//•Â‚¶‚ç‚ê‚é‚©”Û‚©
-		true);					//ƒTƒCƒY•ÏX‚Ì‰Â”Û
+		_T("GPlaneWindow"),		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+		GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
+		WindowPos(windowposx, s_sidemenuheight),		//ä½ç½®
+		WindowSize(s_sidewidth, s_sideheight),		//ã‚µã‚¤ã‚º
+		_T("GroudOfPhysics"),	//ã‚¿ã‚¤ãƒˆãƒ«
+		s_mainhwnd,	//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
+		false,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+		//70, 50, 70,				//ã‚«ãƒ©ãƒ¼
+		0, 0, 0,				//ã‚«ãƒ©ãƒ¼
+		true,					//é–‰ã˜ã‚‰ã‚Œã‚‹ã‹å¦ã‹
+		true);					//ã‚µã‚¤ã‚ºå¤‰æ›´ã®å¯å¦
 
 	s_ghSlider = new OWP_Slider(-1.5, 5.0, -15.0);
 	s_gsizexSlider = new OWP_Slider(5.0, 50.0, -50.0);
@@ -26843,7 +26866,7 @@ int CreateGPlaneWnd()
 				ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
 				CallF(s_gplane->MultDispObj(mult, tra), return);
 
-				s_gpWnd->callRewrite();						//Ä•`‰æ
+				s_gpWnd->callRewrite();						//å†æç”»
 			}
 		}
 		});
@@ -26855,7 +26878,7 @@ int CreateGPlaneWnd()
 				ChaVector3 tra(0.0f, 0.0f, 0.0f);
 				ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
 				CallF(s_gplane->MultDispObj(mult, tra), return);
-				s_gpWnd->callRewrite();						//Ä•`‰æ
+				s_gpWnd->callRewrite();						//å†æç”»
 			}
 		}
 		});
@@ -26867,7 +26890,7 @@ int CreateGPlaneWnd()
 				ChaVector3 tra(0.0f, 0.0f, 0.0f);
 				ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
 				CallF(s_gplane->MultDispObj(mult, tra), return);
-				s_gpWnd->callRewrite();						//Ä•`‰æ
+				s_gpWnd->callRewrite();						//å†æç”»
 			}
 		}
 		});
@@ -26876,7 +26899,7 @@ int CreateGPlaneWnd()
 			if (s_bpWorld) {
 				bool dispflag = s_gpdisp->getValue();
 				s_bpWorld->m_gplanedisp = (int)dispflag;
-				s_gpWnd->callRewrite();						//Ä•`‰æ
+				s_gpWnd->callRewrite();						//å†æç”»
 			}
 		}
 		});
@@ -26886,7 +26909,7 @@ int CreateGPlaneWnd()
 				s_bpWorld->m_restitution = (float)s_grestSlider->getValue();
 				s_bpWorld->RemakeG();
 
-				s_gpWnd->callRewrite();						//Ä•`‰æ
+				s_gpWnd->callRewrite();						//å†æç”»
 			}
 		}
 		});
@@ -26896,7 +26919,7 @@ int CreateGPlaneWnd()
 				s_bpWorld->m_friction = (float)s_gfricSlider->getValue();
 				s_bpWorld->RemakeG();
 
-				s_gpWnd->callRewrite();						//Ä•`‰æ
+				s_gpWnd->callRewrite();						//å†æç”»
 			}
 		}
 		});
@@ -26905,7 +26928,7 @@ int CreateGPlaneWnd()
 	s_gpWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 	s_gpWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
 
-	//‚PƒNƒŠƒbƒN–Ú–â‘è‘Î‰
+	//ï¼‘ã‚¯ãƒªãƒƒã‚¯ç›®å•é¡Œå¯¾å¿œ
 	s_gpWnd->refreshPosAndSize();//2022/09/20
 
 	s_gpWnd->callRewrite();
@@ -26916,49 +26939,49 @@ int CreateGPlaneWnd()
 int CreateToolWnd()
 {
 	/////////
-	// ƒc[ƒ‹ƒEƒBƒ“ƒhƒE‚ğì¬‚µ‚Äƒ{ƒ^ƒ“—Ş‚ğ’Ç‰Á
+	// ãƒ„ãƒ¼ãƒ«ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’ä½œæˆã—ã¦ãƒœã‚¿ãƒ³é¡ã‚’è¿½åŠ 
 	s_toolWnd = new OrgWindow(
 		0,
-		L"ToolWindow_",		//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-		GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
-		//WindowPos(400, 580),		//ˆÊ’u
-		//WindowPos(50, 645),		//ˆÊ’u
-		WindowPos(0, s_2ndposy),		//ˆÊ’u
-		WindowSize(s_toolwidth, s_toolheight),		//ƒTƒCƒY
-		L"ToolWindow",	//ƒ^ƒCƒgƒ‹
-		//s_timelineWnd->getHWnd(),	//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
+		L"ToolWindow_",		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+		GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
+		//WindowPos(400, 580),		//ä½ç½®
+		//WindowPos(50, 645),		//ä½ç½®
+		WindowPos(0, s_2ndposy),		//ä½ç½®
+		WindowSize(s_toolwidth, s_toolheight),		//ã‚µã‚¤ã‚º
+		L"ToolWindow",	//ã‚¿ã‚¤ãƒˆãƒ«
+		//s_timelineWnd->getHWnd(),	//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
 		s_mainhwnd,
-		true,					//•\¦E”ñ•\¦ó‘Ô
-		//70, 50, 70);// ,				//ƒJƒ‰[
-		0, 0, 0);				//ƒJƒ‰[
+		true,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+		//70, 50, 70);// ,				//ã‚«ãƒ©ãƒ¼
+		0, 0, 0);				//ã‚«ãƒ©ãƒ¼
 
-	//	true);// ,					//•Â‚¶‚ç‚ê‚é‚©”Û‚©
-	//	false);					//ƒTƒCƒY•ÏX‚Ì‰Â”Û
+	//	true);// ,					//é–‰ã˜ã‚‰ã‚Œã‚‹ã‹å¦ã‹
+	//	false);					//ã‚µã‚¤ã‚ºå¤‰æ›´ã®å¯å¦
 
 	//s_toolWnd->callRewrite();
 
 
-	s_toolSelBoneB = new OWP_Button(_T("ƒRƒ}ƒ“ƒh‘ÎÛƒ{[ƒ“ target bone"));
-	s_toolSelectCopyFileName = new OWP_Button(_T("ƒRƒs[—š—ğ‘I‘ğ sel cp history"));
-	s_toolCopyB = new OWP_Button(_T("ƒRƒs[ copy"));
-	s_toolSymCopyB = new OWP_Button(_T("‘ÎÌƒRƒs[ sym copy"));
-	//s_toolCutB = new OWP_Button(_T("ƒJƒbƒg"));
-	s_toolPasteB = new OWP_Button(_T("ƒy[ƒXƒg paste"));
-	s_toolInitMPB = new OWP_Button(_T("p¨‰Šú‰» init"));
-	//s_toolDeleteB = new OWP_Button(_T("íœ"));
-	//s_toolMarkB = new OWP_Button(_T("ƒ}[ƒNì¬"));
-	s_toolMotPropB = new OWP_Button(_T("ƒvƒƒpƒeƒB property"));
-	s_toolFilter1B = new OWP_Button(_T("•½ŠŠ‰»(all) smoothing"));
-	s_toolFilter2B = new OWP_Button(_T("•½ŠŠ‰»(Parent One) smoothing"));
-	s_toolFilter3B = new OWP_Button(_T("•½ŠŠ‰»(Parent Deeper) smoothing"));
-	s_toolInterpolate1B = new OWP_Button(_T("•âŠÔ(all) interpolate"));
-	s_toolInterpolate2B = new OWP_Button(_T("•âŠÔ(Parent One) interpolate"));
-	s_toolInterpolate3B = new OWP_Button(_T("•âŠÔ(Parent Deeper) interpolate"));
+	s_toolSelBoneB = new OWP_Button(_T("ã‚³ãƒãƒ³ãƒ‰å¯¾è±¡ãƒœãƒ¼ãƒ³ target bone"));
+	s_toolSelectCopyFileName = new OWP_Button(_T("ã‚³ãƒ”ãƒ¼å±¥æ­´é¸æŠ sel cp history"));
+	s_toolCopyB = new OWP_Button(_T("ã‚³ãƒ”ãƒ¼ copy"));
+	s_toolSymCopyB = new OWP_Button(_T("å¯¾ç§°ã‚³ãƒ”ãƒ¼ sym copy"));
+	//s_toolCutB = new OWP_Button(_T("ã‚«ãƒƒãƒˆ"));
+	s_toolPasteB = new OWP_Button(_T("ãƒšãƒ¼ã‚¹ãƒˆ paste"));
+	s_toolInitMPB = new OWP_Button(_T("å§¿å‹¢åˆæœŸåŒ– init"));
+	//s_toolDeleteB = new OWP_Button(_T("å‰Šé™¤"));
+	//s_toolMarkB = new OWP_Button(_T("ãƒãƒ¼ã‚¯ä½œæˆ"));
+	s_toolMotPropB = new OWP_Button(_T("ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ property"));
+	s_toolFilter1B = new OWP_Button(_T("å¹³æ»‘åŒ–(all) smoothing"));
+	s_toolFilter2B = new OWP_Button(_T("å¹³æ»‘åŒ–(Parent One) smoothing"));
+	s_toolFilter3B = new OWP_Button(_T("å¹³æ»‘åŒ–(Parent Deeper) smoothing"));
+	s_toolInterpolate1B = new OWP_Button(_T("è£œé–“(all) interpolate"));
+	s_toolInterpolate2B = new OWP_Button(_T("è£œé–“(Parent One) interpolate"));
+	s_toolInterpolate3B = new OWP_Button(_T("è£œé–“(Parent Deeper) interpolate"));
 	s_toolZeroFrameB = new OWP_Button(_T("Edit 0 Frame"));
-	s_toolSkipRenderBoneMarkB = new OWP_Button(_T("jointƒ}[ƒNƒXƒLƒbƒv(Deeper)"));
-	s_toolSkipRenderBoneMarkB2 = new OWP_Button(_T("jointƒ}[ƒNƒXƒLƒbƒvReset(Deeper)"));
-	//s_tool180deg = new OWP_Button(_T("180“xC³ 180deg Adjust Euler"));
-	s_toolScaleInitAllB = new OWP_Button(_T("ScaleAllInit(ƒMƒUƒMƒU‚µ‚½‚ç‰Ÿ‚·)"));
+	s_toolSkipRenderBoneMarkB = new OWP_Button(_T("jointãƒãƒ¼ã‚¯ã‚¹ã‚­ãƒƒãƒ—(Deeper)"));
+	s_toolSkipRenderBoneMarkB2 = new OWP_Button(_T("jointãƒãƒ¼ã‚¯ã‚¹ã‚­ãƒƒãƒ—Reset(Deeper)"));
+	//s_tool180deg = new OWP_Button(_T("180åº¦ä¿®æ­£ 180deg Adjust Euler"));
+	s_toolScaleInitAllB = new OWP_Button(_T("ScaleAllInit(ã‚®ã‚¶ã‚®ã‚¶ã—ãŸã‚‰æŠ¼ã™)"));
 
 	s_toolWnd->addParts(*s_toolSelBoneB);
 	s_toolWnd->addParts(*s_toolSelectCopyFileName);
@@ -27141,7 +27164,7 @@ int CreateToolWnd()
 
 
 	s_toolWnd->autoResizeAllParts();
-	s_toolWnd->refreshPosAndSize();//‚±‚ê‚ğŒÄ‚Î‚È‚¢‚Æ1‰ñ–Ú‚ÌƒNƒŠƒbƒNˆÊ’u‚ª‚¸‚ê‚é‚±‚Æ‚ª‚ ‚éB
+	s_toolWnd->refreshPosAndSize();//ã“ã‚Œã‚’å‘¼ã°ãªã„ã¨1å›ç›®ã®ã‚¯ãƒªãƒƒã‚¯ä½ç½®ãŒãšã‚Œã‚‹ã“ã¨ãŒã‚ã‚‹ã€‚
 
 
 	return 0;
@@ -27163,59 +27186,59 @@ int CreateLayerWnd()
 
 
 	////
-	// ƒEƒBƒ“ƒhƒE‚ğì¬
+	// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’ä½œæˆ
 	if (g_4kresolution) {
 		s_layerWnd = new OrgWindow(
 			1,
-			_T("LayerTool"),		//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-			GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
-			//WindowPos(800, 500),		//ˆÊ’u
-			//WindowPos(250, 645),		//ˆÊ’u
-			//WindowPos(250, 660),		//ˆÊ’u
-			WindowPos(2000, 660),		//ˆÊ’u
-			WindowSize(150 * 2, 200 * 2),		//ƒTƒCƒY
-			_T("LayerTool"),	//ƒ^ƒCƒgƒ‹
-			//s_mainhwnd,					//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
+			_T("LayerTool"),		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+			GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
+			//WindowPos(800, 500),		//ä½ç½®
+			//WindowPos(250, 645),		//ä½ç½®
+			//WindowPos(250, 660),		//ä½ç½®
+			WindowPos(2000, 660),		//ä½ç½®
+			WindowSize(150 * 2, 200 * 2),		//ã‚µã‚¤ã‚º
+			_T("LayerTool"),	//ã‚¿ã‚¤ãƒˆãƒ«
+			//s_mainhwnd,					//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
 			//s_3dwnd,
-			NULL,//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ‘¼Š‚ğƒNƒŠƒbƒN‚µ‚Ä‚à‰B‚ê‚È‚¢‚æ‚¤‚É
-			true,					//•\¦E”ñ•\¦ó‘Ô
-			//false,					//•\¦E”ñ•\¦ó‘Ô
-			//70, 50, 70,				//ƒJƒ‰[
-			0, 0, 0,				//ƒJƒ‰[
-			true,					//•Â‚¶‚ç‚ê‚é‚©”Û‚©
-			true);					//ƒTƒCƒY•ÏX‚Ì‰Â”Û
+			NULL,//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ä»–æ‰€ã‚’ã‚¯ãƒªãƒƒã‚¯ã—ã¦ã‚‚éš ã‚Œãªã„ã‚ˆã†ã«
+			true,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+			//false,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+			//70, 50, 70,				//ã‚«ãƒ©ãƒ¼
+			0, 0, 0,				//ã‚«ãƒ©ãƒ¼
+			true,					//é–‰ã˜ã‚‰ã‚Œã‚‹ã‹å¦ã‹
+			true);					//ã‚µã‚¤ã‚ºå¤‰æ›´ã®å¯å¦
 	}
 	else {
 		s_layerWnd = new OrgWindow(
 			1,
-			_T("LayerTool"),		//ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX–¼
-			GetModuleHandle(NULL),	//ƒCƒ“ƒXƒ^ƒ“ƒXƒnƒ“ƒhƒ‹
-			//WindowPos(800, 500),		//ˆÊ’u
-			//WindowPos(250, 645),		//ˆÊ’u
-			//WindowPos(250, 660),		//ˆÊ’u
-			WindowPos(2000, 660),		//ˆÊ’u
-			WindowSize(150, 200),		//ƒTƒCƒY
-			_T("LayerTool"),	//ƒ^ƒCƒgƒ‹
-			//s_mainhwnd,					//eƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹
+			_T("LayerTool"),		//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹å
+			GetModuleHandle(NULL),	//ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒãƒ³ãƒ‰ãƒ«
+			//WindowPos(800, 500),		//ä½ç½®
+			//WindowPos(250, 645),		//ä½ç½®
+			//WindowPos(250, 660),		//ä½ç½®
+			WindowPos(2000, 660),		//ä½ç½®
+			WindowSize(150, 200),		//ã‚µã‚¤ã‚º
+			_T("LayerTool"),	//ã‚¿ã‚¤ãƒˆãƒ«
+			//s_mainhwnd,					//è¦ªã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«
 			//s_3dwnd,
-			NULL,//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ‘¼Š‚ğƒNƒŠƒbƒN‚µ‚Ä‚à‰B‚ê‚È‚¢‚æ‚¤‚É
-			true,					//•\¦E”ñ•\¦ó‘Ô
-			//false,					//•\¦E”ñ•\¦ó‘Ô
-			//70, 50, 70,				//ƒJƒ‰[
-			0, 0, 0,				//ƒJƒ‰[
-			true,					//•Â‚¶‚ç‚ê‚é‚©”Û‚©
-			true);					//ƒTƒCƒY•ÏX‚Ì‰Â”Û
+			NULL,//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ä»–æ‰€ã‚’ã‚¯ãƒªãƒƒã‚¯ã—ã¦ã‚‚éš ã‚Œãªã„ã‚ˆã†ã«
+			true,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+			//false,					//è¡¨ç¤ºãƒ»éè¡¨ç¤ºçŠ¶æ…‹
+			//70, 50, 70,				//ã‚«ãƒ©ãƒ¼
+			0, 0, 0,				//ã‚«ãƒ©ãƒ¼
+			true,					//é–‰ã˜ã‚‰ã‚Œã‚‹ã‹å¦ã‹
+			true);					//ã‚µã‚¤ã‚ºå¤‰æ›´ã®å¯å¦
 	}
 
 	s_layerWnd->setVisible(false);
 
-	// ƒŒƒCƒ„[ƒEƒBƒ“ƒhƒEƒp[ƒc‚ğì¬
-	s_owpLayerTable = new OWP_LayerTable(_T("ƒŒƒCƒ„[ƒe[ƒuƒ‹"));
+	// ãƒ¬ã‚¤ãƒ¤ãƒ¼ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ‘ãƒ¼ãƒ„ã‚’ä½œæˆ
+	s_owpLayerTable = new OWP_LayerTable(_T("ãƒ¬ã‚¤ãƒ¤ãƒ¼ãƒ†ãƒ¼ãƒ–ãƒ«"));
 	WCHAR label[256];
 	wcscpy_s(label, 256, L"dummy name");
 	s_owpLayerTable->newLine(label, 0);
 
-	// ƒEƒBƒ“ƒhƒE‚ÉƒEƒBƒ“ƒhƒEƒp[ƒc‚ğ“o˜^
+	// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã«ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ‘ãƒ¼ãƒ„ã‚’ç™»éŒ²
 	s_layerWnd->addParts(*s_owpLayerTable);
 
 
@@ -27225,19 +27248,19 @@ int CreateLayerWnd()
 		}
 		});
 
-	//ƒŒƒCƒ„[‚ÌƒJ[ƒ\ƒ‹ƒŠƒXƒi[
+	//ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ã‚«ãƒ¼ã‚½ãƒ«ãƒªã‚¹ãƒŠãƒ¼
 	s_owpLayerTable->setCursorListener([]() {
 		//_tprintf_s( _T("CurrentLayer: Index=%3d Name=%s\n"),
 		//			owpLayerTable->getCurrentLine(),
 		//			owpLayerTable->getCurrentLineName().c_str() );
 		});
 
-	//ƒŒƒCƒ„[‚ÌˆÚ“®ƒŠƒXƒi[
+	//ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ç§»å‹•ãƒªã‚¹ãƒŠãƒ¼
 	s_owpLayerTable->setLineShiftListener([](int from, int to) {
 		//_tprintf_s( _T("ShiftLayer: fromIndex=%3d toIndex=%3d\n"), from, to );
 		});
 
-	//ƒŒƒCƒ„[‚Ì‰Â‹ó‘Ô•ÏXƒŠƒXƒi[
+	//ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®å¯è¦–çŠ¶æ…‹å¤‰æ›´ãƒªã‚¹ãƒŠãƒ¼
 	s_owpLayerTable->setChangeVisibleListener([](int index) {
 		if (s_model) {
 			CMQOObject* curobj = (CMQOObject*)(s_owpLayerTable->getObj(index));
@@ -27252,7 +27275,7 @@ int CreateLayerWnd()
 		}
 		});
 
-	//ƒŒƒCƒ„[‚ÌƒƒbƒNó‘Ô•ÏXƒŠƒXƒi[
+	//ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ãƒ­ãƒƒã‚¯çŠ¶æ…‹å¤‰æ›´ãƒªã‚¹ãƒŠãƒ¼
 	s_owpLayerTable->setChangeLockListener([](int index) {
 		//if( owpLayerTable->getLock(index) ){
 		//	_tprintf_s( _T("ChangeLock: Index=%3d Lock='True'  Name=%s\n"),
@@ -27265,7 +27288,7 @@ int CreateLayerWnd()
 		//}
 		});
 
-	//ƒŒƒCƒ„[‚ÌƒvƒƒpƒeƒBƒR[ƒ‹ƒŠƒXƒi[
+	//ãƒ¬ã‚¤ãƒ¤ãƒ¼ã®ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ã‚³ãƒ¼ãƒ«ãƒªã‚¹ãƒŠãƒ¼
 	s_owpLayerTable->setCallPropertyListener([](int index) {
 		//_tprintf_s( _T("CallProperty: Index=%3d Name=%s\n"),
 		//			index,
@@ -27321,24 +27344,24 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 							s_model->SetMotionFrame(renderframe);
 							//s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
 							//ChaMatrix tmpwm = s_model->GetWorldMat();
-							s_model->HierarchyRouteUpdateMatrix(g_limitdegflag, curbone, &modelwm, &s_matVP);//‚‘¬‰»FŠÖŒWƒ{[ƒ“ƒ‹[ƒgŒÀ’èƒAƒbƒvƒf[ƒg
+							s_model->HierarchyRouteUpdateMatrix(g_limitdegflag, curbone, &modelwm, &s_matVP);//é«˜é€ŸåŒ–ï¼šé–¢ä¿‚ãƒœãƒ¼ãƒ³ãƒ«ãƒ¼ãƒˆé™å®šã‚¢ãƒƒãƒ—ãƒ‡ãƒ¼ãƒˆ
 							ChaVector3 tmpfpos = curbone->GetJointFPos();
 							ChaMatrix tmpcurwm = curbone->GetCurMp().GetWorldMat();
 							ChaVector3TransformCoord(&curbonepos, &tmpfpos, &tmpcurwm);
 							vecbonepos.push_back(curbonepos);
 
-							int lightflag = 0;//!!!!!!!“§‚¯‚é‚½‚ß‚É•K—v!!!!!!!!!
+							int lightflag = 0;//!!!!!!!é€ã‘ã‚‹ãŸã‚ã«å¿…è¦!!!!!!!!!
 
 							if (renderframe != currentframe) {
 								if ((rendercount % g_refposstep) == 0) {
-									//refframe‚Ìƒ|[ƒY‚ğ•\¦
+									//refframeã®ãƒãƒ¼ã‚ºã‚’è¡¨ç¤º
 									int btflag1 = 0;
 
 									s_model->SetMotionFrame(renderframe);
 									s_model->UpdateMatrix(g_limitdegflag, &modelwm, &s_matVP);
 
 
-									//ƒJƒŒƒ“ƒgƒtƒŒ[ƒ€‚©‚ç—£‚ê‚é‚Ù‚Ç@“§–¾“x‚ğ”–‚­‚·‚é
+									//ã‚«ãƒ¬ãƒ³ãƒˆãƒ•ãƒ¬ãƒ¼ãƒ ã‹ã‚‰é›¢ã‚Œã‚‹ã»ã©ã€€é€æ˜åº¦ã‚’è–„ãã™ã‚‹
 									const double refstartalpha = 0.80f;
 									double rendernum;
 									double renderalpha0, renderalpha;
@@ -27355,11 +27378,11 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 
 
 						{
-							////ƒJƒŒƒ“ƒgƒtƒŒ[ƒ€‚ğƒŒƒ“ƒ_[
+							////ã‚«ãƒ¬ãƒ³ãƒˆãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ãƒ¬ãƒ³ãƒ€ãƒ¼
 							s_model->SetMotionFrame(currentframe);
 							s_model->UpdateMatrix(g_limitdegflag, &modelwm, &s_matVP);
 
-							int lightflag2 = 0;//!!!!!!!“§‚¯‚é‚½‚ß‚É•K—v!!!!!!!!!
+							int lightflag2 = 0;//!!!!!!!é€ã‘ã‚‹ãŸã‚ã«å¿…è¦!!!!!!!!!
 							//const float orgalpha = 0.8880f;
 							const float orgalpha = 1.0f;
 							ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, orgalpha);
@@ -27387,14 +27410,14 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 						if (childbone && curbone->GetColDisp(childbone, COL_CONE_INDEX)) {
 							ChaVector4 arrowdiffusemult = ChaVector4(1.0f, 0.5f, 0.5f, 0.85f);
 
-							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);//•s“§–¾‚Ìê‡‚É‚Íè“®‚Åw’è
+							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);//ä¸é€æ˜ã®å ´åˆã«ã¯æ‰‹å‹•ã§æŒ‡å®š
 
 							curbone->GetColDisp(childbone, COL_CONE_INDEX)->RenderRefArrow(g_limitdegflag,
 								pd3dImmediateContext, curbone, arrowdiffusemult, 1, vecbonepos);
 							s_model->RenderBoneCircleOne(g_limitdegflag,
 								pd3dImmediateContext, s_bcircle, s_curboneno);
 
-							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);//Œ³‚É–ß‚·
+							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);//å…ƒã«æˆ»ã™
 						}
 					}
 				}
@@ -27427,7 +27450,7 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 		CModel* curmodel = itrmodel->modelptr;
 
 		//if (curmodel && curmodel->GetLoadedFlag() && curmodel->GetModelDisp()){
-		if (curmodel && curmodel->m_loadedflag && curmodel->m_modeldisp) {//curmodel‚ªì¬“r’†‚Ìê‡‚ğl‚¦‚ÄAæ“ª‚©‚ç‚Q‚Â‚Ìpublicƒf[ƒ^ƒƒ“ƒo[‚ğQÆ‚·‚é
+		if (curmodel && curmodel->m_loadedflag && curmodel->m_modeldisp) {//curmodelãŒä½œæˆé€”ä¸­ã®å ´åˆã‚’è€ƒãˆã¦ã€å…ˆé ­ã‹ã‚‰ï¼’ã¤ã®publicãƒ‡ãƒ¼ã‚¿ãƒ¡ãƒ³ãƒãƒ¼ã‚’å‚ç…§ã™ã‚‹
 			int lightflag = 1;
 			ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 			int btflag = 0;
@@ -27547,7 +27570,7 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 		s_fpssprite->Render(pd3dImmediateContext, dispfps);
 	}
 
-	//Undo‚Ì“Ç‚İ‚İƒ|ƒCƒ“ƒgW ‚Æ‘‚«‚İƒ|ƒCƒ“ƒgR ‚ğ•\¦
+	//Undoã®èª­ã¿è¾¼ã¿ãƒã‚¤ãƒ³ãƒˆW ã¨æ›¸ãè¾¼ã¿ãƒã‚¤ãƒ³ãƒˆR ã‚’è¡¨ç¤º
 	if (s_undosprite && s_model) {
 		s_undosprite->Render(pd3dImmediateContext, s_model->GetCurrentUndoR(), s_model->GetCurrentUndoW());
 	}
@@ -27638,9 +27661,9 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 
 			//int spgcnt;
 			//for (spgcnt = 0; spgcnt < SPMENU_MAX; spgcnt++) {
-			//	//MainMenuAimBarWnd‚Ì”wŒiF‚ÍA”ñ‘I‘ğ‚É’ƒFA‘I‘ğ‚ÉƒIƒŒƒ“ƒWBƒIƒŒƒ“ƒW‚ÍspriteON‚ÌFB‚æ‚Á‚ÄƒXƒvƒ‰ƒCƒg•\¦‚ÌƒIƒ“‚ÆƒIƒt‚ğ“ü‚ê‘Ö‚¦‚éB
+			//	//MainMenuAimBarWndã®èƒŒæ™¯è‰²ã¯ã€éé¸æŠæ™‚ã«èŒ¶è‰²ã€é¸æŠæ™‚ã«ã‚ªãƒ¬ãƒ³ã‚¸ã€‚ã‚ªãƒ¬ãƒ³ã‚¸ã¯spriteONã®è‰²ã€‚ã‚ˆã£ã¦ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆè¡¨ç¤ºã®ã‚ªãƒ³ã¨ã‚ªãƒ•ã‚’å…¥ã‚Œæ›¿ãˆã‚‹ã€‚
 			//	if (s_spmenuaimbar[spgcnt].state) {
-			//		if (s_spmenuaimbar[spgcnt].spriteOFF) {//ON‚Ì‚Æ‚«‚ÉOFFF
+			//		if (s_spmenuaimbar[spgcnt].spriteOFF) {//ONã®ã¨ãã«OFFè‰²
 			//			s_spmenuaimbar[spgcnt].spriteOFF->OnRender(pd3dImmediateContext);
 			//		}
 			//		else {
@@ -27648,7 +27671,7 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 			//		}
 			//	}
 			//	else {
-			//		if (s_spmenuaimbar[spgcnt].spriteON) {//OFF‚Ì‚Æ‚«‚ÉONF
+			//		if (s_spmenuaimbar[spgcnt].spriteON) {//OFFã®ã¨ãã«ONè‰²
 			//			s_spmenuaimbar[spgcnt].spriteON->OnRender(pd3dImmediateContext);
 			//		}
 			//		else {
@@ -27863,7 +27886,7 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 			}
 
 			//Smooth
-			if (s_spsmooth.sprite) {//ƒvƒŒƒrƒ…[‚Í”ñ•\¦
+			if (s_spsmooth.sprite) {//ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼æ™‚ã¯éè¡¨ç¤º
 				s_spsmooth.sprite->OnRender(pd3dImmediateContext);
 			}
 			else {
@@ -27873,7 +27896,7 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 			}
 		}
 
-		//ƒJƒƒ‰‘€ìƒXƒvƒ‰ƒCƒg‚Í@ƒvƒŒƒrƒ…[’†‚à•\¦
+		//ã‚«ãƒ¡ãƒ©æ“ä½œã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã¯ã€€ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼ä¸­ã‚‚è¡¨ç¤º
 		int spccnt;
 		for (spccnt = 0; spccnt < SPR_CAM_MAX; spccnt++) {
 			if (s_spcam[spccnt].sprite) {
@@ -27912,7 +27935,7 @@ int OnRenderSetShaderConst()
 	// Get the projection & view matrix from the camera class
 	g_hmVP->SetMatrix((float*)&(s_matVP.data[MATI_11]));
 	//g_pEffect->SetMatrix(g_hmVP, &(s_matVP.D3DX()));
-	////g_pEffect->SetMatrix(g_hmWorld, &s_matW);//CModel‚Ö
+	////g_pEffect->SetMatrix(g_hmWorld, &s_matW);//CModelã¸
 
 
 	ChaVector3 lightdir0, nlightdir0;
@@ -28138,7 +28161,7 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
 	if (curbone) {
-		//if (curbone->GetChild()){//2022/11/23 CommentOut ‚È‚º‚±‚Ìif•¶‚ª‚ ‚Á‚½‚Ì‚©H •s‹ï‡‚É‚æ‚èƒGƒ“ƒhƒWƒ‡ƒCƒ“ƒg‚Éƒ‚[ƒVƒ‡ƒ“ƒ|ƒCƒ“ƒg‚ª–³‚©‚Á‚½‚©‚çH
+		//if (curbone->GetChild()){//2022/11/23 CommentOut ãªãœã“ã®ifæ–‡ãŒã‚ã£ãŸã®ã‹ï¼Ÿ ä¸å…·åˆã«ã‚ˆã‚Šã‚¨ãƒ³ãƒ‰ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã«ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãƒã‚¤ãƒ³ãƒˆãŒç„¡ã‹ã£ãŸã‹ã‚‰ï¼Ÿ
 		if (initmode == INITMP_ROTTRA) {
 			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 			ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -28148,7 +28171,7 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 			//curbone->SetWorldMatFromEul(inittraflag1, setchildflag1, cureul, srcmotid, roundingframe, initscaleflag1);
 			ChaMatrix befwm = curbone->GetWorldMat(g_limitdegflag, srcmotid, roundingframe, 0);
 			curbone->SetWorldMatFromEulAndTra(g_limitdegflag,
-				setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scaleŒvZ–³‚µ
+				setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scaleè¨ˆç®—ç„¡ã—
 		}
 		else if (initmode == INITMP_ROT) {
 			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -28185,7 +28208,7 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 			//int initscaleflag1 = 1;//!!!!!!!
 			ChaMatrix befwm = curbone->GetWorldMat(g_limitdegflag, srcmotid, roundingframe, 0);
 			curbone->SetWorldMatFromEulAndTra(g_limitdegflag,
-				setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scaleŒvZ–³‚µ
+				setchildflag1, befwm, cureul, traanim, srcmotid, roundingframe);//scaleè¨ˆç®—ç„¡ã—
 		}
 		//}
 	}
@@ -28225,7 +28248,7 @@ int DispCustomRigDlg(int rigno)
 		return 0;
 	}
 
-	//ŒÃ‚¢ƒ_ƒCƒAƒƒO‚ğ•Â‚¶‚é
+	//å¤ã„ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’é–‰ã˜ã‚‹
 	if (s_customrigdlg) {
 		DestroyWindow(s_customrigdlg);
 		s_customrigdlg = 0;
@@ -28297,7 +28320,7 @@ int InvalidateCustomRig(int rigno)
 		}
 	}
 
-	//ŒÃ‚¢ƒ_ƒCƒAƒƒO‚ğ•Â‚¶‚é
+	//å¤ã„ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’é–‰ã˜ã‚‹
 	if (s_customrigdlg) {
 		DestroyWindow(s_customrigdlg);
 		s_customrigdlg = 0;
@@ -28538,7 +28561,7 @@ int CustomRig2Dlg(HWND hDlgWnd)
 int CheckRigRigCombo(HWND hDlgWnd, int elemno)
 {
 	//_ASSERT(0);
-	//‰Šú‰»
+	//åˆæœŸåŒ–
 	int rigrigcomboid[5] = { IDC_COMBO1, IDC_COMBO2, IDC_COMBO3, IDC_COMBO4, IDC_COMBO5 };
 	int gpboxid[5] = { IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5 };
 	s_customrig.rigelem[elemno].rigrigboneno = -1;
@@ -28552,7 +28575,7 @@ int CheckRigRigCombo(HWND hDlgWnd, int elemno)
 	}
 
 
-	//ƒ`ƒFƒbƒN@ƒAƒ“ƒh@ƒZƒbƒg
+	//ãƒã‚§ãƒƒã‚¯ã€€ã‚¢ãƒ³ãƒ‰ã€€ã‚»ãƒƒãƒˆ
 	int combono;
 	combono = (int)SendMessage(GetDlgItem(hDlgWnd, rigrigcomboid[elemno]), CB_GETCURSEL, 0, 0);
 	s_customrig.rigelem[elemno].rigrigboneno = -1;
@@ -28863,11 +28886,27 @@ int BoneRClick(int srcboneno)
 
 
 				if (curbone->GetIKTargetFlag() == false){
-					AppendMenu(submenu, MF_STRING, (ID_RMENU_IKTARGET + MENUOFFSET_BONERCLICK), L"Pos Constraint ON");
+					AppendMenu(submenu, MF_STRING, 
+						(ID_RMENU_IKTARGET + MENUOFFSET_BONERCLICK), 
+						L"Pos Constraint ON");
 				}
 				else{
-					AppendMenu(submenu, MF_STRING, (ID_RMENU_IKTARGET + MENUOFFSET_BONERCLICK), L"Pos Constraint OFF");
+					AppendMenu(submenu, MF_STRING, 
+						(ID_RMENU_IKTARGET + MENUOFFSET_BONERCLICK), 
+						L"Pos Constraint OFF");
 				}
+
+				if (curbone->GetIKStopFlag() == false) {
+					AppendMenu(submenu, MF_STRING, 
+						(ID_RMENU_IKSTOP + MENUOFFSET_BONERCLICK), 
+						L"IK Stop ON");
+				}
+				else {
+					AppendMenu(submenu, MF_STRING, 
+						(ID_RMENU_IKSTOP + MENUOFFSET_BONERCLICK), 
+						L"IK Stop OFF");
+				}
+
 
 				//AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_ALL + MENUOFFSET_BONERCLICK, L"Mass0 ON tO AllJoints");
 				//AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_ALL + MENUOFFSET_BONERCLICK, L"Mass0 OFF to AllJoints");
@@ -28955,7 +28994,7 @@ int BoneRClick(int srcboneno)
 				int menuid;
 				menuid = rmenu->TrackPopupMenu(pt);
 				//if (menuid == ID_RMENU_PHYSICSCONSTRAINT){
-				//	//ˆÊ’uƒRƒ“ƒXƒgƒŒƒCƒ“ƒg‚ÍMass0‚ÅÀŒ»‚·‚éB
+				//	//ä½ç½®ã‚³ãƒ³ã‚¹ãƒˆãƒ¬ã‚¤ãƒ³ãƒˆã¯Mass0ã§å®Ÿç¾ã™ã‚‹ã€‚
 				//	////toggle
 				//	//if (curbone->GetPosConstraint() == 0){
 				//	//	s_model->CreatePhysicsPosConstraint(curbone);
@@ -29028,20 +29067,20 @@ int BoneRClick(int srcboneno)
 				//}
 
 				//else if (menuid == ID_RMENU_0){
-				//	//V‹K
+				//	//æ–°è¦
 				//	GUIMenuSetVisible(-1, -1);
 				//	currigno = -1;
 				//	DispCustomRigDlg(currigno);
 				//}
 				//else if ((menuid >= (ID_RMENU_0 + MAXRIGNUM)) && (menuid < (ID_RMENU_0 + MAXRIGNUM * 2))){
-				//	//İ’è
+				//	//è¨­å®š
 				//	GUIMenuSetVisible(-1, -1);
 				//	currigno = s_customrigmenuindex[menuid - (ID_RMENU_0 + MAXRIGNUM)];
 				//	DispCustomRigDlg(currigno);
 
 				//}
 				//else if ((menuid >= (ID_RMENU_0 + MAXRIGNUM * 2)) && (menuid < (ID_RMENU_0 + MAXRIGNUM * 3))){
-				//	//Às
+				//	//å®Ÿè¡Œ
 				//	currigno = s_customrigmenuindex[menuid - (ID_RMENU_0 + MAXRIGNUM * 2)];
 				//	Bone2CustomRig(currigno);
 				//	if (s_customrigbone){
@@ -29279,7 +29318,7 @@ int GetSymRootMode()
 		RemoveMenu(submenu, 0, MF_BYPOSITION);
 	}
 
-	//scale‚ğ•Ï‚¦‚é‚Ætraanim‚à•Ï‚í‚é‚Ì‚Åscaleƒƒjƒ…[‚ğ•ª‚¯‚È‚¢‚Å‚¨‚­B
+	//scaleã‚’å¤‰ãˆã‚‹ã¨traanimã‚‚å¤‰ã‚ã‚‹ã®ã§scaleãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‚’åˆ†ã‘ãªã„ã§ãŠãã€‚
 	int setmenuid;
 	setmenuid = ID_RMENU_0 + MENUOFFSET_GETSYMROOTMODE;
 	AppendMenu(submenu, MF_STRING, setmenuid, L"RootBone:SameToSource");
@@ -29395,7 +29434,7 @@ int OnTimeLineSelectFromSelectedKey()
 			s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
 
 			if (g_underselectingframe != 0) {
-				//if (s_buttonselecttothelast == 0) {//tothelast‚Ì‚Æ‚«‚à“¯‚¶ˆ—
+				//if (s_buttonselecttothelast == 0) {//tothelastã®ã¨ãã‚‚åŒã˜å‡¦ç†
 				if (s_buttonselectstart <= s_buttonselectend) {
 					s_owpLTimeline->setCurrentTime(endframe, true);
 					s_owpEulerGraph->setCurrentTime(endframe, false);
@@ -29406,7 +29445,7 @@ int OnTimeLineSelectFromSelectedKey()
 				}
 				//}
 				//else {
-				//	//to the last selection‚ÌÛ‚É‚ÍƒJƒŒƒ“ƒg‚ğƒAƒvƒ‰ƒCƒtƒŒ[ƒ€‚Ö
+				//	//to the last selectionã®éš›ã«ã¯ã‚«ãƒ¬ãƒ³ãƒˆã‚’ã‚¢ãƒ—ãƒ©ã‚¤ãƒ•ãƒ¬ãƒ¼ãƒ ã¸
 				//	s_owpLTimeline->setCurrentTime(applyframe, true);
 				//	s_owpEulerGraph->setCurrentTime(applyframe, false);
 				//}
@@ -29431,14 +29470,14 @@ int OnTimeLineButtonSelectFromSelectStartEnd(int tothelastflag)
 		return 0;
 	}
 
-	//if ((s_copyKeyInfoList.size() > 0) || tothelastflag) {//2021/11/09 ‘I‘ğÏ‚Ìê‡‚É‚Í‚»‚Ì‚Ü‚Ü@‚±‚ê‚ª‚È‚¢‚Æ‚PƒtƒŒ[ƒ€’·‘I‘ğ‚ÅOnButtonSelect‚ªƒ‹[ƒv‚·‚é
+	//if ((s_copyKeyInfoList.size() > 0) || tothelastflag) {//2021/11/09 é¸æŠæ¸ˆã®å ´åˆã«ã¯ãã®ã¾ã¾ã€€ã“ã‚ŒãŒãªã„ã¨ï¼‘ãƒ•ãƒ¬ãƒ¼ãƒ é•·é¸æŠã§OnButtonSelectãŒãƒ«ãƒ¼ãƒ—ã™ã‚‹
 	if (s_owpLTimeline) {
-		s_owpLTimeline->selectClear(false);//ƒtƒŒ[ƒ€‚ÉF•t‘I‘ğ‚µ‚Ä‚¢‚È‚¢ê‡‚É‚ÍŒÄ‚Î‚ê‚È‚¢‚Ì‚ÅÄ‹Aƒ‹[ƒv‚µ‚È‚¢
-		//if ((s_buttonselectstart != s_buttonselectend) || tothelastflag) {//tothelast‚ÌÛ‚É‚Í@”ÍˆÍ‚ğw’è‚µ‚Ä‚¢‚È‚­‚Ä‚àÀs
+		s_owpLTimeline->selectClear(false);//ãƒ•ãƒ¬ãƒ¼ãƒ ã«è‰²ä»˜é¸æŠã—ã¦ã„ãªã„å ´åˆã«ã¯å‘¼ã°ã‚Œãªã„ã®ã§å†å¸°ãƒ«ãƒ¼ãƒ—ã—ãªã„
+		//if ((s_buttonselectstart != s_buttonselectend) || tothelastflag) {//tothelastã®éš›ã«ã¯ã€€ç¯„å›²ã‚’æŒ‡å®šã—ã¦ã„ãªãã¦ã‚‚å®Ÿè¡Œ
 		//if ((s_buttonselectstart <= s_buttonselectend) || tothelastflag) {//2021/11/09
 		double tmpmaxselectionframe;
 		tmpmaxselectionframe = s_owpLTimeline->OnButtonSelect(s_buttonselectstart, s_buttonselectend, s_buttonselecttothelast);
-		s_buttonselectend = tmpmaxselectionframe;//tothelast‘Î‰
+		s_buttonselectend = tmpmaxselectionframe;//tothelastå¯¾å¿œ
 	//}
 	}
 
@@ -29452,7 +29491,7 @@ int OnTimeLineCursorFunc()
 {
 	if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
 		double curframe;
-		curframe = s_owpLTimeline->getCurrentTime();// ‘I‘ğ
+		curframe = s_owpLTimeline->getCurrentTime();// é¸æŠæ™‚åˆ»
 		s_owpTimeline->setCurrentTime(curframe, false);
 		//s_owpLTimeline->setCurrentTime(curframe, false);
 		s_owpEulerGraph->setCurrentTime(curframe, false);
@@ -29463,7 +29502,7 @@ int OnTimeLineCursorFunc()
 
 int OnTimeLineCursor()
 {
-	//s_tum.UpdateTimeline(OnTimeLineCursorFunc, mbuttonflag, newframe);//”ñƒuƒƒbƒN
+	//s_tum.UpdateTimeline(OnTimeLineCursorFunc, mbuttonflag, newframe);//éãƒ–ãƒ­ãƒƒã‚¯
 
 	if ((s_delmodelFlag == false) && (s_delallmodelFlag == false) && (s_delcurmotFlag == false) &&
 		(s_opedelmodelcnt < 0) && (s_opedelmotioncnt < 0) && (s_opeselectmodelcnt < 0) && (s_opeselectmotioncnt < 0) &&
@@ -29473,7 +29512,7 @@ int OnTimeLineCursor()
 	{
 		OnTimeLineCursorFunc();
 		//UpdateEditedEuler();
-		//s_tum.UpdateTimeline(OnTimeLineCursorFunc, mbuttonflag, newframe);//”ñƒuƒƒbƒN
+		//s_tum.UpdateTimeline(OnTimeLineCursorFunc, mbuttonflag, newframe);//éãƒ–ãƒ­ãƒƒã‚¯
 		//if (s_updatetimeline) {
 		//	s_updatetimeline->UpdateTimeline(OnTimeLineCursorFunc, mbuttonflag, newframe);
 		//	while (s_updatetimeline->IsFinished() == false) {
@@ -29501,7 +29540,7 @@ int OnTimeLineCursor()
 	//if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
 	//	double curframe;
 	//	if (mbuttonflag != 2) {
-	//		curframe = s_owpLTimeline->getCurrentTime();// ‘I‘ğ
+	//		curframe = s_owpLTimeline->getCurrentTime();// é¸æŠæ™‚åˆ»
 	//		s_owpTimeline->setCurrentTime(curframe, false);
 	//		//s_owpLTimeline->setCurrentTime(curframe, false);
 	//		s_owpEulerGraph->setCurrentTime(curframe, false);
@@ -29542,9 +29581,9 @@ int OnTimeLineMButtonDown(bool ctrlshiftflag)
 
 		if (s_editmotionflag < 0) {
 			int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-			if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+			if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 				_ASSERT(0);
-				::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+				::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 				PostQuitMessage(result);
 			}
 
@@ -29553,7 +29592,7 @@ int OnTimeLineMButtonDown(bool ctrlshiftflag)
 				s_editmotionflag = s_curboneno;
 				s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
 				CEditRange::SetApplyRate((double)g_applyrate);
-				PrepairUndo();//LTimeline‚Ì‘I‘ğŒã‚©‚Â•ÒW‘O‚Ì•Û‘¶‚ğ‘z’è
+				PrepairUndo();//LTimelineã®é¸æŠå¾Œã‹ã¤ç·¨é›†å‰ã®ä¿å­˜ã‚’æƒ³å®š
 			}
 		}
 
@@ -29616,14 +29655,14 @@ int OnTimeLineWheel()
 				}
 			}
 
-			if (adkeyflag == 0) {//timeline‚Ìwheeldelta‚ÍƒzƒC[ƒ‹‚ğ‰ñ‚µ‚Ä‚¢‚È‚¢ŠÔ‚ÍXV‚³‚ê‚¸‚É’l‚ªc‚é‚½‚ßAƒzƒC[ƒ‹‚¾‚¯‚ğˆµ‚¤‚±‚Æ(ƒL[ˆ—’†‚Å‚Í‚È‚¢‚±‚Æ)‚ğ–¾¦“I‚ÉŠm”F‚·‚éB
-								 //ƒ}ƒEƒX‘€ì MButton and Wheel, A D key
+			if (adkeyflag == 0) {//timelineã®wheeldeltaã¯ãƒ›ã‚¤ãƒ¼ãƒ«ã‚’å›ã—ã¦ã„ãªã„é–“ã¯æ›´æ–°ã•ã‚Œãšã«å€¤ãŒæ®‹ã‚‹ãŸã‚ã€ãƒ›ã‚¤ãƒ¼ãƒ«ã ã‘ã‚’æ‰±ã†ã“ã¨(ã‚­ãƒ¼å‡¦ç†ä¸­ã§ã¯ãªã„ã“ã¨)ã‚’æ˜ç¤ºçš„ã«ç¢ºèªã™ã‚‹ã€‚
+								 //ãƒã‚¦ã‚¹æ“ä½œ MButton and Wheel, A D key
 				delta = (int)(s_owpLTimeline->getMouseWheelDelta());
 				if (g_controlkey == false) {
 					delta2 = (double)delta / 20.0;
 				}
 				else {
-					//delta2 = (double)delta / 100.0;//ctrl‚ğ‰Ÿ‚µ‚Ä‚¢‚½‚ç[slowly]
+					//delta2 = (double)delta / 100.0;//ctrlã‚’æŠ¼ã—ã¦ã„ãŸã‚‰[slowly]
 					if (delta > 0) {
 						delta2 = 1;
 					}
@@ -29657,9 +29696,9 @@ int OnTimeLineWheel()
 
 				if (s_editmotionflag < 0) {
 					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+					if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 						_ASSERT(0);
-						::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+						::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 						PostQuitMessage(result);
 					}
 				}
@@ -29676,7 +29715,7 @@ int OnTimeLineWheel()
 				delta2 = (double)delta / 20.0;
 			}
 			else {
-				//delta2 = (double)delta / 100.0;//ctrl‚ğ‰Ÿ‚µ‚Ä‚¢‚½‚ç[slowly]
+				//delta2 = (double)delta / 100.0;//ctrlã‚’æŠ¼ã—ã¦ã„ãŸã‚‰[slowly]
 				if (delta > 0) {
 					delta2 = 1;
 				}
@@ -29700,9 +29739,9 @@ int OnTimeLineWheel()
 
 				if (s_editmotionflag < 0) {
 					int result = CreateMotionBrush(s_buttonselectstart, s_buttonselectend, false);
-					if ((result != 0) && (result != 2)) {//result==2‚Íƒ}ƒEƒX‘€ì‚ÅƒtƒŒ[ƒ€‚ª”ÍˆÍŠO‚Éo‚½‚Æ‚«‚È‚Ç’Êíg—p‚Å‹N‚«‚é
+					if ((result != 0) && (result != 2)) {//result==2ã¯ãƒã‚¦ã‚¹æ“ä½œã§ãƒ•ãƒ¬ãƒ¼ãƒ ãŒç¯„å›²å¤–ã«å‡ºãŸã¨ããªã©é€šå¸¸ä½¿ç”¨ã§èµ·ãã‚‹
 						_ASSERT(0);
-						::MessageBox(s_mainhwnd, L"’v–½“I‚ÈƒGƒ‰[‚ª¶‚¶‚½‚Ì‚ÅI—¹‚µ‚Ü‚·B", L"CreateMotionBrush ERROR !!!", MB_OK);
+						::MessageBox(s_mainhwnd, L"è‡´å‘½çš„ãªã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ãŸã®ã§çµ‚äº†ã—ã¾ã™ã€‚", L"CreateMotionBrush ERROR !!!", MB_OK);
 						PostQuitMessage(result);
 					}
 				}
@@ -29722,11 +29761,11 @@ int InitializeMainWindow(CREATESTRUCT* createWindowArgs)
 	//TCHAR message[1024];
 	//int messageResult;
 	//wsprintf(message,
-	//	TEXT("ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX:%s\nƒ^ƒCƒgƒ‹:%s\nƒEƒBƒ“ƒhƒE‚ğ¶¬‚µ‚Ü‚·‚©H"),
+	//	TEXT("ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹:%s\nã‚¿ã‚¤ãƒˆãƒ«:%s\nã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’ç”Ÿæˆã—ã¾ã™ã‹ï¼Ÿ"),
 	//	createWindowArgs->lpszClass, createWindowArgs->lpszName
 	//);
 
-	//messageResult = DSMessageBox(NULL, message, TEXT("Šm”F"), MB_YESNO | MB_ICONINFORMATION);
+	//messageResult = DSMessageBox(NULL, message, TEXT("ç¢ºèª"), MB_YESNO | MB_ICONINFORMATION);
 
 	//if (messageResult == IDNO)
 	//	return -1;
@@ -29814,8 +29853,8 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		else {
 			switch (menuid) {
 			case ID_40047:
-				// "•ÒWE•ÏŠ·"
-				// "ƒ{[ƒ“²‚ğX‚ÉÄŒvZ"
+				// "ç·¨é›†ãƒ»å¤‰æ›"
+				// "ãƒœãƒ¼ãƒ³è»¸ã‚’Xã«å†è¨ˆç®—"
 				ActivatePanel(0);
 				//RecalcBoneAxisX(0);
 				RecalcAxisX_All();
@@ -30022,7 +30061,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				s_editmotionflag = s_model->IKRotateAxisDelta(g_limitdegflag,
 					&s_editrange, PICK_X, s_curboneno, (float)delta, g_iklevel, s_ikcnt, s_ikselectmat);
 
-				//ClearLimitedWM(s_model);//‚±‚ê‚ª–³‚¢‚ÆIK‚ÉƒOƒ‰ƒt‚É‚¨‚©‚µ‚È’l‚ª“ü‚è@‚¨‚©‚µ‚È’l‚ª‚ ‚éŠÔ‚É‡‚í‚¹‚é‚Æ’¼‚é
+				//ClearLimitedWM(s_model);//ã“ã‚ŒãŒç„¡ã„ã¨IKæ™‚ã«ã‚°ãƒ©ãƒ•ã«ãŠã‹ã—ãªå€¤ãŒå…¥ã‚Šã€€ãŠã‹ã—ãªå€¤ãŒã‚ã‚‹æ™‚é–“ã«åˆã‚ã›ã‚‹ã¨ç›´ã‚‹
 				//UpdateEditedEuler();
 			}
 		}
@@ -30064,7 +30103,7 @@ HWND CreateMainWindow()
 	s_mainhwnd = 0;
 
 
-	//EditMotC4.exe‚ª‹N“®‚µ‚Ä‚¢‚ê‚Î‚»‚ÌƒEƒCƒ“ƒhƒE‚ğe‚É‚·‚é
+	//EditMotC4.exeãŒèµ·å‹•ã—ã¦ã„ã‚Œã°ãã®ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã‚’è¦ªã«ã™ã‚‹
 	HWND parenthwnd = 0;
 	if (s_launchbyc4 != 0) {
 		EnumWindows(EnumWindowsProc, (LPARAM)&parenthwnd);
@@ -30090,7 +30129,7 @@ HWND CreateMainWindow()
 
 	if (!RegisterClassEx(&wcx))
 	{
-		OutputDebugString(TEXT("Error: ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX‚Ì“o˜^‚ª‚Å‚«‚Ü‚¹‚ñB\n"));
+		OutputDebugString(TEXT("Error: ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹ã®ç™»éŒ²ãŒã§ãã¾ã›ã‚“ã€‚\n"));
 		return NULL;
 	}
 
@@ -30112,7 +30151,7 @@ HWND CreateMainWindow()
 	s_modelmenu = GetSubMenu(mdlmenu, 3);
 	_ASSERT(s_modelmenu);
 
-	//•ÒWƒƒjƒ…[@4
+	//ç·¨é›†ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã€€4
 
 	s_remenu = GetSubMenu(s_mainmenu, 5);
 	_ASSERT(s_remenu);
@@ -30150,7 +30189,7 @@ HWND CreateMainWindow()
 
 	if (!window)
 	{
-		OutputDebugString(TEXT("Error: ƒEƒBƒ“ƒhƒE‚ªì¬‚Å‚«‚Ü‚¹‚ñB\n"));
+		OutputDebugString(TEXT("Error: ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãŒä½œæˆã§ãã¾ã›ã‚“ã€‚\n"));
 		return NULL;
 	}
 
@@ -30185,7 +30224,7 @@ HWND CreateMainWindow()
 			//}
 			if (s_launchbyc4 == 0) {
 
-				//desktop‚Ì’†S‚ÉƒƒCƒ“ƒEƒCƒ“ƒhƒE‚Ì’†S‚ª—ˆ‚é‚æ‚¤‚ÉˆÚ“®
+				//desktopã®ä¸­å¿ƒã«ãƒ¡ã‚¤ãƒ³ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã®ä¸­å¿ƒãŒæ¥ã‚‹ã‚ˆã†ã«ç§»å‹•
 
 				int desktopcenterx, desktopcentery;
 				desktopcenterx = (desktoprect.left + desktoprect.right) / 2;
@@ -30287,7 +30326,7 @@ HWND Create3DWnd()
 	//int bufwidth = s_mainwidth;
 	//int bufheight = s_mainheight - cycaption - cymenu - cyborder;
 
-	//hr = DXUTCreateDevice(true);//mac + VM Fusion‚Ìê‡‚Í‚±‚Á‚¿
+	//hr = DXUTCreateDevice(true);//mac + VM Fusionã®å ´åˆã¯ã“ã£ã¡
 	//hr = DXUTCreateDevice(true, bufwidth, bufheight);
 	//hr = DXUTCreateDevice(D3D_FEATURE_LEVEL_11_0, true, s_mainwidth, s_mainheight);
 	hr = DXUTCreateDevice(D3D_FEATURE_LEVEL_11_1, true, s_mainwidth, s_mainheight);
@@ -30336,10 +30375,10 @@ HWND Create3DWnd()
 
 
 	//#############################################################################
-	//Ÿ‚ÌƒRƒƒ“ƒgƒAƒEƒgƒuƒƒbƒN‚ÍDXUT‚ÌƒEƒCƒ“ƒhƒE‚Éƒƒjƒ…[‚ğ•t‚¯‚é‚Æ‚«‚Ég—p‚·‚éB
+	//æ¬¡ã®ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆãƒ–ãƒ­ãƒƒã‚¯ã¯DXUTã®ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã«ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‚’ä»˜ã‘ã‚‹ã¨ãã«ä½¿ç”¨ã™ã‚‹ã€‚
 	//#############################################################################
-	//Å‘å‰»‚µ‚Ä‚©‚çŒ³‚É–ß‚·‚±‚Æ‚É‚æ‚è
-	//ƒoƒbƒNƒoƒbƒtƒ@‚Ì‘å‚«‚³–â‘èiƒƒjƒ…[‚âƒLƒƒƒvƒVƒ‡ƒ“‚ª‚ ‚é‚Æ‚«‚Ì‚¸‚êj‚ª‰ğÁ‚³‚ê‚éB
+	//æœ€å¤§åŒ–ã—ã¦ã‹ã‚‰å…ƒã«æˆ»ã™ã“ã¨ã«ã‚ˆã‚Š
+	//ãƒãƒƒã‚¯ãƒãƒƒãƒ•ã‚¡ã®å¤§ãã•å•é¡Œï¼ˆãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‚„ã‚­ãƒ£ãƒ—ã‚·ãƒ§ãƒ³ãŒã‚ã‚‹ã¨ãã®ãšã‚Œï¼‰ãŒè§£æ¶ˆã•ã‚Œã‚‹ã€‚
 	//::ShowWindow(s_3dwnd, SW_MAXIMIZE);
 	//::ShowWindow(s_3dwnd, SW_SHOWNORMAL);
 
@@ -30404,7 +30443,7 @@ CInfoWindow* CreateInfoWnd()
 			OutputToInfoWnd(L"Upper to lower, older to newer. Limit to 6,000 lines.");
 			OutputToInfoWnd(L"Scroll is enable by mouse wheel.");
 			OutputToInfoWnd(L"If the most newest line is shown at lowest position, AutoScroll works.Save to info_(date).txt on exit.");
-			OutputToInfoWnd(L"ãFŒÃ,‰ºFVB6,000sBƒzƒC[ƒ‹‚ÅƒXƒNƒ[ƒ‹Bˆê”ÔV‚µ‚¢‚à‚Ì‚ğ•\¦‚µ‚Ä‚¢‚éAutoScrollBI—¹‚Éinfo_“ú.txt‚ÉƒZ[ƒuB");
+			OutputToInfoWnd(L"ä¸Šï¼šå¤,ä¸‹ï¼šæ–°ã€‚6,000è¡Œã€‚ãƒ›ã‚¤ãƒ¼ãƒ«ã§ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ã€‚ä¸€ç•ªæ–°ã—ã„ã‚‚ã®ã‚’è¡¨ç¤ºã—ã¦ã„ã‚‹æ™‚AutoScrollã€‚çµ‚äº†æ™‚ã«info_æ—¥æ™‚.txtã«ã‚»ãƒ¼ãƒ–ã€‚");
 		}
 
 	}
@@ -30441,7 +30480,7 @@ void RecalcAxisX_All()
 		ChaMatrix tmpwm = s_model->GetWorldMat();
 		s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 
-		//‚±‚±‚ÅAxisMatX‚Ì‰Šú‰»
+		//ã“ã“ã§AxisMatXã®åˆæœŸåŒ–
 		s_model->CreateBtObject(g_limitdegflag, 1);
 		s_model->CalcBtAxismat(2);//2
 		s_model->SetInitAxisMatX(1);
@@ -30479,7 +30518,7 @@ int OnMouseMoveFunc()
 							s_editmotionflag = s_model->IKRotateUnderIK(s_rotrec, g_limitdegflag,
 								&s_editrange, s_pickinfo.pickobjno, targetpos, g_iklevel);
 
-							//ClearLimitedWM(s_model);//‚±‚ê‚ª–³‚¢‚ÆIK‚ÉƒOƒ‰ƒt‚É‚¨‚©‚µ‚È’l‚ª“ü‚è@‚¨‚©‚µ‚È’l‚ª‚ ‚éŠÔ‚É‡‚í‚¹‚é‚Æ’¼‚é
+							//ClearLimitedWM(s_model);//ã“ã‚ŒãŒç„¡ã„ã¨IKæ™‚ã«ã‚°ãƒ©ãƒ•ã«ãŠã‹ã—ãªå€¤ãŒå…¥ã‚Šã€€ãŠã‹ã—ãªå€¤ãŒã‚ã‚‹æ™‚é–“ã«åˆã‚ã›ã‚‹ã¨ç›´ã‚‹
 							//UpdateEditedEuler();
 						}
 						else if (s_ikkind == 1) {
@@ -30513,7 +30552,7 @@ int OnMouseMoveFunc()
 							s_model->RigControl(g_limitdegflag, 0, &s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig, s_pickinfo.buttonflag);
 							s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 							s_editmotionflag = s_curboneno;
-							//s_editmotionflag = 0;//‚±‚ê‚ğ‚O‚É‚·‚é‚Æ@oprigflag == 1‚Ìó‘Ô‚ÅƒAƒ“ƒhƒD‚µ‚½‚É@ƒAƒ“ƒhƒD—p‚Ì•Û‘¶‚ª‘–‚Á‚Ä@•Û‘¶‚ª‘‚¦‚Äó‘Ô‚ª–ß‚ç‚È‚¢
+							//s_editmotionflag = 0;//ã“ã‚Œã‚’ï¼ã«ã™ã‚‹ã¨ã€€oprigflag == 1ã®çŠ¶æ…‹ã§ã‚¢ãƒ³ãƒ‰ã‚¥ã—ãŸæ™‚ã«ã€€ã‚¢ãƒ³ãƒ‰ã‚¥ç”¨ã®ä¿å­˜ãŒèµ°ã£ã¦ã€€ä¿å­˜ãŒå¢—ãˆã¦çŠ¶æ…‹ãŒæˆ»ã‚‰ãªã„
 						}
 					}
 					s_ikcnt++;
@@ -30554,7 +30593,7 @@ int OnMouseMoveFunc()
 								&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno,
 								deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 
-							//ClearLimitedWM(s_model);//‚±‚ê‚ª–³‚¢‚ÆIK‚ÉƒOƒ‰ƒt‚É‚¨‚©‚µ‚È’l‚ª“ü‚è@‚¨‚©‚µ‚È’l‚ª‚ ‚éŠÔ‚É‡‚í‚¹‚é‚Æ’¼‚é
+							//ClearLimitedWM(s_model);//ã“ã‚ŒãŒç„¡ã„ã¨IKæ™‚ã«ã‚°ãƒ©ãƒ•ã«ãŠã‹ã—ãªå€¤ãŒå…¥ã‚Šã€€ãŠã‹ã—ãªå€¤ãŒã‚ã‚‹æ™‚é–“ã«åˆã‚ã›ã‚‹ã¨ç›´ã‚‹
 							//UpdateEditedEuler();
 						}
 						else if (s_ikkind == 1) {
@@ -30605,7 +30644,7 @@ int OnMouseMoveFunc()
 								&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno,
 								deltax, g_iklevel, s_ikcnt, s_ikselectmat);
 
-							//ClearLimitedWM(s_model);//‚±‚ê‚ª–³‚¢‚ÆIK‚ÉƒOƒ‰ƒt‚É‚¨‚©‚µ‚È’l‚ª“ü‚è@‚¨‚©‚µ‚È’l‚ª‚ ‚éŠÔ‚É‡‚í‚¹‚é‚Æ’¼‚é
+							//ClearLimitedWM(s_model);//ã“ã‚ŒãŒç„¡ã„ã¨IKæ™‚ã«ã‚°ãƒ©ãƒ•ã«ãŠã‹ã—ãªå€¤ãŒå…¥ã‚Šã€€ãŠã‹ã—ãªå€¤ãŒã‚ã‚‹æ™‚é–“ã«åˆã‚ã›ã‚‹ã¨ç›´ã‚‹
 							//UpdateEditedEuler();
 						}
 						else if (s_ikkind == 1) {
@@ -30684,7 +30723,7 @@ int OnMouseMoveFunc()
 	}
 	else if (s_pickinfo.buttonflag == PICK_CAMROT) {
 
-		//not use quaternion yet int this part, so ƒWƒ“ƒoƒ‹ƒƒbƒN–¢‰ñ”ğ.
+		//not use quaternion yet int this part, so ã‚¸ãƒ³ãƒãƒ«ãƒ­ãƒƒã‚¯æœªå›é¿.
 
 		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 		POINT ptCursor;
@@ -30739,7 +30778,7 @@ int OnMouseMoveFunc()
 			//	//	roty = 0.0f;
 			//	//}
 			//	//else {
-			//	//	//roty‚¾‚¯‰ñ‚·B
+			//	//	//rotyã ã‘å›ã™ã€‚
 			//	//}
 			//}
 
@@ -30828,7 +30867,7 @@ int OnMouseMoveFunc()
 		//if (s_camdist < 0.0001f) {
 		//	s_camdist = 0.0001f;
 		//}
-		if (s_camdist < 0.01f) {//2022/10/29 0.0001‚Å‚Í‹ß‚Ã‚«‚·‚¬‚½‚Æ‚«‚ÉŒÅ‚Ü‚é‚Ì‚Å0.01‚É•ÏX
+		if (s_camdist < 0.01f) {//2022/10/29 0.0001ã§ã¯è¿‘ã¥ãã™ããŸã¨ãã«å›ºã¾ã‚‹ã®ã§0.01ã«å¤‰æ›´
 			s_camdist = 0.01f;
 		}
 
@@ -30978,9 +31017,9 @@ void GUISetVisible_SpriteFK()
 {
 	bool nextvisible = !(s_spguisw[SPGUISW_CAMERA_AND_IK].state);
 
-	//SpritePlate‚Íí‚É‚T–‡•\¦
+	//SpritePlateã¯å¸¸ã«ï¼•æšè¡¨ç¤º
 
-	//FK—p‚ÌƒXƒvƒ‰ƒCƒg‚Ì•\¦‚ÌƒIƒ“ƒIƒtƒtƒ‰ƒO‚Ìİ’è
+	//FKç”¨ã®ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã®è¡¨ç¤ºã®ã‚ªãƒ³ã‚ªãƒ•ãƒ•ãƒ©ã‚°ã®è¨­å®š
 
 	s_spguisw[SPGUISW_CAMERA_AND_IK].state = nextvisible;
 }
@@ -31203,7 +31242,7 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 {
 	if ((srcmenukind >= SPPLATEMENUKIND_GUI) && (srcmenukind <= SPPLATEMENUKIND_RETARGET)) {
 
-		//platemenu—p‚ÌƒEƒCƒ“ƒhƒEˆÈŠO‚ğ•Â‚¶‚é‚Ü‚½‚Í”jŠü‚·‚é
+		//platemenuç”¨ã®ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ä»¥å¤–ã‚’é–‰ã˜ã‚‹ã¾ãŸã¯ç ´æ£„ã™ã‚‹
 		if (s_copyhistorydlg.GetCreatedFlag() == true) {
 			s_copyhistorydlg.ShowWindow(SW_HIDE);
 		}
@@ -31222,7 +31261,7 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 		}
 
 
-		//ƒvƒŒ[ƒg
+		//ãƒ—ãƒ¬ãƒ¼ãƒˆ
 		s_platemenukind = srcmenukind;
 
 		switch (s_platemenukind) {
@@ -31230,7 +31269,7 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 			if ((srcplateno >= 1) && (srcplateno < (SPGUISWNUM + 2))) {
 				GUIRigidSetVisible(-2);
 				GUIRetargetSetVisible(-2);
-				GUISetVisible(srcplateno);//((spgno == 0) && (spgno < SPGUISWNUM))‚ÅGUISetVisible(spgno + 2)‚ÅGUISetVisible(1)‚ÍPlaceFolderWindow—p
+				GUISetVisible(srcplateno);//((spgno == 0) && (spgno < SPGUISWNUM))ã§GUISetVisible(spgno + 2)ã§GUISetVisible(1)ã¯PlaceFolderWindowç”¨
 				if (s_placefolderWnd) {
 					s_placefolderWnd->setVisible(true);
 				}
@@ -31309,10 +31348,10 @@ void GUIGetNextMenu(POINT ptCursor, int srcmenukind, int* dstmenukind, int* dstp
 		int pickrigidplateno = 0;
 		int pickretargetplateno = 0;
 		if (srcmenukind == SPPLATEMENUKIND_GUI) {
-			pickguiplateno = PickSpGUISW(ptCursor);//ƒJƒGƒ‹ƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½‚Æ‚«‚Í -2, (SPGUISW_* + 2)‚ª•Ô‚é
+			pickguiplateno = PickSpGUISW(ptCursor);//ã‚«ã‚¨ãƒ«ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ãŸã¨ãã¯ -2, (SPGUISW_* + 2)ãŒè¿”ã‚‹
 			if (pickguiplateno == -2) {
 				nextmenukind = SPPLATEMENUKIND_RIGID;
-				nextplateno = 1;//Å‰‚ÌƒvƒŒ[ƒg
+				nextplateno = 1;//æœ€åˆã®ãƒ—ãƒ¬ãƒ¼ãƒˆ
 			}
 			else if (pickguiplateno >= 2) {
 				nextmenukind = srcmenukind;
@@ -31324,10 +31363,10 @@ void GUIGetNextMenu(POINT ptCursor, int srcmenukind, int* dstmenukind, int* dstp
 			}
 		}
 		else if (srcmenukind == SPPLATEMENUKIND_RIGID) {
-			pickrigidplateno = PickSpRigidSW(ptCursor);//ƒJƒGƒ‹ƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½‚Æ‚«‚Í -2
+			pickrigidplateno = PickSpRigidSW(ptCursor);//ã‚«ã‚¨ãƒ«ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ãŸã¨ãã¯ -2
 			if (pickrigidplateno == -2) {
 				nextmenukind = SPPLATEMENUKIND_RETARGET;
-				nextplateno = 1;//Å‰‚ÌƒvƒŒ[ƒg
+				nextplateno = 1;//æœ€åˆã®ãƒ—ãƒ¬ãƒ¼ãƒˆ
 			}
 			else if (pickrigidplateno != 0) {
 				nextmenukind = srcmenukind;
@@ -31339,10 +31378,10 @@ void GUIGetNextMenu(POINT ptCursor, int srcmenukind, int* dstmenukind, int* dstp
 			}
 		}
 		else if (srcmenukind == SPPLATEMENUKIND_RETARGET) {
-			pickretargetplateno = PickSpRetargetSW(ptCursor);//ƒJƒGƒ‹ƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½‚Æ‚«‚Í -2
+			pickretargetplateno = PickSpRetargetSW(ptCursor);//ã‚«ã‚¨ãƒ«ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ãŸã¨ãã¯ -2
 			if (pickretargetplateno == -2) {
 				nextmenukind = SPPLATEMENUKIND_GUI;
-				nextplateno = 1;//Å‰‚ÌƒvƒŒ[ƒg
+				nextplateno = 1;//æœ€åˆã®ãƒ—ãƒ¬ãƒ¼ãƒˆ
 			}
 			else if (pickretargetplateno != 0) {
 				nextmenukind = srcmenukind;
@@ -31486,7 +31525,7 @@ void OnDSUpdate()
 {
 
 	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
-		//DS device‚ª–³‚¢ê‡‚É‚ÍDSŠÖ”‚ÅƒL[ƒ{[ƒh‚Ì–îˆóƒL[‚É‘Î‰
+		//DS deviceãŒç„¡ã„å ´åˆã«ã¯DSé–¢æ•°ã§ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã®çŸ¢å°ã‚­ãƒ¼ã«å¯¾å¿œ
 
 		OnArrowKey();
 
@@ -31496,7 +31535,7 @@ void OnDSUpdate()
 
 	GetDSValues();
 
-	ChangeMouseSetCapture();//ˆ—‘O‚ÉƒLƒƒƒvƒ`ƒƒ[‚ğƒZƒbƒg
+	ChangeMouseSetCapture();//å‡¦ç†å‰ã«ã‚­ãƒ£ãƒ—ãƒãƒ£ãƒ¼ã‚’ã‚»ãƒƒãƒˆ
 
 
 
@@ -31509,27 +31548,27 @@ void OnDSUpdate()
 	DSCrossButton(firstctrlselect);
 
 
-	//R1ƒ{ƒ^ƒ“F‚RDƒEƒCƒ“ƒhƒE‘I‘ğAƒJƒŒƒ“ƒgƒ{[ƒ“ˆÊ’u‚Öƒ}ƒEƒXƒWƒƒƒ“ƒv
+	//R1ãƒœã‚¿ãƒ³ï¼šï¼“Dã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦é¸æŠã€ã‚«ãƒ¬ãƒ³ãƒˆãƒœãƒ¼ãƒ³ä½ç½®ã¸ãƒã‚¦ã‚¹ã‚¸ãƒ£ãƒ³ãƒ—
 	DSR1ButtonSelectCurrentBone();
 	DSR1ButtonSelectMotion();
 
-	//L3, R3ƒ{ƒ^ƒ“‚Åƒ}ƒEƒXˆÊ’uƒAƒs[ƒ‹
+	//L3, R3ãƒœã‚¿ãƒ³ã§ãƒã‚¦ã‚¹ä½ç½®ã‚¢ãƒ”ãƒ¼ãƒ«
 	DSL3R3ButtonMouseHere();
 
 
 	if (g_undertrackingRMenu == 0) {
-		//OK button popupmenu‚ğo‚µ‚Ä‚¢‚È‚¢‚Æ‚«
+		//OK button popupmenuã‚’å‡ºã—ã¦ã„ãªã„ã¨ã
 		DSAimBarOK();
 
-		//optionƒ{ƒ^ƒ“‚Í‰EƒNƒŠƒbƒN‘Š“–
+		//optionãƒœã‚¿ãƒ³ã¯å³ã‚¯ãƒªãƒƒã‚¯ç›¸å½“
 		DSOptionButtonRightClick();
 	}
 	else if (g_undertrackingRMenu == 1) {
-		//OK button popupmenu‚ğo‚µ‚Ä‚¢‚é‚Æ‚«
+		//OK button popupmenuã‚’å‡ºã—ã¦ã„ã‚‹ã¨ã
 		DSOButtonSelectedPopupMenu();
 	}
 
-	//Cancel button : ƒƒjƒ…[‚Ìƒhƒƒbƒvƒ_ƒEƒ“‚ğƒLƒƒƒ“ƒZƒ‹‚·‚é@Cancel dropdown menu. L2 + X --> Undo, R2 + X --> Redo.
+	//Cancel button : ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã®ãƒ‰ãƒ­ãƒƒãƒ—ãƒ€ã‚¦ãƒ³ã‚’ã‚­ãƒ£ãƒ³ã‚»ãƒ«ã™ã‚‹ã€€Cancel dropdown menu. L2 + X --> Undo, R2 + X --> Redo.
 	DSXButtonCancel();
 
 	//Axis L Mouse Move
@@ -31539,7 +31578,7 @@ void OnDSUpdate()
 	DSAxisRMainMenuBar();
 
 
-	ChangeMouseReleaseCapture();//ˆ—‚ªI‚í‚Á‚Ä‚©‚çƒLƒƒƒvƒ`ƒƒ[‚ğŠO‚·
+	ChangeMouseReleaseCapture();//å‡¦ç†ãŒçµ‚ã‚ã£ã¦ã‹ã‚‰ã‚­ãƒ£ãƒ—ãƒãƒ£ãƒ¼ã‚’å¤–ã™
 
 	//OutputToInfoWnd(L"\n\n");
 	//OutputToInfoWnd(L"Axis 0 : %1.4f\n", axisval0);
@@ -31568,7 +31607,7 @@ void GetDSValues()
 
 
 	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
-		//DS device‚ª–³‚¢ê‡‚É‚Í‰½‚à‚¹‚¸‚ÉƒŠƒ^[ƒ“
+		//DS deviceãŒç„¡ã„å ´åˆã«ã¯ä½•ã‚‚ã›ãšã«ãƒªã‚¿ãƒ¼ãƒ³
 		return;
 	}
 
@@ -31649,14 +31688,14 @@ void GetDSValues()
 void DSColorAndVibration()
 {
 	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
-		//DS device‚ª–³‚¢ê‡‚É‚Í‰½‚à‚¹‚¸‚ÉƒŠƒ^[ƒ“
+		//DS deviceãŒç„¡ã„å ´åˆã«ã¯ä½•ã‚‚ã›ãšã«ãƒªã‚¿ãƒ¼ãƒ³
 		return;
 	}
 
 
 	int buttonno;
-	//for (buttonno = 0; buttonno < MB3D_DSBUTTONNUM - 2; buttonno++) {//L3, R3‚Í•Êˆ—IIIII
-	for (buttonno = 0; buttonno < MB3D_DSBUTTONNUM; buttonno++) {//L3, R3‚Í•Êˆ—IIIII
+	//for (buttonno = 0; buttonno < MB3D_DSBUTTONNUM - 2; buttonno++) {//L3, R3ã¯åˆ¥å‡¦ç†ï¼ï¼ï¼ï¼ï¼
+	for (buttonno = 0; buttonno < MB3D_DSBUTTONNUM; buttonno++) {//L3, R3ã¯åˆ¥å‡¦ç†ï¼ï¼ï¼ï¼ï¼
 		int curbuttondown = s_dsbuttondown[buttonno];
 		int curbuttonup = s_dsbuttonup[buttonno];
 
@@ -31701,14 +31740,14 @@ void DSColorAndVibration()
 
 void DSR1ButtonSelectMotion()
 {
-	//R1ƒ{ƒ^ƒ“F‚RDƒEƒCƒ“ƒhƒE‘I‘ğAƒJƒŒƒ“ƒgƒ{[ƒ“ˆÊ’u‚Öƒ}ƒEƒXƒWƒƒƒ“ƒv
+	//R1ãƒœã‚¿ãƒ³ï¼šï¼“Dã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦é¸æŠã€ã‚«ãƒ¬ãƒ³ãƒˆãƒœãƒ¼ãƒ³ä½ç½®ã¸ãƒã‚¦ã‚¹ã‚¸ãƒ£ãƒ³ãƒ—
 	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
-		//DS device‚ª–³‚¢ê‡‚É‚Í‰½‚à‚¹‚¸‚ÉƒŠƒ^[ƒ“
+		//DS deviceãŒç„¡ã„å ´åˆã«ã¯ä½•ã‚‚ã›ãšã«ãƒªã‚¿ãƒ¼ãƒ³
 		return;
 	}
 
 	if (!s_model) {
-		//ƒ‚ƒfƒ‹“Ç‚İ‚İ‘O‚Íˆ—‚µ‚È‚¢‚ÅƒŠƒ^[ƒ“
+		//ãƒ¢ãƒ‡ãƒ«èª­ã¿è¾¼ã¿å‰ã¯å‡¦ç†ã—ãªã„ã§ãƒªã‚¿ãƒ¼ãƒ³
 		return;
 	}
 
@@ -31732,7 +31771,7 @@ void DSR1ButtonSelectMotion()
 	accelflag = accelaxis1 || accelaxis2;
 	accelbothflag = accelaxis1 && accelaxis2;
 
-	if ((accelflag != 0) && (curbuttonup >= 1)) {//ƒAƒNƒZƒ‹—L‚è
+	if ((accelflag != 0) && (curbuttonup >= 1)) {//ã‚¢ã‚¯ã‚»ãƒ«æœ‰ã‚Š
 		int cAnimSets = (int)s_tlarray.size();
 		int nextmotionindex;
 		nextmotionindex = s_motmenuindexmap[s_model] + 1;
@@ -31752,14 +31791,14 @@ void DSR1ButtonSelectMotion()
 
 void DSR1ButtonSelectCurrentBone()
 {
-	//R1ƒ{ƒ^ƒ“F‚RDƒEƒCƒ“ƒhƒE‘I‘ğAƒJƒŒƒ“ƒgƒ{[ƒ“ˆÊ’u‚Öƒ}ƒEƒXƒWƒƒƒ“ƒv
+	//R1ãƒœã‚¿ãƒ³ï¼šï¼“Dã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦é¸æŠã€ã‚«ãƒ¬ãƒ³ãƒˆãƒœãƒ¼ãƒ³ä½ç½®ã¸ãƒã‚¦ã‚¹ã‚¸ãƒ£ãƒ³ãƒ—
 	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
-		//DS device‚ª–³‚¢ê‡‚É‚Í‰½‚à‚¹‚¸‚ÉƒŠƒ^[ƒ“
+		//DS deviceãŒç„¡ã„å ´åˆã«ã¯ä½•ã‚‚ã›ãšã«ãƒªã‚¿ãƒ¼ãƒ³
 		return;
 	}
 
 	if (!s_model) {
-		//ƒ‚ƒfƒ‹“Ç‚İ‚İ‘O‚Íˆ—‚µ‚È‚¢‚ÅƒŠƒ^[ƒ“
+		//ãƒ¢ãƒ‡ãƒ«èª­ã¿è¾¼ã¿å‰ã¯å‡¦ç†ã—ãªã„ã§ãƒªã‚¿ãƒ¼ãƒ³
 		return;
 	}
 
@@ -31768,7 +31807,7 @@ void DSR1ButtonSelectCurrentBone()
 	}
 
 	//###################################################
-	//R1ƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚ÄAjoint‚Æprev_selected_window‚ğ‰•œ‚·‚é
+	//R1ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ã¦ã€jointã¨prev_selected_windowã‚’å¾€å¾©ã™ã‚‹
 	//###################################################
 
 	int buttonR1 = 9;
@@ -31786,7 +31825,7 @@ void DSR1ButtonSelectCurrentBone()
 	accelflag = accelaxis1 || accelaxis2;
 	accelbothflag = accelaxis1 && accelaxis2;
 
-	if ((accelflag == 0) && (curbuttonup >= 1)) {//ƒAƒNƒZƒ‹–³‚µ
+	if ((accelflag == 0) && (curbuttonup >= 1)) {//ã‚¢ã‚¯ã‚»ãƒ«ç„¡ã—
 
 		::SetWindowPos(s_3dwnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 
@@ -31834,7 +31873,7 @@ void DSR1ButtonSelectCurrentBone()
 					s_currentwndid = MB3D_WND_3D;
 					s_currenthwnd = s_3dwnd;
 
-					GUISetVisible_Sel3D();//3DWindow‚ğ‘I‘ğ‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©‚Ìƒ}[ƒN‚ğ‰Eã‹÷‚É•\¦
+					GUISetVisible_Sel3D();//3DWindowã‚’é¸æŠã—ã¦ã„ã‚‹ã‹ã©ã†ã‹ã®ãƒãƒ¼ã‚¯ã‚’å³ä¸Šéš…ã«è¡¨ç¤º
 
 					::ClientToScreen(s_3dwnd, &mousepos);
 					::SetCursorPos(mousepos.x, mousepos.y);
@@ -32118,7 +32157,7 @@ void SelectNextWindow(int nextwndid)
 		bool firstctrlselect = true;
 		DSCrossButton(firstctrlselect);
 
-		GUISetVisible_Sel3D();//3DWindow‚ğ‘I‘ğ‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©‚Ìƒ}[ƒN‚ğ‰Eã‹÷‚É•\¦
+		GUISetVisible_Sel3D();//3DWindowã‚’é¸æŠã—ã¦ã„ã‚‹ã‹ã©ã†ã‹ã®ãƒãƒ¼ã‚¯ã‚’å³ä¸Šéš…ã«è¡¨ç¤º
 
 	}
 	//OutputToInfoWnd(L"Button Down %d", buttonL1);
@@ -32127,12 +32166,12 @@ void SelectNextWindow(int nextwndid)
 void DSSelectCharactor()
 {
 	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
-		//DS device‚ª–³‚¢ê‡‚É‚Í‰½‚à‚¹‚¸‚ÉƒŠƒ^[ƒ“
+		//DS deviceãŒç„¡ã„å ´åˆã«ã¯ä½•ã‚‚ã›ãšã«ãƒªã‚¿ãƒ¼ãƒ³
 		return;
 	}
 
 	if (!s_model) {
-		//ƒ‚ƒfƒ‹“Ç‚İ‚İ‘O‚Íˆ—‚µ‚È‚¢‚ÅƒŠƒ^[ƒ“
+		//ãƒ¢ãƒ‡ãƒ«èª­ã¿è¾¼ã¿å‰ã¯å‡¦ç†ã—ãªã„ã§ãƒªã‚¿ãƒ¼ãƒ³
 		return;
 	}
 
@@ -32156,7 +32195,7 @@ void DSSelectCharactor()
 	accelflag = accelaxis1 || accelaxis2;
 	accelbothflag = accelaxis1 && accelaxis2;
 
-	//L1 Button UpiL2, R2 not pushedj
+	//L1 Button Upï¼ˆL2, R2 not pushedï¼‰
 	if ((accelflag != 0) && (curbuttonup >= 1)) {
 		int modelnum;
 		modelnum = (int)s_modelindex.size();
@@ -32182,12 +32221,12 @@ void DSSelectWindowAndCtrl()
 {
 
 	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
-		//DS device‚ª–³‚¢ê‡‚É‚Í‰½‚à‚¹‚¸‚ÉƒŠƒ^[ƒ“
+		//DS deviceãŒç„¡ã„å ´åˆã«ã¯ä½•ã‚‚ã›ãšã«ãƒªã‚¿ãƒ¼ãƒ³
 		return;
 	}
 
 	if (!s_model) {
-		//ƒ‚ƒfƒ‹“Ç‚İ‚İ‘O‚Íˆ—‚µ‚È‚¢‚ÅƒŠƒ^[ƒ“
+		//ãƒ¢ãƒ‡ãƒ«èª­ã¿è¾¼ã¿å‰ã¯å‡¦ç†ã—ãªã„ã§ãƒªã‚¿ãƒ¼ãƒ³
 		return;
 	}
 
@@ -32200,7 +32239,7 @@ void DSSelectWindowAndCtrl()
 
 	bool doneflag = false;
 
-	//ƒEƒCƒ“ƒhƒE‘I‘ğƒuƒƒbƒN
+	//ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦é¸æŠãƒ–ãƒ­ãƒƒã‚¯
 	{
 		//static int s_currentwndid = 0;
 		//s_currentwndid = 0;
@@ -32224,7 +32263,7 @@ void DSSelectWindowAndCtrl()
 		accelflag = accelaxis1 || accelaxis2;
 		accelbothflag = accelaxis1 && accelaxis2;
 
-		//L1 Button UpiL2, R2 not pushedj
+		//L1 Button Upï¼ˆL2, R2 not pushedï¼‰
 		if ((accelflag == 0) && (curbuttonup >= 1)) {
 			int nextwndid = 0;
 			nextwndid = s_currentwndid + 1;
@@ -32236,15 +32275,15 @@ void DSSelectWindowAndCtrl()
 				nextwndid = MB3D_WND_MAX - 1;
 			}
 
-			SelectNextWindow(nextwndid);//ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ğƒvƒŒ[ƒgˆÊ’u‚ÉˆÚ“®‚·‚é‘O‚ÉŒÄ‚Ôi‚±‚ÌŠÖ”‚Å‚ÍƒRƒ“ƒgƒ[ƒ‹ˆÊ’u‚Éƒ}ƒEƒX‚ÍˆÚ“®‚·‚éj
+			SelectNextWindow(nextwndid);//ãƒã‚¦ã‚¹ã‚«ãƒ¼ã‚½ãƒ«ã‚’ãƒ—ãƒ¬ãƒ¼ãƒˆä½ç½®ã«ç§»å‹•ã™ã‚‹å‰ã«å‘¼ã¶ï¼ˆã“ã®é–¢æ•°ã§ã¯ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ä½ç½®ã«ãƒã‚¦ã‚¹ã¯ç§»å‹•ã™ã‚‹ï¼‰
 
 			doneflag = true;
 		}
 	}
 
-	//R1ƒ‚[ƒh‚ÉŠÖŒW‚È‚­
-	//ƒJƒGƒ‹ƒ{ƒ^ƒ“@ƒvƒŒ[ƒgƒƒjƒ…[‘I‘ğƒuƒƒbƒN
-	//R1ƒ‚[ƒh‚É‚æ‚Á‚Ä‹@”\‚ª•Ï‚í‚éê‡‚É‚Í•ÊŠÖ”‚É‚·‚é
+	//R1ãƒ¢ãƒ¼ãƒ‰ã«é–¢ä¿‚ãªã
+	//ã‚«ã‚¨ãƒ«ãƒœã‚¿ãƒ³ã€€ãƒ—ãƒ¬ãƒ¼ãƒˆãƒ¡ãƒ‹ãƒ¥ãƒ¼é¸æŠãƒ–ãƒ­ãƒƒã‚¯
+	//R1ãƒ¢ãƒ¼ãƒ‰ã«ã‚ˆã£ã¦æ©Ÿèƒ½ãŒå¤‰ã‚ã‚‹å ´åˆã«ã¯åˆ¥é–¢æ•°ã«ã™ã‚‹
 	if (!doneflag) {
 		int frogbuttonid = 3;
 		int platebuttonid = 0;
@@ -32336,7 +32375,7 @@ void DSSelectWindowAndCtrl()
 					s_curaimbarno = nextaimbarno;
 
 
-					SelectNextWindow(MB3D_WND_3D);//ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ğƒvƒŒ[ƒgˆÊ’u‚ÉˆÚ“®‚·‚é‘O‚ÉŒÄ‚Ôi‚±‚ÌŠÖ”‚Å‚ÍƒRƒ“ƒgƒ[ƒ‹ˆÊ’u‚Éƒ}ƒEƒX‚ÍˆÚ“®‚·‚éj
+					SelectNextWindow(MB3D_WND_3D);//ãƒã‚¦ã‚¹ã‚«ãƒ¼ã‚½ãƒ«ã‚’ãƒ—ãƒ¬ãƒ¼ãƒˆä½ç½®ã«ç§»å‹•ã™ã‚‹å‰ã«å‘¼ã¶ï¼ˆã“ã®é–¢æ•°ã§ã¯ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ä½ç½®ã«ãƒã‚¦ã‚¹ã¯ç§»å‹•ã™ã‚‹ï¼‰
 
 					POINT buttonpos;
 					buttonpos = s_spaimbar[s_curaimbarno].dispcenter;
@@ -32357,12 +32396,12 @@ void DSCrossButton(bool firstctrlselect)
 {
 
 	if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
-		//DS device‚ª–³‚¢ê‡‚É‚Í‰½‚à‚¹‚¸‚ÉƒŠƒ^[ƒ“
+		//DS deviceãŒç„¡ã„å ´åˆã«ã¯ä½•ã‚‚ã›ãšã«ãƒªã‚¿ãƒ¼ãƒ³
 		return;
 	}
 
-	//‘I‘ğƒEƒCƒ“ƒhƒEˆË‘¶
-	//\šƒL[ˆ—
+	//é¸æŠã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ä¾å­˜
+	//åå­—ã‚­ãƒ¼å‡¦ç†
 	{
 		if (s_currentwndid == MB3D_WND_3D) {
 			DSCrossButtonSelectUTGUI(firstctrlselect);
@@ -32425,7 +32464,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 	}
 
 	//select control
-	//\šƒL[ˆÚ“®ƒuƒƒbƒN
+	//åå­—ã‚­ãƒ¼ç§»å‹•ãƒ–ãƒ­ãƒƒã‚¯
 	{
 		if ((s_currentwndid >= 0) && (s_currenthwnd != 0)) {
 
@@ -32457,7 +32496,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 			//WS_TABSTOP
 			//VK_TAB
 			//WS_GROUP
-			//‚Ü‚½‚Í
+			//ã¾ãŸã¯
 			//HWND SetFocus(HWND hWnd);
 
 
@@ -32479,7 +32518,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 					if (curbone) {
 						if (parentbutton >= 1) {
 							if ((accelaxis1 >= 1) || (accelaxis2 >= 1)) {
-								//ƒAƒNƒZƒ‹@L2‚Ü‚½‚ÍL3‚ªƒIƒ“‚Ì‚Æ‚«@
+								//ã‚¢ã‚¯ã‚»ãƒ«ã€€L2ã¾ãŸã¯L3ãŒã‚ªãƒ³ã®ã¨ãã€€
 								CBone* upperbranchbone = curbone->GetUpperBranchBone();
 								if (upperbranchbone) {
 									int upperbranchboneno = upperbranchbone->GetBoneNo();
@@ -32511,7 +32550,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 							}
 							else {
 								//sister loop
-								//brother‚ª‚ ‚éê‡@––’[‚Ìbrother‚ÉˆÚ“®
+								//brotherãŒã‚ã‚‹å ´åˆã€€æœ«ç«¯ã®brotherã«ç§»å‹•
 								CBone* brotherbone = curbone->GetBrother();
 								while (brotherbone && brotherbone->GetBrother()) {
 									brotherbone = brotherbone->GetBrother();
@@ -32524,7 +32563,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 									}
 								}
 
-								//ŠK‘w“I‚Æ‚µ‚Ä‚Ìsister, brother‚ª–³‚¢ê‡‚É‚Í–¼‘O‚Æ‚µ‚Ä‚Ìsister, brother‚ğƒ`ƒFƒbƒN‚·‚é
+								//éšå±¤çš„ã¨ã—ã¦ã®sister, brotherãŒç„¡ã„å ´åˆã«ã¯åå‰ã¨ã—ã¦ã®sister, brotherã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹
 								if (changeflag != true) {
 									string strcurbonename = curbone->GetBoneName();
 									string strLeft = "Left";
@@ -32536,7 +32575,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 
 									std::string::size_type leftpos = chkLeft.find(strLeft);
 									if (leftpos != std::string::npos) {
-										//Left‚Ì•”•ª‚ğRight‚É•Ï‚¦‚Äƒ{[ƒ“‚ª‘¶İ‚·‚ê‚Î‚»‚Ìƒ{[ƒ“‚ÉˆÚ“®
+										//Leftã®éƒ¨åˆ†ã‚’Rightã«å¤‰ãˆã¦ãƒœãƒ¼ãƒ³ãŒå­˜åœ¨ã™ã‚Œã°ãã®ãƒœãƒ¼ãƒ³ã«ç§»å‹•
 										chkLeft.replace(leftpos, strLeft.length(), strRight);
 										CBone* rightbone = s_model->GetBoneByName(chkLeft.c_str());
 										if (rightbone) {
@@ -32550,7 +32589,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 									else {
 										std::string::size_type rightpos = chkRight.find(strRight);
 										if (rightpos != std::string::npos) {
-											//Right‚Ì•”•ª‚ğLeft‚É•Ï‚¦‚Äƒ{[ƒ“‚ª‘¶İ‚·‚ê‚Î‚»‚Ìƒ{[ƒ“‚ÉˆÚ“®
+											//Rightã®éƒ¨åˆ†ã‚’Leftã«å¤‰ãˆã¦ãƒœãƒ¼ãƒ³ãŒå­˜åœ¨ã™ã‚Œã°ãã®ãƒœãƒ¼ãƒ³ã«ç§»å‹•
 											chkRight.replace(rightpos, strRight.length(), strLeft);
 											CBone* leftbone = s_model->GetBoneByName(chkRight.c_str());
 											if (leftbone) {
@@ -32568,7 +32607,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 						}
 						else if (childbutton >= 1) {
 							if ((accelaxis1 >= 1) || (accelaxis2 >= 1)) {
-								//ƒAƒNƒZƒ‹@L2‚Ü‚½‚ÍL3‚ªƒIƒ“‚Ì‚Æ‚«@
+								//ã‚¢ã‚¯ã‚»ãƒ«ã€€L2ã¾ãŸã¯L3ãŒã‚ªãƒ³ã®ã¨ãã€€
 								CBone* lowerbranchbone = curbone->GetLowerBranchBone();
 								if (lowerbranchbone) {
 									int lowerbranchboneno = lowerbranchbone->GetBoneNo();
@@ -32600,7 +32639,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 							}
 							else {
 								//brother loop
-								//sister‚Æparent‚Ìchild‚ª‚ ‚éê‡@parent‚Ìchild‚ÉˆÚ“®
+								//sisterã¨parentã®childãŒã‚ã‚‹å ´åˆã€€parentã®childã«ç§»å‹•
 								CBone* sisterbone = curbone->GetSister();
 								if (sisterbone) {
 									CBone* parentbone = curbone->GetParent();
@@ -32617,7 +32656,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 								}
 							}
 
-							//ŠK‘w“I‚Æ‚µ‚Ä‚Ìsister, brother‚ª–³‚¢ê‡‚É‚Í–¼‘O‚Æ‚µ‚Ä‚Ìsister, brother‚ğƒ`ƒFƒbƒN‚·‚é
+							//éšå±¤çš„ã¨ã—ã¦ã®sister, brotherãŒç„¡ã„å ´åˆã«ã¯åå‰ã¨ã—ã¦ã®sister, brotherã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹
 							if (changeflag != true) {
 								string strcurbonename = curbone->GetBoneName();
 								string strLeft = "Left";
@@ -32629,7 +32668,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 
 								std::string::size_type leftpos = chkLeft.find(strLeft);
 								if (leftpos != std::string::npos) {
-									//Left‚Ì•”•ª‚ğRight‚É•Ï‚¦‚Äƒ{[ƒ“‚ª‘¶İ‚·‚ê‚Î‚»‚Ìƒ{[ƒ“‚ÉˆÚ“®
+									//Leftã®éƒ¨åˆ†ã‚’Rightã«å¤‰ãˆã¦ãƒœãƒ¼ãƒ³ãŒå­˜åœ¨ã™ã‚Œã°ãã®ãƒœãƒ¼ãƒ³ã«ç§»å‹•
 									chkLeft.replace(leftpos, strLeft.length(), strRight);
 									CBone* rightbone = s_model->GetBoneByName(chkLeft.c_str());
 									if (rightbone) {
@@ -32643,7 +32682,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 								else {
 									std::string::size_type rightpos = chkRight.find(strRight);
 									if (rightpos != std::string::npos) {
-										//Right‚Ì•”•ª‚ğLeft‚É•Ï‚¦‚Äƒ{[ƒ“‚ª‘¶İ‚·‚ê‚Î‚»‚Ìƒ{[ƒ“‚ÉˆÚ“®
+										//Rightã®éƒ¨åˆ†ã‚’Leftã«å¤‰ãˆã¦ãƒœãƒ¼ãƒ³ãŒå­˜åœ¨ã™ã‚Œã°ãã®ãƒœãƒ¼ãƒ³ã«ç§»å‹•
 										chkRight.replace(rightpos, strRight.length(), strLeft);
 										CBone* leftbone = s_model->GetBoneByName(chkRight.c_str());
 										if (leftbone) {
@@ -32663,8 +32702,8 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 								s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
 
 
-								//ƒ}ƒEƒX‚ªƒ^ƒCƒ€ƒ‰ƒCƒ“ã‚É‚ ‚Á‚½ê‡‚É‚¾‚¯ƒ}ƒEƒX‚ÌˆÊ’u‚ğ‘I‘ğˆÊ’u‚ÖˆÚ“®
-								//‘¼‚Ìƒ_ƒCƒAƒƒO‚È‚Ç‚ğİ’è’†‚ÉƒJ[ƒ\ƒ‹‚ªƒ^ƒCƒ€ƒ‰ƒCƒ“‚É”ò‚Î‚È‚¢‚æ‚¤‚ÉB
+								//ãƒã‚¦ã‚¹ãŒã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ä¸Šã«ã‚ã£ãŸå ´åˆã«ã ã‘ãƒã‚¦ã‚¹ã®ä½ç½®ã‚’é¸æŠä½ç½®ã¸ç§»å‹•
+								//ä»–ã®ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãªã©ã‚’è¨­å®šä¸­ã«ã‚«ãƒ¼ã‚½ãƒ«ãŒã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã«é£›ã°ãªã„ã‚ˆã†ã«ã€‚
 
 								POINT cursorpos;
 								GetCursorPos(&cursorpos);
@@ -32717,7 +32756,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 	}
 
 	//select control
-	//\šƒL[ˆÚ“®ƒuƒƒbƒN
+	//åå­—ã‚­ãƒ¼ç§»å‹•ãƒ–ãƒ­ãƒƒã‚¯
 	{
 		if ((s_currentwndid == 1) && (s_currenthwnd != 0)) {
 
@@ -32750,7 +32789,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 			//WS_TABSTOP
 			//VK_TAB
 			//WS_GROUP
-			//‚Ü‚½‚Í
+			//ã¾ãŸã¯
 			//HWND SetFocus(HWND hWnd);
 
 			//static int s_curdsutguikind = 0;
@@ -32782,7 +32821,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 
 
 					//############################################################################################################################
-					//STL.size()‚Ì•Ô‚è’l‚ÍunsignedB-1‚Æ‚Ì”äŠr‚ÌÛ‚É‚Í0xFFFFFFFF‚Æsize()‚Æ‚Ì”äŠr‚É‚È‚èAˆÓ}‚µ‚È‚¢Œ‹‰Ê‚ğµ‚«‚â‚·‚¢Bsigned‚É‘ã“ü‚µ‚Ä‚©‚ç-1‚Æ”äŠr‚·‚éB
+					//STL.size()ã®è¿”ã‚Šå€¤ã¯unsignedã€‚-1ã¨ã®æ¯”è¼ƒã®éš›ã«ã¯0xFFFFFFFFã¨size()ã¨ã®æ¯”è¼ƒã«ãªã‚Šã€æ„å›³ã—ãªã„çµæœã‚’æ‹›ãã‚„ã™ã„ã€‚signedã«ä»£å…¥ã—ã¦ã‹ã‚‰-1ã¨æ¯”è¼ƒã™ã‚‹ã€‚
 					//############################################################################################################################
 					int guisize0 = (int)s_dsutgui0.size();
 					int guisize1 = (int)s_dsutgui1.size();
@@ -32794,13 +32833,13 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 
 						if (parentbutton >= 1) {
 							curdsutguino--;
-							int guigroupid = curdsutguikind;//guikind‚©‚çSPGUISW?_*‚Ö‚Ì•ÏŠ·Bguikind(1)‚ªSPGUISW_DISP_AND_LIMITS(1)‚ÅAguikind(3)‚ªSPGUISW_VSYNC_AND_REFPOS(3)
+							int guigroupid = curdsutguikind;//guikindã‹ã‚‰SPGUISW?_*ã¸ã®å¤‰æ›ã€‚guikind(1)ãŒSPGUISW_DISP_AND_LIMITS(1)ã§ã€guikind(3)ãŒSPGUISW_VSYNC_AND_REFPOS(3)
 							switch (guigroupid) {
 							case SPGUISW_CAMERA_AND_IK:
 							{
 								if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
 									if (curdsutguino >= SPR_CAM_MAX) {
-										curdsutguino = 0;//size >= 1‚ÍŠÖ”æ“ª‚ÅŠm”F@ring
+										curdsutguino = 0;//size >= 1ã¯é–¢æ•°å…ˆé ­ã§ç¢ºèªã€€ring
 									}
 									else if (curdsutguino < 0) {
 										curdsutguino = SPR_CAM_MAX - 1;//ring
@@ -32818,7 +32857,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							{
 								if (s_spguisw[SPGUISW_DISP_AND_LIMITS].state) {
 									if (curdsutguino >= guisize0) {
-										curdsutguino = 0;//size >= 1‚ÍŠÖ”æ“ª‚ÅŠm”F@ring
+										curdsutguino = 0;//size >= 1ã¯é–¢æ•°å…ˆé ­ã§ç¢ºèªã€€ring
 									}
 									else if (curdsutguino < 0) {
 										curdsutguino = guisize0 - 1;//ring
@@ -32837,7 +32876,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							{
 								if (s_spguisw[SPGUISW_BRUSHPARAMS].state) {
 									if (curdsutguino >= guisize1) {
-										curdsutguino = 0;//size >= 1‚ÍŠÖ”æ“ª‚ÅŠm”F@ring
+										curdsutguino = 0;//size >= 1ã¯é–¢æ•°å…ˆé ­ã§ç¢ºèªã€€ring
 									}
 									else if (curdsutguino < 0) {
 										curdsutguino = guisize1 - 1;//ring
@@ -32856,7 +32895,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							{
 								if (s_spguisw[SPGUISW_BULLETPHYSICS].state) {
 									if (curdsutguino >= guisize2) {
-										curdsutguino = 0;//size >= 1‚ÍŠÖ”æ“ª‚ÅŠm”F@ring
+										curdsutguino = 0;//size >= 1ã¯é–¢æ•°å…ˆé ­ã§ç¢ºèªã€€ring
 									}
 									else if (curdsutguino < 0) {
 										curdsutguino = guisize2 - 1;//ring
@@ -32875,7 +32914,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							{
 								if (s_spguisw[SPGUISW_VSYNC_AND_REFPOS].state) {
 									if (curdsutguino >= guisize3) {
-										curdsutguino = 0;//size >= 1‚ÍŠÖ”æ“ª‚ÅŠm”F ring
+										curdsutguino = 0;//size >= 1ã¯é–¢æ•°å…ˆé ­ã§ç¢ºèª ring
 									}
 									else if (curdsutguino < 0) {
 										curdsutguino = guisize3 - 1;//ring
@@ -32920,7 +32959,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 									//break;
 								}
 								dbgcnt++;
-								if (dbgcnt >= (SPGUISW_VSYNC_AND_REFPOS - SPGUISW_CAMERA_AND_IK + 1)) {//1ü•ªƒ`ƒFƒbƒN‚µ‚½‚ç”²‚¯‚é
+								if (dbgcnt >= (SPGUISW_VSYNC_AND_REFPOS - SPGUISW_CAMERA_AND_IK + 1)) {//1å‘¨åˆ†ãƒã‚§ãƒƒã‚¯ã—ãŸã‚‰æŠœã‘ã‚‹
 									changeflag = false;
 									chkflag = true;
 									break;
@@ -32929,20 +32968,20 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 						}
 						else if (childbutton >= 1) {
 							//if ((accelaxis1 >= 1) || (accelaxis2 >= 1)) {
-							//	//ƒAƒNƒZƒ‹@L2‚Ü‚½‚ÍL3‚ªƒIƒ“‚Ì‚Æ‚«@
+							//	//ã‚¢ã‚¯ã‚»ãƒ«ã€€L2ã¾ãŸã¯L3ãŒã‚ªãƒ³ã®ã¨ãã€€
 
 							//}
 							//else {
 
 							//}
 							curdsutguino++;
-							int guigroupid = curdsutguikind;//guikind‚©‚çSPGUISW?_*‚Ö‚Ì•ÏŠ·B
+							int guigroupid = curdsutguikind;//guikindã‹ã‚‰SPGUISW?_*ã¸ã®å¤‰æ›ã€‚
 							switch (guigroupid) {
 							case SPGUISW_CAMERA_AND_IK:
 							{
 								if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
 									if (curdsutguino >= SPR_CAM_MAX) {
-										curdsutguino = 0;//size >= 1‚ÍŠÖ”æ“ª‚ÅŠm”F ring
+										curdsutguino = 0;//size >= 1ã¯é–¢æ•°å…ˆé ­ã§ç¢ºèª ring
 									}
 									else if (curdsutguino < 0) {
 										curdsutguino = SPR_CAM_MAX - 1;//ring
@@ -32961,7 +33000,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							{
 								if (s_spguisw[SPGUISW_DISP_AND_LIMITS].state) {
 									if (curdsutguino >= guisize0) {
-										curdsutguino = 0;//size >= 1‚ÍŠÖ”æ“ª‚ÅŠm”F@ring
+										curdsutguino = 0;//size >= 1ã¯é–¢æ•°å…ˆé ­ã§ç¢ºèªã€€ring
 									}
 									else if (curdsutguino < 0) {
 										curdsutguino = guisize0 - 1;//ring
@@ -32980,7 +33019,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							{
 								if (s_spguisw[SPGUISW_BRUSHPARAMS].state) {
 									if (curdsutguino >= guisize1) {
-										curdsutguino = 0;//size >= 1‚ÍŠÖ”æ“ª‚ÅŠm”F@ring
+										curdsutguino = 0;//size >= 1ã¯é–¢æ•°å…ˆé ­ã§ç¢ºèªã€€ring
 									}
 									else if (curdsutguino < 0) {
 										curdsutguino = guisize1 - 1;//ring
@@ -32999,7 +33038,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							{
 								if (s_spguisw[SPGUISW_BULLETPHYSICS].state) {
 									if (curdsutguino >= guisize2) {
-										curdsutguino = 0;//size >= 1‚ÍŠÖ”æ“ª‚ÅŠm”F@ring
+										curdsutguino = 0;//size >= 1ã¯é–¢æ•°å…ˆé ­ã§ç¢ºèªã€€ring
 									}
 									else if (curdsutguino < 0) {
 										curdsutguino = guisize2 - 1;//ring
@@ -33018,7 +33057,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 							{
 								if (s_spguisw[SPGUISW_VSYNC_AND_REFPOS].state) {
 									if (curdsutguino >= guisize3) {
-										curdsutguino = 0;//size >= 1‚ÍŠÖ”æ“ª‚ÅŠm”F@ring
+										curdsutguino = 0;//size >= 1ã¯é–¢æ•°å…ˆé ­ã§ç¢ºèªã€€ring
 									}
 									else if (curdsutguino < 0) {
 										curdsutguino = guisize3 - 1;//ring
@@ -33064,7 +33103,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 									//break;
 								}
 								dbgcnt++;
-								if (dbgcnt >= (SPGUISW_VSYNC_AND_REFPOS - SPGUISW_CAMERA_AND_IK + 1)) {//1ü•ªƒ`ƒFƒbƒN‚µ‚½‚ç”²‚¯‚é
+								if (dbgcnt >= (SPGUISW_VSYNC_AND_REFPOS - SPGUISW_CAMERA_AND_IK + 1)) {//1å‘¨åˆ†ãƒã‚§ãƒƒã‚¯ã—ãŸã‚‰æŠœã‘ã‚‹
 									changeflag = false;
 									chkflag = true;
 									break;
@@ -33091,7 +33130,7 @@ void DSCrossButtonSelectUTGUI(bool firstctrlselect)
 
 						/*
 						//#####################################################################################################
-						//ƒvƒŒ[ƒgã‚ÅZƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½‚Æ‚«‚Éƒ}ƒEƒX‚ªƒRƒ“ƒgƒ[ƒ‹‚Ö”ò‚ÔBƒvƒŒ[ƒgã‚Éƒ}ƒEƒX‚ªc‚Á‚½•û‚ª•Ö—˜‚¾‚Á‚½‚Ì‚ÅƒRƒƒ“ƒgƒAƒEƒg
+						//ãƒ—ãƒ¬ãƒ¼ãƒˆä¸Šã§ã€‡ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ãŸã¨ãã«ãƒã‚¦ã‚¹ãŒã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã¸é£›ã¶ã€‚ãƒ—ãƒ¬ãƒ¼ãƒˆä¸Šã«ãƒã‚¦ã‚¹ãŒæ®‹ã£ãŸæ–¹ãŒä¾¿åˆ©ã ã£ãŸã®ã§ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
 						//#####################################################################################################
 						*
 						*
@@ -33358,7 +33397,7 @@ void DSCrossButtonSelectEulLimitCtrls(bool firstctrlselect)
 	}
 
 	//select control
-	//\šƒL[ˆÚ“®ƒuƒƒbƒN
+	//åå­—ã‚­ãƒ¼ç§»å‹•ãƒ–ãƒ­ãƒƒã‚¯
 	{
 		if ((s_currentwndid == MB3D_WND_SIDE) && (s_currenthwnd != 0)) {
 
@@ -33391,7 +33430,7 @@ void DSCrossButtonSelectEulLimitCtrls(bool firstctrlselect)
 			//WS_TABSTOP
 			//VK_TAB
 			//WS_GROUP
-			//‚Ü‚½‚Í
+			//ã¾ãŸã¯
 			//HWND SetFocus(HWND hWnd);
 
 			//static int s_curdsutguikind = 0;
@@ -33531,7 +33570,7 @@ void DSCrossButtonSelectRetargetCtrls(bool firstctrlselect)
 	}
 
 	//select control
-	//\šƒL[ˆÚ“®ƒuƒƒbƒN
+	//åå­—ã‚­ãƒ¼ç§»å‹•ãƒ–ãƒ­ãƒƒã‚¯
 	{
 		if ((s_currentwndid == MB3D_WND_SIDE) && (s_currenthwnd != 0)) {
 
@@ -33564,7 +33603,7 @@ void DSCrossButtonSelectRetargetCtrls(bool firstctrlselect)
 			//WS_TABSTOP
 			//VK_TAB
 			//WS_GROUP
-			//‚Ü‚½‚Í
+			//ã¾ãŸã¯
 			//HWND SetFocus(HWND hWnd);
 
 			//static int s_curdsutguikind = 0;
@@ -33723,7 +33762,7 @@ void DSCrossButtonSelectDampCtrls(bool firstctrlselect)
 	}
 
 	//select control
-	//\šƒL[ˆÚ“®ƒuƒƒbƒN
+	//åå­—ã‚­ãƒ¼ç§»å‹•ãƒ–ãƒ­ãƒƒã‚¯
 	{
 		if ((s_currentwndid == MB3D_WND_SIDE) && (s_currenthwnd != 0)) {
 
@@ -33756,7 +33795,7 @@ void DSCrossButtonSelectDampCtrls(bool firstctrlselect)
 			//WS_TABSTOP
 			//VK_TAB
 			//WS_GROUP
-			//‚Ü‚½‚Í
+			//ã¾ãŸã¯
 			//HWND SetFocus(HWND hWnd);
 
 			//static int s_curdsutguikind = 0;
@@ -33916,7 +33955,7 @@ void DSCrossButtonSelectGPCtrls(bool firstctrlselect)
 	}
 
 	//select control
-	//\šƒL[ˆÚ“®ƒuƒƒbƒN
+	//åå­—ã‚­ãƒ¼ç§»å‹•ãƒ–ãƒ­ãƒƒã‚¯
 	{
 		if ((s_currentwndid == MB3D_WND_SIDE) && (s_currenthwnd != 0)) {
 
@@ -33949,7 +33988,7 @@ void DSCrossButtonSelectGPCtrls(bool firstctrlselect)
 			//WS_TABSTOP
 			//VK_TAB
 			//WS_GROUP
-			//‚Ü‚½‚Í
+			//ã¾ãŸã¯
 			//HWND SetFocus(HWND hWnd);
 
 			//static int s_curdsutguikind = 0;
@@ -34108,7 +34147,7 @@ void DSCrossButtonSelectImpulseCtrls(bool firstctrlselect)
 	}
 
 	//select control
-	//\šƒL[ˆÚ“®ƒuƒƒbƒN
+	//åå­—ã‚­ãƒ¼ç§»å‹•ãƒ–ãƒ­ãƒƒã‚¯
 	{
 		if ((s_currentwndid == MB3D_WND_SIDE) && (s_currenthwnd != 0)) {
 
@@ -34141,7 +34180,7 @@ void DSCrossButtonSelectImpulseCtrls(bool firstctrlselect)
 			//WS_TABSTOP
 			//VK_TAB
 			//WS_GROUP
-			//‚Ü‚½‚Í
+			//ã¾ãŸã¯
 			//HWND SetFocus(HWND hWnd);
 
 			//static int s_curdsutguikind = 0;
@@ -34301,7 +34340,7 @@ void DSCrossButtonSelectRigidCtrls(bool firstctrlselect)
 	}
 
 	//select control
-	//\šƒL[ˆÚ“®ƒuƒƒbƒN
+	//åå­—ã‚­ãƒ¼ç§»å‹•ãƒ–ãƒ­ãƒƒã‚¯
 	{
 		if ((s_currentwndid == MB3D_WND_SIDE) && (s_currenthwnd != 0)) {
 
@@ -34334,7 +34373,7 @@ void DSCrossButtonSelectRigidCtrls(bool firstctrlselect)
 			//WS_TABSTOP
 			//VK_TAB
 			//WS_GROUP
-			//‚Ü‚½‚Í
+			//ã¾ãŸã¯
 			//HWND SetFocus(HWND hWnd);
 
 			//static int s_curdsutguikind = 0;
@@ -34497,7 +34536,7 @@ void DSCrossButtonSelectToolCtrls(bool firstctrlselect)
 	}
 
 	//select control
-	//\šƒL[ˆÚ“®ƒuƒƒbƒN
+	//åå­—ã‚­ãƒ¼ç§»å‹•ãƒ–ãƒ­ãƒƒã‚¯
 	{
 		if ((s_currentwndid == MB3D_WND_TOOL) && (s_currenthwnd != 0)) {
 
@@ -34530,7 +34569,7 @@ void DSCrossButtonSelectToolCtrls(bool firstctrlselect)
 			//WS_TABSTOP
 			//VK_TAB
 			//WS_GROUP
-			//‚Ü‚½‚Í
+			//ã¾ãŸã¯
 			//HWND SetFocus(HWND hWnd);
 
 			//static int s_curdsutguikind = 0;
@@ -34660,7 +34699,7 @@ void DSCrossButtonSelectPlayerBtns(bool firstctrlselect)
 
 
 	//select control
-	//\šƒL[ˆÚ“®ƒuƒƒbƒN
+	//åå­—ã‚­ãƒ¼ç§»å‹•ãƒ–ãƒ­ãƒƒã‚¯
 	{
 		if ((s_currentwndid == MB3D_WND_TIMELINE) && (s_currenthwnd != 0)) {
 
@@ -34693,7 +34732,7 @@ void DSCrossButtonSelectPlayerBtns(bool firstctrlselect)
 			//WS_TABSTOP
 			//VK_TAB
 			//WS_GROUP
-			//‚Ü‚½‚Í
+			//ã¾ãŸã¯
 			//HWND SetFocus(HWND hWnd);
 
 			//static int s_curdsutguikind = 0;
@@ -34879,12 +34918,12 @@ void DSAxisRMainMenuBar()
 	if (changeflag == true) {
 
 		if (g_undertrackingRMenu == 1) {
-			//‘½dƒgƒ‰ƒbƒNƒ|ƒbƒvƒAƒbƒv‹Ö~i‘½dƒ|ƒbƒvƒAƒbƒv‚·‚é‚ÆƒvƒƒOƒ‰ƒ€‚©‚çƒ}ƒEƒXˆÚ“®‚Å‚«‚È‚­‚È‚éj
+			//å¤šé‡ãƒˆãƒ©ãƒƒã‚¯ãƒãƒƒãƒ—ã‚¢ãƒƒãƒ—ç¦æ­¢ï¼ˆå¤šé‡ãƒãƒƒãƒ—ã‚¢ãƒƒãƒ—ã™ã‚‹ã¨ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã‹ã‚‰ãƒã‚¦ã‚¹ç§»å‹•ã§ããªããªã‚‹ï¼‰
 			return;
 		}
 
 
-		SelectNextWindow(MB3D_WND_MAIN);//MainMenuAimBarWnd‚ğƒnƒCƒ‰ƒCƒg
+		SelectNextWindow(MB3D_WND_MAIN);//MainMenuAimBarWndã‚’ãƒã‚¤ãƒ©ã‚¤ãƒˆ
 
 
 		g_currentsubmenuid = nextsubmenuid;
@@ -34902,7 +34941,7 @@ void DSAxisRMainMenuBar()
 				curmenuitemid = ::GetMenuItemID(s_cursubmenu, 0);
 				if (curmenuitemid >= 0) {
 					RECT rc;
-					GetMenuItemRect(s_mainhwnd, mainmenu, menuno, &rc);//rc‚ÍƒXƒNƒŠ[ƒ“À•W
+					GetMenuItemRect(s_mainhwnd, mainmenu, menuno, &rc);//rcã¯ã‚¹ã‚¯ãƒªãƒ¼ãƒ³åº§æ¨™
 					g_submenuwidth = rc.right - rc.left;//org:140
 
 					::SetCursorPos(rc.left, rc.bottom + 22);
@@ -34926,7 +34965,7 @@ void DSAxisRMainMenuBar()
 		//	if (curmenuitemid >= 0) {
 		//		
 		//		//::SendMessage(s_mainhwnd, WM_NOTIFY, 0, (LPARAM)&nmtoolbara);
-		//		////::SendMessage(s_mainhwnd, WM_COMMAND, curmenuitemid, 0);//‘I‘ğŒˆ’è‚ÌƒRƒ}ƒ“ƒh
+		//		////::SendMessage(s_mainhwnd, WM_COMMAND, curmenuitemid, 0);//é¸æŠæ±ºå®šæ™‚ã®ã‚³ãƒãƒ³ãƒ‰
 
 		//		RECT rc;
 		//		TPMPARAMS tpm;
@@ -34944,11 +34983,11 @@ void DSAxisRMainMenuBar()
 		//		InterlockedExchange(&g_undertrackingRMenu, 1);
 
 		//		//#################
-		//		//‘I‘ğŒˆ’è¬Œ÷—á‚»‚Ì‚Q
+		//		//é¸æŠæ±ºå®šæˆåŠŸä¾‹ãã®ï¼’
 		//		//#################
-		//		//‘æ2€–ÚiƒCƒ“ƒfƒbƒNƒX’l = 1, ID = 0x2711j‚ğ‘I‘ğ‚µ‚½‚Æ‚±‚ëA
+		//		//ç¬¬2é …ç›®ï¼ˆã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ = 1, ID = 0x2711ï¼‰ã‚’é¸æŠã—ãŸã¨ã“ã‚ã€
 		//		//wParam = 0x00012711
-		//		//‚Ì‚æ‚¤‚ÉAãˆÊ2ƒoƒCƒg‚ÉƒCƒ“ƒfƒbƒNƒX’l‚ªA‰ºˆÊ2ƒoƒCƒg‚ÉID‚ª“ü‚è‚Ü‚·B
+		//		//ã®ã‚ˆã†ã«ã€ä¸Šä½2ãƒã‚¤ãƒˆã«ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ãŒã€ä¸‹ä½2ãƒã‚¤ãƒˆã«IDãŒå…¥ã‚Šã¾ã™ã€‚
 		//		//WPARAM wparam;
 		//		//wparam = (g_currentsubmenuid << 16) | curmenuitemid;
 		//		//LPARAM lparam;
@@ -34967,7 +35006,7 @@ void DSAxisRMainMenuBar()
 		//		//	rc.left, rc.bottom, s_mainhwnd, &tpm);//
 		//		//SetCapture(s_3dwnd);
 
-		//		SetForegroundWindow(s_mainhwnd);//‚±‚Ìˆ—‚ğ‚µ‚È‚¢‚Æ”ÍˆÍŠOƒNƒŠƒbƒN‚ÅPopup‚ª•Â‚¶‚È‚¢
+		//		SetForegroundWindow(s_mainhwnd);//ã“ã®å‡¦ç†ã‚’ã—ãªã„ã¨ç¯„å›²å¤–ã‚¯ãƒªãƒƒã‚¯ã§PopupãŒé–‰ã˜ãªã„
 
 		//		int retmenuid = ::TrackPopupMenu(s_cursubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, rc.left, rc.bottom, 0, s_mainhwnd, NULL);
 
@@ -35099,23 +35138,23 @@ void DSAxisLSelectingPopupMenu()
 		LPTSTR  dwTypeData;
 		UINT    cch;
 	} MENUITEMINFO, FAR* LPMENUITEMINFO;
-	cbSize ‚ÍA‚±‚Ì\‘¢‘Ì‚ÌƒTƒCƒY‚ğƒoƒCƒg’PˆÊ
+	cbSize ã¯ã€ã“ã®æ§‹é€ ä½“ã®ã‚µã‚¤ã‚ºã‚’ãƒã‚¤ãƒˆå˜ä½
 
 
-	fState ‚ÍAƒƒjƒ…[€–Ú‚Ìó‘Ô‚ğ•\‚·’è”‚ğ‘g‚İ‡‚í‚¹‚Äw’è‚µ‚Ü‚·
-	’è”‚ÍAŸ‚Ì‚à‚Ì‚ğw’è‚Å‚«‚Ü‚·
-	’è”	‰ğà
-	MFS_CHECKED	€–Ú‚ğƒ`ƒFƒbƒN‚·‚é
-	MFS_DEFAULT	€–Ú‚ÍƒfƒtƒHƒ‹ƒg‚Å‚ ‚é
-	MFS_DISABLED	€–Ú‚ğ–³Œøó‘Ô‚É‚·‚é
-	MFS_ENABLED	€–Ú‚ğ—LŒøó‘Ô‚É‚·‚éiƒfƒtƒHƒ‹ƒgj
-	MFS_GRAYED	€–Ú‚ğƒOƒŒ[ó‘Ô‚É‚·‚é
-	MFS_HILITE	€–Ú‚ğƒnƒCƒ‰ƒCƒgó‘Ô‚É‚·‚é//#################
-	MFS_UNCHECKED	€–Ú‚Ìƒ`ƒFƒbƒN‚ğŠO‚·
-	MFS_UNHILITE	€–Ú‚ÌƒnƒCƒ‰ƒCƒg‚ğíœ‚·‚é
+	fState ã¯ã€ãƒ¡ãƒ‹ãƒ¥ãƒ¼é …ç›®ã®çŠ¶æ…‹ã‚’è¡¨ã™å®šæ•°ã‚’çµ„ã¿åˆã‚ã›ã¦æŒ‡å®šã—ã¾ã™
+	å®šæ•°ã¯ã€æ¬¡ã®ã‚‚ã®ã‚’æŒ‡å®šã§ãã¾ã™
+	å®šæ•°	è§£èª¬
+	MFS_CHECKED	é …ç›®ã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹
+	MFS_DEFAULT	é …ç›®ã¯ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã§ã‚ã‚‹
+	MFS_DISABLED	é …ç›®ã‚’ç„¡åŠ¹çŠ¶æ…‹ã«ã™ã‚‹
+	MFS_ENABLED	é …ç›®ã‚’æœ‰åŠ¹çŠ¶æ…‹ã«ã™ã‚‹ï¼ˆãƒ‡ãƒ•ã‚©ãƒ«ãƒˆï¼‰
+	MFS_GRAYED	é …ç›®ã‚’ã‚°ãƒ¬ãƒ¼çŠ¶æ…‹ã«ã™ã‚‹
+	MFS_HILITE	é …ç›®ã‚’ãƒã‚¤ãƒ©ã‚¤ãƒˆçŠ¶æ…‹ã«ã™ã‚‹//#################
+	MFS_UNCHECKED	é …ç›®ã®ãƒã‚§ãƒƒã‚¯ã‚’å¤–ã™
+	MFS_UNHILITE	é …ç›®ã®ãƒã‚¤ãƒ©ã‚¤ãƒˆã‚’å‰Šé™¤ã™ã‚‹
 
-	fByPosition ‚ª TRUE ‚È‚ç‚Î uItem ‚ÍƒCƒ“ƒfƒbƒNƒX‚¾‚Æ”»’f‚µ
-	FALSE ‚È‚ç‚ÎAuItem ‚ªƒƒjƒ…[ƒAƒCƒeƒ€‚Ì ID ‚Å‚ ‚é‚Æ”»’f‚³‚ê‚Ü‚·
+	fByPosition ãŒ TRUE ãªã‚‰ã° uItem ã¯ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã ã¨åˆ¤æ–­ã—
+	FALSE ãªã‚‰ã°ã€uItem ãŒãƒ¡ãƒ‹ãƒ¥ãƒ¼ã‚¢ã‚¤ãƒ†ãƒ ã® ID ã§ã‚ã‚‹ã¨åˆ¤æ–­ã•ã‚Œã¾ã™
 
 	BOOL SetMenuItemInfo(
 		HMENU hMenu , UINT uItem ,
@@ -35172,54 +35211,54 @@ void DSAxisLSelectingPopupMenu()
 	//					MENUITEM "bvh2FBX",                     ID_FILE_BVH2FBX
 	//					MENUITEM "Export bnt",                  ID_FILE_EXPORTBNT
 	//				END
-	//				POPUP "•\¦(disp)"
+	//				POPUP "è¡¨ç¤º(disp)"
 	//				BEGIN
-	//					MENUITEM "ƒ‚[ƒVƒ‡ƒ“ƒEƒCƒ“ƒhƒE(motion)",          ID_DISPMW40002
-	//					MENUITEM "ƒc[ƒ‹ƒEƒCƒ“ƒhƒE(tool)",              4007
-	//					MENUITEM "ƒ‚ƒfƒ‹ƒpƒlƒ‹(model)",               40026
-	//					MENUITEM "ƒIƒuƒWƒFƒNƒgƒpƒlƒ‹(object)",           40012
-	//					MENUITEM "’n–ÊƒIƒuƒWƒFƒNƒg(ground)",            ID_DISPGROUND
+	//					MENUITEM "ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦(motion)",          ID_DISPMW40002
+	//					MENUITEM "ãƒ„ãƒ¼ãƒ«ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦(tool)",              4007
+	//					MENUITEM "ãƒ¢ãƒ‡ãƒ«ãƒ‘ãƒãƒ«(model)",               40026
+	//					MENUITEM "ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãƒ‘ãƒãƒ«(object)",           40012
+	//					MENUITEM "åœ°é¢ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ(ground)",            ID_DISPGROUND
 	//				END
-	//				POPUP "ƒ‚[ƒVƒ‡ƒ“(motion)"
+	//				POPUP "ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³(motion)"
 	//				BEGIN
-	//					MENUITEM "V‹K‹óƒ‚[ƒVƒ‡ƒ“(new empty)",         40004
-	//					MENUITEM "•ÒW’†ƒ‚[ƒVƒ‡ƒ“‚Ìíœ(del under editting)", 40006
+	//					MENUITEM "æ–°è¦ç©ºãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³(new empty)",         40004
+	//					MENUITEM "ç·¨é›†ä¸­ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®å‰Šé™¤(del under editting)", 40006
 	//					MENUITEM SEPARATOR
-	//					POPUP "ƒ‚[ƒVƒ‡ƒ“‚Ì‘I‘ğ(select)"
+	//					POPUP "ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®é¸æŠ(select)"
 	//					BEGIN
 	//						MENUITEM "PlacingFolder",               ID_40062
 	//					END
 	//				END
-	//				POPUP "ƒ‚ƒfƒ‹(model)"
+	//				POPUP "ãƒ¢ãƒ‡ãƒ«(model)"
 	//				BEGIN
-	//					MENUITEM "•ÒW’†‚Ìƒ‚ƒfƒ‹‚ğíœ(del under editting)", ID_DELMODEL
-	//					MENUITEM "‘Sƒ‚ƒfƒ‹íœ(del all)",             ID_DELALLMODEL
+	//					MENUITEM "ç·¨é›†ä¸­ã®ãƒ¢ãƒ‡ãƒ«ã‚’å‰Šé™¤(del under editting)", ID_DELMODEL
+	//					MENUITEM "å…¨ãƒ¢ãƒ‡ãƒ«å‰Šé™¤(del all)",             ID_DELALLMODEL
 	//					MENUITEM SEPARATOR
-	//					POPUP "ƒ‚ƒfƒ‹‚Ì‘I‘ğ(select)"
+	//					POPUP "ãƒ¢ãƒ‡ãƒ«ã®é¸æŠ(select)"
 	//					BEGIN
 	//						MENUITEM "PlacingFolder",               0
 	//					END
 	//				END
-	//				POPUP "•ÒWE•ÏŠ·(edit, conv)"
+	//				POPUP "ç·¨é›†ãƒ»å¤‰æ›(edit, conv)"
 	//				BEGIN
-	//					MENUITEM "ƒ{[ƒ“²‚ğX‚ÉÄŒvZ(RecalcAxisX)",     ID_40047
-	//					MENUITEM "ƒ‚[ƒVƒ‡ƒ“‚ÌƒŠƒ^[ƒQƒbƒg(retarget)",      ID_40048
-	//					MENUITEM "ƒIƒCƒ‰[Šp@Šp“x§ŒÀ(limit euler)",     ID_40049
-	//					MENUITEM "ƒ{[ƒ“À•W²‰ñ“](rot axis)",          ID_40050
+	//					MENUITEM "ãƒœãƒ¼ãƒ³è»¸ã‚’Xã«å†è¨ˆç®—(RecalcAxisX)",     ID_40047
+	//					MENUITEM "ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆ(retarget)",      ID_40048
+	//					MENUITEM "ã‚ªã‚¤ãƒ©ãƒ¼è§’ã€€è§’åº¦åˆ¶é™(limit euler)",     ID_40049
+	//					MENUITEM "ãƒœãƒ¼ãƒ³åº§æ¨™è»¸å›è»¢(rot axis)",          ID_40050
 	//				END
-	//				POPUP "„‘Ìİ’èØ‚è‘Ö‚¦(select rigid)"
-	//				BEGIN
-	//					MENUITEM "PlacingFolder",               0
-	//				END
-	//				POPUP "ragdoll„‘Ì‘I‘ğ(select ragdoll)"
+	//				POPUP "å‰›ä½“è¨­å®šåˆ‡ã‚Šæ›¿ãˆ(select rigid)"
 	//				BEGIN
 	//					MENUITEM "PlacingFolder",               0
 	//				END
-	//				POPUP "ragdollƒ‚[ƒt‘I‘ğ(ragdoll morph)"
+	//				POPUP "ragdollå‰›ä½“é¸æŠ(select ragdoll)"
 	//				BEGIN
 	//					MENUITEM "PlacingFolder",               0
 	//				END
-	//				POPUP "Imp‘I‘ğ(impulse)"
+	//				POPUP "ragdollãƒ¢ãƒ¼ãƒ•é¸æŠ(ragdoll morph)"
+	//				BEGIN
+	//					MENUITEM "PlacingFolder",               0
+	//				END
+	//				POPUP "Impé¸æŠ(impulse)"
 	//				BEGIN
 	//					MENUITEM "PlacingFolder",               64500
 	//				END
@@ -35241,9 +35280,9 @@ void DSAxisLSelectingPopupMenu()
 	//			BEGIN
 	//				POPUP "RMenu2"
 	//				BEGIN
-	//					MENUITEM "‘Sƒ{[ƒ“(all bones)",             ID_RMENU2_40051
-	//					MENUITEM "‘I‘ğƒ{[ƒ“‚P‚Â(one bone)",           ID_RMENU2_40052
-	//					MENUITEM "‘I‘ğƒ{[ƒ“‚Æq‹Ÿƒ{[ƒ“(selected and children)", ID_RMENU2_40053
+	//					MENUITEM "å…¨ãƒœãƒ¼ãƒ³(all bones)",             ID_RMENU2_40051
+	//					MENUITEM "é¸æŠãƒœãƒ¼ãƒ³ï¼‘ã¤(one bone)",           ID_RMENU2_40052
+	//					MENUITEM "é¸æŠãƒœãƒ¼ãƒ³ã¨å­ä¾›ãƒœãƒ¼ãƒ³(selected and children)", ID_RMENU2_40053
 	//				END
 	//			END
 
@@ -35251,8 +35290,8 @@ void DSAxisLSelectingPopupMenu()
 	//			BEGIN
 	//				POPUP "RMenu3"
 	//				BEGIN
-	//					MENUITEM "Rig‚Ìİ’è(set)",                 ID_RMENU3_RIG40055
-	//					MENUITEM "Rig‚ÌÀs(run)",                 ID_RMENU3_RIG40056
+	//					MENUITEM "Rigã®è¨­å®š(set)",                 ID_RMENU3_RIG40055
+	//					MENUITEM "Rigã®å®Ÿè¡Œ(run)",                 ID_RMENU3_RIG40056
 	//				END
 	//			END
 
@@ -35370,8 +35409,8 @@ void DSAxisLMouseMove()
 			::ClipCursor(&desktoprect);
 
 			//WM_MENUSELECT
-			//MF_MOUSESELECT(ãˆÊ)
-			//‰ºˆÊ‚Íƒƒjƒ…[ID
+			//MF_MOUSESELECT(ä¸Šä½)
+			//ä¸‹ä½ã¯ãƒ¡ãƒ‹ãƒ¥ãƒ¼ID
 			//WPARAM wparam = ((MF_MOUSESELECT | MF_SYSMENU) << 16) | 40026;
 			//WPARAM wparam = (MF_SYSMENU << 16) | 40026;
 			//WPARAM wparam = (MF_SYSMENU << 16) | 2;
@@ -35402,7 +35441,7 @@ void DSAxisLMouseMove()
 
 
 
-			//WM_MOUSEMOVE‚ÍƒJƒƒ‰‘€ì‚È‚Ç‚Ì‚Æ‚«‚É‰æ–Ê‚ª	MB3D_WND_3D‚Åƒhƒ‰ƒbƒO‚·‚éê‡‚É•K—v
+			//WM_MOUSEMOVEã¯ã‚«ãƒ¡ãƒ©æ“ä½œæ™‚ãªã©ã®ã¨ãã«ç”»é¢ãŒ	MB3D_WND_3Dã§ãƒ‰ãƒ©ãƒƒã‚°ã™ã‚‹å ´åˆã«å¿…è¦
 			if (s_3dwnd) {
 				POINT client3dpoint;
 				client3dpoint = cursorpos;
@@ -35431,7 +35470,7 @@ void DSAxisLMouseMove()
 			}
 
 
-			//dialog ctrl‚Ìƒhƒ‰ƒbƒO‚Í@enter button‚ğ‰Ÿ‚µ‚Ä‚¢‚éŠÔ‚¾‚¯
+			//dialog ctrlã®ãƒ‰ãƒ©ãƒƒã‚°ã¯ã€€enter buttonã‚’æŠ¼ã—ã¦ã„ã‚‹é–“ã ã‘
 			if (s_dspushedOK >= 1) {
 				HWND ctrlwnd = GetOFWnd(cursorpos);
 				if (ctrlwnd) {
@@ -35473,7 +35512,7 @@ void DSAxisLMouseMove()
 				else if (s_getfilenamehwnd) {
 
 					//###############################################################################################################################################
-					// GetOpenFileName‚Ìƒ_ƒCƒAƒƒO‚Ì‚Q‚Â‚ ‚éƒŠƒXƒgƒ{ƒbƒNƒX‚Ì‚’¼ƒXƒNƒ[ƒ‹ƒo[(ƒXƒNƒ[ƒ‹ƒo[‚ÍFindWindowEx‚Åæ“¾‚Å‚«‚¸BEnumChildProc‚Å‚àƒNƒ‰ƒCƒAƒ“ƒgƒGƒŠƒA“à‚É“ü‚ç‚È‚©‚Á‚½)
+					// GetOpenFileNameã®ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®ï¼’ã¤ã‚ã‚‹ãƒªã‚¹ãƒˆãƒœãƒƒã‚¯ã‚¹ã®å‚ç›´ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼(ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼ã¯FindWindowExã§å–å¾—ã§ããšã€‚EnumChildProcã§ã‚‚ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã‚¨ãƒªã‚¢å†…ã«å…¥ã‚‰ãªã‹ã£ãŸ)
 					//###############################################################################################################################################
 
 					//ctrlwnd == 0
@@ -35570,9 +35609,9 @@ void DSL3R3ButtonMouseHere()
 			//::ScreenToClient(s_anglelimitdlg, &mousepoint);
 			//PAINTSTRUCT ps;
 			//HDC hdc = BeginPaint(s_anglelimitdlg, &ps);
-			//// ƒƒ‚ƒŠƒfƒoƒCƒXƒRƒ“ƒeƒLƒXƒg‚ğì¬‚·‚é
+			//// ãƒ¡ãƒ¢ãƒªãƒ‡ãƒã‚¤ã‚¹ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚’ä½œæˆã™ã‚‹
 			//HDC hCompatDC = CreateCompatibleDC(hdc);
-			//// ƒ[ƒh‚µ‚½ƒrƒbƒgƒ}ƒbƒv‚ğ‘I‘ğ‚·‚é
+			//// ãƒ­ãƒ¼ãƒ‰ã—ãŸãƒ“ãƒƒãƒˆãƒãƒƒãƒ—ã‚’é¸æŠã™ã‚‹
 			//HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
 			//BITMAP bmp;
 			//GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
@@ -35650,7 +35689,7 @@ void OnDSMouseHereApeal()
 
 void DSXButtonCancel()
 {
-	//Cancel button : ƒƒjƒ…[‚Ìƒhƒƒbƒvƒ_ƒEƒ“‚ğƒLƒƒƒ“ƒZƒ‹‚·‚é@Cancel dropdown menu. L2 + X --> Undo, R2 + X --> Redo.
+	//Cancel button : ãƒ¡ãƒ‹ãƒ¥ãƒ¼ã®ãƒ‰ãƒ­ãƒƒãƒ—ãƒ€ã‚¦ãƒ³ã‚’ã‚­ãƒ£ãƒ³ã‚»ãƒ«ã™ã‚‹ã€€Cancel dropdown menu. L2 + X --> Undo, R2 + X --> Redo.
 
 	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
 		return;
@@ -35688,7 +35727,7 @@ void DSXButtonCancel()
 			OnFrameUndo(true, 1);//fromds, fromdskind
 		}
 		else {
-			//TrackPopupMenu‚Ì‘O‚ÅSetForegrandWindow(s_mainhwnd)‚ğ‚µ‚Ä‚¢‚éê‡‚ÉŸ‚ÌŠÖ”‚Åpopup‚ğ•Â‚¶‚é‚±‚Æ‚ªo—ˆ‚éB
+			//TrackPopupMenuã®å‰ã§SetForegrandWindow(s_mainhwnd)ã‚’ã—ã¦ã„ã‚‹å ´åˆã«æ¬¡ã®é–¢æ•°ã§popupã‚’é–‰ã˜ã‚‹ã“ã¨ãŒå‡ºæ¥ã‚‹ã€‚
 			PostMessage(s_mainhwnd, WM_KEYDOWN, VK_ESCAPE, 0);
 			PostMessage(s_3dwnd, WM_KEYDOWN, VK_ESCAPE, 0);
 
@@ -35720,7 +35759,7 @@ void GetHiLiteSubmenu(HMENU* pcommandsubmenu, int* pcommandsubmenunum, int* pcom
 			break;
 		}
 		else {
-			//submenu ‚Q’iŠK‚Ü‚Å‚Í©“®‚Åƒ`ƒFƒbƒN
+			//submenu ï¼’æ®µéšã¾ã§ã¯è‡ªå‹•ã§ãƒã‚§ãƒƒã‚¯
 			HMENU subsubmenu = 0;
 			subsubmenu = GetSubMenu(s_cursubmenu, submenuitemcnt);
 			if (subsubmenu) {
@@ -35843,7 +35882,7 @@ void CALLBACK WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, 
 			s_getfilenamehwnd = hwnd;
 			fgwnd = hwnd;
 		}
-		if ((wcscmp(classname, L"#32770") == 0) || (wcsstr(wintext, L"ƒtƒHƒ‹ƒ_[‚ÌQÆ") != 0)) {//SHGetSpecialFolderLocation
+		if ((wcscmp(classname, L"#32770") == 0) || (wcsstr(wintext, L"ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼ã®å‚ç…§") != 0)) {//SHGetSpecialFolderLocation
 			s_getfilenamehwnd = hwnd;
 			fgwnd = hwnd;
 		}
@@ -35852,9 +35891,9 @@ void CALLBACK WinEventProc(HWINEVENTHOOK hWinEventHook, DWORD event, HWND hwnd, 
 
 			SetDlgPosDesktopCenter(fgwnd, HWND_TOPMOST);
 
-			//‹@”\‚Ìƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½Û@ƒ}ƒEƒX‚ªƒAƒbƒv‚·‚é‘O‚ÉŒÄ‚Î‚ê‚é‚±‚Æ‚ª‚ ‚é
-			//ƒ}ƒEƒX‚ğ“®‚©‚·‚Æ@ƒ{ƒ^ƒ“‚ª‹@”\‚µ‚È‚¢‚±‚Æ‚ª‚ ‚é‚Ì‚Å@SetCursorPos‚ÍƒRƒƒ“ƒgƒAƒEƒg
-			//‚±‚ÌŠÖ”‚ÌŠO‚Å@ƒ_ƒCƒAƒƒO•\¦‚ÉSetCursorPos‚·‚é‚±‚Æ‚Í‘åä•v
+			//æ©Ÿèƒ½ã®ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ãŸéš›ã€€ãƒã‚¦ã‚¹ãŒã‚¢ãƒƒãƒ—ã™ã‚‹å‰ã«å‘¼ã°ã‚Œã‚‹ã“ã¨ãŒã‚ã‚‹
+			//ãƒã‚¦ã‚¹ã‚’å‹•ã‹ã™ã¨ã€€ãƒœã‚¿ãƒ³ãŒæ©Ÿèƒ½ã—ãªã„ã“ã¨ãŒã‚ã‚‹ã®ã§ã€€SetCursorPosã¯ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
+			//ã“ã®é–¢æ•°ã®å¤–ã§ã€€ãƒ€ã‚¤ã‚¢ãƒ­ã‚°è¡¨ç¤ºæ™‚ã«SetCursorPosã™ã‚‹ã“ã¨ã¯å¤§ä¸ˆå¤«
 			//RECT dlgrect;
 			//GetWindowRect(fgwnd, &dlgrect);
 			//SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
@@ -35924,15 +35963,15 @@ void DSOButtonSelectedPopupMenu()
 			if (commandsubmenu && (commandsubmenunum >= 1) && (commandsubmenuno >= 0)) {
 
 
-				InterlockedExchange(&g_undertrackingRMenu, (LONG)0);//ƒRƒ}ƒ“ƒh”­s‚ªŒˆ‚Ü‚Á‚½‚çƒgƒ‰ƒbƒLƒ“ƒOƒtƒ‰ƒO‰ğœ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)0);//ã‚³ãƒãƒ³ãƒ‰ç™ºè¡ŒãŒæ±ºã¾ã£ãŸã‚‰ãƒˆãƒ©ãƒƒã‚­ãƒ³ã‚°ãƒ•ãƒ©ã‚°è§£é™¤!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 				//::PostMessage(s_mainhwnd, WM_KEYDOWN, VK_RETURN, 0);
 
 
 				//if (commandsubmenunum == 1) {
-					//ƒƒjƒ…[€–Ú‚ª‚P‚Â‚¾‚¯‚Ìê‡‚É‚Íƒ|ƒbƒvƒAƒbƒv‚ğ‰ğœ‚µ‚Ä‚©‚çWM_COMMAND‚ğŒÄ‚ñ‚Å‚İ‚é
-					//TrackPopupMenu‚Ì‘O‚ÅSetForegrandWindow(s_mainhwnd)‚ğ‚µ‚Ä‚¢‚éê‡‚ÉŸ‚ÌŠÖ”‚Åpopup‚ğ•Â‚¶‚é‚±‚Æ‚ªo—ˆ‚éB
+					//ãƒ¡ãƒ‹ãƒ¥ãƒ¼é …ç›®ãŒï¼‘ã¤ã ã‘ã®å ´åˆã«ã¯ãƒãƒƒãƒ—ã‚¢ãƒƒãƒ—ã‚’è§£é™¤ã—ã¦ã‹ã‚‰WM_COMMANDã‚’å‘¼ã‚“ã§ã¿ã‚‹
+					//TrackPopupMenuã®å‰ã§SetForegrandWindow(s_mainhwnd)ã‚’ã—ã¦ã„ã‚‹å ´åˆã«æ¬¡ã®é–¢æ•°ã§popupã‚’é–‰ã˜ã‚‹ã“ã¨ãŒå‡ºæ¥ã‚‹ã€‚
 				PostMessage(s_mainhwnd, WM_KEYDOWN, VK_ESCAPE, 0);
 				PostMessage(s_3dwnd, WM_KEYDOWN, VK_ESCAPE, 0);
 				//}
@@ -35951,8 +35990,8 @@ void DSOButtonSelectedPopupMenu()
 
 
 				//::SendMessage(s_mainhwnd, WM_COMMAND, wparam, lparam);
-				//::SendMessage(s_3dwnd, WM_COMMAND, wparam, lparam);//menu‚ÌMsgProc‚Ís_3dwnd‚ÌƒƒbƒZ[ƒWƒvƒƒbƒN
-				::SendMessage(s_3dwnd, WM_COMMAND, wparam, 0);//menu‚ÌMsgProc‚Ís_3dwnd‚ÌƒƒbƒZ[ƒWƒvƒƒbƒN
+				//::SendMessage(s_3dwnd, WM_COMMAND, wparam, lparam);//menuã®MsgProcã¯s_3dwndã®ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒ—ãƒ­ãƒƒã‚¯
+				::SendMessage(s_3dwnd, WM_COMMAND, wparam, 0);//menuã®MsgProcã¯s_3dwndã®ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒ—ãƒ­ãƒƒã‚¯
 			}
 			else {
 
@@ -35962,7 +36001,7 @@ void DSOButtonSelectedPopupMenu()
 					if (ctrlwnd) {
 						s_messageboxpushcnt++;
 
-						//ˆê‰ñ–Ú‚Íƒ_ƒCƒAƒƒO‚ğo‚·‚Æ‚«‚ÌƒNƒŠƒbƒNB‚Q‰ñ–Ú‚ÅIDOK‚ğ‰Ÿ‚·B
+						//ä¸€å›ç›®ã¯ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’å‡ºã™ã¨ãã®ã‚¯ãƒªãƒƒã‚¯ã€‚ï¼’å›ç›®ã§IDOKã‚’æŠ¼ã™ã€‚
 						if (s_messageboxpushcnt >= 2) {
 							//WPARAM wparam;
 							//wparam = (BN_CLICKED << 16) | IDOK;
@@ -36035,7 +36074,7 @@ void DSOButtonSelectedPopupMenu()
 							if (hitflag == 0) {
 
 
-								//ƒfƒBƒŒƒNƒgƒŠw’è—p‚ÌListBox‚Ì‚Æ‚«‚É‚ÍƒGƒ“ƒ^[ƒL[‚ğ‰Ÿ‚µ‚Ä“WŠJ•\¦‚·‚éB
+								//ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªæŒ‡å®šç”¨ã®ListBoxã®ã¨ãã«ã¯ã‚¨ãƒ³ã‚¿ãƒ¼ã‚­ãƒ¼ã‚’æŠ¼ã—ã¦å±•é–‹è¡¨ç¤ºã™ã‚‹ã€‚
 								//int itrcnt = 0;
 								//int findindex = 0;
 								//if (s_enumdist.size() >= 2) {
@@ -36054,7 +36093,7 @@ void DSOButtonSelectedPopupMenu()
 
 
 
-								//ƒfƒBƒŒƒNƒgƒŠw’è—p‚ÌListBox‚Ì‚Æ‚«‚É‚ÍƒGƒ“ƒ^[ƒL[‚ğ‰Ÿ‚µ‚Ä“WŠJ•\¦‚·‚éB
+								//ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªæŒ‡å®šç”¨ã®ListBoxã®ã¨ãã«ã¯ã‚¨ãƒ³ã‚¿ãƒ¼ã‚­ãƒ¼ã‚’æŠ¼ã—ã¦å±•é–‹è¡¨ç¤ºã™ã‚‹ã€‚
 								RECT ctrlrect;
 								GetWindowRect(ctrlwnd, &ctrlrect);
 								POINT ctrllefttop;
@@ -36090,9 +36129,9 @@ void DSOButtonSelectedPopupMenu()
 								//item.state = 0;
 								//item.stateMask = LVIS_SELECTED | LVIS_FOCUSED;
 								//item.iItem = hitindex;
-								//item.iSubItem = 0;          //æ“¾‚·‚éƒTƒuƒAƒCƒeƒ€‚Ì”Ô†
-								//item.pszText = itembuf;         //Ši”[‚·‚éƒeƒLƒXƒgƒoƒbƒtƒ@
-								//item.cchTextMax = MAX_PATH; //ƒoƒbƒtƒ@—e—Ê
+								//item.iSubItem = 0;          //å–å¾—ã™ã‚‹ã‚µãƒ–ã‚¢ã‚¤ãƒ†ãƒ ã®ç•ªå·
+								//item.pszText = itembuf;         //æ ¼ç´ã™ã‚‹ãƒ†ã‚­ã‚¹ãƒˆãƒãƒƒãƒ•ã‚¡
+								//item.cchTextMax = MAX_PATH; //ãƒãƒƒãƒ•ã‚¡å®¹é‡
 								//ListView_GetItem(ctrlwnd, &item);
 								//if (item.state & LVIS_SELECTED) {
 								//	SendMessage(ctrlwnd, LB_SETSEL, (WPARAM)FALSE, (LPARAM)hitindex);
@@ -36160,11 +36199,11 @@ void DSOButtonSelectedPopupMenu()
 						//	ZeroMemory(&item, sizeof(LVITEM));
 						//	item.mask = TVIF_HANDLE | TVIF_TEXT;
 						//	item.iItem = lvinfo.iItem;
-						//	item.iSubItem = 0;          //æ“¾‚·‚éƒTƒuƒAƒCƒeƒ€‚Ì”Ô†
-						//	item.pszText = buf;         //Ši”[‚·‚éƒeƒLƒXƒgƒoƒbƒtƒ@
-						//	item.cchTextMax = MAX_PATH; //ƒoƒbƒtƒ@—e—Ê
+						//	item.iSubItem = 0;          //å–å¾—ã™ã‚‹ã‚µãƒ–ã‚¢ã‚¤ãƒ†ãƒ ã®ç•ªå·
+						//	item.pszText = buf;         //æ ¼ç´ã™ã‚‹ãƒ†ã‚­ã‚¹ãƒˆãƒãƒƒãƒ•ã‚¡
+						//	item.cchTextMax = MAX_PATH; //ãƒãƒƒãƒ•ã‚¡å®¹é‡
 						//	ListView_GetItem(hList, &item);
-						//	DSMessageBox(s_3dwnd, buf, L"‘I‘ğ‚µ‚½ƒf[ƒ^", MB_OK);
+						//	DSMessageBox(s_3dwnd, buf, L"é¸æŠã—ãŸãƒ‡ãƒ¼ã‚¿", MB_OK);
 						//}
 
 
@@ -36218,11 +36257,11 @@ void DSOButtonSelectedPopupMenu()
 		//}
 				//if (selectedmenuid >= 0) {
 				//	//#################
-				//	//‘I‘ğŒˆ’è¬Œ÷—á‚»‚Ì‚Q
+				//	//é¸æŠæ±ºå®šæˆåŠŸä¾‹ãã®ï¼’
 				//	//#################
-				//	//‘æ2€–ÚiƒCƒ“ƒfƒbƒNƒX’l = 1, ID = 0x2711j‚ğ‘I‘ğ‚µ‚½‚Æ‚±‚ëA
+				//	//ç¬¬2é …ç›®ï¼ˆã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ = 1, ID = 0x2711ï¼‰ã‚’é¸æŠã—ãŸã¨ã“ã‚ã€
 				//	//wParam = 0x00012711
-				//	//‚Ì‚æ‚¤‚ÉAãˆÊ2ƒoƒCƒg‚ÉƒCƒ“ƒfƒbƒNƒX’l‚ªA‰ºˆÊ2ƒoƒCƒg‚ÉID‚ª“ü‚è‚Ü‚·B
+				//	//ã®ã‚ˆã†ã«ã€ä¸Šä½2ãƒã‚¤ãƒˆã«ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹å€¤ãŒã€ä¸‹ä½2ãƒã‚¤ãƒˆã«IDãŒå…¥ã‚Šã¾ã™ã€‚
 				//	//WPARAM wparam;
 				//	//wparam = (g_currentsubmenuid << 16) | curmenuitemid;
 				//	//LPARAM lparam;
@@ -36230,8 +36269,8 @@ void DSOButtonSelectedPopupMenu()
 				//	//::SendMessage(s_mainhwnd, WM_COMMAND, wparam, lparam);
 
 				//	if ((submenuitemnum == 1) && (selectedsubmenuitemno >= 0) && (g_currentsubmenuid >= 0)) {
-				//		//ƒƒjƒ…[€–Ú‚ª‚P‚Â‚¾‚¯‚Ìê‡‚É‚Íƒ|ƒbƒvƒAƒbƒv‚ğ‰ğœ‚µ‚Ä‚©‚çWM_COMMAND‚ğŒÄ‚ñ‚Å‚İ‚é
-				//		//TrackPopupMenu‚Ì‘O‚ÅSetForegrandWindow(s_mainhwnd)‚ğ‚µ‚Ä‚¢‚éê‡‚ÉŸ‚ÌŠÖ”‚Åpopup‚ğ•Â‚¶‚é‚±‚Æ‚ªo—ˆ‚éB
+				//		//ãƒ¡ãƒ‹ãƒ¥ãƒ¼é …ç›®ãŒï¼‘ã¤ã ã‘ã®å ´åˆã«ã¯ãƒãƒƒãƒ—ã‚¢ãƒƒãƒ—ã‚’è§£é™¤ã—ã¦ã‹ã‚‰WM_COMMANDã‚’å‘¼ã‚“ã§ã¿ã‚‹
+				//		//TrackPopupMenuã®å‰ã§SetForegrandWindow(s_mainhwnd)ã‚’ã—ã¦ã„ã‚‹å ´åˆã«æ¬¡ã®é–¢æ•°ã§popupã‚’é–‰ã˜ã‚‹ã“ã¨ãŒå‡ºæ¥ã‚‹ã€‚
 				//		PostMessage(s_mainhwnd, WM_KEYDOWN, VK_ESCAPE, 0);
 				//		PostMessage(s_3dwnd, WM_KEYDOWN, VK_ESCAPE, 0);
 				//	}
@@ -36361,11 +36400,11 @@ void DSOButtonSelectedPopupMenu()
 				//	//	//	{
 				//	//	//		item.mask = TVIF_HANDLE | TVIF_TEXT;
 				//	//	//		item.iItem = lvinfo.iItem;
-				//	//	//		item.iSubItem = 0;          //æ“¾‚·‚éƒTƒuƒAƒCƒeƒ€‚Ì”Ô†
-				//	//	//		item.pszText = buf;         //Ši”[‚·‚éƒeƒLƒXƒgƒoƒbƒtƒ@
-				//	//	//		item.cchTextMax = MAX_PATH; //ƒoƒbƒtƒ@—e—Ê
+				//	//	//		item.iSubItem = 0;          //å–å¾—ã™ã‚‹ã‚µãƒ–ã‚¢ã‚¤ãƒ†ãƒ ã®ç•ªå·
+				//	//	//		item.pszText = buf;         //æ ¼ç´ã™ã‚‹ãƒ†ã‚­ã‚¹ãƒˆãƒãƒƒãƒ•ã‚¡
+				//	//	//		item.cchTextMax = MAX_PATH; //ãƒãƒƒãƒ•ã‚¡å®¹é‡
 				//	//	//		ListView_GetItem(hList, &item);
-				//	//	//		DSMessageBox(s_3dwnd, buf, L"‘I‘ğ‚µ‚½ƒf[ƒ^", MB_OK);
+				//	//	//		DSMessageBox(s_3dwnd, buf, L"é¸æŠã—ãŸãƒ‡ãƒ¼ã‚¿", MB_OK);
 				//	//	//	}
 				//	//	//}
 				//	//	//int hotitem;
@@ -36460,7 +36499,7 @@ void DSOButtonSelectedPopupMenu()
 					//}
 					/*if (m_event != nullptr)
 					{
-						SetDlgItemText(IDOK, _T("’â~"));
+						SetDlgItemText(IDOK, _T("åœæ­¢"));
 					}*/
 			}
 		}
@@ -36498,7 +36537,7 @@ void DSOButtonSelectedPopupMenu()
 						hitflag = HIWORD(hitinfo);
 						hitindex = LOWORD(hitinfo);
 						if (hitflag == 0) {
-							//X button‚Å  select‚ğCancel
+							//X buttonã§  selectã‚’Cancel
 							SendMessage(ctrlwnd, LB_SETSEL, (WPARAM)FALSE, (LPARAM)hitindex);
 						}
 					}
@@ -36548,10 +36587,10 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 		//	&& (mousepoint.y >= 0) && (mousepoint.y <= (ctrlrect.bottom - ctrlrect.top))) {
 
 		//#################################################################################################################################################
-		//groupbox‚Ìclassname‚àButtonBgroupbox‚Ì’†‚ÌƒRƒ“ƒgƒ[ƒ‹‚ğ‰Ÿ‚·‚½‚ß‚É‚Í‹——£‚Å”»’è‚·‚é•K—v‚ª‚ ‚Á‚½Bƒ}ƒEƒXˆÊ’u‚Éˆê”Ô‹ß‚¢ƒRƒ“ƒgƒ[ƒ‹‚ğ’T‚·‚½‚ß‚Ìî•ñ‚ğs_enumdist‚Épush_back
+		//groupboxã®classnameã‚‚Buttonã€‚groupboxã®ä¸­ã®ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚’æŠ¼ã™ãŸã‚ã«ã¯è·é›¢ã§åˆ¤å®šã™ã‚‹å¿…è¦ãŒã‚ã£ãŸã€‚ãƒã‚¦ã‚¹ä½ç½®ã«ä¸€ç•ªè¿‘ã„ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚’æ¢ã™ãŸã‚ã®æƒ…å ±ã‚’s_enumdistã«push_back
 		//#################################################################################################################################################
 		POINT ctrllefttop;
-		//ctrlcenter.x = (ctrlrect.right - ctrlrect.left) / 2;//ƒ‰ƒWƒIƒ{ƒ^ƒ“‚È‚Ç‚ÍƒRƒ“ƒgƒ[ƒ‹^‚ñ’†‚Å‚Í‚È‚­¶‘¤‚ğ‰Ÿ‚·‚±‚Æ‚ª‘½‚¢‚Ì‚Å’†‰›‚Í‚â‚ß‚é
+		//ctrlcenter.x = (ctrlrect.right - ctrlrect.left) / 2;//ãƒ©ã‚¸ã‚ªãƒœã‚¿ãƒ³ãªã©ã¯ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«çœŸã‚“ä¸­ã§ã¯ãªãå·¦å´ã‚’æŠ¼ã™ã“ã¨ãŒå¤šã„ã®ã§ä¸­å¤®ã¯ã‚„ã‚ã‚‹
 		//ctrlcenter.y = (ctrlrect.bottom - ctrlrect.top) / 2;
 		ctrllefttop.x = ctrlrect.left;
 		ctrllefttop.y = ctrlrect.top;
@@ -36563,13 +36602,13 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 
 
 		//*rethwnd = hwnd;
-		//return FALSE;//’TõI—¹
+		//return FALSE;//æ¢ç´¢çµ‚äº†
 
-		return TRUE;//’Tõ‘±s
+		return TRUE;//æ¢ç´¢ç¶šè¡Œ
 	}
 	else {
 		*rethwnd = 0;
-		return TRUE;//’Tõ‘±s
+		return TRUE;//æ¢ç´¢ç¶šè¡Œ
 	}
 
 }
@@ -36588,7 +36627,7 @@ BOOL CALLBACK EnumTreeViewProc(HWND hwnd, LPARAM lParam)
 	//if ((wcscmp(L"SysListView32", classname) == 0) || (wcscmp(L"SysTreeView32", classname) == 0)) {
 	if ((wcsstr(classname, L"ListBox") != 0) || (wcsstr(classname, L"TreeView") != 0)) {
 		//*rethwnd = hwnd;
-		//return FALSE;//’TõI—¹
+		//return FALSE;//æ¢ç´¢çµ‚äº†
 
 		POINT mousepoint;
 		::GetCursorPos(&mousepoint);
@@ -36600,7 +36639,7 @@ BOOL CALLBACK EnumTreeViewProc(HWND hwnd, LPARAM lParam)
 		//GetWindowRect(hwnd, &ctrlrect);
 
 		POINT ctrllefttop;
-		//ctrlcenter.x = (ctrlrect.right - ctrlrect.left) / 2;//ƒ‰ƒWƒIƒ{ƒ^ƒ“‚È‚Ç‚ÍƒRƒ“ƒgƒ[ƒ‹^‚ñ’†‚Å‚Í‚È‚­¶‘¤‚ğ‰Ÿ‚·‚±‚Æ‚ª‘½‚¢‚Ì‚Å’†‰›‚Í‚â‚ß‚é
+		//ctrlcenter.x = (ctrlrect.right - ctrlrect.left) / 2;//ãƒ©ã‚¸ã‚ªãƒœã‚¿ãƒ³ãªã©ã¯ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«çœŸã‚“ä¸­ã§ã¯ãªãå·¦å´ã‚’æŠ¼ã™ã“ã¨ãŒå¤šã„ã®ã§ä¸­å¤®ã¯ã‚„ã‚ã‚‹
 		//ctrlcenter.y = (ctrlrect.bottom - ctrlrect.top) / 2;
 		ctrllefttop.x = ctrlrect.left;
 		ctrllefttop.y = ctrlrect.top;
@@ -36611,11 +36650,11 @@ BOOL CALLBACK EnumTreeViewProc(HWND hwnd, LPARAM lParam)
 		s_enumdist.push_back(enumdist);
 
 		*rethwnd = 0;
-		return TRUE;//’Tõ‘±s
+		return TRUE;//æ¢ç´¢ç¶šè¡Œ
 	}
 	else {
 		*rethwnd = 0;
-		return TRUE;//’Tõ‘±s
+		return TRUE;//æ¢ç´¢ç¶šè¡Œ
 	}
 }
 
@@ -36634,11 +36673,11 @@ BOOL CALLBACK EnumIDOKProc(HWND hwnd, LPARAM lParam)
 
 	if (wcscmp(L"OK", wintext) == 0) {
 		*rethwnd = hwnd;
-		return FALSE;//’TõI—¹
+		return FALSE;//æ¢ç´¢çµ‚äº†
 	}
 	else {
 		*rethwnd = 0;
-		return TRUE;//’Tõ‘±s
+		return TRUE;//æ¢ç´¢ç¶šè¡Œ
 	}
 
 }
@@ -36844,8 +36883,8 @@ HWND GetOFWnd(POINT srcpoint)
 
 void DSOptionButtonRightClick()
 {
-	//optionƒ{ƒ^ƒ“‚Í‰EƒNƒŠƒbƒN‘Š“–
-	//ƒJ[ƒ\ƒ‹‚ªƒWƒ‡ƒCƒ“ƒgˆÊ’u‚É‚ ‚é‚Æ‚«‚É‰EƒNƒŠƒbƒN‚·‚é‚ÆƒRƒ“ƒeƒNƒXƒgƒƒjƒ…[‚ªo‚éB
+	//optionãƒœã‚¿ãƒ³ã¯å³ã‚¯ãƒªãƒƒã‚¯ç›¸å½“
+	//ã‚«ãƒ¼ã‚½ãƒ«ãŒã‚¸ãƒ§ã‚¤ãƒ³ãƒˆä½ç½®ã«ã‚ã‚‹ã¨ãã«å³ã‚¯ãƒªãƒƒã‚¯ã™ã‚‹ã¨ã‚³ãƒ³ãƒ†ã‚¯ã‚¹ãƒˆãƒ¡ãƒ‹ãƒ¥ãƒ¼ãŒå‡ºã‚‹ã€‚
 
 	if ((s_dsutgui0.size() <= 0) || (s_dsutgui1.size() <= 0) || (s_dsutgui2.size() <= 0) || (s_dsutgui3.size() <= 0)) {
 		return;
@@ -37055,7 +37094,7 @@ void DSAimBarOK()
 
 					//int ctrlid;
 					//ctrlid = GetDlgCtrlID(ctrlwnd);
-					//::SendMessage(s_ofhwnd, WM_COMMAND, ctrlid, 0);//WM_COMMAND‚Íƒ}ƒEƒX‚ÌUP‚æ‚è‚àŒã‚ÅŒÄ‚Î‚È‚¢‚ÆUP‚ÅƒRƒ}ƒ“ƒh‚ªI—¹‚µ‚Ä‚µ‚Ü‚¤‚±‚Æ‚ª‚ ‚éB
+					//::SendMessage(s_ofhwnd, WM_COMMAND, ctrlid, 0);//WM_COMMANDã¯ãƒã‚¦ã‚¹ã®UPã‚ˆã‚Šã‚‚å¾Œã§å‘¼ã°ãªã„ã¨UPã§ã‚³ãƒãƒ³ãƒ‰ãŒçµ‚äº†ã—ã¦ã—ã¾ã†ã“ã¨ãŒã‚ã‚‹ã€‚
 
 
 					WCHAR wclassname[MAX_PATH] = { 0L };
@@ -37063,7 +37102,7 @@ void DSAimBarOK()
 					//::DSMessageBox(s_anglelimitdlg, wclassname, L"check!!!", MB_OK);
 					if (wcscmp(L"ComboBox", wclassname) == 0) {
 						//	//COMBOBOX
-						//	::SendMessage(ctrlwnd, CB_SHOWDROPDOWN, TRUE, 0);//DOWN‚Ì‚Æ‚«‚Éˆ—‚·‚é
+						//	::SendMessage(ctrlwnd, CB_SHOWDROPDOWN, TRUE, 0);//DOWNã®ã¨ãã«å‡¦ç†ã™ã‚‹
 					}
 					else if (wcscmp(L"msctls_trackbar32", wclassname) == 0) {
 						//Slider
@@ -37107,13 +37146,13 @@ void DSAimBarOK()
 						//if (check1 == 0) {
 						//	SendMessage(ctrlwnd,
 						//		BM_SETCHECK,
-						//		BST_CHECKED,    // ƒ`ƒFƒbƒN‚ğ‚Â‚¯‚é
+						//		BST_CHECKED,    // ãƒã‚§ãƒƒã‚¯ã‚’ã¤ã‘ã‚‹
 						//		0);
 						//}
 						//else if (check1 == 1) {
 						//	SendMessage(ctrlwnd,
 						//		BM_SETCHECK,
-						//		BST_UNCHECKED,    // ƒ`ƒFƒbƒN‚ğ‚Í‚¸‚·
+						//		BST_UNCHECKED,    // ãƒã‚§ãƒƒã‚¯ã‚’ã¯ãšã™
 						//		0);
 						//}
 					}
@@ -37137,7 +37176,7 @@ void DSAimBarOK()
 
 					int ctrlid;
 					ctrlid = GetDlgCtrlID(ctrlwnd);
-					::SendMessage(s_ofhwnd, WM_COMMAND, ctrlid, 0);//WM_COMMAND‚Íƒ}ƒEƒX‚ÌUP‚æ‚è‚àŒã‚ÅŒÄ‚Î‚È‚¢‚ÆUP‚ÅƒRƒ}ƒ“ƒh‚ªI—¹‚µ‚Ä‚µ‚Ü‚¤‚±‚Æ‚ª‚ ‚éB
+					::SendMessage(s_ofhwnd, WM_COMMAND, ctrlid, 0);//WM_COMMANDã¯ãƒã‚¦ã‚¹ã®UPã‚ˆã‚Šã‚‚å¾Œã§å‘¼ã°ãªã„ã¨UPã§ã‚³ãƒãƒ³ãƒ‰ãŒçµ‚äº†ã—ã¦ã—ã¾ã†ã“ã¨ãŒã‚ã‚‹ã€‚
 
 				}
 			}
@@ -37193,10 +37232,10 @@ void DSAimBarOK()
 
 					//MainMenuAimBar
 					if ((s_currentwndid == MB3D_WND_MAIN) && s_cursubmenu && (g_currentsubmenuid >= 0) && (g_currentsubmenuid < SPMENU_MAX)) {
-						//SelectNextWindow(MB3D_WND_3D);//‘±‚¢‚Ä@O button ‚ğ‰Ÿ‚µ‚½‚Æ‚«‚Éƒƒjƒ…[‚ªŠJ‚©‚È‚¢‚æ‚¤‚ÉB//ƒvƒŒ[ƒg‘I‘ğ‚ÉŠY“–ƒEƒCƒ“ƒhƒE‚ğƒnƒCƒ‰ƒCƒg‚·‚é‚æ‚¤‚É‚µ‚½‚Ì‚Å•K—v‚È‚¢B
+						//SelectNextWindow(MB3D_WND_3D);//ç¶šã„ã¦ã€€O button ã‚’æŠ¼ã—ãŸã¨ãã«ãƒ¡ãƒ‹ãƒ¥ãƒ¼ãŒé–‹ã‹ãªã„ã‚ˆã†ã«ã€‚//ãƒ—ãƒ¬ãƒ¼ãƒˆé¸æŠæ™‚ã«è©²å½“ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã‚’ãƒã‚¤ãƒ©ã‚¤ãƒˆã™ã‚‹ã‚ˆã†ã«ã—ãŸã®ã§å¿…è¦ãªã„ã€‚
 						InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
-						//SetForegroundWindow(s_mainhwnd);//‚±‚Ìˆ—‚ğ‚µ‚È‚¢‚Æ”ÍˆÍŠOƒNƒŠƒbƒN‚ÅPopup‚ª•Â‚¶‚È‚¢
-						SetForegroundWindow(s_3dwnd);//‚±‚Ìˆ—‚ğ‚µ‚È‚¢‚Æ”ÍˆÍŠOƒNƒŠƒbƒN‚ÅPopup‚ª•Â‚¶‚È‚¢
+						//SetForegroundWindow(s_mainhwnd);//ã“ã®å‡¦ç†ã‚’ã—ãªã„ã¨ç¯„å›²å¤–ã‚¯ãƒªãƒƒã‚¯ã§PopupãŒé–‰ã˜ãªã„
+						SetForegroundWindow(s_3dwnd);//ã“ã®å‡¦ç†ã‚’ã—ãªã„ã¨ç¯„å›²å¤–ã‚¯ãƒªãƒƒã‚¯ã§PopupãŒé–‰ã˜ãªã„
 						//int retmenuid = ::TrackPopupMenu(s_cursubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, g_currentsubmenupos.x, g_currentsubmenupos.y, 0, s_mainhwnd, NULL);
 						int retmenuid = ::TrackPopupMenu(s_cursubmenu, TPM_RETURNCMD | TPM_LEFTALIGN, g_currentsubmenupos.x, g_currentsubmenupos.y, 0, s_3dwnd, NULL);
 						InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
@@ -37205,7 +37244,7 @@ void DSAimBarOK()
 			}
 
 			//MainWindow MsgProc ; Prepair For Undo
-			PrepairUndo();//ƒƒjƒ…[ƒo[OKŒã‚Ì•Û‘¶
+			PrepairUndo();//ãƒ¡ãƒ‹ãƒ¥ãƒ¼ãƒãƒ¼OKå¾Œã®ä¿å­˜
 
 			s_wmlbuttonup = 1;
 
@@ -37217,7 +37256,7 @@ void DSAimBarOK()
 
 
 /*
-ƒR[ƒh	ƒtƒ@ƒCƒ‹	s	—ñ
+ã‚³ãƒ¼ãƒ‰	ãƒ•ã‚¡ã‚¤ãƒ«	è¡Œ	åˆ—
 s_admpSlider->setSize(WindowSize(slw, 40));	E:\PG\MameBake3D_git\MameBake3D\MameBake3D\Main.cpp	14612	14
 s_akSlider->setSize(WindowSize(slw, 40));	E:\PG\MameBake3D_git\MameBake3D\MameBake3D\Main.cpp	14614	12
 s_boxzSlider->setSize(WindowSize(slw, 40));	E:\PG\MameBake3D_git\MameBake3D\MameBake3D\Main.cpp	14607	14
@@ -37270,7 +37309,7 @@ void ChangeMouseSetCapture()
 	dragbuttonup = s_dsbuttonup[2];
 
 
-	//Zƒ{ƒ^ƒ“‰Ÿ‚µ‚Ä‚¢‚È‚¢‚Æ‚«‚É‚Í‰½‚à‚µ‚È‚¢‚ÅƒŠƒ^[ƒ“
+	//ã€‡ãƒœã‚¿ãƒ³æŠ¼ã—ã¦ã„ãªã„ã¨ãã«ã¯ä½•ã‚‚ã—ãªã„ã§ãƒªã‚¿ãƒ¼ãƒ³
 	if (!dragbuttondown) {
 		return;
 	}
@@ -37425,15 +37464,15 @@ void ChangeMouseSetCapture()
 	///////////////
 
 	//if ((s_pickinfo.buttonflag == PICK_CAMMOVE) || (s_pickinfo.buttonflag == PICK_CAMROT) || (s_pickinfo.buttonflag == PICK_CAMDIST)) {
-	//	//‚±‚±‚Å‚ÍAƒJƒƒ‰ƒXƒvƒ‰ƒCƒg‚ğƒhƒ‰ƒbƒO’†‚Íƒ}ƒEƒXƒLƒƒƒvƒ`ƒƒ[‚ğ‚¢‚¶‚ç‚È‚¢
+	//	//ã“ã“ã§ã¯ã€ã‚«ãƒ¡ãƒ©ã‚¹ãƒ—ãƒ©ã‚¤ãƒˆã‚’ãƒ‰ãƒ©ãƒƒã‚°ä¸­ã¯ãƒã‚¦ã‚¹ã‚­ãƒ£ãƒ—ãƒãƒ£ãƒ¼ã‚’ã„ã˜ã‚‰ãªã„
 	//}
 	//if ((nextcapwndid != s_capwndid) || (s_wmlbuttonup == 1) || (s_dspushedOK == 0) || (g_undertrackingRMenu == 0)) {
 	//else if ((nextcapwndid != s_capwndid) || (s_wmlbuttonup == 1) || (s_dspushedOK == 0)) {
 
 
-	if (dragbuttondown >= 1) {//Zƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½‚Æ‚«‚ÉƒLƒƒƒvƒ`ƒƒ[ƒIƒ“
+	if (dragbuttondown >= 1) {//ã€‡ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ãŸã¨ãã«ã‚­ãƒ£ãƒ—ãƒãƒ£ãƒ¼ã‚ªãƒ³
 
-		//if ((nextcapwndid != s_capwndid) || (s_wmlbuttonup == 1)) {//í‚É‚Å‚Í‚È‚­AZƒ{ƒ^ƒ“‚ğ‰Ÿ‚µ‚½‚Æ‚«‚¾‚¯ˆ—B“¯‚¶ƒEƒCƒ“ƒhƒE‚Å‚à•K—v‚È‚±‚Æ‚ª‚ ‚éB
+		//if ((nextcapwndid != s_capwndid) || (s_wmlbuttonup == 1)) {//å¸¸ã«ã§ã¯ãªãã€ã€‡ãƒœã‚¿ãƒ³ã‚’æŠ¼ã—ãŸã¨ãã ã‘å‡¦ç†ã€‚åŒã˜ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã§ã‚‚å¿…è¦ãªã“ã¨ãŒã‚ã‚‹ã€‚
 		switch (nextcapwndid) {
 		case 0:
 			if (s_mainhwnd) {
@@ -37474,7 +37513,7 @@ void ChangeMouseSetCapture()
 			}
 			break;
 		case 6:
-			//plate menu‚Åê‡•ª‚¯•K—v
+			//plate menuã§å ´åˆåˆ†ã‘å¿…è¦
 			if (s_platemenukind == SPPLATEMENUKIND_GUI) {
 				if (s_mainhwnd) {
 					SetCapture(s_mainhwnd);
@@ -37565,7 +37604,7 @@ void ChangeMouseReleaseCapture()
 	dragbuttonup = s_dsbuttonup[2];
 
 
-	//Zƒ{ƒ^ƒ“‚ğ˜b‚µ‚½‚ÉƒŠƒŠ[ƒXƒLƒƒƒvƒ`ƒƒ‚µ‚ÄƒŠƒ^[ƒ“
+	//ã€‡ãƒœã‚¿ãƒ³ã‚’è©±ã—ãŸæ™‚ã«ãƒªãƒªãƒ¼ã‚¹ã‚­ãƒ£ãƒ—ãƒãƒ£ã—ã¦ãƒªã‚¿ãƒ¼ãƒ³
 	if (dragbuttonup >= 1) {
 		ReleaseCapture();
 		return;
@@ -37614,7 +37653,7 @@ void OrgWindowListenMouse(bool srcflag)
 		s_convboneWnd->setListenMouse(srcflag);
 	}
 
-	//anglelimitdlg‚ÍWindowsDialog
+	//anglelimitdlgã¯WindowsDialog
 
 }
 
@@ -37656,7 +37695,7 @@ void SetMainWindowTitle()
 	}
 
 
-	//"‚Ü‚ß‚Î‚¯‚RD (MameBake3D)"
+	//"ã¾ã‚ã°ã‘ï¼“D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
 	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.12 : No.%d : ", s_appcnt);
 
@@ -37759,8 +37798,8 @@ void OnGUIEventSpeed()
 	//	s_modelindex[modelno].modelptr->SetMotionSpeed(g_dspeed);
 	//}
 
-	//SetMotionSpeed() : ƒ‚[ƒVƒ‡ƒ“‚²‚Æ‚ÌƒXƒs[ƒh
-	//SetTmpMotSpeed() : ƒ‚[ƒVƒ‡ƒ“‚ª•Ï‚í‚Á‚Ä‚àƒXƒ‰ƒCƒ_[w’è‚ÌƒXƒs[ƒh
+	//SetMotionSpeed() : ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã”ã¨ã®ã‚¹ãƒ”ãƒ¼ãƒ‰
+	//SetTmpMotSpeed() : ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãŒå¤‰ã‚ã£ã¦ã‚‚ã‚¹ãƒ©ã‚¤ãƒ€ãƒ¼æŒ‡å®šã®ã‚¹ãƒ”ãƒ¼ãƒ‰
 	for (modelno = 0; modelno < modelnum; modelno++) {
 		s_modelindex[modelno].modelptr->SetTmpMotSpeed((float)g_dspeed);
 		s_modelindex[modelno].modelptr->SetMotionSpeed((float)g_dspeed);
@@ -37773,14 +37812,14 @@ void OnGUIEventSpeed()
 
 //void WaitRetargetThreads()
 //{
-//	//if ((g_retargetbatchflag == 2) || (g_retargetbatchflag == 3)) {//2‚Íƒ_ƒCƒAƒƒO‚Å‚ÌƒLƒƒƒ“ƒZƒ‹
-//	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 2) || (InterlockedAdd(&g_retargetbatchflag, 0) == 3)) {//2‚Íƒ_ƒCƒAƒƒO‚Å‚ÌƒLƒƒƒ“ƒZƒ‹
+//	//if ((g_retargetbatchflag == 2) || (g_retargetbatchflag == 3)) {//2ã¯ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã§ã®ã‚­ãƒ£ãƒ³ã‚»ãƒ«
+//	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 2) || (InterlockedAdd(&g_retargetbatchflag, 0) == 3)) {//2ã¯ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã§ã®ã‚­ãƒ£ãƒ³ã‚»ãƒ«
 //		InterlockedExchange(&g_retargetbatchflag, (LONG)0);
 //		if (s_retargetbatchwnd) {
 //			SendMessage(s_retargetbatchwnd, WM_CLOSE, 0, 0);
 //		}
 //		s_retargetcnt = 0;
-//		InterlockedExchange(&g_retargetbatchflag, (LONG)0);//WM_CLOSE‚Å•Ï‚í‚é‰Â”\«‚ ‚è
+//		InterlockedExchange(&g_retargetbatchflag, (LONG)0);//WM_CLOSEã§å¤‰ã‚ã‚‹å¯èƒ½æ€§ã‚ã‚Š
 //
 //		ChangeLimitDegFlag(s_savelimitdegflag, true, true);
 //		//g_limitdegflag = s_savelimitdegflag;
@@ -37795,28 +37834,28 @@ void OnGUIEventSpeed()
 
 //void WaitMotionCacheThreads()
 //{
-//	//if ((g_motioncachebatchflag == 2) || (g_motioncachebatchflag == 3)) {//2‚Íƒ_ƒCƒAƒƒO‚Å‚ÌƒLƒƒƒ“ƒZƒ‹
-//	if ((InterlockedAdd(&g_motioncachebatchflag, 0) == 2) || (InterlockedAdd(&g_motioncachebatchflag, 0) == 3)) {//2‚Íƒ_ƒCƒAƒƒO‚Å‚ÌƒLƒƒƒ“ƒZƒ‹
+//	//if ((g_motioncachebatchflag == 2) || (g_motioncachebatchflag == 3)) {//2ã¯ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã§ã®ã‚­ãƒ£ãƒ³ã‚»ãƒ«
+//	if ((InterlockedAdd(&g_motioncachebatchflag, 0) == 2) || (InterlockedAdd(&g_motioncachebatchflag, 0) == 3)) {//2ã¯ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã§ã®ã‚­ãƒ£ãƒ³ã‚»ãƒ«
 //		InterlockedExchange(&g_motioncachebatchflag, (LONG)0);
 //		if (s_motioncachebatchwnd) {
 //			SendMessage(s_motioncachebatchwnd, WM_CLOSE, 0, 0);
 //		}
 //		s_motioncachecnt = 0;
-//		InterlockedExchange(&g_motioncachebatchflag, (LONG)0);//WM_CLOSE‚Å•Ï‚í‚é‰Â”\«‚ ‚è
+//		InterlockedExchange(&g_motioncachebatchflag, (LONG)0);//WM_CLOSEã§å¤‰ã‚ã‚‹å¯èƒ½æ€§ã‚ã‚Š
 //	}
 //
 //}
 
 //void WaitBvh2FbxThreads()
 //{
-//	//if ((g_bvh2fbxbatchflag == 2) || (g_bvh2fbxbatchflag == 3)) {//2‚Íƒ_ƒCƒAƒƒO‚Å‚ÌƒLƒƒƒ“ƒZƒ‹
-//	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 2) || (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 3)) {//2‚Íƒ_ƒCƒAƒƒO‚Å‚ÌƒLƒƒƒ“ƒZƒ‹
+//	//if ((g_bvh2fbxbatchflag == 2) || (g_bvh2fbxbatchflag == 3)) {//2ã¯ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã§ã®ã‚­ãƒ£ãƒ³ã‚»ãƒ«
+//	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 2) || (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 3)) {//2ã¯ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã§ã®ã‚­ãƒ£ãƒ³ã‚»ãƒ«
 //		InterlockedExchange(&g_bvh2fbxbatchflag, (LONG)0);
 //		if (s_bvh2fbxbatchwnd) {
 //			SendMessage(s_bvh2fbxbatchwnd, WM_CLOSE, 0, 0);
 //		}
 //		s_bvh2fbxcnt = 0;
-//		InterlockedExchange(&g_bvh2fbxbatchflag, (LONG)0);//WM_CLOSE‚Å•Ï‚í‚é‰Â”\«‚ ‚è
+//		InterlockedExchange(&g_bvh2fbxbatchflag, (LONG)0);//WM_CLOSEã§å¤‰ã‚ã‚‹å¯èƒ½æ€§ã‚ã‚Š
 //	}
 //}
 
@@ -37825,7 +37864,7 @@ int SaveRtgHistory(WCHAR* selectname)
 	WCHAR saveprojpath[MAX_PATH] = { 0L };
 	wcscpy_s(saveprojpath, MAX_PATH, selectname);
 
-	//‘‚«‚İˆ—‚ª¬Œ÷‚µ‚Ä‚©‚ç—š—ğ‚ğ•Û‘¶‚·‚éBrtgƒtƒ@ƒCƒ‹B
+	//æ›¸ãè¾¼ã¿å‡¦ç†ãŒæˆåŠŸã—ã¦ã‹ã‚‰å±¥æ­´ã‚’ä¿å­˜ã™ã‚‹ã€‚rtgãƒ•ã‚¡ã‚¤ãƒ«ã€‚
 	size_t savepathlen;
 	saveprojpath[MAX_PATH - 1] = 0L;
 	savepathlen = wcslen(saveprojpath);
@@ -37860,7 +37899,7 @@ int Savebvh2FBXHistory(WCHAR* selectname)
 	wcscpy_s(saveprojpath, MAX_PATH, selectname);
 
 
-	//‘‚«‚İˆ—‚ª¬Œ÷‚µ‚Ä‚©‚ç—š—ğ‚ğ•Û‘¶‚·‚éBchaƒtƒ@ƒCƒ‹‚¾‚¯B
+	//æ›¸ãè¾¼ã¿å‡¦ç†ãŒæˆåŠŸã—ã¦ã‹ã‚‰å±¥æ­´ã‚’ä¿å­˜ã™ã‚‹ã€‚chaãƒ•ã‚¡ã‚¤ãƒ«ã ã‘ã€‚
 	size_t savepathlen;
 	saveprojpath[MAX_PATH - 1] = 0L;
 	savepathlen = wcslen(saveprojpath);
@@ -37894,7 +37933,7 @@ int SaveBatchHistory(WCHAR* selectname)
 	wcscpy_s(saveprojpath, MAX_PATH, selectname);
 
 
-	//‘‚«‚İˆ—‚ª¬Œ÷‚µ‚Ä‚©‚ç—š—ğ‚ğ•Û‘¶‚·‚éBchaƒtƒ@ƒCƒ‹‚¾‚¯B
+	//æ›¸ãè¾¼ã¿å‡¦ç†ãŒæˆåŠŸã—ã¦ã‹ã‚‰å±¥æ­´ã‚’ä¿å­˜ã™ã‚‹ã€‚chaãƒ•ã‚¡ã‚¤ãƒ«ã ã‘ã€‚
 	size_t savepathlen;
 	saveprojpath[MAX_PATH - 1] = 0L;
 	savepathlen = wcslen(saveprojpath);
@@ -37939,8 +37978,8 @@ int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha)
 	WIN32_FIND_DATA win32fd;
 	hFind = FindFirstFileW(searchfilename, &win32fd);
 
-	std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpƒtƒ@ƒCƒ‹–¼
-	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpƒtƒ@ƒCƒ‹“à‚É‘‚¢‚Ä‚ ‚éopenfilename
+	std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpãƒ•ã‚¡ã‚¤ãƒ«å
+	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpãƒ•ã‚¡ã‚¤ãƒ«å†…ã«æ›¸ã„ã¦ã‚ã‚‹openfilename
 
 	vechistory.clear();
 	bool notfoundfirst = true;
@@ -38054,8 +38093,8 @@ int GetRtgHistoryDir(std::vector<wstring>& dstvecopenfilename)
 	WIN32_FIND_DATA win32fd;
 	hFind = FindFirstFileW(searchfilename, &win32fd);
 
-	std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpƒtƒ@ƒCƒ‹–¼
-	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpƒtƒ@ƒCƒ‹“à‚É‘‚¢‚Ä‚ ‚éopenfilename
+	std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpãƒ•ã‚¡ã‚¤ãƒ«å
+	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpãƒ•ã‚¡ã‚¤ãƒ«å†…ã«æ›¸ã„ã¦ã‚ã‚‹openfilename
 
 	vechistory.clear();
 	bool notfoundfirst = true;
@@ -38149,8 +38188,8 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 	WIN32_FIND_DATA win32fd;
 	hFind = FindFirstFileW(searchfilename, &win32fd);
 
-	std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpƒtƒ@ƒCƒ‹–¼
-	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpƒtƒ@ƒCƒ‹“à‚É‘‚¢‚Ä‚ ‚éopenfilename
+	std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpãƒ•ã‚¡ã‚¤ãƒ«å
+	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpãƒ•ã‚¡ã‚¤ãƒ«å†…ã«æ›¸ã„ã¦ã‚ã‚‹openfilename
 
 	vechistory.clear();
 	bool notfoundfirst = true;
@@ -38243,8 +38282,8 @@ int GetCPTFileName(std::vector<HISTORYELEM>& dstvecopenfilename)
 	WIN32_FIND_DATA win32fd;
 	hFind = FindFirstFileW(searchfilename, &win32fd);
 
-	std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpƒtƒ@ƒCƒ‹–¼
-	//std::vector<wstring> vecopenfilename;//!!!!!!!! tmpƒtƒ@ƒCƒ‹“à‚É‘‚¢‚Ä‚ ‚éopenfilename
+	std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpãƒ•ã‚¡ã‚¤ãƒ«å
+	//std::vector<wstring> vecopenfilename;//!!!!!!!! tmpãƒ•ã‚¡ã‚¤ãƒ«å†…ã«æ›¸ã„ã¦ã‚ã‚‹openfilename
 
 	vechistory.clear();
 	bool notfoundfirst = true;
@@ -38279,7 +38318,7 @@ int GetCPTFileName(std::vector<HISTORYELEM>& dstvecopenfilename)
 			curelem = *itrhistoryelem;
 			int result = LoadCPIFile(&curelem);
 			//_ASSERT(result == 0);
-			*itrhistoryelem = curelem;//¸”s‚µ‚½‚É‚Ínewelem.hascpinfo = 0‚ªƒZƒbƒg‚³‚ê‚Ä‚¢‚é
+			*itrhistoryelem = curelem;//å¤±æ•—ã—ãŸæ™‚ã«ã¯newelem.hascpinfo = 0ãŒã‚»ãƒƒãƒˆã•ã‚Œã¦ã„ã‚‹
 		}
 	}
 
@@ -38309,8 +38348,8 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 	WIN32_FIND_DATA win32fd;
 	hFind = FindFirstFileW(searchfilename, &win32fd);
 
-	std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpƒtƒ@ƒCƒ‹–¼
-	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpƒtƒ@ƒCƒ‹“à‚É‘‚¢‚Ä‚ ‚éopenfilename
+	std::vector<HISTORYELEM> vechistory;//!!!!!!!!! tmpãƒ•ã‚¡ã‚¤ãƒ«å
+	std::vector<wstring> vecopenfilename;//!!!!!!!! tmpãƒ•ã‚¡ã‚¤ãƒ«å†…ã«æ›¸ã„ã¦ã‚ã‚‹openfilename
 
 	vechistory.clear();
 	bool notfoundfirst = true;
@@ -38400,7 +38439,7 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 //	framenumlen = sizeof(int);
 //	celen = sizeof(COPYELEM) * shdnum * cpframenum;
 //	//datasize = headerlen + numlen + celen;
-//	dstcharsize = headerlen + (shdnumlen * 2) + (framenumlen * 2) + (celen * 2) + 1;// charˆÈŠO‚Ì1byte --> 2•¶šA‚ÆI’[‚m‚t‚k‚k
+//	dstcharsize = headerlen + (shdnumlen * 2) + (framenumlen * 2) + (celen * 2) + 1;// charä»¥å¤–ã®1byte --> 2æ–‡å­—ã€ã¨çµ‚ç«¯ï¼®ï¼µï¼¬ï¼¬
 //
 //
 //	hGlobal = GlobalAlloc(GHND, dstcharsize);
@@ -38534,7 +38573,7 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 //	int minimumleng = headerleng + sizeof(int) * 2 + sizeof(int) * 2;
 //	if (srcleng <= minimumleng) {
 //		DbgOut("motparamdlg : PasteFromClipBoardData : srcleng 0 error !!!\n");
-//		::MessageBox(m_hWnd, "ƒNƒŠƒbƒvƒ{[ƒh‚Éƒf[ƒ^‚ª‚ ‚è‚Ü‚¹‚ñ‚Å‚µ‚½B", "ƒy[ƒXƒg¸”s", MB_OK);
+//		::MessageBox(m_hWnd, "ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ã«ãƒ‡ãƒ¼ã‚¿ãŒã‚ã‚Šã¾ã›ã‚“ã§ã—ãŸã€‚", "ãƒšãƒ¼ã‚¹ãƒˆå¤±æ•—", MB_OK);
 //		_ASSERT(0);
 //		GlobalUnlock(cbhg);
 //		return 1;
@@ -38545,7 +38584,7 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 //	cmp0 = strncmp(srcptr, clipboardheader2, headerleng);
 //	if (cmp0) {
 //		DbgOut("motparamdlg : PasteFromClipBoardData : invalid data type error !!!\n");
-//		::MessageBox(m_hWnd, "ƒNƒŠƒbƒvƒ{[ƒh‚Ìƒf[ƒ^‚Ìí—Ş‚ªˆá‚¢‚Ü‚·B", "ƒy[ƒXƒg¸”s", MB_OK);
+//		::MessageBox(m_hWnd, "ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ã®ãƒ‡ãƒ¼ã‚¿ã®ç¨®é¡ãŒé•ã„ã¾ã™ã€‚", "ãƒšãƒ¼ã‚¹ãƒˆå¤±æ•—", MB_OK);
 //		_ASSERT(0);
 //		GlobalUnlock(cbhg);
 //		return 1;
@@ -38558,7 +38597,7 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 //	ret = Char2Hex(srcptr + srcpos, (unsigned char*)&shdnum, sizeof(int) * 2);
 //	if (ret) {
 //		DbgOut("motparamdlg : PasteFromClipBoard : Char2Hex shdnum error !!!\n");
-//		::MessageBox(m_hWnd, "ƒNƒŠƒbƒvƒ{[ƒh‚Ìƒf[ƒ^‚ª•s³‚Å‚·B", "ƒy[ƒXƒg¸”s", MB_OK);
+//		::MessageBox(m_hWnd, "ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ã®ãƒ‡ãƒ¼ã‚¿ãŒä¸æ­£ã§ã™ã€‚", "ãƒšãƒ¼ã‚¹ãƒˆå¤±æ•—", MB_OK);
 //		_ASSERT(0);
 //		GlobalUnlock(cbhg);
 //		return 1;
@@ -38569,7 +38608,7 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 //	ret = Char2Hex(srcptr + srcpos, (unsigned char*)&framenum, sizeof(int) * 2);
 //	if (ret || (framenum <= 0) || (framenum > CPFRAMEMAX)) {
 //		DbgOut("motparamdlg : PasteFromClipBoard : Char2Hex framenum error !!!\n");
-//		::MessageBox(m_hWnd, "ƒNƒŠƒbƒvƒ{[ƒh‚Ìƒf[ƒ^‚ª•s³‚Å‚·B", "ƒy[ƒXƒg¸”s", MB_OK);
+//		::MessageBox(m_hWnd, "ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ã®ãƒ‡ãƒ¼ã‚¿ãŒä¸æ­£ã§ã™ã€‚", "ãƒšãƒ¼ã‚¹ãƒˆå¤±æ•—", MB_OK);
 //		_ASSERT(0);
 //		GlobalUnlock(cbhg);
 //		return 1;
@@ -38582,7 +38621,7 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 //	sizeondata = srcleng - headerleng - (sizeof(int) * 2) - (sizeof(int) * 2);
 //	if (sizeondata != (cesize * 2)) {
 //		DbgOut("motparamdlg : PasteFromClipBoard : data size error !!!\n");
-//		::MessageBox(m_hWnd, "ƒNƒŠƒbƒvƒ{[ƒh‚Ìƒf[ƒ^’·‚ª•s³‚Å‚·B", "ƒy[ƒXƒg¸”s", MB_OK);
+//		::MessageBox(m_hWnd, "ã‚¯ãƒªãƒƒãƒ—ãƒœãƒ¼ãƒ‰ã®ãƒ‡ãƒ¼ã‚¿é•·ãŒä¸æ­£ã§ã™ã€‚", "ãƒšãƒ¼ã‚¹ãƒˆå¤±æ•—", MB_OK);
 //		_ASSERT(0);
 //		GlobalUnlock(cbhg);
 //		return 1;
@@ -38599,7 +38638,7 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 //			ret = Char2Hex(srcptr + srcpos, (unsigned char*)&tempce, sizeof(COPYELEM) * 2);
 //			if (ret) {
 //				DbgOut("motparamdlg : PasteFromClipBoard : Char2Hex ce %d %d error !!!\n", ceno, shdnum);
-//				::MessageBox(m_hWnd, "ƒf[ƒ^•ÏŠ·’†‚ÉƒGƒ‰[‚ª¶‚¶‚Ü‚µ‚½B", "ƒy[ƒXƒg¸”s", MB_OK);
+//				::MessageBox(m_hWnd, "ãƒ‡ãƒ¼ã‚¿å¤‰æ›ä¸­ã«ã‚¨ãƒ©ãƒ¼ãŒç”Ÿã˜ã¾ã—ãŸã€‚", "ãƒšãƒ¼ã‚¹ãƒˆå¤±æ•—", MB_OK);
 //				_ASSERT(0);
 //				GlobalUnlock(cbhg);
 //				return 1;
@@ -38610,12 +38649,12 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 //
 //			if (tempce.mp.m_frameno >= 0) {
 //
-//				//tempce‚Ì–¼‘O‚É‘Î‰‚·‚éserialno‚ğ’T‚µA‚»‚Ìmp‚Éƒf[ƒ^‚ğƒRƒs[‚·‚éB
+//				//tempceã®åå‰ã«å¯¾å¿œã™ã‚‹serialnoã‚’æ¢ã—ã€ãã®mpã«ãƒ‡ãƒ¼ã‚¿ã‚’ã‚³ãƒ”ãƒ¼ã™ã‚‹ã€‚
 //				int chkleng;
 //				chkleng = (int)strlen(tempce.name);
 //				if (chkleng >= 256) {
 //					DbgOut("motparamdlg : PasteFromClipBoard : check tempce name error %d !!!\n", ceno);
-//					::MessageBox(m_hWnd, "•s³‚È–¼‘O‚ªŒ©‚Â‚©‚è‚Ü‚µ‚½B‚P", "ƒy[ƒXƒg¸”s", MB_OK);
+//					::MessageBox(m_hWnd, "ä¸æ­£ãªåå‰ãŒè¦‹ã¤ã‹ã‚Šã¾ã—ãŸã€‚ï¼‘", "ãƒšãƒ¼ã‚¹ãƒˆå¤±æ•—", MB_OK);
 //					_ASSERT(0);
 //					GlobalUnlock(cbhg);
 //					return 1;
@@ -38626,7 +38665,7 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 //				ret = m_thandler->GetBoneNoByName(tempce.name, &findno, m_shandler, 0);
 //				if (ret) {
 //					DbgOut("motparamdlg : PasteFromClipBoard : GetPartNoByName error !!!\n");
-//					::MessageBox(m_hWnd, "•s³‚È–¼‘O‚ªŒ©‚Â‚©‚è‚Ü‚µ‚½B‚Q", "ƒy[ƒXƒg¸”s", MB_OK);
+//					::MessageBox(m_hWnd, "ä¸æ­£ãªåå‰ãŒè¦‹ã¤ã‹ã‚Šã¾ã—ãŸã€‚ï¼’", "ãƒšãƒ¼ã‚¹ãƒˆå¤±æ•—", MB_OK);
 //					_ASSERT(0);
 //					GlobalUnlock(cbhg);
 //					return 1;
@@ -38748,7 +38787,7 @@ int WriteCPTFile(WCHAR* dstfilename)
 
 	char CPTheader[256];
 	::ZeroMemory(CPTheader, sizeof(char) * 256);
-	strcpy_s(CPTheader, 256, "MB3DTempCopyFramesFile ver1.0.0.18");//–{‘Ì‚Å‚Í‚È‚¢
+	strcpy_s(CPTheader, 256, "MB3DTempCopyFramesFile ver1.0.0.18");//æœ¬ä½“ã§ã¯ãªã„
 
 	DWORD wleng = 0;
 	WriteFile(hfile, CPTheader, sizeof(char) * 256, &wleng, NULL);
@@ -38855,7 +38894,7 @@ int WriteCPIFile(WCHAR* srccptfilename)
 			double framenum;
 			int bvhtype;//0:undef, 1-144:bvh1 - bvh144, -1:bvh_other
 			int importance;//0:undef, 1:tiny, 2:alittle, 3:normal, 4:noticed, 5:imortant, 6:very important
-			WCHAR comment[32];//WCHAR * 31•¶š‚Ü‚ÅB‚R‚Q•¶š–Ú‚ÍI’[‹L†
+			WCHAR comment[32];//WCHAR * 31æ–‡å­—ã¾ã§ã€‚ï¼“ï¼’æ–‡å­—ç›®ã¯çµ‚ç«¯è¨˜å·
 
 		}CPMOTINFO;
 	*/
@@ -38886,7 +38925,7 @@ int WriteCPIFile(WCHAR* srccptfilename)
 	}
 
 
-	//cpiƒtƒ@ƒCƒ‹–¼‚Ícptƒtƒ@ƒCƒ‹‚ÌŠg’£q‚ğcpi‚É•Ï‚¦‚½‚à‚Ì
+	//cpiãƒ•ã‚¡ã‚¤ãƒ«åã¯cptãƒ•ã‚¡ã‚¤ãƒ«ã®æ‹¡å¼µå­ã‚’cpiã«å¤‰ãˆãŸã‚‚ã®
 	WCHAR cpifilename[MAX_PATH] = { 0L };
 	wcscpy_s(cpifilename, MAX_PATH, srccptfilename);
 	WCHAR* pext;
@@ -38909,7 +38948,7 @@ int WriteCPIFile(WCHAR* srccptfilename)
 
 	char CPTheader[256];
 	::ZeroMemory(CPTheader, sizeof(char) * 256);
-	strcpy_s(CPTheader, 256, "MB3DTempCopyInfoFile ver1.0.0.18");//–{‘Ì‚Å‚Í‚È‚¢
+	strcpy_s(CPTheader, 256, "MB3DTempCopyInfoFile ver1.0.0.18");//æœ¬ä½“ã§ã¯ãªã„
 
 	DWORD wleng = 0;
 	WriteFile(hfile, CPTheader, sizeof(char) * 256, &wleng, NULL);
@@ -38962,7 +39001,7 @@ bool ValidateCPIFile(char* dstCPIh, int* dstinfosize, char* srcbuf, DWORD buflen
 		return false;
 	}
 	int cmp18;
-	cmp18 = strcmp(dstCPIh, "MB3DTempCopyInfoFile ver1.0.0.18");//–{‘Ì‚Å‚Í‚È‚¢
+	cmp18 = strcmp(dstCPIh, "MB3DTempCopyInfoFile ver1.0.0.18");//æœ¬ä½“ã§ã¯ãªã„
 	if (cmp18 != 0) {
 		_ASSERT(0);
 		return false;
@@ -39023,15 +39062,15 @@ bool ValidateCPTFile(char* dstCPTh, int* dstcpelemnum, char* srcbuf, DWORD bufle
 	//int cmp7;
 	//int cmp8;
 	//int cmp9;
-	//cmp7 = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.7");//–{‘Ì‚Å‚Í‚È‚¢
-	//cmp8 = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.8");//–{‘Ì‚Å‚Í‚È‚¢
-	//cmp9 = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.9");//–{‘Ì‚Å‚Í‚È‚¢
+	//cmp7 = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.7");//æœ¬ä½“ã§ã¯ãªã„
+	//cmp8 = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.8");//æœ¬ä½“ã§ã¯ãªã„
+	//cmp9 = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.9");//æœ¬ä½“ã§ã¯ãªã„
 	//if ((cmp7 != 0) && (cmp8 != 0) && (cmp9 != 0)) {
 	//	_ASSERT(0);
 	//	return false;
 	//}
 	int cmp18;
-	cmp18 = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.18");//–{‘Ì‚Å‚Í‚È‚¢
+	cmp18 = strcmp(dstCPTh, "MB3DTempCopyFramesFile ver1.0.0.18");//æœ¬ä½“ã§ã¯ãªã„
 	if (cmp18 != 0) {
 		_ASSERT(0);
 		return false;
@@ -39365,7 +39404,7 @@ bool LoadCPTFile()
 
 void ChangeCurDirFromMameMediaToTest()
 {
-	//CurrentDirectory‚ªMameMedia‚É‚È‚Á‚Ä‚¢‚½‚Æ‚«‚É‚ÍTestƒfƒBƒŒƒNƒgƒŠ‚É•Ï‚¦‚é
+	//CurrentDirectoryãŒMameMediaã«ãªã£ã¦ã„ãŸã¨ãã«ã¯Testãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã«å¤‰ãˆã‚‹
 	WCHAR curdir[MAX_PATH] = { 0L };
 	ZeroMemory(curdir, sizeof(WCHAR) * MAX_PATH);
 	GetCurrentDirectory(MAX_PATH, curdir);
@@ -39424,8 +39463,8 @@ void InitTimelineSelection()
 void OnArrowKey()
 {
 
-	//ƒ}ƒEƒXƒJ[ƒ\ƒ‹‚ª‹N“®’†ƒ\ƒtƒg‚ÌƒEƒCƒ“ƒhƒE“à‚É‚ ‚éê‡‚¾‚¯ˆ—
-	//•¡”ŒÂ‚ÌEditMot‚ğ—§‚¿ã‚°‚½‚Æ‚«‚É‘€ì’†‚ÌEditMot‚¾‚¯‚É‰e‹¿‚·‚é‚æ‚¤‚É
+	//ãƒã‚¦ã‚¹ã‚«ãƒ¼ã‚½ãƒ«ãŒèµ·å‹•ä¸­ã‚½ãƒ•ãƒˆã®ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦å†…ã«ã‚ã‚‹å ´åˆã ã‘å‡¦ç†
+	//è¤‡æ•°å€‹ã®EditMotã‚’ç«‹ã¡ä¸Šã’ãŸã¨ãã«æ“ä½œä¸­ã®EditMotã ã‘ã«å½±éŸ¿ã™ã‚‹ã‚ˆã†ã«
 	POINT cursorpoint;
 	GetCursorPos(&cursorpoint);
 	::ScreenToClient(s_mainhwnd, &cursorpoint);
@@ -39433,7 +39472,7 @@ void OnArrowKey()
 	GetClientRect(s_mainhwnd, &appclientrect);
 	if ((cursorpoint.x < appclientrect.left) || (cursorpoint.x > appclientrect.right) ||
 		(cursorpoint.y < appclientrect.top) || (cursorpoint.y > appclientrect.bottom)) {
-		//MainWindowŠO‚É‚Â‚«ˆ—‚µ‚È‚¢
+		//MainWindowå¤–ã«ã¤ãå‡¦ç†ã—ãªã„
 		return;
 	}
 
@@ -39548,7 +39587,7 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 	selm.data[MATI_43] = 0.0f;
 
 
-	CalcSelectScale(curbone);//s_selectscale‚ÉƒZƒbƒg
+	CalcSelectScale(curbone);//s_selectscaleã«ã‚»ãƒƒãƒˆ
 
 	ChaMatrix scalemat;
 	ChaMatrixIdentity(&scalemat);
@@ -39646,7 +39685,7 @@ int PickRigBone(UIPICKINFO* ppickinfo)
 
 							CBone* chkbone = s_model->GetBoneByID(s_curboneno);
 							if (chkbone != s_customrigbone) {
-								//ŠJ‚¢‚Ä‚¢‚éİ’èƒ_ƒCƒAƒƒO‚ğ•Â‚¶‚È‚¢‚ÆAİ’èƒ_ƒCƒAƒƒO‚Ìrigbone‚ÆV‚½‚Èrigbone‚ªˆÙ‚È‚Á‚Ä‚µ‚Ü‚¢AApplyƒ{ƒ^ƒ“‚ÅˆÙ‚È‚éƒŠƒO‚ğ•Û‘¶‚·‚é‚±‚Æ‚ª‚ ‚é
+								//é–‹ã„ã¦ã„ã‚‹è¨­å®šãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’é–‰ã˜ãªã„ã¨ã€è¨­å®šãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®rigboneã¨æ–°ãŸãªrigboneãŒç•°ãªã£ã¦ã—ã¾ã„ã€Applyãƒœã‚¿ãƒ³ã§ç•°ãªã‚‹ãƒªã‚°ã‚’ä¿å­˜ã™ã‚‹ã“ã¨ãŒã‚ã‚‹
 								if (s_customrigdlg) {
 									DestroyWindow(s_customrigdlg);
 									s_customrigdlg = 0;
@@ -39856,7 +39895,7 @@ void RollbackBrushState(BRUSHSTATE srcbrushstate)
 	g_brushmirrorUflag = srcbrushstate.brushmirrorUflag;
 	g_brushmirrorVflag = srcbrushstate.brushmirrorVflag;
 	g_ifmirrorVDiv2flag = srcbrushstate.ifmirrorVDiv2flag;
-	ChangeLimitDegFlag(srcbrushstate.limitdegflag, false, false);//RollbackBrushStateŒÄ‚Ño‚µŒ³‚Ì‰º•û‚É‚ÄApplyNewLimitsToWM();‚ğŒÄ‚Ô‚Ì‚Å‚R”Ô–Ú‚Ìˆø”‚Ífalse
+	ChangeLimitDegFlag(srcbrushstate.limitdegflag, false, false);//RollbackBrushStateå‘¼ã³å‡ºã—å…ƒã®ä¸‹æ–¹ã«ã¦ApplyNewLimitsToWM();ã‚’å‘¼ã¶ã®ã§ï¼“ç•ªç›®ã®å¼•æ•°ã¯false
 	//g_limitdegflag = srcbrushstate.limitdegflag;
 	g_motionbrush_method = srcbrushstate.motionbrush_method;
 	g_wallscrapingikflag = srcbrushstate.wallscrapingikflag;
@@ -39976,7 +40015,7 @@ int FilterFunc()
 						}
 
 
-						//nodlg‚Ìê‡‚Í@‰½‰ñ‚©ˆ—‚µ‚Ä‚©‚ç@ŒÄ‚Ño‚µŒ³‚ÅCopyLimitedWorldToWorld‚·‚é
+						//nodlgã®å ´åˆã¯ã€€ä½•å›ã‹å‡¦ç†ã—ã¦ã‹ã‚‰ã€€å‘¼ã³å‡ºã—å…ƒã§CopyLimitedWorldToWorldã™ã‚‹
 						if (s_filternodlg == false) {
 							if (g_limitdegflag == true) {
 								bool allframeflag = false;
@@ -40025,7 +40064,7 @@ int CallFilterFunc(int callnum)
 		}
 
 
-		//limited‚Ö‚Ì•ÏX‚ğ@world‚É”½‰f
+		//limitedã¸ã®å¤‰æ›´ã‚’ã€€worldã«åæ˜ 
 		if (g_limitdegflag == true) {
 			bool allframeflag = false;
 			bool setcursorflag = false;
