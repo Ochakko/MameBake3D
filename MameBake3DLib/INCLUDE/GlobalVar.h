@@ -57,6 +57,7 @@ class CInfoWindow;
 bool g_rotatetanim = false;
 bool g_tpose = true;
 bool g_preciseOnPreviewToo = false;
+bool g_x180flag = false;
 
 float g_AmbientFactorAtLoading = 1.0f;
 float g_DiffuseFactorAtLoading = 1.0f;
@@ -244,6 +245,7 @@ double g_playingend = 1.0;
 extern bool g_rotatetanim;
 extern bool g_tpose;
 extern bool g_preciseOnPreviewToo;
+extern bool g_x180flag;
 
 extern float g_AmbientFactorAtLoading;
 extern float g_DiffuseFactorAtLoading;

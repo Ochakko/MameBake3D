@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include <windows.h>
 #include <math.h>
 
@@ -47,11 +47,11 @@
 
 //extern bool g_wmatDirectSetFlag;//!!!!!!!!!!!!
 extern bool g_underIKRot;
-
+extern bool g_x180flag;
 
 
 //########################################################################################################
-// 	‚±‚±‚©‚ç@//https://lxjk.github.io/2020/02/07/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained-JP.html
+// 	ã“ã“ã‹ã‚‰ã€€//https://lxjk.github.io/2020/02/07/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained-JP.html
 //########################################################################################################
 #define MakeShuffleMask(x,y,z,w)           (x | (y<<2) | (z<<4) | (w<<6))
 
@@ -95,15 +95,15 @@ __forceinline __m128 Mat2MulAdj(__m128 vec1, __m128 vec2)
 			_mm_mul_ps(VecSwizzle(vec1, 1, 0, 3, 2), VecSwizzle(vec2, 2, 1, 2, 1)));
 }
 //########################################################################################################
-// 	‚±‚±‚Ü‚Å@//https://lxjk.github.io/2020/02/07/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained-JP.html
+// 	ã“ã“ã¾ã§ã€€//https://lxjk.github.io/2020/02/07/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained-JP.html
 //########################################################################################################
 
 
 //###########################################################################################################
-// ‚±‚±‚©‚ç@https://www.isus.jp/games/using-simd-technologies-on-intel-architecture-to-speed-up-game-code/
+// ã“ã“ã‹ã‚‰ã€€https://www.isus.jp/games/using-simd-technologies-on-intel-architecture-to-speed-up-game-code/
 //###########################################################################################################
 #define SHUFFLE_PARAM(x, y, z, w) ((x) | ((y) << 2) | ((z) << 4) | ((w) << 6))
-//“¯‚¶—v‘f‚Ì’l‚ğ“¯‚ÉŒvZ‚·‚é‚½‚ßA4 ‚Â‚Ì“¯‚¶’P¸“x•‚“®¬”“_’l‚ğ 1 ‚Â‚Ì __m128 ƒf[ƒ^‚Éİ’è‚µ‚Ü‚·B
+//åŒã˜è¦ç´ ã®å€¤ã‚’åŒæ™‚ã«è¨ˆç®—ã™ã‚‹ãŸã‚ã€4 ã¤ã®åŒã˜å˜ç²¾åº¦æµ®å‹•å°æ•°ç‚¹å€¤ã‚’ 1 ã¤ã® __m128 ãƒ‡ãƒ¼ã‚¿ã«è¨­å®šã—ã¾ã™ã€‚
 
 #define _mm_madd_ps(a, b, c) _mm_add_ps(_mm_mul_ps((a), (b)), (c))
 
@@ -116,7 +116,7 @@ __forceinline __m128 Mat2MulAdj(__m128 vec1, __m128 vec2)
 
 #define _mm_replicate_w_ps(v) _mm_shuffle_ps((v), (v), SHUFFLE_PARAM(3, 3, 3, 3))
 //###########################################################################################################
-// ‚±‚±‚Ü‚Å@https://www.isus.jp/games/using-simd-technologies-on-intel-architecture-to-speed-up-game-code/
+// ã“ã“ã¾ã§ã€€https://www.isus.jp/games/using-simd-technologies-on-intel-architecture-to-speed-up-game-code/
 //###########################################################################################################
 
 
@@ -170,7 +170,7 @@ int vec3RotateY(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
-	ChaVector3 tmpsrcvec = *srcvec;//dstvec‚Æsrcvec‚ª“¯ˆêƒ|ƒCƒ“ƒ^‚Ìê‡‚É‘Î‰
+	ChaVector3 tmpsrcvec = *srcvec;//dstvecã¨srcvecãŒåŒä¸€ãƒã‚¤ãƒ³ã‚¿ã®å ´åˆã«å¯¾å¿œ
 	
 	ChaVector3TransformCoord(dstvec, &tmpsrcvec, &dirm);
 	//dstvec->x = (float)((double)dirm.data[MATI_11] * (double)tmpsrcvec.x + (double)dirm.data[MATI_21] * (double)tmpsrcvec.y + (double)dirm.data[MATI_31] * (double)tmpsrcvec.z + (double)dirm.data[MATI_41]);
@@ -191,7 +191,7 @@ int vec3RotateX(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
-	ChaVector3 tmpsrcvec = *srcvec;//dstvec‚Æsrcvec‚ª“¯ˆêƒ|ƒCƒ“ƒ^‚Ìê‡‚É‘Î‰
+	ChaVector3 tmpsrcvec = *srcvec;//dstvecã¨srcvecãŒåŒä¸€ãƒã‚¤ãƒ³ã‚¿ã®å ´åˆã«å¯¾å¿œ
 
 	ChaVector3TransformCoord(dstvec, &tmpsrcvec, &dirm);
 	//dstvec->x = (float)((double)dirm.data[MATI_11] * (double)tmpsrcvec.x + (double)dirm.data[MATI_21] * (double)tmpsrcvec.y + (double)dirm.data[MATI_31] * (double)tmpsrcvec.z + (double)dirm.data[MATI_41]);
@@ -213,7 +213,7 @@ int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 	_ASSERT(!ret);
 	dirm = dirq.MakeRotMatX();
 
-	ChaVector3 tmpsrcvec = *srcvec;//dstvec‚Æsrcvec‚ª“¯ˆêƒ|ƒCƒ“ƒ^‚Ìê‡‚É‘Î‰
+	ChaVector3 tmpsrcvec = *srcvec;//dstvecã¨srcvecãŒåŒä¸€ãƒã‚¤ãƒ³ã‚¿ã®å ´åˆã«å¯¾å¿œ
 
 	ChaVector3TransformCoord(dstvec, &tmpsrcvec, &dirm);
 	//dstvec->x = (float)((double)dirm.data[MATI_11] * (double)tmpsrcvec.x + (double)dirm.data[MATI_21] * (double)tmpsrcvec.y + (double)dirm.data[MATI_31] * (double)tmpsrcvec.z + (double)dirm.data[MATI_41]);
@@ -263,9 +263,9 @@ int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 //	if( lengthVec(shadowVec) == 0 ){
 //	eulerY= 90.0
 //	}else{
-//	E3DACos ( vecDotVec(shadowVec,axisZVec)/ lengthVec(shadowVec) ), eulerY		//Y²‰ñ“]“x”
+//	E3DACos ( vecDotVec(shadowVec,axisZVec)/ lengthVec(shadowVec) ), eulerY		//Yè»¸å›è»¢åº¦æ•°
 //	}
-//	if( vecDotVec(shadowVec,axisXVec) < 0.0 ){ eulerY= -eulerY }				//‰E‰ñ‚è‚ÉC³
+//	if( vecDotVec(shadowVec,axisXVec) < 0.0 ){ eulerY= -eulerY }				//å³å›ã‚Šã«ä¿®æ­£
 //	***/
 //	vec3RotateY(&tmpVec, -Euler->y, &targetVec);
 //	shadowVec.x = 0.0f;
@@ -285,9 +285,9 @@ int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 //	if( lengthVec(shadowVec) == 0 ){
 //	eulerX= 90.0
 //	}else{
-//	E3DACos ( vecDotVec(shadowVec,axisZVec)/ lengthVec(shadowVec) ), eulerX		//X²‰ñ“]“x”
+//	E3DACos ( vecDotVec(shadowVec,axisZVec)/ lengthVec(shadowVec) ), eulerX		//Xè»¸å›è»¢åº¦æ•°
 //	}
-//	if( vecDotVec(shadowVec,axisYVec) > 0.0 ){ eulerX= -eulerX }				//‰E‰ñ‚è‚ÉC³
+//	if( vecDotVec(shadowVec,axisYVec) > 0.0 ){ eulerX= -eulerX }				//å³å›ã‚Šã«ä¿®æ­£
 //	***/
 //
 //	EQ.Rotate(&targetVec, axisYVec);
@@ -310,14 +310,14 @@ int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 //	E3DMultQVec targetQ,0.0,1.0,0.0,targetVec.0,targetVec.1,targetVec.2
 //	E3DVec3RotateY (targetVec.0+0.0),(targetVec.1+0.0),(targetVec.2+0.0),(-eulerY),targetVec.0,targetVec.1,targetVec.2
 //	E3DVec3RotateY targetVec.2,targetVec.0,targetVec.1,(-eulerX),shadowVec.2,shadowVec.0,shadowVec.1
-//	@@----> ˆø”‚ªZ,X,Y‚É‚È‚Á‚Ä‚¢‚é‚½‚ßRotateX‚Æ“¯‚¶III
+//	ã€€ã€€----> å¼•æ•°ãŒZ,X,Yã«ãªã£ã¦ã„ã‚‹ãŸã‚RotateXã¨åŒã˜ï¼ï¼ï¼
 //
 //	  if( lengthVec(shadowVec) == 0 ){
 //	  eulerZ= 90.0
 //	  }else{
-//	  E3DACos ( vecDotVec(shadowVec,axisYVec)/ lengthVec(shadowVec) ), eulerZ		//Z²‰ñ“]“x”
+//	  E3DACos ( vecDotVec(shadowVec,axisYVec)/ lengthVec(shadowVec) ), eulerZ		//Zè»¸å›è»¢åº¦æ•°
 //	  }
-//	  if( vecDotVec(shadowVec,axisXVec) > 0.0 ){ eulerZ= -eulerZ }				//‰E‰ñ‚è‚ÉC³
+//	  if( vecDotVec(shadowVec,axisXVec) > 0.0 ){ eulerZ= -eulerZ }				//å³å›ã‚Šã«ä¿®æ­£
 //
 //	  ***/
 //	return 0;
@@ -340,26 +340,26 @@ int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 //int modifyEuler(ChaVector3* eulerA, ChaVector3* eulerB)
 //{
 //
-//	//ƒIƒCƒ‰[ŠpA‚Ì’l‚ğƒIƒCƒ‰[ŠpB‚Ì’l‚É‹ß‚¢•\¦‚ÉC³
+//	//ã‚ªã‚¤ãƒ©ãƒ¼è§’Aã®å€¤ã‚’ã‚ªã‚¤ãƒ©ãƒ¼è§’Bã®å€¤ã«è¿‘ã„è¡¨ç¤ºã«ä¿®æ­£
 //	float tmpX1, tmpY1, tmpZ1;
 //	float tmpX2, tmpY2, tmpZ2;
 //	float s1, s2;
 //
-//	//—\‘z‚³‚ê‚éŠp“x1
+//	//äºˆæƒ³ã•ã‚Œã‚‹è§’åº¦1
 //	tmpX1 = eulerA->x + 360.0f * GetRound((eulerB->x - eulerA->x) / 360.0f);
 //	tmpY1 = eulerA->y + 360.0f * GetRound((eulerB->y - eulerA->y) / 360.0f);
 //	tmpZ1 = eulerA->z + 360.0f * GetRound((eulerB->z - eulerA->z) / 360.0f);
 //
-//	//—\‘z‚³‚ê‚éŠp“x2
+//	//äºˆæƒ³ã•ã‚Œã‚‹è§’åº¦2
 //	tmpX2 = 180.0f - eulerA->x + 360.0f * GetRound((eulerB->x + eulerA->x - 180.0f) / 360.0f);
 //	tmpY2 = eulerA->y + 180.0f + 360.0f * GetRound((eulerB->y - eulerA->y - 180.0f) / 360.0f);
 //	tmpZ2 = eulerA->z + 180.0f + 360.0f * GetRound((eulerB->z - eulerA->z - 180.0f) / 360.0f);
 //
-//	//Šp“x•Ï‰»‚Ì‘å‚«‚³
+//	//è§’åº¦å¤‰åŒ–ã®å¤§ãã•
 //	s1 = (eulerB->x - tmpX1) * (eulerB->x - tmpX1) + (eulerB->y - tmpY1) * (eulerB->y - tmpY1) + (eulerB->z - tmpZ1) * (eulerB->z - tmpZ1);
 //	s2 = (eulerB->x - tmpX2) * (eulerB->x - tmpX2) + (eulerB->y - tmpY2) * (eulerB->y - tmpY2) + (eulerB->z - tmpZ2) * (eulerB->z - tmpZ2);
 //
-//	//•Ï‰»‚Ì­‚È‚¢•û‚ÉC³
+//	//å¤‰åŒ–ã®å°‘ãªã„æ–¹ã«ä¿®æ­£
 //	if (s1 < s2) {
 //		eulerA->x = tmpX1; eulerA->y = tmpY1; eulerA->z = tmpZ1;
 //	}
@@ -546,45 +546,45 @@ void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, Cha
 	len2 = VecLength(vec2);
 	len3 = VecLength(vec3);
 
-	//Ÿ‚ÌƒRƒƒ“ƒgƒAƒEƒgƒR[ƒh‚Å‚Ík¬o—ˆ‚È‚¢
+	//æ¬¡ã®ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆã‚³ãƒ¼ãƒ‰ã§ã¯ç¸®å°å‡ºæ¥ãªã„
 	//if ((fabs(len1) - 1.0) < 0.0001) {
-	//	len1 = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ğ–h~
+	//	len1 = 1.0;//èª¤å·®ã§æ€¥ã«å¤§ãã•ãŒå¤‰ã‚ã‚‹ã®ã‚’é˜²æ­¢
 	//}
 	//if (fabs(len1) < 0.0001) {
-	//	len1 = 0.0001;//0scale‹Ö~
+	//	len1 = 0.0001;//0scaleç¦æ­¢
 	//}
 	//if ((fabs(len2) - 1.0) < 0.0001) {
-	//	len2 = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ğ–h~
+	//	len2 = 1.0;//èª¤å·®ã§æ€¥ã«å¤§ãã•ãŒå¤‰ã‚ã‚‹ã®ã‚’é˜²æ­¢
 	//}
 	//if (fabs(len2) < 0.0001) {
-	//	len2 = 0.0001;//0scale‹Ö~
+	//	len2 = 0.0001;//0scaleç¦æ­¢
 	//}
 	//if ((fabs(len3) - 1.0) < 0.0001) {
-	//	len3 = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ğ–h~
+	//	len3 = 1.0;//èª¤å·®ã§æ€¥ã«å¤§ãã•ãŒå¤‰ã‚ã‚‹ã®ã‚’é˜²æ­¢
 	//}
 	//if (fabs(len3) < 0.0001) {
-	//	len3 = 0.0001;//0scale‹Ö~
+	//	len3 = 0.0001;//0scaleç¦æ­¢
 	//}
 
 
 	//2021/12/01
 	if (((len1 - 1.0) > 0.0) && ((len1 - 1.0) < 0.00001)) {
-		len1 = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ğ–h~
+		len1 = 1.0;//èª¤å·®ã§æ€¥ã«å¤§ãã•ãŒå¤‰ã‚ã‚‹ã®ã‚’é˜²æ­¢
 	}
 	if (len1 < 0.00001) {
-		len1 = 0.00001;//0scale‹Ö~
+		len1 = 0.00001;//0scaleç¦æ­¢
 	}
 	if (((len2 - 1.0) > 0.0) && ((len2 - 1.0) < 0.00001)) {
-		len2 = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ğ–h~
+		len2 = 1.0;//èª¤å·®ã§æ€¥ã«å¤§ãã•ãŒå¤‰ã‚ã‚‹ã®ã‚’é˜²æ­¢
 	}
 	if (len2 < 0.00001) {
-		len2 = 0.00001;//0scale‹Ö~
+		len2 = 0.00001;//0scaleç¦æ­¢
 	}
 	if (((len3 - 1.0) > 0.0) && ((len3 - 1.0) < 0.00001)) {
-		len3 = 1.0;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ğ–h~
+		len3 = 1.0;//èª¤å·®ã§æ€¥ã«å¤§ãã•ãŒå¤‰ã‚ã‚‹ã®ã‚’é˜²æ­¢
 	}
 	if (len3 < 0.00001) {
-		len3 = 0.00001;//0scale‹Ö~
+		len3 = 0.00001;//0scaleç¦æ­¢
 	}
 
 
@@ -792,22 +792,22 @@ ChaMatrix ChaMatrixKeepScale(ChaMatrix srcmat, ChaVector3 srcsvec)
 
 
 	if (((srcsvec.x - 1.0f) > -0.00003f) && ((srcsvec.x - 1.0f) < 0.00003f)) {
-		srcsvec.x = 1.0f;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ğ–h~
+		srcsvec.x = 1.0f;//èª¤å·®ã§æ€¥ã«å¤§ãã•ãŒå¤‰ã‚ã‚‹ã®ã‚’é˜²æ­¢
 	}
 	if (srcsvec.x < 0.00003f) {
-		srcsvec.x = 0.000030f;//0scale‹Ö~
+		srcsvec.x = 0.000030f;//0scaleç¦æ­¢
 	}
 	if (((srcsvec.y - 1.0f) > -0.00003f) && ((srcsvec.y - 1.0f) < 0.00003f)) {
-		srcsvec.y = 1.0f;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ğ–h~
+		srcsvec.y = 1.0f;//èª¤å·®ã§æ€¥ã«å¤§ãã•ãŒå¤‰ã‚ã‚‹ã®ã‚’é˜²æ­¢
 	}
 	if (srcsvec.y < 0.00003f) {
-		srcsvec.y = 0.000030f;//0scale‹Ö~
+		srcsvec.y = 0.000030f;//0scaleç¦æ­¢
 	}
 	if (((srcsvec.z - 1.0f) > -0.00003f) && ((srcsvec.z - 1.0f) < 0.00003f)) {
-		srcsvec.z = 1.0f;//Œë·‚Å‹}‚É‘å‚«‚³‚ª•Ï‚í‚é‚Ì‚ğ–h~
+		srcsvec.z = 1.0f;//èª¤å·®ã§æ€¥ã«å¤§ãã•ãŒå¤‰ã‚ã‚‹ã®ã‚’é˜²æ­¢
 	}
 	if (srcsvec.z < 0.00003f) {
-		srcsvec.z = 0.000030f;//0scale‹Ö~
+		srcsvec.z = 0.000030f;//0scaleç¦æ­¢
 	}
 	keepvecx = vecx0 * srcsvec.x;
 	keepvecy = vecy0 * srcsvec.y;
@@ -870,7 +870,7 @@ ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodema
 			tmpmat = befrotmat * *srcsmat * *srcrmat * aftrotmat;
 		}
 
-		//2023/02/12 ƒXƒP[ƒ‹Œë·‚É‚æ‚éƒOƒ‰ƒtƒMƒUƒMƒU‘Îô
+		//2023/02/12 ã‚¹ã‚±ãƒ¼ãƒ«èª¤å·®ã«ã‚ˆã‚‹ã‚°ãƒ©ãƒ•ã‚®ã‚¶ã‚®ã‚¶å¯¾ç­–
 		ChaVector3 keepscale;
 		keepscale.x = srcsmat->data[MATI_11];
 		keepscale.y = srcsmat->data[MATI_22];
@@ -888,7 +888,7 @@ ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodema
 			tmpmat = befrotmat * *srcrmat * aftrotmat;
 		}
 
-		//2023/02/12 ƒXƒP[ƒ‹Œë·‚É‚æ‚éƒOƒ‰ƒtƒMƒUƒMƒU‘Îô
+		//2023/02/12 ã‚¹ã‚±ãƒ¼ãƒ«èª¤å·®ã«ã‚ˆã‚‹ã‚°ãƒ©ãƒ•ã‚®ã‚¶ã‚®ã‚¶å¯¾ç­–
 		ChaVector3 keepscale = ChaVector3(1.0f, 1.0f, 1.0f);
 		retmat = ChaMatrixKeepScale(tmpmat, keepscale);
 	}
@@ -899,7 +899,7 @@ ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodema
 
 ChaMatrix GetS0RTMatrix(ChaMatrix srcmat) 
 {
-	//Šg‘åk¬‚ğ‰Šú‰»‚µ‚½RTs—ñ‚ğ•Ô‚·
+	//æ‹¡å¤§ç¸®å°ã‚’åˆæœŸåŒ–ã—ãŸRTè¡Œåˆ—ã‚’è¿”ã™
 	ChaMatrix retm;
 	ChaVector3 svec, tvec;
 	ChaMatrix rmat, tmat;
@@ -1306,7 +1306,7 @@ FbxAMatrix ChaMatrix::FBXAMATRIX()
 
 void ChaMatrix::SetTranslation(ChaVector3 srctra)
 {
-	//‰Šú‰»‚µ‚È‚¢
+	//åˆæœŸåŒ–ã—ãªã„
 
 	data[MATI_41] = srctra.x;
 	data[MATI_42] = srctra.y;
@@ -1314,13 +1314,13 @@ void ChaMatrix::SetTranslation(ChaVector3 srctra)
 }
 void ChaMatrix::SetXYZRotation(CQuaternion* srcaxisq, ChaVector3 srceul)
 {
-	//‰Šú‰»‚µ‚È‚¢
+	//åˆæœŸåŒ–ã—ãªã„
 	ChaMatrix rotmat = srceul.MakeXYZRotMat(srcaxisq);
 	SetBasis(rotmat);
 }
 void ChaMatrix::SetXYZRotation(CQuaternion* srcaxisq, CQuaternion srcq)
 {
-	//‰Šú‰»‚µ‚È‚¢
+	//åˆæœŸåŒ–ã—ãªã„
 
 	CQuaternion EQ;
 	if (srcaxisq) {
@@ -1336,7 +1336,7 @@ void ChaMatrix::SetXYZRotation(CQuaternion* srcaxisq, CQuaternion srcq)
 }
 void ChaMatrix::SetScale(ChaVector3 srcscale)
 {
-	//‰Šú‰»‚µ‚È‚¢
+	//åˆæœŸåŒ–ã—ãªã„
 
 	data[MATI_11] = srcscale.x;
 	data[MATI_22] = srcscale.y;
@@ -1345,7 +1345,7 @@ void ChaMatrix::SetScale(ChaVector3 srcscale)
 }
 void ChaMatrix::SetBasis(ChaMatrix srcmat)
 {
-	//‰Šú‰»‚µ‚È‚¢@copy3x3
+	//åˆæœŸåŒ–ã—ãªã„ã€€copy3x3
 	data[MATI_11] = srcmat.data[MATI_11];
 	data[MATI_12] = srcmat.data[MATI_12];
 	data[MATI_13] = srcmat.data[MATI_13];
@@ -1764,7 +1764,7 @@ int CQuaternion::SetParams(DirectX::XMFLOAT4 srcxq)
 float CQuaternion::QuaternionLimitPhai(float srcphai) 
 {
 	//#######################################################
-	//srcphai‚ğ-180“x‚©‚ç180“x‚É’¼‚µ‚Ä‚©‚çƒNƒH[ƒ^ƒjƒIƒ“‚Ìİ’è‚ğ‚·‚é
+	//srcphaiã‚’-180åº¦ã‹ã‚‰180åº¦ã«ç›´ã—ã¦ã‹ã‚‰ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã®è¨­å®šã‚’ã™ã‚‹
 	//#######################################################
 
 	float retphai = 0.0f;
@@ -1880,7 +1880,7 @@ int CQuaternion::SetAxisAndRot(ChaVector3 srcaxis, double phai)
 
 int CQuaternion::SetRotationXYZ(CQuaternion* axisq, ChaVector3 srcdeg)
 {
-	// X²AY²AZ²‚Ì‡”Ô‚ÅA‰ñ“]‚·‚éAƒNƒH[ƒ^ƒjƒIƒ“‚ğƒZƒbƒg‚·‚éB
+	// Xè»¸ã€Yè»¸ã€Zè»¸ã®é †ç•ªã§ã€å›è»¢ã™ã‚‹ã€ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
 
 	CQuaternion axisQ, invaxisQ;
 	if (axisq) {
@@ -1924,7 +1924,7 @@ int CQuaternion::SetRotationXYZ(CQuaternion* axisq, ChaVector3 srcdeg)
 
 int CQuaternion::SetRotationRadXYZ(CQuaternion* axisq, ChaVector3 srcrad)
 {
-	// X²AY²AZ²‚Ì‡”Ô‚ÅA‰ñ“]‚·‚éAƒNƒH[ƒ^ƒjƒIƒ“‚ğƒZƒbƒg‚·‚éB
+	// Xè»¸ã€Yè»¸ã€Zè»¸ã®é †ç•ªã§ã€å›è»¢ã™ã‚‹ã€ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
 
 	CQuaternion axisQ, invaxisQ;
 	if (axisq) {
@@ -1969,7 +1969,7 @@ int CQuaternion::SetRotationRadXYZ(CQuaternion* axisq, ChaVector3 srcrad)
 
 int CQuaternion::SetRotationXYZ(CQuaternion* axisq, double degx, double degy, double degz)
 {
-	// X²AY²AZ²‚Ì‡”Ô‚ÅA‰ñ“]‚·‚éAƒNƒH[ƒ^ƒjƒIƒ“‚ğƒZƒbƒg‚·‚éB
+	// Xè»¸ã€Yè»¸ã€Zè»¸ã®é †ç•ªã§ã€å›è»¢ã™ã‚‹ã€ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
 	CQuaternion axisQ, invaxisQ;
 	if (axisq) {
 		axisQ = *axisq;
@@ -2009,7 +2009,7 @@ int CQuaternion::SetRotationXYZ(CQuaternion* axisq, double degx, double degy, do
 
 int CQuaternion::SetRotationRadXYZ(CQuaternion* axisq, double radx, double rady, double radz)
 {
-	// X²AY²AZ²‚Ì‡”Ô‚ÅA‰ñ“]‚·‚éAƒNƒH[ƒ^ƒjƒIƒ“‚ğƒZƒbƒg‚·‚éB
+	// Xè»¸ã€Yè»¸ã€Zè»¸ã®é †ç•ªã§ã€å›è»¢ã™ã‚‹ã€ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
 	CQuaternion axisQ, invaxisQ;
 	if (axisq) {
 		axisQ = *axisq;
@@ -2050,7 +2050,7 @@ int CQuaternion::SetRotationRadXYZ(CQuaternion* axisq, double radx, double rady,
 
 int CQuaternion::SetRotationZXY(CQuaternion* axisq, ChaVector3 srcdeg)
 {
-	// Z²AX²AY²‚Ì‡”Ô‚ÅA‰ñ“]‚·‚éAƒNƒH[ƒ^ƒjƒIƒ“‚ğƒZƒbƒg‚·‚éB
+	// Zè»¸ã€Xè»¸ã€Yè»¸ã®é †ç•ªã§ã€å›è»¢ã™ã‚‹ã€ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
 
 	CQuaternion axisQ, invaxisQ;
 	if (axisq) {
@@ -2093,7 +2093,7 @@ int CQuaternion::SetRotationZXY(CQuaternion* axisq, ChaVector3 srcdeg)
 
 int CQuaternion::SetRotationZXY(CQuaternion* axisq, double degx, double degy, double degz)
 {
-	// Z²AX²AY²‚Ì‡”Ô‚ÅA‰ñ“]‚·‚éAƒNƒH[ƒ^ƒjƒIƒ“‚ğƒZƒbƒg‚·‚éB
+	// Zè»¸ã€Xè»¸ã€Yè»¸ã®é †ç•ªã§ã€å›è»¢ã™ã‚‹ã€ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
 	CQuaternion axisQ, invaxisQ;
 	if (axisq) {
 		axisQ = *axisq;
@@ -2213,7 +2213,7 @@ ChaMatrix CQuaternion::MakeRotMatX()
 	float data[16];
 	ZeroMemory(data, sizeof(float) * 16);
 
-	//“]’u
+	//è»¢ç½®
 	data[MATI_11] = (float)(1.0 - 2.0 * ((double)y * (double)y + (double)z * (double)z));
 	data[MATI_21] = (float)(2.0 * ((double)x * (double)y - (double)z * (double)w));
 	data[MATI_31] = (float)(2.0 * ((double)z * (double)x + (double)w * (double)y));
@@ -2267,15 +2267,15 @@ ChaMatrix CQuaternion::MakeRotMatX()
 
 void CQuaternion::RotationMatrix(ChaMatrix srcmat)
 {
-	//“]’u‘Oƒo[ƒWƒ‡ƒ“
+	//è»¢ç½®å‰ãƒãƒ¼ã‚¸ãƒ§ãƒ³
 
-	//CQuaternion‚Í gpar * par * cur‚Ì‡‚ÅŠ|‚¯‚éŒn
-	//ChaMatrix‚Í cur * par * gpar‚Ì‡‚ÅŠ|‚¯‚éŒn
-	//CQuaternion‚Ì‚É“]’u‚µ‚ÄChaMatrix‚Ì‚Æ‚«‚É‚»‚Ì‚Ü‚Ü‚ÅŒvZ‚ª‡‚¤B
+	//CQuaternionã¯ gpar * par * curã®é †ã§æ›ã‘ã‚‹ç³»
+	//ChaMatrixã¯ cur * par * gparã®é †ã§æ›ã‘ã‚‹ç³»
+	//CQuaternionã®æ™‚ã«è»¢ç½®ã—ã¦ChaMatrixã®ã¨ãã«ãã®ã¾ã¾ã§è¨ˆç®—ãŒåˆã†ã€‚
 
 	CQuaternion tmpq;
 
-	//ƒXƒP[ƒ‹‚ÉŠÖ‚µ‚Ä³‹K‰»‚µ‚½‰ñ“]‚©‚çQuaternion‚ğ‹‚ß‚éB‚»‚Ì‚½‚ß‚ÉSRT‚É•ª‰ğ‚·‚éB
+	//ã‚¹ã‚±ãƒ¼ãƒ«ã«é–¢ã—ã¦æ­£è¦åŒ–ã—ãŸå›è»¢ã‹ã‚‰Quaternionã‚’æ±‚ã‚ã‚‹ã€‚ãã®ãŸã‚ã«SRTã«åˆ†è§£ã™ã‚‹ã€‚
 	ChaVector3 svec, tvec;
 	ChaMatrix rmat;
 	GetSRTMatrix(srcmat, &svec, &rmat, &tvec);
@@ -2379,11 +2379,11 @@ void CQuaternion::RotationMatrix(ChaMatrix srcmat)
 /*
 void CQuaternion::RotationMatrix(ChaMatrix srcmat)
 {
-//“]’uŒãƒo[ƒWƒ‡ƒ“
+//è»¢ç½®å¾Œãƒãƒ¼ã‚¸ãƒ§ãƒ³
 
 CQuaternion tmpq;
 
-//ƒXƒP[ƒ‹‚ÉŠÖ‚µ‚Ä³‹K‰»‚µ‚½‰ñ“]‚©‚çQuaternion‚ğ‹‚ß‚éB‚»‚Ì‚½‚ß‚ÉSRT‚É•ª‰ğ‚·‚éB
+//ã‚¹ã‚±ãƒ¼ãƒ«ã«é–¢ã—ã¦æ­£è¦åŒ–ã—ãŸå›è»¢ã‹ã‚‰Quaternionã‚’æ±‚ã‚ã‚‹ã€‚ãã®ãŸã‚ã«SRTã«åˆ†è§£ã™ã‚‹ã€‚
 ChaVector3 svec, tvec;
 ChaMatrix rmat;
 GetSRTMatrix(srcmat, &svec, &rmat, &tvec);
@@ -2467,8 +2467,8 @@ double CQuaternion::CalcRad(CQuaternion srcq)
 	double retrad;
 	dot = this->DotProduct(srcq);
 
-	//!!!!!!!!!!@’ˆÓ@!!!!!!!!!!!!
-	//!!!! dot ‚ª‚P‚æ‚è”÷–­‚É‘å‚«‚¢’l‚Ì‚Æ‚«Akaku‚É‚ÍA–³Œø‚È’l(-1.#IN00)‚ª“ü‚Á‚Ä‚µ‚Ü‚¤B
+	//!!!!!!!!!!ã€€æ³¨æ„ã€€!!!!!!!!!!!!
+	//!!!! dot ãŒï¼‘ã‚ˆã‚Šå¾®å¦™ã«å¤§ãã„å€¤ã®ã¨ãã€kakuã«ã¯ã€ç„¡åŠ¹ãªå€¤(-1.#IN00)ãŒå…¥ã£ã¦ã—ã¾ã†ã€‚
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	if (dot > 1.0)
 		dot = 1.0;
@@ -2496,14 +2496,14 @@ int CQuaternion::Slerp2(CQuaternion endq, double t, CQuaternion* dstq)
 	kaku = this->CalcRad(endq);
 
 	if (kaku > (PI * 0.5)) {
-		//•Ğ•û‚ğ-q‚É‚·‚ê‚ÎA(PI * 0.5f)‚æ‚è¬‚³‚­‚È‚éBiÅ’ZƒR[ƒX‚ğ‚½‚Ç‚ê‚éj
+		//ç‰‡æ–¹ã‚’-qã«ã™ã‚Œã°ã€(PI * 0.5f)ã‚ˆã‚Šå°ã•ããªã‚‹ã€‚ï¼ˆæœ€çŸ­ã‚³ãƒ¼ã‚¹ã‚’ãŸã©ã‚Œã‚‹ï¼‰
 		endq = -endq;
 		kaku = this->CalcRad(endq);
 		_ASSERT(kaku <= (PI * 0.5));
 	}
 
-	// sin( kaku ) == 0.0 •t‹ß‚ğ’²®B
-	//180“x‚É‚Í‚È‚ç‚È‚¢‚Ì‚Åi‚È‚ç‚È‚¢‚æ‚¤‚É‚·‚é‚Ì‚Åj‚O“x‚Ì‚İƒPƒA
+	// sin( kaku ) == 0.0 ä»˜è¿‘ã‚’èª¿æ•´ã€‚
+	//180åº¦ã«ã¯ãªã‚‰ãªã„ã®ã§ï¼ˆãªã‚‰ãªã„ã‚ˆã†ã«ã™ã‚‹ã®ã§ï¼‰ï¼åº¦ã®ã¿ã‚±ã‚¢
 	int kaku0flag = 0;
 	if ((kaku <= 1e-4) && (kaku >= -1e-4)) {
 		kaku0flag = 1;
@@ -2539,14 +2539,14 @@ CQuaternion CQuaternion::Slerp(CQuaternion endq, int framenum, int frameno)
 	kaku = this->CalcRad(endq);
 
 	if (kaku > (PI * 0.5)) {
-		//•Ğ•û‚ğ-q‚É‚·‚ê‚ÎA(PI * 0.5f)‚æ‚è¬‚³‚­‚È‚éBiÅ’ZƒR[ƒX‚ğ‚½‚Ç‚ê‚éj
+		//ç‰‡æ–¹ã‚’-qã«ã™ã‚Œã°ã€(PI * 0.5f)ã‚ˆã‚Šå°ã•ããªã‚‹ã€‚ï¼ˆæœ€çŸ­ã‚³ãƒ¼ã‚¹ã‚’ãŸã©ã‚Œã‚‹ï¼‰
 		endq = -endq;
 		kaku = this->CalcRad(endq);
 		_ASSERT(kaku <= (PI * 0.5));
 	}
 
-	// sin( kaku ) == 0.0 •t‹ß‚ğ’²®B
-	//180“x‚É‚Í‚È‚ç‚È‚¢‚Ì‚Åi‚È‚ç‚È‚¢‚æ‚¤‚É‚·‚é‚Ì‚Åj‚O“x‚Ì‚İƒPƒA
+	// sin( kaku ) == 0.0 ä»˜è¿‘ã‚’èª¿æ•´ã€‚
+	//180åº¦ã«ã¯ãªã‚‰ãªã„ã®ã§ï¼ˆãªã‚‰ãªã„ã‚ˆã†ã«ã™ã‚‹ã®ã§ï¼‰ï¼åº¦ã®ã¿ã‚±ã‚¢
 	int kaku0flag = 0;
 	if ((kaku <= 1e-4) && (kaku >= -1e-4)) {
 		kaku0flag = 1;
@@ -2656,7 +2656,7 @@ CQuaternion CQuaternion::inverse()
 
 int CQuaternion::RotationArc(ChaVector3 srcvec0, ChaVector3 srcvec1)
 {
-	//srcvec0, srcvec1‚ÍAnormalize‚³‚ê‚Ä‚¢‚é‚Æ‚·‚éB
+	//srcvec0, srcvec1ã¯ã€normalizeã•ã‚Œã¦ã„ã‚‹ã¨ã™ã‚‹ã€‚
 
 	ChaVector3 c;
 	ChaVector3Cross(&c, (const ChaVector3*)&srcvec0, (const ChaVector3*)&srcvec1);
@@ -3298,13 +3298,13 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//}
 
 	if (Euler.z >= 0.0f) {
-		tmpZ0 = Euler.z + 360.0f * this->GetRound((befeul.z - Euler.z) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
+		tmpZ0 = Euler.z + 360.0f * this->GetRound((befeul.z - Euler.z) / 360.0f);//ã‚ªãƒ¼ãƒãƒ¼ï¼‘ï¼˜ï¼åº¦
 	}
 	else {
-		tmpZ0 = Euler.z - 360.0f * this->GetRound((Euler.z - befeul.z) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
+		tmpZ0 = Euler.z - 360.0f * this->GetRound((Euler.z - befeul.z) / 360.0f);//ã‚ªãƒ¼ãƒãƒ¼ï¼‘ï¼˜ï¼åº¦
 	}
 	if (notmodify180flag == 0) {
-		//180“x(thdeg : 165“xˆÈã)‚Ì•Ï‰»‚Í@²”½“]‚µ‚È‚¢‚æ‚¤‚È•\Œ»‚É•â³
+		//180åº¦(thdeg : 165åº¦ä»¥ä¸Š)ã®å¤‰åŒ–ã¯ã€€è»¸åè»¢ã—ãªã„ã‚ˆã†ãªè¡¨ç¾ã«è£œæ­£
 		if ((tmpZ0 - befeul.z) >= thdeg) {
 			tmpZ0 -= 180.0f;
 		}
@@ -3313,7 +3313,7 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 		}
 	}
 	else {
-		//tmpZ0‚»‚Ì‚Ü‚Ü
+		//tmpZ0ãã®ã¾ã¾
 	}
 	Euler.z = tmpZ0;
 
@@ -3347,13 +3347,13 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//}
 
 	if (Euler.y >= 0.0f) {
-		tmpY0 = Euler.y + 360.0f * this->GetRound((befeul.y - Euler.y) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
+		tmpY0 = Euler.y + 360.0f * this->GetRound((befeul.y - Euler.y) / 360.0f);//ã‚ªãƒ¼ãƒãƒ¼ï¼‘ï¼˜ï¼åº¦
 	}
 	else {
-		tmpY0 = Euler.y - 360.0f * this->GetRound((Euler.y - befeul.y) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
+		tmpY0 = Euler.y - 360.0f * this->GetRound((Euler.y - befeul.y) / 360.0f);//ã‚ªãƒ¼ãƒãƒ¼ï¼‘ï¼˜ï¼åº¦
 	}
 	if (notmodify180flag == 0) {
-		//180“x(thdeg : 165“xˆÈã)‚Ì•Ï‰»‚Í@²”½“]‚µ‚È‚¢‚æ‚¤‚È•\Œ»‚É•â³
+		//180åº¦(thdeg : 165åº¦ä»¥ä¸Š)ã®å¤‰åŒ–ã¯ã€€è»¸åè»¢ã—ãªã„ã‚ˆã†ãªè¡¨ç¾ã«è£œæ­£
 		if ((tmpY0 - befeul.y) >= thdeg) {
 			tmpY0 -= 180.0f;
 		}
@@ -3362,7 +3362,7 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 		}
 	}
 	else {
-		//tmpY0‚»‚Ì‚Ü‚Ü
+		//tmpY0ãã®ã¾ã¾
 	}
 	Euler.y = tmpY0;
 
@@ -3398,19 +3398,32 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//	Euler.x = -Euler.x;
 	//}
 	if (Euler.x >= 0.0f) {
-		tmpX0 = Euler.x + 360.0f * this->GetRound((befeul.x - Euler.x) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
+		tmpX0 = Euler.x + 360.0f * this->GetRound((befeul.x - Euler.x) / 360.0f);//ã‚ªãƒ¼ãƒãƒ¼ï¼‘ï¼˜ï¼åº¦
 	}
 	else {
-		tmpX0 = Euler.x - 360.0f * this->GetRound((Euler.x - befeul.x) / 360.0f);//ƒI[ƒo[‚P‚W‚O“x
+		tmpX0 = Euler.x - 360.0f * this->GetRound((Euler.x - befeul.x) / 360.0f);//ã‚ªãƒ¼ãƒãƒ¼ï¼‘ï¼˜ï¼åº¦
 	}
 
 	//2023/02/15
-	//X²‚ÌŠp“x‚ğ180“x•â³‚µ‚Ä‚à@Œã‘±‚Ì²‚ª–³‚¢‚Ì‚Å@‘¼‚Ì²‚ÌŒvZ‚É”½‰fo—ˆ‚È‚¢
-	//‚µ‚©‚µ@•â³‚ğæ‚èœ‚¢‚Ä‚µ‚Ü‚¤‚Æ@ƒŠƒ^[ƒQƒbƒgŒ‹‰Ê‚ª‚¨‚©‚µ‚¢‚±‚Æ‚ª‚ ‚ébvh121
-	//æ‚èœ‚­‚Æ@IK’†‚É@ƒLƒƒƒ‰ƒNƒ^[‚ª‹t—§‚¿‚µ‚È‚­‚È‚é
-	if (g_underIKRot == false) {
+	//Xè»¸ã®è§’åº¦ã‚’180åº¦è£œæ­£ã—ã¦ã‚‚ã€€å¾Œç¶šã®è»¸ãŒç„¡ã„ã®ã§ã€€ä»–ã®è»¸ã®è¨ˆç®—ã«åæ˜ å‡ºæ¥ãªã„
+	//ã—ã‹ã—ã€€è£œæ­£ã‚’å–ã‚Šé™¤ã„ã¦ã—ã¾ã†ã¨ã€€ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆçµæœãŒãŠã‹ã—ã„ã“ã¨ãŒã‚ã‚‹bvh121
+	//å–ã‚Šé™¤ãã¨ã€€IKä¸­ã«ã€€ã‚­ãƒ£ãƒ©ã‚¯ã‚¿ãƒ¼ãŒé€†ç«‹ã¡ã—ãªããªã‚‹
+	//##############
+	//2023/02/23
+	//ã„ã‚ã„ã‚ãƒ†ã‚¹ãƒˆã—ãŸçµæœ
+	// 
+	//å›è»¢ãŒå…¨ã¦ãƒªã‚»ãƒƒãƒˆã•ã‚Œã¦ã„ã‚‹ã¨ã“ã‚ã‹ã‚‰ã€€IKã™ã‚‹å ´åˆã«ã¯ã€€
+	//Xè»¸ã«é–¢ã—ã¦ï¼‘ï¼˜ï¼åº¦ãƒ¢ãƒ‡ã‚£ãƒ•ã‚¡ã‚¤ã‚’ã—ãŸæ–¹ãŒã€€çµæœãŒè‰¯ã„ï¼ˆã²ã£ãã‚Šè¿”ã‚‰ãªã„ï¼‰
+	//
+	//å…ƒã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãŒã‚ã‚‹ä¸Šã«ã€€IKç·¨é›†ã™ã‚‹å ´åˆã«ã¯
+	//Xè»¸ã«é–¢ã—ã¦ï¼‘ï¼˜ï¼åº¦ãƒ¢ãƒ‡ã‚£ãƒ•ã‚¡ã‚¤ã‚’ã—ãªã„æ–¹ãŒã€€çµæœãŒè‰¯ã„
+	//
+	//è‡ªå‹•åŒ–ãŒé›£ã—ã„ã®ã§ã€€ãƒ¦ãƒ¼ã‚¶æŒ‡å®šã®ã‚ªãƒ—ã‚·ãƒ§ãƒ³åŒ–
+	//DispAndLimitsãƒ—ãƒ¬ãƒ¼ãƒˆãƒ¡ãƒ‹ãƒ¥ãƒ¼ã«ã€€x180ãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹è¿½åŠ 
+	//x180ã«ãƒã‚§ãƒƒã‚¯ã‚’å…¥ã‚Œã‚‹ã¨ã€€Xè»¸ã«é–¢ã—ã¦ã‚‚ï¼‘ï¼˜ï¼åº¦ãƒ¢ãƒ‡ã‚£ãƒ•ã‚¡ã‚¤ã‚’è¡Œã†
+	if ((g_underIKRot == false) || (g_x180flag == true)) {
 		if (notmodify180flag == 0) {
-			//180“x(thdeg : 165“xˆÈã)‚Ì•Ï‰»‚Í@²”½“]‚µ‚È‚¢‚æ‚¤‚È•\Œ»‚É•â³
+			//180åº¦(thdeg : 165åº¦ä»¥ä¸Š)ã®å¤‰åŒ–ã¯ã€€è»¸åè»¢ã—ãªã„ã‚ˆã†ãªè¡¨ç¾ã«è£œæ­£
 			if ((tmpX0 - befeul.x) >= thdeg) {
 				tmpX0 -= 180.0f;
 			}
@@ -3419,20 +3432,20 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 			}
 		}
 		else {
-			//tmpX0‚»‚Ì‚Ü‚Ü
+			//tmpX0ãã®ã¾ã¾
 		}
 	}
 	Euler.x = tmpX0;
 
 	//###################################################################################################################################
 	//2023/01/12
-	//Rokoko‚Ìfbx“Ç‚İ‚İƒeƒXƒg‚Æ@rootjoint‚ğIK‚Å‚Q‰ñ“]‚·‚éƒeƒXƒg‚ğ‚µ‚Ä@ƒIƒCƒ‰[ƒOƒ‰ƒt‚ğŠÏ@
-	//ModifyEuler‚Í@Œãˆ—‚Æ‚µ‚Ä‚Å‚Í‚È‚­@XYZ‚»‚ê‚¼‚ê‚ÌŠp“x‚ğ‹‚ß‚éÛ‚É@‚»‚Ì“s“x•â³‚·‚é•K—v‚ª‚ ‚Á‚½
-	//(‚»‚Ì‚æ‚¤‚É‚µ‚È‚¢‚Æ@Y²‚ğ‚Q‰ñ“]‚·‚éŠÔ‚É@Y²‚ª‚X‚O“x‚Ì”ÍˆÍ‚µ‚©“®‚©‚¸‚É@X‚ÆZ‚ª‚P‚W‚O“x‚¸‚Â•Ï‰»‚·‚éŠK’ió‚ÌƒOƒ‰ƒt‚É‚È‚Á‚Ä‚µ‚Ü‚Á‚½)
-	//‚æ‚Á‚Ä@Œãˆ—‚Æ‚µ‚Ä‚ÌModifyEuler*‚ÍƒRƒƒ“ƒgƒAƒEƒg‚µ‚Ä@ŠeŠp“x‚ğ‹‚ß‚é•”•ª‚Åˆ—‚µ‚½
+	//Rokokoã®fbxèª­ã¿è¾¼ã¿ãƒ†ã‚¹ãƒˆã¨ã€€rootjointã‚’IKã§ï¼’å›è»¢ã™ã‚‹ãƒ†ã‚¹ãƒˆã‚’ã—ã¦ã€€ã‚ªã‚¤ãƒ©ãƒ¼ã‚°ãƒ©ãƒ•ã‚’è¦³å¯Ÿ
+	//ModifyEulerã¯ã€€å¾Œå‡¦ç†ã¨ã—ã¦ã§ã¯ãªãã€€XYZãã‚Œãã‚Œã®è§’åº¦ã‚’æ±‚ã‚ã‚‹éš›ã«ã€€ãã®éƒ½åº¦è£œæ­£ã™ã‚‹å¿…è¦ãŒã‚ã£ãŸ
+	//(ãã®ã‚ˆã†ã«ã—ãªã„ã¨ã€€Yè»¸ã‚’ï¼’å›è»¢ã™ã‚‹é–“ã«ã€€Yè»¸ãŒï¼™ï¼åº¦ã®ç¯„å›²ã—ã‹å‹•ã‹ãšã«ã€€Xã¨ZãŒï¼‘ï¼˜ï¼åº¦ãšã¤å¤‰åŒ–ã™ã‚‹éšæ®µçŠ¶ã®ã‚°ãƒ©ãƒ•ã«ãªã£ã¦ã—ã¾ã£ãŸ)
+	//ã‚ˆã£ã¦ã€€å¾Œå‡¦ç†ã¨ã—ã¦ã®ModifyEuler*ã¯ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆã—ã¦ã€€å„è§’åº¦ã‚’æ±‚ã‚ã‚‹éƒ¨åˆ†ã§å‡¦ç†ã—ãŸ
 	//###################################################################################################################################
 	//ModifyEuler(&Euler, &befeul);
-	//ModifyEulerXYZ(&Euler, &befeul, isfirstbone, isendbone, notmodifyflag);//10027 CommentOut. ˆ—‚ªd‚¢‚í‚è‚É‚½‚Ü‚É‚µ‚©–ğ‚É—§‚½‚È‚¢‚Ì‚ÅB‚µ‚Î‚ç‚­ƒRƒƒ“ƒgƒAƒEƒgB
+	//ModifyEulerXYZ(&Euler, &befeul, isfirstbone, isendbone, notmodifyflag);//10027 CommentOut. å‡¦ç†ãŒé‡ã„ã‚ã‚Šã«ãŸã¾ã«ã—ã‹å½¹ã«ç«‹ãŸãªã„ã®ã§ã€‚ã—ã°ã‚‰ãã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆã€‚
 	//ModifyEuler360(&Euler, &befeul, notmodify180flag);
 	//ModifyEuler360(&Euler, &befeul, 0);
 
@@ -3440,27 +3453,27 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 
 	//###########################################################################################
 	//2023/02/04
-	//“–‚½‚è‘O‚Ì‚±‚Æ‚¾‚ª@XYZEul(180, 0, 180)‚ÆXYZEul(0, 0, 0)‚Íˆá‚¤p¨
-	//360“x‚Ìƒvƒ‰ƒXƒ}ƒCƒiƒX‚Í—L‚è‚¾‚ª@180“x‚Ìƒvƒ‰ƒXƒ}ƒCƒiƒX‚Í@ˆá‚¤p¨‚É‚·‚é‚±‚Æ
-	//ƒmƒCƒY‘Îô‚Æ‚µ‚Ä+-180“x‚Í—L‚è“¾‚é‚ª
-	//“¯‚¶p¨‚Ì•Ê•\Œ»‚Æ‚µ‚Ä‚Ì+-180“x‚Í@XYZEul(0, 180, 0)‚ğXYZEul(180, 0, 180)‚É‚·‚éˆÈŠO‚Év‚¢‚Â‚©‚È‚¢
-	//360‚Ìƒvƒ‰ƒXƒ}ƒCƒiƒX‚É–ß‚µ‚Ä@Œãˆ—‚Æ‚µ‚Ä•â³‚ğs‚¤
+	//å½“ãŸã‚Šå‰ã®ã“ã¨ã ãŒã€€XYZEul(180, 0, 180)ã¨XYZEul(0, 0, 0)ã¯é•ã†å§¿å‹¢
+	//360åº¦ã®ãƒ—ãƒ©ã‚¹ãƒã‚¤ãƒŠã‚¹ã¯æœ‰ã‚Šã ãŒã€€180åº¦ã®ãƒ—ãƒ©ã‚¹ãƒã‚¤ãƒŠã‚¹ã¯ã€€é•ã†å§¿å‹¢ã«ã™ã‚‹ã“ã¨
+	//ãƒã‚¤ã‚ºå¯¾ç­–ã¨ã—ã¦+-180åº¦ã¯æœ‰ã‚Šå¾—ã‚‹ãŒ
+	//åŒã˜å§¿å‹¢ã®åˆ¥è¡¨ç¾ã¨ã—ã¦ã®+-180åº¦ã¯ã€€XYZEul(0, 180, 0)ã‚’XYZEul(180, 0, 180)ã«ã™ã‚‹ä»¥å¤–ã«æ€ã„ã¤ã‹ãªã„
+	//360ã®ãƒ—ãƒ©ã‚¹ãƒã‚¤ãƒŠã‚¹ã«æˆ»ã—ã¦ã€€å¾Œå‡¦ç†ã¨ã—ã¦è£œæ­£ã‚’è¡Œã†
 	//###########################################################################################
 
 	//###########################################################################################################
 	//2023/02/07
-	//‚Q²‚ª‚P‚W‚O“x•Ï‰»‚µ‚ÄY²‚ª‚O‚©‚ç‚X‚O“x‚Ü‚Å‚µ‚©“®‚©‚È‚¢‚æ‚¤‚É•Ï‰»‚µ‚È‚ª‚ç
-	//‘Ì‚ª‚P‰ñ“]‚·‚é‚Æ‚¢‚¤‚Ì‚Í@IKRot‚ÌÛ‚É‹N‚±‚Á‚½‚µ@‚R‚U‚O“x‚Ìƒvƒ‰ƒXƒ}ƒCƒiƒX‚¾‚¯‚¾‚Æ•K‚¸‚»‚¤‚È‚Á‚½
-	//‚P‚W‚O“x‚Ìƒvƒ‰ƒXƒ}ƒCƒiƒX‚Í•K—v‚Æ”F¯‚µ’¼‚µ
-	//ˆÈ‘O‚Ì‚æ‚¤‚ÉXYZ‚»‚ê‚¼‚ê‚ğ‹‚ß‚È‚ª‚ç‚P‚W‚O“xƒ`ƒFƒbƒN
+	//ï¼’è»¸ãŒï¼‘ï¼˜ï¼åº¦å¤‰åŒ–ã—ã¦Yè»¸ãŒï¼ã‹ã‚‰ï¼™ï¼åº¦ã¾ã§ã—ã‹å‹•ã‹ãªã„ã‚ˆã†ã«å¤‰åŒ–ã—ãªãŒã‚‰
+	//ä½“ãŒï¼‘å›è»¢ã™ã‚‹ã¨ã„ã†ã®ã¯ã€€IKRotã®éš›ã«èµ·ã“ã£ãŸã—ã€€ï¼“ï¼–ï¼åº¦ã®ãƒ—ãƒ©ã‚¹ãƒã‚¤ãƒŠã‚¹ã ã‘ã ã¨å¿…ãšãã†ãªã£ãŸ
+	//ï¼‘ï¼˜ï¼åº¦ã®ãƒ—ãƒ©ã‚¹ãƒã‚¤ãƒŠã‚¹ã¯å¿…è¦ã¨èªè­˜ã—ç›´ã—
+	//ä»¥å‰ã®ã‚ˆã†ã«XYZãã‚Œãã‚Œã‚’æ±‚ã‚ãªãŒã‚‰ï¼‘ï¼˜ï¼åº¦ãƒã‚§ãƒƒã‚¯
 	// 
-	//2023/02/04‚Ì•ÏX‚Í@LimitEul‚ÉƒOƒ‰ƒt‚ª‚P‚W‚O“x‚Ì•Ï‰»‚ğŒğŒİ‚ÉŒJ‚è•Ô‚·Çó‚ªo‚½‚©‚ç
-	//2023/02/07‚ÉƒeƒXƒg‚µ‚½‚Æ‚±‚ë@‚»‚ê‚Í‚P‚W‚O“xƒvƒ‰ƒXƒ}ƒCƒiƒX•â³‚ªŒ´ˆö‚Ì•s‹ï‡‚Å‚Í‚È‚©‚Á‚½‚æ‚¤‚¾
+	//2023/02/04ã®å¤‰æ›´ã¯ã€€LimitEulæ™‚ã«ã‚°ãƒ©ãƒ•ãŒï¼‘ï¼˜ï¼åº¦ã®å¤‰åŒ–ã‚’äº¤äº’ã«ç¹°ã‚Šè¿”ã™ç—‡çŠ¶ãŒå‡ºãŸã‹ã‚‰
+	//2023/02/07ã«ãƒ†ã‚¹ãƒˆã—ãŸã¨ã“ã‚ã€€ãã‚Œã¯ï¼‘ï¼˜ï¼åº¦ãƒ—ãƒ©ã‚¹ãƒã‚¤ãƒŠã‚¹è£œæ­£ãŒåŸå› ã®ä¸å…·åˆã§ã¯ãªã‹ã£ãŸã‚ˆã†ã 
 	//
 	//2023/02/08 am00:53
-	//GetBefEul()‚Ì“à—e‚Ì–â‘è‚¾‚Á‚½@unlimited‚ÌƒIƒCƒ‰[‚ğbefeul‚É‚·‚é‚±‚Æ‚Å‰ğŒˆ‚µ‚½‚æ‚¤‚¾
-	//notmodify180flagŠÖ˜A‚ğƒ[ƒ‹ƒoƒbƒN‚µ‚ÄƒeƒXƒg@–â‘è‚ªo‚½ƒeƒXƒgƒf[ƒ^(bvh121)‚Å‚´‚Á‚ÆƒeƒXƒg@¡‚Ì‚Æ‚±‚ëOK
-	//  @‚à‚¤Q‚Ü‚·
+	//GetBefEul()ã®å†…å®¹ã®å•é¡Œã ã£ãŸã€€unlimitedã®ã‚ªã‚¤ãƒ©ãƒ¼ã‚’befeulã«ã™ã‚‹ã“ã¨ã§è§£æ±ºã—ãŸã‚ˆã†ã 
+	//notmodify180flagé–¢é€£ã‚’ãƒ­ãƒ¼ãƒ«ãƒãƒƒã‚¯ã—ã¦ãƒ†ã‚¹ãƒˆã€€å•é¡ŒãŒå‡ºãŸãƒ†ã‚¹ãƒˆãƒ‡ãƒ¼ã‚¿(bvh121)ã§ã–ã£ã¨ãƒ†ã‚¹ãƒˆã€€ä»Šã®ã¨ã“ã‚OK
+	//  ã€€ã‚‚ã†å¯ã¾ã™
 	//###########################################################################################################
 
 	//if (g_underIKRot == false) {
@@ -3634,32 +3647,32 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 //int CQuaternion::ModifyEuler(ChaVector3* eulerA, ChaVector3* eulerB)
 //{
 //
-//	//ƒIƒCƒ‰[ŠpA‚Ì’l‚ğƒIƒCƒ‰[ŠpB‚Ì’l‚É‹ß‚¢•\¦‚ÉC³
+//	//ã‚ªã‚¤ãƒ©ãƒ¼è§’Aã®å€¤ã‚’ã‚ªã‚¤ãƒ©ãƒ¼è§’Bã®å€¤ã«è¿‘ã„è¡¨ç¤ºã«ä¿®æ­£
 //	double tmpX1, tmpY1, tmpZ1;
 //	double tmpX2, tmpY2, tmpZ2;
 //	double s1, s2;
 //
-//	//—\‘z‚³‚ê‚éŠp“x1
+//	//äºˆæƒ³ã•ã‚Œã‚‹è§’åº¦1
 //	tmpX1 = eulerA->x + 360.0 * GetRound((float)(((double)eulerB->x - (double)eulerA->x) / 360.0));
 //	tmpY1 = eulerA->y + 360.0 * GetRound((float)(((double)eulerB->y - (double)eulerA->y) / 360.0));
 //	tmpZ1 = eulerA->z + 360.0 * GetRound((float)(((double)eulerB->z - (double)eulerA->z) / 360.0));
 //
-//	//—\‘z‚³‚ê‚éŠp“x2
-//	//ƒNƒH[ƒ^ƒjƒIƒ“‚Í‚P‚W‚O‹‚Åˆê‰ñ“]‚·‚éB
-//	//‰¡²‚ª‚QƒV[ƒ^Ac²‚ªsin2ƒV[ƒ^Acos2ƒV[ƒ^‚ÌƒOƒ‰ƒt‚É‚¨‚¢‚ÄAnewƒV[ƒ^@=@180 + oldƒV[ƒ^‚Ì’l‚Í“™‚µ‚¢B
-//	//tmp2‚ÌŠp“x‚ÍƒNƒH[ƒ^ƒjƒIƒ“‚É‚¨‚¢‚Ä“™‚µ‚¢p¨‚ğæ‚éƒIƒCƒ‰[Šp‚Å‚ ‚éB
-//	//‚±‚Ìê‡A‚R‚Â‚Ì²‚Ì‚¤‚¿‚P‚Â‚¾‚¯‚Ì²‚ÌŠp“x‚Ì•„†(‚±‚±‚Å‚ÍX²)‚ª”½“]‚·‚éB
-//	//‚Æ‚¢‚¤‚±‚Æ‚¾‚Æv‚¤BƒeƒXƒg‚·‚é‚Æ‡‚Á‚Ä‚¢‚éB
+//	//äºˆæƒ³ã•ã‚Œã‚‹è§’åº¦2
+//	//ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã¯ï¼‘ï¼˜ï¼Â°ã§ä¸€å›è»¢ã™ã‚‹ã€‚
+//	//æ¨ªè»¸ãŒï¼’ã‚·ãƒ¼ã‚¿ã€ç¸¦è»¸ãŒsin2ã‚·ãƒ¼ã‚¿ã€cos2ã‚·ãƒ¼ã‚¿ã®ã‚°ãƒ©ãƒ•ã«ãŠã„ã¦ã€newã‚·ãƒ¼ã‚¿ã€€=ã€€180 + oldã‚·ãƒ¼ã‚¿ã®å€¤ã¯ç­‰ã—ã„ã€‚
+//	//tmp2ã®è§’åº¦ã¯ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã«ãŠã„ã¦ç­‰ã—ã„å§¿å‹¢ã‚’å–ã‚‹ã‚ªã‚¤ãƒ©ãƒ¼è§’ã§ã‚ã‚‹ã€‚
+//	//ã“ã®å ´åˆã€ï¼“ã¤ã®è»¸ã®ã†ã¡ï¼‘ã¤ã ã‘ã®è»¸ã®è§’åº¦ã®ç¬¦å·(ã“ã“ã§ã¯Xè»¸)ãŒåè»¢ã™ã‚‹ã€‚
+//	//ã¨ã„ã†ã“ã¨ã ã¨æ€ã†ã€‚ãƒ†ã‚¹ãƒˆã™ã‚‹ã¨åˆã£ã¦ã„ã‚‹ã€‚
 //	tmpX2 = 180.0 - eulerA->x + 360.0 * GetRound((float)(((double)eulerB->x + (double)eulerA->x - 180.0) / 360.0));
 //	tmpY2 = eulerA->y + 180.0 + 360.0 * GetRound((float)(((double)eulerB->y - (double)eulerA->y - 180.0) / 360.0));
 //	tmpZ2 = eulerA->z + 180.0 + 360.0 * GetRound((float)(((double)eulerB->z - (double)eulerA->z - 180.0) / 360.0));
 //
 //
-//	//Šp“x•Ï‰»‚Ì‘å‚«‚³
+//	//è§’åº¦å¤‰åŒ–ã®å¤§ãã•
 //	s1 = ((double)eulerB->x - tmpX1) * ((double)eulerB->x - tmpX1) + ((double)eulerB->y - tmpY1) * ((double)eulerB->y - tmpY1) + ((double)eulerB->z - tmpZ1) * ((double)eulerB->z - tmpZ1);
 //	s2 = ((double)eulerB->x - tmpX2) * ((double)eulerB->x - tmpX2) + ((double)eulerB->y - tmpY2) * ((double)eulerB->y - tmpY2) + ((double)eulerB->z - tmpZ2) * ((double)eulerB->z - tmpZ2);
 //
-//	//•Ï‰»‚Ì­‚È‚¢•û‚ÉC³
+//	//å¤‰åŒ–ã®å°‘ãªã„æ–¹ã«ä¿®æ­£
 //	if (s1 < s2) {
 //		eulerA->x = (float)tmpX1; eulerA->y = (float)tmpY1; eulerA->z = (float)tmpZ1;
 //	}
@@ -3672,7 +3685,7 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 
 BOOL IsValidNewEul(ChaVector3 srcneweul, ChaVector3 srcbefeul)
 {
-	//‚Æ‚è‚ ‚¦‚¸
+	//ã¨ã‚Šã‚ãˆãš
 	return TRUE;
 }
 
@@ -3681,16 +3694,16 @@ int CQuaternion::ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notm
 {
 	//#########################################################
 	// 2022/12/04
-	//+-180dgree‚É§ŒÀ‚¹‚¸‚É@ƒIƒCƒ‰[Šp‚ğ˜A‘±‚³‚¹‚é‚½‚ß‚ÌŠÖ”
+	//+-180dgreeã«åˆ¶é™ã›ãšã«ã€€ã‚ªã‚¤ãƒ©ãƒ¼è§’ã‚’é€£ç¶šã•ã›ã‚‹ãŸã‚ã®é–¢æ•°
 	//#########################################################
 
 	//###########################################################################################
 	//2023/02/04
-	//“–‚½‚è‘O‚Ì‚±‚Æ‚¾‚ª@XYZEul(180, 0, 180)‚ÆXYZEul(0, 0, 0)‚Íˆá‚¤p¨
-	//360“x‚Ìƒvƒ‰ƒXƒ}ƒCƒiƒX‚Í—L‚è‚¾‚ª@180“x‚Ìƒvƒ‰ƒXƒ}ƒCƒiƒX‚Í@ˆá‚¤p¨‚É‚·‚é‚±‚Æ
-	//ƒmƒCƒY‘Îô‚Æ‚µ‚Ä+-180“x‚Í—L‚è“¾‚é‚ª
-	//“¯‚¶p¨‚Ì•Ê•\Œ»‚Æ‚µ‚Ä‚Ì+-180“x‚Í@XYZEul(0, 180, 0)‚ğXYZEul(180, 0, 180)‚É‚·‚éˆÈŠO‚Év‚¢‚Â‚©‚È‚¢
-	//360‚Ìƒvƒ‰ƒXƒ}ƒCƒiƒX‚É–ß‚µ‚Ä@Œãˆ—‚Æ‚µ‚Ä•â³‚ğs‚¤
+	//å½“ãŸã‚Šå‰ã®ã“ã¨ã ãŒã€€XYZEul(180, 0, 180)ã¨XYZEul(0, 0, 0)ã¯é•ã†å§¿å‹¢
+	//360åº¦ã®ãƒ—ãƒ©ã‚¹ãƒã‚¤ãƒŠã‚¹ã¯æœ‰ã‚Šã ãŒã€€180åº¦ã®ãƒ—ãƒ©ã‚¹ãƒã‚¤ãƒŠã‚¹ã¯ã€€é•ã†å§¿å‹¢ã«ã™ã‚‹ã“ã¨
+	//ãƒã‚¤ã‚ºå¯¾ç­–ã¨ã—ã¦+-180åº¦ã¯æœ‰ã‚Šå¾—ã‚‹ãŒ
+	//åŒã˜å§¿å‹¢ã®åˆ¥è¡¨ç¾ã¨ã—ã¦ã®+-180åº¦ã¯ã€€XYZEul(0, 180, 0)ã‚’XYZEul(180, 0, 180)ã«ã™ã‚‹ä»¥å¤–ã«æ€ã„ã¤ã‹ãªã„
+	//360ã®ãƒ—ãƒ©ã‚¹ãƒã‚¤ãƒŠã‚¹ã«æˆ»ã—ã¦ã€€å¾Œå‡¦ç†ã¨ã—ã¦è£œæ­£ã‚’è¡Œã†
 	//###########################################################################################
 
 
@@ -3715,7 +3728,7 @@ int CQuaternion::ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notm
 			tmpZ0 = eulerA->z - 360.0f * this->GetRound((eulerA->z - eulerB->z) / 360.0f);
 		}
 		
-		//Šp“x•Ï‰»‚Ì‘å‚«‚³
+		//è§’åº¦å¤‰åŒ–ã®å¤§ãã•
 		double s0 = ((double)eulerB->x - eulerA->x) * ((double)eulerB->x - eulerA->x) + 
 					((double)eulerB->y - eulerA->y) * ((double)eulerB->y - eulerA->y) + 
 					((double)eulerB->z - eulerA->z) * ((double)eulerB->z - eulerA->z);
@@ -3724,7 +3737,7 @@ int CQuaternion::ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notm
 					((double)eulerB->z - tmpZ0) * ((double)eulerB->z - tmpZ0);
 
 		if (s0 <= s1) {
-			//‚»‚Ì‚Ü‚Ü
+			//ãã®ã¾ã¾
 		}
 		else {
 			eulerA->x = tmpX0;
@@ -3734,13 +3747,13 @@ int CQuaternion::ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notm
 
 	}
 	else {
-		//‚»‚Ì‚Ü‚Ü
+		//ãã®ã¾ã¾
 	}
 
 	////############################################################################################
-	////Q2EulXYZ‚Éaxisq‚ğw’è‚µ‚ÄŒÄ‚Ño‚µ‚½ê‡
-	////invaxisq * *this * axisq‚É‚æ‚Á‚Ä@‚P‚W‚O“x•ªƒIƒCƒ‰[Šp‚ª‰ñ“]‚·‚é‚±‚Æ‚ª‚ ‚é‚Ì‚Å‘Îô
-	//// ‚½‚¾‚µ@befframe‚ª0ƒtƒŒ[ƒ€‚Ìê‡‚É‚Í@‚P‚W‚O“x•ª‰ñ“]ƒ`ƒFƒbƒN‚Í‚µ‚È‚¢(‚P‚W‚O“x‰ñ“]‚ğ‹–‚·)
+	////Q2EulXYZã«axisqã‚’æŒ‡å®šã—ã¦å‘¼ã³å‡ºã—ãŸå ´åˆ
+	////invaxisq * *this * axisqã«ã‚ˆã£ã¦ã€€ï¼‘ï¼˜ï¼åº¦åˆ†ã‚ªã‚¤ãƒ©ãƒ¼è§’ãŒå›è»¢ã™ã‚‹ã“ã¨ãŒã‚ã‚‹ã®ã§å¯¾ç­–
+	//// ãŸã ã—ã€€befframeãŒ0ãƒ•ãƒ¬ãƒ¼ãƒ ã®å ´åˆã«ã¯ã€€ï¼‘ï¼˜ï¼åº¦åˆ†å›è»¢ãƒã‚§ãƒƒã‚¯ã¯ã—ãªã„(ï¼‘ï¼˜ï¼åº¦å›è»¢ã‚’è¨±ã™)
 	////############################################################################################
 	//if (notmodify180flag == 0) {
 	//	float thdeg = 165.0f;
@@ -3774,7 +3787,7 @@ int CQuaternion::ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notm
 int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfirstbone, int isendbone, int notmodifyflag)
 {
 
-	//ƒIƒCƒ‰[ŠpA‚Ì’l‚ğƒIƒCƒ‰[ŠpB‚Ì’l‚É‹ß‚¢•\¦‚ÉC³
+	//ã‚ªã‚¤ãƒ©ãƒ¼è§’Aã®å€¤ã‚’ã‚ªã‚¤ãƒ©ãƒ¼è§’Bã®å€¤ã«è¿‘ã„è¡¨ç¤ºã«ä¿®æ­£
 	double tmpX0, tmpY0, tmpZ0;
 	double tmpX1, tmpY1, tmpZ1;
 	double tmpX2, tmpY2, tmpZ2;
@@ -3788,36 +3801,36 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 	tmpY0 = eulerA->y;
 	tmpZ0 = eulerA->z;
 
-	//—\‘z‚³‚ê‚éŠp“x1
+	//äºˆæƒ³ã•ã‚Œã‚‹è§’åº¦1
 	tmpX1 = (double)eulerA->x + 360.0 * GetRound((float)(((double)eulerB->x - (double)eulerA->x) / 360.0));
 	tmpY1 = (double)eulerA->y + 360.0 * GetRound((float)(((double)eulerB->y - (double)eulerA->y) / 360.0));
 	tmpZ1 = (double)eulerA->z + 360.0 * GetRound((float)(((double)eulerB->z - (double)eulerA->z) / 360.0));
 
 
 	//##########################################################################################
-	// ModifyEuler ‚¢‚Ü‚Ü‚Å‚ÌsöŒë‚Ì‚Ü‚Æ‚ß
+	// ModifyEuler ã„ã¾ã¾ã§ã®è©¦è¡ŒéŒ¯èª¤ã®ã¾ã¨ã‚
 	//####################################
 	// 
 	// 
-	// 	notmodifyflag == 1//!!!! bvh-->fbx‘‚«o‚µ‚É‚Ímodifyeuler‚Å— •Ô‚èƒ`ƒFƒbƒN‚ğ‚·‚é‚ªA‚»‚êˆÈŠO‚Ì‚Í‚Qd‚Éˆ—‚µ‚È‚¢‚æ‚¤‚É— •Ô‚èƒ`ƒFƒbƒN‚ğ‚µ‚È‚¢
+	// 	notmodifyflag == 1//!!!! bvh-->fbxæ›¸ãå‡ºã—æ™‚ã«ã¯modifyeulerã§è£è¿”ã‚Šãƒã‚§ãƒƒã‚¯ã‚’ã™ã‚‹ãŒã€ãã‚Œä»¥å¤–ã®æ™‚ã¯ï¼’é‡ã«å‡¦ç†ã—ãªã„ã‚ˆã†ã«è£è¿”ã‚Šãƒã‚§ãƒƒã‚¯ã‚’ã—ãªã„
 	// 
 	// 
 	// 
-	// söŒë‚ÌÇó‚Æ”Šw‚ğv‚¢o‚µAŒ‹‹ÇŸ‚Ì‚æ‚¤‚É‚È‚Á‚½.
-	// ƒmƒCƒY‚ªæ‚Á‚Ä‚¢‚é‚Æ‚«‚É‚à¡‚Ü‚Å‚Åˆê”Ô‚«‚ê‚¢‚ÈƒIƒCƒ‰[ƒOƒ‰ƒt‚É‚È‚Á‚½.‚Â‚Üæ‚ÉŠÖ‚µ‚Ä‚à‰ü‘P.
+	// è©¦è¡ŒéŒ¯èª¤æ™‚ã®ç—‡çŠ¶ã¨æ•°å­¦ã‚’æ€ã„å‡ºã—ã€çµå±€æ¬¡ã®ã‚ˆã†ã«ãªã£ãŸ.
+	// ãƒã‚¤ã‚ºãŒä¹—ã£ã¦ã„ã‚‹ã¨ãã«ã‚‚ä»Šã¾ã§ã§ä¸€ç•ªãã‚Œã„ãªã‚ªã‚¤ãƒ©ãƒ¼ã‚°ãƒ©ãƒ•ã«ãªã£ãŸ.ã¤ã¾å…ˆã«é–¢ã—ã¦ã‚‚æ”¹å–„.
 	// 
-	//À•WŒn‡‚í‚¹B²‚ÌŒü‚«‚ªÀ•WŒn‚É‡‚¤‚æ‚¤‚É‚P‚W‚O“x‰ñ“]ƒ`ƒFƒbƒNBÀ•WŒn‚ğ‡‚í‚¹‚é‚É‚Íbefeul‚É‹ß‚Ã‚¯‚ê‚Î—Ç‚¢.
+	//åº§æ¨™ç³»åˆã‚ã›ã€‚è»¸ã®å‘ããŒåº§æ¨™ç³»ã«åˆã†ã‚ˆã†ã«ï¼‘ï¼˜ï¼åº¦å›è»¢ãƒã‚§ãƒƒã‚¯ã€‚åº§æ¨™ç³»ã‚’åˆã‚ã›ã‚‹ã«ã¯befeulã«è¿‘ã¥ã‘ã‚Œã°è‰¯ã„.
 	// 
 	// 
-	// ƒNƒH[ƒ^ƒjƒIƒ“‚©‚çƒIƒCƒ‰[Šp‚ğŒvZ‚·‚é‚Æ‚«Aƒ{[ƒ“²‚ÉŠÖ‚µ‚Ä‚P‚W‚O“x‚Ë‚¶‚ê‚é‚æ‚¤‚ÈƒNƒI[ƒ^ƒjƒIƒ“‚ÌƒIƒCƒ‰[Šp‚Æ“¯‚¶ƒIƒCƒ‰[Šp‚É‚È‚é.
-	// —á‚¦‚ÎZ‚ª‚P‚W‚O“x‰ñ“]‚µ‚½AX‚ÆY‚Í-X, -Y‚É‚È‚é.(180 - X)‚Å‚Í–³‚©‚Á‚½.
-	// — •Ô‚Á‚½ƒIƒCƒ‰[Šp‚Ì•û‚ªbefeul‚É‹ß‚¢ê‡‚ğŒŸo‚µ‚ÄƒIƒCƒ‰[Šp‚ğ— •Ô•Ô‚·ˆ—‚ğ‚·‚é.
+	// ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã‹ã‚‰ã‚ªã‚¤ãƒ©ãƒ¼è§’ã‚’è¨ˆç®—ã™ã‚‹ã¨ãã€ãƒœãƒ¼ãƒ³è»¸ã«é–¢ã—ã¦ï¼‘ï¼˜ï¼åº¦ã­ã˜ã‚Œã‚‹ã‚ˆã†ãªã‚¯ã‚ªãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã®ã‚ªã‚¤ãƒ©ãƒ¼è§’ã¨åŒã˜ã‚ªã‚¤ãƒ©ãƒ¼è§’ã«ãªã‚‹.
+	// ä¾‹ãˆã°ZãŒï¼‘ï¼˜ï¼åº¦å›è»¢ã—ãŸæ™‚ã€Xã¨Yã¯-X, -Yã«ãªã‚‹.(180 - X)ã§ã¯ç„¡ã‹ã£ãŸ.
+	// è£è¿”ã£ãŸã‚ªã‚¤ãƒ©ãƒ¼è§’ã®æ–¹ãŒbefeulã«è¿‘ã„å ´åˆã‚’æ¤œå‡ºã—ã¦ã‚ªã‚¤ãƒ©ãƒ¼è§’ã‚’è£è¿”è¿”ã™å‡¦ç†ã‚’ã™ã‚‹.
 	// 
 	// 
 	//##########################################################################################
 
 
-	//X + 180‚Ì‚Æ‚«
+	//X + 180ã®ã¨ã
 	tmpX2 = tmpX0 + 180.0;
 	if (tmpX2 > 180.0) {
 		tmpX2 -= 360.0;
@@ -3827,7 +3840,7 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 	//tmpY2 = 180.0 - tmpY0;
 	//tmpZ2 = 180.0 - tmpZ0;
 
-	//Y + 180‚Ì‚Æ‚«
+	//Y + 180ã®ã¨ã
 	tmpY3 = tmpY0 + 180.0;
 	if (tmpY3 > 180.0) {
 		tmpY3 -= 360.0;
@@ -3837,7 +3850,7 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 	//tmpX3 = 180.0 - tmpX0;
 	//tmpZ3 = 180.0 - tmpZ0;
 
-	//Z + 180‚Ì‚Æ‚«
+	//Z + 180ã®ã¨ã
 	tmpZ4 = tmpZ0 + 180.0;
 	if (tmpZ4 > 180.0) {
 		tmpZ4 -= 360.0;
@@ -3849,7 +3862,7 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 
 
 
-	//Šp“x•Ï‰»‚Ì‘å‚«‚³
+	//è§’åº¦å¤‰åŒ–ã®å¤§ãã•
 	s0 = ((double)eulerB->x - tmpX0) * ((double)eulerB->x - tmpX0) + ((double)eulerB->y - tmpY0) * ((double)eulerB->y - tmpY0) + ((double)eulerB->z - tmpZ0) * ((double)eulerB->z - tmpZ0);
 	s1 = ((double)eulerB->x - tmpX1) * ((double)eulerB->x - tmpX1) + ((double)eulerB->y - tmpY1) * ((double)eulerB->y - tmpY1) + ((double)eulerB->z - tmpZ1) * ((double)eulerB->z - tmpZ1);
 	s2 = ((double)eulerB->x - tmpX2) * ((double)eulerB->x - tmpX2) + ((double)eulerB->y - tmpY2) * ((double)eulerB->y - tmpY2) + ((double)eulerB->z - tmpZ2) * ((double)eulerB->z - tmpZ2);
@@ -3924,26 +3937,26 @@ int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfi
 int CQuaternion::ModifyEuler( ChaVector3* eulerA, ChaVector3* eulerB )
 {
 
-//ƒIƒCƒ‰[ŠpA‚Ì’l‚ğƒIƒCƒ‰[ŠpB‚Ì’l‚É‹ß‚¢•\¦‚ÉC³
+//ã‚ªã‚¤ãƒ©ãƒ¼è§’Aã®å€¤ã‚’ã‚ªã‚¤ãƒ©ãƒ¼è§’Bã®å€¤ã«è¿‘ã„è¡¨ç¤ºã«ä¿®æ­£
 float tmpX1, tmpY1, tmpZ1;
 float tmpX2, tmpY2, tmpZ2;
 float s1, s2;
 
-//—\‘z‚³‚ê‚éŠp“x1
+//äºˆæƒ³ã•ã‚Œã‚‹è§’åº¦1
 tmpX1 = eulerA->x + 360.0f * GetRound( (eulerB->x - eulerA->x) / 360.0f );
 tmpY1 = eulerA->y + 360.0f * GetRound( (eulerB->y - eulerA->y) / 360.0f );
 tmpZ1 = eulerA->z + 360.0f * GetRound( (eulerB->z - eulerA->z) / 360.0f );
 
-//—\‘z‚³‚ê‚éŠp“x2
+//äºˆæƒ³ã•ã‚Œã‚‹è§’åº¦2
 tmpX2 = 180.0f - eulerA->x + 360.0f * GetRound( (eulerB->x + eulerA->x - 180.0f) / 360.0f );
 tmpY2 = eulerA->y + 180.0f + 360.0f * GetRound( (eulerB->y - eulerA->y - 180.0f) / 360.0f );
 tmpZ2 = eulerA->z + 180.0f + 360.0f * GetRound( (eulerB->z - eulerA->z - 180.0f) / 360.0f );
 
-//Šp“x•Ï‰»‚Ì‘å‚«‚³
+//è§’åº¦å¤‰åŒ–ã®å¤§ãã•
 s1 = (eulerB->x - tmpX1) * (eulerB->x - tmpX1) + (eulerB->y - tmpY1) * (eulerB->y - tmpY1) + (eulerB->z - tmpZ1) * (eulerB->z - tmpZ1);
 s2 = (eulerB->x - tmpX2) * (eulerB->x - tmpX2) + (eulerB->y - tmpY2) * (eulerB->y - tmpY2) + (eulerB->z - tmpZ2) * (eulerB->z - tmpZ2);
 
-//•Ï‰»‚Ì­‚È‚¢•û‚ÉC³
+//å¤‰åŒ–ã®å°‘ãªã„æ–¹ã«ä¿®æ­£
 if( s1 < s2 ){
 eulerA->x = tmpX1; eulerA->y = tmpY1; eulerA->z = tmpZ1;
 }else{
@@ -3956,7 +3969,7 @@ return 0;
 int CQuaternion::GetRound(float srcval)
 {
 	//2023/02/04
-	//-180“x‚Æ+180“x‚ª“ü‚ê‘Ö‚í‚ç‚È‚¢‚æ‚¤‚É0.5‚æ‚è­‚µ¬‚³‚­‚·‚é
+	//-180åº¦ã¨+180åº¦ãŒå…¥ã‚Œæ›¿ã‚ã‚‰ãªã„ã‚ˆã†ã«0.5ã‚ˆã‚Šå°‘ã—å°ã•ãã™ã‚‹
 
 	if (srcval > 0.0f) {
 		return (int)(srcval + 0.490);
@@ -3992,9 +4005,9 @@ int CQuaternion::CalcFBXEulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3
 		//Q2EulXYZusingMat(ROTORDER_XYZ, axisq, befeul, &tmpeul, isfirstbone, isendbone, notmodify180flag);
 	}
 	else {
-		//FBX‘‚«o‚µ‚ÌÛ‚ÉƒAƒjƒ[ƒVƒ‡ƒ“‚Éu‚ ‚é’ö“x‚Ì‘å‚«‚³‚Ì•Ï‰»v‚ª‚È‚¢‚ÆƒL[‚ªÈ—ª‚³‚ê‚Ä‚µ‚Ü‚¤B
-		//ƒmƒCƒY‚ğæ‚¹‚é‚±‚Æ‚ÅƒAƒjƒ[ƒVƒ‡ƒ“‚ª‚È‚­‚Ä‚àƒL[‚ªÈ—ª‚³‚ê‚È‚¢‚æ‚¤‚É‚È‚éB
-		//ƒmƒCƒY‚ğæ‚¹‚é‚Ì‚Í‚P‚Â‚Ìƒ{[ƒ“‚Å—Ç‚¢B
+		//FBXæ›¸ãå‡ºã—ã®éš›ã«ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã«ã€Œã‚ã‚‹ç¨‹åº¦ã®å¤§ãã•ã®å¤‰åŒ–ã€ãŒãªã„ã¨ã‚­ãƒ¼ãŒçœç•¥ã•ã‚Œã¦ã—ã¾ã†ã€‚
+		//ãƒã‚¤ã‚ºã‚’ä¹—ã›ã‚‹ã“ã¨ã§ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒãªãã¦ã‚‚ã‚­ãƒ¼ãŒçœç•¥ã•ã‚Œãªã„ã‚ˆã†ã«ãªã‚‹ã€‚
+		//ãƒã‚¤ã‚ºã‚’ä¹—ã›ã‚‹ã®ã¯ï¼‘ã¤ã®ãƒœãƒ¼ãƒ³ã§è‰¯ã„ã€‚
 		if (isfirstbone == 1) {
 			tmpeul.x = (float)(noise[dbgcnt % 4]) / 100.0f;//!!!!!!!!
 		}
@@ -4025,9 +4038,9 @@ int CQuaternion::CalcFBXEulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3
 //		Q2EulZXY(axisq, befeul, &tmpeul);
 //	}
 //	else {
-//		//FBX‘‚«o‚µ‚ÌÛ‚ÉƒAƒjƒ[ƒVƒ‡ƒ“‚Éu‚ ‚é’ö“x‚Ì‘å‚«‚³‚Ì•Ï‰»v‚ª‚È‚¢‚ÆƒL[‚ªÈ—ª‚³‚ê‚Ä‚µ‚Ü‚¤B
-//		//ƒmƒCƒY‚ğæ‚¹‚é‚±‚Æ‚ÅƒAƒjƒ[ƒVƒ‡ƒ“‚ª‚È‚­‚Ä‚àƒL[‚ªÈ—ª‚³‚ê‚È‚¢‚æ‚¤‚É‚È‚éB
-//		//ƒmƒCƒY‚ğæ‚¹‚é‚Ì‚Í‚P‚Â‚Ìƒ{[ƒ“‚Å—Ç‚¢B
+//		//FBXæ›¸ãå‡ºã—ã®éš›ã«ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã«ã€Œã‚ã‚‹ç¨‹åº¦ã®å¤§ãã•ã®å¤‰åŒ–ã€ãŒãªã„ã¨ã‚­ãƒ¼ãŒçœç•¥ã•ã‚Œã¦ã—ã¾ã†ã€‚
+//		//ãƒã‚¤ã‚ºã‚’ä¹—ã›ã‚‹ã“ã¨ã§ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒãªãã¦ã‚‚ã‚­ãƒ¼ãŒçœç•¥ã•ã‚Œãªã„ã‚ˆã†ã«ãªã‚‹ã€‚
+//		//ãƒã‚¤ã‚ºã‚’ä¹—ã›ã‚‹ã®ã¯ï¼‘ã¤ã®ãƒœãƒ¼ãƒ³ã§è‰¯ã„ã€‚
 //		if (isfirstbone == 1) {
 //			tmpeul.x = (float)(noise[dbgcnt % 4]) / 100.0f;//!!!!!!!!
 //		}
@@ -4065,7 +4078,7 @@ int CQuaternion::InOrder(CQuaternion* srcdstq)
 	double kaku;
 	kaku = CalcRad(*srcdstq);
 	if (kaku > (PI * 0.5)) {
-		//•Ğ•û‚ğ-q‚É‚·‚ê‚ÎA(PI * 0.5f)‚æ‚è¬‚³‚­‚È‚éBiÅ’ZƒR[ƒX‚ğ‚½‚Ç‚ê‚éj
+		//ç‰‡æ–¹ã‚’-qã«ã™ã‚Œã°ã€(PI * 0.5f)ã‚ˆã‚Šå°ã•ããªã‚‹ã€‚ï¼ˆæœ€çŸ­ã‚³ãƒ¼ã‚¹ã‚’ãŸã©ã‚Œã‚‹ï¼‰
 		CQuaternion tmpq = -*srcdstq;
 		*srcdstq = tmpq;
 	}
@@ -4145,14 +4158,14 @@ void ChaMatrixIdentity(ChaMatrix* pdst)
 	pdst->data[MATI_44] = 1.0f;
 }
 
-CQuaternion ChaMatrix2Q(ChaMatrix srcmat)//ChaMatrix‚ğó‚¯æ‚Á‚Ä@CQuaternion‚ğ•Ô‚·
+CQuaternion ChaMatrix2Q(ChaMatrix srcmat)//ChaMatrixã‚’å—ã‘å–ã£ã¦ã€€CQuaternionã‚’è¿”ã™
 {
 	CQuaternion retq;
 	retq.RotationMatrix(srcmat);
 	return retq;
 }
 
-ChaMatrix ChaMatrixRot(ChaMatrix srcmat)//‰ñ“]¬•ª‚¾‚¯‚Ìs—ñ‚É‚·‚é
+ChaMatrix ChaMatrixRot(ChaMatrix srcmat)//å›è»¢æˆåˆ†ã ã‘ã®è¡Œåˆ—ã«ã™ã‚‹
 {
 	ChaMatrix retmat;
 	retmat.SetIdentity();
@@ -4181,7 +4194,7 @@ ChaMatrix ChaMatrixRot(ChaMatrix srcmat)//‰ñ“]¬•ª‚¾‚¯‚Ìs—ñ‚É‚·‚é
 
 }
 
-ChaMatrix ChaMatrixScale(ChaMatrix srcmat)//ƒXƒP[ƒ‹¬•ª‚¾‚¯‚Ìs—ñ‚É‚·‚é
+ChaMatrix ChaMatrixScale(ChaMatrix srcmat)//ã‚¹ã‚±ãƒ¼ãƒ«æˆåˆ†ã ã‘ã®è¡Œåˆ—ã«ã™ã‚‹
 {
 	ChaMatrix retmat;
 	retmat.SetIdentity();
@@ -4203,7 +4216,7 @@ ChaMatrix ChaMatrixScale(ChaMatrix srcmat)//ƒXƒP[ƒ‹¬•ª‚¾‚¯‚Ìs—ñ‚É‚·‚é
 	return retmat;
 }
 
-ChaMatrix ChaMatrixTra(ChaMatrix srcmat)//ˆÚ“®¬•ª‚¾‚¯‚Ìs—ñ‚É‚·‚é
+ChaMatrix ChaMatrixTra(ChaMatrix srcmat)//ç§»å‹•æˆåˆ†ã ã‘ã®è¡Œåˆ—ã«ã™ã‚‹
 {
 	ChaMatrix retmat;
 	retmat.SetIdentity();
@@ -4215,7 +4228,7 @@ ChaMatrix ChaMatrixTra(ChaMatrix srcmat)//ˆÚ“®¬•ª‚¾‚¯‚Ìs—ñ‚É‚·‚é
 	return retmat;
 }
 
-ChaVector3 ChaMatrixScaleVec(ChaMatrix srcmat)//ƒXƒP[ƒ‹¬•ª‚ÌƒxƒNƒgƒ‹‚ğæ“¾
+ChaVector3 ChaMatrixScaleVec(ChaMatrix srcmat)//ã‚¹ã‚±ãƒ¼ãƒ«æˆåˆ†ã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’å–å¾—
 {
 	ChaVector3 rotx, roty, rotz;
 	rotx = ChaVector3(srcmat.data[MATI_11], srcmat.data[MATI_12], srcmat.data[MATI_13]);
@@ -4234,11 +4247,11 @@ ChaVector3 ChaMatrixScaleVec(ChaMatrix srcmat)//ƒXƒP[ƒ‹¬•ª‚ÌƒxƒNƒgƒ‹‚ğæ“¾
 
 	return retvec;
 }
-ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat, int notmodify180flag)//‰ñ“]¬•ª‚ÌƒxƒNƒgƒ‹‚ğæ“¾
+ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat, int notmodify180flag)//å›è»¢æˆåˆ†ã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’å–å¾—
 {
-	//ƒ[ƒJƒ‹ƒIƒCƒ‰[Šp‚ğæ“¾‚·‚é‚½‚ß‚É‚Í
-	//srcmat‚É‚Í@GetNodeMat * GetWorldMat * Inv(GetParent()->GetWorldMat) * Inv(GetParent()->GetNodeMat) ‚ğ“n‚·
-	//ƒWƒ‡ƒCƒ“ƒg‚ÌƒIƒCƒ‰[Šp‚ğæ“¾‚·‚éê‡‚É‚Í@CBone::CalcLocalEulXYZ()‚ğg‚¤
+	//ãƒ­ãƒ¼ã‚«ãƒ«ã‚ªã‚¤ãƒ©ãƒ¼è§’ã‚’å–å¾—ã™ã‚‹ãŸã‚ã«ã¯
+	//srcmatã«ã¯ã€€GetNodeMat * GetWorldMat * Inv(GetParent()->GetWorldMat) * Inv(GetParent()->GetNodeMat) ã‚’æ¸¡ã™
+	//ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®ã‚ªã‚¤ãƒ©ãƒ¼è§’ã‚’å–å¾—ã™ã‚‹å ´åˆã«ã¯ã€€CBone::CalcLocalEulXYZ()ã‚’ä½¿ã†
 	
 	ChaVector3 reteul = ChaVector3(0.0f, 0.0f, 0.0f);
 	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -4253,7 +4266,7 @@ ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat, int notmodify180flag)//‰ñ“]¬•ª‚Ìƒx
 
 	return reteul;
 }
-ChaVector3 ChaMatrixTraVec(ChaMatrix srcmat)//ˆÚ“®¬•ª‚ÌƒxƒNƒgƒ‹‚ğæ“¾
+ChaVector3 ChaMatrixTraVec(ChaMatrix srcmat)//ç§»å‹•æˆåˆ†ã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’å–å¾—
 {
 	ChaVector3 rettra;
 	rettra.x = srcmat.data[MATI_41];
@@ -4305,11 +4318,11 @@ void ChaMatrixNormalizeRot(ChaMatrix* pdst)
 
 
 //#####################################################################################
-//2022/11/06 ƒeƒXƒg’†@–â‘è”­¶@•\¦‚É‚Í–â‘è‚Ío‚Ä‚¢‚È‚©‚Á‚½‚ª
-//‚RDƒIƒuƒWƒFƒNƒg‚ğƒ}ƒEƒX‚ÅƒsƒbƒN‚·‚é•”•ª‚Å@ƒsƒbƒN‚Ì¸“x‚ª’˜‚µ‚­—‚¿‚Äg‚¦‚È‚©‚Á‚½
-//‚È‚º‚©‚Í‚æ‚­‚í‚©‚Á‚Ä‚¢‚È‚¢‚ª@double‚Ì AVX‚ğg‚í‚È‚¢‚Æ@¸“x‚ªŠÔ‚É‡‚í‚È‚¢‚Ì‚ª–â‘èH
-//‚±‚Ì”®‚Ì‚Ü‚Ü@AVX2‚ÉˆÚs‚·‚é‚±‚Æ‚Í‰Â”\‚¾‚ë‚¤‚©H‚Æl‚¦’†
-//‚Æ‚è‚ ‚¦‚¸ƒRƒƒ“ƒgƒAƒEƒg@
+//2022/11/06 ãƒ†ã‚¹ãƒˆä¸­ã€€å•é¡Œç™ºç”Ÿã€€è¡¨ç¤ºã«ã¯å•é¡Œã¯å‡ºã¦ã„ãªã‹ã£ãŸãŒ
+//ï¼“Dã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ãƒã‚¦ã‚¹ã§ãƒ”ãƒƒã‚¯ã™ã‚‹éƒ¨åˆ†ã§ã€€ãƒ”ãƒƒã‚¯ã®ç²¾åº¦ãŒè‘—ã—ãè½ã¡ã¦ä½¿ãˆãªã‹ã£ãŸ
+//ãªãœã‹ã¯ã‚ˆãã‚ã‹ã£ã¦ã„ãªã„ãŒã€€doubleã® AVXã‚’ä½¿ã‚ãªã„ã¨ã€€ç²¾åº¦ãŒé–“ã«åˆã‚ãªã„ã®ãŒå•é¡Œï¼Ÿ
+//ã“ã®æ•°å¼ã®ã¾ã¾ã€€AVX2ã«ç§»è¡Œã™ã‚‹ã“ã¨ã¯å¯èƒ½ã ã‚ã†ã‹ï¼Ÿã¨è€ƒãˆä¸­
+//ã¨ã‚Šã‚ãˆãšã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆã€€
 //#####################################################################################
 //void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc)
 //{
@@ -4390,7 +4403,7 @@ void ChaMatrixNormalizeRot(ChaMatrix* pdst)
 //		float checkdetM4[4];
 //		_mm_store_ps(checkdetM4, detM);
 //		//if (fabs(checkdetM4[3]) >= 1e-5) {
-//		if (fabs(checkdetM4[3]) >= FLT_MIN) {//2022/11/23 ChkRay‚É‚¨‚¢‚ÄÅ¬‹——£‚æ‚è‹ß‚¢‚à‚Ì‚Í“–‚½‚è‚É‚µ‚Ä‚¢‚é@1e-5‚Å‚ÍÅ¬‹——£‚Ì¸“x‚ª–³‚©‚Á‚½@‚±‚Ì’l‚È‚çOK
+//		if (fabs(checkdetM4[3]) >= FLT_MIN) {//2022/11/23 ChkRayã«ãŠã„ã¦æœ€å°è·é›¢ã‚ˆã‚Šè¿‘ã„ã‚‚ã®ã¯å½“ãŸã‚Šã«ã—ã¦ã„ã‚‹ã€€1e-5ã§ã¯æœ€å°è·é›¢ã®ç²¾åº¦ãŒç„¡ã‹ã£ãŸã€€ã“ã®å€¤ãªã‚‰OK
 //			const __m128 adjSignMask = _mm_setr_ps(1.f, -1.f, -1.f, 1.f);
 //			// (1/|M|, -1/|M|, -1/|M|, 1/|M|)
 //			__m128 rDetM = _mm_div_ps(adjSignMask, detM);
@@ -4660,7 +4673,7 @@ void ChaVector3Normalize(ChaVector3* pdst, const ChaVector3* psrc){
 	//_mm_store_ps(check, maddxyz);
 	////if (check[0] >= 1e-7) {
 	//if (fabs(check[0]) >= FLT_MIN) {//2022/11/23
-	//	__m128 invsqrt = _mm_rsqrt_ps(maddxyz);//•½•ûª‚Ì‹t”
+	//	__m128 invsqrt = _mm_rsqrt_ps(maddxyz);//å¹³æ–¹æ ¹ã®é€†æ•°
 
 	//	__m128 srcxyz1 = _mm_setr_ps(psrc->x, psrc->y, psrc->z, 0.0f);
 	//	__m128 mresult = _mm_mul_ps(srcxyz1, invsqrt);
@@ -4803,21 +4816,21 @@ D3DXVECTOR3 *WINAPI D3DXVec3TransformNormal(D3DXVECTOR3 *pOut,
 CONST D3DXVECTOR3 *pV,
 CONST D3DXMATRIX *pM
 );
-ƒpƒ‰ƒ[ƒ^
+ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿
 
 pOut
-[in, out] ‰‰ZŒ‹‰Ê‚Å‚ ‚é D3DXVECTOR3 \‘¢‘Ì‚Ö‚Ìƒ|ƒCƒ“ƒ^B
+[in, out] æ¼”ç®—çµæœã§ã‚ã‚‹ D3DXVECTOR3 æ§‹é€ ä½“ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚
 pV
-[in] ˆ—‚ÌŠî‚É‚È‚é D3DXVECTOR3 \‘¢‘Ì‚Ö‚Ìƒ|ƒCƒ“ƒ^B
+[in] å‡¦ç†ã®åŸºã«ãªã‚‹ D3DXVECTOR3 æ§‹é€ ä½“ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚
 pM
-[in] ˆ—‚ÌŠî‚É‚È‚é D3DXMATRIX \‘¢‘Ì‚Ö‚Ìƒ|ƒCƒ“ƒ^B
-–ß‚è’l
+[in] å‡¦ç†ã®åŸºã«ãªã‚‹ D3DXMATRIX æ§‹é€ ä½“ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚
+æˆ»ã‚Šå€¤
 
-ƒgƒ‰ƒ“ƒXƒtƒH[ƒ€‚³‚ê‚½ƒxƒNƒgƒ‹‚Ì D3DXVECTOR3 \‘¢‘Ì‚Ö‚Ìƒ|ƒCƒ“ƒ^B
+ãƒˆãƒ©ãƒ³ã‚¹ãƒ•ã‚©ãƒ¼ãƒ ã•ã‚ŒãŸãƒ™ã‚¯ãƒˆãƒ«ã® D3DXVECTOR3 æ§‹é€ ä½“ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚
 
-’ˆÓ
+æ³¨æ„
 
-‚±‚ÌŠÖ”‚ÍAƒxƒNƒgƒ‹ pV ‚ÌƒxƒNƒgƒ‹–@ü(x, y, z, 0) ‚ğs—ñ pM ‚Åƒgƒ‰ƒ“ƒXƒtƒH[ƒ€‚·‚éB
+ã“ã®é–¢æ•°ã¯ã€ãƒ™ã‚¯ãƒˆãƒ« pV ã®ãƒ™ã‚¯ãƒˆãƒ«æ³•ç·š(x, y, z, 0) ã‚’è¡Œåˆ— pM ã§ãƒˆãƒ©ãƒ³ã‚¹ãƒ•ã‚©ãƒ¼ãƒ ã™ã‚‹ã€‚
 */
 ChaVector3* ChaVector3TransformNormal(ChaVector3 *dstvec, const ChaVector3* srcvec, const ChaMatrix* srcmat)
 {
@@ -5080,22 +5093,22 @@ const ChaMatrix* ChaMatrixRotationQuaternion(ChaMatrix* dstmat, CQuaternion* src
 
 /*
 pOut
-[in, out] ‰‰ZŒ‹‰Ê‚Å‚ ‚é D3DXMATRIX \‘¢‘Ì‚Ö‚Ìƒ|ƒCƒ“ƒ^B
+[in, out] æ¼”ç®—çµæœã§ã‚ã‚‹ D3DXMATRIX æ§‹é€ ä½“ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚
 Yaw
-[in] y ²‚ğ’†S‚Æ‚·‚éƒˆ[(ƒ‰ƒWƒAƒ“’PˆÊ)B
+[in] y è»¸ã‚’ä¸­å¿ƒã¨ã™ã‚‹ãƒ¨ãƒ¼(ãƒ©ã‚¸ã‚¢ãƒ³å˜ä½)ã€‚
 Pitch
-[in] x ²‚ğ’†S‚Æ‚·‚éƒsƒbƒ`(ƒ‰ƒWƒAƒ“’PˆÊ)B
+[in] x è»¸ã‚’ä¸­å¿ƒã¨ã™ã‚‹ãƒ”ãƒƒãƒ(ãƒ©ã‚¸ã‚¢ãƒ³å˜ä½)ã€‚
 Roll
-[in] z ²‚ğ’†S‚Æ‚·‚éƒ[ƒ‹(ƒ‰ƒWƒAƒ“’PˆÊ)B
-–ß‚è’l
+[in] z è»¸ã‚’ä¸­å¿ƒã¨ã™ã‚‹ãƒ­ãƒ¼ãƒ«(ãƒ©ã‚¸ã‚¢ãƒ³å˜ä½)ã€‚
+æˆ»ã‚Šå€¤
 
-w’è‚³‚ê‚½ƒˆ[¥ƒsƒbƒ`¥ƒ[ƒ‹‚ğ‚Â D3DXMATRIX \‘¢‘Ì‚Ö‚Ìƒ|ƒCƒ“ƒ^B
+æŒ‡å®šã•ã‚ŒãŸãƒ¨ãƒ¼ï½¥ãƒ”ãƒƒãƒï½¥ãƒ­ãƒ¼ãƒ«ã‚’æŒã¤ D3DXMATRIX æ§‹é€ ä½“ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚
 
-’ˆÓ
+æ³¨æ„
 
-‚±‚ÌŠÖ”‚Ì–ß‚è’l‚ÍApOut ƒpƒ‰ƒ[ƒ^‚Ì–ß‚è’l‚Æ“¯‚¶‚Å‚ ‚éB‚µ‚½‚ª‚Á‚ÄAD3DXMatrixRotationYawPitchRoll ŠÖ”‚ğ•Ê‚ÌŠÖ”‚Ìˆø”‚Æ‚µ‚Äg‚¦‚éB
+ã“ã®é–¢æ•°ã®æˆ»ã‚Šå€¤ã¯ã€pOut ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®æˆ»ã‚Šå€¤ã¨åŒã˜ã§ã‚ã‚‹ã€‚ã—ãŸãŒã£ã¦ã€D3DXMatrixRotationYawPitchRoll é–¢æ•°ã‚’åˆ¥ã®é–¢æ•°ã®å¼•æ•°ã¨ã—ã¦ä½¿ãˆã‚‹ã€‚
 
-ƒgƒ‰ƒ“ƒXƒtƒH[ƒ€‚Ì‡˜‚ÍAÅ‰‚Éƒ[ƒ‹AŸ‚Éƒsƒbƒ`AÅŒã‚Éƒˆ[‚Å‚ ‚éB‚±‚ê‚ÍAƒIƒuƒWƒFƒNƒg‚Ìƒ[ƒJƒ‹À•W²‚ğŠî€‚Æ‚µ‚ÄAz ²‚ÌüˆÍ‚Å‚Ì‰ñ“]Ax ²‚ÌüˆÍ‚Å‚Ì‰ñ“]Ay ²‚ÌüˆÍ‚Å‚Ì‰ñ“]‚Æ“¯‚¶‚É‚È‚éB
+ãƒˆãƒ©ãƒ³ã‚¹ãƒ•ã‚©ãƒ¼ãƒ ã®é †åºã¯ã€æœ€åˆã«ãƒ­ãƒ¼ãƒ«ã€æ¬¡ã«ãƒ”ãƒƒãƒã€æœ€å¾Œã«ãƒ¨ãƒ¼ã§ã‚ã‚‹ã€‚ã“ã‚Œã¯ã€ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®ãƒ­ãƒ¼ã‚«ãƒ«åº§æ¨™è»¸ã‚’åŸºæº–ã¨ã—ã¦ã€z è»¸ã®å‘¨å›²ã§ã®å›è»¢ã€x è»¸ã®å‘¨å›²ã§ã®å›è»¢ã€y è»¸ã®å‘¨å›²ã§ã®å›è»¢ã¨åŒã˜ã«ãªã‚‹ã€‚
 */
 ChaMatrix* ChaMatrixRotationYawPitchRoll(ChaMatrix* pOut, float srcyaw, float srcpitch, float srcroll)
 {
@@ -5235,7 +5248,7 @@ ChaMatrix CalcAxisMatX(ChaVector3 vecx, ChaVector3 srcpos, ChaMatrix srcmat)
 	ChaVector3Normalize(&vecx, &vecx);
 
 	//###########################################################################################
-	//convmat‚Ìvecx‚ğbonevec‚É‚·‚é@‚»‚ê‚É‡‚í‚¹‚Ä‚R²‚ªŒİ‚¢‚É‚’¼‚É‚È‚é‚æ‚¤‚Évecy, vecz‚ğ‹‚ß‚é
+	//convmatã®vecxã‚’bonevecã«ã™ã‚‹ã€€ãã‚Œã«åˆã‚ã›ã¦ï¼“è»¸ãŒäº’ã„ã«å‚ç›´ã«ãªã‚‹ã‚ˆã†ã«vecy, veczã‚’æ±‚ã‚ã‚‹
 	//###########################################################################################
 	ChaVector3 axisx = vecx;
 	ChaVector3 axisy0 = ChaVector3(srcmat.data[MATI_21], srcmat.data[MATI_22], srcmat.data[MATI_23]);
@@ -5248,7 +5261,7 @@ ChaMatrix CalcAxisMatX(ChaVector3 vecx, ChaVector3 srcpos, ChaMatrix srcmat)
 	ChaVector3Normalize(&axisz1, &axisz1);
 
 	//#####################################
-	//‹‚ß‚½•ÏŠ·ƒxƒNƒgƒ‹‚Å@•ÏŠ·s—ñ‚ğì¬
+	//æ±‚ã‚ãŸå¤‰æ›ãƒ™ã‚¯ãƒˆãƒ«ã§ã€€å¤‰æ›è¡Œåˆ—ã‚’ä½œæˆ
 	//#####################################
 	retmat.data[MATI_11] = axisx.x;
 	retmat.data[MATI_12] = axisx.y;
@@ -5263,7 +5276,7 @@ ChaMatrix CalcAxisMatX(ChaVector3 vecx, ChaVector3 srcpos, ChaMatrix srcmat)
 	retmat.data[MATI_33] = axisz1.z;
 
 	//#########################################################
-	//ˆÊ’u‚Í@ƒ{[ƒ“‚Ìe‚ÌˆÊ’u@‚Â‚Ü‚èƒJƒŒƒ“ƒgƒWƒ‡ƒCƒ“ƒg‚ÌˆÊ’u
+	//ä½ç½®ã¯ã€€ãƒœãƒ¼ãƒ³ã®è¦ªã®ä½ç½®ã€€ã¤ã¾ã‚Šã‚«ãƒ¬ãƒ³ãƒˆã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®ä½ç½®
 	//#########################################################
 	retmat.data[MATI_41] = srcpos.x;
 	retmat.data[MATI_42] = srcpos.y;

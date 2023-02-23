@@ -677,8 +677,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 */
 
 /*
-* 2023/02/22
-* EditMot 1.2.0.12 RC1
+* 2023/02/23
+* EditMot 1.2.0.12 RC4
 * 
 * 	モデルパネル、モーションパネルの選択がシングルクリックで出来るように
 * 		4Kフレーム組み込み時に　ダブルクリックしないと選択変更できなかった不具合修正
@@ -709,7 +709,17 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 *
 *
 * 	位置コンストレイント機能
+* 		Pos Constraintをオンにしたジョイントの位置を保つようにIKします
 * 		物理ではなく　普通に数学とIKターゲットによる　位置コンストレイント
+* 
+* 		########################################################################################
+* 		最初に断っておきますが
+* 		無理な動きは無理です
+* 		体が大きく動く場合に使用すると無理なことになり易い
+* 		想定としては　乗り物などのハンドルに手をコンストレイントして　体を少し揺らすなどの用途
+* 		だましだまし使う用
+* 		########################################################################################
+*
 * 		ジョイント右クリックでメニューを出して　PosConstraintをオンオフ
 * 		オンにすると　移動回転操作の際に　オンにした時のそのジョイントの位置を目標に　位置修正
 * 		位置修正のための回転は　IKStopFlagが設定されているジョイントで止まる
@@ -718,11 +728,12 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 *
 *
 * 		位置修正のための回転が　ねじれないように　回転の軸は　カメラの向きにも依存する
-* 			カメラ軸とカメラ軸に垂直な軸に関して回転してIKターゲットすることにより　前よりも安定
+* 			カメラ軸とカメラ軸に垂直な軸に関して回転してIKターゲットすることにより　以前よりも安定
 *
 *
 * 		効果が分かりやすい使い方としては
-* 			HandのPos Constraintをオンにしてから　一番右の上から２番根のアイコンで移動モードにして　Hipsを移動
+* 		　　編集フレーム範囲をマウスドラッグで選択してから
+* 			HandのPos Constraintをオンにしてから　CameraAndIKプレートメニューの　上から２番目のアイコンで移動モードにして　Hipsを移動
 *
 * 		Pos Constraintオンオフのコツ
 * 			想定としては　Hand と Foot のジョイントに使う
@@ -738,21 +749,16 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 * 			設定ジョイントの親をクリックしてから　下矢印キーで　その子供を選択し　
 * 			マウスを　ジョイントに充てて　小さい黄色い四角が光ったときに　右クリックすると間違いが少ない
 *		
-*			############################################################################
-*			ツリービューのジョイント項目右クリックでも　オンオフ用のメニューが出る
-*				ツリービュー右クリックで設定した方が　どこに設定するのかが　分かりやすい
-*			############################################################################
+* 			###########################################################################################################
+* 			左ペインのツリービューのジョイント項目右クリックでも　オンオフ用のメニューが出る
+* 			ツリービュー右クリックで設定した方が　どこに設定するのかが　分かりやすい
+* 			オンにすると　ツリービューの項目の右側に　IKstopは進入禁止マーク　PosConstraintは一時停止マークが表示される
+* 			###########################################################################################################
 *
-* 
-*		マウスドラッグによる回転角度が閾値未満の場合修正
-*			回転角度が閾値未満の場合に　PosConstraintが機能していなかったのを修正
-*			閾値未満の場合にも　IKROTRECを保存して　PosConstraintだけ実行
-*			ブラシのウェイトカーブが小さい部分で　コンストレイントがおかしかったのが直った
-* 
-* 
-* 		PosConstraintの設定の保存は　まだ　していない
+* 		Pos Constraintの設定については　常時設定では無くて　必要作業ごとの設定を想定しているので　保存はしていません
+* 			例えば　ハンドルを握りながら体が揺れるような　モーションIK時に　一時的にオンにすることを想定
 *
-* 
+*
 *	IK Stopフラグのオンオフに関しても　ジョイント右クリックで設定可能に
 * 
 * 
@@ -773,11 +779,25 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 *	fpsコンボボックス追加
 *		VSyncRefPosプレートメニューのVSyncチェックボックス廃止
 *		DispAndLimitsプレートメニューの一番上に　fpsコンボボックス追加
-*		ドロップダウンから　max500fps, 100fps, 60fps, 30fps, 15fpsを選ぶように
+*		ドロップダウンから　free fps, 100fps, 60fps, 30fps, 15fpsを選ぶように
 * 
 * 
 *	プレイヤーボタンを更に微妙に中央寄せ
 *		出来るだけ押しやすく
+* 
+* 
+* 　X軸に関する１８０度補正をユーザが選択可能なオプションに
+*		DispAndLimitsプレートメニューに　X180チェックボックス追加
+*		チェックを入れると　IK時に　Y軸Z軸に対して行っているのと同様の１８０度補正を行う
+*		こちらでテストした限りでは
+*		回転モーションが設定されていない状態に対して IK編集する際には　オン
+* 　　　元のモーションがある上から　IK編集する場合には　オフ　にするとひっくり返りにくい
+*		自動化が難しいので　ユーザ操作に任せることに
+* 
+* 	TroubleShootingドキュメント追加
+* 		Documents/TroubleShooting/0_RulesOfJointName.docx
+* 		Documents/TroubleShooting/ACaseTwistedUnintentionally.docx
+*		Documents/TroubleShooting/ACaseHandStandUnintentionallyOnIK.docx
 * 
 * 
 */
@@ -2096,6 +2116,7 @@ CDXUTCheckBox* s_IfMirrorVDiv2CheckBox = 0;
 //CDXUTCheckBox* s_VSyncCheckBox = 0;
 CDXUTCheckBox* s_TraRotCheckBox = 0;
 CDXUTCheckBox* s_PreciseCheckBox = 0;
+CDXUTCheckBox* s_X180CheckBox = 0;
 CDXUTCheckBox* s_TPoseCheckBox = 0;
 
 
@@ -2131,6 +2152,7 @@ static CDXUTControl* s_ui_brushmirroru = 0;
 static CDXUTControl* s_ui_brushmirrorv = 0;
 static CDXUTControl* s_ui_ifmirrorvdiv2 = 0;
 static CDXUTControl* s_ui_precise = 0;
+static CDXUTControl* s_ui_x180 = 0;
 static CDXUTControl* s_ui_tpose = 0;
 
 //Left 2nd
@@ -2370,6 +2392,7 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 
 #define IDC_TRAROT					84
 #define IDC_COMBO_FPS				85
+#define IDC_X180					86
 
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -3487,6 +3510,7 @@ void InitApp()
 	g_rotatetanim = true;
 	g_tpose = true;
 	g_preciseOnPreviewToo = false;
+	g_x180flag = false;
 
 	g_refposstep = 10;
 	g_refalpha = 50;
@@ -3810,6 +3834,7 @@ void InitApp()
 	//s_VSyncCheckBox = 0;
 	s_TraRotCheckBox = 0;
 	s_PreciseCheckBox = 0;
+	s_X180CheckBox = 0;
 	s_TPoseCheckBox = 0;
 
 	//Left
@@ -3856,6 +3881,7 @@ void InitApp()
 	//s_ui_vsync = 0;
 	s_ui_trarot = 0;
 	s_ui_precise = 0;
+	s_ui_x180 = 0;
 	s_ui_tpose = 0;
 
 	//Bullet
@@ -22055,6 +22081,9 @@ int OnFrameUtCheckBox()
 	if (s_PreciseCheckBox) {
 		g_preciseOnPreviewToo = (bool)s_PreciseCheckBox->GetChecked();
 	}
+	if (s_X180CheckBox) {
+		g_x180flag = (bool)s_X180CheckBox->GetChecked();
+	}
 	//if (s_VSyncCheckBox) {
 	//	g_VSync = (bool)s_VSyncCheckBox->GetChecked();
 	//}
@@ -24653,8 +24682,8 @@ int CreateUtDialog()
 	}
 	else {
 		//iY = 0;
-		//iY = 0;
-		iY = addh;
+		iY = 0;
+		//iY = addh;
 		iX0 = 0;
 	}
 
@@ -24823,6 +24852,22 @@ int CreateUtDialog()
 	s_dsutguiid0.push_back(IDC_PRECISEONPREVIEWTOO);
 
 
+	g_SampleUI.AddCheckBox(IDC_X180, L"X180", 
+		iX0 + 25, iY += addh, checkboxxlen / 2 - 5, 16, 
+		g_x180flag, 0U, false, &s_X180CheckBox);
+	s_ui_x180 = g_SampleUI.GetControl(IDC_X180);
+	_ASSERT(s_ui_x180);
+	s_dsutgui0.push_back(s_ui_x180);
+	s_dsutguiid0.push_back(IDC_X180);
+
+
+	g_SampleUI.AddCheckBox(IDC_TRAROT, L"TRot", 
+		iX0 + checkboxxlen / 2 + 5 + 30, iY, checkboxxlen / 2 - 5, 16,
+		g_rotatetanim, 0U, false, &s_TraRotCheckBox);
+	s_ui_trarot = g_SampleUI.GetControl(IDC_TRAROT);
+	_ASSERT(s_ui_trarot);
+	s_dsutgui0.push_back(s_ui_trarot);
+	s_dsutguiid0.push_back(IDC_TRAROT);
 
 	if (g_4kresolution) {
 		//iY = s_mainheight - (520 - MAINMENUAIMBARH);
@@ -25112,14 +25157,6 @@ int CreateUtDialog()
 		//s_dsutgui3.push_back(s_ui_vsync);
 		//s_dsutguiid3.push_back(IDC_VSYNC);
 
-		//g_SampleUI.AddCheckBox(IDC_TRAROT, L"TRot", startx + checkboxxlen / 2 + 5, iY + addh, checkboxxlen / 2, 16, g_rotatetanim, 0U, false, &s_TraRotCheckBox);
-		g_SampleUI.AddCheckBox(IDC_TRAROT, L"TRot", startx, iY + addh, checkboxxlen / 2, 16, g_rotatetanim, 0U, false, &s_TraRotCheckBox);
-		s_ui_trarot = g_SampleUI.GetControl(IDC_TRAROT);
-		_ASSERT(s_ui_trarot);
-		s_dsutgui3.push_back(s_ui_trarot);
-		s_dsutguiid3.push_back(IDC_TRAROT);
-
-		iY += addh;
 	}
 
 	{//1-->Experimental
