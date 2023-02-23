@@ -1,5 +1,5 @@
 2023/02/23
-	EditMot 1.2.0.12 RC4
+	EditMot 1.2.0.12 release
 
   	位置コンストレイント機能
 		Pos Constraintをオンにしたジョイントの位置を保つようにIKします
@@ -115,7 +115,7 @@
 		Documents/TroubleShooting/0_RulesOfJointName.docx
 		Documents/TroubleShooting/ACaseTwistedUnintentionally.docx
 		Documents/TroubleShooting/ACaseHandStandUnintentionallyOnIK.docx
-
+		Documents/TroubleShooting/IfLimitEulIsNotEffectiveOnBtStart.docx
 
 
 	YouTubeチャンネル
