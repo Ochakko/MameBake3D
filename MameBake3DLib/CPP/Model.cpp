@@ -9140,7 +9140,7 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 	CQuaternion qForRot;
 	CQuaternion qForHipsRot;
 
-	if (keynum1flag) {
+	if (keynum1flag || (fromiktarget == true)) {
 		bool infooutflag = true;
 		qForRot = rotq0;
 		qForHipsRot = rotq0;
@@ -9330,7 +9330,10 @@ int CModel::IKRotateUnderIK(bool limitdegflag, CEditRange* erptr,
 					CQuaternion rotq0;
 					rotq0.SetAxisAndRot(rotaxis2, rotrad2);
 
-					parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+					//parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+					// 
+					//保存結果は　CBone::RotAndTraBoneQReqにおいてしか使っておらず　startframeしか使っていない
+					parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
 
 					//2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　
 					//制限角度により　回転出来ない場合は　リターンする
@@ -9502,10 +9505,15 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 				int rotrecsize = parentbone->GetIKRotRecSize();
 				if (rotrecsize > 0) {
 					int rotrecno;
+					bool beflessthanth = false;
+					int lessthanthcount = 0;
 					for (rotrecno = 0; rotrecno < rotrecsize; rotrecno++) {
 						IKROTREC currotrec = parentbone->GetIKRotRec(rotrecno);
 						CQuaternion rotq0 = currotrec.rotq;
 						bool lessthanthflag = currotrec.lessthanthflag;
+						if ((beflessthanth == false) && (lessthanthflag == true)) {
+							lessthanthcount = 0;
+						}
 
 						UpdateMatrix(limitdegflag, &m_matWorld, &m_matVP);//curmp更新
 
@@ -9523,7 +9531,11 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 							break;//ikrotrec loopを抜けて　parentbone loopへ
 						}
 
-						parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+						//parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+						// 
+						//保存結果は　CBone::RotAndTraBoneQReqにおいてしか使っておらず　startframeしか使っていない
+						parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
+
 
 						if (keynum >= 2) {
 							int keyno = 0;
@@ -9543,8 +9555,11 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 									else {
 										//マウスドラッグによる回転角度が1e-4より小さい場合にも
 										//IKTargetは実行
-										bool postflag = true;
-										IKTargetVec(limitdegflag, erptr, curframe, postflag);
+										if ((lessthanthcount % 10) == 0) {//１０回に１回
+											bool postflag = true;
+											IKTargetVec(limitdegflag, erptr, curframe, postflag);
+										}
+										lessthanthcount++;
 									}
 								}
 							}
@@ -9557,6 +9572,8 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 						//		m_curmotinfo->curframe, startframe, applyframe,
 						//		rotq0, keynum1flag);
 						//}
+
+						beflessthanth = lessthanthflag;
 					}
 				}
 
@@ -9695,7 +9712,11 @@ int CModel::IKRotate(bool limitdegflag, CEditRange* erptr,
 					CQuaternion rotq0;
 					rotq0.SetAxisAndRot( rotaxis2, rotrad2 );
 
-					parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+					//parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+					// 
+					//保存結果は　CBone::RotAndTraBoneQReqにおいてしか使っておらず　startframeしか使っていない
+					parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
+
 
 					//2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　
 					//制限角度により　回転出来ない場合は　リターンする
@@ -9903,51 +9924,38 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 					CQuaternion rotq0;
 					rotq0.SetAxisAndRot(rotaxis2, rotrad2);
 
-					parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
-
-					//2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　
-					//制限角度により　回転出来ない場合は　リターンする
-					//if (g_limitdegflag != 0) {
-					if ((limitdegflag != false) && (g_wallscrapingikflag == 0)) {//2023/01/23
-						//2023/01/28 IK時は　GetBtForce()チェックはしない　BtForce == 1でも角度制限する
-						int ismovable = IsMovableRot(limitdegflag, m_curmotinfo->motid, applyframe, applyframe,
-							rotq0, parentbone, parentbone);
-						if (ismovable == 0) {
-							//g_underIKRot = false;//2023/01/14 parent limited or not
-							if (editboneforret) {
-								return editboneforret->GetBoneNo();
-							}
-							else {
-								return srcboneno;
-							}
-						}
-					}
+					//parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+					// 
+					//保存結果は　CBone::RotAndTraBoneQReqにおいてしか使っておらず　startframeしか使っていない
+					parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
 
 
-					if (keynum >= 2) {
-						int keyno = 0;
-						//double curframe;
-						//for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
-						bool keynum1flag = false;
-						bool fromiktarget = true;
-						IKRotateOneFrame(limitdegflag, erptr,
-							keyno, parentbone,
-							curframe, startframe, applyframe,
-							rotq0, keynum1flag, postflag, fromiktarget);
+					////2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　
+					////制限角度により　回転出来ない場合は　リターンする
+					////if (g_limitdegflag != 0) {
+					//if ((limitdegflag != false) && (g_wallscrapingikflag == 0)) {//2023/01/23
+					//	//2023/01/28 IK時は　GetBtForce()チェックはしない　BtForce == 1でも角度制限する
+					//	int ismovable = IsMovableRot(limitdegflag, m_curmotinfo->motid, applyframe, applyframe,
+					//		rotq0, parentbone, parentbone);
+					//	if (ismovable == 0) {
+					//		//g_underIKRot = false;//2023/01/14 parent limited or not
+					//		if (editboneforret) {
+					//			return editboneforret->GetBoneNo();
+					//		}
+					//		else {
+					//			return srcboneno;
+					//		}
+					//	}
+					//}
 
-						keyno++;
-						//}
-					}
-					else {
-						if (postflag == false) {
-							bool keynum1flag = true;
-							bool fromiktarget = true;
-							IKRotateOneFrame(limitdegflag, erptr,
-								0, parentbone,
-								m_curmotinfo->curframe, startframe, applyframe,
-								rotq0, keynum1flag, postflag, fromiktarget);
-						}
-					}
+					int keyno = 0;
+					bool keynum1flag = false;
+					bool fromiktarget = true;
+					IKRotateOneFrame(limitdegflag, erptr,
+						keyno, parentbone,
+						curframe, startframe, applyframe,
+						rotq0, keynum1flag, postflag, fromiktarget);
+					keyno++;
 
 					if (g_applyendflag == 1) {
 						//curmotinfo->curframeから最後までcurmotinfo->curframeの姿勢を適用
@@ -11398,7 +11406,10 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 							CQuaternion qForRot;
 							CQuaternion qForHipsRot;
 
-							curbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+							//curbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+							// 
+							//保存結果は　CBone::RotAndTraBoneQReqにおいてしか使っておらず　startframeしか使っていない
+							curbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
 
 
 							//2023/01/23 : Rigの場合は　回転できなくても処理を継続
@@ -12213,7 +12224,10 @@ int CModel::IKRotateAxisDeltaUnderIK(
 				CQuaternion qForHipsRot;
 
 
-				aplybone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+				//aplybone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+				// 
+				//保存結果は　CBone::RotAndTraBoneQReqにおいてしか使っておらず　startframeしか使っていない
+				aplybone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
 
 
 				//2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　
@@ -12420,13 +12434,21 @@ int CModel::IKRotateAxisDeltaPostIK(
 			int rotrecsize = aplybone->GetIKRotRecSize();
 			if (rotrecsize > 0) {
 				int rotrecno;
+				bool beflessthanth = false;
+				int lessthanthcount = 0;
 				for (rotrecno = 0; rotrecno < rotrecsize; rotrecno++) {
 					IKROTREC currotrec = aplybone->GetIKRotRec(rotrecno);
 					CQuaternion localq = currotrec.rotq;
 					bool lessthanthflag = currotrec.lessthanthflag;
+					if ((beflessthanth == false) && (lessthanthflag == true)) {
+						lessthanthcount = 0;
+					}
 
 
-					aplybone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+					//aplybone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+					// 
+					//保存結果は　CBone::RotAndTraBoneQReqにおいてしか使っておらず　startframeしか使っていない
+					aplybone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
 
 
 					if (keynum >= 2) {
@@ -12446,8 +12468,11 @@ int CModel::IKRotateAxisDeltaPostIK(
 								else {
 									//マウスドラッグによる回転角度が1e-4より小さい場合にも
 									//IKTargetは実行
-									bool postflag = true;
-									IKTargetVec(limitdegflag, erptr, curframe, postflag);
+									if ((lessthanthcount % 10) == 0) {//１０回に１回
+										bool postflag = true;
+										IKTargetVec(limitdegflag, erptr, curframe, postflag);
+									}
+									lessthanthcount++;
 								}
 							}
 							keyno++;
@@ -12463,6 +12488,8 @@ int CModel::IKRotateAxisDeltaPostIK(
 					//		m_curmotinfo->curframe, startframe, applyframe,
 					//		localq, keynum1flag);
 					//}
+
+					beflessthanth = lessthanthflag;
 				}
 			}
 			
@@ -12655,7 +12682,10 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 			CQuaternion qForHipsRot;
 
 
-			aplybone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+			//aplybone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+			// 
+			//保存結果は　CBone::RotAndTraBoneQReqにおいてしか使っておらず　startframeしか使っていない
+			aplybone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
 
 
 			//2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　

@@ -319,7 +319,7 @@ public:
 	ChaMatrix CalcNewLocalTAnimMatFromSRTraAnim(ChaMatrix srcnewlocalrotmat, 
 		ChaMatrix srcsmat, ChaMatrix srcrmat, ChaMatrix srctanimmat, ChaVector3 oneframetraanim);
 
-	int SaveSRT(bool limitdegflag, int srcmotid, double srcstartframe, double srcendframe);
+	int SaveSRT(bool limitdegflag, int srcmotid, double srcframe);
 
 	//CMotionPoint* RotBoneQCurrentReq(bool infooutflag, CBone* parbone, int srcmotid, double srcframe, CQuaternion rotq, CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f), int setmatflag = 0, ChaMatrix* psetmat = 0);
 

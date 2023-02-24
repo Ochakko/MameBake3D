@@ -3110,47 +3110,31 @@ CMotionPoint* CBone::RotBoneQReq(bool limitdegflag, bool infooutflag,
 }
 
 
-int CBone::SaveSRT(bool limitdegflag, int srcmotid, double srcstartframe, double srcendframe)
+int CBone::SaveSRT(bool limitdegflag, int srcmotid, double srcframe)
 {
-	double calcstartframe, calcendframe;
-	calcendframe = (double)((int)(srcendframe + 0.1));
-	if (srcstartframe >= (1.0 - 0.1)) {
-		calcstartframe = (double)((int)(srcstartframe - 1.0 + 0.1));
-	}
-	else {
-		calcstartframe = 0.0;
-	}
-
-	double curframe;
-	for (curframe = calcstartframe; curframe <= calcendframe; curframe += 1.0) {
-		CMotionPoint* curmp;
-		curmp = GetMotionPoint(srcmotid, curframe);
-		if (curmp) {
-			ChaMatrix curwm, parentwm, localmat;
-			curwm = GetWorldMat(limitdegflag, srcmotid, curframe, curmp);
-			if (GetParent()) {
-				parentwm = GetParent()->GetWorldMat(limitdegflag, srcmotid, curframe, 0);
-				localmat = curwm * ChaMatrixInv(parentwm);
-			}
-			else {
-				parentwm.SetIdentity();
-				localmat = curwm;
-			}
-
-			ChaMatrix smat, rmat, tmat, tanimmat;
-			smat.SetIdentity();
-			rmat.SetIdentity();
-			tmat.SetIdentity();
-			tanimmat.SetIdentity();
-			GetSRTandTraAnim(localmat, GetNodeMat(), &smat, &rmat, &tmat, &tanimmat);
-			curmp->SetSaveSRTandTraAnim(smat, rmat, tmat, tanimmat);
+	double curframe = (double)((int)(srcframe + 0.0001));
+	CMotionPoint* curmp;
+	curmp = GetMotionPoint(srcmotid, curframe);
+	if (curmp) {
+		ChaMatrix curwm, parentwm, localmat;
+		curwm = GetWorldMat(limitdegflag, srcmotid, curframe, curmp);
+		if (GetParent()) {
+			parentwm = GetParent()->GetWorldMat(limitdegflag, srcmotid, curframe, 0);
+			localmat = curwm * ChaMatrixInv(parentwm);
 		}
 		else {
-			_ASSERT(0);
-			return 1;
+			parentwm.SetIdentity();
+			localmat = curwm;
 		}
-	}
 
+		ChaMatrix smat, rmat, tmat, tanimmat;
+		smat.SetIdentity();
+		rmat.SetIdentity();
+		tmat.SetIdentity();
+		tanimmat.SetIdentity();
+		GetSRTandTraAnim(localmat, GetNodeMat(), &smat, &rmat, &tmat, &tanimmat);
+		curmp->SetSaveSRTandTraAnim(smat, rmat, tmat, tanimmat);
+	}
 	return 0;
 }
 
@@ -3230,8 +3214,8 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 			startframetraanimmat.SetIdentity();
 		}
 	}
-	ChaMatrix currenttraanimmat;
-	curmp->GetSaveSRTandTraAnim(0, 0, 0, &currenttraanimmat);
+	//ChaMatrix currenttraanimmat;
+	//curmp->GetSaveSRTandTraAnim(0, 0, 0, &currenttraanimmat);
 
 
 
