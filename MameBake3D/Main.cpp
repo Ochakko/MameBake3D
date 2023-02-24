@@ -678,7 +678,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 
 /*
 * 2023/02/23
-* EditMot 1.2.0.12 RC4
+* EditMot 1.2.0.12
 * 
 * 	モデルパネル、モーションパネルの選択がシングルクリックで出来るように
 * 		4Kフレーム組み込み時に　ダブルクリックしないと選択変更できなかった不具合修正
@@ -3516,6 +3516,7 @@ void InitApp()
 	g_refalpha = 50;
 
 	g_underIKRot = false;
+	g_fpsforce30 = false;
 	g_underRetargetFlag = false;
 	s_retargetguiFlag = false;
 
@@ -7969,6 +7970,14 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 						//}
 
 						s_pickinfo.buttonflag = PICK_CENTER;//!!!!!!!!!!!!!
+						g_underIKRot = true;
+
+						//IK中は30fpsにする
+						//IK中の描画回数が多いと　IKROTRECの保存数が多すぎて
+						//ドラッグ終了後のウェイトカーソルが長くなりすぎる
+						//IKROTREC保存数を減らすため30fps
+						g_fpsforce30 = true;
+
 
 						//CModel::PickBone内でセット
 						//s_pickinfo.firstdiff.x = (float)s_pickinfo.clickpos.x - s_pickinfo.objscreen.x;
@@ -8010,6 +8019,13 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 							else {
 								ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
 							}
+							g_underIKRot = true;
+
+							//IK中は30fpsにする
+							//IK中の描画回数が多いと　IKROTRECの保存数が多すぎて
+							//ドラッグ終了後のウェイトカーソルが長くなりすぎる
+							//IKROTREC保存数を減らすため30fps
+							g_fpsforce30 = true;
 						}
 						else {
 							ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
@@ -8029,6 +8045,15 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 						ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
 						s_pickinfo.pickobjno = -1;
+					}
+					else {
+						g_underIKRot = true;
+
+						//IK中は30fpsにする
+						//IK中の描画回数が多いと　IKROTRECの保存数が多すぎて
+						//ドラッグ終了後のウェイトカーソルが長くなりすぎる
+						//IKROTREC保存数を減らすため30fps
+						g_fpsforce30 = true;
 					}
 				}
 				//if( s_owpLTimeline && s_model && s_model->GetCurMotInfo() ){
@@ -8138,6 +8163,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 
 		//マウスによるIKとFKの後処理　applyframe以外のフレームの処理
+		g_fpsforce30 = false;
 		if ((s_ikkind == 0) && (s_editmotionflag >= 0)){
 			if (s_pickinfo.buttonflag == PICK_CENTER) {
 				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
@@ -8195,6 +8221,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				}
 			}
 		}
+		g_underIKRot = false;
 
 
 		s_wmlbuttonup = 1;//ゲームパッド用フラグ
@@ -30202,7 +30229,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.12 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.13 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -37730,7 +37757,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.12 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.13 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

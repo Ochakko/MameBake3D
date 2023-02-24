@@ -16,6 +16,7 @@
 
 extern bool g_VSync;//GlobalVar.h
 extern int g_fpskind;
+extern bool g_fpsforce30;
 
 #define DXUT_MIN_WINDOW_SIZE_X 200
 #define DXUT_MIN_WINDOW_SIZE_Y 200
@@ -2897,39 +2898,53 @@ void WINAPI DXUTRender3DEnvironment()
 
 
     //2023/02/21
-    if(g_VSync == true)
+    if (g_fpsforce30 == false)
     {
-        double oneframetime = 0.010;
-        if (g_fpskind == 0)
+        if (g_VSync == true)
         {
-            oneframetime = 0.0020;
-        }
-        else if (g_fpskind == 1)
-        {
-            oneframetime = 0.010;
-        }
-        else if (g_fpskind == 2)
-        {
-            oneframetime = 1.0 / 60.0;
-        }
-        else if (g_fpskind == 3)
-        {
-            oneframetime = 1.0 / 30.0;
-        }
-        else if (g_fpskind == 4)
-        {
-            oneframetime = 1.0 / 15.0;
-        }
+            double oneframetime = 0.010;
+            if (g_fpskind == 0)
+            {
+                oneframetime = 0.0020;
+            }
+            else if (g_fpskind == 1)
+            {
+                oneframetime = 0.010;
+            }
+            else if (g_fpskind == 2)
+            {
+                oneframetime = 1.0 / 60.0;
+            }
+            else if (g_fpskind == 3)
+            {
+                oneframetime = 1.0 / 30.0;
+            }
+            else if (g_fpskind == 4)
+            {
+                oneframetime = 1.0 / 15.0;
+            }
 
-        GetDXUTState().SetOverrideConstantFrameTime(true);
-        GetDXUTState().SetOverrideConstantTimePerFrame((float)oneframetime);
-        DXUTSetConstantFrameTime(true, (float)oneframetime);
+            GetDXUTState().SetOverrideConstantFrameTime(true);
+            GetDXUTState().SetOverrideConstantTimePerFrame((float)oneframetime);
+            DXUTSetConstantFrameTime(true, (float)oneframetime);
+        }
+        else
+        {
+            GetDXUTState().SetOverrideConstantFrameTime(false);
+            GetDXUTState().SetOverrideConstantTimePerFrame(fElapsedTime);
+            DXUTSetConstantFrameTime(true, fElapsedTime);
+        }
     }
     else
     {
-        GetDXUTState().SetOverrideConstantFrameTime(false);
-        GetDXUTState().SetOverrideConstantTimePerFrame(fElapsedTime);
-        DXUTSetConstantFrameTime(true, fElapsedTime);
+        //IK??30fps???
+        //IK???????????IKROTREC?????????
+        //????????????????????????
+        //IKROTREC?????????30fps
+        double oneframetime = 1.0 / 30.0;
+        GetDXUTState().SetOverrideConstantFrameTime(true);
+        GetDXUTState().SetOverrideConstantTimePerFrame((float)oneframetime);
+        DXUTSetConstantFrameTime(true, (float)oneframetime);
     }
 
 
@@ -3006,7 +3021,7 @@ void WINAPI DXUTRender3DEnvironment()
     UINT SyncInterval = GetDXUTState().GetCurrentDeviceSettings()->d3d11.SyncInterval;
 
     // Show the frame on the primary surface.
-    if (g_VSync) {
+    if ((g_VSync == true) || (g_fpsforce30 == true)) {
         hr = pSwapChain->Present(SyncInterval, dwFlags);
     }
     else {

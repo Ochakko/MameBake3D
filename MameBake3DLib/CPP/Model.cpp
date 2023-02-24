@@ -9249,7 +9249,7 @@ int CModel::IKRotateUnderIK(bool limitdegflag, CEditRange* erptr,
 	CBone* firstbone = m_bonelist[srcboneno];
 	if (!firstbone) {
 		_ASSERT(0);
-		g_underIKRot = false;//2023/01/14 parent limited or not
+		////g_underIKRot = false;//2023/01/14 parent limited or not
 		return -1;
 	}
 	bool ishipsjoint = false;
@@ -9295,7 +9295,7 @@ int CModel::IKRotateUnderIK(bool limitdegflag, CEditRange* erptr,
 		{
 
 			//IKTarget()でフラグがリセットされるので　ループ先頭で　セットし直し
-			g_underIKRot = true;
+			////g_underIKRot = true;
 
 			//CBone* parentbone = curbone->GetParent();
 			CBone* parentbone = lastpar->GetParent();
@@ -9340,7 +9340,7 @@ int CModel::IKRotateUnderIK(bool limitdegflag, CEditRange* erptr,
 						int ismovable = IsMovableRot(limitdegflag, m_curmotinfo->motid, applyframe, applyframe,
 							rotq0, parentbone, parentbone);
 						if (ismovable == 0) {
-							g_underIKRot = false;//2023/01/14 parent limited or not
+							////g_underIKRot = false;//2023/01/14 parent limited or not
 							if (editboneforret) {
 								return editboneforret->GetBoneNo();
 							}
@@ -9428,7 +9428,7 @@ int CModel::IKRotateUnderIK(bool limitdegflag, CEditRange* erptr,
 		}
 	}
 
-	g_underIKRot = false;//2023/01/14 parent limited or not
+	//g_underIKRot = false;//2023/01/14 parent limited or not
 	if (editboneforret)
 	{
 		return editboneforret->GetBoneNo();
@@ -9446,7 +9446,7 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 	CBone* firstbone = m_bonelist[srcboneno];
 	if (!firstbone) {
 		_ASSERT(0);
-		g_underIKRot = false;//2023/01/14 parent limited or not
+		//g_underIKRot = false;//2023/01/14 parent limited or not
 		return -1;
 	}
 	bool ishipsjoint = false;
@@ -9492,7 +9492,7 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 		{
 
 			//IKTarget()でフラグがリセットされるので　ループ先頭で　セットし直し
-			g_underIKRot = true;
+			//g_underIKRot = true;
 
 			double firstframe = 0.0;
 
@@ -9588,7 +9588,7 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 		AdjustBoneTra(limitdegflag, erptr, lastpar);
 	}
 
-	g_underIKRot = false;//2023/01/14 parent limited or not
+	//g_underIKRot = false;//2023/01/14 parent limited or not
 	if (editboneforret)
 	{
 		return editboneforret->GetBoneNo();
@@ -9606,7 +9606,7 @@ int CModel::IKRotate(bool limitdegflag, CEditRange* erptr,
 	CBone* firstbone = m_bonelist[ srcboneno ];
 	if( !firstbone ){
 		_ASSERT( 0 );
-		g_underIKRot = false;//2023/01/14 parent limited or not
+		//g_underIKRot = false;//2023/01/14 parent limited or not
 		return -1;
 	}
 	bool ishipsjoint = false;
@@ -9660,7 +9660,7 @@ int CModel::IKRotate(bool limitdegflag, CEditRange* erptr,
 		{
 
 			//IKTarget()でフラグがリセットされるので　ループ先頭で　セットし直し
-			g_underIKRot = true;
+			//g_underIKRot = true;
 
 			//CBone* parentbone = curbone->GetParent();
 			CBone* parentbone = lastpar->GetParent();
@@ -9705,7 +9705,7 @@ int CModel::IKRotate(bool limitdegflag, CEditRange* erptr,
 						int ismovable = IsMovableRot(limitdegflag, m_curmotinfo->motid, applyframe, applyframe,
 							rotq0, parentbone, parentbone);
 						if (ismovable == 0) {
-							g_underIKRot = false;//2023/01/14 parent limited or not
+							//g_underIKRot = false;//2023/01/14 parent limited or not
 							if (editboneforret) {
 								return editboneforret->GetBoneNo();
 							}
@@ -9786,7 +9786,7 @@ int CModel::IKRotate(bool limitdegflag, CEditRange* erptr,
 	//}
 
 
-	g_underIKRot = false;//2023/01/14 parent limited or not
+	//g_underIKRot = false;//2023/01/14 parent limited or not
 	if (editboneforret)
 	{
 		return editboneforret->GetBoneNo();
@@ -9809,7 +9809,7 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 	CBone* firstbone = m_bonelist[srcboneno];
 	if (!firstbone) {
 		_ASSERT(0);
-		g_underIKRot = false;//2023/01/14 parent limited or not
+		//g_underIKRot = false;//2023/01/14 parent limited or not
 		return -1;
 	}
 	bool ishipsjoint = false;
@@ -9860,7 +9860,7 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 		{
 
 			//IKTarget()でフラグがリセットされるので　ループ先頭で　セットし直し
-			g_underIKRot = true;
+			//g_underIKRot = true;
 
 			//CBone* parentbone = curbone->GetParent();
 			CBone* parentbone = lastpar->GetParent();
@@ -9913,7 +9913,7 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 						int ismovable = IsMovableRot(limitdegflag, m_curmotinfo->motid, applyframe, applyframe,
 							rotq0, parentbone, parentbone);
 						if (ismovable == 0) {
-							g_underIKRot = false;//2023/01/14 parent limited or not
+							//g_underIKRot = false;//2023/01/14 parent limited or not
 							if (editboneforret) {
 								return editboneforret->GetBoneNo();
 							}
@@ -9992,7 +9992,7 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 	//}
 
 
-	g_underIKRot = false;//2023/01/14 parent limited or not
+	//g_underIKRot = false;//2023/01/14 parent limited or not
 	if (editboneforret)
 	{
 		return editboneforret->GetBoneNo();
@@ -11251,7 +11251,7 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 	//	return 0;//2023/01/27　再入禁止でギザギザは無くなるかどうかテスト
 	//}
 
-	g_underIKRot = true;//2023/01/14 parent limited or not
+	//g_underIKRot = true;//2023/01/14 parent limited or not
 
 
 	int calcnum = 3;
@@ -11259,7 +11259,7 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 	float rotrad = srcdelta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
 	//if (fabs(rotrad) < (0.020 * DEG2PAI)){
 	if (fabs(rotrad) < (0.020 * DEG2PAI)) {//2023/02/11
-		g_underIKRot = false;//2023/01/14 parent limited or not
+		//g_underIKRot = false;//2023/01/14 parent limited or not
 		return 0;
 	}	
 
@@ -11270,7 +11270,7 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 
 	CBone* curbone = m_bonelist[srcboneno];
 	if (!curbone){
-		g_underIKRot = false;//2023/01/14 parent limited or not
+		//g_underIKRot = false;//2023/01/14 parent limited or not
 		return 0;
 	}
 	CBone* parentbone = 0;
@@ -11371,7 +11371,7 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 							}
 							else {
 								_ASSERT(0);
-								g_underIKRot = false;//2023/01/14 parent limited or not
+								//g_underIKRot = false;//2023/01/14 parent limited or not
 								return 1;
 							}
 							ChaVector3Normalize(&axis0, &axis0);
@@ -11409,7 +11409,7 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 							//	int ismovable = IsMovableRot(m_curmotinfo->motid, applyframe, applyframe, 
 							//		localq, curbone, aplybone);
 							//	if (ismovable == 0) {
-							//		g_underIKRot = false;//2023/01/14 parent limited or not
+							//		//g_underIKRot = false;//2023/01/14 parent limited or not
 							//		if (lastbone) {
 							//			return lastbone->GetBoneNo();
 							//		}
@@ -11518,7 +11518,7 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 		//}
 	//}
 
-	g_underIKRot = false;//2023/01/14 parent limited or not
+	//g_underIKRot = false;//2023/01/14 parent limited or not
 	if (lastbone){
 		return lastbone->GetBoneNo();
 	}
@@ -12093,7 +12093,7 @@ int CModel::IKRotateAxisDeltaUnderIK(
 	float rotrad = delta / 10.0f * (float)PAI / 12.0f * g_physicsmvrate;//PhysicsIKプレートのEditRateスライダーで倍率設定.
 	//if (fabs(rotrad) < (0.020 * DEG2PAI)) {
 	if (fabs(rotrad) < (0.020 * DEG2PAI)) {//2023/02/11
-		g_underIKRot = false;//2023/01/14 parent limited or not
+		//g_underIKRot = false;//2023/01/14 parent limited or not
 		return 0;
 	}
 	if (fabs(rotrad) > (0.0550 * DEG2PAI)) {//2023/02/11
@@ -12107,7 +12107,7 @@ int CModel::IKRotateAxisDeltaUnderIK(
 
 	CBone* curbone = m_bonelist[srcboneno];
 	if (!curbone) {
-		g_underIKRot = false;//2023/01/14 parent limited or not
+		//g_underIKRot = false;//2023/01/14 parent limited or not
 		return 0;
 	}
 	bool ishipsjoint = false;
@@ -12134,7 +12134,7 @@ int CModel::IKRotateAxisDeltaUnderIK(
 	for (calccnt = 0; calccnt < calcnum; calccnt++) {
 		curbone = firstbone;
 		if (!curbone) {
-			g_underIKRot = false;//2023/01/14 parent limited or not
+			//g_underIKRot = false;//2023/01/14 parent limited or not
 			return 0;
 		}
 		lastbone = curbone;
@@ -12147,7 +12147,7 @@ int CModel::IKRotateAxisDeltaUnderIK(
 		while (curbone && ((maxlevel == 0) || (levelcnt < maxlevel))) {
 
 			//IKTarget()でフラグがリセットされるので　ループ先頭で　セットし直し
-			g_underIKRot = true;
+			//g_underIKRot = true;
 
 
 			parentbone = curbone->GetParent();
@@ -12199,7 +12199,7 @@ int CModel::IKRotateAxisDeltaUnderIK(
 			}
 			else {
 				_ASSERT(0);
-				g_underIKRot = false;//2023/01/14 parent limited or not
+				//g_underIKRot = false;//2023/01/14 parent limited or not
 				return 1;
 			}
 			ChaVector3Normalize(&axis0, &axis0);
@@ -12223,7 +12223,7 @@ int CModel::IKRotateAxisDeltaUnderIK(
 					//2023/01/28 IK時は　GetBtForce()チェックはしない　BtForce == 1でも角度制限する
 					int ismovable = IsMovableRot(limitdegflag, m_curmotinfo->motid, applyframe, applyframe, localq, aplybone, aplybone);
 					if (ismovable == 0) {
-						//g_underIKRot = false;//2023/01/14 parent limited or not
+						////g_underIKRot = false;//2023/01/14 parent limited or not
 						//if (editboneforret) {
 						//	return editboneforret->GetBoneNo();
 						//}
@@ -12318,7 +12318,7 @@ int CModel::IKRotateAxisDeltaUnderIK(
 	}
 
 
-	g_underIKRot = false;//2023/01/14 parent limited or not
+	//g_underIKRot = false;//2023/01/14 parent limited or not
 	if (editboneforret) {
 		return editboneforret->GetBoneNo();
 	}
@@ -12349,7 +12349,7 @@ int CModel::IKRotateAxisDeltaPostIK(
 
 	CBone* curbone = m_bonelist[srcboneno];
 	if (!curbone) {
-		g_underIKRot = false;//2023/01/14 parent limited or not
+		//g_underIKRot = false;//2023/01/14 parent limited or not
 		return 0;
 	}
 	bool ishipsjoint = false;
@@ -12376,7 +12376,7 @@ int CModel::IKRotateAxisDeltaPostIK(
 	for (calccnt = 0; calccnt < calcnum; calccnt++) {
 		curbone = firstbone;
 		if (!curbone) {
-			g_underIKRot = false;//2023/01/14 parent limited or not
+			//g_underIKRot = false;//2023/01/14 parent limited or not
 			return 0;
 		}
 		lastbone = curbone;
@@ -12389,7 +12389,7 @@ int CModel::IKRotateAxisDeltaPostIK(
 		while (curbone && ((maxlevel == 0) || (levelcnt < maxlevel))) {
 
 			//IKTarget()でフラグがリセットされるので　ループ先頭で　セットし直し
-			g_underIKRot = true;
+			//g_underIKRot = true;
 
 
 			parentbone = curbone->GetParent();
@@ -12499,7 +12499,7 @@ int CModel::IKRotateAxisDeltaPostIK(
 	
 
 
-	g_underIKRot = false;//2023/01/14 parent limited or not
+	//g_underIKRot = false;//2023/01/14 parent limited or not
 	if (editboneforret) {
 		return editboneforret->GetBoneNo();
 	}
@@ -12537,7 +12537,7 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 	float rotrad = delta / 10.0f * (float)PAI / 12.0f * g_physicsmvrate;//PhysicsIKプレートのEditRateスライダーで倍率設定.
 	//if (fabs(rotrad) < (0.020 * DEG2PAI)) {
 	if (fabs(rotrad) < (0.020 * DEG2PAI)) {//2023/02/11
-		g_underIKRot = false;//2023/01/14 parent limited or not
+		//g_underIKRot = false;//2023/01/14 parent limited or not
 		return 0;
 	}
 	if (fabs(rotrad) > (0.0550 * DEG2PAI)) {//2023/02/11
@@ -12551,7 +12551,7 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 
 	CBone* curbone = m_bonelist[srcboneno];
 	if (!curbone){
-		g_underIKRot = false;//2023/01/14 parent limited or not
+		//g_underIKRot = false;//2023/01/14 parent limited or not
 		return 0;
 	}
 	bool ishipsjoint = false;
@@ -12578,7 +12578,7 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 	for (calccnt = 0; calccnt < calcnum; calccnt++){
 		curbone = firstbone;
 		if (!curbone){
-			g_underIKRot = false;//2023/01/14 parent limited or not
+			//g_underIKRot = false;//2023/01/14 parent limited or not
 			return 0;
 		}
 		lastbone = curbone;
@@ -12591,7 +12591,7 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 		while (curbone && ((maxlevel == 0) || (levelcnt < maxlevel))){
 
 			//IKTarget()でフラグがリセットされるので　ループ先頭で　セットし直し
-			g_underIKRot = true;
+			//g_underIKRot = true;
 
 
 			parentbone = curbone->GetParent();
@@ -12643,7 +12643,7 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 			}
 			else {
 				_ASSERT(0);
-				g_underIKRot = false;//2023/01/14 parent limited or not
+				//g_underIKRot = false;//2023/01/14 parent limited or not
 				return 1;
 			}
 			ChaVector3Normalize(&axis0, &axis0);
@@ -12665,7 +12665,7 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 				//2023/01/28 IK時は　GetBtForce()チェックはしない　BtForce == 1でも角度制限する
 				int ismovable = IsMovableRot(limitdegflag, m_curmotinfo->motid, applyframe, applyframe, localq, aplybone, aplybone);
 				if (ismovable == 0) {
-					//g_underIKRot = false;//2023/01/14 parent limited or not
+					////g_underIKRot = false;//2023/01/14 parent limited or not
 					//if (editboneforret) {
 					//	return editboneforret->GetBoneNo();
 					//}
@@ -12737,7 +12737,7 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 	}
 
 
-	g_underIKRot = false;//2023/01/14 parent limited or not
+	//g_underIKRot = false;//2023/01/14 parent limited or not
 	if (editboneforret){
 		return editboneforret->GetBoneNo();
 	}
