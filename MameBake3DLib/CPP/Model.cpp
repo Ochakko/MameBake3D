@@ -9147,7 +9147,7 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 		parentbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
 			infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
 
-		if (fromiktarget == false) {
+		if ((fromiktarget != true) && (postflag != true)) {
 			IKTargetVec(limitdegflag, erptr, curframe, postflag);
 		}
 	}
@@ -9212,7 +9212,7 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 		}
 
 
-		if (fromiktarget == false) {
+		if ((fromiktarget != true) && (postflag != true)) {
 			IKTargetVec(limitdegflag, erptr, curframe, postflag);
 		}
 	}
@@ -9505,15 +9505,10 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 				int rotrecsize = parentbone->GetIKRotRecSize();
 				if (rotrecsize > 0) {
 					int rotrecno;
-					bool beflessthanth = false;
-					int lessthanthcount = 0;
 					for (rotrecno = 0; rotrecno < rotrecsize; rotrecno++) {
 						IKROTREC currotrec = parentbone->GetIKRotRec(rotrecno);
 						CQuaternion rotq0 = currotrec.rotq;
 						bool lessthanthflag = currotrec.lessthanthflag;
-						if ((beflessthanth == false) && (lessthanthflag == true)) {
-							lessthanthcount = 0;
-						}
 
 						//UpdateMatrix(limitdegflag, &m_matWorld, &m_matVP);//curmp更新
 
@@ -9542,7 +9537,6 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 							double curframe;
 							for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
 								if (curframe != applyframe) {
-
 									if (lessthanthflag == false) {
 										bool keynum1flag = false;
 										bool postflag = true;
@@ -9551,16 +9545,6 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 											keyno, parentbone,
 											curframe, startframe, applyframe,
 											rotq0, keynum1flag, postflag, fromiktarget);
-									}
-									else {
-										//マウスドラッグによる回転角度が1e-4より小さい場合にも
-										//IKTargetは実行
-										//if ((lessthanthcount % 10) == 0) {//１０回に１回
-										if (lessthanthcount == 0) {//１回
-											bool postflag = true;
-											IKTargetVec(limitdegflag, erptr, curframe, postflag);
-										}
-										lessthanthcount++;
 									}
 								}
 							}
@@ -9573,8 +9557,6 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 						//		m_curmotinfo->curframe, startframe, applyframe,
 						//		rotq0, keynum1flag);
 						//}
-
-						beflessthanth = lessthanthflag;
 					}
 				}
 
@@ -9598,6 +9580,15 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 			levelcnt++;
 			currate = (float)pow((double)g_ikrate, (double)g_ikfirst * (double)levelcnt);
 
+		}
+
+
+		double curframe;
+		for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
+			if (curframe != applyframe) {
+				bool postflag = true;
+				IKTargetVec(limitdegflag, erptr, curframe, postflag);
+			}
 		}
 	}
 
@@ -9846,9 +9837,9 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 
 
-	if (postflag && (directframe == applyframe)) {
-		return srcboneno;
-	}
+	//if (postflag && (directframe == applyframe)) {
+	//	return srcboneno;
+	//}
 
 
 	CBone* curbone = firstbone;
@@ -12434,22 +12425,15 @@ int CModel::IKRotateAxisDeltaPostIK(
 			int rotrecsize = aplybone->GetIKRotRecSize();
 			if (rotrecsize > 0) {
 				int rotrecno;
-				bool beflessthanth = false;
-				int lessthanthcount = 0;
 				for (rotrecno = 0; rotrecno < rotrecsize; rotrecno++) {
 					IKROTREC currotrec = aplybone->GetIKRotRec(rotrecno);
 					CQuaternion localq = currotrec.rotq;
 					bool lessthanthflag = currotrec.lessthanthflag;
-					if ((beflessthanth == false) && (lessthanthflag == true)) {
-						lessthanthcount = 0;
-					}
-
 
 					//aplybone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
 					// 
 					//保存結果は　CBone::RotAndTraBoneQReqにおいてしか使っておらず　startframeしか使っていない
 					aplybone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
-
 
 					if (keynum >= 2) {
 						int keyno = 0;
@@ -12464,16 +12448,6 @@ int CModel::IKRotateAxisDeltaPostIK(
 										keyno, aplybone,
 										curframe, startframe, applyframe,
 										localq, keynum1flag, postflag, fromiktarget);
-								}
-								else {
-									//マウスドラッグによる回転角度が1e-4より小さい場合にも
-									//IKTargetは実行
-									//if ((lessthanthcount % 10) == 0) {//１０回に１回
-									if (lessthanthcount == 0) {//１回
-										bool postflag = true;
-										IKTargetVec(limitdegflag, erptr, curframe, postflag);
-									}
-									lessthanthcount++;
 								}
 							}
 							keyno++;
@@ -12490,7 +12464,6 @@ int CModel::IKRotateAxisDeltaPostIK(
 					//		localq, keynum1flag);
 					//}
 
-					beflessthanth = lessthanthflag;
 				}
 			}
 			
@@ -12517,6 +12490,16 @@ int CModel::IKRotateAxisDeltaPostIK(
 				}
 			}
 		}
+
+
+		double curframe;
+		for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
+			if (curframe != applyframe) {
+				bool postflag = true;
+				IKTargetVec(limitdegflag, erptr, curframe, postflag);
+			}
+		}
+
 
 	}
 
@@ -13210,9 +13193,6 @@ int CModel::FKBoneTraPostFK(
 
 						curbone->AddBoneTraReq(limitdegflag, 0, m_curmotinfo->motid, curframe,
 							currenttranslation, dummyparentwm, dummyparentwm);
-
-						bool postflag = true;
-						IKTargetVec(limitdegflag, erptr, curframe, postflag);
 					}
 					keyno++;
 				}
@@ -13223,6 +13203,16 @@ int CModel::FKBoneTraPostFK(
 			//}
 		}
 	}
+
+
+	double curframe;
+	for (curframe = (double)((int)(startframe + 0.0001)); curframe <= (double)((int)(endframe + 0.0001)); curframe += 1.0) {
+		if (curframe != (double)((int)(applyframe + 0.0001))) {
+			bool postflag = true;
+			IKTargetVec(limitdegflag, erptr, curframe, postflag);
+		}
+	}
+
 
 	return curbone->GetBoneNo();
 }
@@ -13386,8 +13376,17 @@ int CModel::PosConstraintExecuteFromButton(bool limitdegflag, CEditRange* erptr)
 
 	if (m_curmotinfo) {
 		SetIKTargetVec();
-		bool postflag = false;//curframe == applyframeでも　回転を実行するために必要なフラグfalse
-		IKTargetVec(limitdegflag, erptr, m_curmotinfo->curframe, postflag);
+		int keynum;
+		double startframe, endframe, applyframe;
+		erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
+		double curframe;
+		for (curframe = (double)((int)startframe + 0.0001); curframe <= (double)((int)endframe + 0.0001); curframe += 1.0) {
+			bool postflag = true;
+			int calccount;
+			for (calccount = 0; calccount < 1; calccount++) {//IKTargetVecでも複数回計算している
+				IKTargetVec(limitdegflag, erptr, curframe, postflag);
+			}
+		}
 	}
 	else {
 		_ASSERT(0);
@@ -13410,7 +13409,7 @@ int CModel::IKTargetVec(bool limitdegflag, CEditRange* erptr, double srcframe, b
 		if (srcbone && srcbone->GetParent() && srcbone->GetIKTargetFlag()) {
 			ChaVector3 iktargetpos = srcbone->GetIKTargetPos();
 			int calccount;
-			for (calccount = 0; calccount < 1; calccount++) {
+			for (calccount = 0; calccount < 50; calccount++) {
 				IKRotateForIKTarget(limitdegflag, erptr, srcbone->GetBoneNo(), 
 					iktargetpos, 200, srcframe, postflag);
 			}

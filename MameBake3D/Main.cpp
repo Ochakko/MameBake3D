@@ -23896,7 +23896,11 @@ int OnFrameToolWnd()
 	if (s_constexeFlag) {//s_spconstexeボタン用
 		if (s_model && s_model->GetCurMotInfo()) {
 
+			HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 			s_model->PosConstraintExecuteFromButton(g_limitdegflag, &s_editrange);
+			if (oldcursor) {
+				SetCursor(oldcursor);
+			}
 
 			PrepairUndo();
 		}
