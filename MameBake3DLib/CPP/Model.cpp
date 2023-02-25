@@ -9822,8 +9822,7 @@ int CModel::IKRotate(bool limitdegflag, CEditRange* erptr,
 
 //IKRotate()と違うところ　：　カメラ軸回転とカメラ軸に垂直な軸回転と　２回回転するところ
 int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
-	int srcboneno, ChaVector3 targetpos, int maxlevel, double directframe, 
-	bool postflag)
+	int srcboneno, ChaVector3 targetpos, int maxlevel, double directframe, bool postflag)
 {
 
 	double curframe = directframe;
@@ -13359,6 +13358,44 @@ void CModel::SetIKTargetVecReq(CBone* srcbone)
 
 }
 
+int CModel::RefreshPosConstraint()
+{
+	SetIKTargetVec();
+
+	std::vector<CBone*>::iterator itrtargetbone;
+	for (itrtargetbone = m_iktargetbonevec.begin(); itrtargetbone != m_iktargetbonevec.end(); itrtargetbone++) {
+		CBone* srcbone = *itrtargetbone;
+		if (srcbone && srcbone->GetParent() && srcbone->GetIKTargetFlag()) {
+			srcbone->SetIKTargetFlag(true);
+		}
+		else {
+			_ASSERT(0);
+			continue;
+		}
+	}
+
+	return 0;
+}
+
+int CModel::PosConstraintExecuteFromButton(bool limitdegflag, CEditRange* erptr)
+{
+	if (!erptr) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	if (m_curmotinfo) {
+		SetIKTargetVec();
+		bool postflag = false;//curframe == applyframeでも　回転を実行するために必要なフラグfalse
+		IKTargetVec(limitdegflag, erptr, m_curmotinfo->curframe, postflag);
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
+
+	return 0;
+}
 
 int CModel::IKTargetVec(bool limitdegflag, CEditRange* erptr, double srcframe, bool postflag)
 {

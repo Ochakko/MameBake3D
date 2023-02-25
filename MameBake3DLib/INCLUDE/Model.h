@@ -415,6 +415,9 @@ public:
 	int IKTargetVec(bool limitdegflag, CEditRange* srptr, double srcframe, bool postflag);
 	int SetIKTargetVec();
 	void SetIKTargetVecReq(CBone* srcbone);
+	int PosConstraintExecuteFromButton(bool limitdegflag, CEditRange* erptr);
+	int RefreshPosConstraint();
+
 	//int PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel);
 	//int PhysicsMV(CEditRange* erptr, int srcboneno, ChaVector3 diffvec);
 

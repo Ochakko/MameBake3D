@@ -1854,6 +1854,8 @@ static bool s_selboneFlag = false;
 static bool s_initmpFlag = false;
 static int  s_filterState = 0;
 static bool s_smoothFlag = false;//s_spsmoothボタン用
+static bool s_constexeFlag = false;//s_spconstexeボタン用
+static bool s_constrefreshFlag = false;//s_spconstrefreshボタン用
 static bool s_filternodlg = false;
 static bool s_delmodelFlag = false;
 static bool s_delallmodelFlag = false;
@@ -2028,6 +2030,8 @@ static SPELEM s_sprig[SPRIGMAX];//inactive, active
 static SPELEM s_spret2prev;
 static SPELEM s_spcplw2w;
 static SPELEM s_spsmooth;
+static SPELEM s_spconstexe;
+static SPELEM s_spconstrefresh;
 static SPGUISW s_spguisw[SPGUISWNUM];
 static SPGUISW s_sprigidsw[SPRIGIDSWNUM];
 static SPGUISW s_spretargetsw[SPRETARGETSWNUM];
@@ -2776,6 +2780,11 @@ static int SetSpLimitEulSWParams();
 static int PickSpLimitEulSW(POINT srcpos);
 static int SetSpScrapingSWParams();
 static int PickSpScrapingSW(POINT srcpos);
+static int SetSpConstExeParams();
+static int PickSpConstExe(POINT srcpos);
+static int SetSpConstRefreshParams();
+static int PickSpConstRefresh(POINT srcpos);
+
 
 static int PickRigBone(UIPICKINFO* ppickinfo);
 static ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis, int disporder, bool posinverse);
@@ -3436,7 +3445,8 @@ int CheckResolution()
 
 	if (!g_4kresolution) {
 
-		s_spsize = 38.0f;
+		//s_spsize = 38.0f;
+		s_spsize = 32.0f;
 		s_sptopmargin = 35.0f;
 		s_spsidemargin = 35.0f;
 
@@ -3674,6 +3684,8 @@ void InitApp()
 	s_initmpFlag = false;
 	s_filterState = 0;
 	s_smoothFlag = false;
+	s_constexeFlag = false;
+	s_constrefreshFlag = false;
 	s_filternodlg = false;
 	s_interpolateState = 0;
 	s_skipJointMark = 0;
@@ -4042,6 +4054,8 @@ void InitApp()
 	ZeroMemory(&s_spret2prev, sizeof(SPELEM));
 	ZeroMemory(&s_spcplw2w, sizeof(SPELEM));
 	ZeroMemory(&s_spsmooth, sizeof(SPELEM));
+	ZeroMemory(&s_spconstexe, sizeof(SPELEM));
+	ZeroMemory(&s_spconstrefresh, sizeof(SPELEM));
 	ZeroMemory(&s_mousecenteron, sizeof(SPELEM));
 
 	{
@@ -4807,6 +4821,12 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	_ASSERT(s_spsmooth.sprite);
 	CallF(s_spsmooth.sprite->Create(pd3dImmediateContext, mpath, L"SmoothFilter.png", 0, 0), return S_FALSE);
 
+	s_spconstexe.sprite = new CMySprite(s_pdev);
+	_ASSERT(s_spconstexe.sprite);
+	CallF(s_spconstexe.sprite->Create(pd3dImmediateContext, mpath, L"Constraint_Execute.png", 0, 0), return S_FALSE);
+	s_spconstrefresh.sprite = new CMySprite(s_pdev);
+	_ASSERT(s_spconstrefresh.sprite);
+	CallF(s_spconstrefresh.sprite->Create(pd3dImmediateContext, mpath, L"Constraint_refresh.png", 0, 0), return S_FALSE);
 
 	s_mousecenteron.sprite = new CMySprite(s_pdev);
 	_ASSERT(s_mousecenteron.sprite);
@@ -5038,6 +5058,8 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpSmoothParams();
 	SetSpLimitEulSWParams();
 	SetSpScrapingSWParams();
+	SetSpConstExeParams();
+	SetSpConstRefreshParams();
 	//SetSpBtParams();
 	SetSpMouseHereParams();
 	SetSpMouseCenterParams();//SetSpCamParamsよりも後で呼ぶ　位置を参照しているから
@@ -6310,6 +6332,18 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete curspsmooth;
 	}
 	s_spsmooth.sprite = 0;
+
+
+	CMySprite* curspconstexe = s_spconstexe.sprite;
+	if (curspconstexe) {
+		delete curspconstexe;
+	}
+	s_spconstrefresh.sprite = 0;
+	CMySprite* curspconstrefresh = s_spconstrefresh.sprite;
+	if (curspconstrefresh) {
+		delete curspconstrefresh;
+	}
+	s_spconstrefresh.sprite = 0;
 
 
 	CMySprite* curspm = s_mousecenteron.sprite;
@@ -7873,6 +7907,20 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				s_smoothFlag = true;
 			}
 		}
+
+		if (PickSpConstExe(ptCursor) != 0) {
+			if (s_constexeFlag == false) {
+				s_constexeFlag = true;
+			}
+		}
+		if (PickSpConstRefresh(ptCursor) != 0) {
+			if (s_constrefreshFlag == false) {
+				s_constrefreshFlag = true;
+			}
+		}
+
+
+
 
 		int oprigdoneflag = 0;
 		int pickrigflag = 0;
@@ -18776,6 +18824,60 @@ int SetSpSmoothParams()
 
 }
 
+int SetSpConstExeParams()
+{
+	if (!s_spconstexe.sprite) {
+		return 0;
+	}
+
+	int spashift = 6;
+	s_spconstexe.dispcenter.x = s_mainwidth - (int)s_spsidemargin;
+	s_spconstexe.dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spashift) * 7 + spashift;
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_spconstexe.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_spconstexe.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
+	if (s_spconstexe.sprite) {
+		CallF(s_spconstexe.sprite->SetPos(disppos), return 1);
+		CallF(s_spconstexe.sprite->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+
+}
+
+int SetSpConstRefreshParams()
+{
+	if (!s_spconstexe.sprite) {
+		return 0;
+	}
+
+	int spashift = 6;
+	s_spconstrefresh.dispcenter.x = s_mainwidth - (int)s_spsidemargin - (int)s_spsize - 10;
+	s_spconstrefresh.dispcenter.y = (int)s_sptopmargin + ((int)s_spsize + spashift) * 7 + spashift;
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_spconstrefresh.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_spconstrefresh.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
+	if (s_spconstrefresh.sprite) {
+		CallF(s_spconstrefresh.sprite->SetPos(disppos), return 1);
+		CallF(s_spconstrefresh.sprite->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+
+}
+
 int SetSpMouseHereParams()
 {
 	if (!s_spmousehere.sprite) {
@@ -19373,6 +19475,62 @@ int PickSpSmooth(POINT srcpos)
 	//SPRIG_INACTIVEとSPRIG_ACTIVEは同じ位置なので当たり判定は１回で良い
 	if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
 		int startx = s_spsmooth.dispcenter.x - (int)s_spsize / 2;
+		int endx = startx + (int)s_spsize;
+
+		if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+			pickflag = 1;
+		}
+	}
+
+	return pickflag;
+}
+
+int PickSpConstExe(POINT srcpos)
+{
+	int pickflag = 0;
+
+	if (s_spconstexe.sprite == 0) {
+		return 0;
+	}
+	if (g_previewFlag != 0) {
+		//preview中は　押さない
+		return 0;
+	}
+
+	int starty = s_spconstexe.dispcenter.y - (int)s_spsize / 2;
+	int endy = starty + (int)s_spsize;
+
+	//SPRIG_INACTIVEとSPRIG_ACTIVEは同じ位置なので当たり判定は１回で良い
+	if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+		int startx = s_spconstexe.dispcenter.x - (int)s_spsize / 2;
+		int endx = startx + (int)s_spsize;
+
+		if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+			pickflag = 1;
+		}
+	}
+
+	return pickflag;
+}
+
+int PickSpConstRefresh(POINT srcpos)
+{
+	int pickflag = 0;
+
+	if (s_spconstrefresh.sprite == 0) {
+		return 0;
+	}
+	if (g_previewFlag != 0) {
+		//preview中は　押さない
+		return 0;
+	}
+
+	int starty = s_spconstrefresh.dispcenter.y - (int)s_spsize / 2;
+	int endy = starty + (int)s_spsize;
+
+	//SPRIG_INACTIVEとSPRIG_ACTIVEは同じ位置なので当たり判定は１回で良い
+	if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+		int startx = s_spconstrefresh.dispcenter.x - (int)s_spsize / 2;
 		int endx = startx + (int)s_spsize;
 
 		if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
@@ -23735,6 +23893,25 @@ int OnFrameToolWnd()
 		s_smoothFlag = false;
 	}
 
+	if (s_constexeFlag) {//s_spconstexeボタン用
+		if (s_model && s_model->GetCurMotInfo()) {
+
+			s_model->PosConstraintExecuteFromButton(g_limitdegflag, &s_editrange);
+
+			PrepairUndo();
+		}
+		s_constexeFlag = false;
+	}
+	if (s_constrefreshFlag) {//s_spconstexeボタン用
+		if (s_model && s_model->GetCurMotInfo()) {
+
+			s_model->RefreshPosConstraint();
+
+			//PrepairUndo();
+		}
+		s_constrefreshFlag = false;
+	}
+
 
 	if (s_btresetFlag == true) {
 		if (s_model) {
@@ -27950,10 +28127,25 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 				s_spsmooth.sprite->OnRender(pd3dImmediateContext);
 			}
 			else {
-				if (!s_spsmooth.sprite) {
-					_ASSERT(0);
-				}
+				_ASSERT(0);
 			}
+
+			//ConstExe
+			if (s_spconstexe.sprite) {//プレビュー時は非表示
+				s_spconstexe.sprite->OnRender(pd3dImmediateContext);
+			}
+			else {
+				_ASSERT(0);
+			}
+
+			//ConstRefresh
+			if (s_spconstrefresh.sprite) {//プレビュー時は非表示
+				s_spconstrefresh.sprite->OnRender(pd3dImmediateContext);
+			}
+			else {
+				_ASSERT(0);
+			}
+
 		}
 
 		//カメラ操作スプライトは　プレビュー中も表示

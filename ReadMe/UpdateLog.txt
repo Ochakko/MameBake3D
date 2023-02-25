@@ -27,6 +27,16 @@
 		大きく動いても　カレントフレーム以外が　暴れにくくなった
 
 
+	位置コンストレイント実行ボタン　と　位置コンストレイントリフレッシュボタン　を追加(2023/02/25)
+		CameraAndIKプレートメニューに　ConstraintExecuteボタンとConstraintRefreshボタンを追加
+
+		ConstraintExecuteボタンは
+			ジョイント右クリックでPosConstraintをオンにしているジョイントの　位置を　オンにした時の拘束位置へとIKします
+
+		ConstraintRefreshボタンは			
+			ジョイント右クリックでPosConstraintをオンにしているジョイントの　現在のジョイントを位置を　拘束位置として設定します
+　
+
 
 	1.2.0.12動画
 		https://youtu.be/8p13H6MGQZ8
