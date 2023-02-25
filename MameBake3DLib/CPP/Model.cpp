@@ -9300,7 +9300,7 @@ int CModel::IKRotateUnderIK(bool limitdegflag, CEditRange* erptr,
 			//CBone* parentbone = curbone->GetParent();
 			CBone* parentbone = lastpar->GetParent();
 			if (parentbone && (curbone->GetJointFPos() != parentbone->GetJointFPos())) {
-				UpdateMatrix(limitdegflag, &m_matWorld, &m_matVP);//curmp更新
+				//UpdateMatrix(limitdegflag, &m_matWorld, &m_matVP);//curmp更新
 
 				CRigidElem* curre = GetRigidElem(lastpar->GetBoneNo());
 				if (curre && (curre->GetForbidRotFlag() != 0)) {
@@ -9515,7 +9515,7 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 							lessthanthcount = 0;
 						}
 
-						UpdateMatrix(limitdegflag, &m_matWorld, &m_matVP);//curmp更新
+						//UpdateMatrix(limitdegflag, &m_matWorld, &m_matVP);//curmp更新
 
 						CRigidElem* curre = GetRigidElem(lastpar->GetBoneNo());
 						if (curre && (curre->GetForbidRotFlag() != 0)) {
@@ -9555,7 +9555,8 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 									else {
 										//マウスドラッグによる回転角度が1e-4より小さい場合にも
 										//IKTargetは実行
-										if ((lessthanthcount % 10) == 0) {//１０回に１回
+										//if ((lessthanthcount % 10) == 0) {//１０回に１回
+										if (lessthanthcount == 0) {//１回
 											bool postflag = true;
 											IKTargetVec(limitdegflag, erptr, curframe, postflag);
 										}
@@ -9682,7 +9683,7 @@ int CModel::IKRotate(bool limitdegflag, CEditRange* erptr,
 			//CBone* parentbone = curbone->GetParent();
 			CBone* parentbone = lastpar->GetParent();
 			if( parentbone && (curbone->GetJointFPos() != parentbone->GetJointFPos()) ){
-				UpdateMatrix(limitdegflag, &m_matWorld, &m_matVP);//curmp更新
+				//UpdateMatrix(limitdegflag, &m_matWorld, &m_matVP);//curmp更新
 
 				CRigidElem* curre = GetRigidElem(lastpar->GetBoneNo());
 				if (curre && (curre->GetForbidRotFlag() != 0)) {
@@ -9886,7 +9887,7 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 			//CBone* parentbone = curbone->GetParent();
 			CBone* parentbone = lastpar->GetParent();
 			if (parentbone && (curbone->GetJointFPos() != parentbone->GetJointFPos())) {
-				UpdateMatrix(limitdegflag, &m_matWorld, &m_matVP);//curmp更新
+				//UpdateMatrix(limitdegflag, &m_matWorld, &m_matVP);//curmp更新
 
 				CRigidElem* curre = GetRigidElem(lastpar->GetBoneNo());
 				if (curre && (curre->GetForbidRotFlag() != 0)) {
@@ -12468,7 +12469,8 @@ int CModel::IKRotateAxisDeltaPostIK(
 								else {
 									//マウスドラッグによる回転角度が1e-4より小さい場合にも
 									//IKTargetは実行
-									if ((lessthanthcount % 10) == 0) {//１０回に１回
+									//if ((lessthanthcount % 10) == 0) {//１０回に１回
+									if (lessthanthcount == 0) {//１回
 										bool postflag = true;
 										IKTargetVec(limitdegflag, erptr, curframe, postflag);
 									}
