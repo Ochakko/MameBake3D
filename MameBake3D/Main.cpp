@@ -809,7 +809,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 
 /*
 * 2023/02/25
-* EditMot 1.2.0.13 RC1
+* EditMot 1.2.0.13 RC2
 * 
 * IK終了後のウェイトカーソル時間短縮
 * 	IK中は30fpsにする
@@ -854,6 +854,10 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 *		　　追加処理として　フレーム選択そのままでConstExecuteボタンを押す
 *		２，IK操作無しで　選択フレーム範囲のジョイント位置をコンストレイントしたい場合
 *			ジョイント右クリックでPosConstraint ON　フレーム選択　ConstRefreshボタンで現在位置を高速位置　ConstExecuteボタンで拘束計算
+* 
+* VRoidモデル着替え
+*	Test/0_VRoid_Spring_1 追加
+* 　Test/0_VRoid_Winter_1 削除
 * 
 * 
 */
@@ -23952,10 +23956,17 @@ int OnFrameToolWnd()
 	}
 
 	if (s_constexeFlag) {//s_spconstexeボタン用
-		if (s_model && s_model->GetCurMotInfo()) {
+		if (s_model && s_model->GetCurMotInfo() && s_model->GetTopBone()) {
 
 			HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 			s_model->PosConstraintExecuteFromButton(g_limitdegflag, &s_editrange);
+			if (g_limitdegflag == true) {
+				bool allframeflag = false;
+				bool setcursorflag = false;
+				bool onpasteflag = false;
+				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, s_model->GetTopBone()->GetBoneNo(), onpasteflag);
+			}
+			refreshEulerGraph();
 			if (oldcursor) {
 				SetCursor(oldcursor);
 			}

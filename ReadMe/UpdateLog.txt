@@ -1,5 +1,5 @@
   2023/02/25
-  EditMot 1.2.0.13 RC1
+  EditMot 1.2.0.13 RC2
   
   IK終了後のウェイトカーソル時間短縮
   	IK中は30fpsにする
@@ -46,12 +46,16 @@
   			ジョイント右クリックでPosConstraint ON　フレーム選択　ConstRefreshボタンで現在位置を高速位置　ConstExecuteボタンで拘束計算
   
 
-　
-	YouTubeチャンネル
-		https://www.youtube.com/@ochakkolab
+　VRoidモデル着替え
+	Test/0_VRoid_Spring_1 追加
+　　　Test/0_VRoid_Winter_1 削除
 
-	おちゃっこLAB
-		https://ochakkolab.jp/
+
+　YouTubeチャンネル
+	https://www.youtube.com/@ochakkolab
+
+　おちゃっこLAB
+	https://ochakkolab.jp/
 
 
 
