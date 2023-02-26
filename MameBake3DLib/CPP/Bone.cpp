@@ -790,7 +790,9 @@ int CBone::ApplyNewLimitsToWM(int srcmotid, double srcframe)
 		bool directsetflag = false;
 		int infooutflag = 0;
 		int setchildflag = 1;//<-- 必須 RootNodeの回転を絞り込めば分かる
-		SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, curwm);
+		int onlycheck = 0;
+		bool fromiktarget = false;
+		SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, curwm, onlycheck, fromiktarget);
 		
 		//curmp->SetLimitedWM(newwm);
 		//curmp->SetLimitedLocalEul(neweul);
@@ -2596,7 +2598,9 @@ CMotionPoint* CBone::AddBoneTraReq(bool limitdegflag, CMotionPoint* parmp, int s
 		//ChaMatrix tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat();
 		ChaMatrix tmpmat = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp) * ChaMatrixInv(befparentwm) * newparentwm;
 		bool directsetflag = true;
-		SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, tmpmat);
+		int onlycheck = 0;
+		bool fromiktarget = false;
+		SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, tmpmat, onlycheck, fromiktarget);
 
 		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 	}
@@ -2606,7 +2610,9 @@ CMotionPoint* CBone::AddBoneTraReq(bool limitdegflag, CMotionPoint* parmp, int s
 		ChaMatrixTranslation( &tramat, srctra.x, srctra.y, srctra.z );
 		ChaMatrix tmpmat = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp) * tramat;
 		bool directsetflag = true;
-		SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, tmpmat);
+		int onlycheck = 0;
+		bool fromiktarget = false;
+		SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, tmpmat, onlycheck, fromiktarget);
 
 		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 	}
@@ -2655,7 +2661,9 @@ CMotionPoint* CBone::AddBoneScaleReq(bool limitdegflag, CMotionPoint* parmp, int
 		//ChaMatrix tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat();
 		ChaMatrix tmpmat = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp) * ChaMatrixInv(befparentwm) * newparentwm;
 		bool directsetflag = true;
-		SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, tmpmat);
+		int onlycheck = 0;
+		bool fromiktarget = false;
+		SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, tmpmat, onlycheck, fromiktarget);
 
 		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 	}
@@ -2675,7 +2683,9 @@ CMotionPoint* CBone::AddBoneScaleReq(bool limitdegflag, CMotionPoint* parmp, int
 		//ChaMatrix tmpmat = curmp->GetWorldMat() * tramat;
 		ChaMatrix tmpmat = tramat * GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
 		bool directsetflag = true;
-		SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, tmpmat);
+		int onlycheck = 0;
+		bool fromiktarget = false;
+		SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, tmpmat, onlycheck, fromiktarget);
 
 		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 
@@ -2956,8 +2966,10 @@ void CBone::UpdateCurrentWM(bool limitdegflag, int srcmotid, double srcframe,
 	bool directsetflag = true;//directset !!!
 	bool infooutflag = false;
 	int setchildflag = 0;
+	int onlycheck = 0;
+	bool fromiktarget = false;
 	SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag,
-		srcmotid, roundingframe, newwm);
+		srcmotid, roundingframe, newwm, onlycheck, fromiktarget);
 
 	CMotionPoint* curmp = GetMotionPoint(srcmotid, roundingframe);
 	if (curmp) {
@@ -2998,8 +3010,10 @@ void CBone::UpdateParentWMReq(bool limitdegflag, bool setbroflag, int srcmotid, 
 	bool directsetflag = true;//directset !!!
 	bool infooutflag = false;
 	int setchildflag = 0;
+	int onlycheck = 0;
+	bool fromiktarget = false;
 	SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag,
-		srcmotid, roundingframe, currentnewwm);
+		srcmotid, roundingframe, currentnewwm, onlycheck, fromiktarget);
 
 	CMotionPoint* curmp = GetMotionPoint(srcmotid, roundingframe);
 	if (curmp) {
@@ -3083,7 +3097,10 @@ CMotionPoint* CBone::RotBoneQReq(bool limitdegflag, bool infooutflag,
 
 	bool directsetflag = false;
 	int setchildflag = 0;
-	SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm);
+	int onlycheck = 0;
+	bool fromiktarget = false;
+	SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, 
+		srcmotid, roundingframe, newwm, onlycheck, fromiktarget);
 
 	if (bvhbone){
 		//bvhbone->SetTmpMat(tmpmat);
@@ -3140,7 +3157,7 @@ int CBone::SaveSRT(bool limitdegflag, int srcmotid, double srcframe)
 
 CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr, 
 	double srcstartframe, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
-	CQuaternion qForRot, CQuaternion qForHipsRot, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm)
+	CQuaternion qForRot, CQuaternion qForHipsRot, bool fromiktarget)
 {
 	//######################################
 	//IK用.　RetargetはRotBoneQReq()を使用
@@ -3264,7 +3281,8 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 		if (onlycheckptr) {
 			bool directsetflag = false;
 			int onlycheckflag = 1;
-			ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm, onlycheckflag);
+			ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, 
+				srcmotid, roundingframe, newwm, onlycheckflag, fromiktarget);
 			*onlycheckptr = ismovable;
 			//if (ismovable == 0) {
 			//	return curmp;// not movableの場合は　印を付けて　直ちにリターンする
@@ -3275,7 +3293,8 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 			bool directsetflag = false;
 			int onlycheckflag = 0;
 			int setchildflag = 1;
-			ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm, onlycheckflag);
+			ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, 
+				srcmotid, roundingframe, newwm, onlycheckflag, fromiktarget);
 		}		
 		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 
@@ -3336,7 +3355,8 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 		if (onlycheckptr) {
 			bool directsetflag = false;
 			int onlycheckflag = 1;
-			ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, newwm, onlycheckflag);
+			ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, 
+				srcmotid, roundingframe, newwm, onlycheckflag, fromiktarget);
 			*onlycheckptr = ismovable;
 			//if (ismovable == 0) {
 			//	return curmp;// not movableの場合は　印を付けて　直ちにリターンする
@@ -3351,7 +3371,8 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 			bool directsetflag = false;
 			int onlycheckflag = 0;
 			int setchildflag = 1;//2023/02/12 ２段目の前に再帰する必要
-			ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm, onlycheckflag);
+			ismovable = SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, 
+				srcmotid, roundingframe, newwm, onlycheckflag, fromiktarget);
 		}
 		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 
@@ -3402,7 +3423,9 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 			
 			bool directsetflag2 = true;
 			int setchildflag2 = 1;//2023/02/12
-			SetWorldMat(limitdegflag, directsetflag2, infooutflag, setchildflag2, srcmotid, roundingframe, newwm);
+			int onlycheck2 = 0;
+			SetWorldMat(limitdegflag, directsetflag2, infooutflag, setchildflag2, 
+				srcmotid, roundingframe, newwm, onlycheck2, fromiktarget);
 			currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 		}
 
@@ -3595,11 +3618,18 @@ CMotionPoint* CBone::RotBoneQOne(bool limitdegflag, CBone* srcparentbone, CMotio
 	if (parmp){
 		//parentの行列をセット !!!!!!!!!
 		bool directsetflag = true;
+		int onlycheck = 0;
+		bool fromiktarget = false;
 		SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, 
-			srcparentbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, parmp));
+			srcparentbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, parmp),
+			onlycheck, fromiktarget);
 	} else{
 		bool directsetflag = true;
-		SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, srcmat);
+		int onlycheck = 0;
+		bool fromiktarget = false;
+		SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, 
+			srcmotid, roundingframe, srcmat,
+			onlycheck, fromiktarget);
 	}
 
 	curmp->SetAbsMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
@@ -3633,7 +3663,11 @@ CMotionPoint* CBone::SetAbsMatReq(bool limitdegflag, int broflag,
 
 	bool infooutflag = false;
 	bool directsetflag = true;
-	SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, firstmp->GetAbsMat());
+	int onlycheck = 0;
+	bool fromiktarget = false;
+	SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, 
+		srcmotid, roundingframe, firstmp->GetAbsMat(),
+		onlycheck, fromiktarget);
 
 	if( m_child ){
 		m_child->SetAbsMatReq(limitdegflag, 1, srcmotid, roundingframe, firstframe);
@@ -5447,7 +5481,7 @@ ChaVector3 CBone::GetLocalEul(bool limitdegflag, int srcmotid, double srcframe, 
 //onlycheck = 0
 int CBone::SetWorldMat(bool limitdegflag, bool directsetflag, 
 	bool infooutflag, int setchildflag, 
-	int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck)
+	int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget)
 {
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
@@ -5535,7 +5569,7 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 				}
 			}
 			else {
-				if (g_wallscrapingikflag == 1) {
+				if ((g_wallscrapingikflag == 1) || (fromiktarget == true)) {//PosConstraint用の回転時には　自動で壁すり処理をする
 					//############################################
 					//　遊び付きリミテッドIK
 					//############################################

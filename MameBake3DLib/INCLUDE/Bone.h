@@ -302,7 +302,7 @@ public:
 		CQuaternion rotq, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm, 
 		CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f));// , int setmatflag = 0, ChaMatrix* psetmat = 0, bool onretarget = false);
 	CMotionPoint* RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr, double srcstartframe, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
-		CQuaternion qForRot, CQuaternion qForHipsRot, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm);
+		CQuaternion qForRot, CQuaternion qForHipsRot, bool fromiktarget);
 
 	//directsetで　parentの姿勢を更新　再帰
 	void UpdateParentWMReq(bool limitdegflag, bool setbroflag, int srcmotid, double srcframe,
@@ -450,7 +450,7 @@ public:
 	ChaVector3 GetLimitedLocalEul(int srcmotid, double srcframe);
 	ChaVector3 GetUnlimitedLocalEul(int srcmotid, double srcframe);
 	int SetWorldMat(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix srcmat, CMotionPoint* srcmp);
-	int SetWorldMat(bool limitdegflag, bool directsetflag, bool infooutflag, int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck = 0);
+	int SetWorldMat(bool limitdegflag, bool directsetflag, bool infooutflag, int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget);
 	int SetWorldMatFromEul(bool limitdegflag, int inittraflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag = 0);
 	int SetWorldMatFromEulAndScaleAndTra(bool limitdegflag, int inittraflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, ChaVector3 srcscale, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetWorldMatFromEulAndTra(bool limitdegflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe);

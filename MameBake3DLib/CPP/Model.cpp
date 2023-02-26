@@ -9135,8 +9135,6 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 		return 1;
 	}
 
-	ChaMatrix dummyparentwm;
-	dummyparentwm.SetIdentity();
 	CQuaternion qForRot;
 	CQuaternion qForHipsRot;
 
@@ -9145,7 +9143,7 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 		qForRot = rotq0;
 		qForHipsRot = rotq0;
 		parentbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
-			infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
+			infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, fromiktarget);
 
 		if ((fromiktarget != true) && (postflag != true)) {
 			IKTargetVec(limitdegflag, erptr, curframe, postflag);
@@ -9194,17 +9192,17 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 				qForHipsRot.Slerp2(endq, 1.0 - changerate, &curqForHipsRot);
 
 				parentbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
-					infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForHipsRot, dummyparentwm, dummyparentwm);
+					infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForHipsRot, fromiktarget);
 			}
 			else {
 				parentbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
-					infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
+					infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, fromiktarget);
 			}
 		}
 		else {
 			if (keyno == 0) {
 				parentbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
-					infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
+					infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, fromiktarget);
 			}
 			else {
 				parentbone->SetAbsMatReq(limitdegflag, 0, m_curmotinfo->motid, curframe, firstframe);
@@ -11234,6 +11232,10 @@ int CModel::AdjustBoneTra(bool limitdegflag, CEditRange* erptr, CBone* lastpar)
 
 int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig, int buttonflag)
 {
+
+	bool fromiktarget = false;
+
+
 	if (depthcnt >= 10){
 		_ASSERT(0);
 		return 0;//!!!!!!!!!!!!!!!!!
@@ -11275,8 +11277,6 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 	CBone* parentbone = 0;
 	CBone* lastbone = 0;
 
-	ChaMatrix dummyparentwm;
-	dummyparentwm.SetIdentity();
 
 
 	//int calccnt;
@@ -11468,17 +11468,20 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 											qForHipsRot.Slerp2(endq, 1.0 - changerate, &curqForHipsRot);
 
 											curbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
-												infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForHipsRot, dummyparentwm, dummyparentwm);
+												infooutflag, 0, m_curmotinfo->motid, curframe, 
+												curqForRot, curqForHipsRot, fromiktarget);
 										}
 										else{
 											curbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
-												infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
+												infooutflag, 0, m_curmotinfo->motid, curframe, 
+												qForRot, qForHipsRot, fromiktarget);
 										}
 									}
 									else{
 										if (keyno == 0){
 											curbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
-												infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
+												infooutflag, 0, m_curmotinfo->motid, curframe, 
+												qForRot, qForHipsRot, fromiktarget);
 										}
 										else{
 											curbone->SetAbsMatReq(limitdegflag, 0, m_curmotinfo->motid, curframe, firstframe);
@@ -11493,7 +11496,8 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 								qForRot = localq;
 								qForHipsRot = localq;
 								curbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
-									infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, qForRot, qForHipsRot, dummyparentwm, dummyparentwm);
+									infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, 
+									qForRot, qForHipsRot, fromiktarget);
 							}
 							if (g_applyendflag == 1){
 								//curmotinfo->curframeから最後までcurmotinfo->curframeの姿勢を適用
@@ -12058,8 +12062,10 @@ int CModel::IsMovableRot(bool limitdegflag, int srcmotid, double srcframe, doubl
 	dummyparentwm.SetIdentity();
 	double dummystartframe = 0.0;
 	int onlycheckIsMovable = 0;
+	bool fromiktarget = false;
 	srcrotbone->RotAndTraBoneQReq(limitdegflag, &onlycheckIsMovable, dummystartframe,
-		infooutflag, 0, srcmotid, roundingframe, curqForRot, curqForHipsRot, dummyparentwm, dummyparentwm);
+		infooutflag, 0, srcmotid, roundingframe, 
+		curqForRot, curqForHipsRot, fromiktarget);
 
 	return onlycheckIsMovable;
 }
@@ -14544,7 +14550,11 @@ void CModel::ApplyBtToMotionReq(bool limitdegflag, CBone* srcbone)
 
 		bool infooutflag = false;
 		bool directsetflag = true;
-		srcbone->SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, setmat);
+		int onlycheck = 0;
+		bool fromiktarget = false;
+		srcbone->SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, 
+			m_curmotinfo->motid, m_curmotinfo->curframe, setmat,
+			onlycheck, fromiktarget);
 
 	}
 
@@ -14913,12 +14923,20 @@ void CModel::ApplyPhysIkRecReq(bool limitdegflag, CBone* srcbone, double srcfram
 
 			//srcbone->SetWorldMat(0, curmi->motid, roundingframe, setmat);
 			if (btbone->GetChild()) {
-				btbone->SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, curmi->motid, roundingframe, setmat);
+				int onlycheck = 0;
+				bool fromiktarget = false;
+				btbone->SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, 
+					curmi->motid, roundingframe, setmat,
+					onlycheck, fromiktarget);
 			}
 			else if (btbone->GetParent()) {
 				//endjointでparentがある場合
+				int onlycheck = 0;
+				bool fromiktarget = false;
 				ChaMatrix parsetmat = btbone->GetParent()->GetWorldMat(limitdegflag, curmi->motid, roundingframe, 0);//limited????
-				btbone->SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, curmi->motid, roundingframe, parsetmat);
+				btbone->SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, 
+					curmi->motid, roundingframe, parsetmat,
+					onlycheck, fromiktarget);
 				//btbone->SetWorldMat(1, curmi->motid, roundingframe, parsetmat);
 			}
 

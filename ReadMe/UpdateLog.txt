@@ -1,5 +1,5 @@
-  2023/02/25
-  EditMot 1.2.0.13 RC2
+  2023/02/26
+  EditMot 1.2.0.13 RC3
   
   IK終了後のウェイトカーソル時間短縮
   	IK中は30fpsにする
@@ -31,6 +31,11 @@
   		(計算回数については　今後変わる可能性や　スライダー指定にする可能性も有)
   
   
+	角度制限に対応
+		LimitEulオンの時の位置コンストレイントは　自動的にWallScraping(壁すり)処理で回転
+
+
+
   位置コンストレイント実行ボタン　と　位置コンストレイントリフレッシュボタン　を追加(2023/02/25)
   	CameraAndIKプレートメニューに　ConstraintExecuteボタンとConstraintRefreshボタンを追加
   
@@ -43,7 +48,7 @@
   		１，位置コンストレイントしてIKした結果をみて　位置が動いてしまっている場合に
   		　　追加処理として　フレーム選択そのままでConstExecuteボタンを押す
   		２，IK操作無しで　選択フレーム範囲のジョイント位置をコンストレイントしたい場合
-  			ジョイント右クリックでPosConstraint ON　フレーム選択　ConstRefreshボタンで現在位置を高速位置　ConstExecuteボタンで拘束計算
+  			ジョイント右クリックでPosConstraint ON　フレーム選択　ConstRefreshボタンで現在位置を拘束位置　ConstExecuteボタンで拘束計算
   
 
 　VRoidモデル着替え
