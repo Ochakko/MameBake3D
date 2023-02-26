@@ -885,6 +885,11 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 * 　Test/0_VRoid_Winter_1 削除
 * 
 * 
+*　トラブルシューティングドキュメント追加
+*	Documents/TroubleShooting/ArmFlapsWhenHandIsConstraint.docx
+*	Documents/TroubleShooting/HideRigidBodyMarkOfHair.docx
+*
+* 
 */
 
 

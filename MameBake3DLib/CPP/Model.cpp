@@ -9143,6 +9143,12 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 		qForRot = rotq0;
 		qForHipsRot = rotq0;
 
+		//bool calcaplyflag = false;
+		//CalcQForRot(limitdegflag, calcaplyflag, 
+		//	m_curmotinfo->motid, curframe, applyframe, rotq0,
+		//	parentbone, parentbone,
+		//	&qForRot, &qForHipsRot);
+
 		//IKTragetの場合には
 		//0.10で刻んで　徐々に近づける
 		//近づきが足りない場合は　処理後に　ConstExecuteボタンを押す
@@ -9159,9 +9165,16 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 
 	}
 	else if (keynum1flag) {
-		bool infooutflag = true;
 		qForRot = rotq0;
 		qForHipsRot = rotq0;
+
+		//bool calcaplyflag = false;
+		//CalcQForRot(limitdegflag, calcaplyflag, 
+		//	m_curmotinfo->motid, curframe, applyframe, rotq0,
+		//	parentbone, parentbone,
+		//	&qForRot, &qForHipsRot);
+
+		bool infooutflag = true;
 		parentbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
 			infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, fromiktarget);
 
@@ -9171,7 +9184,9 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 	}
 	else {
 		if (g_pseudolocalflag == 1) {
-			CalcQForRot(limitdegflag, m_curmotinfo->motid, curframe, applyframe, rotq0,
+			bool calcaplyflag = true;
+			CalcQForRot(limitdegflag, calcaplyflag, 
+				m_curmotinfo->motid, curframe, applyframe, rotq0,
 				parentbone, parentbone,
 				&qForRot, &qForHipsRot);
 		}
@@ -9932,6 +9947,11 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 				if (fabs(rotrad2) > 1.0e-4) {
 					CQuaternion rotq0;
 					rotq0.SetAxisAndRot(rotaxis2, rotrad2);
+
+
+
+
+
 
 					//parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
 					// 
@@ -11448,7 +11468,9 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 								for (curframe = startframe; curframe <= endframe; curframe += 1.0){
 
 									if (aplybone && (g_pseudolocalflag == 1)) {
-										CalcQForRot(limitdegflag, m_curmotinfo->motid, curframe, applyframe, localq,
+										bool calcaplyflag = true;
+										CalcQForRot(limitdegflag, calcaplyflag,
+											m_curmotinfo->motid, curframe, applyframe, localq,
 											curbone, aplybone,
 											&qForRot, &qForHipsRot);
 									}
@@ -11977,7 +11999,8 @@ void CModel::InterpolateBetweenSelectionReq(bool limitdegflag, CBone* srcbone,
 //
 //}
 
-int CModel::CalcQForRot(bool limitdegflag, int srcmotid, double srcframe, double srcapplyframe, CQuaternion srcaddrot,
+int CModel::CalcQForRot(bool limitdegflag, bool calcaplyflag, 
+	int srcmotid, double srcframe, double srcapplyframe, CQuaternion srcaddrot,
 	CBone* srcrotbone, CBone* srcaplybone, 
 	CQuaternion* dstqForRot, CQuaternion* dstqForHipsRot)
 {
@@ -12033,9 +12056,16 @@ int CModel::CalcQForRot(bool limitdegflag, int srcmotid, double srcframe, double
 	//ToDo : RotQBoneReq2()を作って　引数として上記２つの回転情報を渡す
 	//####################################################################
 
-
-	transmat2ForRot = invcurparrotmat * aplyparrotmat * srcaddrot.MakeRotMatX() * invaplyparrotmat * curparrotmat;//bef
+	if (calcaplyflag == true) {
+		transmat2ForRot = invcurparrotmat * aplyparrotmat * srcaddrot.MakeRotMatX() * invaplyparrotmat * curparrotmat;//bef
+	}
+	else {
+		transmat2ForRot = invcurparrotmat * srcaddrot.MakeRotMatX() * curparrotmat;//bef
+	}
+	
 	transmat2ForHipsRot = srcaddrot.MakeRotMatX();//for hips edit
+
+
 	dstqForRot->RotationMatrix(transmat2ForRot);
 	dstqForHipsRot->RotationMatrix(transmat2ForHipsRot);
 
@@ -12046,6 +12076,9 @@ int CModel::CalcQForRot(bool limitdegflag, int srcmotid, double srcframe, double
 int CModel::IsMovableRot(bool limitdegflag, int srcmotid, double srcframe, double srcapplyframe, CQuaternion srcaddrot,
 	CBone* srcrotbone, CBone* srcaplybone)
 {
+
+	bool fromiktarget = false;
+
 	//#############################################
 	//movable : return 1,  not movable : return 0
 	//#############################################
@@ -12062,7 +12095,9 @@ int CModel::IsMovableRot(bool limitdegflag, int srcmotid, double srcframe, doubl
 
 	CQuaternion qForRot;
 	CQuaternion qForHipsRot;
-	CalcQForRot(limitdegflag, m_curmotinfo->motid, roundingframe, roundingapplyframe, srcaddrot,
+	bool calcaplyflag = true;
+	CalcQForRot(limitdegflag, calcaplyflag,
+		m_curmotinfo->motid, roundingframe, roundingapplyframe, srcaddrot,
 		srcrotbone, srcaplybone,
 		&qForRot, &qForHipsRot);
 
@@ -12082,7 +12117,6 @@ int CModel::IsMovableRot(bool limitdegflag, int srcmotid, double srcframe, doubl
 	dummyparentwm.SetIdentity();
 	double dummystartframe = 0.0;
 	int onlycheckIsMovable = 0;
-	bool fromiktarget = false;
 	srcrotbone->RotAndTraBoneQReq(limitdegflag, &onlycheckIsMovable, dummystartframe,
 		infooutflag, 0, srcmotid, roundingframe, 
 		curqForRot, curqForHipsRot, fromiktarget);

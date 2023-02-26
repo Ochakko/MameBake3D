@@ -959,7 +959,7 @@ private:
 	void SetCurrentRigidElemReq(CBone* srcbone, std::string curname);
 
 
-	int CalcQForRot(bool limitdegflag, 
+	int CalcQForRot(bool limitdegflag, bool calcaplyflag,
 		int srcmotid, double srcframe, double srcapplyframe, CQuaternion srcaddrot,
 		CBone* srcrotbone, CBone* srcaplybone, 
 		CQuaternion* dstqForRot, CQuaternion* dstqForHipsRot);
