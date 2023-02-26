@@ -2,1104 +2,1104 @@
 <IMPULSE>
     <FileInfo>1001-01</FileInfo>
   <Bone>
-    <Name>Root</Name>
+    <Name>Root_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_C_Hips</ChildName>
+      <ChildName>J_Bip_C_Hips_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_C_Hips</Name>
+    <Name>J_Bip_C_Hips_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_SkirtSide0_01</ChildName>
+      <ChildName>J_Sec_L_SkirtSide0_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_R_SkirtSide0_01</ChildName>
+      <ChildName>J_Sec_R_SkirtSide0_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_C_Spine</ChildName>
+      <ChildName>J_Bip_C_Spine_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_UpperLeg</ChildName>
+      <ChildName>J_Bip_L_UpperLeg_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_UpperLeg</ChildName>
+      <ChildName>J_Bip_R_UpperLeg_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_SkirtSide0_01</Name>
+    <Name>J_Sec_L_SkirtSide0_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_SkirtSide1_01</ChildName>
+      <ChildName>J_Sec_L_SkirtSide1_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_SkirtSide1_01</Name>
+    <Name>J_Sec_L_SkirtSide1_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_SkirtSide2_01</ChildName>
+      <ChildName>J_Sec_L_SkirtSide2_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_SkirtSide2_01</Name>
+    <Name>J_Sec_L_SkirtSide2_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_SkirtSide2_end_01</ChildName>
+      <ChildName>J_Sec_L_SkirtSide2_end_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_SkirtSide0_01</Name>
+    <Name>J_Sec_R_SkirtSide0_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_R_SkirtSide1_01</ChildName>
+      <ChildName>J_Sec_R_SkirtSide1_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_SkirtSide1_01</Name>
+    <Name>J_Sec_R_SkirtSide1_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_R_SkirtSide2_01</ChildName>
+      <ChildName>J_Sec_R_SkirtSide2_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_SkirtSide2_01</Name>
+    <Name>J_Sec_R_SkirtSide2_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_R_SkirtSide2_end_01</ChildName>
+      <ChildName>J_Sec_R_SkirtSide2_end_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_C_Spine</Name>
+    <Name>J_Bip_C_Spine_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_C_Chest</ChildName>
+      <ChildName>J_Bip_C_Chest_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_C_Chest</Name>
+    <Name>J_Bip_C_Chest_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_C_UpperChest</ChildName>
+      <ChildName>J_Bip_C_UpperChest_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_C_UpperChest</Name>
+    <Name>J_Bip_C_UpperChest_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_Bust1</ChildName>
+      <ChildName>J_Sec_L_Bust1_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_R_Bust1</ChildName>
+      <ChildName>J_Sec_R_Bust1_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_C_Neck</ChildName>
+      <ChildName>J_Bip_C_Neck_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_Shoulder</ChildName>
+      <ChildName>J_Bip_L_Shoulder_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_Shoulder</ChildName>
+      <ChildName>J_Bip_R_Shoulder_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_Bust1</Name>
+    <Name>J_Sec_L_Bust1_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_Bust2</ChildName>
+      <ChildName>J_Sec_L_Bust2_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_Bust1</Name>
+    <Name>J_Sec_R_Bust1_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_R_Bust2</ChildName>
+      <ChildName>J_Sec_R_Bust2_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_C_Neck</Name>
+    <Name>J_Bip_C_Neck_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_C_Head</ChildName>
+      <ChildName>J_Bip_C_Head_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_C_Head</Name>
+    <Name>J_Bip_C_Head_Joint</Name>
     <RigidElem>
-      <ChildName>J_Adj_L_FaceEye</ChildName>
+      <ChildName>J_Adj_L_FaceEye_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Adj_R_FaceEye</ChildName>
+      <ChildName>J_Adj_R_FaceEye_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_01</ChildName>
+      <ChildName>J_Sec_Hair1_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_02</ChildName>
+      <ChildName>J_Sec_Hair1_02_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_03</ChildName>
+      <ChildName>J_Sec_Hair1_03_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_04</ChildName>
+      <ChildName>J_Sec_Hair1_04_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_05</ChildName>
+      <ChildName>J_Sec_Hair1_05_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_06</ChildName>
+      <ChildName>J_Sec_Hair1_06_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_07</ChildName>
+      <ChildName>J_Sec_Hair1_07_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_08</ChildName>
+      <ChildName>J_Sec_Hair1_08_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_09</ChildName>
+      <ChildName>J_Sec_Hair1_09_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_10</ChildName>
+      <ChildName>J_Sec_Hair1_10_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_11</ChildName>
+      <ChildName>J_Sec_Hair1_11_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_12</ChildName>
+      <ChildName>J_Sec_Hair1_12_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_01</Name>
+    <Name>J_Sec_Hair1_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_01</ChildName>
+      <ChildName>J_Sec_Hair2_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_01</Name>
+    <Name>J_Sec_Hair2_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_01</ChildName>
+      <ChildName>J_Sec_Hair3_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair3_01</Name>
+    <Name>J_Sec_Hair3_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair4_01</ChildName>
+      <ChildName>J_Sec_Hair4_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_02</Name>
+    <Name>J_Sec_Hair1_02_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_02</ChildName>
+      <ChildName>J_Sec_Hair2_02_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_02</Name>
+    <Name>J_Sec_Hair2_02_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_02</ChildName>
+      <ChildName>J_Sec_Hair3_02_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair3_02</Name>
+    <Name>J_Sec_Hair3_02_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair4_02</ChildName>
+      <ChildName>J_Sec_Hair4_02_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_03</Name>
+    <Name>J_Sec_Hair1_03_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_03</ChildName>
+      <ChildName>J_Sec_Hair2_03_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_03</Name>
+    <Name>J_Sec_Hair2_03_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_03</ChildName>
+      <ChildName>J_Sec_Hair3_03_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair3_03</Name>
+    <Name>J_Sec_Hair3_03_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair4_03</ChildName>
+      <ChildName>J_Sec_Hair4_03_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair4_03</Name>
+    <Name>J_Sec_Hair4_03_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair5_03</ChildName>
+      <ChildName>J_Sec_Hair5_03_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair5_03</Name>
+    <Name>J_Sec_Hair5_03_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair6_03</ChildName>
+      <ChildName>J_Sec_Hair6_03_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_04</Name>
+    <Name>J_Sec_Hair1_04_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_04</ChildName>
+      <ChildName>J_Sec_Hair2_04_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_04</Name>
+    <Name>J_Sec_Hair2_04_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_04</ChildName>
+      <ChildName>J_Sec_Hair3_04_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair3_04</Name>
+    <Name>J_Sec_Hair3_04_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair4_04</ChildName>
+      <ChildName>J_Sec_Hair4_04_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair4_04</Name>
+    <Name>J_Sec_Hair4_04_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair5_04</ChildName>
+      <ChildName>J_Sec_Hair5_04_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_05</Name>
+    <Name>J_Sec_Hair1_05_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_05</ChildName>
+      <ChildName>J_Sec_Hair2_05_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_05</Name>
+    <Name>J_Sec_Hair2_05_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_05</ChildName>
+      <ChildName>J_Sec_Hair3_05_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair3_05</Name>
+    <Name>J_Sec_Hair3_05_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair4_05</ChildName>
+      <ChildName>J_Sec_Hair4_05_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair4_05</Name>
+    <Name>J_Sec_Hair4_05_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair5_05</ChildName>
+      <ChildName>J_Sec_Hair5_05_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_06</Name>
+    <Name>J_Sec_Hair1_06_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_06</ChildName>
+      <ChildName>J_Sec_Hair2_06_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_06</Name>
+    <Name>J_Sec_Hair2_06_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_06</ChildName>
+      <ChildName>J_Sec_Hair3_06_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_07</Name>
+    <Name>J_Sec_Hair1_07_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_07</ChildName>
+      <ChildName>J_Sec_Hair2_07_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_07</Name>
+    <Name>J_Sec_Hair2_07_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_07</ChildName>
+      <ChildName>J_Sec_Hair3_07_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_08</Name>
+    <Name>J_Sec_Hair1_08_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_08</ChildName>
+      <ChildName>J_Sec_Hair2_08_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_08</Name>
+    <Name>J_Sec_Hair2_08_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_08</ChildName>
+      <ChildName>J_Sec_Hair3_08_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_09</Name>
+    <Name>J_Sec_Hair1_09_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_09</ChildName>
+      <ChildName>J_Sec_Hair2_09_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_09</Name>
+    <Name>J_Sec_Hair2_09_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_09</ChildName>
+      <ChildName>J_Sec_Hair3_09_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_10</Name>
+    <Name>J_Sec_Hair1_10_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_10</ChildName>
+      <ChildName>J_Sec_Hair2_10_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_10</Name>
+    <Name>J_Sec_Hair2_10_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_10</ChildName>
+      <ChildName>J_Sec_Hair3_10_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_11</Name>
+    <Name>J_Sec_Hair1_11_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_11</ChildName>
+      <ChildName>J_Sec_Hair2_11_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_11</Name>
+    <Name>J_Sec_Hair2_11_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_11</ChildName>
+      <ChildName>J_Sec_Hair3_11_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_12</Name>
+    <Name>J_Sec_Hair1_12_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_12</ChildName>
+      <ChildName>J_Sec_Hair2_12_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_12</Name>
+    <Name>J_Sec_Hair2_12_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_12</ChildName>
+      <ChildName>J_Sec_Hair3_12_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Shoulder</Name>
+    <Name>J_Bip_L_Shoulder_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_L_UpperArm</ChildName>
+      <ChildName>J_Bip_L_UpperArm_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_UpperArm</Name>
+    <Name>J_Bip_L_UpperArm_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_L_LowerArm</ChildName>
+      <ChildName>J_Bip_L_LowerArm_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_LowerArm</Name>
+    <Name>J_Bip_L_LowerArm_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_LowerSleeve_01</ChildName>
+      <ChildName>J_Sec_L_LowerSleeve_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_Hand</ChildName>
+      <ChildName>J_Bip_L_Hand_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_LowerSleeve_01</Name>
+    <Name>J_Sec_L_LowerSleeve_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_LowerSleeve_end_01</ChildName>
+      <ChildName>J_Sec_L_LowerSleeve_end_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Hand</Name>
+    <Name>J_Bip_L_Hand_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_L_Index1</ChildName>
+      <ChildName>J_Bip_L_Index1_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_Little1</ChildName>
+      <ChildName>J_Bip_L_Little1_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_Middle1</ChildName>
+      <ChildName>J_Bip_L_Middle1_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_Ring1</ChildName>
+      <ChildName>J_Bip_L_Ring1_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_Thumb1</ChildName>
+      <ChildName>J_Bip_L_Thumb1_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_L_TipSleeve_01</ChildName>
+      <ChildName>J_Sec_L_TipSleeve_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Index1</Name>
+    <Name>J_Bip_L_Index1_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_L_Index2</ChildName>
+      <ChildName>J_Bip_L_Index2_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Index2</Name>
+    <Name>J_Bip_L_Index2_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_L_Index3</ChildName>
+      <ChildName>J_Bip_L_Index3_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Little1</Name>
+    <Name>J_Bip_L_Little1_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_L_Little2</ChildName>
+      <ChildName>J_Bip_L_Little2_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Little2</Name>
+    <Name>J_Bip_L_Little2_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_L_Little3</ChildName>
+      <ChildName>J_Bip_L_Little3_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Middle1</Name>
+    <Name>J_Bip_L_Middle1_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_L_Middle2</ChildName>
+      <ChildName>J_Bip_L_Middle2_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Middle2</Name>
+    <Name>J_Bip_L_Middle2_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_L_Middle3</ChildName>
+      <ChildName>J_Bip_L_Middle3_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Ring1</Name>
+    <Name>J_Bip_L_Ring1_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_L_Ring2</ChildName>
+      <ChildName>J_Bip_L_Ring2_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Ring2</Name>
+    <Name>J_Bip_L_Ring2_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_L_Ring3</ChildName>
+      <ChildName>J_Bip_L_Ring3_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Thumb1</Name>
+    <Name>J_Bip_L_Thumb1_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_L_Thumb2</ChildName>
+      <ChildName>J_Bip_L_Thumb2_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Thumb2</Name>
+    <Name>J_Bip_L_Thumb2_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_L_Thumb3</ChildName>
+      <ChildName>J_Bip_L_Thumb3_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_TipSleeve_01</Name>
+    <Name>J_Sec_L_TipSleeve_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_TipSleeve_end_01</ChildName>
+      <ChildName>J_Sec_L_TipSleeve_end_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Shoulder</Name>
+    <Name>J_Bip_R_Shoulder_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_R_UpperArm</ChildName>
+      <ChildName>J_Bip_R_UpperArm_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_UpperArm</Name>
+    <Name>J_Bip_R_UpperArm_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_R_LowerArm</ChildName>
+      <ChildName>J_Bip_R_LowerArm_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_LowerArm</Name>
+    <Name>J_Bip_R_LowerArm_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_R_LowerSleeve_01</ChildName>
+      <ChildName>J_Sec_R_LowerSleeve_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_Hand</ChildName>
+      <ChildName>J_Bip_R_Hand_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_LowerSleeve_01</Name>
+    <Name>J_Sec_R_LowerSleeve_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_R_LowerSleeve_end_01</ChildName>
+      <ChildName>J_Sec_R_LowerSleeve_end_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Hand</Name>
+    <Name>J_Bip_R_Hand_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_R_Index1</ChildName>
+      <ChildName>J_Bip_R_Index1_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_Little1</ChildName>
+      <ChildName>J_Bip_R_Little1_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_Middle1</ChildName>
+      <ChildName>J_Bip_R_Middle1_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_Ring1</ChildName>
+      <ChildName>J_Bip_R_Ring1_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_Thumb1</ChildName>
+      <ChildName>J_Bip_R_Thumb1_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_R_TipSleeve_01</ChildName>
+      <ChildName>J_Sec_R_TipSleeve_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Index1</Name>
+    <Name>J_Bip_R_Index1_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_R_Index2</ChildName>
+      <ChildName>J_Bip_R_Index2_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Index2</Name>
+    <Name>J_Bip_R_Index2_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_R_Index3</ChildName>
+      <ChildName>J_Bip_R_Index3_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Little1</Name>
+    <Name>J_Bip_R_Little1_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_R_Little2</ChildName>
+      <ChildName>J_Bip_R_Little2_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Little2</Name>
+    <Name>J_Bip_R_Little2_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_R_Little3</ChildName>
+      <ChildName>J_Bip_R_Little3_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Middle1</Name>
+    <Name>J_Bip_R_Middle1_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_R_Middle2</ChildName>
+      <ChildName>J_Bip_R_Middle2_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Middle2</Name>
+    <Name>J_Bip_R_Middle2_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_R_Middle3</ChildName>
+      <ChildName>J_Bip_R_Middle3_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Ring1</Name>
+    <Name>J_Bip_R_Ring1_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_R_Ring2</ChildName>
+      <ChildName>J_Bip_R_Ring2_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Ring2</Name>
+    <Name>J_Bip_R_Ring2_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_R_Ring3</ChildName>
+      <ChildName>J_Bip_R_Ring3_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Thumb1</Name>
+    <Name>J_Bip_R_Thumb1_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_R_Thumb2</ChildName>
+      <ChildName>J_Bip_R_Thumb2_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Thumb2</Name>
+    <Name>J_Bip_R_Thumb2_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_R_Thumb3</ChildName>
+      <ChildName>J_Bip_R_Thumb3_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_TipSleeve_01</Name>
+    <Name>J_Sec_R_TipSleeve_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_R_TipSleeve_end_01</ChildName>
+      <ChildName>J_Sec_R_TipSleeve_end_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_UpperLeg</Name>
+    <Name>J_Bip_L_UpperLeg_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_SkirtBack0_01</ChildName>
+      <ChildName>J_Sec_L_SkirtBack0_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_L_SkirtFront0_01</ChildName>
+      <ChildName>J_Sec_L_SkirtFront0_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_LowerLeg</ChildName>
+      <ChildName>J_Bip_L_LowerLeg_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_SkirtBack0_01</Name>
+    <Name>J_Sec_L_SkirtBack0_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_SkirtBack1_01</ChildName>
+      <ChildName>J_Sec_L_SkirtBack1_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_SkirtBack1_01</Name>
+    <Name>J_Sec_L_SkirtBack1_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_SkirtBack2_01</ChildName>
+      <ChildName>J_Sec_L_SkirtBack2_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_SkirtBack2_01</Name>
+    <Name>J_Sec_L_SkirtBack2_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_SkirtBack2_end_01</ChildName>
+      <ChildName>J_Sec_L_SkirtBack2_end_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_SkirtFront0_01</Name>
+    <Name>J_Sec_L_SkirtFront0_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_SkirtFront1_01</ChildName>
+      <ChildName>J_Sec_L_SkirtFront1_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_SkirtFront1_01</Name>
+    <Name>J_Sec_L_SkirtFront1_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_SkirtFront2_01</ChildName>
+      <ChildName>J_Sec_L_SkirtFront2_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_SkirtFront2_01</Name>
+    <Name>J_Sec_L_SkirtFront2_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_L_SkirtFront2_end_01</ChildName>
+      <ChildName>J_Sec_L_SkirtFront2_end_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_LowerLeg</Name>
+    <Name>J_Bip_L_LowerLeg_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_L_Foot</ChildName>
+      <ChildName>J_Bip_L_Foot_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Foot</Name>
+    <Name>J_Bip_L_Foot_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_L_ToeBase</ChildName>
+      <ChildName>J_Bip_L_ToeBase_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_UpperLeg</Name>
+    <Name>J_Bip_R_UpperLeg_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_R_SkirtBack0_01</ChildName>
+      <ChildName>J_Sec_R_SkirtBack0_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_R_SkirtFront0_01</ChildName>
+      <ChildName>J_Sec_R_SkirtFront0_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_LowerLeg</ChildName>
+      <ChildName>J_Bip_R_LowerLeg_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_SkirtBack0_01</Name>
+    <Name>J_Sec_R_SkirtBack0_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_R_SkirtBack1_01</ChildName>
+      <ChildName>J_Sec_R_SkirtBack1_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_SkirtBack1_01</Name>
+    <Name>J_Sec_R_SkirtBack1_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_R_SkirtBack2_01</ChildName>
+      <ChildName>J_Sec_R_SkirtBack2_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_SkirtBack2_01</Name>
+    <Name>J_Sec_R_SkirtBack2_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_R_SkirtBack2_end_01</ChildName>
+      <ChildName>J_Sec_R_SkirtBack2_end_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_SkirtFront0_01</Name>
+    <Name>J_Sec_R_SkirtFront0_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_R_SkirtFront1_01</ChildName>
+      <ChildName>J_Sec_R_SkirtFront1_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_SkirtFront1_01</Name>
+    <Name>J_Sec_R_SkirtFront1_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_R_SkirtFront2_01</ChildName>
+      <ChildName>J_Sec_R_SkirtFront2_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_SkirtFront2_01</Name>
+    <Name>J_Sec_R_SkirtFront2_01_Joint</Name>
     <RigidElem>
-      <ChildName>J_Sec_R_SkirtFront2_end_01</ChildName>
+      <ChildName>J_Sec_R_SkirtFront2_end_01_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_LowerLeg</Name>
+    <Name>J_Bip_R_LowerLeg_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_R_Foot</ChildName>
+      <ChildName>J_Bip_R_Foot_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Foot</Name>
+    <Name>J_Bip_R_Foot_Joint</Name>
     <RigidElem>
-      <ChildName>J_Bip_R_ToeBase</ChildName>
+      <ChildName>J_Bip_R_ToeBase_Joint</ChildName>
       <ImpulseX>0.000000</ImpulseX>
       <ImpulseY>0.000000</ImpulseY>
       <ImpulseZ>0.000000</ImpulseZ>

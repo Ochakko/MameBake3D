@@ -4046,7 +4046,8 @@ CBone* CModel::CreateNewFbxBone(FbxNodeAttribute::EType type, FbxNode* curnode, 
 	//2023/02/19
 	//とりあえず　ジョイント名をみて　自動でIKStopFlagをセット
 	if ((strstr(newbone->GetBoneName(), "UpperLeg") != 0) ||
-		(strstr(newbone->GetBoneName(), "UpperArm") != 0)) {
+		//(strstr(newbone->GetBoneName(), "UpperArm") != 0)) {
+		(strstr(newbone->GetBoneName(), "Shoulder") != 0)) {
 		newbone->SetIKStopFlag(true);
 	}
 	else {
@@ -9138,7 +9139,26 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 	CQuaternion qForRot;
 	CQuaternion qForHipsRot;
 
-	if (keynum1flag || (fromiktarget == true)) {
+	if (fromiktarget == true) {
+		qForRot = rotq0;
+		qForHipsRot = rotq0;
+
+		//IKTragetの場合には
+		//0.10で刻んで　徐々に近づける
+		//近づきが足りない場合は　処理後に　ConstExecuteボタンを押す
+		CQuaternion endq;
+		CQuaternion curqForRot;
+		CQuaternion curqForHipsRot;
+		endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		qForRot.Slerp2(endq, 0.10f, &curqForRot);
+		curqForHipsRot = curqForRot;
+
+		bool infooutflag = true;
+		parentbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+			infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForHipsRot, fromiktarget);
+
+	}
+	else if (keynum1flag) {
 		bool infooutflag = true;
 		qForRot = rotq0;
 		qForHipsRot = rotq0;
@@ -9289,7 +9309,7 @@ int CModel::IKRotateUnderIK(bool limitdegflag, CEditRange* erptr,
 		int levelcnt = 0;
 		float currate = g_ikrate;
 
-		while (curbone && lastpar && ((maxlevel == 0) || (levelcnt < maxlevel)))
+		while (curbone && lastpar && lastpar->GetParent() && ((maxlevel == 0) || (levelcnt < maxlevel)))
 		{
 
 			//IKTarget()でフラグがリセットされるので　ループ先頭で　セットし直し
@@ -9489,7 +9509,7 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 		int levelcnt = 0;
 		float currate = g_ikrate;
 
-		while (curbone && lastpar && ((maxlevel == 0) || (levelcnt < maxlevel)))
+		while (curbone && lastpar && lastpar->GetParent() && ((maxlevel == 0) || (levelcnt < maxlevel)))
 		{
 
 			//IKTarget()でフラグがリセットされるので　ループ先頭で　セットし直し
@@ -9663,7 +9683,7 @@ int CModel::IKRotate(bool limitdegflag, CEditRange* erptr,
 		int levelcnt = 0;
 		float currate = g_ikrate;
 
-		while( curbone && lastpar && ((maxlevel == 0) || (levelcnt < maxlevel)) )
+		while( curbone && lastpar && lastpar->GetParent() && ((maxlevel == 0) || (levelcnt < maxlevel)) )
 		{
 
 			//IKTarget()でフラグがリセットされるので　ループ先頭で　セットし直し
@@ -9866,7 +9886,7 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 		//currate = g_ikrate;
 		currate = 0.750f;
 
-		while (curbone && lastpar && ((maxlevel == 0) || (levelcnt < maxlevel)))
+		while (curbone && lastpar && lastpar->GetParent() && ((maxlevel == 0) || (levelcnt < maxlevel)))
 		{
 
 			//IKTarget()でフラグがリセットされるので　ループ先頭で　セットし直し
@@ -9957,19 +9977,19 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 
 			}
 
-
-			//if( curbone->GetParent() ){
-			//	lastpar = curbone->GetParent();
-			//}
-			//curbone = curbone->GetParent();
 			if (parentbone) {
 				lastpar = parentbone;
 
+				//コンストレイント用回転も　IKStopで止める必要有
+				//体の中心まで回転を伝えた方が　コンストレイントしやすいが
+				//shoulderのIKStopで回転を止めない場合
+				//右手と左手のコンストレイント順番により　どちらかにしか拘束できなくなる
 				//check ikstopflag
 				if (parentbone->GetIKStopFlag()) {
 					break;
 				}
 			}
+
 
 			levelcnt++;
 
@@ -13415,9 +13435,10 @@ int CModel::IKTargetVec(bool limitdegflag, CEditRange* erptr, double srcframe, b
 		if (srcbone && srcbone->GetParent() && srcbone->GetIKTargetFlag()) {
 			ChaVector3 iktargetpos = srcbone->GetIKTargetPos();
 			int calccount;
-			for (calccount = 0; calccount < 50; calccount++) {
+			for (calccount = 0; calccount < 60; calccount++) {
+				int maxlevel = 0;
 				IKRotateForIKTarget(limitdegflag, erptr, srcbone->GetBoneNo(), 
-					iktargetpos, 200, srcframe, postflag);
+					iktargetpos, maxlevel, srcframe, postflag);
 			}
 		}
 	}

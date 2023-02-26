@@ -808,8 +808,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 
 
 /*
-* 2023/02/25
-* EditMot 1.2.0.13 RC2
+* 2023/02/26
+* EditMot 1.2.0.13 RC4
 * 
 * IK終了後のウェイトカーソル時間短縮
 * 	IK中は30fpsにする
@@ -822,6 +822,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 *	計算の修正
 *		関数呼び出し構造を大きく変えた際に　カレントフレーム以外の計算時のフレーム番号が間違っていたのを修正
 *		カレントフレーム以外の姿勢が　暴れなくなった
+* 
+*		コンストレイント用の回転は　徐々に繰り返し回転することにより　より暴れにくく
 * 
 *	高速化（以下における　待ち時間の数値は　こちらの環境における数値　絶対的な数値では無い）
 *		位置コンストレイント計算の呼び出し方を　試行錯誤して　修正
@@ -841,8 +843,28 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 *		(計算回数については　今後変わる可能性や　スライダー指定にする可能性も有)
 * 
 *	角度制限に対応
-*		LimitEulオンの時の位置コンストレイントは　自動的にWallScraping(壁すり)処理で回転
+*		LimitEulオンの時の位置コンストレイントは　自動的にWallScrapingIK(壁すりIK)処理で回転
 *
+*	位置コンストレイントとIKStopフラグについて
+*		体全体が傾かないと　位置拘束は難しいことが多い
+*		しかし
+*		コンストレイント用回転も　IKStopで止める必要有
+*		体の中心まで回転を伝えた方が　コンストレイントしやすいが
+*		shoulderのIKStopで回転を止めない場合
+*		右手と左手のコンストレイント順番により　どちらかにしか拘束できなくなる
+*
+*		IKStop自動設定ジョイントを　UpperArmからShoulderに変更
+*		手が拘束位置に届かずに回転しない場合　Shoulderの制限角度を緩めてから　ConstExecuteボタン押下で改善することがある
+* 
+*	LimitEulオンで　コンストレイントテストを繰り返してみてメモ
+*		既存の動きに対して　手の位置をコンストレイントしたい場合
+*		無理をして　手を指定位置に近づけるために　肘が行ったり来たりの急激な回転を繰り返すことがあった
+*		肩を少し動かすだけで改善することがあったので　肩の制限角度を少しいじった
+*		Smoothボタンを数回押して　ConstExecuteボタンを数回押すを繰り返してみると　更に改善した
+*		そうやって滑らかに指定位置に近づいた動きをみてみると
+*		既存の動きの腕の動きの回転を初期化をしてから　ConstExecuteするのとあまり変わらなかった
+*		ToolWindowの姿勢初期化-->OneSelectedBone-->InitRotを実行してから　ConstExecute + Smoothという操作も選択肢に入れると良い		
+* 
 * 
 * 位置コンストレイント実行ボタン　と　位置コンストレイントリフレッシュボタン　を追加(2023/02/25)
 * 	CameraAndIKプレートメニューに　ConstraintExecuteボタンとConstraintRefreshボタンを追加
@@ -7328,9 +7350,15 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				if (mi) {
 					s_copymotvec.clear();
 					s_copyKeyInfoList.clear();
-					s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
-					s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
-					CEditRange::SetApplyRate((double)g_applyrate);
+					//s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
+					//s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
+					//CEditRange::SetApplyRate((double)g_applyrate);
+
+					OnTimeLineButtonSelectFromSelectStartEnd(0);
+					OnTimeLineSelectFromSelectedKey();
+					if (s_owpTimeline) {
+						s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
+					}
 
 					int updatejointno = -1;
 
@@ -23962,6 +23990,8 @@ int OnFrameToolWnd()
 		if (s_model && s_model->GetCurMotInfo() && s_model->GetTopBone()) {
 
 			HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+			OnTimeLineButtonSelectFromSelectStartEnd(0);
+			OnTimeLineSelectFromSelectedKey();
 			s_model->PosConstraintExecuteFromButton(g_limitdegflag, &s_editrange);
 			if (g_limitdegflag == true) {
 				bool allframeflag = false;
@@ -40378,6 +40408,10 @@ int FilterFunc()
 int CallFilterFunc(int callnum)
 {
 	if (s_model && s_model->GetCurMotInfo()) {
+
+		OnTimeLineButtonSelectFromSelectStartEnd(0);
+		OnTimeLineSelectFromSelectedKey();
+
 		if (g_iklevel == 1) {
 			s_filterState = 2;//one
 		}
