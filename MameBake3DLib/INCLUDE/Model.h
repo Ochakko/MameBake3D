@@ -965,7 +965,13 @@ private:
 		CQuaternion* dstqForRot, CQuaternion* dstqForHipsRot);
 	int IsMovableRot(bool limitdegflag, int srcmotid, double srcframe, double srcapplyframe, 
 		CQuaternion srcaddrot, CBone* srcrotbone, CBone* srcaplybone);
-	int CalcAxisAndRotForIKRotate(int limitdegflag, 
+
+	bool CalcAxisAndRotForIKRotateAxis(int limitdegflag,
+		CBone* parentbone, CBone* firstbone,
+		double curframe, ChaVector3 targetpos,
+		ChaVector3 srcikaxis,
+		ChaVector3* dstaxis, float* dstrotrad);
+	int CalcAxisAndRotForIKRotate(int limitdegflag,
 		CBone* parentbone, CBone* firstbone, 
 		double curframe, ChaVector3 targetpos, 
 		ChaVector3* dstaxis, float* dstrotrad);
@@ -973,6 +979,7 @@ private:
 		CBone* parentbone, CBone* firstbone,
 		double curframe, ChaVector3 targetpos,
 		ChaVector3* dstaxis, float* dstrotrad);
+
 	int IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 		int keyno, CBone* parentbone,
 		double curframe, double startframe, double applyframe,

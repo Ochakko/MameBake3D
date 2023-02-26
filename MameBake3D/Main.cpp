@@ -8315,6 +8315,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 				s_editmotionflag = s_model->IKRotatePostIK(g_limitdegflag,
 					&s_editrange, s_pickinfo.pickobjno, g_iklevel);
+
 				if (oldcursor != NULL) {
 					SetCursor(oldcursor);
 				}
@@ -8331,6 +8332,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 					g_limitdegflag,
 					&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno,
 					g_iklevel, s_ikcnt);
+
 
 				if (oldcursor != NULL) {
 					SetCursor(oldcursor);
@@ -8391,9 +8393,22 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		//IKRot終了時　LimitEulオンで　編集ボーンがあった場合
 		//グラフが波打つことは分かっているので(XYZどれか１つでも制限に掛かると　XYZ全て動かなくなるため)
 		//自動で　フィルターを掛けて　滑らかにする
-		if ((s_ikkind == 0) && (g_limitdegflag == true) && (s_editmotionflag >= 0)) {
-			int callnum = 1;
-			CallFilterFunc(callnum);
+		if (((s_ikkind == 0) || (s_ikkind == 1)) && 
+			(g_limitdegflag == true) && 
+			(s_editmotionflag >= 0)) {
+
+			//int callnum = 1;
+			//s_filternodlg = true;
+			//CallFilterFunc(callnum);
+
+			//ギザギザを平滑化
+			CMotFilter motfilter;
+			s_filternodlg = true;
+			s_filterState = 3;//deeper
+			motfilter.FilterNoDlg(g_limitdegflag, s_model, s_model->GetTopBone(),
+				s_filterState,
+				s_model->GetCurMotInfo()->motid,
+				(int)(s_buttonselectstart + 0.0001), (int)(s_buttonselectend + 0.0001));
 		}
 
 
@@ -23983,8 +23998,17 @@ int OnFrameToolWnd()
 		if (s_model && s_model->GetCurMotInfo()) {
 			//PrepairUndo();
 
-			int callnum = 1;
-			CallFilterFunc(callnum);
+			//int callnum = 1;
+			//CallFilterFunc(callnum);
+
+			//ギザギザを平滑化
+			CMotFilter motfilter;
+			s_filternodlg = true;
+			s_filterState = 3;//deeper
+			motfilter.FilterNoDlg(g_limitdegflag, s_model, s_model->GetTopBone(),
+				s_filterState,
+				s_model->GetCurMotInfo()->motid,
+				(int)(s_buttonselectstart + 0.0001), (int)(s_buttonselectend + 0.0001));
 
 			PrepairUndo();
 		}
@@ -23998,6 +24022,16 @@ int OnFrameToolWnd()
 			OnTimeLineButtonSelectFromSelectStartEnd(0);
 			OnTimeLineSelectFromSelectedKey();
 			s_model->PosConstraintExecuteFromButton(g_limitdegflag, &s_editrange);
+
+			//ギザギザを平滑化
+			CMotFilter motfilter;
+			s_filternodlg = true;
+			s_filterState = 3;//deeper
+			motfilter.FilterNoDlg(g_limitdegflag, s_model, s_model->GetTopBone(),
+				s_filterState,
+				s_model->GetCurMotInfo()->motid,
+				(int)(s_buttonselectstart + 0.0001), (int)(s_buttonselectend + 0.0001));
+
 			if (g_limitdegflag == true) {
 				bool allframeflag = false;
 				bool setcursorflag = false;
@@ -40333,12 +40367,14 @@ int FilterFunc()
 		if (s_model && s_model->GetCurMotInfo()) {
 			if (s_owpTimeline && s_owpLTimeline) {
 				s_editrange.Clear();
-				s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-				CEditRange::SetApplyRate((double)g_applyrate);
+				//s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
+				//CEditRange::SetApplyRate((double)g_applyrate);
+
+				OnTimeLineButtonSelectFromSelectStartEnd(0);
+				OnTimeLineSelectFromSelectedKey();
 				int keynum;
 				double startframe, endframe, applyframe;
 				s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
-
 
 				CBone* opebone = 0;
 				if (s_curboneno >= 0) {
@@ -40413,9 +40449,6 @@ int FilterFunc()
 int CallFilterFunc(int callnum)
 {
 	if (s_model && s_model->GetCurMotInfo()) {
-
-		OnTimeLineButtonSelectFromSelectStartEnd(0);
-		OnTimeLineSelectFromSelectedKey();
 
 		if (g_iklevel == 1) {
 			s_filterState = 2;//one

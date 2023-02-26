@@ -8984,6 +8984,70 @@ int CModel::SetBefEditMatFK(bool limitdegflag, CEditRange* erptr, CBone* curbone
 	return 0;
 }
 
+bool CModel::CalcAxisAndRotForIKRotateAxis(int limitdegflag,
+	CBone* parentbone, CBone* firstbone,
+	double curframe, ChaVector3 targetpos, 
+	ChaVector3 srcikaxis,
+	ChaVector3* dstaxis, float* dstrotrad)
+{
+
+	//return nearflag : too near to move
+
+	if (!parentbone || !firstbone || !dstaxis || !dstrotrad) {
+		_ASSERT(0);
+		return true;
+	}
+
+	if (!firstbone->GetParent()) {
+		_ASSERT(0);
+		return true;
+	}
+
+	ChaVector3 ikaxis = srcikaxis;//!!!!!!!!!!!!
+	ChaVector3Normalize(&ikaxis, &ikaxis);
+
+	ChaVector3 parworld, chilworld;
+	{
+		parworld = parentbone->GetWorldPos(limitdegflag, m_curmotinfo->motid, curframe);
+		ChaMatrix parworldmat = firstbone->GetParent()->GetWorldMat(limitdegflag, m_curmotinfo->motid, curframe, 0) * GetWorldMat();
+		ChaVector3 tmpfirstfpos = firstbone->GetJointFPos();
+		ChaVector3TransformCoord(&chilworld, &tmpfirstfpos, &parworldmat);
+	}
+
+	ChaVector3 childtotarget = targetpos - chilworld;
+	double distance = ChaVector3LengthDbl(&childtotarget);
+	//if (distance <= 0.10f) {
+	//	return true;
+	//}
+
+
+	ChaVector3 parbef, chilbef, tarbef;
+	parbef = parworld;
+	CalcShadowToPlane(chilworld, ikaxis, parworld, &chilbef);
+	CalcShadowToPlane(targetpos, ikaxis, parworld, &tarbef);
+
+	ChaVector3 vec0, vec1;
+	vec0 = chilbef - parbef;
+	ChaVector3Normalize(&vec0, &vec0);
+	vec1 = tarbef - parbef;
+	ChaVector3Normalize(&vec1, &vec1);
+
+	ChaVector3 rotaxis2;
+	ChaVector3Cross(&rotaxis2, (const ChaVector3*)&vec0, (const ChaVector3*)&vec1);
+	ChaVector3Normalize(&rotaxis2, &rotaxis2);
+
+	float rotdot2, rotrad2;
+	rotdot2 = ChaVector3Dot(&vec0, &vec1);
+	rotdot2 = min(1.0f, rotdot2);
+	rotdot2 = max(-1.0f, rotdot2);
+	rotrad2 = (float)acos(rotdot2);
+
+	*dstaxis = rotaxis2;
+	*dstrotrad = rotrad2;
+
+	return false;
+}
+
 
 int CModel::CalcAxisAndRotForIKRotate(int limitdegflag, 
 	CBone* parentbone, CBone* firstbone, 
@@ -9150,18 +9214,21 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 		//	&qForRot, &qForHipsRot);
 
 		//IKTragetの場合には
-		//0.10で刻んで　徐々に近づける
+		//0.080で刻んで　徐々に近づける
 		//近づきが足りない場合は　処理後に　ConstExecuteボタンを押す
 		CQuaternion endq;
 		CQuaternion curqForRot;
 		CQuaternion curqForHipsRot;
 		endq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-		qForRot.Slerp2(endq, 0.10f, &curqForRot);
+		qForRot.Slerp2(endq, 0.080f, &curqForRot);
 		curqForHipsRot = curqForRot;
-
 		bool infooutflag = true;
 		parentbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
 			infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForHipsRot, fromiktarget);
+
+		//bool infooutflag = true;
+		//parentbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+		//	infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, fromiktarget);
 
 	}
 	else if (keynum1flag) {
@@ -9889,14 +9956,14 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 
 	//For IKTraget
 	//カメラ軸回転とカメラ軸に垂直な軸回転と　２回実行する
-	int calcnum = 2;
+	int calcnum = 3;
 
 	int calccnt;
-	for (calccnt = 0; calccnt < calcnum; calccnt++) {
+	for (calccnt = 1; calccnt <= calcnum; calccnt++) {
 		curbone = firstbone;
 		lastpar = curbone;
 
-		int levelcnt = 2;
+		int levelcnt = 0;
 		float currate;
 		//currate = g_ikrate;
 		currate = 0.750f;
@@ -9928,30 +9995,52 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 
 				ChaVector3 rotaxis2;
 				float rotrad2;
-				if ((calccnt % 2) != 0) {
-					CalcAxisAndRotForIKRotate(limitdegflag,
-						parentbone, firstbone,
-						curframe, targetpos,
-						&rotaxis2, &rotrad2);
+				//if ((calccnt % 2) != 0) {
+				//	CalcAxisAndRotForIKRotate(limitdegflag,
+				//		parentbone, firstbone,
+				//		curframe, targetpos,
+				//		&rotaxis2, &rotrad2);
+				//}
+				//else {
+				//	CalcAxisAndRotForIKRotateVert(limitdegflag,
+				//		parentbone, firstbone,
+				//		curframe, targetpos,
+				//		&rotaxis2, &rotrad2);
+				//}
+
+
+				ChaMatrix parentnodemat;
+				parentnodemat = parentbone->GetNodeMat();
+				ChaMatrix parentnoderot;
+				parentnoderot = ChaMatrixRot(parentnodemat);
+				ChaVector3 ikaxis;
+				if ((calccnt % 3) == 0) {
+					ikaxis.x = parentnoderot.data[MATI_11];
+					ikaxis.y = parentnoderot.data[MATI_12];
+					ikaxis.z = parentnoderot.data[MATI_13];
+				}
+				else if ((calccnt % 2) == 0) {
+					ikaxis.x = parentnoderot.data[MATI_21];
+					ikaxis.y = parentnoderot.data[MATI_22];
+					ikaxis.z = parentnoderot.data[MATI_23];
 				}
 				else {
-					CalcAxisAndRotForIKRotateVert(limitdegflag,
-						parentbone, firstbone,
-						curframe, targetpos,
-						&rotaxis2, &rotrad2);
+					ikaxis.x = parentnoderot.data[MATI_31];
+					ikaxis.y = parentnoderot.data[MATI_32];
+					ikaxis.z = parentnoderot.data[MATI_33];
 				}
+				bool nearflag = CalcAxisAndRotForIKRotateAxis(limitdegflag,
+					parentbone, firstbone,
+					curframe, targetpos,
+					ikaxis,
+					&rotaxis2, &rotrad2);
 
-				rotrad2 *= currate;
+				//rotrad2 *= currate;
 
 				double firstframe = 0.0;
-				if (fabs(rotrad2) > 1.0e-4) {
+				if ((nearflag == false) && (fabs(rotrad2) > 1.0e-4)) {
 					CQuaternion rotq0;
 					rotq0.SetAxisAndRot(rotaxis2, rotrad2);
-
-
-
-
-
 
 					//parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
 					// 
@@ -9959,23 +10048,8 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 					parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
 
 
-					////2023/01/22 : topposスライダーの位置のフレーム(３D表示中のフレーム)において　
-					////制限角度により　回転出来ない場合は　リターンする
-					////if (g_limitdegflag != 0) {
-					//if ((limitdegflag != false) && (g_wallscrapingikflag == 0)) {//2023/01/23
-					//	//2023/01/28 IK時は　GetBtForce()チェックはしない　BtForce == 1でも角度制限する
-					//	int ismovable = IsMovableRot(limitdegflag, m_curmotinfo->motid, applyframe, applyframe,
-					//		rotq0, parentbone, parentbone);
-					//	if (ismovable == 0) {
-					//		//g_underIKRot = false;//2023/01/14 parent limited or not
-					//		if (editboneforret) {
-					//			return editboneforret->GetBoneNo();
-					//		}
-					//		else {
-					//			return srcboneno;
-					//		}
-					//	}
-					//}
+					//IKRotateは壁すりIKで行うので　回転可能かどうかのチェックはここではしない
+
 
 					int keyno = 0;
 					bool keynum1flag = false;
@@ -10017,7 +10091,7 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 		}
 
 		//絶対モードの場合
-		if ((calccnt == (calcnum - 1)) && g_absikflag && lastpar) {
+		if ((calccnt == calcnum) && g_absikflag && lastpar) {
 			AdjustBoneTra(limitdegflag, erptr, lastpar);
 		}
 	}
@@ -13469,7 +13543,8 @@ int CModel::IKTargetVec(bool limitdegflag, CEditRange* erptr, double srcframe, b
 		if (srcbone && srcbone->GetParent() && srcbone->GetIKTargetFlag()) {
 			ChaVector3 iktargetpos = srcbone->GetIKTargetPos();
 			int calccount;
-			for (calccount = 0; calccount < 60; calccount++) {
+			const int calccountmax = 30;
+			for (calccount = 0; calccount < calccountmax; calccount++) {
 				int maxlevel = 0;
 				IKRotateForIKTarget(limitdegflag, erptr, srcbone->GetBoneNo(), 
 					iktargetpos, maxlevel, srcframe, postflag);

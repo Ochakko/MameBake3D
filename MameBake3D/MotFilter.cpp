@@ -144,12 +144,18 @@ int CMotFilter::FilterNoDlg(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
 	DestroyObjs();//!!!!!!!!!!
 
 	
-	m_filtertype = AVGF_GAUSSIAN;
-	int framenum = srcendframe - srcstartframe + 1;
-	if (framenum <= 3) {
-		return 0;
-	}
-	m_filtersize = max(3, (framenum / 10));
+	//m_filtertype = AVGF_GAUSSIAN;
+	//int framenum = srcendframe - srcstartframe + 1;
+	//if (framenum <= 3) {
+	//	return 0;
+	//}
+	//m_filtersize = max(3, (framenum / 10));
+
+
+	//2023/02/27
+	//‚±‚Á‚¿‚Ì•û‚ªŒ`‚ª•Ï‚í‚ç‚È‚¢
+	m_filtertype = AVGF_MOVING;
+	m_filtersize = 9;
 
 
 	CallFilterFunc(limitdegflag, srcmodel, srcbone, srcopekind, srcmotid, srcstartframe, srcendframe);
