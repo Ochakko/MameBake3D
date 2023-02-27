@@ -68,6 +68,10 @@
   		２，IK操作無しで　選択フレーム範囲のジョイント位置をコンストレイントしたい場合
   			ジョイント右クリックでPosConstraint ON　フレーム選択　ConstRefreshボタンで現在位置を拘束位置　ConstExecuteボタンで拘束計算
   
+　MotionSpeedスライダーを1.0以下にしたときの振る舞い修正
+	1.2.0.12でフレーム単位表示になってしまっていたのを修正
+	スピード1.0以下でも滑らか表示
+
 
 　VRoidモデル着替え
 	Test/0_VRoid_Spring_1 追加
@@ -77,6 +81,7 @@
 　トラブルシューティングドキュメント追加
 	Documents/TroubleShooting/ArmFlapsWhenHandIsConstraint.docx
 	Documents/TroubleShooting/HideRigidBodyMarkOfHair.docx
+	Documents/TroubleShooting/CantRotOver165DegreeAMouseDrag.docx
 	
 
 

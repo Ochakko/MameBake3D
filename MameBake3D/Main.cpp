@@ -808,8 +808,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 
 
 /*
-* 2023/02/26
-* EditMot 1.2.0.13
+* 2023/02/27
+* EditMot 1.2.0.13 RC9
 * 
 * IK終了後のウェイトカーソル時間短縮
 * 	IK中は30fpsにする
@@ -879,6 +879,12 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 *		　　追加処理として　フレーム選択そのままでConstExecuteボタンを押す
 *		２，IK操作無しで　選択フレーム範囲のジョイント位置をコンストレイントしたい場合
 *			ジョイント右クリックでPosConstraint ON　フレーム選択　ConstRefreshボタンで現在位置を拘束位置　ConstExecuteボタンで拘束計算
+*
+*
+* MotionSpeedスライダーを1.0以下にしたときの振る舞い修正
+*	1.2.0.12でフレーム単位表示になってしまっていたのを修正
+*	スピード1.0以下でも滑らか表示
+* 
 * 
 * VRoidモデル着替え
 *	Test/0_VRoid_Spring_1 追加
@@ -888,6 +894,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 *　トラブルシューティングドキュメント追加
 *	Documents/TroubleShooting/ArmFlapsWhenHandIsConstraint.docx
 *	Documents/TroubleShooting/HideRigidBodyMarkOfHair.docx
+* 	Documents/TroubleShooting/CantRotOver165DegreeAMouseDrag.docx
 *
 * 
 */
@@ -3509,7 +3516,7 @@ int CheckResolution()
 
 					//s_longtimelinewidth = 970 * 2;
 					//s_longtimelinewidth = s_mainwidth + s_modelwindowwidth;
-					s_longtimelinewidth = s_totalwndwidth - s_toolwidth - s_sidewidth;
+					s_longtimelinewidth = s_totalwndwidth - s_toolwidth - s_sidewidth - 16;
 					//s_longtimelineheight = (s_totalwndheight - s_2ndposy - MAINMENUAIMBARH - 18) * 2;
 					s_longtimelineheight = s_totalwndheight - s_2ndposy - (MAINMENUAIMBARH + 18) * 2 + MAINMENUAIMBARH + 8;
 
@@ -16002,7 +16009,7 @@ int CreateConvBoneWnd()
 		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
 	}
 	else {
-		windowposx = s_timelinewidth + s_mainwidth;
+		windowposx = s_timelinewidth + s_mainwidth + 16;
 	}
 
 	s_convboneWnd = new OrgWindow(
