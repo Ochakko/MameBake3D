@@ -1,4 +1,4 @@
-//--------------------------------------------------------------------------------------
+﻿//--------------------------------------------------------------------------------------
 // File: DXUT.cpp
 //
 // Copyright (c) Microsoft Corporation.
@@ -2897,7 +2897,7 @@ void WINAPI DXUTRender3DEnvironment()
     DXUTGetGlobalTimer()->GetTimeValues( &fTime, &fAbsTime, &fElapsedTime );
 
 
-    //2023/02/21
+    ////2023/02/21
     if (g_fpsforce30 == false)
     {
         if (g_VSync == true)
@@ -2926,27 +2926,25 @@ void WINAPI DXUTRender3DEnvironment()
 
             GetDXUTState().SetOverrideConstantFrameTime(true);
             GetDXUTState().SetOverrideConstantTimePerFrame((float)oneframetime);
-            DXUTSetConstantFrameTime(true, (float)oneframetime);
+            //DXUTSetConstantFrameTime(true, (float)oneframetime);//true指定すると　1frame単位でしか再生できなくなる
+            DXUTSetConstantFrameTime(false, (float)oneframetime);//2023/02/27　smooth preview between frames
         }
         else
         {
             GetDXUTState().SetOverrideConstantFrameTime(false);
             GetDXUTState().SetOverrideConstantTimePerFrame(fElapsedTime);
-            DXUTSetConstantFrameTime(true, fElapsedTime);
+            //DXUTSetConstantFrameTime(true, fElapsedTime);//true指定すると　1frame単位でしか再生できなくなる
+            DXUTSetConstantFrameTime(false, fElapsedTime);//2023/02/27　smooth preview between frames
         }
     }
     else
     {
-        //IK??30fps???
-        //IK???????????IKROTREC?????????
-        //????????????????????????
-        //IKROTREC?????????30fps
         double oneframetime = 1.0 / 30.0;
         GetDXUTState().SetOverrideConstantFrameTime(true);
         GetDXUTState().SetOverrideConstantTimePerFrame((float)oneframetime);
-        DXUTSetConstantFrameTime(true, (float)oneframetime);
+        //DXUTSetConstantFrameTime(true, (float)oneframetime);//true指定すると　1frame単位でしか再生できなくなる
+        DXUTSetConstantFrameTime(false, (float)oneframetime);//2023/02/27　smooth preview between frames
     }
-
 
     // Store the time for the app
     if( GetDXUTState().GetConstantFrameTime() )
