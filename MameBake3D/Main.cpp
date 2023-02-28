@@ -900,6 +900,22 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 */
 
 
+/*
+* 2023/03/01
+* EditMot 1.2.0.14へ向けて
+* 
+* 物理修正
+*	エラー対策として追加していた条件文修正
+*	(cs.rank - 1) >= 2 をエラーにしていたのを　(cs.rank - 1) > 2　をエラーにするように修正
+*	MotionSpeedを0.1にして　Model_boxingサンプルを実行すると　パンチが素通りしていたが　修正により当たるようになった
+* 　Model_boxingサンプルにおいては　(こちらの環境では)
+*		fpsコンボボックスで　fpsを60にして　MotionSpeedを3にしたときが　一番うまく動く
+*		fpsを100などに指定した場合には　erpスライダー値を小さくして　位置補正率を下げることにより　ダイナミックな動きが保たれる
+* 
+* 
+*/
+
+
 
 #include "useatl.h"
 
@@ -30573,7 +30589,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.13 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.14 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -38101,7 +38117,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.13 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.14 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

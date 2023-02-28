@@ -244,7 +244,8 @@ struct GJK
 			}
 			/* Append new vertice in -'v' direction	*/
 			appendvertice(cs, -m_ray);
-			if (((cs.rank - 1) < 0) || (cs.rank - 1) >= 2) {//2021/10/01
+			//if (((cs.rank - 1) < 0) || (cs.rank - 1) >= 2) {//2021/10/01
+			if (((cs.rank - 1) < 0) || (cs.rank - 1) > 2) {//2023/03/01
 				//_ASSERT(0);
 				m_status = eStatus::Failed;
 				return m_status;
