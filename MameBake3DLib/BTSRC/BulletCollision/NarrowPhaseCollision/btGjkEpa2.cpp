@@ -244,8 +244,19 @@ struct GJK
 			}
 			/* Append new vertice in -'v' direction	*/
 			appendvertice(cs, -m_ray);
-			//if (((cs.rank - 1) < 0) || (cs.rank - 1) >= 2) {//2021/10/01
-			if (((cs.rank - 1) < 0) || (cs.rank - 1) > 2) {//2023/03/01
+
+
+/* 
+*	//btGjkEpa2.cpp L164
+	struct sSimplex
+	{
+		sSV* c[4];
+		btScalar p[4];
+		U rank;
+	};
+*/
+			//if (((cs.rank - 1) < 0) || (cs.rank - 1) >= 2) {//2021/10/01 ‚½‚Ô‚ñ’x‚¢PC‚Å“®‚©‚µ‚Ä‚¢‚½‚ÌğŒH
+			if (((cs.rank - 1) < 0) || (cs.rank - 1) > 3) {//2023/03/01 Å‘åƒ‰ƒ“ƒN‚Ü‚ÅŒvZ
 				//_ASSERT(0);
 				m_status = eStatus::Failed;
 				return m_status;
