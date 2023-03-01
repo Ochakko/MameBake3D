@@ -902,7 +902,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 
 /*
 * 2023/03/01
-* EditMot 1.2.0.14へ向けて
+* EditMot 1.2.0.14 RC1
 * 
 * 物理修正
 *	遅いPCで動かすために　詳細度をカットしていた条件文修正
@@ -913,6 +913,15 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 *		剛体がスリープ状態になっていたのが原因
 *		スリープまでの時間指定と　スリープ速度の閾値指定により解決
 *
+* Rigの設定ダイアログの表示位置の種類増加
+*	0から2までの表示位置を 0から15までに変更
+* 
+* 剛体設定ダイアログ修正
+*	ダイアログの下から２番目のSetRigidGroupIDForConflict(当たり判定グループ指定)のボタン修正
+*		同じグループの剛体全部に設定　を選んだ場合に　自分のグループと衝突判定する設定項目も対象に　
+* 
+* 姿勢初期化ボタン修正
+*	ToolWindowの姿勢初期化でdeeperを選んだ場合に　選択ジョイントと同じデプスのジョイントは対象にしないように
 * 
 * 
 */
@@ -2386,19 +2395,19 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 // UI control IDs
 //--------------------------------------------------------------------------------------
 #define ID_RMENU_PHYSICSCONSTRAINT	(ID_RMENU_0 - 100)
-#define ID_RMENU_MASS0			(ID_RMENU_PHYSICSCONSTRAINT + 1)
-#define ID_RMENU_EXCLUDE_MV		(ID_RMENU_PHYSICSCONSTRAINT + 2)
-#define ID_RMENU_FORBIDROT_ONE	(ID_RMENU_PHYSICSCONSTRAINT + 3)
-#define ID_RMENU_ENABLEROT_ONE	(ID_RMENU_PHYSICSCONSTRAINT + 4)
-#define ID_RMENU_FORBIDROT_CHILDREN	(ID_RMENU_PHYSICSCONSTRAINT + 5)
-#define ID_RMENU_ENABLEROT_CHILDREN	(ID_RMENU_PHYSICSCONSTRAINT + 6)
-
-#define ID_RMENU_MASS0_ON_ALL		(ID_RMENU_PHYSICSCONSTRAINT + 7)
-#define ID_RMENU_MASS0_OFF_ALL		(ID_RMENU_PHYSICSCONSTRAINT + 8)
-#define ID_RMENU_MASS0_ON_UPPER		(ID_RMENU_PHYSICSCONSTRAINT + 9)
-#define ID_RMENU_MASS0_OFF_UPPER	(ID_RMENU_PHYSICSCONSTRAINT + 10)
-#define ID_RMENU_MASS0_ON_LOWER		(ID_RMENU_PHYSICSCONSTRAINT + 11)
-#define ID_RMENU_MASS0_OFF_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 12)
+//#define ID_RMENU_MASS0			(ID_RMENU_PHYSICSCONSTRAINT + 1)
+//#define ID_RMENU_EXCLUDE_MV		(ID_RMENU_PHYSICSCONSTRAINT + 2)
+//#define ID_RMENU_FORBIDROT_ONE	(ID_RMENU_PHYSICSCONSTRAINT + 3)
+//#define ID_RMENU_ENABLEROT_ONE	(ID_RMENU_PHYSICSCONSTRAINT + 4)
+//#define ID_RMENU_FORBIDROT_CHILDREN	(ID_RMENU_PHYSICSCONSTRAINT + 5)
+//#define ID_RMENU_ENABLEROT_CHILDREN	(ID_RMENU_PHYSICSCONSTRAINT + 6)
+//
+//#define ID_RMENU_MASS0_ON_ALL		(ID_RMENU_PHYSICSCONSTRAINT + 7)
+//#define ID_RMENU_MASS0_OFF_ALL		(ID_RMENU_PHYSICSCONSTRAINT + 8)
+//#define ID_RMENU_MASS0_ON_UPPER		(ID_RMENU_PHYSICSCONSTRAINT + 9)
+//#define ID_RMENU_MASS0_OFF_UPPER	(ID_RMENU_PHYSICSCONSTRAINT + 10)
+//#define ID_RMENU_MASS0_ON_LOWER		(ID_RMENU_PHYSICSCONSTRAINT + 11)
+//#define ID_RMENU_MASS0_OFF_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 12)
 
 #define ID_RMENU_KINEMATIC_ON_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 13)
 #define ID_RMENU_KINEMATIC_OFF_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 14)
@@ -2926,7 +2935,7 @@ static int InitMpFromTool();
 //static int InitMP( CBone* curbone, double curframe );
 //static void InitMPReq(CBone* curbone, double curframe);
 static int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe);
-static void InitMpByEulReq(int initmode, CBone* curbone, int srcmotid, double srcframe);
+static void InitMpByEulReq(int initmode, CBone* curbone, int srcmotid, double srcframe, bool broflag);
 
 static void SkipJointMarkReq(int srcstate, CBone* srcbone, bool setbrotherflag);
 
@@ -7392,18 +7401,19 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 					int updatejointno = -1;
 
-					if (subid == 0) {
+					if (subid == 0) {//all
 						list<KeyInfo>::iterator itrcp;
 						for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
 							double curframe = itrcp->time;
 							CBone* topbone = s_model->GetTopBone();
 							if (topbone) {
-								InitMpByEulReq(initmode, topbone, mi->motid, curframe);//topbone req
+								bool broflag = false;
+								InitMpByEulReq(initmode, topbone, mi->motid, curframe, broflag);//topbone req
 								updatejointno = topbone->GetBoneNo();
 							}
 						}
 					}
-					else if (subid == 1) {
+					else if (subid == 1) {//one
 						if (opebone) {
 							list<KeyInfo>::iterator itrcp;
 							for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
@@ -7413,12 +7423,13 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 							}
 						}
 					}
-					else if (subid == 2) {
+					else if (subid == 2) {//deeper
 						if (opebone) {
 							list<KeyInfo>::iterator itrcp;
 							for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
 								double curframe = itrcp->time;
-								InitMpByEulReq(initmode, opebone, mi->motid, curframe);//opebone req
+								bool broflag = false;
+								InitMpByEulReq(initmode, opebone, mi->motid, curframe, broflag);//opebone req
 								updatejointno = opebone->GetBoneNo();
 							}
 						}
@@ -13573,10 +13584,14 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 					if (currig.useflag == 2) {//0: free, 1: allocated, 2: valid
 					//if (currig.rigboneno > 0) {
 						ChaVector3 curbonepos = curbone->GetWorldPos(g_limitdegflag, curmotid, curframe);
+						
+						//pos transform
 						ChaMatrix rigmat;
 						ChaMatrixIdentity(&rigmat);
 						rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder, currig.posinverse);
+						g_hmWorld->SetMatrix((float*)&(rigmat.data[MATI_11]));
 
+						//material
 						if (currig.dispaxis == 0) {
 							s_matrigmat = ChaVector4(1.0f, 0.5f, 0.5f, 0.79f);
 						}
@@ -13589,7 +13604,6 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 						s_matrig->SetDif4F(s_matrigmat);
 
 
-						g_hmWorld->SetMatrix((float*)&(rigmat.data[MATI_11]));
 
 						s_rigmark->UpdateMatrix(g_limitdegflag, &rigmat, &s_matVP);
 						//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
@@ -17183,7 +17197,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 					pmodel->SetCurrentRigidElem(s_reindexmap[pmodel]);//s_curreindexをmodelごとに持つ必要あり！！！
 
 					//決め打ち
-					s_btWorld->setGravity(btVector3(0.0f, -9.8f, 0.0f)); // 重力加速度の設定
+					s_btWorld->setGravity(btVector3(0.0f, -9.8f, 0.0f)); // 重力加速度の設定　//SetBtKinFlagReqにて剛体ごとにも設定
 
 
 
@@ -23630,7 +23644,8 @@ int OnFrameToolWnd()
 				for (frame = 0.0; frame < motleng; frame += 1.0) {
 					if (s_model->GetTopBone()) {
 						s_model->SetMotionFrame(frame);
-						InitMpByEulReq(INITMP_SCALE, s_model->GetTopBone(), curmi->motid, frame);
+						bool broflag = false;
+						InitMpByEulReq(INITMP_SCALE, s_model->GetTopBone(), curmi->motid, frame, broflag);
 					}
 				}
 
@@ -28636,7 +28651,7 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 	return 0;
 }
 
-void InitMpByEulReq(int initmode, CBone* curbone, int srcmotid, double srcframe)
+void InitMpByEulReq(int initmode, CBone* curbone, int srcmotid, double srcframe, bool broflag)
 {
 	if (!curbone) {
 		return;
@@ -28645,10 +28660,11 @@ void InitMpByEulReq(int initmode, CBone* curbone, int srcmotid, double srcframe)
 	InitMpByEul(initmode, curbone, srcmotid, srcframe);
 
 	if (curbone->GetChild()) {
-		InitMpByEulReq(initmode, curbone->GetChild(), srcmotid, srcframe);
+		bool broflag2 = true;
+		InitMpByEulReq(initmode, curbone->GetChild(), srcmotid, srcframe, broflag2);
 	}
-	if (curbone->GetBrother()) {
-		InitMpByEulReq(initmode, curbone->GetBrother(), srcmotid, srcframe);
+	if (curbone->GetBrother() && (broflag == true)) {
+		InitMpByEulReq(initmode, curbone->GetBrother(), srcmotid, srcframe, broflag);
 	}
 }
 
@@ -28853,20 +28869,34 @@ int CustomRig2Dlg(HWND hDlgWnd)
 		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPAXIS), CB_ADDSTRING, 0, (LPARAM)strcomboda);
 		wcscpy_s(strcomboda, 256, L"Z");
 		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPAXIS), CB_ADDSTRING, 0, (LPARAM)strcomboda);
-		if ((s_customrig.dispaxis >= 0) && (s_customrig.disporder <= 2)) {
+		if ((s_customrig.dispaxis >= 0) && (s_customrig.dispaxis <= 2)) {
+			SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPAXIS), CB_SETCURSEL, s_customrig.dispaxis, 0);
+		}
+		else {
+			s_customrig.dispaxis = 0;
 			SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPAXIS), CB_SETCURSEL, s_customrig.dispaxis, 0);
 		}
 
 		//disporder
 		WCHAR strcombodo[256] = { 0L };
 		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_RESETCONTENT, 0, 0);
-		wcscpy_s(strcombodo, 256, L"0");
-		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_ADDSTRING, 0, (LPARAM)strcombodo);
-		wcscpy_s(strcombodo, 256, L"1");
-		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_ADDSTRING, 0, (LPARAM)strcombodo);
-		wcscpy_s(strcombodo, 256, L"2");
-		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_ADDSTRING, 0, (LPARAM)strcombodo);
-		if ((s_customrig.disporder >= 0) && (s_customrig.disporder <= 2)) {
+		int orderno;
+		for (orderno = 0; orderno < 16; orderno++) {
+			swprintf_s(strcombodo, 256, L"%d", orderno);
+			SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_ADDSTRING, 0, (LPARAM)strcombodo);
+
+		}
+		//wcscpy_s(strcombodo, 256, L"0");
+		//SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_ADDSTRING, 0, (LPARAM)strcombodo);
+		//wcscpy_s(strcombodo, 256, L"1");
+		//SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_ADDSTRING, 0, (LPARAM)strcombodo);
+		//wcscpy_s(strcombodo, 256, L"2");
+		//SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_ADDSTRING, 0, (LPARAM)strcombodo);
+		if ((s_customrig.disporder >= 0) && (s_customrig.disporder <= 15)) {
+			SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_SETCURSEL, s_customrig.disporder, 0);
+		}
+		else {
+			s_customrig.disporder = 0;
 			SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_SETCURSEL, s_customrig.disporder, 0);
 		}
 
@@ -29125,8 +29155,11 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				}
 
 				int combonodo = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_GETCURSEL, 0, 0);
-				if ((combonodo >= 0) && (combonodo <= 2)) {
+				if ((combonodo >= 0) && (combonodo <= 15)) {
 					s_customrig.disporder = combonodo;
+				}
+				else {
+					s_customrig.disporder = 0;
 				}
 
 				if (IsDlgButtonChecked(hDlgWnd, IDC_CHKINV) == BST_CHECKED) {
@@ -40015,18 +40048,30 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 	ChaMatrixScaling(&scalemat, s_selectscale, s_selectscale, s_selectscale);
 
 	ChaVector3 curbonepos = curbone->GetWorldPos(g_limitdegflag, curmotid, curframe);
+	float curboneleng = (float)curbone->GetBoneLeng();
+	float multoffset;
+	if (curboneleng != 0.0f) {
+		multoffset = curboneleng * 0.25f;
+	}
+	else {
+		multoffset = 1.0f;
+	}
+
 
 	float rigorderoffset = 0.0f;
-	if (disporder == 0) {
-		rigorderoffset = 0.05f;
-	}
-	else if (disporder == 1) {
-		rigorderoffset = 0.35f;
-	}
-	else if (disporder == 2) {
-		rigorderoffset = 0.65f;
-	}
-
+	//if (disporder == 0) {
+	//	//rigorderoffset = 0.05f * multoffset;
+	//	rigorderoffset = 0.0f;
+	//}
+	//else if (disporder == 1) {
+	//	//rigorderoffset = 0.35f * multoffset;
+	//	rigorderoffset = 0.25f * multoffset;
+	//}
+	//else if (disporder == 2) {
+	//	//rigorderoffset = 0.65f * multoffset;
+	//	rigorderoffset = 0.50f * multoffset;
+	//}
+	rigorderoffset = (float)disporder * 0.25f * multoffset;
 	if (posinverse) {
 		rigorderoffset *= -1.0f;
 	}

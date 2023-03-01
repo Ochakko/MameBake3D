@@ -167,7 +167,7 @@ int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone)
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
 		return 0;
 	}
-	if ((srccr.disporder < 0) || (srccr.disporder > 2)) {
+	if ((srccr.disporder < 0) || (srccr.disporder > 15)) {
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"エラー。disporder : %d", srccr.disporder);
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
@@ -299,9 +299,9 @@ int CBone::InitParams()
 	m_tmpkinematic = false;
 	//m_curmotid = -1;
 	m_curmotid = 0;//有効なidは１から
-	m_excludemv = 0;
-	m_mass0 = 0;
-	m_posconstraint = 0;
+	//m_excludemv = 0;
+	//m_mass0 = 0;
+	//m_posconstraint = 0;
 	ZeroMemory(m_coldisp, sizeof(CModel*)* COL_MAX);
 
 	ChaMatrixIdentity(&m_tmpsymmat);

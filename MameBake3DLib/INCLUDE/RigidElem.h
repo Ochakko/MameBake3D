@@ -85,7 +85,7 @@ public: //accesser
 	int GetColiidsSize(){ return (int)m_coliids.size(); };
 	int GetColiids( int srcindex ){ return m_coliids[ srcindex ]; };
 	void PushBackColiids( int srcid ){ m_coliids.push_back( srcid ); };
-	void CopyColiids( CRigidElem* srcre ){ m_coliids = srcre->m_coliids; };
+	void CopyColiids(CRigidElem* srcre) { m_coliids = srcre->m_coliids; SetMyselfflag(srcre->GetMyselfflag()); };
 	void CopyColiids( std::vector<int>& srcids ){ m_coliids = srcids; };
 	void CopyColiids2Dstvec( std::vector<int>& dstids ){ dstids = m_coliids; };
 

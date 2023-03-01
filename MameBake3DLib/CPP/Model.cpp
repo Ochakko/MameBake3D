@@ -6543,10 +6543,10 @@ int CModel::CreateBtObject(bool limitdegflag, int onfirstcreate )
 		 //RestoreMassReq(m_topbone);
 	}
 	else{
-		SetRagdollKinFlagReq(m_topbt, -1);
-		CreatePhysicsPosConstraintReq(m_topbone);
-		bool forceflag = false;
-		SetMass0Req(m_topbone, forceflag);
+		//SetRagdollKinFlagReq(m_topbt, -1);
+		//CreatePhysicsPosConstraintReq(m_topbone);
+		//bool forceflag = false;
+		//SetMass0Req(m_topbone, forceflag);
 	}
 
 
@@ -8678,103 +8678,103 @@ void CModel::SetKinematicFlagReq(CBtObject* srcbto)
 }
 
 
-int CModel::SetRagdollKinFlag(int selectbone, int physicsmvkind)
-{
-
-	if( !m_topbt ){
-		return 0;
-	}
-
-	SetRagdollKinFlagReq( m_topbt, selectbone, physicsmvkind );
-
-	
-
-
-	return 0;
-}
-void CModel::SetRagdollKinFlagReq(CBtObject* srcbto, int selectbone, int physicsmvkind)
-{
-	//Mass0が設定されていた場合、TmpKinematicは強制的に無効
-
-
-	CBone* srcbone = srcbto->GetBone();
-	if (srcbone && srcbone->GetParent()){
-		if ((srcbone->GetMass0() == TRUE) || (srcbone->GetParent()->GetMass0() == TRUE) || (srcbone->GetParent()->GetTmpKinematic() == false)) {
-			CBone* kinchildbone = GetBoneByID(selectbone);
-			if (kinchildbone) {
-				CBone* kinbone = kinchildbone->GetParent();
-				if (kinbone) {
-					int curboneno = srcbone->GetBoneNo();
-					if (curboneno != kinbone->GetBoneNo()) {
-						srcbone->SetBtKinFlag(0);
-					}
-					else {
-						srcbone->SetBtKinFlag(1);
-					}
-
-				}
-			}
-			else {
-				srcbone->SetBtKinFlag(0);
-			}
-		}
-		else {
-			srcbone->SetBtKinFlag(1);
-		}
-
-		//if ((physicsmvkind == 0) && (srcbone->GetBtKinFlag() == 1) && (srcbto->GetRigidBody())){
-		if ((srcbone->GetBtKinFlag() == 1) && (srcbto->GetRigidBody())){
-			DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
-			if (s_setrigidflag == 0){
-				s_rigidflag = curflag;
-				s_setrigidflag = 1;
-			}
-			//srcbto->GetRigidBody()->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
-			srcbto->GetRigidBody()->setCollisionFlags(curflag | btCollisionObject::CF_KINEMATIC_OBJECT);
-			//srcbto->m_rigidbody->setActivationState(DISABLE_DEACTIVATION);
-			//srcbto->m_rigidbody->setActivationState(WANTS_DEACTIVATION);
-			//srcbto->m_rigidbody->setActivationState(DISABLE_SIMULATION);
-			//CF_STATIC_OBJECT
-		}
-		else if (srcbto->GetRigidBody()){
-			DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
-			srcbto->GetRigidBody()->setCollisionFlags(curflag & ~btCollisionObject::CF_KINEMATIC_OBJECT);
-
-			if (srcbone->GetParent()){
-				CRigidElem* curre = srcbone->GetParent()->GetRigidElem(srcbone);
-				if (curre){
-					if ((m_curreindex >= 0) && (m_curreindex < (int)m_rigideleminfo.size())){
-						//srcbto->GetRigidBody()->setGravity(btVector3(0.0f, curre->GetBtg() * m_rigideleminfo[m_curreindex].btgscale, 0.0f));
-						srcbto->GetRigidBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
-						srcbto->GetRigidBody()->applyGravity();
-					}
-					else{
-						_ASSERT(0);
-					}
-				}
-			}
-		}
-
-		if (srcbto->GetRigidBody()){
-			//srcbto->GetRigidBody()->activate();
-			//###srcbto->GetRigidBody()->setDeactivationTime(0.0);
-			//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
-
-			//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 150.0);
-			//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
-		}
-	}
-
-
-
-	int chilno;
-	for( chilno = 0; chilno < srcbto->GetChildBtSize(); chilno++ ){
-		CBtObject* chilbto = srcbto->GetChildBt( chilno );
-		if( chilbto ){
-			SetRagdollKinFlagReq( chilbto, selectbone );
-		}
-	}
-}
+//int CModel::SetRagdollKinFlag(int selectbone, int physicsmvkind)
+//{
+//
+//	if( !m_topbt ){
+//		return 0;
+//	}
+//
+//	SetRagdollKinFlagReq( m_topbt, selectbone, physicsmvkind );
+//
+//	
+//
+//
+//	return 0;
+//}
+//void CModel::SetRagdollKinFlagReq(CBtObject* srcbto, int selectbone, int physicsmvkind)
+//{
+//	//Mass0が設定されていた場合、TmpKinematicは強制的に無効
+//
+//
+//	CBone* srcbone = srcbto->GetBone();
+//	if (srcbone && srcbone->GetParent()){
+//		if ((srcbone->GetMass0() == TRUE) || (srcbone->GetParent()->GetMass0() == TRUE) || (srcbone->GetParent()->GetTmpKinematic() == false)) {
+//			CBone* kinchildbone = GetBoneByID(selectbone);
+//			if (kinchildbone) {
+//				CBone* kinbone = kinchildbone->GetParent();
+//				if (kinbone) {
+//					int curboneno = srcbone->GetBoneNo();
+//					if (curboneno != kinbone->GetBoneNo()) {
+//						srcbone->SetBtKinFlag(0);
+//					}
+//					else {
+//						srcbone->SetBtKinFlag(1);
+//					}
+//
+//				}
+//			}
+//			else {
+//				srcbone->SetBtKinFlag(0);
+//			}
+//		}
+//		else {
+//			srcbone->SetBtKinFlag(1);
+//		}
+//
+//		//if ((physicsmvkind == 0) && (srcbone->GetBtKinFlag() == 1) && (srcbto->GetRigidBody())){
+//		if ((srcbone->GetBtKinFlag() == 1) && (srcbto->GetRigidBody())){
+//			DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
+//			if (s_setrigidflag == 0){
+//				s_rigidflag = curflag;
+//				s_setrigidflag = 1;
+//			}
+//			//srcbto->GetRigidBody()->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
+//			srcbto->GetRigidBody()->setCollisionFlags(curflag | btCollisionObject::CF_KINEMATIC_OBJECT);
+//			//srcbto->m_rigidbody->setActivationState(DISABLE_DEACTIVATION);
+//			//srcbto->m_rigidbody->setActivationState(WANTS_DEACTIVATION);
+//			//srcbto->m_rigidbody->setActivationState(DISABLE_SIMULATION);
+//			//CF_STATIC_OBJECT
+//		}
+//		else if (srcbto->GetRigidBody()){
+//			DWORD curflag = srcbto->GetRigidBody()->getCollisionFlags();
+//			srcbto->GetRigidBody()->setCollisionFlags(curflag & ~btCollisionObject::CF_KINEMATIC_OBJECT);
+//
+//			if (srcbone->GetParent()){
+//				CRigidElem* curre = srcbone->GetParent()->GetRigidElem(srcbone);
+//				if (curre){
+//					if ((m_curreindex >= 0) && (m_curreindex < (int)m_rigideleminfo.size())){
+//						//srcbto->GetRigidBody()->setGravity(btVector3(0.0f, curre->GetBtg() * m_rigideleminfo[m_curreindex].btgscale, 0.0f));
+//						srcbto->GetRigidBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
+//						srcbto->GetRigidBody()->applyGravity();
+//					}
+//					else{
+//						_ASSERT(0);
+//					}
+//				}
+//			}
+//		}
+//
+//		if (srcbto->GetRigidBody()){
+//			//srcbto->GetRigidBody()->activate();
+//			//###srcbto->GetRigidBody()->setDeactivationTime(0.0);
+//			//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
+//
+//			//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 150.0);
+//			//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
+//		}
+//	}
+//
+//
+//
+//	int chilno;
+//	for( chilno = 0; chilno < srcbto->GetChildBtSize(); chilno++ ){
+//		CBtObject* chilbto = srcbto->GetChildBt( chilno );
+//		if( chilbto ){
+//			SetRagdollKinFlagReq( chilbto, selectbone );
+//		}
+//	}
+//}
 
 int CModel::SetCurrentRigidElem( int curindex )
 {
@@ -11225,24 +11225,24 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 //
 //}
 
-int CModel::WithConstraint(CBone* srcbone)
-{
-	if (srcbone){
-
-		CBone* curbone = srcbone;
-		while (curbone){
-			if (curbone->GetPosConstraint() == 1){
-				return 1;
-			}
-			curbone = curbone->GetParent();
-		}
-	}
-	else{
-		return 0;
-	}
-
-	return 0;
-}
+//int CModel::WithConstraint(CBone* srcbone)
+//{
+//	if (srcbone){
+//
+//		CBone* curbone = srcbone;
+//		while (curbone){
+//			if (curbone->GetPosConstraint() == 1){
+//				return 1;
+//			}
+//			curbone = curbone->GetParent();
+//		}
+//	}
+//	else{
+//		return 0;
+//	}
+//
+//	return 0;
+//}
 
 
 //void CModel::PhysicsMVReq(CBone* srcbone, ChaVector3 mvvec)
@@ -14344,168 +14344,168 @@ void CModel::DumpBtConstraintReq(CBtObject* srcbto, int srcdepth)
 	}
 }
 
-int CModel::CreatePhysicsPosConstraint(CBone* srcbone)
-{
-	if (!srcbone){
-		return 0;
-	}
-
-	CBone* parentbone = srcbone->GetParent();
-	if (parentbone){
-		CBtObject* curbto = parentbone->GetBtObject(srcbone);
-		if (curbto){
-			curbto->CreatePhysicsPosConstraint();
-			srcbone->SetPosConstraint(1);
-		}
-	}
-
-	return 0;
-}
-
-int CModel::DestroyPhysicsPosConstraint(CBone* srcbone)
-{
-	if (!srcbone){
-		return 0;
-	}
-
-	CBone* parentbone = srcbone->GetParent();
-	if (parentbone){
-		CBtObject* curbto = parentbone->GetBtObject(srcbone);
-		if (curbto){
-			curbto->DestroyPhysicsPosConstraint();
-			srcbone->SetPosConstraint(0);
-		}
-	}
-
-	return 0;
-}
-int CModel::CreatePhysicsPosConstraintAll()
-{
-	if (!m_topbone) {
-		return 0;
-	}
-
-	int forceflag = 1;
-	CreatePhysicsPosConstraintReq(m_topbone, forceflag);
-
-	return 0;
-}
-
-int CModel::DestroyPhysicsPosConstraintAll()
-{
-	if (!m_topbone) {
-		return 0;
-	}
-
-	int forceflag = 1;
-	DestroyPhysicsPosConstraintReq(m_topbone, forceflag);
-
-	return 0;
-}
-int CModel::CreatePhysicsPosConstraintUpper(CBone* srcbone)
-{
-	if (!srcbone) {
-		return 0;
-	}
-
-	CBone* upperbone = srcbone;
-	while (upperbone) {
-		CBone* parentbone = upperbone->GetParent();
-		if (parentbone) {
-			CBtObject* curbto = parentbone->GetBtObject(srcbone);
-			if (curbto) {
-				curbto->CreatePhysicsPosConstraint();
-				srcbone->SetPosConstraint(1);
-			}
-		}
-		upperbone = parentbone;
-	}
-
-	return 0;
-}
-
-int CModel::DestroyPhysicsPosConstraintUpper(CBone* srcbone)
-{
-	if (!srcbone) {
-		return 0;
-	}
-
-	CBone* upperbone = srcbone;
-	while (upperbone) {
-		CBone* parentbone = upperbone->GetParent();
-		if (parentbone) {
-			CBtObject* curbto = parentbone->GetBtObject(srcbone);
-			if (curbto) {
-				curbto->DestroyPhysicsPosConstraint();
-				srcbone->SetPosConstraint(0);
-			}
-		}
-		upperbone = parentbone;
-	}
-
-
-	return 0;
-}
-
-int CModel::CreatePhysicsPosConstraintLower(CBone* srcbone)
-{
-	if (!srcbone) {
-		return 0;
-	}
-
-	int forceflag = 1;
-	CreatePhysicsPosConstraintReq(srcbone, forceflag);
-
-	return 0;
-}
-
-int CModel::DestroyPhysicsPosConstraintLower(CBone* srcbone)
-{
-	if (!srcbone) {
-		return 0;
-	}
-
-	int forceflag = 1;
-	DestroyPhysicsPosConstraintReq(srcbone, forceflag);
-
-
-	return 0;
-}
-
-
-//forceflag = 0
-void CModel::CreatePhysicsPosConstraintReq(CBone* srcbone, int forceflag)
-{
-	if (srcbone){
-		if ((forceflag == 1) || (srcbone->GetPosConstraint() == 1)){
-			CreatePhysicsPosConstraint(srcbone);
-		}
-
-		if (srcbone->GetChild()){
-			CreatePhysicsPosConstraintReq(srcbone->GetChild(), forceflag);
-		}
-		if (srcbone->GetBrother()){
-			CreatePhysicsPosConstraintReq(srcbone->GetBrother(), forceflag);
-		}
-	}
-}
-
-//forceflag = 0
-void CModel::DestroyPhysicsPosConstraintReq(CBone* srcbone, int forceflag)
-{
-	if (srcbone) {
-		if ((forceflag == 1) || (srcbone->GetPosConstraint() == 0)) {
-			DestroyPhysicsPosConstraint(srcbone);
-		}
-
-		if (srcbone->GetChild()) {
-			DestroyPhysicsPosConstraintReq(srcbone->GetChild(), forceflag);
-		}
-		if (srcbone->GetBrother()) {
-			DestroyPhysicsPosConstraintReq(srcbone->GetBrother(), forceflag);
-		}
-	}
-}
+//int CModel::CreatePhysicsPosConstraint(CBone* srcbone)
+//{
+//	if (!srcbone){
+//		return 0;
+//	}
+//
+//	CBone* parentbone = srcbone->GetParent();
+//	if (parentbone){
+//		CBtObject* curbto = parentbone->GetBtObject(srcbone);
+//		if (curbto){
+//			curbto->CreatePhysicsPosConstraint();
+//			srcbone->SetPosConstraint(1);
+//		}
+//	}
+//
+//	return 0;
+//}
+//
+//int CModel::DestroyPhysicsPosConstraint(CBone* srcbone)
+//{
+//	if (!srcbone){
+//		return 0;
+//	}
+//
+//	CBone* parentbone = srcbone->GetParent();
+//	if (parentbone){
+//		CBtObject* curbto = parentbone->GetBtObject(srcbone);
+//		if (curbto){
+//			curbto->DestroyPhysicsPosConstraint();
+//			srcbone->SetPosConstraint(0);
+//		}
+//	}
+//
+//	return 0;
+//}
+//int CModel::CreatePhysicsPosConstraintAll()
+//{
+//	if (!m_topbone) {
+//		return 0;
+//	}
+//
+//	int forceflag = 1;
+//	CreatePhysicsPosConstraintReq(m_topbone, forceflag);
+//
+//	return 0;
+//}
+//
+//int CModel::DestroyPhysicsPosConstraintAll()
+//{
+//	if (!m_topbone) {
+//		return 0;
+//	}
+//
+//	int forceflag = 1;
+//	DestroyPhysicsPosConstraintReq(m_topbone, forceflag);
+//
+//	return 0;
+//}
+//int CModel::CreatePhysicsPosConstraintUpper(CBone* srcbone)
+//{
+//	if (!srcbone) {
+//		return 0;
+//	}
+//
+//	CBone* upperbone = srcbone;
+//	while (upperbone) {
+//		CBone* parentbone = upperbone->GetParent();
+//		if (parentbone) {
+//			CBtObject* curbto = parentbone->GetBtObject(srcbone);
+//			if (curbto) {
+//				curbto->CreatePhysicsPosConstraint();
+//				srcbone->SetPosConstraint(1);
+//			}
+//		}
+//		upperbone = parentbone;
+//	}
+//
+//	return 0;
+//}
+//
+//int CModel::DestroyPhysicsPosConstraintUpper(CBone* srcbone)
+//{
+//	if (!srcbone) {
+//		return 0;
+//	}
+//
+//	CBone* upperbone = srcbone;
+//	while (upperbone) {
+//		CBone* parentbone = upperbone->GetParent();
+//		if (parentbone) {
+//			CBtObject* curbto = parentbone->GetBtObject(srcbone);
+//			if (curbto) {
+//				curbto->DestroyPhysicsPosConstraint();
+//				srcbone->SetPosConstraint(0);
+//			}
+//		}
+//		upperbone = parentbone;
+//	}
+//
+//
+//	return 0;
+//}
+//
+//int CModel::CreatePhysicsPosConstraintLower(CBone* srcbone)
+//{
+//	if (!srcbone) {
+//		return 0;
+//	}
+//
+//	int forceflag = 1;
+//	CreatePhysicsPosConstraintReq(srcbone, forceflag);
+//
+//	return 0;
+//}
+//
+//int CModel::DestroyPhysicsPosConstraintLower(CBone* srcbone)
+//{
+//	if (!srcbone) {
+//		return 0;
+//	}
+//
+//	int forceflag = 1;
+//	DestroyPhysicsPosConstraintReq(srcbone, forceflag);
+//
+//
+//	return 0;
+//}
+//
+//
+////forceflag = 0
+//void CModel::CreatePhysicsPosConstraintReq(CBone* srcbone, int forceflag)
+//{
+//	if (srcbone){
+//		if ((forceflag == 1) || (srcbone->GetPosConstraint() == 1)){
+//			CreatePhysicsPosConstraint(srcbone);
+//		}
+//
+//		if (srcbone->GetChild()){
+//			CreatePhysicsPosConstraintReq(srcbone->GetChild(), forceflag);
+//		}
+//		if (srcbone->GetBrother()){
+//			CreatePhysicsPosConstraintReq(srcbone->GetBrother(), forceflag);
+//		}
+//	}
+//}
+//
+////forceflag = 0
+//void CModel::DestroyPhysicsPosConstraintReq(CBone* srcbone, int forceflag)
+//{
+//	if (srcbone) {
+//		if ((forceflag == 1) || (srcbone->GetPosConstraint() == 0)) {
+//			DestroyPhysicsPosConstraint(srcbone);
+//		}
+//
+//		if (srcbone->GetChild()) {
+//			DestroyPhysicsPosConstraintReq(srcbone->GetChild(), forceflag);
+//		}
+//		if (srcbone->GetBrother()) {
+//			DestroyPhysicsPosConstraintReq(srcbone->GetBrother(), forceflag);
+//		}
+//	}
+//}
 
 int CModel::SetKinematicTmpLower(CBone* srcbone, bool srcflag)
 {
@@ -14533,125 +14533,125 @@ void CModel::SetKinematicTmpLowerReq(CBone* srcbone, bool srcflag)
 }
 
 
-int CModel::Mass0_All(bool setflag)
-{
-	if (!m_topbone) {
-		return 0;
-	}
-	if (setflag == true) {
-		bool forceflag = true;
-		SetMass0Req(m_topbone, forceflag);
-	}
-	else {
-		RestoreMassReq(m_topbone);
-	}
-	return 0;
-}
-int CModel::Mass0_Upper(bool setflag, CBone* srcbone)
-{
-	if (!srcbone) {
-		return 1;
-	}
-	bool forceflag = true;
-	CBone* setbone = srcbone;
-	while (setbone) {
-		if (setflag == true) {
-			SetMass0(setbone);
-		}
-		else {
-			RestoreMass(setbone);
-		}
-		setbone = setbone->GetParent();
-	}
-	return 0;
-}
-int CModel::Mass0_Lower(bool setflag, CBone* srcbone)
-{
-	if (!srcbone) {
-		return 1;
-	}
-	bool forceflag = true;
-	if (setflag == true) {
-		SetMass0Req(srcbone, forceflag);
-	}
-	else {
-		RestoreMassReq(srcbone);
-	}
-	return 0;
-}
-
-int CModel::SetMass0(CBone* srcbone)
-{
-	if (!srcbone){
-		return 0;
-	}
-
-	CBone* parentbone = srcbone->GetParent();
-	if (parentbone){
-		CBtObject* curbto = parentbone->GetBtObject(srcbone);
-		if (curbto){
-			btVector3 localInertia(0, 0, 0);
-			curbto->GetRigidBody()->setMassProps(0.0, localInertia);
-			srcbone->SetMass0(1);
-		}
-	}
-	return 0;
-}
-int CModel::RestoreMass(CBone* srcbone)
-{
-	if (!srcbone){
-		return 0;
-	}
-
-	CBone* parentbone = srcbone->GetParent();
-	if (parentbone){
-		btScalar setmass = 0.0;
-		CRigidElem* curre = parentbone->GetRigidElem(srcbone);
-		if (curre){
-			setmass = curre->GetMass();
-		}
-
-		CBtObject* curbto = parentbone->GetBtObject(srcbone);
-		if (curbto){
-			btVector3 localInertia(0, 0, 0);
-			curbto->GetRigidBody()->setMassProps(setmass, localInertia);
-			srcbone->SetMass0(0);
-		}
-	}
-	return 0;
-
-}
-
-void CModel::SetMass0Req(CBone* srcbone, bool forceflag)
-{
-	if (srcbone){
-		//強制設定or設定の復元
-		if ((forceflag == true) || (srcbone->GetMass0() == 1)){
-			SetMass0(srcbone);
-		}
-
-		if (srcbone->GetChild()){
-			SetMass0Req(srcbone->GetChild(), forceflag);
-		}
-		if (srcbone->GetBrother()){
-			SetMass0Req(srcbone->GetBrother(), forceflag);
-		}
-	}
-}
-
-void CModel::RestoreMassReq(CBone* srcbone)
-{
-	if (srcbone){
-		RestoreMass(srcbone);
-
-		if (srcbone->GetChild()){
-			RestoreMassReq(srcbone->GetChild());
-		}
-		if (srcbone->GetBrother()){
-			RestoreMassReq(srcbone->GetBrother());
-		}
-	}
-}
+//int CModel::Mass0_All(bool setflag)
+//{
+//	if (!m_topbone) {
+//		return 0;
+//	}
+//	if (setflag == true) {
+//		bool forceflag = true;
+//		SetMass0Req(m_topbone, forceflag);
+//	}
+//	else {
+//		RestoreMassReq(m_topbone);
+//	}
+//	return 0;
+//}
+//int CModel::Mass0_Upper(bool setflag, CBone* srcbone)
+//{
+//	if (!srcbone) {
+//		return 1;
+//	}
+//	bool forceflag = true;
+//	CBone* setbone = srcbone;
+//	while (setbone) {
+//		if (setflag == true) {
+//			SetMass0(setbone);
+//		}
+//		else {
+//			RestoreMass(setbone);
+//		}
+//		setbone = setbone->GetParent();
+//	}
+//	return 0;
+//}
+//int CModel::Mass0_Lower(bool setflag, CBone* srcbone)
+//{
+//	if (!srcbone) {
+//		return 1;
+//	}
+//	bool forceflag = true;
+//	if (setflag == true) {
+//		SetMass0Req(srcbone, forceflag);
+//	}
+//	else {
+//		RestoreMassReq(srcbone);
+//	}
+//	return 0;
+//}
+//
+//int CModel::SetMass0(CBone* srcbone)
+//{
+//	if (!srcbone){
+//		return 0;
+//	}
+//
+//	CBone* parentbone = srcbone->GetParent();
+//	if (parentbone){
+//		CBtObject* curbto = parentbone->GetBtObject(srcbone);
+//		if (curbto){
+//			btVector3 localInertia(0, 0, 0);
+//			curbto->GetRigidBody()->setMassProps(0.0, localInertia);
+//			srcbone->SetMass0(1);
+//		}
+//	}
+//	return 0;
+//}
+//int CModel::RestoreMass(CBone* srcbone)
+//{
+//	if (!srcbone){
+//		return 0;
+//	}
+//
+//	CBone* parentbone = srcbone->GetParent();
+//	if (parentbone){
+//		btScalar setmass = 0.0;
+//		CRigidElem* curre = parentbone->GetRigidElem(srcbone);
+//		if (curre){
+//			setmass = curre->GetMass();
+//		}
+//
+//		CBtObject* curbto = parentbone->GetBtObject(srcbone);
+//		if (curbto){
+//			btVector3 localInertia(0, 0, 0);
+//			curbto->GetRigidBody()->setMassProps(setmass, localInertia);
+//			srcbone->SetMass0(0);
+//		}
+//	}
+//	return 0;
+//
+//}
+//
+//void CModel::SetMass0Req(CBone* srcbone, bool forceflag)
+//{
+//	if (srcbone){
+//		//強制設定or設定の復元
+//		if ((forceflag == true) || (srcbone->GetMass0() == 1)){
+//			SetMass0(srcbone);
+//		}
+//
+//		if (srcbone->GetChild()){
+//			SetMass0Req(srcbone->GetChild(), forceflag);
+//		}
+//		if (srcbone->GetBrother()){
+//			SetMass0Req(srcbone->GetBrother(), forceflag);
+//		}
+//	}
+//}
+//
+//void CModel::RestoreMassReq(CBone* srcbone)
+//{
+//	if (srcbone){
+//		RestoreMass(srcbone);
+//
+//		if (srcbone->GetChild()){
+//			RestoreMassReq(srcbone->GetChild());
+//		}
+//		if (srcbone->GetBrother()){
+//			RestoreMassReq(srcbone->GetBrother());
+//		}
+//	}
+//}
 
 
 int CModel::ApplyBtToMotion(bool limitdegflag)

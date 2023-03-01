@@ -84,7 +84,8 @@ int CRigFile::WriteRigFile( WCHAR* strpath, CModel* srcmodel )
 	}
 
 	CallF( Write2File( "<?xml version=\"1.0\" encoding=\"Shift_JIS\"?>\r\n<RIGFILE>\r\n" ), return 1 );  
-	CallF( Write2File( "    <FileInfo>1001-01</FileInfo>\r\n" ), return 1 );
+	//CallF( Write2File( "    <FileInfo>1001-01</FileInfo>\r\n" ), return 1 );
+	CallF(Write2File("    <FileInfo>1001-02</FileInfo>\r\n"), return 1);//2023/03/01 disporder[0,2]-->[0,15]
 
 	WriteRigReq( m_model->GetTopBone() );
 

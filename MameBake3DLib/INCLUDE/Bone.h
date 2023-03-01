@@ -1135,26 +1135,26 @@ public: //accesser
 		m_firstcalcrigid = srcflag;
 	};
 
-	void SetPosConstraint(int srcval){
-		m_posconstraint = srcval;
-	};
-	int GetPosConstraint(){
-		return m_posconstraint;
-	};
+	//êîäwåvéZÇÃIKTargetFlagÇ…ïœçX
+	//void SetPosConstraint(int srcval){
+	//	m_posconstraint = srcval;
+	//};
+	//int GetPosConstraint(){
+	//	return m_posconstraint;
+	//};
+	//void SetMass0(int srcval){
+	//	m_mass0 = srcval;
+	//};
+	//int GetMass0(){
+	//	return m_mass0;
+	//};
 
-	void SetMass0(int srcval){
-		m_mass0 = srcval;
-	};
-	int GetMass0(){
-		return m_mass0;
-	};
-
-	void SetExcludeMv(int srcval){
-		m_excludemv = srcval;
-	};
-	int GetExcludeMv(){
-		return m_excludemv;
-	};
+	//void SetExcludeMv(int srcval){
+	//	m_excludemv = srcval;
+	//};
+	//int GetExcludeMv(){
+	//	return m_excludemv;
+	//};
 	void SetCurMotID(int srcmotid);
 	int GetCurMotID()
 	{
@@ -1334,9 +1334,9 @@ private:
 	int m_allocheadflag;//1: head pointer at allocated
 
 
-	int m_posconstraint;
-	int m_mass0;
-	int m_excludemv;
+	//int m_posconstraint;
+	//int m_mass0;
+	//int m_excludemv;
 	bool m_firstcalcrigid;
 	int m_type;
 	int m_selectflag;

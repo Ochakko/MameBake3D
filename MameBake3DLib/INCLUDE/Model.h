@@ -694,7 +694,7 @@ public:
 
 	int Motion2Bt(bool limitdegflag, int firstflag, double nextframe, 
 		ChaMatrix* mW, ChaMatrix* mVP, int selectboneno);
-	int SetRagdollKinFlag(int selectbone, int physicsmvkind = 0);
+	//int SetRagdollKinFlag(int selectbone, int physicsmvkind = 0);
 	int SetKinematicFlag();
 	int CreateRigidElem();
 	int SetCurrentRigidElem( int curindex );
@@ -915,7 +915,7 @@ private:
 	//void SetBtKinFlagReq(CBtObject* srcbto, int oncreateflag);
 	void Motion2BtReq( CBtObject* srcbto );
 	//void SetBtGravityReq( CBtObject* srcbto );
-	void SetRagdollKinFlagReq( CBtObject* srcbto, int selectbone, int physicsmvkind = 0 );
+	//void SetRagdollKinFlagReq( CBtObject* srcbto, int selectbone, int physicsmvkind = 0 );
 	//void CreateBtConnectReq( CBone* curbone );
 	void SetColiIDReq( CBone* srcbone, CRigidElem* srcre );
 	void EnableAllRigidElemReq(CBone* srcbone, int srcrgdindex);
@@ -951,7 +951,7 @@ private:
 	void SetKinematicTmpLowerReq(CBone* srcbone, bool srcflag);
 
 	//void PhysicsMVReq(CBone* srcbone, ChaVector3 diffvec);
-	int WithConstraint(CBone* srcbone);
+	//int WithConstraint(CBone* srcbone);
 	void BulletSimulationStopReq(CBtObject* srcbto);
 	void BulletSimulationStartReq(CBtObject* srcbto);
 	void ApplyBtToMotionReq(bool limitdegflag, CBone* srcbone);
