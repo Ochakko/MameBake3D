@@ -6312,9 +6312,13 @@ void CModel::BulletSimulationStartReq(CBtObject* srcbto)
 
 	if (srcbto->GetRigidBody()){
 		srcbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
+
+		//srcbto->GetRigidBody()->setDeactivationTime(0.0);
+		////srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
+
+		srcbto->GetRigidBody()->setDeactivationTime(0.0f);
+		srcbto->GetRigidBody()->setSleepingThresholds(0.0f, 0.0f);
 		srcbto->GetRigidBody()->activate();
-		srcbto->GetRigidBody()->setDeactivationTime(0.0);
-		//srcbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
 	}
 
 	int chilno;
@@ -8910,11 +8914,17 @@ void CModel::ResetBtReq( CBtObject* curbto )
 			curbto->GetRigidBody()->setCenterOfMassTransform( myMotionState->m_graphicsWorldTrans );
 			curbto->GetRigidBody()->setInterpolationWorldTransform( myMotionState->m_startWorldTrans );
 			curbto->GetRigidBody()->forceActivationState(ACTIVE_TAG);
-			curbto->GetRigidBody()->activate();
-			curbto->GetRigidBody()->setDeactivationTime(0.0);
-			//curbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
+			
+			//curbto->GetRigidBody()->activate();
+			//curbto->GetRigidBody()->setDeactivationTime(0.0);
 
+			//curbto->GetRigidBody()->setDeactivationTime(0.016 / 4.0);
 			//colObj->setActivationState(WANTS_DEACTIVATION);
+
+
+			curbto->GetRigidBody()->setDeactivationTime(0.0f);
+			curbto->GetRigidBody()->setSleepingThresholds(0.0f, 0.0f);
+			curbto->GetRigidBody()->activate();
 		}
 		if (curbto->GetRigidBody() && !curbto->GetRigidBody()->isStaticObject())
 		{

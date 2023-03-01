@@ -906,11 +906,13 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 * 
 * 物理修正
 *	遅いPCで動かすために　詳細度をカットしていた条件文修正
-*	(cs.rank - 1) >= 2 をエラーにしていたのを　(cs.rank - 1) > 3　をエラーにするように修正(最大詳細度まで計算するように)
-*	MotionSpeedを0.1にして　Model_boxingサンプルを実行すると　パンチが素通りしていたが　修正により当たるようになった
-* 　Model_boxingサンプルにおいては　(こちらの環境では)
-*		fpsコンボボックスで　fpsを60にして　MotionSpeedを3にしたときが　一番うまく動く
-*		fpsを100などに指定した場合には　erpスライダー値を小さくして　位置補正率を下げることにより　ダイナミックな動きが保たれる
+*		(cs.rank - 1) >= 2 をエラーにしていたのを　(cs.rank - 1) > 3　をエラーにするように修正(最大詳細度まで計算するように)
+*		MotionSpeedを0.1にして　Model_boxingサンプルを実行すると　パンチが素通りしていたが　修正により当たるようになった
+*
+*	表示が速い環境において　当たり判定が当たらなかったり制限角度が効かない不具合修正
+*		剛体がスリープ状態になっていたのが原因
+*		スリープまでの時間指定と　スリープ速度の閾値指定により解決
+*
 * 
 * 
 */
@@ -22692,9 +22694,8 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 
 	//安定のために　シミュ開始時の姿勢で　キネマティックしている回数
-	int initterm;
-	initterm = max(10, (int)(s_avrgfps * 0.1));
-
+	int INITTERM;
+	INITTERM = max(10, (int)(s_avrgfps * 0.1));
 
 	bool recstopflag = false;
 	vector<MODELELEM>::iterator itrmodel;
@@ -22703,7 +22704,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel) {
 
-			if (curmodel->GetBtCnt() <= initterm) {
+			if (curmodel->GetBtCnt() <= INITTERM) {
 				curmodel->SetKinematicFlag();
 				//!!curmodel->SetBtEquilibriumPoint();
 			}
@@ -22738,7 +22739,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 				s_owpLTimeline->setCurrentTime(*pnextframe, false);
 				s_owpEulerGraph->setCurrentTime(*pnextframe, false, true);
 #endif
-				firstmodelflag = 0;
+				firstmodelflag = false;
 			}
 			//if (endflag == 1) {
 				//g_previewFlag = 0;
