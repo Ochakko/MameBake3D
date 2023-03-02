@@ -9,7 +9,7 @@ public:
 	float x,y,z;
 
 	// constructor
-	inline RDBPoint() { }
+	inline RDBPoint() { x = 0.0f; y = 0.0f; z = 0.0f; }
 	inline RDBPoint(float nx, float ny, float nz) {x=nx; y=ny; z=nz;}
 
 	// operator

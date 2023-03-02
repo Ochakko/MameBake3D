@@ -84,8 +84,18 @@ int CRigFile::WriteRigFile( WCHAR* strpath, CModel* srcmodel )
 	}
 
 	CallF( Write2File( "<?xml version=\"1.0\" encoding=\"Shift_JIS\"?>\r\n<RIGFILE>\r\n" ), return 1 );  
+	
 	//CallF( Write2File( "    <FileInfo>1001-01</FileInfo>\r\n" ), return 1 );
-	CallF(Write2File("    <FileInfo>1001-02</FileInfo>\r\n"), return 1);//2023/03/01 disporder[0,2]-->[0,15]
+	
+	//2023/03/01
+	//disporder[0,2]-->[0,15]
+	//CallF(Write2File("    <FileInfo>1001-02</FileInfo>\r\n"), return 1);
+
+	//2023/03/02
+	//disporder[0,15]-->[0,RIGPOSINDEXMAX]
+	//shapemultêVãKÅ@[0, RIGMULTINDEXMAX]
+	CallF(Write2File("    <FileInfo>1001-03</FileInfo>\r\n"), return 1);
+
 
 	WriteRigReq( m_model->GetTopBone() );
 
@@ -174,6 +184,9 @@ int CRigFile::WriteRig(CBone* srcbone)
 	CallF(Write2File("    <DispOrder>%d</DispOrder>\r\n", m_customrig.disporder), return 1);
 
 	CallF(Write2File("    <DispPosInverse>%d</DispPosInverse>\r\n", (int)(m_customrig.posinverse)), return 1);
+
+	CallF(Write2File("    <ShapeMult>%d</ShapeMult>\r\n", m_customrig.shapemult), return 1);
+
 
 	int elemno;
 	for (elemno = 0; elemno < m_customrig.elemnum; elemno++){
@@ -347,7 +360,8 @@ int CRigFile::ReadBone(XMLIOBUF* xmliobuf)
 
 	int disporder;
 	int resultdisporder = Read_Int(xmliobuf, "<DispOrder>", "</DispOrder>", &disporder);
-	if (resultdisporder == 0) {
+	if ((resultdisporder == 0) && 
+		(disporder >= 0) && (disporder <= RIGPOSINDEXMAX)) {
 		m_customrig.disporder = disporder;
 	}
 	else {
@@ -363,6 +377,16 @@ int CRigFile::ReadBone(XMLIOBUF* xmliobuf)
 		m_customrig.posinverse = false;
 	}
 
+	//FileInfo 1001-03Ç≈Å@êVãK
+	int shapemult;
+	int resultshapemult = Read_Int(xmliobuf, "<ShapeMult>", "</ShapeMult>", &shapemult);
+	if ((resultshapemult == 0) && 
+		(shapemult >= 0) && (shapemult <= RIGMULTINDEXMAX)) {
+		m_customrig.shapemult = shapemult;
+	}
+	else {
+		m_customrig.shapemult = 0;
+	}
 
 	m_customrig.useflag = 2;
 

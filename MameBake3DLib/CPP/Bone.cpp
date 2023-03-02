@@ -72,8 +72,12 @@ static std::vector<CBone*> s_bonepool;//allocate BONEPOOLBLKLEN motoinpoints at 
 
 void InitCustomRig(CUSTOMRIG* dstcr, CBone* parentbone, int rigno)
 {
-	ZeroMemory(dstcr, sizeof(CUSTOMRIG));
-
+	//ZeroMemory(dstcr, sizeof(CUSTOMRIG));
+	if (!dstcr) {
+		_ASSERT(0);
+		return;
+	}
+	dstcr->Init();
 
 	dstcr->rigboneno = -1;
 	int rigelemno;
@@ -167,9 +171,15 @@ int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone)
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
 		return 0;
 	}
-	if ((srccr.disporder < 0) || (srccr.disporder > 15)) {
+	if ((srccr.disporder < 0) || (srccr.disporder > RIGPOSINDEXMAX)) {
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"エラー。disporder : %d", srccr.disporder);
+		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		return 0;
+	}
+	if ((srccr.shapemult < 0) || (srccr.shapemult > RIGMULTINDEXMAX)) {
+		WCHAR strerr[256];
+		swprintf_s(strerr, 256, L"エラー。shapemult : %d", srccr.shapemult);
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
 		return 0;
 	}
@@ -221,6 +231,7 @@ int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem)
 			::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
 			return 0;
 		}
+
 		int uvno;
 		for (uvno = 0; uvno < 2; uvno++) {
 			RIGTRANS currigtrans = srcrigelem.transuv[uvno];

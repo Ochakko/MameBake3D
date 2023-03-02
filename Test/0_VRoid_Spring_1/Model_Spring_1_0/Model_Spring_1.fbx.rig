@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="Shift_JIS"?>
 <RIGFILE>
-    <FileInfo>1001-01</FileInfo>
+    <FileInfo>1001-03</FileInfo>
   <Bone>
     <RigName>L_Hand_Close</RigName>
     <OwnerBone>J_Bip_L_Hand_Joint</OwnerBone>
     <RigNumber>1</RigNumber>
     <ElemNum>5</ElemNum>
-    <DispAxis>0</DispAxis>
+    <DispAxis>1</DispAxis>
     <DispOrder>0</DispOrder>
-    <DispPosInverse>0</DispPosInverse>
+    <DispPosInverse>1</DispPosInverse>
+    <ShapeMult>4</ShapeMult>
     <RigElem>
     <RigRigName>J_Bip_L_Thumb3_Joint</RigRigName>
     <RigRigNo>0</RigRigNo>
@@ -71,8 +72,9 @@
     <RigNumber>0</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>0</DispOrder>
+    <DispOrder>20</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>1</ShapeMult>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -113,8 +115,9 @@
     <RigNumber>0</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>0</DispOrder>
+    <DispOrder>20</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>1</ShapeMult>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -155,8 +158,9 @@
     <RigNumber>0</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>0</DispOrder>
+    <DispOrder>20</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>1</ShapeMult>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -197,8 +201,9 @@
     <RigNumber>0</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>0</DispOrder>
+    <DispOrder>20</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>1</ShapeMult>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -239,8 +244,9 @@
     <RigNumber>0</RigNumber>
     <ElemNum>2</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>0</DispOrder>
+    <DispOrder>20</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>2</ShapeMult>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -269,9 +275,10 @@
     <OwnerBone>J_Bip_R_Hand_Joint</OwnerBone>
     <RigNumber>0</RigNumber>
     <ElemNum>5</ElemNum>
-    <DispAxis>0</DispAxis>
+    <DispAxis>1</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>4</ShapeMult>
     <RigElem>
     <RigRigName>J_Bip_R_Thumb3_Joint</RigRigName>
     <RigRigNo>0</RigRigNo>
@@ -334,8 +341,9 @@
     <RigNumber>0</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>0</DispOrder>
-    <DispPosInverse>0</DispPosInverse>
+    <DispOrder>20</DispOrder>
+    <DispPosInverse>1</DispPosInverse>
+    <ShapeMult>1</ShapeMult>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -376,8 +384,9 @@
     <RigNumber>0</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>0</DispOrder>
-    <DispPosInverse>0</DispPosInverse>
+    <DispOrder>20</DispOrder>
+    <DispPosInverse>1</DispPosInverse>
+    <ShapeMult>1</ShapeMult>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -418,8 +427,9 @@
     <RigNumber>0</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>0</DispOrder>
-    <DispPosInverse>0</DispPosInverse>
+    <DispOrder>20</DispOrder>
+    <DispPosInverse>1</DispPosInverse>
+    <ShapeMult>1</ShapeMult>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -460,8 +470,9 @@
     <RigNumber>0</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>0</DispOrder>
-    <DispPosInverse>0</DispPosInverse>
+    <DispOrder>20</DispOrder>
+    <DispPosInverse>1</DispPosInverse>
+    <ShapeMult>1</ShapeMult>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -502,8 +513,9 @@
     <RigNumber>0</RigNumber>
     <ElemNum>2</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>0</DispOrder>
-    <DispPosInverse>0</DispPosInverse>
+    <DispOrder>20</DispOrder>
+    <DispPosInverse>1</DispPosInverse>
+    <ShapeMult>2</ShapeMult>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>

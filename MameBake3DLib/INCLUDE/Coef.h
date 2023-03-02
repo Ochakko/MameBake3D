@@ -36,6 +36,8 @@ class CMQOMaterial;
 //配列長が256　名前は255文字まで
 #define JOINTNAMELENG	256	
 
+#define RIGPOSINDEXMAX	30
+#define RIGMULTINDEXMAX	6	
 
 
 // * 100だとOpenFile()関数のスタックサイズが大きすぎて警告が出るので * 32に変更
@@ -253,6 +255,19 @@ typedef struct tag_anglelimmit
 
 	bool applyeul[AXIS_MAX];
 	float chkeul[AXIS_MAX];
+
+	void Init() {
+		ZeroMemory(limitoff, sizeof(int) * AXIS_MAX);
+		ZeroMemory(via180flag, sizeof(int) * AXIS_MAX);
+		boneaxiskind = BONEAXIS_CURRENT;
+		int axisno;
+		for (axisno = 0; axisno < AXIS_MAX; axisno++) {
+			lower[axisno] = -180;
+			upper[axisno] = 180;
+			applyeul[axisno] = false;
+			chkeul[axisno] = 0.0f;
+		}
+	}
 }ANGLELIMIT;
 
 typedef struct tag_rigtrans
@@ -260,6 +275,12 @@ typedef struct tag_rigtrans
 	int axiskind;
 	float applyrate;// from -100.0f to 100.0f
 	int enable;//enable 1, disable 0
+
+	void Init() {
+		axiskind = 0;
+		applyrate = 0.0f;
+		enable = 0;
+	};
 }RIGTRANS;
 
 typedef struct tag_rigelem
@@ -268,6 +289,12 @@ typedef struct tag_rigelem
 	int rigrigno;
 	int boneno;
 	RIGTRANS transuv[2];
+
+	void Init() {
+		rigrigboneno = -1;
+		rigrigno = -1;
+		boneno = -1;
+	};
 }RIGELEM;
 
 typedef struct tag_customrig
@@ -281,6 +308,23 @@ typedef struct tag_customrig
 	int dispaxis;//操作用オブジェクト表示場所（軸） ver1.0.0.19から
 	int disporder;//操作用オブジェクト表示場所（番目） ver1.0.0.19から
 	bool posinverse;//操作用オブジェクト位置マイナス位置フラグ　ver1.0.0.19から
+	int shapemult;//操作用オブジェクト形状表示倍率インデックス　ver1.2.0.14 RC2から
+
+	void Init() {
+		useflag = 0;
+		rigno = -1;
+		rigboneno = -1;
+		elemnum = 0;
+		ZeroMemory(rigname, sizeof(WCHAR) * 256);
+		int elemno;
+		for (elemno = 0; elemno < MAXRIGELEMNUM; elemno++) {
+			rigelem[elemno].Init();
+		}
+		dispaxis = 0;
+		disporder = 0;
+		posinverse = false;
+		shapemult = 0;
+	};
 }CUSTOMRIG;
 
 typedef struct tag_hinfo
@@ -288,12 +332,23 @@ typedef struct tag_hinfo
 	float minh;
 	float maxh;
 	float height;
+
+	void Init() {
+		minh = FLT_MAX;//有効値で置き換わるようにMAX
+		maxh = FLT_MIN;//有効値で置き換わるようにMIN
+		height = 0.0f;
+	};
 }HINFO;
 
 typedef struct tag_reinfo
 {
 	char filename[MAX_PATH];
 	float btgscale;
+
+	void Init() {
+		ZeroMemory(filename, sizeof(char) * MAX_PATH);
+		btgscale = 1.0f;
+	};
 }REINFO;
 
 typedef struct tag_boneinfluence
@@ -302,6 +357,13 @@ typedef struct tag_boneinfluence
     DWORD numInfluences;
     DWORD *vertices;
     FLOAT *weights;
+
+	void Init() {
+		Bone = 0;
+		numInfluences = 0;
+		vertices = 0;
+		weights = 0;
+	};
 }BONEINFLUENCE;
 
 
@@ -309,6 +371,11 @@ typedef struct tag_tlelem
 {
 	int menuindex;
 	int motionid;
+
+	void Init() {
+		menuindex = 0;
+		motionid = 0;
+	};
 }TLELEM;
 
 typedef struct tag_modelelem
@@ -318,6 +385,14 @@ typedef struct tag_modelelem
 	int motmenuindex;
 	std::map<int, int> lineno2boneno;
 	std::map<int, int> boneno2lineno;
+
+	void Init() {
+		modelptr = 0;
+		tlarray.clear();
+		motmenuindex = 0;
+		lineno2boneno.clear();
+		boneno2lineno.clear();
+	};
 }MODELELEM;
 
 
@@ -327,6 +402,13 @@ typedef struct tag_xmliobuf
 	int bufleng;
 	int pos;
 	int isend;
+
+	void Init() {
+		buf = 0;
+		bufleng = 0;
+		pos = 0;
+		isend = 0;
+	};
 }XMLIOBUF;
 
 enum {
@@ -394,6 +476,17 @@ typedef struct tag_motinfo
 	double curframe;
 	double speed;
 	int loopflag;
+
+	void Init() {
+		ZeroMemory(motname, sizeof(char) * 256);
+		ZeroMemory(wfilename, sizeof(WCHAR) * MAX_PATH);
+		ZeroMemory(engmotname, sizeof(char) * 256);
+		motid = 0;
+		frameleng = 0.0;
+		curframe = 0.0;
+		speed = 1.0;
+		loopflag = 0;
+	};
 }MOTINFO;
 
 
@@ -408,6 +501,15 @@ typedef struct tag_infelem
 	float orginf;//CALCMODE_*で計算した値。
 	float dispinf;//　orginf[] * userrate[]、normalizeflagが１のときは、正規化する。
 	int isadditive;//影響度の正規化無し。
+
+	void Init() {
+		boneno = 0;
+		kind = 0;
+		userrate = 0.0f;
+		orginf = 0.0f;
+		dispinf = 0.0f;
+		isadditive = 0;
+	};
 }INFELEM;
 
 
@@ -416,6 +518,12 @@ typedef struct rgbdat
 	unsigned char b;
 	unsigned char g;
 	unsigned char r;
+
+	void Init() {
+		b = 0;
+		g = 0;
+		r = 0;
+	};
 } RGBDAT;
 
 typedef struct rgb3f
@@ -423,6 +531,12 @@ typedef struct rgb3f
 	float r;
 	float g;
 	float b;
+
+	void Init() {
+		r = 0.0f;
+		g = 0.0f;
+		b = 0.0f;
+	};
 } RGB3F;
 
 typedef struct tag_argbfdat
@@ -431,6 +545,13 @@ typedef struct tag_argbfdat
 	float r;
 	float g;
 	float b;
+
+	void Init() {
+		a = 1.0f;
+		r = 0.0f;
+		g = 0.0f;
+		b = 0.0f;
+	};
 } ARGBF;
 
 // material mode
@@ -444,12 +565,25 @@ typedef struct tag_infdata
 {
 	int m_infnum;
 	INFELEM m_infelem[INFNUMMAX];
+
+	void Init() {
+		m_infnum = 0;
+		int infno;
+		for (infno = 0; infno < INFNUMMAX; infno++) {
+			m_infelem[infno].Init();
+		}
+	};
 } INFDATA;
 
 typedef struct tag_chkalpha
 {
 	int alphanum;
 	int notalphanum;
+
+	void Init() {
+		alphanum = 0;
+		notalphanum = 0;
+	};
 } CHKALPHA;
 
 
@@ -460,6 +594,14 @@ typedef struct tag_mqobuf
 	DWORD bufleng;
 	DWORD pos;
 	int isend;
+
+	void Init() {
+		hfile = INVALID_HANDLE_VALUE;
+		buf = 0;
+		bufleng = 0;
+		pos = 0;
+		isend = 0;
+	};
 } MQOBUF;
 
 
@@ -480,18 +622,35 @@ typedef struct tag_materialblock
 	int startface;
 	int endface;
 	CMQOMaterial* mqomat;
+
+	void Init() {
+		materialno = 0;
+		startface = 0;
+		endface = 0;
+		mqomat = 0;
+	};
 } MATERIALBLOCK;
 
 typedef struct tag_dirtymat
 {
 	int materialno;
 	int* dirtyflag;
+
+	void Init() {
+		materialno = 0;
+		dirtyflag = 0;
+	}
 } DIRTYMAT;
 
 typedef struct tag_vcoldata
 {
 	int vertno;
 	__int64 vcol;
+
+	void Init() {
+		vertno = 0;
+		vcol = (__int64)0;
+	}
 } VCOLDATA;
 
 enum {
@@ -509,6 +668,13 @@ typedef struct tag_infelemheader
 	int normalizeflag;
 	int symaxis;
 	float symdist;
+
+	void Init() {
+		infnum = 0;
+		normalizeflag = 0;
+		symaxis = 0;
+		symdist = 0.0f;
+	};
 }INFELEMHEADER;
 
 enum {
@@ -551,12 +717,23 @@ enum {
 typedef struct tag_tvertex {
 	float pos[4]; 
 	float tex[2];
+
+	void Init() {
+		ZeroMemory(pos, sizeof(float) * 4);
+		ZeroMemory(tex, sizeof(float) * 2);
+	};
 } TVERTEX;
 
 typedef struct tag_tlvertex {
 	float pos[4];
 	float diffuse[4];
 	float tex[2];
+
+	void Init() {
+		ZeroMemory(pos, sizeof(float) * 4);
+		ZeroMemory(diffuse, sizeof(float) * 4);
+		ZeroMemory(tex, sizeof(float) * 2);
+	};
 } TLVERTEX;
 
 
@@ -565,6 +742,11 @@ typedef struct tag_pm3inf
 {
 	float weight[4];
 	int boneindex[4];
+
+	void Init() {
+		ZeroMemory(weight, sizeof(float) * 4);
+		ZeroMemory(boneindex, sizeof(int) * 4);
+	};
 }PM3INF;
 
 typedef struct tag_brushstate
@@ -615,6 +797,12 @@ typedef struct tag_errormes {
 	int errorcode;
 	DWORD type;
 	char* mesptr;
+
+	void Init() {
+		errorcode = 0;
+		type = 0;
+		mesptr = 0;
+	}
 } ERRORMES;
 
 //interpolation

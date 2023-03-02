@@ -902,7 +902,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 
 /*
 * 2023/03/01
-* EditMot 1.2.0.14 RC1
+* EditMot 1.2.0.14 RC2
 * 
 * 物理修正
 *	遅いPCで動かすために　詳細度をカットしていた条件文修正
@@ -916,12 +916,22 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 * Rigの設定ダイアログの表示位置の種類増加
 *	0から2までの表示位置を 0から15までに変更
 * 
+* Rigの表示倍率指定用コンボボックス追加
+*	ジョイント右クリックで　作成済のリグ名-->Settingメニューで右ペインに設定ウインドウ-->表示倍率(番号)
+*	０から６の番号をしてい　1.2.0.13と比較して　大体　１倍から３倍の大きさで表示
+* 
+* 
 * 剛体設定ダイアログ修正
 *	ダイアログの下から２番目のSetRigidGroupIDForConflict(当たり判定グループ指定)のボタン修正
 *		同じグループの剛体全部に設定　を選んだ場合に　自分のグループと衝突判定する設定項目も対象に　
 * 
 * 姿勢初期化ボタン修正
 *	ToolWindowの姿勢初期化でdeeperを選んだ場合に　選択ジョイントと同じデプスのジョイントは対象にしないように
+* 
+* 
+* サンプルモデル更新
+*	Rig設定、制限角度設定更新
+*		Test/0_VRoid_Spring_1
 * 
 * 
 */
@@ -1550,7 +1560,7 @@ static ChaVector4 s_ringgreenmat;
 static ChaVector4 s_matyellowmat;
 static ChaVector4 s_ringyellowmat;
 
-static CMQOMaterial* s_matrig = 0;
+static CMQOMaterial* s_rigmaterial[RIGMULTINDEXMAX + 1];
 static ChaVector4 s_matrigmat;
 
 
@@ -1726,7 +1736,7 @@ static CModel* s_bmark = NULL;
 //static CModel* s_coldisp[ COL_MAX ];
 static CModel* s_ground = NULL;
 static CModel* s_gplane = NULL;
-static CModel* s_rigmark = NULL;
+static CModel* s_rigopemark[RIGMULTINDEXMAX + 1];
 
 //static CModel* s_dummytri = NULL;
 static CMySprite* s_bcircle = 0;
@@ -3637,6 +3647,10 @@ void InitApp()
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
+	ZeroMemory(s_rigopemark, sizeof(CModel*) * (RIGMULTINDEXMAX + 1));
+	ZeroMemory(s_rigmaterial, sizeof(CMQOMaterial*) * (RIGMULTINDEXMAX + 1));
+	s_matrigmat = ChaVector4(255.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f, 1.0f);
+
 	g_lightflag = 1;
 
 	g_btcalccnt = 2.0;
@@ -4602,15 +4616,25 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	CallF(s_select_posture->MakeDispObj(), return S_FALSE);
 
 
-	s_rigmark = new CModel();
-	if (!s_rigmark) {
-		_ASSERT(0);
-		return S_FALSE;
+	int rigopemarkno;
+	for (rigopemarkno = 0; rigopemarkno <= RIGMULTINDEXMAX; rigopemarkno++) {
+		s_rigopemark[rigopemarkno] = new CModel();
+		if (s_rigopemark[rigopemarkno]) {
+			float rigmult = 0.30f * (float)(rigopemarkno + 1) * 0.5f;
+			CallF(s_rigopemark[rigopemarkno]->LoadMQO(s_pdev, pd3dImmediateContext, 
+				L"..\\Media\\MameMedia\\rigmark.mqo", 0, rigmult , 0), return S_FALSE);
+			CallF(s_rigopemark[rigopemarkno]->MakeDispObj(), return S_FALSE);
+			s_rigmaterial[rigopemarkno] = s_rigopemark[rigopemarkno]->GetMQOMaterialByName("mat1");
+			if (!s_rigmaterial[rigopemarkno]) {
+				_ASSERT(0);
+				return S_FALSE;
+			}
+		}
+		else {
+			_ASSERT(0);
+			return S_FALSE;
+		}
 	}
-	CallF(s_rigmark->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\rigmark.mqo", 0, 0.30f, 0), return S_FALSE);
-	CallF(s_rigmark->MakeDispObj(), return S_FALSE);
-	s_matrig = s_rigmark->GetMQOMaterialByName("mat1");
-	_ASSERT(s_matrig);
 	s_matrigmat = ChaVector4(255.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f, 1.0f);
 
 
@@ -5630,10 +5654,16 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_select_posture;
 		s_select_posture = 0;
 	}
-	if (s_rigmark) {
-		delete s_rigmark;
-		s_rigmark = 0;
+
+	int rigopemarkno;
+	for (rigopemarkno = 0; rigopemarkno <= RIGMULTINDEXMAX; rigopemarkno++) {
+		CModel* delmodel = s_rigopemark[rigopemarkno];
+		if (delmodel) {
+			delete delmodel;
+		}
+		s_rigopemark[rigopemarkno] = 0;
 	}
+
 	if (s_ground) {
 		delete s_ground;
 		s_ground = 0;
@@ -13583,37 +13613,42 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 					CUSTOMRIG currig = curbone->GetCustomRig(rigno);
 					if (currig.useflag == 2) {//0: free, 1: allocated, 2: valid
 					//if (currig.rigboneno > 0) {
-						ChaVector3 curbonepos = curbone->GetWorldPos(g_limitdegflag, curmotid, curframe);
-						
-						//pos transform
-						ChaMatrix rigmat;
-						ChaMatrixIdentity(&rigmat);
-						rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder, currig.posinverse);
-						g_hmWorld->SetMatrix((float*)&(rigmat.data[MATI_11]));
+						int rigopemarkno = currig.shapemult;
+						if ((rigopemarkno >= 0) && (rigopemarkno <= RIGMULTINDEXMAX) && 
+							s_rigopemark[rigopemarkno] && s_rigmaterial[rigopemarkno]) {
+							ChaVector3 curbonepos = curbone->GetWorldPos(g_limitdegflag, curmotid, curframe);
 
-						//material
-						if (currig.dispaxis == 0) {
-							s_matrigmat = ChaVector4(1.0f, 0.5f, 0.5f, 0.79f);
+							//pos transform
+							ChaMatrix rigmat;
+							ChaMatrixIdentity(&rigmat);
+							rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder, currig.posinverse);
+							g_hmWorld->SetMatrix((float*)&(rigmat.data[MATI_11]));
+
+							//material
+							if (currig.dispaxis == 0) {
+								s_matrigmat = ChaVector4(1.0f, 0.5f, 0.5f, 0.79f);
+							}
+							else if (currig.dispaxis == 1) {
+								s_matrigmat = ChaVector4(0.0f, 1.0f, 0.0f, 0.79f);
+							}
+							else if (currig.dispaxis == 2) {
+								s_matrigmat = ChaVector4(15.0f / 255.0f, 200.0f / 255.0f, 1.0f, 0.79f);
+							}
+							s_rigmaterial[rigopemarkno]->SetDif4F(s_matrigmat);
+
+
+
+							s_rigopemark[rigopemarkno]->UpdateMatrix(g_limitdegflag, &rigmat, &s_matVP);
+							//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+							int lightflag = 0;
+							//ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
+							ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
+							s_rigopemark[rigopemarkno]->OnRender(pd3dImmediateContext, lightflag, diffusemult);
+							//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+
 						}
-						else if (currig.dispaxis == 1) {
-							s_matrigmat = ChaVector4(0.0f, 1.0f, 0.0f, 0.79f);
-						}
-						else if (currig.dispaxis == 2) {
-							s_matrigmat = ChaVector4(15.0f / 255.0f, 200.0f / 255.0f, 1.0f, 0.79f);
-						}
-						s_matrig->SetDif4F(s_matrigmat);
-
-
-
-						s_rigmark->UpdateMatrix(g_limitdegflag, &rigmat, &s_matVP);
-						//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
-						pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
-						int lightflag = 0;
-						//ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
-						ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
-						s_rigmark->OnRender(pd3dImmediateContext, lightflag, diffusemult);
-						//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
-						pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 					}
 				}
 			}
@@ -28881,18 +28916,12 @@ int CustomRig2Dlg(HWND hDlgWnd)
 		WCHAR strcombodo[256] = { 0L };
 		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_RESETCONTENT, 0, 0);
 		int orderno;
-		for (orderno = 0; orderno < 16; orderno++) {
+		for (orderno = 0; orderno <= RIGPOSINDEXMAX; orderno++) {
 			swprintf_s(strcombodo, 256, L"%d", orderno);
 			SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_ADDSTRING, 0, (LPARAM)strcombodo);
 
 		}
-		//wcscpy_s(strcombodo, 256, L"0");
-		//SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_ADDSTRING, 0, (LPARAM)strcombodo);
-		//wcscpy_s(strcombodo, 256, L"1");
-		//SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_ADDSTRING, 0, (LPARAM)strcombodo);
-		//wcscpy_s(strcombodo, 256, L"2");
-		//SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_ADDSTRING, 0, (LPARAM)strcombodo);
-		if ((s_customrig.disporder >= 0) && (s_customrig.disporder <= 15)) {
+		if ((s_customrig.disporder >= 0) && (s_customrig.disporder <= RIGPOSINDEXMAX)) {
 			SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_SETCURSEL, s_customrig.disporder, 0);
 		}
 		else {
@@ -28907,6 +28936,25 @@ int CustomRig2Dlg(HWND hDlgWnd)
 		else {
 			CheckDlgButton(hDlgWnd, IDC_CHKINV, BST_UNCHECKED);
 		}
+
+
+		//shapemult
+		WCHAR strcombomult[256] = { 0L };
+		SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_RIGMULT), CB_RESETCONTENT, 0, 0);
+		int shapemultno;
+		for (shapemultno = 0; shapemultno <= RIGMULTINDEXMAX; shapemultno++) {
+			swprintf_s(strcombomult, 256, L"%d", shapemultno);
+			SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_RIGMULT), CB_ADDSTRING, 0, (LPARAM)strcombomult);
+
+		}
+		if ((s_customrig.shapemult >= 0) && (s_customrig.shapemult <= RIGMULTINDEXMAX)) {
+			SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_RIGMULT), CB_SETCURSEL, s_customrig.shapemult, 0);
+		}
+		else {
+			s_customrig.shapemult = 0;
+			SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_RIGMULT), CB_SETCURSEL, s_customrig.shapemult, 0);
+		}
+
 
 
 		WCHAR strcombo[256];
@@ -29155,7 +29203,7 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				}
 
 				int combonodo = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_DISPORDER), CB_GETCURSEL, 0, 0);
-				if ((combonodo >= 0) && (combonodo <= 15)) {
+				if ((combonodo >= 0) && (combonodo <= RIGPOSINDEXMAX)) {
 					s_customrig.disporder = combonodo;
 				}
 				else {
@@ -29168,6 +29216,15 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				else {
 					s_customrig.posinverse = false;
 				}
+
+				int combonomult = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_COMBO_RIGMULT), CB_GETCURSEL, 0, 0);
+				if ((combonomult >= 0) && (combonomult <= RIGMULTINDEXMAX)) {
+					s_customrig.shapemult = combonomult;
+				}
+				else {
+					s_customrig.shapemult = 0;
+				}
+
 
 				int axisuid[5] = { IDC_AXIS_U1, IDC_AXIS_U2, IDC_AXIS_U3, IDC_AXIS_U4, IDC_AXIS_U5 };
 				int axisvid[5] = { IDC_AXIS_V1, IDC_AXIS_V2, IDC_AXIS_V3, IDC_AXIS_V4, IDC_AXIS_V5 };
@@ -29292,9 +29349,17 @@ int BoneRClick(int srcboneno)
 
 		s_pickinfo.pickobjno = -1;
 
-		CallF(s_model->PickBone(&s_pickinfo), return 1);
-		if (s_pickinfo.pickobjno >= 0) {
-			s_curboneno = s_pickinfo.pickobjno;
+		if (s_oprigflag == 0) {
+			CallF(s_model->PickBone(&s_pickinfo), return 1);
+			if (s_pickinfo.pickobjno >= 0) {
+				s_curboneno = s_pickinfo.pickobjno;
+			}
+		}
+		else {
+			int pickrigboneno = PickRigBone(&s_pickinfo);
+			if (pickrigboneno >= 0) {
+				s_curboneno = s_pickinfo.pickobjno;
+			}
 		}
 	}
 
@@ -40023,23 +40088,22 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 		return retmat;
 	}
 
-	int multworld = 1;
-	ChaMatrix selm;
-	selm.SetIdentity();
+	//int multworld = 1;
+	//ChaMatrix selm;
+	//selm.SetIdentity();
 	//int multworld = 1;
 	//ChaMatrix selm = curbone->CalcManipulatorMatrix(0, 0, multworld, curmotid, curframe);
 	//ChaMatrix selm = curbone->CalcManipulatorMatrix(0, multworld, curmotid, curframe);
-	if (curbone && curbone->GetParent()) {
-		curbone->GetParent()->CalcAxisMatX_Manipulator(g_limitdegflag, 0, curbone, &selm, 0);
-		//curbone->GetParent()->CalcAxisMatX_RigidBody(0, curbone, &selm, 0);
-	}
-	else {
-		selm.SetIdentity();
-	}
-	selm.data[MATI_41] = 0.0f;
-	selm.data[MATI_42] = 0.0f;
-	selm.data[MATI_43] = 0.0f;
-
+	//if (curbone && curbone->GetParent()) {
+	//	curbone->GetParent()->CalcAxisMatX_Manipulator(g_limitdegflag, 0, curbone, &selm, 0);
+	//	//curbone->GetParent()->CalcAxisMatX_RigidBody(0, curbone, &selm, 0);
+	//}
+	//else {
+	//	selm.SetIdentity();
+	//}
+	//selm.data[MATI_41] = 0.0f;
+	//selm.data[MATI_42] = 0.0f;
+	//selm.data[MATI_43] = 0.0f;
 
 	CalcSelectScale(curbone);//s_selectscaleにセット
 
@@ -40059,40 +40123,46 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 
 
 	float rigorderoffset = 0.0f;
-	//if (disporder == 0) {
-	//	//rigorderoffset = 0.05f * multoffset;
-	//	rigorderoffset = 0.0f;
-	//}
-	//else if (disporder == 1) {
-	//	//rigorderoffset = 0.35f * multoffset;
-	//	rigorderoffset = 0.25f * multoffset;
-	//}
-	//else if (disporder == 2) {
-	//	//rigorderoffset = 0.65f * multoffset;
-	//	rigorderoffset = 0.50f * multoffset;
-	//}
 	rigorderoffset = (float)disporder * 0.25f * multoffset;
 	if (posinverse) {
 		rigorderoffset *= -1.0f;
 	}
 
 
-	ChaVector3 offsetorgpos = ChaVector3(0.0f, 0.0f, 0.0f);
-	ChaVector3 offsetdisppos = ChaVector3(0.0f, 0.0f, 0.0f);
+	//ChaVector3 offsetorgpos = ChaVector3(0.0f, 0.0f, 0.0f);
+	//ChaVector3 offsetdisppos = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	ChaMatrix curwm = curbone->GetWorldMat(g_limitdegflag, curmotid, curframe, 0);
+	ChaMatrix curbonerotmat;
+	curbonerotmat = ChaMatrixRot(curwm);
+	ChaVector3 offsetvec;
 
 	if (dispaxis == 0) {
-		offsetorgpos = ChaVector3(rigorderoffset, 0.0f, 0.0f);
+		offsetvec.x = curbonerotmat.data[MATI_11];
+		offsetvec.y = curbonerotmat.data[MATI_12];
+		offsetvec.z = curbonerotmat.data[MATI_13];
 	}
 	else if (dispaxis == 1) {
-		offsetorgpos = ChaVector3(0.0f, rigorderoffset, 0.0f);
+		offsetvec.x = curbonerotmat.data[MATI_21];
+		offsetvec.y = curbonerotmat.data[MATI_22];
+		offsetvec.z = curbonerotmat.data[MATI_23];
 	}
 	else if (dispaxis == 2) {
-		offsetorgpos = ChaVector3(0.0f, 0.0f, rigorderoffset);
+		offsetvec.x = curbonerotmat.data[MATI_31];
+		offsetvec.y = curbonerotmat.data[MATI_32];
+		offsetvec.z = curbonerotmat.data[MATI_33];
 	}
-	ChaVector3TransformCoord(&offsetdisppos, &offsetorgpos, &selm);
+	else {
+		_ASSERT(0);
+		offsetvec = ChaVector3(1.0f, 0.0f, 0.0f);
+	}
+	offsetvec *= rigorderoffset;
+	//ChaVector3TransformCoord(&offsetdisppos, &offsetorgpos, &selm);
+
 	ChaMatrix tramat;
 	ChaMatrixIdentity(&tramat);
-	ChaMatrixTranslation(&tramat, curbonepos.x + offsetdisppos.x, curbonepos.y + offsetdisppos.y, curbonepos.z + offsetdisppos.z);
+	ChaMatrixTranslation(&tramat, 
+		curbonepos.x + offsetvec.x, curbonepos.y + offsetvec.y, curbonepos.z + offsetvec.z);
 
 	retmat = scalemat * tramat;
 
@@ -40105,6 +40175,10 @@ int PickRigBone(UIPICKINFO* ppickinfo)
 		return -1;
 	}
 
+	if (g_previewFlag != 0) {
+		//プレビュー中はマウスでは選択しない
+		return -1;
+	}
 
 
 	MOTINFO* curmi = s_model->GetCurMotInfo();
@@ -40122,58 +40196,61 @@ int PickRigBone(UIPICKINFO* ppickinfo)
 					if (currig.useflag == 2) {//0: free, 1: allocated, 2: valid
 						//s_matrig->SetDif4F(s_matrigmat);
 
-						ChaMatrix rigmat;
-						ChaMatrixIdentity(&rigmat);
-						rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder, currig.posinverse);
+						int rigopemarkno = currig.shapemult;
+						if ((rigopemarkno >= 0) && (rigopemarkno <= RIGMULTINDEXMAX) &&
+							s_rigopemark[rigopemarkno] && s_rigmaterial[rigopemarkno]) {
+
+							ChaMatrix rigmat;
+							ChaMatrixIdentity(&rigmat);
+							rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder, currig.posinverse);
+
+							g_hmWorld->SetMatrix((float*)&(rigmat.data[MATI_11]));
+							s_rigopemark[rigopemarkno]->UpdateMatrix(g_limitdegflag, &rigmat, &s_matVP);
 
 
-						g_hmWorld->SetMatrix((float*)&(rigmat.data[MATI_11]));
-						s_rigmark->UpdateMatrix(g_limitdegflag, &rigmat, &s_matVP);
+							int chkboneno = curbone->GetBoneNo();
+
+							UIPICKINFO chkpickinfo;
+							chkpickinfo = *ppickinfo;
+
+							chkpickinfo.buttonflag = PICK_CENTER;
+							chkpickinfo.pickobjno = chkboneno;
+
+							int colliobj;
+							colliobj = s_rigopemark[rigopemarkno]->CollisionNoBoneObj_Mouse(&chkpickinfo, "obj1");
+							if (colliobj) {
+								RollbackCurBoneNo();
+
+								*ppickinfo = chkpickinfo;
+
+								s_curboneno = chkboneno;
 
 
-						int chkboneno = curbone->GetBoneNo();
-
-						UIPICKINFO chkpickinfo;
-						chkpickinfo = *ppickinfo;
-
-						chkpickinfo.buttonflag = PICK_CENTER;
-						chkpickinfo.pickobjno = chkboneno;
-
-						int colliobj;
-						colliobj = s_rigmark->CollisionNoBoneObj_Mouse(&chkpickinfo, "obj1");
-						if (colliobj) {
-							RollbackCurBoneNo();
-
-							*ppickinfo = chkpickinfo;
-
-							s_curboneno = chkboneno;
-
-
-							CBone* chkbone = s_model->GetBoneByID(s_curboneno);
-							if (chkbone != s_customrigbone) {
-								//開いている設定ダイアログを閉じないと、設定ダイアログのrigboneと新たなrigboneが異なってしまい、Applyボタンで異なるリグを保存することがある
-								if (s_customrigdlg) {
-									DestroyWindow(s_customrigdlg);
-									s_customrigdlg = 0;
+								CBone* chkbone = s_model->GetBoneByID(s_curboneno);
+								if (chkbone != s_customrigbone) {
+									//開いている設定ダイアログを閉じないと、設定ダイアログのrigboneと新たなrigboneが異なってしまい、Applyボタンで異なるリグを保存することがある
+									if (s_customrigdlg) {
+										DestroyWindow(s_customrigdlg);
+										s_customrigdlg = 0;
+									}
 								}
+
+								if (s_owpTimeline) {
+									s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+									//WindowPos currentpos = s_owpTimeline->getCurrentLinePos();
+									//POINT mousepos;
+									//mousepos.x = currentpos.x;
+									//mousepos.y = currentpos.y;
+									//::ClientToScreen(s_timelineWnd->getHWnd(), &mousepos);
+									//::SetCursorPos(mousepos.x, mousepos.y);
+								}
+								ChangeCurrentBone();//2021/11/19
+
+								Bone2CustomRig(rigno);
+
+								return chkboneno;//!!!!!!!!!!!!!!!!!!!!!!!!!!!! found !!!!!!!!!!!!!!!!!!
 							}
-
-							if (s_owpTimeline) {
-								s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
-								//WindowPos currentpos = s_owpTimeline->getCurrentLinePos();
-								//POINT mousepos;
-								//mousepos.x = currentpos.x;
-								//mousepos.y = currentpos.y;
-								//::ClientToScreen(s_timelineWnd->getHWnd(), &mousepos);
-								//::SetCursorPos(mousepos.x, mousepos.y);
-							}
-							ChangeCurrentBone();//2021/11/19
-
-							Bone2CustomRig(rigno);
-
-							return chkboneno;//!!!!!!!!!!!!!!!!!!!!!!!!!!!! found !!!!!!!!!!!!!!!!!!
 						}
-
 					}
 				}
 			}

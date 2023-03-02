@@ -49,6 +49,12 @@ typedef struct tag_vec3f
 	float x;
 	float y;
 	float z;
+
+	void Init() {
+		x = 0.0f;
+		y = 0.0f;
+		z = 0.0f;
+	};
 } VEC3F;
 
 
@@ -57,6 +63,12 @@ typedef struct tag_dvec3
 	double x;
 	double y;
 	double z;
+
+	void Init() {
+		x = 0.0;
+		y = 0.0;
+		z = 0.0;
+	};
 } DVEC3;
 
 
@@ -125,6 +137,13 @@ typedef struct tag_tpos
 	float fleft;
 	float fbottom;
 	float fright;
+
+	void Init() {
+		ftop = 0.0f;
+		fleft = 0.0f;
+		fbottom = 0.0f;
+		fright = 0.0f;
+	};
 }TPOS;
 
 enum {
@@ -147,6 +166,13 @@ typedef struct tag_tselem
 	char jointname[256];
 	int jointno;
 	int twistflag;
+
+	void Init() {
+		skelno = 0;
+		ZeroMemory(jointname, sizeof(char) * 256);
+		jointno = 0;
+		twistflag = 0;
+	};
 }TSELEM;
 
 
@@ -163,6 +189,13 @@ typedef struct tag_color4uc
 	unsigned char r;
 	unsigned char g;
 	unsigned char b;
+
+	void Init() {
+		a = 255;
+		r = 0;
+		g = 0;
+		b = 0;
+	};
 } COLOR4UC;
 
 typedef struct tag_color3uc
@@ -170,6 +203,12 @@ typedef struct tag_color3uc
 	unsigned char r;
 	unsigned char g;
 	unsigned char b;
+
+	void Init() {
+		r = 0;
+		g = 0;
+		b = 0;
+	};
 } COLOR3UC;
 
 
@@ -179,6 +218,13 @@ typedef struct tag_color4f
 	float g;
 	float b;
 	float a;
+
+	void Init() {
+		r = 0.0f;
+		g = 0.0f;
+		b = 0.0f;
+		a = 1.0f;
+	};
 } COLOR4F;
 
 typedef struct RDBColor3f
@@ -187,6 +233,12 @@ public:
 	float r;
 	float g;
 	float b;
+
+	void Init() {
+		r = 0.0f;
+		g = 0.0f;
+		b = 0.0f;
+	};
 } RDBColor3f;
 
 enum tag_calcmode
