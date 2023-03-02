@@ -91,11 +91,15 @@ int CRigFile::WriteRigFile( WCHAR* strpath, CModel* srcmodel )
 	//disporder[0,2]-->[0,15]
 	//CallF(Write2File("    <FileInfo>1001-02</FileInfo>\r\n"), return 1);
 
-	//2023/03/02
+	//2023/03/02 1.2.0.14 RC2
 	//disporder[0,15]-->[0,RIGPOSINDEXMAX]
 	//shapemult新規　[0, RIGMULTINDEXMAX]
-	CallF(Write2File("    <FileInfo>1001-03</FileInfo>\r\n"), return 1);
+	//CallF(Write2File("    <FileInfo>1001-03</FileInfo>\r\n"), return 1);
 
+	//2023/03/02 1.2.0.14 RC3
+	//shapekind新規　[RIGSHAPE_SPHERE(0), RIGSHAPE_RING(1)]
+	//rigcolor新規　[RIGCOLOR_RED(0), RIGCOLOR_BLUE(2)]
+	CallF(Write2File("    <FileInfo>1001-04</FileInfo>\r\n"), return 1);
 
 	WriteRigReq( m_model->GetTopBone() );
 
@@ -187,6 +191,9 @@ int CRigFile::WriteRig(CBone* srcbone)
 
 	CallF(Write2File("    <ShapeMult>%d</ShapeMult>\r\n", m_customrig.shapemult), return 1);
 
+	CallF(Write2File("    <ShapeKind>%d</ShapeKind>\r\n", m_customrig.shapekind), return 1);
+
+	CallF(Write2File("    <RigColor>%d</RigColor>\r\n", m_customrig.rigcolor), return 1);
 
 	int elemno;
 	for (elemno = 0; elemno < m_customrig.elemnum; elemno++){
@@ -386,6 +393,24 @@ int CRigFile::ReadBone(XMLIOBUF* xmliobuf)
 	}
 	else {
 		m_customrig.shapemult = 0;
+	}
+
+	int shapekind;
+	int resultshapekind = Read_Int(xmliobuf, "<ShapeKind>", "</ShapeKind>", &shapekind);
+	if (resultshapekind == 0) {
+		m_customrig.shapekind = shapekind;
+	}
+	else {
+		m_customrig.shapekind = 0;
+	}
+
+	int rigcolor;
+	int resultrigcolor = Read_Int(xmliobuf, "<RigColor>", "</RigColor>", &rigcolor);
+	if (resultrigcolor == 0) {
+		m_customrig.rigcolor = rigcolor;
+	}
+	else {
+		m_customrig.rigcolor = 0;
 	}
 
 	m_customrig.useflag = 2;

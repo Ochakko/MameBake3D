@@ -18,7 +18,10 @@
 
 #include <ChaVecCalc.h>
 
-int ChkRay( int allowrev, int i1, int i2, int i3, ChaVector3* pointbuf, ChaVector3 startpos, ChaVector3 dir, float justval, int* justptr )
+int ChkRay( int allowrev, int i1, int i2, int i3, 
+	ChaVector3* pointbuf, ChaVector3 startpos, ChaVector3 dir, 
+	float justval, int* justptr,
+	ChaMatrix* ptransmat)//default:ptransmat=0
 {
 	ChaVector3 v1;
 	v1 = startpos;
@@ -29,15 +32,32 @@ int ChkRay( int allowrev, int i1, int i2, int i3, ChaVector3* pointbuf, ChaVecto
 	ChaVector3 e;
 	ChaVector3Normalize( &e, &v );
 
+	ChaVector3 point1, point2, point3;
+	if (!ptransmat) {
+		point1 = *(pointbuf + i1);
+		point2 = *(pointbuf + i2);
+		point3 = *(pointbuf + i3);
+	}
+	else {
+		ChaVector3 orgpoint1, orgpoint2, orgpoint3;
+		orgpoint1 = *(pointbuf + i1);
+		orgpoint2 = *(pointbuf + i2);
+		orgpoint3 = *(pointbuf + i3);
+
+		ChaVector3TransformCoord(&point1, &orgpoint1, ptransmat);
+		ChaVector3TransformCoord(&point2, &orgpoint2, ptransmat);
+		ChaVector3TransformCoord(&point3, &orgpoint3, ptransmat);
+	}
+
 	ChaVector3 s, t;
-	s = *( pointbuf + i2 ) - *( pointbuf + i1 );
-	t = *( pointbuf + i3 ) - *( pointbuf + i1 );
+	s = point2 - point1;
+	t = point3 - point1;
 	ChaVector3 abc;
 	ChaVector3Cross( &abc, (const ChaVector3*)&s, (const ChaVector3*)&t );
 	ChaVector3Normalize( &abc, &abc );
 
 	float d;
-	d = -ChaVector3Dot( &abc, (pointbuf + i1) );
+	d = -ChaVector3Dot( &abc, &point1 );
 
 	float dotface = ChaVector3Dot( &abc, &e );
 	if( dotface == 0.0f ){
@@ -64,18 +84,18 @@ int ChkRay( int allowrev, int i1, int i2, int i3, ChaVector3* pointbuf, ChaVecto
 
 	ChaVector3 g0, g1, cA, cB, cC;
 	
-	g1 = *(pointbuf + i2) - *(pointbuf + i1);
-	g0 = q - *(pointbuf + i1);
+	g1 = point2 - point1;
+	g0 = q - point1;
 	ChaVector3Cross( &cA, (const ChaVector3*)&g0, (const ChaVector3*)&g1 );
 	ChaVector3Normalize( &cA, &cA );
 
-	g1 = *(pointbuf + i3) - *(pointbuf + i2);
-	g0 = q - *(pointbuf + i2);
+	g1 = point3 - point2;
+	g0 = q - point2;
 	ChaVector3Cross( &cB, (const ChaVector3*)&g0, (const ChaVector3*)&g1 );
 	ChaVector3Normalize( &cB, &cB );
 
-	g1 = *(pointbuf + i1) - *(pointbuf + i3);
-	g0 = q - *(pointbuf + i3);
+	g1 = point1 - point3;
+	g0 = q - point3;
 	ChaVector3Cross( &cC, (const ChaVector3*)&g0, (const ChaVector3*)&g1 );
 	ChaVector3Normalize( &cC, &cC );
 

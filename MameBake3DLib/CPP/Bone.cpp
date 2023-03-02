@@ -171,15 +171,27 @@ int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone)
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
 		return 0;
 	}
-	if ((srccr.disporder < 0) || (srccr.disporder > RIGPOSINDEXMAX)) {
+	if ((srccr.disporder < 0) || (srccr.disporder > RIGPOSINDEXMAX)) {//INDEXMAXは有り
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"エラー。disporder : %d", srccr.disporder);
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
 		return 0;
 	}
-	if ((srccr.shapemult < 0) || (srccr.shapemult > RIGMULTINDEXMAX)) {
+	if ((srccr.shapemult < 0) || (srccr.shapemult > RIGMULTINDEXMAX)) {//INDEXMAXは有り
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"エラー。shapemult : %d", srccr.shapemult);
+		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		return 0;
+	}
+	if ((srccr.shapekind < 0) || (srccr.shapekind >= RIGSHAPE_MAX)) {//MAXは無し
+		WCHAR strerr[256];
+		swprintf_s(strerr, 256, L"エラー。shapekind : %d", srccr.shapekind);
+		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		return 0;
+	}
+	if ((srccr.rigcolor < 0) || (srccr.rigcolor >= RIGCOLOR_MAX)) {//MAXは無し
+		WCHAR strerr[256];
+		swprintf_s(strerr, 256, L"エラー。rigcolor : %d", srccr.rigcolor);
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
 		return 0;
 	}

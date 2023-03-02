@@ -544,7 +544,7 @@ public:
  * @param (char* objnameptr) IN 調べたいオブジェクトの名前を指定する。
  * @return ２D位置にオブジェクトがあれば１、無ければ０を返す。
  */
-	int CollisionNoBoneObj_Mouse( UIPICKINFO* pickinfo, const char* objnameptr );
+	int CollisionNoBoneObj_Mouse(UIPICKINFO* pickinfo, const char* objnameptr, ChaMatrix* ptransmat = 0);
 
 /**
  * @fn

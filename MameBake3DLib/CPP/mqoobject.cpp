@@ -1890,7 +1890,7 @@ int CMQOObject::GetFaceInMaterial( int matno, CMQOFace** ppface, int arrayleng, 
 	return 0;
 }
 
-int CMQOObject::CollisionLocal_Ray( ChaVector3 startlocal, ChaVector3 dirlocal )
+int CMQOObject::CollisionLocal_Ray(ChaVector3 startlocal, ChaVector3 dirlocal, ChaMatrix* ptransmat)//default:ptransmat=0
 {
 	int face_count;
 	int vert_count;

@@ -2946,7 +2946,7 @@ void CModel::SetSelectFlagReq( CBone* boneptr, int broflag )
 }
 
 
-int CModel::CollisionNoBoneObj_Mouse( UIPICKINFO* pickinfo, const char* objnameptr )
+int CModel::CollisionNoBoneObj_Mouse( UIPICKINFO* pickinfo, const char* objnameptr, ChaMatrix* ptransmat)//default:transmat = 0
 {
 	//当たったら１、当たらなかったら０を返す。エラーも０を返す。
 
@@ -2959,7 +2959,7 @@ int CModel::CollisionNoBoneObj_Mouse( UIPICKINFO* pickinfo, const char* objnamep
 	ChaVector3 startlocal, dirlocal;
 	CalcMouseLocalRay( pickinfo, &startlocal, &dirlocal );
 
-	int colli = curobj->CollisionLocal_Ray( startlocal, dirlocal );
+	int colli = curobj->CollisionLocal_Ray(startlocal, dirlocal, ptransmat);
 
 	return colli;
 }

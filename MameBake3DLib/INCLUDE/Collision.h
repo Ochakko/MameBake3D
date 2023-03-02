@@ -21,7 +21,10 @@
  * @param (int* justptr) IN 半直線の始点と面の距離がjustvalより小さい場合は正の整数がセットされる。
  * @return 交わる場合は１、そうでなければ０を返す。
  */
-	int ChkRay( int allowrev, int i1, int i2, int i3, ChaVector3* pointbuf, ChaVector3 startpos, ChaVector3 dir, float justval, int* justptr );
+	int ChkRay( int allowrev, int i1, int i2, int i3, 
+		ChaVector3* pointbuf, ChaVector3 startpos, ChaVector3 dir, 
+		float justval, int* justptr,
+		ChaMatrix* ptransmat = 0);
 
 /**
  * @fn
@@ -36,7 +39,10 @@
 	int CalcShadowToPlane( ChaVector3 srcpos, ChaVector3 planedir, ChaVector3 planepos, ChaVector3* shadowptr );
 
 #else
-	extern int ChkRay( int allowrev, int i1, int i2, int i3, ChaVector3* pointbuf, ChaVector3 startpos, ChaVector3 dir, float justval, int* justptr );
+	extern int ChkRay( int allowrev, int i1, int i2, int i3, 
+		ChaVector3* pointbuf, ChaVector3 startpos, ChaVector3 dir, 
+		float justval, int* justptr,
+		ChaMatrix* ptransmat = 0);
 	extern int CalcShadowToPlane( ChaVector3 srcpos, ChaVector3 planedir, ChaVector3 planepos, ChaVector3* shadowptr );
 #endif
 

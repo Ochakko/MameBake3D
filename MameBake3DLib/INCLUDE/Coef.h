@@ -297,6 +297,21 @@ typedef struct tag_rigelem
 	};
 }RIGELEM;
 
+enum {
+	RIGSHAPE_SPHERE,
+	RIGSHAPE_RINGX,
+	RIGSHAPE_RINGY,
+	RIGSHAPE_RINGZ,
+	RIGSHAPE_MAX
+};
+
+enum {
+	RIGCOLOR_RED,
+	RIGCOLOR_GREEN,
+	RIGCOLOR_BLUE,
+	RIGCOLOR_MAX
+};
+
 typedef struct tag_customrig
 {
 	int useflag;//0 : free, 1 : rental, 2 : valid and in use
@@ -309,6 +324,8 @@ typedef struct tag_customrig
 	int disporder;//操作用オブジェクト表示場所（番目） ver1.0.0.19から
 	bool posinverse;//操作用オブジェクト位置マイナス位置フラグ　ver1.0.0.19から
 	int shapemult;//操作用オブジェクト形状表示倍率インデックス　ver1.2.0.14 RC2から
+	int shapekind;//RIGSHAPE_SPHERE, RIGSHAPE_RINGX, RIGSHAPE_RINGY, RIGSHAPE_RINGZ　ver1.2.0.14 RC3から
+	int rigcolor;//RIGCOLOR_RED, RIGCOLOR_GREEN, RIGCOLOR_BLUE　ver1.2.0.14 RC3から
 
 	void Init() {
 		useflag = 0;
@@ -324,6 +341,8 @@ typedef struct tag_customrig
 		disporder = 0;
 		posinverse = false;
 		shapemult = 0;
+		shapekind = RIGSHAPE_SPHERE;
+		rigcolor = RIGCOLOR_RED;
 	};
 }CUSTOMRIG;
 
