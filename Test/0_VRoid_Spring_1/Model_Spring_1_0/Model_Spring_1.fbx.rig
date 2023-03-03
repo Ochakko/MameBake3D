@@ -1188,11 +1188,11 @@
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
       <BoneName>J_Bip_R_UpperLeg_Joint</BoneName>
-      <AxisU>X</AxisU>
-      <RateU>1.000000</RateU>
+      <AxisU>Y</AxisU>
+      <RateU>-1.000000</RateU>
       <EnableU>1</EnableU>
-      <AxisV>X</AxisV>
-      <RateV>1.000000</RateV>
+      <AxisV>Y</AxisV>
+      <RateV>-1.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
   </Bone>
@@ -1257,10 +1257,10 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>J_Bip_R_Foot_Joint</BoneName>
       <AxisU>Z</AxisU>
-      <RateU>1.000000</RateU>
+      <RateU>0.000000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Z</AxisV>
-      <RateV>1.000000</RateV>
+      <RateV>0.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>
@@ -1268,10 +1268,10 @@
     <RigRigNo>-1</RigRigNo>
       <BoneName>J_Bip_R_LowerLeg_Joint</BoneName>
       <AxisU>Z</AxisU>
-      <RateU>1.000000</RateU>
+      <RateU>0.000000</RateU>
       <EnableU>1</EnableU>
       <AxisV>Z</AxisV>
-      <RateV>1.000000</RateV>
+      <RateV>0.000000</RateV>
       <EnableV>1</EnableV>
     </RigElem>
     <RigElem>

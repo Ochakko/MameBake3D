@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Shift_JIS"?>
 <Lmt>
     <FileInfo>1001-03</FileInfo>
-    <FileComment>CommentForEGP_20230303090812</FileComment>
+    <FileComment>CommentForEGP_20230303215543</FileComment>
   <Bone>
     <Name>Root_Joint</Name>
     <BoneAxisType>Current</BoneAxisType>
@@ -905,7 +905,7 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-2</Lower_X>
+      <Lower_X>-3</Lower_X>
       <Upper_X>2</Upper_X>
       <Lower_Y>-2</Lower_Y>
       <Upper_Y>2</Upper_Y>
@@ -918,7 +918,7 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-2</Lower_X>
+      <Lower_X>-3</Lower_X>
       <Upper_X>2</Upper_X>
       <Lower_Y>-2</Lower_Y>
       <Upper_Y>2</Upper_Y>
@@ -972,7 +972,7 @@
       <Via180_Z>0</Via180_Z>
       <Lower_X>-4</Lower_X>
       <Upper_X>2</Upper_X>
-      <Lower_Y>-4</Lower_Y>
+      <Lower_Y>-8</Lower_Y>
       <Upper_Y>2</Upper_Y>
       <Lower_Z>-68</Lower_Z>
       <Upper_Z>2</Upper_Z>
@@ -1009,11 +1009,11 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-3</Lower_X>
-      <Upper_X>3</Upper_X>
-      <Lower_Y>-7</Lower_Y>
-      <Upper_Y>5</Upper_Y>
-      <Lower_Z>-68</Lower_Z>
+      <Lower_X>-8</Lower_X>
+      <Upper_X>7</Upper_X>
+      <Lower_Y>-23</Lower_Y>
+      <Upper_Y>14</Upper_Y>
+      <Lower_Z>-72</Lower_Z>
       <Upper_Z>2</Upper_Z>
   </Bone>
   <Bone>
@@ -1048,11 +1048,11 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-4</Lower_X>
-      <Upper_X>2</Upper_X>
-      <Lower_Y>-4</Lower_Y>
-      <Upper_Y>6</Upper_Y>
-      <Lower_Z>-68</Lower_Z>
+      <Lower_X>-5</Lower_X>
+      <Upper_X>3</Upper_X>
+      <Lower_Y>-12</Lower_Y>
+      <Upper_Y>12</Upper_Y>
+      <Lower_Z>-71</Lower_Z>
       <Upper_Z>2</Upper_Z>
   </Bone>
   <Bone>
@@ -1087,11 +1087,11 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-2</Lower_X>
-      <Upper_X>3</Upper_X>
-      <Lower_Y>-6</Lower_Y>
-      <Upper_Y>3</Upper_Y>
-      <Lower_Z>-68</Lower_Z>
+      <Lower_X>-4</Lower_X>
+      <Upper_X>5</Upper_X>
+      <Lower_Y>-14</Lower_Y>
+      <Upper_Y>6</Upper_Y>
+      <Lower_Z>-70</Lower_Z>
       <Upper_Z>2</Upper_Z>
   </Bone>
   <Bone>
@@ -1259,7 +1259,7 @@
       <Lower_X>-3</Lower_X>
       <Upper_X>2</Upper_X>
       <Lower_Y>-2</Lower_Y>
-      <Upper_Y>2</Upper_Y>
+      <Upper_Y>3</Upper_Y>
       <Lower_Z>-2</Lower_Z>
       <Upper_Z>80</Upper_Z>
   </Bone>
@@ -1269,10 +1269,10 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-4</Lower_X>
-      <Upper_X>2</Upper_X>
-      <Lower_Y>-2</Lower_Y>
-      <Upper_Y>3</Upper_Y>
+      <Lower_X>-6</Lower_X>
+      <Upper_X>3</Upper_X>
+      <Lower_Y>-3</Lower_Y>
+      <Upper_Y>5</Upper_Y>
       <Lower_Z>-2</Lower_Z>
       <Upper_Z>80</Upper_Z>
   </Bone>
@@ -1308,10 +1308,10 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-6</Lower_X>
-      <Upper_X>3</Upper_X>
-      <Lower_Y>-6</Lower_Y>
-      <Upper_Y>5</Upper_Y>
+      <Lower_X>-19</Lower_X>
+      <Upper_X>8</Upper_X>
+      <Lower_Y>-20</Lower_Y>
+      <Upper_Y>12</Upper_Y>
       <Lower_Z>-2</Lower_Z>
       <Upper_Z>80</Upper_Z>
   </Bone>
@@ -1347,10 +1347,10 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-2</Lower_X>
-      <Upper_X>6</Upper_X>
-      <Lower_Y>-5</Lower_Y>
-      <Upper_Y>9</Upper_Y>
+      <Lower_X>-3</Lower_X>
+      <Upper_X>12</Upper_X>
+      <Lower_Y>-12</Lower_Y>
+      <Upper_Y>11</Upper_Y>
       <Lower_Z>-2</Lower_Z>
       <Upper_Z>80</Upper_Z>
   </Bone>
@@ -1387,9 +1387,9 @@
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
       <Lower_X>-2</Lower_X>
-      <Upper_X>6</Upper_X>
-      <Lower_Y>-7</Lower_Y>
-      <Upper_Y>6</Upper_Y>
+      <Upper_X>18</Upper_X>
+      <Lower_Y>-21</Lower_Y>
+      <Upper_Y>17</Upper_Y>
       <Lower_Z>-2</Lower_Z>
       <Upper_Z>80</Upper_Z>
   </Bone>

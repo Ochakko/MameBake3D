@@ -8061,6 +8061,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		
 		if (s_model) {
 			s_model->ClearIKRotRec();
+			s_model->ClearIKRotRecUV();
 		}
 
 		//!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -8586,6 +8587,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 					0, &s_editrange, s_pickinfo.pickobjno,
 					1,
 					s_ikcustomrig, s_pickinfo.buttonflag);
+				tmpwm = s_model->GetWorldMat();
 				s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 				s_editmotionflag = s_curboneno;
 
@@ -8852,39 +8854,39 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 		}
 	}
 	break;
-	case IDC_PHYSICS_IK:
-		s_physicskind = 0;
-		s_savelimitdegflag = g_limitdegflag;
-		ChangeLimitDegFlag(false, true, true);
-		//g_limitdegflag = false;
-		//if (s_LimitDegCheckBox) {
-		//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
-		//}
-		StartBt(s_model, TRUE, 1, 1);
-		break;
-	case IDC_PHYSICS_MV_IK:
-		s_physicskind = 1;
-		s_savelimitdegflag = g_limitdegflag;
-		ChangeLimitDegFlag(false, true, true);
-		//g_limitdegflag = false;
-		//if (s_LimitDegCheckBox) {
-		//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
-		//}
-		StartBt(s_model, TRUE, 1, 1);
-		break;
-	case IDC_PHYSICS_MV_SLIDER:
-		RollbackCurBoneNo();
-		g_physicsmvrate = (float)(g_SampleUI.GetSlider(IDC_PHYSICS_MV_SLIDER)->GetValue()) * 0.01f;
-		swprintf_s(sz, 100, L"EditRate : %.3f", g_physicsmvrate);
-		g_SampleUI.GetStatic(IDC_STATIC_PHYSICS_MV_SLIDER)->SetText(sz);
-		break;
-		//case IDC_APPLY_BT:
-		//	if (s_model){
-		//		s_model->BulletSimulationStop();
-		//		g_previewFlag = 0;
-		//		s_model->ApplyBtToMotion();
-		//	}
-		//	break;
+	//case IDC_PHYSICS_IK:
+	//	s_physicskind = 0;
+	//	s_savelimitdegflag = g_limitdegflag;
+	//	ChangeLimitDegFlag(false, true, true);
+	//	//g_limitdegflag = false;
+	//	//if (s_LimitDegCheckBox) {
+	//	//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+	//	//}
+	//	StartBt(s_model, TRUE, 1, 1);
+	//	break;
+	//case IDC_PHYSICS_MV_IK:
+	//	s_physicskind = 1;
+	//	s_savelimitdegflag = g_limitdegflag;
+	//	ChangeLimitDegFlag(false, true, true);
+	//	//g_limitdegflag = false;
+	//	//if (s_LimitDegCheckBox) {
+	//	//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+	//	//}
+	//	StartBt(s_model, TRUE, 1, 1);
+	//	break;
+	//case IDC_PHYSICS_MV_SLIDER:
+	//	RollbackCurBoneNo();
+	//	g_physicsmvrate = (float)(g_SampleUI.GetSlider(IDC_PHYSICS_MV_SLIDER)->GetValue()) * 0.01f;
+	//	swprintf_s(sz, 100, L"EditRate : %.3f", g_physicsmvrate);
+	//	g_SampleUI.GetStatic(IDC_STATIC_PHYSICS_MV_SLIDER)->SetText(sz);
+	//	break;
+	//	//case IDC_APPLY_BT:
+	//	//	if (s_model){
+	//	//		s_model->BulletSimulationStop();
+	//	//		g_previewFlag = 0;
+	//	//		s_model->ApplyBtToMotion();
+	//	//	}
+	//	//	break;
 	case IDC_STOP_BT:
 	case IDC_PHYSICS_IK_STOP:
 		StopBt();
@@ -13650,7 +13652,7 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 			//s_selm_posture = curboneptr->CalcManipulatorPostureMatrix(calccapsuleflag, 0, multworld, 0);
 
 			if (curboneptr && curboneptr->GetParent()) {
-				curboneptr->GetParent()->CalcAxisMatX_Manipulator(g_limitdegflag, 0, curboneptr, &s_selm, 0);
+				curboneptr->GetParent()->CalcAxisMatX_Manipulator(g_limitdegflag, g_boneaxis, 0, curboneptr, &s_selm, 0);
 			}
 			else {
 				s_selm.SetIdentity();
@@ -17958,13 +17960,11 @@ int SaveProject()
 		return 0;
 	}
 
+	//###################################################################
+	//limitdegflagは　ダイアログで指定した　g_bakelimiteulonsave　を使う
+	//###################################################################
 
-	s_savelimitdegflag = g_limitdegflag;
-	ChangeLimitDegFlag(g_bakelimiteulonsave, true, true);
-	//g_limitdegflag = g_bakelimiteulonsave;
-	//if (s_LimitDegCheckBox) {
-	//	s_LimitDegCheckBox->SetChecked(g_bakelimiteulonsave);
-	//}
+	HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 
 	vector<MODELELEM>::iterator itrmodel;
@@ -17975,10 +17975,10 @@ int SaveProject()
 			s_owpEulerGraph->setCurrentTime(0.0, false);
 			curmodel->SetMotionFrame(0.0);
 			ChaMatrix tmpwm = curmodel->GetWorldMat();
-			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
+			curmodel->UpdateMatrix(g_bakelimiteulonsave, &tmpwm, &s_matVP);
 
 			//ここでAxisMatXの初期化
-			curmodel->CreateBtObject(g_limitdegflag, 1);
+			curmodel->CreateBtObject(g_bakelimiteulonsave, 1);
 			curmodel->CalcBtAxismat(2);//2
 			curmodel->SetInitAxisMatX(1);
 		}
@@ -17993,11 +17993,9 @@ int SaveProject()
 		s_modelindex, (float)g_dspeed);
 	if (result) {
 		::MessageBox(s_mainhwnd, L"保存に失敗しました。", L"Error", MB_OK);
-		ChangeLimitDegFlag(s_savelimitdegflag, true, true);
-		//g_limitdegflag = s_savelimitdegflag;
-		//if (s_LimitDegCheckBox) {
-		//	s_LimitDegCheckBox->SetChecked(s_savelimitdegflag);
-		//}
+		if (oldcursor) {
+			SetCursor(oldcursor);
+		}
 		return 1;
 	}
 
@@ -18033,11 +18031,10 @@ int SaveProject()
 		}
 	}
 
-	ChangeLimitDegFlag(s_savelimitdegflag, true, true);
-	//g_limitdegflag = s_savelimitdegflag;
-	//if (s_LimitDegCheckBox) {
-	//	s_LimitDegCheckBox->SetChecked(s_savelimitdegflag);
-	//}
+
+	if (oldcursor) {
+		SetCursor(oldcursor);
+	}
 
 
 	return 0;
@@ -40368,8 +40365,11 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 	//ChaMatrix selm = curbone->CalcManipulatorMatrix(0, 0, multworld, curmotid, curframe);
 	//ChaMatrix selm = curbone->CalcManipulatorMatrix(0, multworld, curmotid, curframe);
 	if (curbone && curbone->GetParent()) {
-		curbone->GetParent()->CalcAxisMatX_Manipulator(g_limitdegflag, 0, curbone, &selm, 0);
-		//curbone->GetParent()->CalcAxisMatX_RigidBody(0, curbone, &selm, 0);
+
+		//!!!!!! 軸の種類を変えた場合にも　リグの設定が保たれるように　BONEAXIS_CURRENTで統一
+		//BONEAXIS_BINDPOSEはXフィットしないので　BONEAXIS_CURRENTを選んだ
+		curbone->GetParent()->CalcAxisMatX_Manipulator(g_limitdegflag, BONEAXIS_CURRENT, 0, curbone, &selm, 0);
+
 	}
 	else {
 		//selm.SetIdentity();

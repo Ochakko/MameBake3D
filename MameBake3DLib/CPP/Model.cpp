@@ -9337,6 +9337,10 @@ void CModel::ClearIKRotRec()
 {
 	ClearIKRotRecReq(GetTopBone());
 }
+void CModel::ClearIKRotRecUV()
+{
+	ClearIKRotRecUVReq(GetTopBone());
+}
 
 void CModel::ClearIKRotRecReq(CBone* srcbone)
 {
@@ -9349,6 +9353,20 @@ void CModel::ClearIKRotRecReq(CBone* srcbone)
 		}
 		if (srcbone->GetBrother()) {
 			ClearIKRotRecReq(srcbone->GetBrother());
+		}
+	}
+}
+void CModel::ClearIKRotRecUVReq(CBone* srcbone)
+{
+	if (srcbone) {
+
+		srcbone->ClearIKRotRecUV();
+
+		if (srcbone->GetChild()) {
+			ClearIKRotRecUVReq(srcbone->GetChild());
+		}
+		if (srcbone->GetBrother()) {
+			ClearIKRotRecUVReq(srcbone->GetBrother());
 		}
 	}
 }
@@ -11480,7 +11498,7 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 							//int multworld = 1;//!!!!!!!!!!!!!!!!!!!!!!!!!!
 							//selectmat = curbone->CalcManipulatorMatrix(0, multworld, m_curmotinfo->motid, m_curmotinfo->curframe);//curmotinfo!!!
 							if (curbone && curbone->GetParent()) {
-								curbone->GetParent()->CalcAxisMatX_Manipulator(limitdegflag, 0, curbone, &selectmat, 0);
+								curbone->GetParent()->CalcAxisMatX_Manipulator(limitdegflag, g_boneaxis, 0, curbone, &selectmat, 0);
 							}
 							else {
 								selectmat.SetIdentity();
@@ -11689,8 +11707,6 @@ int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt,
 	//g_underIKRot = true;//2023/01/14 parent limited or not
 
 
-	int calcnum = 3;
-
 	float rotrad = srcdelta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
 	//if (fabs(rotrad) < (0.020 * DEG2PAI)){
 	if (fabs(rotrad) < (0.020 * DEG2PAI)) {//2023/02/11
@@ -11762,7 +11778,7 @@ int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt,
 					selectmat.SetIdentity();
 					invselectmat.SetIdentity();
 					if (curbone && curbone->GetParent()) {
-						curbone->GetParent()->CalcAxisMatX_Manipulator(limitdegflag, 0, curbone, &selectmat, 0);
+						curbone->GetParent()->CalcAxisMatX_Manipulator(limitdegflag, g_boneaxis, 0, curbone, &selectmat, 0);
 					}
 					else {
 						selectmat.SetIdentity();
@@ -11826,8 +11842,17 @@ int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt,
 						currotrec.rotq = localq;
 						currotrec.targetpos = ChaVector3(0.0f, 0.0f, 0.0f);
 						currotrec.lessthanthflag = false;
-						curbone->AddIKRotRec(currotrec);
-
+						if (uvno == 0) {
+							curbone->AddIKRotRec_U(currotrec);
+						}
+						else if (uvno == 1) {
+							curbone->AddIKRotRec_V(currotrec);
+						}
+						else {
+							_ASSERT(0);
+							return 0;
+						}
+						
 						if (g_applyendflag == 1) {
 							//curmotinfo->curframeから最後までcurmotinfo->curframeの姿勢を適用
 							if (m_topbone) {
@@ -11850,8 +11875,16 @@ int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt,
 						currotrec.rotq = localq;
 						currotrec.targetpos = ChaVector3(0.0f, 0.0f, 0.0f);
 						currotrec.lessthanthflag = true;//!!!!!!!!!!!
-						curbone->AddIKRotRec(currotrec);
-
+						if (uvno == 0) {
+							curbone->AddIKRotRec_U(currotrec);
+						}
+						else if (uvno == 1) {
+							curbone->AddIKRotRec_V(currotrec);
+						}
+						else {
+							_ASSERT(0);
+							return 0;
+						}
 					}
 				}
 			}
@@ -11871,7 +11904,7 @@ int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt,
 
 int CModel::RigControlPostRig(bool limitdegflag, int depthcnt, 
 	CEditRange* erptr, int srcboneno, 
-	int uvno, 
+	int uvno,
 	CUSTOMRIG ikcustomrig, int buttonflag)
 {
 
@@ -11943,12 +11976,31 @@ int CModel::RigControlPostRig(bool limitdegflag, int depthcnt,
 					aplybone = curbone;
 				}
 
-
-				int rotrecsize = curbone->GetIKRotRecSize();
+				int rotrecsize;
+				if (uvno == 0) {
+					rotrecsize = curbone->GetIKRotRecSize_U();
+				}
+				else if (uvno == 1) {
+					rotrecsize = curbone->GetIKRotRecSize_V();
+				}
+				else {
+					_ASSERT(0);
+					return 0;
+				}
 				if (rotrecsize > 0) {
 					int rotrecno;
 					for (rotrecno = 0; rotrecno < rotrecsize; rotrecno++) {
-						IKROTREC currotrec = curbone->GetIKRotRec(rotrecno);
+						IKROTREC currotrec;
+						if (uvno == 0) {
+							currotrec = curbone->GetIKRotRec_U(rotrecno);
+						}
+						else if (uvno == 1) {
+							currotrec = curbone->GetIKRotRec_V(rotrecno);
+						}
+						else {
+							_ASSERT(0);
+							return 0;
+						}
 						CQuaternion localq = currotrec.rotq;
 						bool lessthanthflag = currotrec.lessthanthflag;
 
@@ -14534,7 +14586,7 @@ int CModel::RecalcBoneAxisX(CBone* srcbone)
 			if (curbone){
 				ChaMatrix axismat;
 				//axismat = curbone->GetFirstAxisMatZ();
-				curbone->GetParent()->CalcAxisMatX_Manipulator(limitdegflag, 1, curbone, &axismat, 1);//nodemat用？　_Manipulatorを使う
+				curbone->GetParent()->CalcAxisMatX_Manipulator(limitdegflag, BONEAXIS_CURRENT, 1, curbone, &axismat, 1);//nodemat用？　_Manipulatorを使う
 				axismat.data[MATI_41] = curbone->GetJointFPos().x;
 				axismat.data[MATI_42] = curbone->GetJointFPos().y;
 				axismat.data[MATI_43] = curbone->GetJointFPos().z;
@@ -14546,7 +14598,7 @@ int CModel::RecalcBoneAxisX(CBone* srcbone)
 		ChaMatrix axismat;
 		//axismat = srcbone->GetFirstAxisMatZ();
 		if (srcbone->GetParent()){
-			srcbone->GetParent()->CalcAxisMatX_Manipulator(limitdegflag, 1, srcbone, &axismat, 1);//nodemat用？
+			srcbone->GetParent()->CalcAxisMatX_Manipulator(limitdegflag, BONEAXIS_CURRENT, 1, srcbone, &axismat, 1);//nodemat用？
 		}
 		else{
 			ChaMatrixIdentity(&axismat);

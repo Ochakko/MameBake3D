@@ -445,6 +445,8 @@ int CBone::InitParams()
 	m_iktargetpos = ChaVector3(0.0f, 0.0f, 0.0f);
 
 	m_ikrotrec.clear();
+	m_ikrotrec_u.clear();
+	m_ikrotrec_v.clear();
 
 	return 0;
 }
@@ -1596,7 +1598,7 @@ int CBone::CalcAxisMatZ( ChaVector3* curpos, ChaVector3* childpos )
 }
 
 
-float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag)
+float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag)
 {
 	//############################################################################################
 	//2022/11/04
@@ -1638,26 +1640,6 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int bindflag, CBone* ch
 		*dstmat = inimat;
 		return 0.0f;
 	}
-
-
-	//###################
-	//kinds of bone axis
-	//###################
-	//if (g_boneaxis == 0) {
-	//	//current bone axis
-	//}
-	//else if (g_boneaxis == 1) {
-	//	//parent bone axis
-	//	if (GetParent()) {
-	//	}
-	//	else {
-	//	}
-	//}
-	//else if (g_boneaxis == 2) {
-	//	//global axis
-	//}
-	//else {
-	//}
 
 	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
 
@@ -1711,7 +1693,7 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int bindflag, CBone* ch
 
 		//hipsjointではない場合
 
-		if ((g_boneaxis == BONEAXIS_CURRENT) || (g_boneaxis == BONEAXIS_BINDPOSE)) {
+		if ((srcboneaxis == BONEAXIS_CURRENT) || (srcboneaxis == BONEAXIS_BINDPOSE)) {
 			//current bone axis
 			if ((g_previewFlag != 4) && (g_previewFlag != 5)) {
 				convmat = tmplimwm;
@@ -1721,7 +1703,7 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int bindflag, CBone* ch
 			}
 			
 		}
-		else if (g_boneaxis == BONEAXIS_PARENT) {
+		else if (srcboneaxis == BONEAXIS_PARENT) {
 			//parent bone axis
 			if ((g_previewFlag != 4) && (g_previewFlag != 5)) {
 				convmat = tmpparentlimwm;
@@ -1730,7 +1712,7 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int bindflag, CBone* ch
 				convmat = tmpparentbtmat;
 			}
 		}
-		else if (g_boneaxis == BONEAXIS_GLOBAL) {
+		else if (srcboneaxis == BONEAXIS_GLOBAL) {
 			//global axis
 			convmat.SetIdentity();
 		}
@@ -1754,7 +1736,7 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int bindflag, CBone* ch
 
 
 
-	if ((aftbonepos == aftchildpos) || (g_boneaxis == BONEAXIS_GLOBAL) || (ishipsjoint == true)) {
+	if ((aftbonepos == aftchildpos) || (srcboneaxis == BONEAXIS_GLOBAL) || (ishipsjoint == true)) {
 		//ボーンの長さが０のとき　Identity回転　ボーン軸の種類がグローバルの場合　Identity回転
 		dstmat->SetIdentity();
 		//#########################################################
@@ -1769,17 +1751,17 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int bindflag, CBone* ch
 
 	ChaVector3 startpos, endpos;
 
-	if ((g_boneaxis == BONEAXIS_CURRENT) || (g_boneaxis == BONEAXIS_BINDPOSE)) {
+	if ((srcboneaxis == BONEAXIS_CURRENT) || (srcboneaxis == BONEAXIS_BINDPOSE)) {
 		//current bone axis
 		startpos = aftbonepos;
 		endpos = aftchildpos;
 	}
-	else if (g_boneaxis == BONEAXIS_PARENT) {
+	else if (srcboneaxis == BONEAXIS_PARENT) {
 		//parent bone axis
 		startpos = aftparentpos;
 		endpos = aftbonepos;
 	}
-	else if (g_boneaxis == BONEAXIS_GLOBAL) {
+	else if (srcboneaxis == BONEAXIS_GLOBAL) {
 		//global axis
 
 		_ASSERT(0);//上方でIdentity回転をセットしてリターンしているので　ここは通らない
@@ -1818,7 +1800,7 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int bindflag, CBone* ch
 	//位置は　ボーンの親の位置　つまりカレントジョイントの位置
 	//#########################################################
 
-	if (g_boneaxis != BONEAXIS_BINDPOSE) {
+	if (srcboneaxis != BONEAXIS_BINDPOSE) {//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! BINDPOSEの時は　オートフィットしない
 		//ボーン軸をX軸に　オートフィット
 		*dstmat = CalcAxisMatX(bonevec, aftbonepos, convmat);//ChaVecCalc.cpp
 	}

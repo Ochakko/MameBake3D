@@ -223,7 +223,7 @@ public:
 	//int CalcAxisMat( int firstflag, float delta );
 	//float CalcAxisMatX_Manipulator_T(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ボーン軸がX軸
 	//float CalcAxisMatX_Manipulator_NotT(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag, int buttonflag);//ボーン軸がX軸
-	float CalcAxisMatX_Manipulator(bool limitdegflag, int bindflag, 
+	float CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bindflag,
 		CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ボーン軸がX軸
 	float CalcAxisMatX_RigidBody(bool limitdegflag, bool dir2xflag, int bindflag, 
 		CBone* childbone, ChaMatrix* dstmat, int setstartflag);//カプセルデータX軸向き
@@ -1325,6 +1325,56 @@ public: //accesser
 		}
 	}
 
+	void ClearIKRotRecUV()
+	{
+		m_ikrotrec_u.clear();
+		m_ikrotrec_v.clear();
+	}
+	void AddIKRotRec_U(IKROTREC srcrotrec)
+	{
+		m_ikrotrec_u.push_back(srcrotrec);
+	}
+	void AddIKRotRec_V(IKROTREC srcrotrec)
+	{
+		m_ikrotrec_v.push_back(srcrotrec);
+	}
+	int GetIKRotRecSize_U()
+	{
+		return (int)m_ikrotrec_u.size();
+	}
+	int GetIKRotRecSize_V()
+	{
+		return (int)m_ikrotrec_v.size();
+	}
+	IKROTREC GetIKRotRec_U(int srcindex)
+	{
+		if ((srcindex >= 0) && (srcindex < GetIKRotRecSize_U())) {
+			return m_ikrotrec_u[srcindex];
+		}
+		else {
+			IKROTREC norec;
+			norec.rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+			norec.targetpos = ChaVector3(0.0f, 0.0f, 0.0f);
+			norec.lessthanthflag = true;
+			return norec;
+		}
+	}
+	IKROTREC GetIKRotRec_V(int srcindex)
+	{
+		if ((srcindex >= 0) && (srcindex < GetIKRotRecSize_V())) {
+			return m_ikrotrec_v[srcindex];
+		}
+		else {
+			IKROTREC norec;
+			norec.rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+			norec.targetpos = ChaVector3(0.0f, 0.0f, 0.0f);
+			norec.lessthanthflag = true;
+			return norec;
+		}
+	}
+
+
+
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
 	CRITICAL_SECTION m_CritSection_AddMP;
@@ -1484,6 +1534,8 @@ private:
 	ChaVector3 m_iktargetpos;
 
 	std::vector<IKROTREC> m_ikrotrec;
+	std::vector<IKROTREC> m_ikrotrec_u;
+	std::vector<IKROTREC> m_ikrotrec_v;
 
 
 	CBone* m_parent;

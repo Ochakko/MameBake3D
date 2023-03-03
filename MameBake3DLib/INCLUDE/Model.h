@@ -408,6 +408,7 @@ public:
 		int srcboneno, int maxlevel);
 
 	void ClearIKRotRec();
+	void ClearIKRotRecUV();
 
 	int IKRotate(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel, double directframe = -1.0);
 	int IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, 
@@ -992,6 +993,7 @@ private:
 		CQuaternion rotq0, bool keynum1flag, bool postflag, bool fromiktarget);
 
 	void ClearIKRotRecReq(CBone* srcbone);
+	void ClearIKRotRecUVReq(CBone* srcbone);
 
 
 	//int GetFreeThreadIndex();
