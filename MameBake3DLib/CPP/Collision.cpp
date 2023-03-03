@@ -20,8 +20,7 @@
 
 int ChkRay( int allowrev, int i1, int i2, int i3, 
 	ChaVector3* pointbuf, ChaVector3 startpos, ChaVector3 dir, 
-	float justval, int* justptr,
-	ChaMatrix* ptransmat)//default:ptransmat=0
+	float justval, int* justptr )
 {
 	ChaVector3 v1;
 	v1 = startpos;
@@ -33,21 +32,10 @@ int ChkRay( int allowrev, int i1, int i2, int i3,
 	ChaVector3Normalize( &e, &v );
 
 	ChaVector3 point1, point2, point3;
-	if (!ptransmat) {
-		point1 = *(pointbuf + i1);
-		point2 = *(pointbuf + i2);
-		point3 = *(pointbuf + i3);
-	}
-	else {
-		ChaVector3 orgpoint1, orgpoint2, orgpoint3;
-		orgpoint1 = *(pointbuf + i1);
-		orgpoint2 = *(pointbuf + i2);
-		orgpoint3 = *(pointbuf + i3);
+	point1 = *(pointbuf + i1);
+	point2 = *(pointbuf + i2);
+	point3 = *(pointbuf + i3);
 
-		ChaVector3TransformCoord(&point1, &orgpoint1, ptransmat);
-		ChaVector3TransformCoord(&point2, &orgpoint2, ptransmat);
-		ChaVector3TransformCoord(&point3, &orgpoint3, ptransmat);
-	}
 
 	ChaVector3 s, t;
 	s = point2 - point1;

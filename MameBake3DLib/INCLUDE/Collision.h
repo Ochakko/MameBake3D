@@ -23,8 +23,7 @@
  */
 	int ChkRay( int allowrev, int i1, int i2, int i3, 
 		ChaVector3* pointbuf, ChaVector3 startpos, ChaVector3 dir, 
-		float justval, int* justptr,
-		ChaMatrix* ptransmat = 0);
+		float justval, int* justptr );
 
 /**
  * @fn
@@ -41,8 +40,7 @@
 #else
 	extern int ChkRay( int allowrev, int i1, int i2, int i3, 
 		ChaVector3* pointbuf, ChaVector3 startpos, ChaVector3 dir, 
-		float justval, int* justptr,
-		ChaMatrix* ptransmat = 0);
+		float justval, int* justptr );
 	extern int CalcShadowToPlane( ChaVector3 srcpos, ChaVector3 planedir, ChaVector3 planepos, ChaVector3* shadowptr );
 #endif
 

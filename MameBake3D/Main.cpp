@@ -902,7 +902,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 
 /*
 * 2023/03/01
-* EditMot 1.2.0.14 RC3
+* EditMot 1.2.0.14 RC4
 * 
 * 物理修正
 *	遅いPCで動かすために　詳細度をカットしていた条件文修正
@@ -918,11 +918,11 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 *	ジョイント右クリックで　作成済のリグ名-->Settingメニューで右ペインに設定ウインドウ-->形状
 * 
 * Rigの設定ダイアログの表示位置の種類追加
-*	0から2までの表示位置を 0から15までに変更
+*	0から2までの表示位置を 0から30までに変更
 * 
 * Rigの表示倍率指定用コンボボックス追加
 *	ジョイント右クリックで　作成済のリグ名-->Settingメニューで右ペインに設定ウインドウ-->表示倍率(番号)
-*	０から６の番号をしてい　1.2.0.13と比較して　大体　１倍から３倍の大きさで表示
+*	０から１２の番号を指定　1.2.0.13と比較して　大体　１倍から６倍の大きさで表示
 * 
 * 
 * 剛体設定ダイアログ修正
@@ -8299,14 +8299,15 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 					else {
 						//if (g_previewFlag != 5){
 						if (s_dispselect) {
+							bool excludeinvface = false;
 							int colliobjx, colliobjy, colliobjz, colliringx, colliringy, colliringz;
-							colliobjx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objX");
-							colliobjy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objY");
-							colliobjz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objZ");
+							colliobjx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objX", excludeinvface);
+							colliobjy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objY", excludeinvface);
+							colliobjz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objZ", excludeinvface);
 							if (s_ikkind == 0) {
-								colliringx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringX");
-								colliringy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringY");
-								colliringz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringZ");
+								colliringx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringX", excludeinvface);
+								colliringy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringY", excludeinvface);
+								colliringz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringZ", excludeinvface);
 							}
 							else {
 								colliringx = 0;
@@ -13703,18 +13704,26 @@ CModel* GetCurRigModel(CUSTOMRIG currig)
 		(rigaxis >= 0) && (rigaxis <= 2) && 
 		(rigcolor >= 0) && (rigcolor < RIGCOLOR_MAX)) {
 
+		float alpha;
+		if (rigshapekind == RIGSHAPE_SPHERE) {
+			alpha = 0.79f;//ZCmpAlways
+		}
+		else {
+			alpha = 1.0f;//ZCmp
+		}
+
 		if (rigcolor == RIGCOLOR_RED) {
-			s_matrigmat = ChaVector4(1.0f, 0.5f, 0.5f, 0.79f);
+			s_matrigmat = ChaVector4(1.0f, 0.5f, 0.5f, alpha);
 		}
 		else if (rigcolor == RIGCOLOR_GREEN) {
-			s_matrigmat = ChaVector4(0.0f, 1.0f, 0.0f, 0.79f);
+			s_matrigmat = ChaVector4(0.0f, 1.0f, 0.0f, alpha);
 		}
 		else if (rigcolor == RIGCOLOR_BLUE) {
-			s_matrigmat = ChaVector4(15.0f / 255.0f, 200.0f / 255.0f, 1.0f, 0.79f);
+			s_matrigmat = ChaVector4(15.0f / 255.0f, 200.0f / 255.0f, 1.0f, alpha);
 		}
 		else {
 			_ASSERT(0);
-			s_matrigmat = ChaVector4(1.0f, 0.5f, 0.5f, 0.79f);
+			s_matrigmat = ChaVector4(1.0f, 0.5f, 0.5f, alpha);
 		}
 
 		CModel* currigmodel;
@@ -13773,7 +13782,7 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 						CModel* currigmodel;
 						currigmodel = GetCurRigModel(currig);
 						if (currigmodel) {
-							ChaVector3 curbonepos = curbone->GetWorldPos(g_limitdegflag, curmotid, curframe);
+							//ChaVector3 curbonepos = curbone->GetWorldPos(g_limitdegflag, curmotid, curframe);
 
 							//pos transform
 							ChaMatrix rigmat;
@@ -13781,21 +13790,27 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 							rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder, currig.posinverse);
 							g_hmWorld->SetMatrix((float*)&(rigmat.data[MATI_11]));
 
+							//####################################
+							//zcmpalways, zcmpは alphaで自動切換え
+							//####################################
+
 							currigmodel->UpdateMatrix(g_limitdegflag, &rigmat, &s_matVP);
 							//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
-							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+							//pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 							int lightflag = 0;
 							//ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 							ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 							currigmodel->OnRender(pd3dImmediateContext, lightflag, diffusemult);
 							//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
-							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+							//pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 						
 						}
 					}
 				}
 			}
 		}
+
+		pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 	}
 
 	return 0;
@@ -19966,6 +19981,7 @@ int SetSelectState()
 		}
 		else {
 			if (s_dispselect) {
+				bool excludeinvface = false;
 				int colliobjx, colliobjy, colliobjz, colliringx, colliringy, colliringz;
 				colliobjx = 0;
 				colliobjy = 0;
@@ -19974,13 +19990,13 @@ int SetSelectState()
 				colliringy = 0;
 				colliringz = 0;
 
-				colliobjx = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "objX");
-				colliobjy = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "objY");
-				colliobjz = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "objZ");
+				colliobjx = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "objX", excludeinvface);
+				colliobjy = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "objY", excludeinvface);
+				colliobjz = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "objZ", excludeinvface);
 				if (s_ikkind == 0) {
-					colliringx = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "ringX");
-					colliringy = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "ringY");
-					colliringz = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "ringZ");
+					colliringx = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "ringX", excludeinvface);
+					colliringy = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "ringY", excludeinvface);
+					colliringz = s_select->CollisionNoBoneObj_Mouse(&pickinfo, "ringZ", excludeinvface);
 				}
 				else {
 					colliringx = 0;
@@ -40286,19 +40302,19 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 	}
 
 	//int multworld = 1;
-	//ChaMatrix selm;
-	//selm.SetIdentity();
+	ChaMatrix selm;
+	selm.SetIdentity();
 	//int multworld = 1;
 	//ChaMatrix selm = curbone->CalcManipulatorMatrix(0, 0, multworld, curmotid, curframe);
 	//ChaMatrix selm = curbone->CalcManipulatorMatrix(0, multworld, curmotid, curframe);
-	//if (curbone && curbone->GetParent()) {
-	//	curbone->GetParent()->CalcAxisMatX_Manipulator(g_limitdegflag, 0, curbone, &selm, 0);
-	//	//curbone->GetParent()->CalcAxisMatX_RigidBody(0, curbone, &selm, 0);
-	//}
-	//else {
-	//	//selm.SetIdentity();
-	//	selm = curbone->GetWorldMat(g_limitdegflag, curmotid, curframe, 0);
-	//}
+	if (curbone && curbone->GetParent()) {
+		curbone->GetParent()->CalcAxisMatX_Manipulator(g_limitdegflag, 0, curbone, &selm, 0);
+		//curbone->GetParent()->CalcAxisMatX_RigidBody(0, curbone, &selm, 0);
+	}
+	else {
+		//selm.SetIdentity();
+		selm = curbone->GetWorldMat(g_limitdegflag, curmotid, curframe, 0);
+	}
 	//selm.data[MATI_41] = 0.0f;
 	//selm.data[MATI_42] = 0.0f;
 	//selm.data[MATI_43] = 0.0f;
@@ -40330,9 +40346,10 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 	//ChaVector3 offsetorgpos = ChaVector3(0.0f, 0.0f, 0.0f);
 	//ChaVector3 offsetdisppos = ChaVector3(0.0f, 0.0f, 0.0f);
 
-	ChaMatrix curwm = curbone->GetWorldMat(g_limitdegflag, curmotid, curframe, 0);
+	//ChaMatrix curwm = curbone->GetWorldMat(g_limitdegflag, curmotid, curframe, 0);
 	ChaMatrix curbonerotmat;
-	curbonerotmat = ChaMatrixRot(curwm);
+	//curbonerotmat = ChaMatrixRot(curwm);
+	curbonerotmat = ChaMatrixRot(selm);
 	ChaVector3 offsetvec;
 
 	if (dispaxis == 0) {
@@ -40415,7 +40432,8 @@ int PickRigBone(UIPICKINFO* ppickinfo)
 							chkpickinfo.pickobjno = chkboneno;
 
 							int colliobj;
-							colliobj = currigmodel->CollisionNoBoneObj_Mouse(&chkpickinfo, "obj1", &rigmat);
+							bool excludeinvface = true;
+							colliobj = currigmodel->CollisionNoBoneObj_Mouse(&chkpickinfo, "obj1", excludeinvface);
 							if (colliobj) {
 								RollbackCurBoneNo();
 

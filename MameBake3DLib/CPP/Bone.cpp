@@ -150,18 +150,21 @@ int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone)
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"エラー。rigboneno : %d", srccr.rigboneno);
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		_ASSERT(0);
 		return 0;
 	}
 	if ((srccr.rigno < 0) || (srccr.rigno >= MAXRIGNUM)) {
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"エラー。rigno : %d", srccr.rigno);
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		_ASSERT(0);
 		return 0;
 	}
 	if ((srccr.elemnum < 1) || (srccr.elemnum > MAXRIGELEMNUM)) {
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"エラー。elemnum : %d", srccr.elemnum);
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		_ASSERT(0);
 		return 0;
 	}
 
@@ -169,30 +172,35 @@ int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone)
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"エラー。dispaxis : %d", srccr.dispaxis);
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		_ASSERT(0);
 		return 0;
 	}
 	if ((srccr.disporder < 0) || (srccr.disporder > RIGPOSINDEXMAX)) {//INDEXMAXは有り
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"エラー。disporder : %d", srccr.disporder);
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		_ASSERT(0);
 		return 0;
 	}
 	if ((srccr.shapemult < 0) || (srccr.shapemult > RIGMULTINDEXMAX)) {//INDEXMAXは有り
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"エラー。shapemult : %d", srccr.shapemult);
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		_ASSERT(0);
 		return 0;
 	}
 	if ((srccr.shapekind < 0) || (srccr.shapekind >= RIGSHAPE_MAX)) {//MAXは無し
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"エラー。shapekind : %d", srccr.shapekind);
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		_ASSERT(0);
 		return 0;
 	}
 	if ((srccr.rigcolor < 0) || (srccr.rigcolor >= RIGCOLOR_MAX)) {//MAXは無し
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"エラー。rigcolor : %d", srccr.rigcolor);
 		::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+		_ASSERT(0);
 		return 0;
 	}
 
@@ -205,7 +213,7 @@ int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone)
 			WCHAR strerr[256];
 			swprintf_s(strerr, 256, L"エラー。bonename %s, elem %d", parentbone->GetWBoneName(), elemno);
 			::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
-
+			_ASSERT(0);
 			return 0;//!!!!!!!!!!!!!
 		}
 	}
@@ -225,6 +233,7 @@ int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem)
 				WCHAR strerr[256];
 				swprintf_s(strerr, 256, L"エラー。ownerbone %s, rigrigno %d", ownerbone->GetWBoneName(), srcrigelem.rigrigno);
 				::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+				_ASSERT(0);
 				return 0;
 			}
 		}
@@ -232,6 +241,7 @@ int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem)
 			WCHAR strerr[256];
 			swprintf_s(strerr, 256, L"エラー。ownerbone NULL");
 			::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+			_ASSERT(0);
 			return 0;
 		}
 	}
@@ -241,6 +251,7 @@ int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem)
 			WCHAR strerr[256];
 			swprintf_s(strerr, 256, L"エラー。boneno : %d", srcrigelem.boneno);
 			::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+			_ASSERT(0);
 			return 0;
 		}
 
@@ -251,18 +262,21 @@ int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem)
 				WCHAR strerr[256];
 				swprintf_s(strerr, 256, L"エラー。UV %d : axiskind : %d", uvno, currigtrans.axiskind);
 				::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+				_ASSERT(0);
 				return 0;
 			}
 			if ((currigtrans.applyrate < -100.0f) || (currigtrans.applyrate > 100.0f)) {
 				WCHAR strerr[256];
 				swprintf_s(strerr, 256, L"エラー。UV %d : applyrate : %f", uvno, currigtrans.applyrate);
 				::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+				_ASSERT(0);
 				return 0;
 			}
 			if ((currigtrans.enable != 0) && (currigtrans.enable != 1)) {
 				WCHAR strerr[256];
 				swprintf_s(strerr, 256, L"エラー。UV %d : enable : %d", uvno, currigtrans.enable);
 				::MessageBox(NULL, strerr, L"入力エラー", MB_OK);
+				_ASSERT(0);
 				return 0;
 			}
 		}

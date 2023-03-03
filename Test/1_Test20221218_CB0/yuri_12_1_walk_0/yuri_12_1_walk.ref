@@ -3,7 +3,7 @@
     <FileInfo>1001-01</FileInfo>
     <SCBTG>9.800000</SCBTG>
   <Bone>
-    <Name>Root</Name>
+    <Name>Root_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
       <ChildName>Hip_Joint</ChildName>

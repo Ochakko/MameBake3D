@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="Shift_JIS"?>
 <RIGFILE>
-    <FileInfo>1001-01</FileInfo>
+    <FileInfo>1001-04</FileInfo>
   <Bone>
     <RigName>Rig1</RigName>
     <OwnerBone>LeftElbow_branch_Joint</OwnerBone>
     <RigNumber>0</RigNumber>
     <ElemNum>3</ElemNum>
-    <DispAxis>1</DispAxis>
-    <DispOrder>1</DispOrder>
-    <DispPosInverse>0</DispPosInverse>
+    <DispAxis>0</DispAxis>
+    <DispOrder>3</DispOrder>
+    <DispPosInverse>1</DispPosInverse>
+    <ShapeMult>4</ShapeMult>
+    <ShapeKind>1</ShapeKind>
+    <RigColor>2</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -49,8 +52,11 @@
     <RigNumber>1</RigNumber>
     <ElemNum>5</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>0</DispOrder>
-    <DispPosInverse>1</DispPosInverse>
+    <DispOrder>2</DispOrder>
+    <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>4</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>1</RigColor>
     <RigElem>
     <RigRigName>LeftThumbDistal_end_Joint</RigRigName>
     <RigRigNo>0</RigRigNo>
@@ -112,9 +118,12 @@
     <OwnerBone>LeftElbow_branch_Joint</OwnerBone>
     <RigNumber>2</RigNumber>
     <ElemNum>2</ElemNum>
-    <DispAxis>2</DispAxis>
-    <DispOrder>1</DispOrder>
-    <DispPosInverse>0</DispPosInverse>
+    <DispAxis>0</DispAxis>
+    <DispOrder>6</DispOrder>
+    <DispPosInverse>1</DispPosInverse>
+    <ShapeMult>4</ShapeMult>
+    <ShapeKind>1</ShapeKind>
+    <RigColor>1</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -146,6 +155,9 @@
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>2</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -188,6 +200,9 @@
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>2</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -241,6 +256,9 @@
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>2</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -294,6 +312,9 @@
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>2</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -347,6 +368,9 @@
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>2</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -397,9 +421,12 @@
     <OwnerBone>RightElbow_branch_Joint</OwnerBone>
     <RigNumber>0</RigNumber>
     <ElemNum>3</ElemNum>
-    <DispAxis>1</DispAxis>
-    <DispOrder>1</DispOrder>
+    <DispAxis>0</DispAxis>
+    <DispOrder>3</DispOrder>
     <DispPosInverse>1</DispPosInverse>
+    <ShapeMult>4</ShapeMult>
+    <ShapeKind>1</ShapeKind>
+    <RigColor>2</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -440,8 +467,11 @@
     <RigNumber>1</RigNumber>
     <ElemNum>5</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>0</DispOrder>
+    <DispOrder>2</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>4</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>1</RigColor>
     <RigElem>
     <RigRigName>RightThumbDistal_end_Joint</RigRigName>
     <RigRigNo>0</RigRigNo>
@@ -503,9 +533,12 @@
     <OwnerBone>RightElbow_branch_Joint</OwnerBone>
     <RigNumber>2</RigNumber>
     <ElemNum>2</ElemNum>
-    <DispAxis>2</DispAxis>
-    <DispOrder>1</DispOrder>
-    <DispPosInverse>0</DispPosInverse>
+    <DispAxis>0</DispAxis>
+    <DispOrder>6</DispOrder>
+    <DispPosInverse>1</DispPosInverse>
+    <ShapeMult>4</ShapeMult>
+    <ShapeKind>1</ShapeKind>
+    <RigColor>1</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -537,6 +570,9 @@
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>2</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -579,6 +615,9 @@
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>2</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -632,6 +671,9 @@
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>2</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -685,6 +727,9 @@
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>2</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -738,6 +783,9 @@
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>2</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -791,6 +839,9 @@
     <DispAxis>1</DispAxis>
     <DispOrder>1</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>0</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -833,6 +884,9 @@
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>0</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -875,6 +929,9 @@
     <DispAxis>2</DispAxis>
     <DispOrder>1</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>0</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -906,6 +963,9 @@
     <DispAxis>1</DispAxis>
     <DispOrder>1</DispOrder>
     <DispPosInverse>1</DispPosInverse>
+    <ShapeMult>0</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -948,6 +1008,9 @@
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>0</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>
@@ -990,6 +1053,9 @@
     <DispAxis>2</DispAxis>
     <DispOrder>1</DispOrder>
     <DispPosInverse>0</DispPosInverse>
+    <ShapeMult>0</ShapeMult>
+    <ShapeKind>0</ShapeKind>
+    <RigColor>0</RigColor>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
     <RigRigNo>-1</RigRigNo>

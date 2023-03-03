@@ -37,7 +37,7 @@ class CMQOMaterial;
 #define JOINTNAMELENG	256	
 
 #define RIGPOSINDEXMAX	30
-#define RIGMULTINDEXMAX	6	
+#define RIGMULTINDEXMAX	12	
 
 
 // * 100だとOpenFile()関数のスタックサイズが大きすぎて警告が出るので * 32に変更
@@ -262,8 +262,8 @@ typedef struct tag_anglelimmit
 		boneaxiskind = BONEAXIS_CURRENT;
 		int axisno;
 		for (axisno = 0; axisno < AXIS_MAX; axisno++) {
-			lower[axisno] = -180;
-			upper[axisno] = 180;
+			lower[axisno] = -2;
+			upper[axisno] = 2;
 			applyeul[axisno] = false;
 			chkeul[axisno] = 0.0f;
 		}
@@ -294,6 +294,8 @@ typedef struct tag_rigelem
 		rigrigboneno = -1;
 		rigrigno = -1;
 		boneno = -1;
+		transuv[0].Init();
+		transuv[1].Init();
 	};
 }RIGELEM;
 

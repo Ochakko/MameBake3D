@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Shift_JIS"?>
 <Lmt>
     <FileInfo>1001-03</FileInfo>
-    <FileComment>CommentForEGP_20230302212141</FileComment>
+    <FileComment>CommentForEGP_20230303090812</FileComment>
   <Bone>
     <Name>Root_Joint</Name>
     <BoneAxisType>Current</BoneAxisType>
@@ -972,7 +972,7 @@
       <Via180_Z>0</Via180_Z>
       <Lower_X>-4</Lower_X>
       <Upper_X>2</Upper_X>
-      <Lower_Y>-3</Lower_Y>
+      <Lower_Y>-4</Lower_Y>
       <Upper_Y>2</Upper_Y>
       <Lower_Z>-68</Lower_Z>
       <Upper_Z>2</Upper_Z>
@@ -1009,10 +1009,10 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-2</Lower_X>
+      <Lower_X>-3</Lower_X>
       <Upper_X>3</Upper_X>
-      <Lower_Y>-4</Lower_Y>
-      <Upper_Y>2</Upper_Y>
+      <Lower_Y>-7</Lower_Y>
+      <Upper_Y>5</Upper_Y>
       <Lower_Z>-68</Lower_Z>
       <Upper_Z>2</Upper_Z>
   </Bone>
@@ -1048,10 +1048,10 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-2</Lower_X>
+      <Lower_X>-4</Lower_X>
       <Upper_X>2</Upper_X>
-      <Lower_Y>-2</Lower_Y>
-      <Upper_Y>2</Upper_Y>
+      <Lower_Y>-4</Lower_Y>
+      <Upper_Y>6</Upper_Y>
       <Lower_Z>-68</Lower_Z>
       <Upper_Z>2</Upper_Z>
   </Bone>
@@ -1088,9 +1088,9 @@
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
       <Lower_X>-2</Lower_X>
-      <Upper_X>2</Upper_X>
-      <Lower_Y>-3</Lower_Y>
-      <Upper_Y>2</Upper_Y>
+      <Upper_X>3</Upper_X>
+      <Lower_Y>-6</Lower_Y>
+      <Upper_Y>3</Upper_Y>
       <Lower_Z>-68</Lower_Z>
       <Upper_Z>2</Upper_Z>
   </Bone>
@@ -1308,10 +1308,10 @@
       <Via180_X>0</Via180_X>
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
-      <Lower_X>-2</Lower_X>
-      <Upper_X>2</Upper_X>
-      <Lower_Y>-2</Lower_Y>
-      <Upper_Y>2</Upper_Y>
+      <Lower_X>-6</Lower_X>
+      <Upper_X>3</Upper_X>
+      <Lower_Y>-6</Lower_Y>
+      <Upper_Y>5</Upper_Y>
       <Lower_Z>-2</Lower_Z>
       <Upper_Z>80</Upper_Z>
   </Bone>
@@ -1349,7 +1349,7 @@
       <Via180_Z>0</Via180_Z>
       <Lower_X>-2</Lower_X>
       <Upper_X>6</Upper_X>
-      <Lower_Y>-2</Lower_Y>
+      <Lower_Y>-5</Lower_Y>
       <Upper_Y>9</Upper_Y>
       <Lower_Z>-2</Lower_Z>
       <Upper_Z>80</Upper_Z>
@@ -1387,9 +1387,9 @@
       <Via180_Y>0</Via180_Y>
       <Via180_Z>0</Via180_Z>
       <Lower_X>-2</Lower_X>
-      <Upper_X>2</Upper_X>
-      <Lower_Y>-2</Lower_Y>
-      <Upper_Y>2</Upper_Y>
+      <Upper_X>6</Upper_X>
+      <Lower_Y>-7</Lower_Y>
+      <Upper_Y>6</Upper_Y>
       <Lower_Z>-2</Lower_Z>
       <Upper_Z>80</Upper_Z>
   </Bone>

@@ -1890,7 +1890,8 @@ int CMQOObject::GetFaceInMaterial( int matno, CMQOFace** ppface, int arrayleng, 
 	return 0;
 }
 
-int CMQOObject::CollisionLocal_Ray(ChaVector3 startlocal, ChaVector3 dirlocal, ChaMatrix* ptransmat)//default:ptransmat=0
+int CMQOObject::CollisionLocal_Ray(ChaVector3 startlocal, ChaVector3 dirlocal, 
+	bool excludeinvface)
 {
 	int face_count;
 	int vert_count;
@@ -1921,7 +1922,13 @@ int CMQOObject::CollisionLocal_Ray(ChaVector3 startlocal, ChaVector3 dirlocal, C
 		return 0;
 	}
 
-	int allowrev = 0;
+	int allowrev;
+	if (excludeinvface) {
+		allowrev = 1;
+	}
+	else {
+		allowrev = 0;
+	}
 
 	int fno;
 	int hitflag;
@@ -1932,16 +1939,19 @@ int CMQOObject::CollisionLocal_Ray(ChaVector3 startlocal, ChaVector3 dirlocal, C
 		justflag = 0;
 		CMQOFace* curface = faceptr + fno;
 		if( curface->GetPointNum() == 3 ){
-			hitflag = ChkRay( allowrev, curface->GetIndex( 0 ), curface->GetIndex( 1 ), curface->GetIndex( 2 ), pointptr, startlocal, dirlocal, justval, &justflag );
+			hitflag = ChkRay( allowrev, curface->GetIndex( 0 ), curface->GetIndex( 1 ), curface->GetIndex( 2 ), 
+				pointptr, startlocal, dirlocal, justval, &justflag );
 			if( hitflag || justflag ){
 				return 1;
 			}
 		}else if( curface->GetPointNum() == 4 ){
-			hitflag = ChkRay( allowrev, curface->GetIndex( 0 ), curface->GetIndex( 1 ), curface->GetIndex( 2 ), pointptr, startlocal, dirlocal, justval, &justflag );
+			hitflag = ChkRay( allowrev, curface->GetIndex( 0 ), curface->GetIndex( 1 ), curface->GetIndex( 2 ), 
+				pointptr, startlocal, dirlocal, justval, &justflag );
 			if( hitflag || justflag ){
 				return 1;
 			}
-			hitflag = ChkRay( allowrev, curface->GetIndex( 0 ), curface->GetIndex( 2 ), curface->GetIndex( 3 ), pointptr, startlocal, dirlocal, justval, &justflag );
+			hitflag = ChkRay( allowrev, curface->GetIndex( 0 ), curface->GetIndex( 2 ), curface->GetIndex( 3 ), 
+				pointptr, startlocal, dirlocal, justval, &justflag );
 			if( hitflag || justflag ){
 				return 1;
 			}
