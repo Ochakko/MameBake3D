@@ -734,6 +734,12 @@ public:
 
 	int RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, 
 		int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig, int buttonflag);
+	int RigControlUnderRig(bool limitdegflag, int depthcnt, CEditRange* erptr,
+		int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig, int buttonflag);
+	int RigControlPostRig(bool limitdegflag, int depthcnt, CEditRange* erptr,
+		int srcboneno, int uvno, CUSTOMRIG ikcustomrig, int buttonflag);
+
+
 	//int PhysicsRigControl(int depthcnt, CEditRange* erptr, int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig);
 
 	int DbgDump();

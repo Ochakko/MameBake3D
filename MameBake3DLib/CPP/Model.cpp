@@ -11660,6 +11660,359 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 	}
 }
 
+int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt, 
+	CEditRange* erptr, int srcboneno, 
+	int uvno, float srcdelta, 
+	CUSTOMRIG ikcustomrig, int buttonflag)
+{
+
+	SetIKTargetVec();
+
+
+	if (depthcnt >= 10) {
+		_ASSERT(0);
+		return 0;//!!!!!!!!!!!!!!!!!
+	}
+	depthcnt++;
+
+	if (!m_curmotinfo) {
+		return 0;
+	}
+
+
+	//rigからrigを呼ぶので　再入禁止には別手段が必要
+	//if (g_underIKRot == true) {
+	//	return 0;//2023/01/27　再入禁止でギザギザは無くなるかどうかテスト
+	//}
+	//g_underIKRot = true;//2023/01/14 parent limited or not
+
+
+	int calcnum = 3;
+
+	float rotrad = srcdelta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
+	//if (fabs(rotrad) < (0.020 * DEG2PAI)){
+	if (fabs(rotrad) < (0.020 * DEG2PAI)) {//2023/02/11
+		//g_underIKRot = false;//2023/01/14 parent limited or not
+		return 0;
+	}
+
+
+	int keynum;
+	double startframe, endframe, applyframe;
+	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
+
+	CBone* curbone = m_bonelist[srcboneno];
+	if (!curbone) {
+		//g_underIKRot = false;//2023/01/14 parent limited or not
+		return 0;
+	}
+	CBone* parentbone = 0;
+	CBone* lastbone = 0;
+
+
+
+	//int calccnt;
+	//for (calccnt = 0; calccnt < calcnum; calccnt++){
+	double firstframe = 0.0;
+
+	int elemno;
+	for (elemno = 0; elemno < ikcustomrig.elemnum; elemno++) {
+		RIGELEM currigelem = ikcustomrig.rigelem[elemno];
+		if (currigelem.rigrigboneno >= 0) {
+			//rigのrig
+			CBone* rigrigbone = GetBoneByID(currigelem.rigrigboneno);
+			if (rigrigbone) {
+				int rigrigno = currigelem.rigrigno;
+				if ((rigrigno >= 0) && (rigrigno < MAXRIGNUM)) {
+					if (currigelem.transuv[uvno].enable == 1) {
+						CUSTOMRIG rigrig = rigrigbone->GetCustomRig(rigrigno);
+						RigControl(limitdegflag, depthcnt, erptr, rigrigbone->GetBoneNo(),
+							uvno, srcdelta * currigelem.transuv[uvno].applyrate, rigrig, buttonflag);
+					}
+				}
+			}
+		}
+		else {
+			//rigelem
+			curbone = GetBoneByID(currigelem.boneno);
+			if (curbone) {
+				lastbone = curbone;
+				parentbone = curbone->GetParent();
+
+				CBone* aplybone;
+				if (parentbone) {
+					aplybone = parentbone;
+				}
+				else {
+					aplybone = curbone;
+				}
+
+
+				int axiskind = currigelem.transuv[uvno].axiskind;
+				float rotrad2 = rotrad * currigelem.transuv[uvno].applyrate;
+				if (currigelem.transuv[uvno].enable == 1) {
+
+					ChaVector3 axis0;
+					CQuaternion localq;
+
+					ChaMatrix selectmat;
+					ChaMatrix invselectmat;
+					selectmat.SetIdentity();
+					invselectmat.SetIdentity();
+					if (curbone && curbone->GetParent()) {
+						curbone->GetParent()->CalcAxisMatX_Manipulator(limitdegflag, 0, curbone, &selectmat, 0);
+					}
+					else {
+						selectmat.SetIdentity();
+					}
+					ChaMatrixInverse(&invselectmat, NULL, &selectmat);
+					if (axiskind == AXIS_X) {
+						axis0 = ChaVector3(selectmat.data[MATI_11], selectmat.data[MATI_12], selectmat.data[MATI_13]);
+					}
+					else if (axiskind == AXIS_Y) {
+						axis0 = ChaVector3(selectmat.data[MATI_21], selectmat.data[MATI_22], selectmat.data[MATI_23]);
+					}
+					else if (axiskind == AXIS_Z) {
+						axis0 = ChaVector3(selectmat.data[MATI_31], selectmat.data[MATI_32], selectmat.data[MATI_33]);
+					}
+					else {
+						_ASSERT(0);
+						//g_underIKRot = false;//2023/01/14 parent limited or not
+						return 1;
+					}
+					ChaVector3Normalize(&axis0, &axis0);
+
+
+					if (fabs(rotrad2) >= (0.020 * DEG2PAI)) {//2023/02/11
+
+						if (fabs(rotrad2) > (0.0550 * DEG2PAI)) {//2023/02/11
+							rotrad2 = 0.0550f * fabs(rotrad2) / rotrad2;
+						}
+						localq.SetAxisAndRot(axis0, rotrad2);
+
+						CQuaternion qForRot;
+						CQuaternion qForHipsRot;
+
+						//curbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+						// 
+						//保存結果は　CBone::RotAndTraBoneQReqにおいてしか使っておらず　startframeしか使っていない
+						curbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
+
+						if (keynum >= 2) {
+							int keyno = 0;
+							double curframe = applyframe;
+							bool keynum1flag = false;
+							bool postflag = false;
+							bool fromiktarget = false;
+							IKRotateOneFrame(limitdegflag, erptr,
+								keyno, curbone,
+								curframe, startframe, applyframe,
+								localq, keynum1flag, postflag, fromiktarget);
+						}
+						else {
+							bool keynum1flag = true;
+							bool postflag = false;
+							bool fromiktarget = false;
+							IKRotateOneFrame(limitdegflag, erptr,
+								0, curbone,
+								m_curmotinfo->curframe, startframe, applyframe,
+								localq, keynum1flag, postflag, fromiktarget);
+						}
+
+						//curboneのrotqを保存
+						IKROTREC currotrec;
+						currotrec.rotq = localq;
+						currotrec.targetpos = ChaVector3(0.0f, 0.0f, 0.0f);
+						currotrec.lessthanthflag = false;
+						curbone->AddIKRotRec(currotrec);
+
+						if (g_applyendflag == 1) {
+							//curmotinfo->curframeから最後までcurmotinfo->curframeの姿勢を適用
+							if (m_topbone) {
+								int tolast;
+								for (tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++) {
+									m_topbone->PasteRotReq(limitdegflag, m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
+								}
+							}
+						}
+					}
+					else {
+						//rotqの回転角度が1e-4より小さい場合
+						//ウェイトが小さいフレームにおいても　IKTargetが走るように記録する必要がある
+						if (fabs(rotrad2) > (0.0550 * DEG2PAI)) {//2023/02/11
+							rotrad2 = 0.0550f * fabs(rotrad2) / rotrad2;
+						}
+						localq.SetAxisAndRot(axis0, rotrad2);
+
+						IKROTREC currotrec;
+						currotrec.rotq = localq;
+						currotrec.targetpos = ChaVector3(0.0f, 0.0f, 0.0f);
+						currotrec.lessthanthflag = true;//!!!!!!!!!!!
+						curbone->AddIKRotRec(currotrec);
+
+					}
+				}
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+	}
+
+	if (lastbone) {
+		return lastbone->GetBoneNo();
+	}
+	else {
+		return srcboneno;
+	}
+}
+
+int CModel::RigControlPostRig(bool limitdegflag, int depthcnt, 
+	CEditRange* erptr, int srcboneno, 
+	int uvno, 
+	CUSTOMRIG ikcustomrig, int buttonflag)
+{
+
+	if (depthcnt >= 10) {
+		_ASSERT(0);
+		return 0;//!!!!!!!!!!!!!!!!!
+	}
+	depthcnt++;
+
+	if (!m_curmotinfo) {
+		return 0;
+	}
+
+
+	//rigからrigを呼ぶので　再入禁止には別手段が必要
+	//if (g_underIKRot == true) {
+	//	return 0;//2023/01/27　再入禁止でギザギザは無くなるかどうかテスト
+	//}
+	//g_underIKRot = true;//2023/01/14 parent limited or not
+
+
+	int keynum;
+	double startframe, endframe, applyframe;
+	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
+
+	CBone* curbone = m_bonelist[srcboneno];
+	if (!curbone) {
+		//g_underIKRot = false;//2023/01/14 parent limited or not
+		return 0;
+	}
+	CBone* parentbone = 0;
+	CBone* lastbone = 0;
+
+
+
+	//int calccnt;
+	//for (calccnt = 0; calccnt < calcnum; calccnt++){
+	double firstframe = 0.0;
+
+	int elemno;
+	for (elemno = 0; elemno < ikcustomrig.elemnum; elemno++) {
+		RIGELEM currigelem = ikcustomrig.rigelem[elemno];
+		if (currigelem.rigrigboneno >= 0) {
+			//rigのrig
+			CBone* rigrigbone = GetBoneByID(currigelem.rigrigboneno);
+			if (rigrigbone) {
+				int rigrigno = currigelem.rigrigno;
+				if ((rigrigno >= 0) && (rigrigno < MAXRIGNUM)) {
+					if (currigelem.transuv[uvno].enable == 1) {
+						CUSTOMRIG rigrig = rigrigbone->GetCustomRig(rigrigno);
+						RigControlPostRig(limitdegflag, depthcnt, erptr, rigrigbone->GetBoneNo(),
+							uvno, rigrig, buttonflag);
+					}
+				}
+			}
+		}
+		else {
+			//rigelem
+			curbone = GetBoneByID(currigelem.boneno);
+			if (curbone) {
+				lastbone = curbone;
+				parentbone = curbone->GetParent();
+
+				CBone* aplybone;
+				if (parentbone) {
+					aplybone = parentbone;
+				}
+				else {
+					aplybone = curbone;
+				}
+
+
+				int rotrecsize = curbone->GetIKRotRecSize();
+				if (rotrecsize > 0) {
+					int rotrecno;
+					for (rotrecno = 0; rotrecno < rotrecsize; rotrecno++) {
+						IKROTREC currotrec = curbone->GetIKRotRec(rotrecno);
+						CQuaternion localq = currotrec.rotq;
+						bool lessthanthflag = currotrec.lessthanthflag;
+
+						//curbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
+						// 
+						//保存結果は　CBone::RotAndTraBoneQReqにおいてしか使っておらず　startframeしか使っていない
+						curbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
+
+						//2023/01/23 : Rigの場合は　回転できなくても処理を継続
+
+						if (keynum >= 2) {
+							int keyno = 0;
+							double curframe;
+							for (curframe = startframe; curframe <= endframe; curframe += 1.0) {
+								if (curframe != applyframe) {
+									if (lessthanthflag == false) {
+										bool keynum1flag = false;
+										bool postflag = true;
+										bool fromiktarget = false;
+										IKRotateOneFrame(limitdegflag, erptr,
+											keyno, curbone,
+											curframe, startframe, applyframe,
+											localq, keynum1flag, postflag, fromiktarget);
+									}
+								}
+								keyno++;
+							}
+
+						}
+
+						if (g_applyendflag == 1) {
+							//curmotinfo->curframeから最後までcurmotinfo->curframeの姿勢を適用
+							if (m_topbone) {
+								int tolast;
+								for (tolast = (int)m_curmotinfo->curframe + 1; tolast < (int)m_curmotinfo->frameleng; tolast++) {
+									m_topbone->PasteRotReq(limitdegflag, m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
+								}
+							}
+						}
+					}
+				}
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+	}
+
+	double curframe;
+	for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
+		if (curframe != applyframe) {
+			bool postflag = true;
+			IKTargetVec(limitdegflag, erptr, curframe, postflag);
+		}
+	}
+
+	if (lastbone) {
+		return lastbone->GetBoneNo();
+	}
+	else {
+		return srcboneno;
+	}
+}
+
+
+
 int CModel::InterpolateBetweenSelection(bool limitdegflag, double srcstartframe, double srcendframe, 
 	CBone* srcbone, int srckind)
 {

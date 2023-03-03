@@ -902,7 +902,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 
 /*
 * 2023/03/01
-* EditMot 1.2.0.14 RC4
+* EditMot 1.2.0.14 RC5
 * 
 * 物理修正
 *	遅いPCで動かすために　詳細度をカットしていた条件文修正
@@ -913,6 +913,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 *		剛体がスリープ状態になっていたのが原因
 *		スリープまでの時間指定と　スリープ速度の閾値指定により解決
 *
+* Rigもマウスドラッグ中とドラッグ終了後の処理に分けて　マウスレスポンス向上
+* 
 * Rigの形状種類追加
 *	球の他に　円(X, Y, Z)を追加　設定画面で選べる
 *	ジョイント右クリックで　作成済のリグ名-->Settingメニューで右ペインに設定ウインドウ-->形状
@@ -8479,58 +8481,85 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 		//マウスによるIKとFKの後処理　applyframe以外のフレームの処理
 		g_fpsforce30 = false;
-		if ((s_ikkind == 0) && (s_editmotionflag >= 0)){
-			if (s_pickinfo.buttonflag == PICK_CENTER) {
-				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
-				s_editmotionflag = s_model->IKRotatePostIK(g_limitdegflag,
-					&s_editrange, s_pickinfo.pickobjno, g_iklevel);
+		if (s_oprigflag == 0) {
+			if ((s_ikkind == 0) && (s_editmotionflag >= 0)) {
+				if (s_pickinfo.buttonflag == PICK_CENTER) {
+					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+					s_editmotionflag = s_model->IKRotatePostIK(g_limitdegflag,
+						&s_editrange, s_pickinfo.pickobjno, g_iklevel);
 
-				if (oldcursor != NULL) {
-					SetCursor(oldcursor);
+					if (oldcursor != NULL) {
+						SetCursor(oldcursor);
+					}
+				}
+				else if ((s_pickinfo.buttonflag == PICK_X) ||
+					(s_pickinfo.buttonflag == PICK_Y) ||
+					(s_pickinfo.buttonflag == PICK_Z) ||
+					(s_pickinfo.buttonflag == PICK_SPA_X) ||
+					(s_pickinfo.buttonflag == PICK_SPA_Y) ||
+					(s_pickinfo.buttonflag == PICK_SPA_Z)) {
+					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+					s_editmotionflag = s_model->IKRotateAxisDeltaPostIK(
+						g_limitdegflag,
+						&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno,
+						g_iklevel, s_ikcnt);
+
+
+					if (oldcursor != NULL) {
+						SetCursor(oldcursor);
+					}
 				}
 			}
-			else if ((s_pickinfo.buttonflag == PICK_X) || 
-				(s_pickinfo.buttonflag == PICK_Y) || 
-				(s_pickinfo.buttonflag == PICK_Z) ||
-				(s_pickinfo.buttonflag == PICK_SPA_X) || 
-				(s_pickinfo.buttonflag == PICK_SPA_Y) || 
-				(s_pickinfo.buttonflag == PICK_SPA_Z)) {
-				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+			else if ((s_ikkind == 1) && (s_editmotionflag >= 0)) {
+				if (s_pickinfo.buttonflag == PICK_CENTER) {
+					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-				s_editmotionflag = s_model->IKRotateAxisDeltaPostIK(
-					g_limitdegflag,
-					&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno,
-					g_iklevel, s_ikcnt);
+					s_model->FKBoneTraPostFK(g_limitdegflag,
+						&s_editrange, s_curboneno);
+					s_editmotionflag = s_curboneno;
 
+					if (oldcursor != NULL) {
+						SetCursor(oldcursor);
+					}
+				}
+				else if ((s_pickinfo.buttonflag == PICK_X) ||
+					(s_pickinfo.buttonflag == PICK_Y) ||
+					(s_pickinfo.buttonflag == PICK_Z) ||
+					(s_pickinfo.buttonflag == PICK_SPA_X) ||
+					(s_pickinfo.buttonflag == PICK_SPA_Y) ||
+					(s_pickinfo.buttonflag == PICK_SPA_Z)) {
+					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-				if (oldcursor != NULL) {
-					SetCursor(oldcursor);
+					s_model->FKBoneTraAxisPostFK(
+						g_limitdegflag,
+						&s_editrange, s_curboneno);
+					s_editmotionflag = s_curboneno;
+
+					if (oldcursor != NULL) {
+						SetCursor(oldcursor);
+					}
 				}
 			}
+
 		}
-		else if ((s_ikkind == 1) && (s_editmotionflag >= 0)) {
-			if (s_pickinfo.buttonflag == PICK_CENTER) {
+		else {
+			if (s_customrigbone && (s_customrigno >= 0) && (s_editmotionflag >= 0)) {
+
 				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-				s_model->FKBoneTraPostFK(g_limitdegflag,
-					&s_editrange, s_curboneno);
-				s_editmotionflag = s_curboneno;
-
-				if (oldcursor != NULL) {
-					SetCursor(oldcursor);
-				}
-			}
-			else if ((s_pickinfo.buttonflag == PICK_X) ||
-				(s_pickinfo.buttonflag == PICK_Y) ||
-				(s_pickinfo.buttonflag == PICK_Z) ||
-				(s_pickinfo.buttonflag == PICK_SPA_X) ||
-				(s_pickinfo.buttonflag == PICK_SPA_Y) ||
-				(s_pickinfo.buttonflag == PICK_SPA_Z)) {
-				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
-
-				s_model->FKBoneTraAxisPostFK(
-					g_limitdegflag,
-					&s_editrange, s_curboneno);
+				s_ikcustomrig = s_customrigbone->GetCustomRig(s_customrigno);
+				s_model->RigControlPostRig(g_limitdegflag,
+					0, &s_editrange, s_pickinfo.pickobjno,
+					0,
+					s_ikcustomrig, s_pickinfo.buttonflag);
+				ChaMatrix tmpwm = s_model->GetWorldMat();
+				s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
+				s_model->RigControlPostRig(g_limitdegflag,
+					0, &s_editrange, s_pickinfo.pickobjno,
+					1,
+					s_ikcustomrig, s_pickinfo.buttonflag);
+				s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 				s_editmotionflag = s_curboneno;
 
 				if (oldcursor != NULL) {
@@ -8562,7 +8591,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		//IKRot終了時　LimitEulオンで　編集ボーンがあった場合
 		//グラフが波打つことは分かっているので(XYZどれか１つでも制限に掛かると　XYZ全て動かなくなるため)
 		//自動で　フィルターを掛けて　滑らかにする
-		if (((s_ikkind == 0) || (s_ikkind == 1)) && 
+		if ((((s_ikkind == 0) || (s_ikkind == 1)) || ((s_oprigflag != 0) && s_customrigbone)) &&
 			(g_limitdegflag == true) && 
 			(s_editmotionflag >= 0)) {
 
@@ -31275,13 +31304,16 @@ int OnMouseMoveFunc()
 							}
 
 							s_ikcustomrig = s_customrigbone->GetCustomRig(s_customrigno);
-
-							s_model->RigControl(g_limitdegflag,
-								0, &s_editrange, s_pickinfo.pickobjno, 0,
-								deltau, s_ikcustomrig, s_pickinfo.buttonflag);
+							s_model->RigControlUnderRig(g_limitdegflag,
+								0, &s_editrange, s_pickinfo.pickobjno,
+								0, deltau, 
+								s_ikcustomrig, s_pickinfo.buttonflag);
 							ChaMatrix tmpwm = s_model->GetWorldMat();
 							s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
-							s_model->RigControl(g_limitdegflag, 0, &s_editrange, s_pickinfo.pickobjno, 1, deltav, s_ikcustomrig, s_pickinfo.buttonflag);
+							s_model->RigControlUnderRig(g_limitdegflag, 
+								0, &s_editrange, s_pickinfo.pickobjno, 
+								1, deltav, 
+								s_ikcustomrig, s_pickinfo.buttonflag);
 							s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 							s_editmotionflag = s_curboneno;
 							//s_editmotionflag = 0;//これを０にすると　oprigflag == 1の状態でアンドゥした時に　アンドゥ用の保存が走って　保存が増えて状態が戻らない
