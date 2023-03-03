@@ -80,6 +80,9 @@ extern ID3D11EffectVectorVariable* g_hPm3Offset;
 extern int	g_nNumActiveLights;
 */
 
+extern bool g_zcmpalways;
+
+
 CDispObj::CDispObj()
 {
 	InitParams();
@@ -652,11 +655,17 @@ int CDispObj::RenderNormal(ID3D11DeviceContext* pd3d11DeviceContext, CMQOMateria
 
 			if (diffuse.w <= 0.99999f) {
 				//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
-				pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+				if (g_zcmpalways == false) {
+					pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+				}
+				g_zcmpalways = true;
 			}
 			else {
 				//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
-				pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+				if (g_zcmpalways == true) {
+					pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+				}
+				g_zcmpalways = false;
 			}
 
 			//pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
@@ -1169,15 +1178,22 @@ int CDispObj::RenderNormalPM3(ID3D11DeviceContext* pd3d11DeviceContext, int ligh
 		hr = g_hPm3Offset->SetRawValue(&m_scaleoffset, 0, sizeof(ChaVector3));
 		_ASSERT(SUCCEEDED(hr));
 
-
 		if (diffuse.w <= 0.99999f) {
 			//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
-			pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+			if (g_zcmpalways == false) {
+				pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+			}
+			g_zcmpalways = true;
 		}
 		else {
 			//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
-			pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+			if (g_zcmpalways == true) {
+				pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+			}
+			g_zcmpalways = false;
 		}
+
+
 
 		pd3d11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 

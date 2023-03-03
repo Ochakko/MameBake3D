@@ -902,7 +902,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 
 /*
 * 2023/03/01
-* EditMot 1.2.0.14 RC5
+* EditMot 1.2.0.14 RC6
 * 
 * 物理修正
 *	遅いPCで動かすために　詳細度をカットしていた条件文修正
@@ -914,6 +914,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 *		スリープまでの時間指定と　スリープ速度の閾値指定により解決
 *
 * Rigもマウスドラッグ中とドラッグ終了後の処理に分けて　マウスレスポンス向上
+* 
+* Rigにマウスを当てたときに　リグのボーンとリグの名前のツールチップを表示
 * 
 * Rigの形状種類追加
 *	球の他に　円(X, Y, Z)を追加　設定画面で選べる
@@ -1182,6 +1184,8 @@ HWND g_filterdlghwnd = 0;
 
 CRITICAL_SECTION g_CritSection_GetGP;
 
+static int CreateTipRig(CBone* currigbone, int currigno, POINT ptCursor, bool remakeflag);
+static int DispTipRig();
 static int ClearLimitedWM(CModel* srcmodel);
 
 static float CalcSelectScale(CBone* curboneptr);
@@ -1593,6 +1597,7 @@ static CUSTOMRIG s_customrig;
 static CUSTOMRIG s_ikcustomrig;
 static CBone* s_customrigbone = 0;
 static int s_customrigno = 0;
+static int s_tiprigdispcount = 0;
 static map<int, int> s_customrigmenuindex;
 
 static int s_forcenewaxis = 0;
@@ -1778,6 +1783,10 @@ static int s_curmotid = -1;
 static int s_curboneno = -1;
 static int s_saveboneno = -1;
 static int s_curbaseno = -1;
+
+static int s_tiprigboneno = -1;
+static int s_tiprigno = -1;
+
 static int s_ikcnt = 0;
 static ChaMatrix s_selm = ChaMatrix(0.0f, 0.0f, 0.0f, 0.0f,
 	0.0f, 0.0f, 0.0f, 0.0f,
@@ -2272,6 +2281,7 @@ CDXUTCheckBox* s_PreciseCheckBox = 0;
 CDXUTCheckBox* s_X180CheckBox = 0;
 CDXUTCheckBox* s_TPoseCheckBox = 0;
 
+CDXUTStatic* s_TipText = 0;
 
 //Left
 static CDXUTControl* s_ui_fpskind = 0;
@@ -2546,6 +2556,7 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_TRAROT					84
 #define IDC_COMBO_FPS				85
 #define IDC_X180					86
+#define IDC_TIPRIG					87
 
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -2936,7 +2947,7 @@ static int SetSpConstRefreshParams();
 static int PickSpConstRefresh(POINT srcpos);
 
 
-static int PickRigBone(UIPICKINFO* ppickinfo);
+static int PickRigBone(UIPICKINFO* ppickinfo, bool forrigtip = false, int* dstrigno = 0);
 static ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis, int disporder, bool posinverse);
 
 
@@ -3671,6 +3682,11 @@ void InitApp()
 	ZeroMemory(s_rigmaterial_ringZ, sizeof(CMQOMaterial*) * (RIGMULTINDEXMAX + 1));
 	s_matrigmat = ChaVector4(255.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f, 1.0f);
 
+	s_tiprigboneno = -1;
+	s_tiprigno = -1;
+	s_tiprigdispcount = 0;
+
+	g_zcmpalways = false;
 	g_lightflag = 1;
 
 	g_btcalccnt = 2.0;
@@ -4009,6 +4025,7 @@ void InitApp()
 	s_PreciseCheckBox = 0;
 	s_X180CheckBox = 0;
 	s_TPoseCheckBox = 0;
+	s_TipText = 0;
 
 	//Left
 	s_ui_fpskind = 0;
@@ -5145,7 +5162,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 
 
 	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
-
+	g_zcmpalways = false;
 
 
 
@@ -5384,6 +5401,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		UnhookWinEvent(s_hhook);
 		s_hhook = NULL;
 	}
+
 
 	//if (s_eventhook) {
 		////UnhookWinEvent(s_eventhook);
@@ -6682,6 +6700,14 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		OnFrameToolWnd();
 	}
 	else {
+
+		if (s_oprigflag != 0) {
+			if ((s_tiprigdispcount % 20) == 0) {
+				DispTipRig();
+			}
+			s_tiprigdispcount++;
+		}
+
 		WCHAR sz[100];
 		//swprintf_s(sz, 100, L"ThreadNum:%d(%d)", g_numthread, gNumIslands);
 		//g_SampleUI.GetStatic(IDC_STATIC_NUMTHREAD)->SetText(sz);
@@ -6692,6 +6718,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		if (g_undertrackingRMenu == 0) {
 			OnDSUpdate();
 		}
+
 
 		OnFrameStartPreview(fTime, &savetime);
 
@@ -13679,7 +13706,7 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 
 
 			//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
-			pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+			//pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
 		}
 	}
@@ -13691,14 +13718,14 @@ int RenderSelectFunc(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	s_select->UpdateMatrix(g_limitdegflag, &s_selectmat, &s_matVP);
 	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
-	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+	//pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 	if (s_dispselect) {
 		int lightflag = 1;
 		//ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.7f);
 		s_select->OnRender(pd3dImmediateContext, lightflag, diffusemult);
 	}
-	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+	//pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
 	return 0;
 
@@ -13708,14 +13735,14 @@ int RenderSelectPostureFunc(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	s_select_posture->UpdateMatrix(g_limitdegflag, &s_selectmat_posture, &s_matVP);
 	//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
-	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+	//pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 	if (s_dispselect) {
 		int lightflag = 1;
 		//ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.7f);
 		s_select_posture->OnRender(pd3dImmediateContext, lightflag, diffusemult);
 	}
-	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+	//pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
 	return 0;
 
@@ -13839,7 +13866,7 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 			}
 		}
 
-		pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+		//pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 	}
 
 	return 0;
@@ -28055,13 +28082,14 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 							ChaVector4 arrowdiffusemult = ChaVector4(1.0f, 0.5f, 0.5f, 0.85f);
 
 							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);//不透明の場合には手動で指定
-
+							g_zcmpalways = true;
 							curbone->GetColDisp(childbone, COL_CONE_INDEX)->RenderRefArrow(g_limitdegflag,
 								pd3dImmediateContext, curbone, arrowdiffusemult, 1, vecbonepos);
 							s_model->RenderBoneCircleOne(g_limitdegflag,
 								pd3dImmediateContext, s_bcircle, s_curboneno);
 
 							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);//元に戻す
+							g_zcmpalways = false;
 						}
 					}
 				}
@@ -40417,7 +40445,7 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 	return retmat;
 }
 
-int PickRigBone(UIPICKINFO* ppickinfo)
+int PickRigBone(UIPICKINFO* ppickinfo, bool forrigtip, int* dstrigno)//default:forrigtip = false, dstrigno = 0
 {
 	if (!s_model || !ppickinfo) {
 		return -1;
@@ -40469,32 +40497,37 @@ int PickRigBone(UIPICKINFO* ppickinfo)
 							if (colliobj) {
 								RollbackCurBoneNo();
 
-								*ppickinfo = chkpickinfo;
+								if (forrigtip == false) {
+									*ppickinfo = chkpickinfo;
+									s_curboneno = chkboneno;
 
-								s_curboneno = chkboneno;
+									CBone* chkbone = s_model->GetBoneByID(s_curboneno);
+									if (chkbone != s_customrigbone) {
+										//開いている設定ダイアログを閉じないと、設定ダイアログのrigboneと新たなrigboneが異なってしまい、Applyボタンで異なるリグを保存することがある
+										if (s_customrigdlg) {
+											DestroyWindow(s_customrigdlg);
+											s_customrigdlg = 0;
+										}
+									}
 
+									if (s_owpTimeline) {
+										s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+										//WindowPos currentpos = s_owpTimeline->getCurrentLinePos();
+										//POINT mousepos;
+										//mousepos.x = currentpos.x;
+										//mousepos.y = currentpos.y;
+										//::ClientToScreen(s_timelineWnd->getHWnd(), &mousepos);
+										//::SetCursorPos(mousepos.x, mousepos.y);
+									}
+									ChangeCurrentBone();//2021/11/19
 
-								CBone* chkbone = s_model->GetBoneByID(s_curboneno);
-								if (chkbone != s_customrigbone) {
-									//開いている設定ダイアログを閉じないと、設定ダイアログのrigboneと新たなrigboneが異なってしまい、Applyボタンで異なるリグを保存することがある
-									if (s_customrigdlg) {
-										DestroyWindow(s_customrigdlg);
-										s_customrigdlg = 0;
+									Bone2CustomRig(rigno);
+								}
+								else {
+									if (dstrigno) {
+										*dstrigno = rigno;
 									}
 								}
-
-								if (s_owpTimeline) {
-									s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
-									//WindowPos currentpos = s_owpTimeline->getCurrentLinePos();
-									//POINT mousepos;
-									//mousepos.x = currentpos.x;
-									//mousepos.y = currentpos.y;
-									//::ClientToScreen(s_timelineWnd->getHWnd(), &mousepos);
-									//::SetCursorPos(mousepos.x, mousepos.y);
-								}
-								ChangeCurrentBone();//2021/11/19
-
-								Bone2CustomRig(rigno);
 
 								return chkboneno;//!!!!!!!!!!!!!!!!!!!!!!!!!!!! found !!!!!!!!!!!!!!!!!!
 							}
@@ -40892,3 +40925,106 @@ int CallFilterFunc(int callnum)
 
 	return 0;
 }
+
+int CreateTipRig(CBone* currigbone, int currigno, POINT ptCursor, bool remakeflag)
+{
+	if (!currigbone || (currigno < 0)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	if (remakeflag) {
+		if (s_TipText) {
+			g_SampleUI.RemoveControl(IDC_TIPRIG);
+			s_TipText = 0;
+		}
+		CUSTOMRIG curcustomrig = currigbone->GetCustomRig(currigno);
+
+		WCHAR sz512[512] = { 0L };
+		swprintf_s(sz512, 512, L"%s : %s", currigbone->GetWBoneName(), curcustomrig.rigname);
+		size_t szlen = wcslen(sz512);
+		int displen;
+		if (szlen <= 511) {
+			displen = (int)szlen * 10;
+		}
+		else {
+			sz512[511] = 0L;
+			displen = 511 * 10;
+		}
+		g_SampleUI.AddStatic(IDC_TIPRIG, sz512, ptCursor.x, ptCursor.y, displen, 18);
+		s_TipText = g_SampleUI.GetStatic(IDC_TIPRIG);
+	}
+	else {
+		if (s_TipText) {
+			s_TipText->SetLocation(ptCursor.x, ptCursor.y);
+		}
+	}
+
+	return 0;
+}
+
+int DispTipRig()
+{
+	if (!s_model) {
+		return 0;
+	}
+
+	UIPICKINFO tmppickinfo;
+	ZeroMemory(&tmppickinfo, sizeof(UIPICKINFO));
+	tmppickinfo.mousebefpos = s_pickinfo.mousepos;
+	POINT ptCursor;
+	GetCursorPos(&ptCursor);
+	::ScreenToClient(s_3dwnd, &ptCursor);
+	tmppickinfo.mousepos = ptCursor;
+
+	tmppickinfo.clickpos = ptCursor;
+	tmppickinfo.diffmouse = ChaVector2(0.0f, 0.0f);
+	tmppickinfo.firstdiff = ChaVector2(0.0f, 0.0f);
+	tmppickinfo.winx = (int)DXUTGetWindowWidth();
+	tmppickinfo.winy = (int)DXUTGetWindowHeight();
+	tmppickinfo.pickrange = PICKRANGE;
+
+	//s_customrigのツールチップ表示
+	if ((s_oprigflag != 0) && (g_previewFlag == 0)) {
+		bool forrigtip = true;
+		int currigno = -1;
+		int pickrigboneno = PickRigBone(&tmppickinfo, forrigtip, &currigno);
+		if ((pickrigboneno >= 0) && (currigno >= 0)) {
+			CBone* currigbone = s_model->GetBoneByID(pickrigboneno);
+			if (currigbone) {
+				if (s_tiprigboneno != pickrigboneno) {
+					//チップ作り直し
+					s_tiprigboneno = pickrigboneno;
+					s_tiprigno = currigno;
+					bool remakeflag = true;
+					CreateTipRig(currigbone, currigno, ptCursor, remakeflag);
+				}
+				else {
+					if (s_tiprigno != s_customrig.rigno) {
+						//チップ作り直し
+						s_tiprigboneno = pickrigboneno;
+						s_tiprigno = currigno;
+						bool remakeflag = true;
+						CreateTipRig(currigbone, currigno, ptCursor, remakeflag);
+					}
+					else {
+						//チップ位置移動
+						s_tiprigboneno = pickrigboneno;
+						s_tiprigno = currigno;
+						bool remakeflag = false;
+						CreateTipRig(currigbone, currigno, ptCursor, remakeflag);
+					}
+				}
+			}
+		}
+		else {
+			//チップ削除
+			if (s_TipText) {
+				g_SampleUI.RemoveControl(IDC_TIPRIG);
+				s_TipText = 0;
+			}
+		}
+	}
+	return 0;
+}
+

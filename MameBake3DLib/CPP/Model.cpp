@@ -5349,6 +5349,7 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 
 	//pdev->SetRenderState( D3DRS_ZFUNC, D3DCMP_ALWAYS );
 	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+	g_zcmpalways = true;
 
 	//ボーンの三角錐表示
 	if ((g_previewFlag != 5) && (g_previewFlag != 4)){
@@ -5580,6 +5581,7 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 
 	//pdev->SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );
 	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+	g_zcmpalways = false;
 
 	return 0;
 }
