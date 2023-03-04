@@ -9204,10 +9204,15 @@ int CModel::CalcAxisAndRotForIKRotateVert(int limitdegflag,
 
 
 int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
-	int keyno, CBone* parentbone,
+	int keyno, CBone* rotbone, CBone* parentbone,
 	double curframe, double startframe, double applyframe,
 	CQuaternion rotq0, bool keynum1flag, bool postflag, bool fromiktarget)
 {
+
+	//for return value
+	int ismovable = 1;
+
+
 	if (!erptr || !parentbone) {
 		_ASSERT(0);
 		return 1;
@@ -9236,7 +9241,7 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 		qForRot.Slerp2(endq, 0.080f, &curqForRot);
 		curqForHipsRot = curqForRot;
 		bool infooutflag = true;
-		parentbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+		ismovable = rotbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
 			infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForHipsRot, fromiktarget);
 
 		//bool infooutflag = true;
@@ -9255,7 +9260,7 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 		//	&qForRot, &qForHipsRot);
 
 		bool infooutflag = true;
-		parentbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+		ismovable = rotbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
 			infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, fromiktarget);
 
 		if ((fromiktarget != true) && (postflag != true)) {
@@ -9267,7 +9272,7 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 			bool calcaplyflag = true;
 			CalcQForRot(limitdegflag, calcaplyflag, 
 				m_curmotinfo->motid, curframe, applyframe, rotq0,
-				parentbone, parentbone,
+				rotbone, parentbone,
 				&qForRot, &qForHipsRot);
 		}
 		else {
@@ -9306,21 +9311,21 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 				qForRot.Slerp2(endq, 1.0 - changerate, &curqForRot);
 				qForHipsRot.Slerp2(endq, 1.0 - changerate, &curqForHipsRot);
 
-				parentbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+				ismovable = rotbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
 					infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForHipsRot, fromiktarget);
 			}
 			else {
-				parentbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+				ismovable = rotbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
 					infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, fromiktarget);
 			}
 		}
 		else {
 			if (keyno == 0) {
-				parentbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+				ismovable = rotbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
 					infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, fromiktarget);
 			}
 			else {
-				parentbone->SetAbsMatReq(limitdegflag, 0, m_curmotinfo->motid, curframe, firstframe);
+				rotbone->SetAbsMatReq(limitdegflag, 0, m_curmotinfo->motid, curframe, firstframe);
 			}
 		}
 
@@ -9330,7 +9335,7 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 		}
 	}
 	
-	return 0;
+	return ismovable;
 }
 
 void CModel::ClearIKRotRec()
@@ -9486,15 +9491,16 @@ int CModel::IKRotateUnderIK(bool limitdegflag, CEditRange* erptr,
 
 
 					double curframe = applyframe;
-
+					int ismovable2 = 1;
 					if (keynum >= 2) {
 						int keyno = 0;
 
 						bool keynum1flag = false;
 						bool postflag = false;
 						bool fromiktarget = false;
-						IKRotateOneFrame(limitdegflag, erptr,
-							keyno, parentbone,
+						ismovable2 = IKRotateOneFrame(limitdegflag, erptr,
+							keyno, 
+							parentbone, parentbone,
 							curframe, startframe, applyframe,
 							rotq0, keynum1flag, postflag, fromiktarget);
 
@@ -9504,10 +9510,17 @@ int CModel::IKRotateUnderIK(bool limitdegflag, CEditRange* erptr,
 						bool keynum1flag = true;
 						bool postflag = false;
 						bool fromiktarget = false;
-						IKRotateOneFrame(limitdegflag, erptr,
-							0, parentbone,
+						ismovable2 = IKRotateOneFrame(limitdegflag, erptr,
+							0, 
+							parentbone, parentbone,
 							m_curmotinfo->curframe, startframe, applyframe,
 							rotq0, keynum1flag, postflag, fromiktarget);
+					}
+
+
+					//2023/03/04 制限角度に引っ掛かった場合には　やめて　次のジョイントの回転へ
+					if ((ismovable2 == 0) && (g_wallscrapingikflag == 0)) {
+						continue;
 					}
 
 
@@ -9663,23 +9676,24 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 						parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
 
 
-						if (keynum >= 2) {
-							int keyno = 0;
-							double curframe;
-							for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
-								if (curframe != applyframe) {
-									if (lessthanthflag == false) {
+						if (lessthanthflag == false) {
+							if (keynum >= 2) {
+								int keyno = 0;
+								double curframe;
+								for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
+									if (curframe != applyframe) {
 										bool keynum1flag = false;
 										bool postflag = true;
 										bool fromiktarget = false;
 										IKRotateOneFrame(limitdegflag, erptr,
-											keyno, parentbone,
+											keyno, 
+											parentbone, parentbone,
 											curframe, startframe, applyframe,
 											rotq0, keynum1flag, postflag, fromiktarget);
 									}
 								}
+								keyno++;
 							}
-							keyno++;
 						}
 						//else {
 						//	bool keynum1flag = true;
@@ -9869,7 +9883,8 @@ int CModel::IKRotate(bool limitdegflag, CEditRange* erptr,
 							bool postflag = false;
 							bool fromiktarget = false;
 							IKRotateOneFrame(limitdegflag, erptr,
-								keyno, parentbone, 
+								keyno, 
+								parentbone, parentbone, 
 								curframe, startframe, applyframe,
 								rotq0, keynum1flag, postflag, fromiktarget);
 
@@ -9881,7 +9896,8 @@ int CModel::IKRotate(bool limitdegflag, CEditRange* erptr,
 						bool postflag = false;
 						bool fromiktarget = false;
 						IKRotateOneFrame(limitdegflag, erptr,
-							0, parentbone,
+							0, 
+							parentbone, parentbone,
 							m_curmotinfo->curframe, startframe, applyframe,
 							rotq0, keynum1flag, postflag, fromiktarget);
 					}
@@ -10086,7 +10102,8 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 					bool keynum1flag = false;
 					bool fromiktarget = true;
 					IKRotateOneFrame(limitdegflag, erptr,
-						keyno, parentbone,
+						keyno, 
+						parentbone, parentbone,
 						curframe, startframe, applyframe,
 						rotq0, keynum1flag, postflag, fromiktarget);
 					keyno++;
@@ -11691,12 +11708,12 @@ int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt,
 
 	if (depthcnt >= 10) {
 		_ASSERT(0);
-		return 0;//!!!!!!!!!!!!!!!!!
+		return -1;//!!!!!!!!!!!!!!!!!
 	}
 	depthcnt++;
 
 	if (!m_curmotinfo) {
-		return 0;
+		return -1;
 	}
 
 
@@ -11707,11 +11724,14 @@ int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt,
 	//g_underIKRot = true;//2023/01/14 parent limited or not
 
 
-	float rotrad = srcdelta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
-	//if (fabs(rotrad) < (0.020 * DEG2PAI)){
-	if (fabs(rotrad) < (0.020 * DEG2PAI)) {//2023/02/11
-		//g_underIKRot = false;//2023/01/14 parent limited or not
+	//float rotrad = srcdelta / 10.0f * (float)PAI / 12.0f;// / (float)calcnum;
+	float rotrad = srcdelta / 10.0f * (float)PAI / 20.0f * g_physicsmvrate;//2023/03/04
+	//if (fabs(rotrad) < (0.020 * DEG2PAI)) {//2023/02/11
+	if (fabs(rotrad) < (0.010 * DEG2PAI)) {//2023/03/04
 		return 0;
+	}
+	if (fabs(rotrad) > (0.0550 * DEG2PAI)) {//2023/03/04
+		rotrad = 0.0550f * fabs(rotrad) / rotrad;
 	}
 
 
@@ -11722,7 +11742,7 @@ int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt,
 	CBone* curbone = m_bonelist[srcboneno];
 	if (!curbone) {
 		//g_underIKRot = false;//2023/01/14 parent limited or not
-		return 0;
+		return -1;
 	}
 	CBone* parentbone = 0;
 	CBone* lastbone = 0;
@@ -11736,6 +11756,15 @@ int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt,
 	int elemno;
 	for (elemno = 0; elemno < ikcustomrig.elemnum; elemno++) {
 		RIGELEM currigelem = ikcustomrig.rigelem[elemno];
+
+		//2023/03/04
+		//同じ軸で２倍回転しないように　重複処理はスキップ
+		if ((uvno == 1) &&
+			(currigelem.transuv[0].enable == 1) && (currigelem.transuv[1].enable == 1) &&
+			(currigelem.transuv[0].axiskind == currigelem.transuv[1].axiskind)) {
+			continue;
+		}
+
 		if (currigelem.rigrigboneno >= 0) {
 			//rigのrig
 			CBone* rigrigbone = GetBoneByID(currigelem.rigrigboneno);
@@ -11796,12 +11825,13 @@ int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt,
 					else {
 						_ASSERT(0);
 						//g_underIKRot = false;//2023/01/14 parent limited or not
-						return 1;
+						return -1;
 					}
 					ChaVector3Normalize(&axis0, &axis0);
 
 
-					if (fabs(rotrad2) >= (0.020 * DEG2PAI)) {//2023/02/11
+					//if (fabs(rotrad2) >= (0.020 * DEG2PAI)) {//2023/02/11
+					if (fabs(rotrad2) >= (0.010 * DEG2PAI)) {//2023/03/04
 
 						if (fabs(rotrad2) > (0.0550 * DEG2PAI)) {//2023/02/11
 							rotrad2 = 0.0550f * fabs(rotrad2) / rotrad2;
@@ -11816,25 +11846,35 @@ int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt,
 						//保存結果は　CBone::RotAndTraBoneQReqにおいてしか使っておらず　startframeしか使っていない
 						curbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
 
+						int ismovable2 = 1;
 						if (keynum >= 2) {
 							int keyno = 0;
 							double curframe = applyframe;
 							bool keynum1flag = false;
 							bool postflag = false;
 							bool fromiktarget = false;
-							IKRotateOneFrame(limitdegflag, erptr,
-								keyno, curbone,
+							ismovable2 = IKRotateOneFrame(limitdegflag, erptr,
+								keyno, 
+								curbone, aplybone,
 								curframe, startframe, applyframe,
 								localq, keynum1flag, postflag, fromiktarget);
+
 						}
 						else {
 							bool keynum1flag = true;
 							bool postflag = false;
 							bool fromiktarget = false;
-							IKRotateOneFrame(limitdegflag, erptr,
-								0, curbone,
+							ismovable2 = IKRotateOneFrame(limitdegflag, erptr,
+								0, 
+								curbone, aplybone,
 								m_curmotinfo->curframe, startframe, applyframe,
 								localq, keynum1flag, postflag, fromiktarget);
+						}
+
+
+						//2023/03/04 制限角度に引っ掛かった場合には　やめて　次のジョイントの回転へ
+						if ((ismovable2 == 0) && (g_wallscrapingikflag == 0)) {
+							continue;
 						}
 
 						//curboneのrotqを保存
@@ -11850,7 +11890,7 @@ int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt,
 						}
 						else {
 							_ASSERT(0);
-							return 0;
+							return -1;
 						}
 						
 						if (g_applyendflag == 1) {
@@ -11883,7 +11923,7 @@ int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt,
 						}
 						else {
 							_ASSERT(0);
-							return 0;
+							return -1;
 						}
 					}
 				}
@@ -11930,6 +11970,11 @@ int CModel::RigControlPostRig(bool limitdegflag, int depthcnt,
 	double startframe, endframe, applyframe;
 	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 
+	double roundingstartframe, roundingendframe, roundingapplyframe;
+	roundingstartframe = (double)((int)(startframe + 0.0001));
+	roundingendframe = (double)((int)(endframe + 0.0001));
+	roundingapplyframe = (double)((int)(applyframe + 0.0001));
+
 	CBone* curbone = m_bonelist[srcboneno];
 	if (!curbone) {
 		//g_underIKRot = false;//2023/01/14 parent limited or not
@@ -11947,6 +11992,15 @@ int CModel::RigControlPostRig(bool limitdegflag, int depthcnt,
 	int elemno;
 	for (elemno = 0; elemno < ikcustomrig.elemnum; elemno++) {
 		RIGELEM currigelem = ikcustomrig.rigelem[elemno];
+
+		//2023/03/04
+		//同じ軸で２倍回転しないように　重複処理はスキップ
+		if ((uvno == 1) &&
+			(currigelem.transuv[0].enable == 1) && (currigelem.transuv[1].enable == 1) &&
+			(currigelem.transuv[0].axiskind == currigelem.transuv[1].axiskind)) {
+			continue;
+		}
+
 		if (currigelem.rigrigboneno >= 0) {
 			//rigのrig
 			CBone* rigrigbone = GetBoneByID(currigelem.rigrigboneno);
@@ -12007,28 +12061,28 @@ int CModel::RigControlPostRig(bool limitdegflag, int depthcnt,
 						//curbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
 						// 
 						//保存結果は　CBone::RotAndTraBoneQReqにおいてしか使っておらず　startframeしか使っていない
-						curbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
+						curbone->SaveSRT(limitdegflag, m_curmotinfo->motid, roundingstartframe);
 
 						//2023/01/23 : Rigの場合は　回転できなくても処理を継続
-
-						if (keynum >= 2) {
-							int keyno = 0;
-							double curframe;
-							for (curframe = startframe; curframe <= endframe; curframe += 1.0) {
-								if (curframe != applyframe) {
-									if (lessthanthflag == false) {
+						
+						if (lessthanthflag == false) {
+							if (keynum >= 2) {
+								int keyno = 0;
+								double curframe;
+								for (curframe = roundingstartframe; curframe <= roundingendframe; curframe += 1.0) {
+									if (curframe != roundingapplyframe) {
 										bool keynum1flag = false;
 										bool postflag = true;
 										bool fromiktarget = false;
 										IKRotateOneFrame(limitdegflag, erptr,
-											keyno, curbone,
-											curframe, startframe, applyframe,
+											keyno, 
+											curbone, aplybone,
+											curframe, roundingstartframe, roundingapplyframe,
 											localq, keynum1flag, postflag, fromiktarget);
 									}
+									keyno++;
 								}
-								keyno++;
 							}
-
 						}
 
 						if (g_applyendflag == 1) {
@@ -12049,11 +12103,14 @@ int CModel::RigControlPostRig(bool limitdegflag, int depthcnt,
 		}
 	}
 
-	double curframe;
-	for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
-		if (curframe != applyframe) {
-			bool postflag = true;
-			IKTargetVec(limitdegflag, erptr, curframe, postflag);
+
+	if (uvno == 1) {
+		double curframe;
+		for (curframe = roundingstartframe; curframe <= roundingendframe; curframe += 1.0) {
+			if (curframe != roundingapplyframe) {
+				bool postflag = true;
+				IKTargetVec(limitdegflag, erptr, curframe, postflag);
+			}
 		}
 	}
 
@@ -12644,10 +12701,10 @@ int CModel::IKRotateAxisDeltaUnderIK(
 
 	int calcnum = 1;
 	//int calcnum = 4;//ctrlを押しながらドラッグでdelta * 0.25になっている.多フレーム選択時の重さを考えると処理を重くすることは出来ないのでゆっくりドラッグする他ない.
-	float rotrad = delta / 10.0f * (float)PAI / 12.0f * g_physicsmvrate;//PhysicsIKプレートのEditRateスライダーで倍率設定.
-	//if (fabs(rotrad) < (0.020 * DEG2PAI)) {
-	if (fabs(rotrad) < (0.020 * DEG2PAI)) {//2023/02/11
-		//g_underIKRot = false;//2023/01/14 parent limited or not
+	//float rotrad = delta / 10.0f * (float)PAI / 12.0f * g_physicsmvrate;//PhysicsIKプレートのEditRateスライダーで倍率設定.
+	float rotrad = delta / 10.0f * (float)PAI / 20.0f * g_physicsmvrate;//2023/03/04
+	//if (fabs(rotrad) < (0.020 * DEG2PAI)) {//2023/02/11
+	if (fabs(rotrad) < (0.010 * DEG2PAI)) {//2023/03/04
 		return 0;
 	}
 	if (fabs(rotrad) > (0.0550 * DEG2PAI)) {//2023/02/11
@@ -12797,6 +12854,7 @@ int CModel::IKRotateAxisDeltaUnderIK(
 					}
 				}
 
+				int ismovable2 = 1;
 				if (keynum >= 2) {
 					int keyno = 0;
 					double curframe = applyframe;
@@ -12805,8 +12863,9 @@ int CModel::IKRotateAxisDeltaUnderIK(
 					bool keynum1flag = false;
 					bool postflag = false;
 					bool fromiktarget = false;
-					IKRotateOneFrame(limitdegflag, erptr,
-						keyno, aplybone,
+					ismovable2 = IKRotateOneFrame(limitdegflag, erptr,
+						keyno, 
+						aplybone, aplybone,
 						curframe, startframe, applyframe,
 						localq, keynum1flag, postflag, fromiktarget);
 
@@ -12821,11 +12880,19 @@ int CModel::IKRotateAxisDeltaUnderIK(
 					bool keynum1flag = true;
 					bool postflag = false;
 					bool fromiktarget = false;
-					IKRotateOneFrame(limitdegflag, erptr,
-						0, aplybone,
+					ismovable2 = IKRotateOneFrame(limitdegflag, erptr,
+						0, 
+						aplybone, aplybone,
 						m_curmotinfo->curframe, startframe, applyframe,
 						localq, keynum1flag, false, fromiktarget);
 				}
+
+
+				//2023/03/04 制限角度に引っ掛かった場合には　やめて　次のジョイントの回転へ
+				if ((ismovable2 == 0) && (g_wallscrapingikflag == 0)) {
+					continue;
+				}
+
 
 				if (g_applyendflag == 1) {
 					//curmotinfo->curframeから最後までcurmotinfo->curframeの姿勢を適用
@@ -12987,22 +13054,23 @@ int CModel::IKRotateAxisDeltaPostIK(
 					//保存結果は　CBone::RotAndTraBoneQReqにおいてしか使っておらず　startframeしか使っていない
 					aplybone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe);
 
-					if (keynum >= 2) {
-						int keyno = 0;
-						double curframe;
-						for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
-							if (curframe != applyframe) {
-								if (lessthanthflag == false) {
+					if (lessthanthflag == false) {
+						if (keynum >= 2) {
+							int keyno = 0;
+							double curframe;
+							for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
+								if (curframe != applyframe) {
 									bool keynum1flag = false;
 									bool postflag = true;
 									bool fromiktarget = false;
 									IKRotateOneFrame(limitdegflag, erptr,
-										keyno, aplybone,
+										keyno, 
+										aplybone, aplybone,
 										curframe, startframe, applyframe,
 										localq, keynum1flag, postflag, fromiktarget);
 								}
+								keyno++;
 							}
-							keyno++;
 						}
 					}
 					//else {
@@ -13257,7 +13325,8 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 					bool postflag = false;
 					bool fromiktarget = false;
 					IKRotateOneFrame(limitdegflag, erptr,
-						keyno, aplybone,
+						keyno, 
+						aplybone, aplybone,
 						curframe, startframe, applyframe,
 						localq, keynum1flag, postflag, fromiktarget);
 
@@ -13273,7 +13342,8 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 				bool postflag = false;
 				bool fromiktarget = false;
 				IKRotateOneFrame(limitdegflag, erptr,
-					0, aplybone,
+					0, 
+					aplybone, aplybone,
 					m_curmotinfo->curframe, startframe, applyframe,
 					localq, keynum1flag, postflag, fromiktarget);
 			}

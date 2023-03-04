@@ -3174,7 +3174,12 @@ int CBone::SaveSRT(bool limitdegflag, int srcmotid, double srcframe)
 	return 0;
 }
 
-CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr, 
+
+
+//###############################
+//2023/03/04 ismovableをリターン
+//###############################
+int CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 	double srcstartframe, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
 	CQuaternion qForRot, CQuaternion qForHipsRot, bool fromiktarget)
 {
@@ -3191,7 +3196,9 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 	//###################################################################
 
 
-	int ismovable = 1;
+	
+	int ismovable = 1;//for return value
+
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
@@ -3306,7 +3313,7 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 			//if (ismovable == 0) {
 			//	return curmp;// not movableの場合は　印を付けて　直ちにリターンする
 			//}
-			return curmp;//onlycheckptr != NULLの場合は　初回呼び出しでmovableチェックして直ちにリターン
+			return ismovable;//onlycheckptr != NULLの場合は　初回呼び出しでmovableチェックして直ちにリターン
 		}
 		else {
 			bool directsetflag = false;
@@ -3383,7 +3390,7 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 
 
 			//onlycheckの場合は　ここまで
-			return curmp;
+			return ismovable;
 
 		}
 		else {
@@ -3466,7 +3473,7 @@ CMotionPoint* CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 	//	}
 	//}
 
-	return curmp;
+	return ismovable;
 }
 
 

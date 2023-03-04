@@ -301,7 +301,7 @@ public:
 	CMotionPoint* RotBoneQReq(bool limitdegflag, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe, 
 		CQuaternion rotq, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm, 
 		CBone* bvhbone = 0, ChaVector3 traanim = ChaVector3(0.0f, 0.0f, 0.0f));// , int setmatflag = 0, ChaMatrix* psetmat = 0, bool onretarget = false);
-	CMotionPoint* RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr, double srcstartframe, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
+	int RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr, double srcstartframe, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
 		CQuaternion qForRot, CQuaternion qForHipsRot, bool fromiktarget);
 
 	//directsetで　parentの姿勢を更新　再帰

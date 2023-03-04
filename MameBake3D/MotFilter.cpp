@@ -154,8 +154,13 @@ int CMotFilter::FilterNoDlg(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
 
 	//2023/02/27
 	//こっちの方が形が変わらない
-	m_filtertype = AVGF_MOVING;
-	m_filtersize = 9;
+	//m_filtertype = AVGF_MOVING;
+	//m_filtersize = 9;
+
+
+	//m_filtertype = AVGF_WEIGHTED_MOVING;
+	m_filtertype = AVGF_GAUSSIAN;
+	m_filtersize = 5;
 
 
 	CallFilterFunc(limitdegflag, srcmodel, srcbone, srcopekind, srcmotid, srcstartframe, srcendframe);
@@ -167,8 +172,9 @@ int CMotFilter::CallFilterFunc(bool limitdegflag, CModel* srcmodel, CBone* srcbo
 	int srcopekind, int srcmotid, int srcstartframe, int srcendframe)
 {
 	int frameleng = srcendframe - srcstartframe + 1;
+	int bufleng = frameleng + m_filtersize * 2;//サンプリングは両端にm_fitersize分余計に
 
-	m_eul = new ChaVector3[frameleng];//frame番号でアクセスする
+	m_eul = new ChaVector3[bufleng];
 	if (!m_eul) {
 		_ASSERT(0);
 		return 1;
@@ -179,7 +185,7 @@ int CMotFilter::CallFilterFunc(bool limitdegflag, CModel* srcmodel, CBone* srcbo
 		return 1;
 	}
 
-	m_tra = new ChaVector3[frameleng];
+	m_tra = new ChaVector3[bufleng];
 	if (!m_tra) {
 		_ASSERT(0);
 		return 1;
@@ -189,6 +195,12 @@ int CMotFilter::CallFilterFunc(bool limitdegflag, CModel* srcmodel, CBone* srcbo
 		_ASSERT(0);
 		return 1;
 	}
+
+	ZeroMemory(m_eul, sizeof(ChaVector3) * bufleng);//サンプリングは両端にm_fitersize分余計に
+	ZeroMemory(m_tra, sizeof(ChaVector3) * bufleng);//サンプリングは両端にm_fitersize分余計に
+
+	ZeroMemory(m_smootheul, sizeof(ChaVector3) * frameleng);//結果はstartframe-->endframe
+	ZeroMemory(m_smoothtra, sizeof(ChaVector3) * frameleng);//結果はstartframe-->endframe
 
 
 	if (srcopekind == 1) {
@@ -226,8 +238,25 @@ int CMotFilter::CallFilterFunc(bool limitdegflag, CModel* srcmodel, CBone* srcbo
 
 int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe)
 {
+	if (!srcmodel || !curbone) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	int frameleng = srcendframe - srcstartframe + 1;
-	int half_filtersize = m_filtersize / 2;
+	int bufleng = frameleng + m_filtersize * 2;//サンプリングは両端にm_fitersize分余計に
+
+	int motionleng;
+	MOTINFO* curmi = srcmodel->GetMotInfo(srcmotid);
+	if (curmi) {
+		motionleng = (int)(curmi->frameleng + 0.0001);
+	}
+	else {
+		motionleng = frameleng;
+		_ASSERT(0);
+		return 1;
+	}
+
 
 	ChaVector3 tmp_vec3;
 	ChaVector3 tmp_pos3;
@@ -235,64 +264,89 @@ int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, 
 	int frame;
 
 	if (curbone) {
-		ZeroMemory(m_eul, sizeof(ChaVector3) * frameleng);
-		ZeroMemory(m_smootheul, sizeof(ChaVector3) * frameleng);
-		ZeroMemory(m_tra, sizeof(ChaVector3) * frameleng);
-		ZeroMemory(m_smoothtra, sizeof(ChaVector3) * frameleng);
 
-		//ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-		//befeul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)((int)(srcstartframe + 0.0001)), BEFEUL_BEFFRAME);// axiskind = -1 --> m_anglelimitの座標系
+		ZeroMemory(m_eul, sizeof(ChaVector3) * bufleng);//サンプリングは両端にm_fitersize分余計に
+		ZeroMemory(m_tra, sizeof(ChaVector3) * bufleng);//サンプリングは両端にm_fitersize分余計に
 
-		for (frame = srcstartframe; frame <= srcendframe; frame++) {
-			//CMotionPoint curmp;
-			//curbone->CalcLocalInfo(limitdegflag, srcmotid, (double)frame, &curmp);
-			ChaVector3 cureul = curbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, (double)frame, BEFEUL_BEFFRAME);// axiskind = -1 --> m_anglelimitの座標系
-			//ChaVector3 cureul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)frame, BEFEUL_DIRECT, &befeul);// axiskind = -1 --> m_anglelimitの座標系
-			//ChaVector3 cureul = curbone->CalcLocalEulXYZ(-1, srcmotid, (double)frame, BEFEUL_ZERO, 0);// axiskind = -1 --> m_anglelimitの座標系
-			ChaVector3 curtra = curbone->CalcLocalTraAnim(limitdegflag, srcmotid, (double)frame);
+		ZeroMemory(m_smootheul, sizeof(ChaVector3) * frameleng);//結果はstartframe-->endframe
+		ZeroMemory(m_smoothtra, sizeof(ChaVector3) * frameleng);//結果はstartframe-->endframe
 
-			*(m_eul + frame - srcstartframe) = cureul;
-			*(m_tra + frame - srcstartframe) = curtra;
-			//befeul = cureul;
-			//if ((frame == (int)(srcstartframe + 0.0001)) || IsValidNewEul(cureul, befeul)) {
-			//	befeul = cureul;
-			//}
+		int bufindex = 0;
+		for (frame = (srcstartframe - m_filtersize); frame <= (srcendframe + m_filtersize); frame++) {
+			int smpframe;
+			if ((frame >= 1) && (frame < motionleng)) {
+				smpframe = frame;
+			}
+			else if (frame < 1) {
+				smpframe = 1;
+			}
+			else if (frame >= motionleng) {
+				smpframe = motionleng - 1;
+			}
+			else {
+				_ASSERT(0);
+				return 1;
+			}
+			ChaVector3 cureul = curbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, (double)smpframe, BEFEUL_BEFFRAME);// axiskind = -1 --> m_anglelimitの座標系
+			ChaVector3 curtra = curbone->CalcLocalTraAnim(limitdegflag, srcmotid, (double)smpframe);
+
+			*(m_eul + bufindex) = cureul;
+			*(m_tra + bufindex) = curtra;
+			bufindex++;
 		}
 
 
 		//平滑化処理
 		switch (m_filtertype) {
-		case AVGF_NONE:							//平滑処理なし
-			MoveMemory((void*)m_smootheul, (void*)m_eul, sizeof(ChaVector3) * frameleng);
-			MoveMemory((void*)m_smoothtra, (void*)m_tra, sizeof(ChaVector3) * frameleng);
-			break;
-		case AVGF_MOVING:					//移動平均
-			//平滑化処理
-			for (frame = srcstartframe; frame <= srcendframe; frame++) {
+		case AVGF_NONE:
+			//平滑処理なし
+		{
+			MoveMemory((void*)m_smootheul, (void*)(m_eul + m_filtersize), sizeof(ChaVector3) * frameleng);
+			MoveMemory((void*)m_smoothtra, (void*)(m_tra + m_filtersize), sizeof(ChaVector3) * frameleng);
+		}
+		break;
+		case AVGF_MOVING:
+			//移動平均
+		{
+			int srcindex;
+			int dstindex = 0;
+			for (srcindex = m_filtersize; srcindex < (frameleng + m_filtersize); srcindex++) {
 				tmp_vec3 = ChaVector3(0.0f, 0.0f, 0.0f);
 				tmp_pos3 = ChaVector3(0.0f, 0.0f, 0.0f);
 				int addcount = 0;
 				for (int k = -m_filtersize; k <= m_filtersize; k++) {
-					int index = frame - srcstartframe + k;
-					if((index >= 0) && (index < frameleng)){
-						tmp_vec3 += m_eul[index];
-						tmp_pos3 += m_tra[index];
+					int smpframe = srcindex + k;
+					if ((smpframe >= 0) && (smpframe < bufleng)) {
+						tmp_vec3 += m_eul[smpframe];
+						tmp_pos3 += m_tra[smpframe];
 						addcount++;
+					}
+					else {
+						_ASSERT(0);
+						return 1;
 					}
 				}
 				if (addcount > 0) {
-					m_smootheul[frame - srcstartframe] = tmp_vec3 / (float)addcount;
-					m_smoothtra[frame - srcstartframe] = tmp_pos3 / (float)addcount;
+					if ((dstindex >= 0) && (dstindex < frameleng)) {
+						m_smootheul[dstindex] = tmp_vec3 / (float)addcount;
+						m_smoothtra[dstindex] = tmp_pos3 / (float)addcount;
+					}
+					else {
+						_ASSERT(0);
+						return 1;
+					}
 				}
 				else {
 					_ASSERT(0);
-					m_smootheul[frame - srcstartframe] = m_eul[frame - srcstartframe];
-					m_smoothtra[frame - srcstartframe] = m_tra[frame - srcstartframe];
+					return 1;
 				}
+				dstindex++;
 			}
-			break;
+		}	
+		break;
 
-		case AVGF_WEIGHTED_MOVING:			//加重移動平均
+		case AVGF_WEIGHTED_MOVING:			
+			//加重移動平均
 		{
 			double denomVal = 0.0;
 			float weightVal = 0.0;
@@ -304,11 +358,12 @@ int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, 
 			}
 			denomVal = 1.0 / (double)sumd;
 
-			for (frame = srcstartframe; frame <= srcendframe; frame++) {
+			int srcindex;
+			int dstindex = 0;
+			for (srcindex = m_filtersize; srcindex < (frameleng + m_filtersize); srcindex++) {
 				tmp_vec3 = ChaVector3(0.0f, 0.0f, 0.0f);
 				tmp_pos3 = ChaVector3(0.0f, 0.0f, 0.0f);
 				for (int k = -m_filtersize; k <= m_filtersize; k++) {
-					int index = frame - srcstartframe + k;
 					if (k <= 0) {
 						coef = k + m_filtersize;
 					}
@@ -316,23 +371,33 @@ int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, 
 						coef = m_filtersize - k;
 					}
 					weightVal = (float)((double)denomVal / 2.0 * (double)coef);
-					if ((index >= 0) && (index < frameleng)) {
-						tmp_vec3 = tmp_vec3 + m_eul[index] * weightVal;
-						tmp_pos3 = tmp_pos3 + m_tra[index] * weightVal;
+
+					int smpframe = srcindex + k;
+					if ((smpframe >= 0) && (smpframe < bufleng)) {
+						tmp_vec3 = tmp_vec3 + m_eul[smpframe] * weightVal;
+						tmp_pos3 = tmp_pos3 + m_tra[smpframe] * weightVal;
 					}
 					else {
-						tmp_vec3 = tmp_vec3 + m_eul[frame - srcstartframe] * weightVal;
-						tmp_pos3 = tmp_pos3 + m_tra[frame - srcstartframe] * weightVal;
+						_ASSERT(0);
+						return 1;
 					}
 				}
-				m_smootheul[frame - srcstartframe] = tmp_vec3;
-				m_smoothtra[frame - srcstartframe] = tmp_pos3;
+				if ((dstindex >= 0) && (dstindex < frameleng)) {
+					m_smootheul[dstindex] = tmp_vec3;
+					m_smoothtra[dstindex] = tmp_pos3;
+				}
+				else {
+					_ASSERT(0);
+					return 1;
+				}
+				dstindex++;
 			}
-			break;
 		}
+		break;
 
-		case AVGF_GAUSSIAN:					//ガウシアン 
-
+		case AVGF_GAUSSIAN:					
+			//ガウシアン 
+		{
 			double normalizeVal = 0.0;
 			float normalDistVal = 0.0;
 
@@ -344,11 +409,12 @@ int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, 
 			}
 			normalizeVal = 1.0 / (double)sum;
 
-			for (frame = srcstartframe; frame <= srcendframe; frame++) {
+			int srcindex;
+			int dstindex = 0;
+			for (srcindex = m_filtersize; srcindex < (frameleng + m_filtersize); srcindex++) {
 				tmp_vec3 = ChaVector3(0.0f, 0.0f, 0.0f);
 				tmp_pos3 = ChaVector3(0.0f, 0.0f, 0.0f);
 				for (int k = -m_filtersize; k <= m_filtersize; k++) {
-					int index = frame - srcstartframe + k;
 					if (k <= 0) {
 						r = k + m_filtersize;
 					}
@@ -357,20 +423,32 @@ int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, 
 					}
 					normalDistVal = (float)((double)normalizeVal / 2.0 *
 						(double)Combi(m_filtersize, r));
-					if ((index >= 0) && (index < frameleng)) {
-						tmp_vec3 = tmp_vec3 + m_eul[index] * normalDistVal;
-						tmp_pos3 = tmp_pos3 + m_tra[index] * normalDistVal;
+
+					int smpframe = srcindex + k;
+					if ((smpframe >= 0) && (smpframe < bufleng)) {
+						tmp_vec3 = tmp_vec3 + m_eul[smpframe] * normalDistVal;
+						tmp_pos3 = tmp_pos3 + m_tra[smpframe] * normalDistVal;
 					}
 					else {
-						tmp_vec3 = tmp_vec3 + m_eul[frame - srcstartframe] * normalDistVal;
-						tmp_pos3 = tmp_pos3 + m_tra[frame - srcstartframe] * normalDistVal;
+						_ASSERT(0);
+						return 1;
 					}
 				}
-				m_smootheul[frame - srcstartframe] = tmp_vec3;
-				m_smoothtra[frame - srcstartframe] = tmp_pos3;
+				if ((dstindex >= 0) && (dstindex < frameleng)) {
+					m_smootheul[dstindex] = tmp_vec3;
+					m_smoothtra[dstindex] = tmp_pos3;
+				}
+				else {
+					_ASSERT(0);
+					return 1;
+				}
+				dstindex++;
 			}
-
-			break;
+		}
+		break;
+		
+		default:
+		break;
 		}
 
 		for (frame = srcstartframe; frame <= srcendframe; frame++) {

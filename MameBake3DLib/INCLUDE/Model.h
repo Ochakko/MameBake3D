@@ -988,7 +988,7 @@ private:
 		ChaVector3* dstaxis, float* dstrotrad);
 
 	int IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
-		int keyno, CBone* parentbone,
+		int keyno, CBone* rotbone, CBone* parentbone,
 		double curframe, double startframe, double applyframe,
 		CQuaternion rotq0, bool keynum1flag, bool postflag, bool fromiktarget);
 
