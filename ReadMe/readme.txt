@@ -258,13 +258,13 @@ DXUTÇ…Ç¬Ç¢ÇƒÅ@(2023/02/22)
 
 		        GetDXUTState().SetOverrideConstantFrameTime(true);
 		        GetDXUTState().SetOverrideConstantTimePerFrame(oneframetime);
-		        DXUTSetConstantFrameTime(true, oneframetime);
+		        DXUTSetConstantFrameTime(false, oneframetime);
 		    }
 		    else
 		    {
 		        GetDXUTState().SetOverrideConstantFrameTime(false);
 		        GetDXUTState().SetOverrideConstantTimePerFrame(fElapsedTime);
-		        DXUTSetConstantFrameTime(true, fElapsedTime);
+		        DXUTSetConstantFrameTime(false, fElapsedTime);
 		    }
 
 
