@@ -1598,6 +1598,7 @@ int CBone::CalcAxisMatZ( ChaVector3* curpos, ChaVector3* childpos )
 }
 
 
+
 float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag)
 {
 	//############################################################################################

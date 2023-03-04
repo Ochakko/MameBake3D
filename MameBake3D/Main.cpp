@@ -901,8 +901,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 
 
 /*
-* 2023/03/01
-* EditMot 1.2.0.14 RC9
+* 2023/03/04
+* EditMot 1.2.0.14 RC10
 * 
 * 物理修正
 *	遅いPCで動かすために　詳細度をカットしていた条件文修正
@@ -8656,7 +8656,14 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				bool allframeflag = false;
 				bool setcursorflag = true;
 				bool onpasteflag = false;
-				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, s_editmotionflag, onpasteflag);
+
+
+				//CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, s_editmotionflag, onpasteflag);
+
+				//2023/03/04
+				//rigの場合や　IKTargetの場合があるので　operatingjointnoはTopBoneの番号
+				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag,
+					s_model->GetTopBone()->GetBoneNo(), onpasteflag);
 			}
 
 			UpdateEditedEuler();
@@ -28225,9 +28232,6 @@ int OnRenderSelect(ID3D11DeviceContext* pd3dImmediateContext)
 			SetSelectState();
 			RenderSelectMark(pd3dImmediateContext, 1);
 		}
-		if ((s_model && s_model->GetModelDisp()) && (s_oprigflag != 0)) {
-			RenderRigMarkFunc(pd3dImmediateContext);
-		}
 	}
 	//else if ((g_previewFlag == 5) && (s_oprigflag == 1)){
 	else if (g_previewFlag == 5) {
@@ -28235,6 +28239,14 @@ int OnRenderSelect(ID3D11DeviceContext* pd3dImmediateContext)
 			//SetSelectCol();
 			SetSelectState();
 			RenderSelectMark(pd3dImmediateContext, 1);
+		}
+	}
+
+
+	//プレビュー中　物理中は　リグマークは表示しない
+	if (g_previewFlag == 0) {
+		if ((s_model && s_model->GetModelDisp()) && (s_oprigflag != 0)) {
+			RenderRigMarkFunc(pd3dImmediateContext);
 		}
 	}
 
@@ -40378,7 +40390,6 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 		//!!!!!! 軸の種類を変えた場合にも　リグの設定が保たれるように　BONEAXIS_CURRENTで統一
 		//BONEAXIS_BINDPOSEはXフィットしないので　BONEAXIS_CURRENTを選んだ
 		curbone->GetParent()->CalcAxisMatX_Manipulator(g_limitdegflag, BONEAXIS_CURRENT, 0, curbone, &selm, 0);
-
 	}
 	else {
 		//selm.SetIdentity();
