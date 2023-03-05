@@ -410,6 +410,7 @@ public:
 	void ClearIKRotRec();
 	void ClearIKRotRecUV();
 
+
 	int IKRotate(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel, double directframe = -1.0);
 	int IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, 
 		int maxlevel, double directframe, bool postflag);
@@ -418,6 +419,9 @@ public:
 	void SetIKTargetVecReq(CBone* srcbone);
 	int PosConstraintExecuteFromButton(bool limitdegflag, CEditRange* erptr);
 	int RefreshPosConstraint();
+
+	bool CheckIKTarget();
+	void CheckIKTargetReq(CBone* srcbone, bool* pfound);
 
 	//int PhysicsRot(CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel);
 	//int PhysicsMV(CEditRange* erptr, int srcboneno, ChaVector3 diffvec);

@@ -27,7 +27,7 @@ using namespace std;
 
 
 extern bool g_underIKRot;
-extern bool g_edgesmp;
+//extern bool g_edgesmp;
 
 CMotFilter::CMotFilter()
 {
@@ -106,7 +106,8 @@ int CMotFilter::GetFilterType()
 	元のモーションの再現率が大きい。（といいなあ）
 						   　
 ***********************************************************/
-int CMotFilter::Filter(bool limitdegflag, CModel* srcmodel, CBone* srcbone, 
+int CMotFilter::Filter(bool edgesmp, bool limitdegflag, 
+	CModel* srcmodel, CBone* srcbone,
 	int srcopekind, int srcmotid, int srcstartframe, int srcendframe)
 {
 	if (!srcmodel || !srcbone){
@@ -123,7 +124,8 @@ int CMotFilter::Filter(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
 		return 0;//!!!!!!!!!!!!!!!
 	}
 
-	CallFilterFunc(limitdegflag, srcmodel, srcbone, srcopekind, srcmotid, srcstartframe, srcendframe);
+	CallFilterFunc(edgesmp, limitdegflag, 
+		srcmodel, srcbone, srcopekind, srcmotid, srcstartframe, srcendframe);
 
 	::MessageBox(NULL, L"平滑化を実行しました。", L"処理終了", MB_OK);
 
@@ -131,7 +133,8 @@ int CMotFilter::Filter(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
 }
 
 
-int CMotFilter::FilterNoDlg(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
+int CMotFilter::FilterNoDlg(bool edgesmp, bool limitdegflag, 
+	CModel* srcmodel, CBone* srcbone,
 	int srcopekind, int srcmotid, int srcstartframe, int srcendframe)
 {
 	if (!srcmodel || !srcbone) {
@@ -163,12 +166,14 @@ int CMotFilter::FilterNoDlg(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
 	m_filtersize = 5;
 
 
-	CallFilterFunc(limitdegflag, srcmodel, srcbone, srcopekind, srcmotid, srcstartframe, srcendframe);
+	CallFilterFunc(edgesmp, limitdegflag, 
+		srcmodel, srcbone, srcopekind, srcmotid, srcstartframe, srcendframe);
 
 	return 0;
 }
 
-int CMotFilter::CallFilterFunc(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
+int CMotFilter::CallFilterFunc(bool edgesmp, bool limitdegflag, 
+	CModel* srcmodel, CBone* srcbone,
 	int srcopekind, int srcmotid, int srcstartframe, int srcendframe)
 {
 	int frameleng = srcendframe - srcstartframe + 1;
@@ -205,15 +210,19 @@ int CMotFilter::CallFilterFunc(bool limitdegflag, CModel* srcmodel, CBone* srcbo
 
 	if (srcopekind == 1) {
 		//all joints
+		bool saveunderik = g_underIKRot;
 		g_underIKRot = true;
-		FilterReq(limitdegflag, srcmodel, srcmodel->GetTopBone(), srcmotid, srcstartframe, srcendframe);
-		g_underIKRot = false;
+		FilterReq(edgesmp, limitdegflag, srcmodel, 
+			srcmodel->GetTopBone(), srcmotid, srcstartframe, srcendframe);
+		g_underIKRot = saveunderik;
 	}
 	else if (srcopekind == 2) {
 		//selecting joint
+		bool saveunderik = g_underIKRot;
 		g_underIKRot = true;
-		int result = FilterFunc(limitdegflag, srcmodel, srcbone, srcmotid, srcstartframe, srcendframe);
-		g_underIKRot = false;
+		int result = FilterFunc(edgesmp, limitdegflag, 
+			srcmodel, srcbone, srcmotid, srcstartframe, srcendframe);
+		g_underIKRot = saveunderik;
 		if (result != 0) {
 			_ASSERT(0);
 			return 1;//!!!!!!!!!!!!!
@@ -221,9 +230,11 @@ int CMotFilter::CallFilterFunc(bool limitdegflag, CModel* srcmodel, CBone* srcbo
 	}
 	else if (srcopekind == 3) {
 		//selecting joint and deeper
+		bool saveunderik = g_underIKRot;
 		g_underIKRot = true;
-		FilterReq(limitdegflag, srcmodel, srcbone, srcmotid, srcstartframe, srcendframe);
-		g_underIKRot = false;
+		FilterReq(edgesmp, limitdegflag, 
+			srcmodel, srcbone, srcmotid, srcstartframe, srcendframe);
+		g_underIKRot = saveunderik;
 	}
 	else {
 		_ASSERT(0);
@@ -236,7 +247,8 @@ int CMotFilter::CallFilterFunc(bool limitdegflag, CModel* srcmodel, CBone* srcbo
 }
 
 
-int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe)
+int CMotFilter::FilterFunc(bool edgesmp, bool limitdegflag,
+	CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe)
 {
 	if (!srcmodel || !curbone) {
 		_ASSERT(0);
@@ -274,7 +286,7 @@ int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, 
 		int bufindex = 0;
 		for (frame = (srcstartframe - m_filtersize); frame <= (srcendframe + m_filtersize); frame++) {
 			int smpframe;
-			if (g_edgesmp == false) {
+			if (edgesmp == false) {
 				//両端部分のサンプリング　自由端　編集領域の外も(あれば)サンプリング
 				if ((frame >= 1) && (frame < motionleng)) {
 					smpframe = frame;
@@ -500,11 +512,13 @@ int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, 
 	return 0;
 }
 
-void CMotFilter::FilterReq(bool limitdegflag, CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe)
+void CMotFilter::FilterReq(bool edgesmp, bool limitdegflag, 
+	CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe)
 {
 	if (curbone) {
 
-		int result = FilterFunc(limitdegflag, srcmodel, curbone, srcmotid, srcstartframe, srcendframe);
+		int result = FilterFunc(edgesmp, limitdegflag, 
+			srcmodel, curbone, srcmotid, srcstartframe, srcendframe);
 		if (result != 0) {
 			_ASSERT(0);
 			return;//!!!!!!!!!!!!!
@@ -512,10 +526,12 @@ void CMotFilter::FilterReq(bool limitdegflag, CModel* srcmodel, CBone* curbone, 
 
 
 		if (curbone->GetChild()){
-			FilterReq(limitdegflag, srcmodel, curbone->GetChild(), srcmotid, srcstartframe, srcendframe);
+			FilterReq(edgesmp, limitdegflag, 
+				srcmodel, curbone->GetChild(), srcmotid, srcstartframe, srcendframe);
 		}
 		if (curbone->GetBrother()){
-			FilterReq(limitdegflag, srcmodel, curbone->GetBrother(), srcmotid, srcstartframe, srcendframe);
+			FilterReq(edgesmp, limitdegflag, 
+				srcmodel, curbone->GetBrother(), srcmotid, srcstartframe, srcendframe);
 		}
 	}
 }

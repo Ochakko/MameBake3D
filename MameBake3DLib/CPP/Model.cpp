@@ -13943,6 +13943,34 @@ int CModel::FKBoneTra(bool limitdegflag, int onlyoneflag, CEditRange* erptr,
 	return curbone->GetBoneNo();
 }
 
+
+bool CModel::CheckIKTarget()
+{
+	bool hastarget = false;
+	CheckIKTargetReq(GetTopBone(), &hastarget);
+	return hastarget;
+}
+void CModel::CheckIKTargetReq(CBone* srcbone, bool* pfound)
+{
+	if (srcbone) {
+
+		if (srcbone->GetIKTargetFlag()) {
+			if (pfound) {
+				*pfound = true;
+			}
+			return;
+		}
+
+		if (srcbone->GetChild()) {
+			CheckIKTargetReq(srcbone->GetChild(), pfound);
+		}
+		if (srcbone->GetBrother()) {
+			CheckIKTargetReq(srcbone->GetBrother(), pfound);
+		}
+	}
+}
+
+
 int CModel::SetIKTargetVec()
 {
 	m_iktargetbonevec.clear();

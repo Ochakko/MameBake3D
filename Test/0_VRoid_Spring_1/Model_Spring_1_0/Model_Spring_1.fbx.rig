@@ -9,7 +9,7 @@
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
-    <ShapeMult>10</ShapeMult>
+    <ShapeMult>9</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>0</RigColor>
     <RigElem>
@@ -30,9 +30,9 @@
     <RigNumber>1</RigNumber>
     <ElemNum>1</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>6</DispOrder>
+    <DispOrder>8</DispOrder>
     <DispPosInverse>1</DispPosInverse>
-    <ShapeMult>10</ShapeMult>
+    <ShapeMult>9</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>1</RigColor>
     <RigElem>
@@ -53,9 +53,9 @@
     <RigNumber>2</RigNumber>
     <ElemNum>1</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>12</DispOrder>
+    <DispOrder>16</DispOrder>
     <DispPosInverse>1</DispPosInverse>
-    <ShapeMult>10</ShapeMult>
+    <ShapeMult>9</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>2</RigColor>
     <RigElem>
@@ -147,7 +147,7 @@
     <DispAxis>0</DispAxis>
     <DispOrder>3</DispOrder>
     <DispPosInverse>1</DispPosInverse>
-    <ShapeMult>6</ShapeMult>
+    <ShapeMult>4</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>0</RigColor>
     <RigElem>
@@ -257,9 +257,9 @@
     <RigNumber>2</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>6</DispOrder>
+    <DispOrder>7</DispOrder>
     <DispPosInverse>1</DispPosInverse>
-    <ShapeMult>6</ShapeMult>
+    <ShapeMult>5</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>1</RigColor>
     <RigElem>
@@ -302,9 +302,9 @@
     <RigNumber>3</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>9</DispOrder>
+    <DispOrder>11</DispOrder>
     <DispPosInverse>1</DispPosInverse>
-    <ShapeMult>6</ShapeMult>
+    <ShapeMult>5</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>2</RigColor>
     <RigElem>
@@ -630,7 +630,7 @@
     <DispAxis>0</DispAxis>
     <DispOrder>3</DispOrder>
     <DispPosInverse>1</DispPosInverse>
-    <ShapeMult>6</ShapeMult>
+    <ShapeMult>4</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>0</RigColor>
     <RigElem>
@@ -673,9 +673,9 @@
     <RigNumber>2</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>6</DispOrder>
+    <DispOrder>7</DispOrder>
     <DispPosInverse>1</DispPosInverse>
-    <ShapeMult>6</ShapeMult>
+    <ShapeMult>5</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>1</RigColor>
     <RigElem>
@@ -718,9 +718,9 @@
     <RigNumber>3</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>9</DispOrder>
+    <DispOrder>11</DispOrder>
     <DispPosInverse>1</DispPosInverse>
-    <ShapeMult>6</ShapeMult>
+    <ShapeMult>5</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>2</RigColor>
     <RigElem>
@@ -979,7 +979,7 @@
     <DispAxis>1</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
-    <ShapeMult>6</ShapeMult>
+    <ShapeMult>4</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>0</RigColor>
     <RigElem>
@@ -1022,9 +1022,9 @@
     <RigNumber>1</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>3</DispOrder>
+    <DispOrder>4</DispOrder>
     <DispPosInverse>1</DispPosInverse>
-    <ShapeMult>6</ShapeMult>
+    <ShapeMult>4</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>1</RigColor>
     <RigElem>
@@ -1067,9 +1067,9 @@
     <RigNumber>2</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>9</DispOrder>
+    <DispOrder>12</DispOrder>
     <DispPosInverse>1</DispPosInverse>
-    <ShapeMult>6</ShapeMult>
+    <ShapeMult>4</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>2</RigColor>
     <RigElem>
@@ -1112,9 +1112,9 @@
     <RigNumber>3</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>6</DispOrder>
+    <DispOrder>8</DispOrder>
     <DispPosInverse>1</DispPosInverse>
-    <ShapeMult>6</ShapeMult>
+    <ShapeMult>4</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>1</RigColor>
     <RigElem>
@@ -1159,7 +1159,7 @@
     <DispAxis>0</DispAxis>
     <DispOrder>0</DispOrder>
     <DispPosInverse>0</DispPosInverse>
-    <ShapeMult>6</ShapeMult>
+    <ShapeMult>4</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>0</RigColor>
     <RigElem>
@@ -1202,9 +1202,9 @@
     <RigNumber>1</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>3</DispOrder>
+    <DispOrder>4</DispOrder>
     <DispPosInverse>1</DispPosInverse>
-    <ShapeMult>6</ShapeMult>
+    <ShapeMult>4</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>1</RigColor>
     <RigElem>
@@ -1247,9 +1247,9 @@
     <RigNumber>2</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>9</DispOrder>
+    <DispOrder>12</DispOrder>
     <DispPosInverse>1</DispPosInverse>
-    <ShapeMult>6</ShapeMult>
+    <ShapeMult>4</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>2</RigColor>
     <RigElem>
@@ -1292,9 +1292,9 @@
     <RigNumber>3</RigNumber>
     <ElemNum>3</ElemNum>
     <DispAxis>0</DispAxis>
-    <DispOrder>6</DispOrder>
+    <DispOrder>8</DispOrder>
     <DispPosInverse>1</DispPosInverse>
-    <ShapeMult>6</ShapeMult>
+    <ShapeMult>4</ShapeMult>
     <ShapeKind>1</ShapeKind>
     <RigColor>1</RigColor>
     <RigElem>

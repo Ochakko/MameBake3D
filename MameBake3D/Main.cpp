@@ -956,18 +956,23 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 
 /*
 * 2023/03/05
-* EditMot 1.2.0.15へ向けて
+* EditMot 1.2.0.15 RC1
 * 
 * 位置コンストレイントしたときに　選択フレーム両端部分で　位置が動く問題対応
 *	原因
 *		位置が動くのは　自動平滑化によるもの
-*		平滑化の計算時に　選択範囲両端よりも前後にサンプリングして滑らかにするのがデフォルト
+*		平滑化の計算時に　選択範囲両端よりも前後にサンプリングして滑らかにするのが1.2.0.14からのデフォルト
 *		デフォルト状態だと　両端で位置が動く
 *	対策
-*		edge samplingチェックボックスを追加して　サンプリングを両端より広げないオプションを追加
-*		edge samplingチェックボックスにチェックしてから　位置コンストレイントすると　両端も動かない
+*		ConstExecuteボタン押下時　または　ジョイントに対してPosConstraintをオンにしている場合
+*			平滑化時の両端のサンプリング時に　エッジサンプリングするように　自動で切り替え
+*	対策結果
+*		普段は　選択フレーム両端がより滑らかになるように機能し
+* 		位置コンストレイント時には　両端のエッジが立つように機能
+* 		位置コンストレイントが　選択フレーム両端においても決まるようになった
 * 
-* 
+* サンプルのリグ設定を調整
+*	リグと他のリグの背面が重ならないようにリグ同士の間隔を少し広く設定
 * 
 */
 
@@ -2039,7 +2044,7 @@ static int  s_filterState = 0;
 static bool s_smoothFlag = false;//s_spsmoothボタン用
 static bool s_constexeFlag = false;//s_spconstexeボタン用
 static bool s_constrefreshFlag = false;//s_spconstrefreshボタン用
-static bool s_filternodlg = false;
+//static bool s_filternodlg = false;
 static bool s_delmodelFlag = false;
 static bool s_delallmodelFlag = false;
 static bool s_changeupdatethreadsFlag = false;
@@ -2305,7 +2310,7 @@ CDXUTCheckBox* s_TraRotCheckBox = 0;
 CDXUTCheckBox* s_PreciseCheckBox = 0;
 CDXUTCheckBox* s_X180CheckBox = 0;
 CDXUTCheckBox* s_TPoseCheckBox = 0;
-CDXUTCheckBox* s_EdgeSmpCheckBox = 0;
+//CDXUTCheckBox* s_EdgeSmpCheckBox = 0;
 
 
 CDXUTStatic* s_TipText = 0;
@@ -2357,7 +2362,7 @@ static CDXUTControl* s_ui_texspeed = 0;
 static CDXUTControl* s_ui_speed = 0;
 //static CDXUTControl* s_ui_vsync = 0;
 static CDXUTControl* s_ui_trarot = 0;
-static CDXUTControl* s_ui_edgesmp = 0;
+//static CDXUTControl* s_ui_edgesmp = 0;
 
 
 //Bullet
@@ -2585,7 +2590,7 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_COMBO_FPS				85
 #define IDC_X180					86
 #define IDC_TIPRIG					87
-#define IDC_EDGESMP					88
+//#define IDC_EDGESMP					88
 
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -2718,9 +2723,9 @@ static int OnFrameUndo(bool fromds, int fromdskind);
 static int OnSpriteUndo();
 static void OnGUIEventSpeed();
 static int SetShowPosTime();
-static int FilterFunc();
-static int CallFilterFunc(int callnum);
-
+//static int CallFilterFunc(int callnum);
+static int FilterFuncDlg();
+static int FilterNoDlg(bool copylw2w);
 
 static void SavePlayingStartEnd();
 static void SetButtonStartEndFromPlaying();
@@ -3715,7 +3720,7 @@ void InitApp()
 	s_tiprigno = -1;
 	s_tiprigdispcount = 0;
 
-	g_edgesmp = false;
+	//g_edgesmp = false;
 
 	g_zcmpalways = false;
 	g_lightflag = 1;
@@ -3893,7 +3898,7 @@ void InitApp()
 	s_smoothFlag = false;
 	s_constexeFlag = false;
 	s_constrefreshFlag = false;
-	s_filternodlg = false;
+	//s_filternodlg = false;
 	s_interpolateState = 0;
 	s_skipJointMark = 0;
 	s_firstkeyFlag = false;
@@ -4053,7 +4058,7 @@ void InitApp()
 	s_IfMirrorVDiv2CheckBox = 0;
 	//s_VSyncCheckBox = 0;
 	s_TraRotCheckBox = 0;
-	s_EdgeSmpCheckBox = 0;
+	//s_EdgeSmpCheckBox = 0;
 	s_PreciseCheckBox = 0;
 	s_X180CheckBox = 0;
 	s_TPoseCheckBox = 0;
@@ -4102,7 +4107,7 @@ void InitApp()
 	s_ui_speed = 0;
 	//s_ui_vsync = 0;
 	s_ui_trarot = 0;
-	s_ui_edgesmp = 0;
+	//s_ui_edgesmp = 0;
 	s_ui_precise = 0;
 	s_ui_x180 = 0;
 	s_ui_tpose = 0;
@@ -8657,18 +8662,9 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			(g_limitdegflag == true) && 
 			(s_editmotionflag >= 0)) {
 
-			//int callnum = 1;
-			//s_filternodlg = true;
-			//CallFilterFunc(callnum);
-
 			//ギザギザを平滑化
-			CMotFilter motfilter;
-			s_filternodlg = true;
-			s_filterState = 3;//deeper
-			motfilter.FilterNoDlg(g_limitdegflag, s_model, s_model->GetTopBone(),
-				s_filterState,
-				s_model->GetCurMotInfo()->motid,
-				(int)(s_buttonselectstart + 0.0001), (int)(s_buttonselectend + 0.0001));
+			bool copylw2w = false;
+			FilterNoDlg(copylw2w);
 		}
 
 
@@ -9229,9 +9225,9 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 	case IDC_TRAROT:
 		RollbackCurBoneNo();
 		break;
-	case IDC_EDGESMP:
-		RollbackCurBoneNo();
-		break;
+	//case IDC_EDGESMP:
+	//	RollbackCurBoneNo();
+	//	break;
 
 	default:
 		break;
@@ -22717,9 +22713,9 @@ int OnFrameUtCheckBox()
 	if (s_TraRotCheckBox) {
 		g_rotatetanim = (bool)s_TraRotCheckBox->GetChecked();
 	}
-	if (s_EdgeSmpCheckBox) {
-		g_edgesmp = (bool)s_EdgeSmpCheckBox->GetChecked();
-	}
+	//if (s_EdgeSmpCheckBox) {
+	//	g_edgesmp = (bool)s_EdgeSmpCheckBox->GetChecked();
+	//}
 	if (s_HighRpmCheckBox) {
 		g_HighRpmMode = (int)s_HighRpmCheckBox->GetChecked();
 	}
@@ -23942,26 +23938,17 @@ int OnFrameToolWnd()
 					}
 				}
 
-
-				//2023/02/13
-				//フィルターで滑らかに
-				int callnum = 1;
-				CallFilterFunc(callnum);
-
-
-				if (g_limitdegflag == true) {
-					int updatejointno = s_model->GetTopBone()->GetBoneNo();
-					bool allframeflag = true;
-					bool setcursorflag = false;
-					bool onpasteflag = false;
-					CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, updatejointno, onpasteflag);
-				}
-				refreshEulerGraph();
+				////2023/02/13
+				////フィルターで滑らかに
+				//int callnum = 1;
+				//CallFilterFunc(callnum);
+				bool copylw2w = true;
+				FilterNoDlg(copylw2w);
 
 				//カーソルを元に戻す
 				SetCursor(oldcursor);
 
-				PrepairUndo();//全フレーム変更後に全フレーム保存
+				//PrepairUndo();//全フレーム変更後に全フレーム保存 //FilterNoDlg内部から呼ぶ
 			}
 		}
 		s_scaleAllInitFlag = false;
@@ -24321,28 +24308,20 @@ int OnFrameToolWnd()
 
 
 	if (s_filterState != 0) {//ToolWindowの平滑化ボタン用
-		FilterFunc();
+		FilterFuncDlg();
 		s_filterState = 0;
-		s_filternodlg = false;
+		//s_filternodlg = false;
 	}
 
 	if (s_smoothFlag) {//s_spsmoothボタン用
 		if (s_model && s_model->GetCurMotInfo()) {
 			//PrepairUndo();
 
-			//int callnum = 1;
-			//CallFilterFunc(callnum);
-
 			//ギザギザを平滑化
-			CMotFilter motfilter;
-			s_filternodlg = true;
-			s_filterState = 3;//deeper
-			motfilter.FilterNoDlg(g_limitdegflag, s_model, s_model->GetTopBone(),
-				s_filterState,
-				s_model->GetCurMotInfo()->motid,
-				(int)(s_buttonselectstart + 0.0001), (int)(s_buttonselectend + 0.0001));
+			bool copylw2w = true;
+			FilterNoDlg(copylw2w);
 
-			PrepairUndo();
+			//PrepairUndo();//FilterNoDlg内部から呼ぶ
 		}
 		s_smoothFlag = false;
 	}
@@ -24356,26 +24335,12 @@ int OnFrameToolWnd()
 			s_model->PosConstraintExecuteFromButton(g_limitdegflag, &s_editrange);
 
 			//ギザギザを平滑化
-			CMotFilter motfilter;
-			s_filternodlg = true;
-			s_filterState = 3;//deeper
-			motfilter.FilterNoDlg(g_limitdegflag, s_model, s_model->GetTopBone(),
-				s_filterState,
-				s_model->GetCurMotInfo()->motid,
-				(int)(s_buttonselectstart + 0.0001), (int)(s_buttonselectend + 0.0001));
+			bool copylw2w = true;
+			FilterNoDlg(copylw2w);
 
-			if (g_limitdegflag == true) {
-				bool allframeflag = false;
-				bool setcursorflag = false;
-				bool onpasteflag = false;
-				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, s_model->GetTopBone()->GetBoneNo(), onpasteflag);
-			}
-			refreshEulerGraph();
 			if (oldcursor) {
 				SetCursor(oldcursor);
 			}
-
-			PrepairUndo();
 		}
 		s_constexeFlag = false;
 	}
@@ -25733,19 +25698,18 @@ int CreateUtDialog()
 
 	//Center Bottom
 	//iY = s_mainheight - 210;
-	//iY = s_mainheight - 155;
-	iY = s_mainheight - 155 - addh;
+	iY = s_mainheight - 155;
 	startx = s_mainwidth / 2 - 50;
 
 	int addh2 = 27;
 
-	g_SampleUI.AddCheckBox(IDC_EDGESMP, L"edge sampling",
-		startx, iY += addh, checkboxxlen, 16,
-		g_edgesmp, 0U, false, &s_EdgeSmpCheckBox);
-	s_ui_edgesmp = g_SampleUI.GetControl(IDC_EDGESMP);
-	_ASSERT(s_ui_edgesmp);
-	s_dsutgui1.push_back(s_ui_edgesmp);
-	s_dsutguiid1.push_back(IDC_EDGESMP);
+	//g_SampleUI.AddCheckBox(IDC_EDGESMP, L"edge sampling",
+	//	startx, iY += addh, checkboxxlen, 16,
+	//	g_edgesmp, 0U, false, &s_EdgeSmpCheckBox);
+	//s_ui_edgesmp = g_SampleUI.GetControl(IDC_EDGESMP);
+	//_ASSERT(s_ui_edgesmp);
+	//s_dsutgui1.push_back(s_ui_edgesmp);
+	//s_dsutguiid1.push_back(IDC_EDGESMP);
 
 
 	//iY += 10;
@@ -27823,7 +27787,7 @@ int CreateToolWnd()
 		if (s_model) {
 			if (s_filterState == 0) {
 				s_filterState = 1;
-				s_filternodlg = false;
+				//s_filternodlg = false;
 			}
 		}
 		});
@@ -27831,7 +27795,7 @@ int CreateToolWnd()
 		if (s_model) {
 			if (s_filterState == 0) {
 				s_filterState = 2;
-				s_filternodlg = false;
+				//s_filternodlg = false;
 			}
 		}
 		});
@@ -27839,7 +27803,7 @@ int CreateToolWnd()
 		if (s_model) {
 			if (s_filterState == 0) {
 				s_filterState = 3;
-				s_filternodlg = false;
+				//s_filternodlg = false;
 			}
 		}
 		});
@@ -40840,7 +40804,56 @@ int DisplayApplyRateText()
 	return 0;
 }
 
-int FilterFunc()
+int FilterNoDlg(bool copylw2w)
+{
+	if (!s_model) {
+		return 0;
+	}
+	if (!s_model->GetCurMotInfo()) {
+		return 0;
+	}
+	if (!s_model->GetTopBone()) {
+		return 0;
+	}
+
+	CMotFilter motfilter;
+
+	bool edgesmp;
+	if (s_constexeFlag) {
+		edgesmp = true;
+	}
+	else {
+		edgesmp = s_model->CheckIKTarget();
+	}
+
+	//s_filternodlg = true;
+	s_filterState = 3;//deeper
+	motfilter.FilterNoDlg(edgesmp, g_limitdegflag, s_model, s_model->GetTopBone(),
+		s_filterState,
+		s_model->GetCurMotInfo()->motid,
+		(int)(s_buttonselectstart + 0.0001), (int)(s_buttonselectend + 0.0001));
+
+	s_filterState = 0;
+
+	if (copylw2w) {
+		if (g_limitdegflag == true) {
+			bool allframeflag = false;
+			bool setcursorflag = false;
+			int operatingjointno = s_model->GetTopBone()->GetBoneNo();
+			bool onpasteflag = false;
+			CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
+		}
+		refreshEulerGraph();
+		PrepairUndo();
+	}
+
+
+	return 0;
+}
+
+
+
+int FilterFuncDlg()
 {
 	if ((s_filterState == 1) || (s_filterState == 2) || (s_filterState == 3)) {
 		//if (s_model){
@@ -40885,47 +40898,39 @@ int FilterFunc()
 
 
 				if (opebone) {
-					if (keynum >= 2) {
-						CMotFilter motfilter;
-						if (s_filternodlg == false) {
-							motfilter.Filter(g_limitdegflag, s_model, opebone,
-								s_filterState,
-								s_model->GetCurMotInfo()->motid,
-								(int)(startframe + 0.0001), (int)(endframe + 0.0001));
-						}
-						else {
-							motfilter.FilterNoDlg(g_limitdegflag, s_model, opebone,
-								s_filterState,
-								s_model->GetCurMotInfo()->motid,
-								(int)(startframe + 0.0001), (int)(endframe + 0.0001));
-						}
 
-
-						//nodlgの場合は　何回か処理してから　呼び出し元でCopyLimitedWorldToWorldする
-						if (s_filternodlg == false) {
-							if (g_limitdegflag == true) {
-								bool allframeflag = false;
-								bool setcursorflag = false;
-								int operatingjointno = opebone->GetBoneNo();
-								bool onpasteflag = false;
-								CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
-							}
-							refreshEulerGraph();
-
-							PrepairUndo();
-						}
-
+					bool edgesmp;
+					if (s_constexeFlag) {
+						edgesmp = true;
 					}
 					else {
-						if (s_filternodlg == false) {
-							::DSMessageBox(s_3dwnd, L"Retry After Setting Of Selection MultiFrames.", L"error!!!", MB_OK);
+						edgesmp = s_model->CheckIKTarget();
+					}
+
+					if (keynum >= 2) {
+						CMotFilter motfilter;
+						motfilter.Filter(edgesmp, g_limitdegflag, s_model, opebone,
+							s_filterState,
+							s_model->GetCurMotInfo()->motid,
+							(int)(startframe + 0.0001), (int)(endframe + 0.0001));
+
+
+						if (g_limitdegflag == true) {
+							bool allframeflag = false;
+							bool setcursorflag = false;
+							int operatingjointno = opebone->GetBoneNo();
+							bool onpasteflag = false;
+							CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
 						}
+						refreshEulerGraph();
+						PrepairUndo();
+					}
+					else {
+						::DSMessageBox(s_3dwnd, L"Retry After Setting Of Selection MultiFrames.", L"error!!!", MB_OK);
 					}
 				}
 				else {
-					if (s_filternodlg == false) {
-						::DSMessageBox(s_3dwnd, L"Retry After Selectiong target joint.", L"error!!!", MB_OK);
-					}
+					::DSMessageBox(s_3dwnd, L"Retry After Selectiong target joint.", L"error!!!", MB_OK);
 				}
 			}
 		}
@@ -40933,58 +40938,60 @@ int FilterFunc()
 	return 0;
 }
 
-int CallFilterFunc(int callnum)
-{
-	if (s_model && s_model->GetCurMotInfo()) {
-
-		if (g_iklevel == 1) {
-			s_filterState = 2;//one
-		}
-		else {
-			s_filterState = 3;//deeper
-		}
-		s_filternodlg = true;
-
-		int callcount;
-		for (callcount = 0; callcount < callnum; callcount++) {
-			FilterFunc();
-		}
 
 
-		//limitedへの変更を　worldに反映
-		if (g_limitdegflag == true) {
-			bool allframeflag = false;
-			bool setcursorflag = false;
-			bool onpasteflag = false;
-
-			int operatingjointno = 0;
-			CBone* curbone = s_model->GetBoneByID(s_curboneno);
-			if (curbone) {
-				if (curbone->GetParent()) {
-					operatingjointno = curbone->GetParent()->GetBoneNo();
-				}
-				else {
-					operatingjointno = curbone->GetBoneNo();
-				}
-			}
-			else {
-				if (s_model->GetTopBone()) {
-					operatingjointno = s_model->GetTopBone()->GetBoneNo();
-				}
-			}
-			CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
-		}
-
-
-		UpdateEditedEuler();
-	}
-
-
-	s_filterState = 0;
-	s_filternodlg = false;
-
-	return 0;
-}
+//int CallFilterFunc(int callnum)
+//{
+//	if (s_model && s_model->GetCurMotInfo()) {
+//
+//		if (g_iklevel == 1) {
+//			s_filterState = 2;//one
+//		}
+//		else {
+//			s_filterState = 3;//deeper
+//		}
+//		s_filternodlg = true;
+//
+//		int callcount;
+//		for (callcount = 0; callcount < callnum; callcount++) {
+//			FilterFunc();
+//		}
+//
+//
+//		//limitedへの変更を　worldに反映
+//		if (g_limitdegflag == true) {
+//			bool allframeflag = false;
+//			bool setcursorflag = false;
+//			bool onpasteflag = false;
+//
+//			int operatingjointno = 0;
+//			CBone* curbone = s_model->GetBoneByID(s_curboneno);
+//			if (curbone) {
+//				if (curbone->GetParent()) {
+//					operatingjointno = curbone->GetParent()->GetBoneNo();
+//				}
+//				else {
+//					operatingjointno = curbone->GetBoneNo();
+//				}
+//			}
+//			else {
+//				if (s_model->GetTopBone()) {
+//					operatingjointno = s_model->GetTopBone()->GetBoneNo();
+//				}
+//			}
+//			CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
+//		}
+//
+//
+//		UpdateEditedEuler();
+//	}
+//
+//
+//	s_filterState = 0;
+//	s_filternodlg = false;
+//
+//	return 0;
+//}
 
 int CreateTipRig(CBone* currigbone, int currigno, POINT ptCursor, bool remakeflag)
 {

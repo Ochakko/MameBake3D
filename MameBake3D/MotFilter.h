@@ -8,10 +8,10 @@ public:
 	CMotFilter();
 	~CMotFilter();
 
-	int Filter(bool limitdegflag, CModel* srcmodel, CBone* srcbone, 
+	int Filter(bool edgesmp, bool limitdegflag, CModel* srcmodel, CBone* srcbone, 
 		int srcopekind, int srcmotid, int srcstartframe, int srcendframe);
 
-	int FilterNoDlg(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
+	int FilterNoDlg(bool edgesmp, bool limitdegflag, CModel* srcmodel, CBone* srcbone,
 		int srcopekind, int srcmotid, int srcstartframe, int srcendframe);
 
 private:
@@ -21,10 +21,10 @@ private:
 	int GetFilterType();
 	int Combi(int N, int rp);
 
-	int CallFilterFunc(bool limitdegflag, CModel* srcmodel, CBone* srcbone,
+	int CallFilterFunc(bool edgesmp, bool limitdegflag, CModel* srcmodel, CBone* srcbone,
 		int srcopekind, int srcmotid, int srcstartframe, int srcendframe);
-	void FilterReq(bool limitdegflag, CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe);
-	int FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe);
+	void FilterReq(bool edgesmp, bool limitdegflag, CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe);
+	int FilterFunc(bool edgesmp, bool limitdegflag, CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe);
 
 
 private:
