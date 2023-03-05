@@ -27,7 +27,7 @@ using namespace std;
 
 
 extern bool g_underIKRot;
-
+extern bool g_edgesmp;
 
 CMotFilter::CMotFilter()
 {
@@ -274,18 +274,35 @@ int CMotFilter::FilterFunc(bool limitdegflag, CModel* srcmodel, CBone* curbone, 
 		int bufindex = 0;
 		for (frame = (srcstartframe - m_filtersize); frame <= (srcendframe + m_filtersize); frame++) {
 			int smpframe;
-			if ((frame >= 1) && (frame < motionleng)) {
-				smpframe = frame;
-			}
-			else if (frame < 1) {
-				smpframe = 1;
-			}
-			else if (frame >= motionleng) {
-				smpframe = motionleng - 1;
+			if (g_edgesmp == false) {
+				//両端部分のサンプリング　自由端　編集領域の外も(あれば)サンプリング
+				if ((frame >= 1) && (frame < motionleng)) {
+					smpframe = frame;
+				}
+				else if (frame < 1) {
+					smpframe = 1;
+				}
+				else if (frame >= motionleng) {
+					smpframe = motionleng - 1;
+				}
+				else {
+					_ASSERT(0);
+					return 1;
+				}
 			}
 			else {
-				_ASSERT(0);
-				return 1;
+				//2023/03/05
+				//主に　位置コンストレイントの時の　オプションとして使用する予定
+				//両端部分のサンプリング　固定端　編集領域の外はサンプリングしない
+				if (frame < srcstartframe) {
+					smpframe = srcstartframe;
+				}
+				else if (frame > srcendframe) {
+					smpframe = srcendframe;
+				}
+				else {
+					smpframe = frame;
+				}
 			}
 			ChaVector3 cureul = curbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, (double)smpframe, BEFEUL_BEFFRAME);// axiskind = -1 --> m_anglelimitの座標系
 			ChaVector3 curtra = curbone->CalcLocalTraAnim(limitdegflag, srcmotid, (double)smpframe);

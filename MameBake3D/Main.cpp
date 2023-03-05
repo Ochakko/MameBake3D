@@ -954,6 +954,22 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 */
 
 
+/*
+* 2023/03/05
+* EditMot 1.2.0.15へ向けて
+* 
+* 位置コンストレイントしたときに　選択フレーム両端部分で　位置が動く問題対応
+*	原因
+*		位置が動くのは　自動平滑化によるもの
+*		平滑化の計算時に　選択範囲両端よりも前後にサンプリングして滑らかにするのがデフォルト
+*		デフォルト状態だと　両端で位置が動く
+*	対策
+*		edge samplingチェックボックスを追加して　サンプリングを両端より広げないオプションを追加
+*		edge samplingチェックボックスにチェックしてから　位置コンストレイントすると　両端も動かない
+* 
+* 
+* 
+*/
 
 #include "useatl.h"
 
@@ -2289,6 +2305,8 @@ CDXUTCheckBox* s_TraRotCheckBox = 0;
 CDXUTCheckBox* s_PreciseCheckBox = 0;
 CDXUTCheckBox* s_X180CheckBox = 0;
 CDXUTCheckBox* s_TPoseCheckBox = 0;
+CDXUTCheckBox* s_EdgeSmpCheckBox = 0;
+
 
 CDXUTStatic* s_TipText = 0;
 
@@ -2339,6 +2357,7 @@ static CDXUTControl* s_ui_texspeed = 0;
 static CDXUTControl* s_ui_speed = 0;
 //static CDXUTControl* s_ui_vsync = 0;
 static CDXUTControl* s_ui_trarot = 0;
+static CDXUTControl* s_ui_edgesmp = 0;
 
 
 //Bullet
@@ -2566,6 +2585,7 @@ CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 #define IDC_COMBO_FPS				85
 #define IDC_X180					86
 #define IDC_TIPRIG					87
+#define IDC_EDGESMP					88
 
 
 LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -3695,6 +3715,8 @@ void InitApp()
 	s_tiprigno = -1;
 	s_tiprigdispcount = 0;
 
+	g_edgesmp = false;
+
 	g_zcmpalways = false;
 	g_lightflag = 1;
 
@@ -4031,6 +4053,7 @@ void InitApp()
 	s_IfMirrorVDiv2CheckBox = 0;
 	//s_VSyncCheckBox = 0;
 	s_TraRotCheckBox = 0;
+	s_EdgeSmpCheckBox = 0;
 	s_PreciseCheckBox = 0;
 	s_X180CheckBox = 0;
 	s_TPoseCheckBox = 0;
@@ -4079,6 +4102,7 @@ void InitApp()
 	s_ui_speed = 0;
 	//s_ui_vsync = 0;
 	s_ui_trarot = 0;
+	s_ui_edgesmp = 0;
 	s_ui_precise = 0;
 	s_ui_x180 = 0;
 	s_ui_tpose = 0;
@@ -9203,6 +9227,9 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 	//	RollbackCurBoneNo();
 	//	break;
 	case IDC_TRAROT:
+		RollbackCurBoneNo();
+		break;
+	case IDC_EDGESMP:
 		RollbackCurBoneNo();
 		break;
 
@@ -22690,6 +22717,9 @@ int OnFrameUtCheckBox()
 	if (s_TraRotCheckBox) {
 		g_rotatetanim = (bool)s_TraRotCheckBox->GetChecked();
 	}
+	if (s_EdgeSmpCheckBox) {
+		g_edgesmp = (bool)s_EdgeSmpCheckBox->GetChecked();
+	}
 	if (s_HighRpmCheckBox) {
 		g_HighRpmMode = (int)s_HighRpmCheckBox->GetChecked();
 	}
@@ -25646,7 +25676,7 @@ int CreateUtDialog()
 		//swprintf_s(sz, 100, L"TopPos : %d%% ", g_applyrate);
 		CEditRange::SetApplyRate((double)g_applyrate);
 
-		swprintf_s(sz, 100, L"TopPos : %d%% : %d", g_applyrate, 1);// current frame is 1 at first.
+		swprintf_s(sz, 100, L"TopPos:%d%%:%d", g_applyrate, 1);// current frame is 1 at first.
 		//g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, 35, iY += addh, ctrlxlen, ctrlh);
 		g_SampleUI.AddStatic(IDC_STATIC_APPLYRATE, sz, startx, iY += addh, ctrlxlen, 18);
 		s_ui_texapplyrate = g_SampleUI.GetControl(IDC_STATIC_APPLYRATE);
@@ -25703,10 +25733,20 @@ int CreateUtDialog()
 
 	//Center Bottom
 	//iY = s_mainheight - 210;
-	iY = s_mainheight - 155;
+	//iY = s_mainheight - 155;
+	iY = s_mainheight - 155 - addh;
 	startx = s_mainwidth / 2 - 50;
 
 	int addh2 = 27;
+
+	g_SampleUI.AddCheckBox(IDC_EDGESMP, L"edge sampling",
+		startx, iY += addh, checkboxxlen, 16,
+		g_edgesmp, 0U, false, &s_EdgeSmpCheckBox);
+	s_ui_edgesmp = g_SampleUI.GetControl(IDC_EDGESMP);
+	_ASSERT(s_ui_edgesmp);
+	s_dsutgui1.push_back(s_ui_edgesmp);
+	s_dsutguiid1.push_back(IDC_EDGESMP);
+
 
 	//iY += 10;
 	g_SampleUI.AddButton(IDC_BTSTART, L"BT start", startx, iY += addh, 100, ctrlh);
@@ -30976,7 +31016,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.14 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.15 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -38507,7 +38547,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.14 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.15 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
@@ -40791,7 +40831,7 @@ int DisplayApplyRateText()
 			CDXUTStatic* pstatic = g_SampleUI.GetStatic(IDC_STATIC_APPLYRATE);
 			if (pstatic) {
 				WCHAR sz[100] = { 0L };
-				swprintf_s(sz, 100, L"TopPos : %d%% : %d", g_applyrate, (int)(s_editrange.GetApplyFrame()));
+				swprintf_s(sz, 100, L"TopPos:%d%%:%d", g_applyrate, (int)(s_editrange.GetApplyFrame()));
 				g_SampleUI.GetStatic(IDC_STATIC_APPLYRATE)->SetText(sz);
 			}
 		}
