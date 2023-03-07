@@ -1,3 +1,8 @@
+2023/03/07
+	サンプル更新
+		Test/1_BoySporty_4　追加
+		Test/shadowboxing20221231　削除
+
 2023/03/06
 　EditMot 1.2.0.15 release
  
