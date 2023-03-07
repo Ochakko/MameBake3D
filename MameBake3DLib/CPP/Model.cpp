@@ -11773,7 +11773,7 @@ int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt,
 				if ((rigrigno >= 0) && (rigrigno < MAXRIGNUM)) {
 					if (currigelem.transuv[uvno].enable == 1) {
 						CUSTOMRIG rigrig = rigrigbone->GetCustomRig(rigrigno);
-						RigControl(limitdegflag, depthcnt, erptr, rigrigbone->GetBoneNo(),
+						RigControlUnderRig(limitdegflag, depthcnt, erptr, rigrigbone->GetBoneNo(),
 							uvno, srcdelta * currigelem.transuv[uvno].applyrate, rigrig, buttonflag);
 					}
 				}

@@ -976,6 +976,19 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 * 
 */
 
+/*
+* 2023/03/08
+* EditMot 1.2.0.16 RC1
+* 
+* Rig処理修正
+*	UnderとPostに分けたのにも関わらず　フレーム範囲が広いと重かったのを修正
+*	UnderRigからRigを呼び出すときの処理がUnderになっていなかったのを修正
+* 
+* 
+* 
+*/
+
+
 #include "useatl.h"
 
 #include <stdlib.h>
@@ -30980,7 +30993,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.15 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.16 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -38511,7 +38524,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.15 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.16 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
