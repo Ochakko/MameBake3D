@@ -10,6 +10,7 @@
       <ColType>1</ColType>
       <SkipFlag>1</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -36,6 +37,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -58,6 +60,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -80,6 +83,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -106,6 +110,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -132,6 +137,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -158,6 +164,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -180,6 +187,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -202,6 +210,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -224,6 +233,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -246,6 +256,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -272,6 +283,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -298,6 +310,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -324,6 +337,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -350,6 +364,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -372,6 +387,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -394,6 +410,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -416,6 +433,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -438,6 +456,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -460,6 +479,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -482,6 +502,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -504,6 +525,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -526,6 +548,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -548,6 +571,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -570,6 +594,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -592,6 +617,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -614,6 +640,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -640,6 +667,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -666,6 +694,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -692,6 +721,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -718,6 +748,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -744,6 +775,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -770,6 +802,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -796,6 +829,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -822,6 +856,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -848,6 +883,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -874,6 +910,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -900,6 +937,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -926,6 +964,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -952,6 +991,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -978,6 +1018,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1004,6 +1045,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1030,6 +1072,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1056,6 +1099,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1082,6 +1126,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1108,6 +1153,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1134,6 +1180,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1160,6 +1207,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1186,6 +1234,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1212,6 +1261,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1238,6 +1288,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1264,6 +1315,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1290,6 +1342,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1312,6 +1365,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1334,6 +1388,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1360,6 +1415,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1386,6 +1442,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1412,6 +1469,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1438,6 +1496,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1460,6 +1519,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1482,6 +1542,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1504,6 +1565,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1526,6 +1588,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1552,6 +1615,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1578,6 +1642,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1604,6 +1669,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1630,6 +1696,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1656,6 +1723,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1682,6 +1750,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1708,6 +1777,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1734,6 +1804,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1760,6 +1831,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1786,6 +1858,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1812,6 +1885,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1838,6 +1912,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1860,6 +1935,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1882,6 +1958,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1908,6 +1985,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1934,6 +2012,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1960,6 +2039,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -1986,6 +2066,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2008,6 +2089,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2030,6 +2112,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2052,6 +2135,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2074,6 +2158,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2100,6 +2185,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2126,6 +2212,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2152,6 +2239,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2178,6 +2266,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2204,6 +2293,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2230,6 +2320,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2256,6 +2347,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2282,6 +2374,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2308,6 +2401,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2334,6 +2428,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2360,6 +2455,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2382,6 +2478,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2404,6 +2501,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2426,6 +2524,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2452,6 +2551,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2478,6 +2578,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2504,6 +2605,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2530,6 +2632,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2556,6 +2659,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2582,6 +2686,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2604,6 +2709,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2626,6 +2732,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2648,6 +2755,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2674,6 +2782,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2700,6 +2809,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2726,6 +2836,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2752,6 +2863,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>
@@ -2778,6 +2890,7 @@
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
       <AK>2</AK>

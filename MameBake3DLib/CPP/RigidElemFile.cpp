@@ -152,20 +152,21 @@ int CRigidElemFile::WriteRE( CBone* srcbone )
 		if( curre ){
 			CallF( Write2File( "    <RigidElem>\r\n" ), return 1);
 
-			CallF( Write2File( "      <ChildName>%s</ChildName>\r\n", childbone->GetBoneName() ), return 1);
-			CallF( Write2File( "      <ColType>%d</ColType>\r\n", curre->GetColtype() ), return 1);
-			CallF( Write2File( "      <SkipFlag>%d</SkipFlag>\r\n", curre->GetSkipflag() ), return 1);
-			CallF( Write2File( "      <ShpRate>%f</ShpRate>\r\n", curre->GetSphrate() ), return 1);
-			CallF( Write2File( "      <LK>%d</LK>\r\n", curre->GetLKindex() ), return 1);
-			CallF( Write2File( "      <CUSLK>%f</CUSLK>\r\n", curre->GetCusLk() ), return 1);
-			CallF( Write2File( "      <AK>%d</AK>\r\n", curre->GetAKindex() ), return 1);
-			CallF( Write2File( "      <CUSAK>%f</CUSAK>\r\n", curre->GetCusAk() ), return 1);
-			CallF( Write2File( "      <Mass>%f</Mass>\r\n", curre->GetMass() ), return 1);
-			CallF( Write2File( "      <LDMP>%f</LDMP>\r\n", curre->GetLDamping() ), return 1);
-			CallF( Write2File( "      <ADMP>%f</ADMP>\r\n", curre->GetADamping() ), return 1);
-			CallF( Write2File( "      <BTG>%f</BTG>\r\n", curre->GetBtg() ), return 1 );
-			CallF( Write2File( "      <DMPANIML>%f</DMPANIML>\r\n", curre->GetDampanimL() ), return 1 );
-			CallF( Write2File( "      <DMPANIMA>%f</DMPANIMA>\r\n", curre->GetDampanimA() ), return 1 );
+			CallF(Write2File("      <ChildName>%s</ChildName>\r\n", childbone->GetBoneName()), return 1);
+			CallF(Write2File("      <ColType>%d</ColType>\r\n", curre->GetColtype()), return 1);
+			CallF(Write2File("      <SkipFlag>%d</SkipFlag>\r\n", curre->GetSkipflag()), return 1);
+			CallF(Write2File("      <ShpRate>%f</ShpRate>\r\n", curre->GetSphrate()), return 1);
+			CallF(Write2File("      <BoxzRate>%f</BoxzRate>\r\n", curre->GetBoxzrate()), return 1);
+			CallF(Write2File("      <LK>%d</LK>\r\n", curre->GetLKindex()), return 1);
+			CallF(Write2File("      <CUSLK>%f</CUSLK>\r\n", curre->GetCusLk()), return 1);
+			CallF(Write2File("      <AK>%d</AK>\r\n", curre->GetAKindex()), return 1);
+			CallF(Write2File("      <CUSAK>%f</CUSAK>\r\n", curre->GetCusAk()), return 1);
+			CallF(Write2File("      <Mass>%f</Mass>\r\n", curre->GetMass()), return 1);
+			CallF(Write2File("      <LDMP>%f</LDMP>\r\n", curre->GetLDamping()), return 1);
+			CallF(Write2File("      <ADMP>%f</ADMP>\r\n", curre->GetADamping()), return 1);
+			CallF(Write2File("      <BTG>%f</BTG>\r\n", curre->GetBtg()), return 1 );
+			CallF(Write2File("      <DMPANIML>%f</DMPANIML>\r\n", curre->GetDampanimL()), return 1 );
+			CallF(Write2File("      <DMPANIMA>%f</DMPANIMA>\r\n", curre->GetDampanimA()), return 1 );
 
 
 			CallF( Write2File( "      <GROUP>%d</GROUP>\r\n", curre->GetGroupid() ), return 1);
@@ -382,6 +383,15 @@ int CRigidElemFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 	float rate = 0.0f;
 	CallF( Read_Float( xmlbuf, "<ShpRate>", "</ShpRate>", &rate ), return 1 );
 
+
+	//1.2.0.16で追加　１０年前からあったパラメータ
+	float boxzrate = 0.0f;
+	int result1 = Read_Float(xmlbuf, "<BoxzRate>", "</BoxzRate>", &boxzrate);
+	if (result1 != 0) {
+		//無くてもエラーにしないで　デフォルト値をセット
+		boxzrate = 0.60f;//default value
+	}
+
 	int lkindex = 0;
 	int retki = Read_Int( xmlbuf, "<LK>", "</LK>", &lkindex );
 	if( retki ){
@@ -509,29 +519,30 @@ int CRigidElemFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 			CRigidElem* curre;
 			curre = curbone->GetRigidElemOfMap( m_rename, childbone );
 			if( curre ){
-				curre->SetSkipflag( skipflag );
-				curre->SetSphrate( rate );
-				curre->SetColtype( coltype );
-				curre->SetLKindex( lkindex );
-				curre->SetAKindex( akindex );
-				curre->SetCusLk( cuslk );
-				curre->SetCusAk( cusak );
-				curre->SetMass( mass );
-				curre->SetLDamping( ldmp );
-				curre->SetADamping( admp );
-				curre->SetBtg( btg );
+				curre->SetSkipflag(skipflag);
+				curre->SetSphrate(rate);
+				curre->SetBoxzrate(boxzrate);
+				curre->SetColtype(coltype);
+				curre->SetLKindex(lkindex);
+				curre->SetAKindex(akindex);
+				curre->SetCusLk(cuslk);
+				curre->SetCusAk(cusak);
+				curre->SetMass(mass);
+				curre->SetLDamping(ldmp);
+				curre->SetADamping(admp);
+				curre->SetBtg(btg);
 
-				curre->SetGroupid( gid );
-				curre->CopyColiids( tmpids );
-				curre->SetMyselfflag( myself );
+				curre->SetGroupid(gid);
+				curre->CopyColiids(tmpids);
+				curre->SetMyselfflag(myself);
 
-				curre->SetRestitution( rest );
-				curre->SetFriction( fric );
+				curre->SetRestitution(rest);
+				curre->SetFriction(fric);
 
 				curre->SetForbidRotFlag(forbidrot);
 
-				curre->SetDampanimL( dmpanimL );
-				curre->SetDampanimA( dmpanimA );
+				curre->SetDampanimL(dmpanimL);
+				curre->SetDampanimA(dmpanimA);
 			}
 			else{
 				_ASSERT(0);

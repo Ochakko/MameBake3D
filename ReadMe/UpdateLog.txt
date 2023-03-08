@@ -1,5 +1,5 @@
 2023/03/08
-　EditMot 1.2.0.16 RC3
+　EditMot 1.2.0.16 RC4
  
 　Rig処理修正
 	UnderとPostに分けたのにも関わらず　フレーム範囲が広いと重かったのを修正
@@ -10,6 +10,13 @@
 　MameMedia読み込み時NULLチェック
 
 　OrgWindow作成時NULLチェック
+
+　RigidElemFile(*.ref)の書き出しと読み込みにboxz要素追加
+	剛体形状として　ずっとカプセル形状でしかテストしてこなかったが
+	直方体なども使うようになったので　boxz(ダイアログの形状depth要素)の書き出しと読み込みに対応
+
+　サンプル更新
+	Test/1_Boy_Sporty_4
 
 
 　おちゃっこLAB
