@@ -1,11 +1,13 @@
 2023/03/08
-　EditMot 1.2.0.16 RC1
+　EditMot 1.2.0.16 RC2
  
 　Rig処理修正
 	UnderとPostに分けたのにも関わらず　フレーム範囲が広いと重かったのを修正
 	UnderRigからRigを呼び出すときの処理がUnderになっていなかったのを修正
 
+　ModelPanelでmodelを切り替えたときに　ソフトが落ちることがある不具合修正
  
+
 　おちゃっこLAB
 	https://ochakkolab.jp/
 

@@ -2364,8 +2364,24 @@ void s_dummyfunc()
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
 		OWP_GroupBox(const TCHAR *_name ) : OrgWindowParts() {
-			name= new TCHAR[256];
-			_tcscpy_s(name,256,_name);
+			name = new TCHAR[256];
+			if (_name) {
+				size_t tclen = _tcslen(_name);
+				size_t cplen;
+				if (tclen != 0) {
+					if (tclen <= 255) {
+						cplen = tclen;
+					}
+					else {
+						cplen = 255;
+					}
+					_tcsncpy_s(name, 256, _name, cplen);
+					name[cplen] = (TCHAR)0;
+				}
+				else {
+					_tcscpy_s(name, 256, TEXT("NoName"));
+				}
+			}
 
 			//openListener = [](){s_dummyfunc();};
 			openListener = NULL;
@@ -2602,7 +2618,23 @@ void s_dummyfunc()
 			return name;
 		}
 		void setName( const TCHAR *value ){
-			_tcscpy_s(name,256,value);
+			if (name && value) {
+				size_t tclen = _tcslen(value);
+				size_t cplen;
+				if (tclen != 0) {
+					if (tclen <= 255) {
+						cplen = tclen;
+					}
+					else {
+						cplen = 255;
+					}
+					_tcsncpy_s(name, 256, value, cplen);
+					name[cplen] = (TCHAR)0;
+				}
+				else {
+					_tcscpy_s(name, 256, TEXT("NoName"));
+				}
+			}
 
 			callRewrite();
 		}
@@ -2737,8 +2769,24 @@ void s_dummyfunc()
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
 		OWP_Label(const TCHAR *_name ) : OrgWindowParts() {
-			name= new TCHAR[256];
-			_tcscpy_s(name,256,_name);
+			name = new TCHAR[256];
+			if (_name) {
+				size_t tclen = _tcslen(_name);
+				size_t cplen;
+				if (tclen != 0) {
+					if (tclen <= 255) {
+						cplen = tclen;
+					}
+					else {
+						cplen = 255;
+					}
+					_tcsncpy_s(name, 256, _name, cplen);
+					name[cplen] = (TCHAR)0;
+				}
+				else {
+					_tcscpy_s(name, 256, TEXT("NoName"));
+				}
+			}
 		}
 		~OWP_Label(){
 			delete[] name;
@@ -2824,7 +2872,23 @@ void s_dummyfunc()
 		}
 		/// Method : 内容変更
 		void setName(const TCHAR *value ){
-			_tcscpy_s(name,256,value);
+			if (name && value) {
+				size_t tclen = _tcslen(value);
+				size_t cplen;
+				if (tclen != 0) {
+					if (tclen <= 255) {
+						cplen = tclen;
+					}
+					else {
+						cplen = 255;
+					}
+					_tcsncpy_s(name, 256, value, cplen);
+					name[cplen] = (TCHAR)0;
+				}
+				else {
+					_tcscpy_s(name, 256, TEXT("NoName"));
+				}
+			}
 
 			callRewrite();
 		}
@@ -2844,9 +2908,24 @@ void s_dummyfunc()
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
 		OWP_Button( const TCHAR *_name=_T("") ) : OrgWindowParts() {
-			name= new TCHAR[256];
-			_tcscpy_s(name,256,_name);
-
+			name = new TCHAR[256];
+			if (_name) {
+				size_t tclen = _tcslen(_name);
+				size_t cplen;
+				if (tclen != 0) {
+					if (tclen <= 255) {
+						cplen = tclen;
+					}
+					else {
+						cplen = 255;
+					}
+					_tcsncpy_s(name, 256, _name, cplen);
+					name[cplen] = (TCHAR)0;
+				}
+				else {
+					_tcscpy_s(name, 256, TEXT("NoName"));
+				}
+			}
 
 			buttonPush=false;
 			//buttonListener = [](){s_dummyfunc();};
@@ -2965,7 +3044,23 @@ void s_dummyfunc()
 			this->buttonListener= listener;
 		}
 		void setName(const TCHAR *value){
-			_tcscpy_s(name, 256, value);
+			if (name && value) {
+				size_t tclen = _tcslen(value);
+				size_t cplen;
+				if (tclen != 0) {
+					if (tclen <= 255) {
+						cplen = tclen;
+					}
+					else {
+						cplen = 255;
+					}
+					_tcsncpy_s(name, 256, value, cplen);
+					name[cplen] = (TCHAR)0;
+				}
+				else {
+					_tcscpy_s(name, 256, TEXT("NoName"));
+				}
+			}
 
 			callRewrite();
 		}
@@ -3543,8 +3638,24 @@ void s_dummyfunc()
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
 		OWP_CheckBoxA( const TCHAR *_name=_T(""), bool _value=false ) : OrgWindowParts() {
-			name= new TCHAR[256];
-			_tcscpy_s(name,256,_name);
+			name = new TCHAR[256];
+			if (_name) {
+				size_t tclen = _tcslen(_name);
+				size_t cplen;
+				if (tclen != 0) {
+					if (tclen <= 255) {
+						cplen = tclen;
+					}
+					else {
+						cplen = 255;
+					}
+					_tcsncpy_s(name, 256, _name, cplen);
+					name[cplen] = (TCHAR)0;
+				}
+				else {
+					_tcscpy_s(name, 256, TEXT("NoName"));
+				}
+			}
 
 			value= _value;
 
@@ -8673,8 +8784,24 @@ void s_dummyfunc()
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
 		OWP_LayerTable(const TCHAR *_name ) : OrgWindowParts() {
-			name= new TCHAR[256];
-			_tcscpy_s(name,256,_name);
+			name = new TCHAR[256];
+			if (_name) {
+				size_t tclen = _tcslen(_name);
+				size_t cplen;
+				if (tclen != 0) {
+					if (tclen <= 255) {
+						cplen = tclen;
+					}
+					else {
+						cplen = 255;
+					}
+					_tcsncpy_s(name, 256, _name, cplen);
+					name[cplen] = (TCHAR)0;
+				}
+				else {
+					_tcscpy_s(name, 256, TEXT("NoName"));
+				}
+			}
 
 			//cursorListener = [](){s_dummyfunc();};
 			//lineShiftListener = [](int beforIndex, int afterIndex){s_dummyfunc();};
@@ -9078,7 +9205,23 @@ void s_dummyfunc()
 			return name;
 		}
 		void setName(const TCHAR *value){
-			_tcscpy_s(name,256,value);
+			if (name && value) {
+				size_t tclen = _tcslen(value);
+				size_t cplen;
+				if (tclen != 0) {
+					if (tclen <= 255) {
+						cplen = tclen;
+					}
+					else {
+						cplen = 255;
+					}
+					_tcsncpy_s(name, 256, value, cplen);
+					name[cplen] = (TCHAR)0;
+				}
+				else {
+					_tcscpy_s(name, 256, TEXT("NoName"));
+				}
+			}
 
 			//再描画要求
 			if( rewriteOnChange ){
@@ -9455,7 +9598,23 @@ void s_dummyfunc()
 		//////////////////// Constructor/Destructor //////////////////////
 		OWP_ScrollWnd(const TCHAR *_name) : OrgWindowParts() {
 			name = new TCHAR[256];
-			_tcscpy_s(name, 256, _name);
+			if (_name) {
+				size_t tclen = _tcslen(_name);
+				size_t cplen;
+				if (tclen != 0) {
+					if (tclen <= 255) {
+						cplen = tclen;
+					}
+					else {
+						cplen = 255;
+					}
+					_tcsncpy_s(name, 256, _name, cplen);
+					name[cplen] = (TCHAR)0;
+				}
+				else {
+					_tcscpy_s(name, 256, TEXT("NoName"));
+				}
+			}
 
 			//cursorListener = [](){s_dummyfunc(); };
 			//lineShiftListener = [](int beforIndex, int afterIndex){s_dummyfunc(); };
@@ -9751,7 +9910,23 @@ void s_dummyfunc()
 			return name;
 		}
 		void setName(const TCHAR *value){
-			_tcscpy_s(name, 256, value);
+			if (name && value) {
+				size_t tclen = _tcslen(value);
+				size_t cplen;
+				if (tclen != 0) {
+					if (tclen <= 255) {
+						cplen = tclen;
+					}
+					else {
+						cplen = 255;
+					}
+					_tcsncpy_s(name, 256, value, cplen);
+					name[cplen] = (TCHAR)0;
+				}
+				else {
+					_tcscpy_s(name, 256, TEXT("NoName"));
+				}
+			}
 
 			//再描画要求
 			if (rewriteOnChange){

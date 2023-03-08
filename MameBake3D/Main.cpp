@@ -978,13 +978,13 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 
 /*
 * 2023/03/08
-* EditMot 1.2.0.16 RC1
+* EditMot 1.2.0.16 RC2
 * 
 * Rig処理修正
 *	UnderとPostに分けたのにも関わらず　フレーム範囲が広いと重かったのを修正
 *	UnderRigからRigを呼び出すときの処理がUnderになっていなかったのを修正
 * 
-* 
+* ModelPanelでmodelを切り替えたときに　ソフトが落ちることがある不具合修正
 * 
 */
 
@@ -12830,6 +12830,8 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 
 	s_underselectmotion = true;
 
+	HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
 	//大きいフレーム一のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
 	InitTimelineSelection();
 
@@ -12837,6 +12839,9 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 		_ASSERT(0);
 		SetMainWindowTitle();
 		s_underselectmotion = false;
+		if (oldcursor) {
+			SetCursor(oldcursor);
+		}
 		return 0;
 	}
 
@@ -12845,6 +12850,9 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 	if (selindex < 0) {
 		SetMainWindowTitle();
 		s_underselectmotion = false;
+		if (oldcursor) {
+			SetCursor(oldcursor);
+		}
 		return 0;//!!!!!!!!!
 	}
 
@@ -12862,6 +12870,9 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 		s_curmotid = -1;
 		SetMainWindowTitle();
 		s_underselectmotion = false;
+		if (oldcursor) {
+			SetCursor(oldcursor);
+		}
 		return 0;//!!!!!!!!!!!!!!!!!!
 	}
 
@@ -12874,6 +12885,9 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 		s_curmotid = -1;
 		SetMainWindowTitle();
 		s_underselectmotion = false;
+		if (oldcursor) {
+			SetCursor(oldcursor);
+		}
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
 
@@ -12898,7 +12912,15 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 		int selmotid;
 		selmotid = s_tlarray[selindex].motionid;
 		if (selmotid > 0) {
-			CallF(s_model->SetCurrentMotion(selmotid), return 1);
+			int chkresult;
+			chkresult = s_model->SetCurrentMotion(selmotid);
+			if (chkresult != 0) {
+				_ASSERT(0);
+				if (oldcursor) {
+					SetCursor(oldcursor);
+				}
+				return 1;
+			}
 			//EraseKeyList();
 			s_owpTimeline->setCurrentLine(0);
 			//s_owpTimeline->setCurrentTime( 0.0 );
@@ -12992,6 +13014,9 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 		s_model->SetInitAxisMatX(1);
 	}
 
+	if (oldcursor) {
+		SetCursor(oldcursor);
+	}
 
 	return 0;
 }
@@ -13169,7 +13194,8 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 
 	//if (!g_bvh2fbxbatchflag && !g_motioncachebatchflag && !g_retargetbatchflag) {
 	//if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
-	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
+	if ((s_dispconvbone == true) &&
+		(InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
 		CreateConvBoneWnd();//!!!!!!!!!!!!! モデル選択変更によりリターゲットウインドウ作り直し
 	}
 
@@ -16330,8 +16356,12 @@ int CreateConvBoneWnd()
 		::MessageBox(s_mainhwnd, L"modelメニューでmodelを選択して下さい", L"model not selected !!!", MB_OK);
 		return 0;
 	}
-	s_convbone_model = s_model;
+	if (s_model->GetBoneListSize() <= 1) {
+		return 0;
+	}
 
+
+	s_convbone_model = s_model;
 
 	s_convbonenum = s_model->GetBoneListSize();
 	if (s_convbonenum >= CONVBONEMAX) {
@@ -16399,8 +16429,10 @@ int CreateConvBoneWnd()
 		}
 	}
 	DbgOut(L"\n\n");
-	_ASSERT(cbno == s_convbonenum);
-
+	if (cbno != s_convbonenum) {
+		_ASSERT(0);
+		return 1;
+	}
 
 	s_convbonesp = new OWP_Separator(s_convboneWnd, false, 0.5, true);									// セパレータ1（境界線による横方向2分割）
 
@@ -16410,85 +16442,183 @@ int CreateConvBoneWnd()
 	s_cbselmodel = new OWP_Label(strtext);
 
 	s_cbselbvh = new OWP_Button(L"SelectMotionModel");
+	if (!s_cbselbvh) {
+		_ASSERT(0);
+		return 1;
+	}
 	s_convboneconvert = new OWP_Button(L"ConvertButton");
+	if (!s_convboneconvert) {
+		_ASSERT(0);
+		return 1;
+	}
 	s_convbonespace1 = new OWP_Label(L"--------------");
+	if (!s_convbonespace1) {
+		_ASSERT(0);
+		return 1;
+	}
 	s_convbonespace2 = new OWP_Label(L"--------------");
+	if (!s_convbonespace2) {
+		_ASSERT(0);
+		return 1;
+	}
 	s_convbonespace3 = new OWP_Label(L"--------------");
+	if (!s_convbonespace3) {
+		_ASSERT(0);
+		return 1;
+	}
 	s_convbonespace4 = new OWP_Label(L"--------------");
+	if (!s_convbonespace4) {
+		_ASSERT(0);
+		return 1;
+	}
 	s_convbonespace5 = new OWP_Label(L"              ");
+	if (!s_convbonespace5) {
+		_ASSERT(0);
+		return 1;
+	}
 	s_rtgfilesave = new OWP_Button(L"Save RtgFile");
+	if (!s_rtgfilesave) {
+		_ASSERT(0);
+		return 1;
+	}
 	s_rtgfileload = new OWP_Button(L"Load RtgFile");
+	if (!s_rtgfileload) {
+		_ASSERT(0);
+		return 1;
+	}
 	s_convbonemidashi[0] = new OWP_Label(L"ShapeSide");
+	if (!s_convbonemidashi) {
+		_ASSERT(0);
+		return 1;
+	}
 	s_convbonemidashi[1] = new OWP_Label(L"MotionSide");
-
+	if (!s_convbonemidashi) {
+		_ASSERT(0);
+		return 1;
+	}
 
 	COLORREF importantcolR = RGB(168, 129, 129);
 	COLORREF importantcolG = RGB(0, 240, 0);
 	COLORREF importantcolW = RGB(240, 240, 240);
-	s_convboneconvert->setTextColor(importantcolG);
-	s_rtgfilesave->setTextColor(importantcolG);
-	s_rtgfileload->setTextColor(importantcolG);
-	s_cbselbvh->setTextColor(importantcolR);
-	s_cbselmodel->setTextColor(importantcolR);
-	s_convbonespace1->setTextColor(importantcolW);
-	s_convbonespace2->setTextColor(importantcolW);
-	s_convbonespace3->setTextColor(importantcolW);
+	if (s_convboneconvert) {
+		s_convboneconvert->setTextColor(importantcolG);
+	}
+	if (s_rtgfilesave) {
+		s_rtgfilesave->setTextColor(importantcolG);
+	}
+	if (s_rtgfileload) {
+		s_rtgfileload->setTextColor(importantcolG);
+	}
+	if (s_cbselbvh) {
+		s_cbselbvh->setTextColor(importantcolR);
+	}
+	if (s_cbselmodel) {
+		s_cbselmodel->setTextColor(importantcolR);
+	}
+	if (s_convbonespace1) {
+		s_convbonespace1->setTextColor(importantcolW);
+	}
+	if (s_convbonespace2) {
+		s_convbonespace2->setTextColor(importantcolW);
+	}
+	if (s_convbonespace3) {
+		s_convbonespace3->setTextColor(importantcolW);
+	}
 
-
-	s_convboneSCWnd->addParts(*s_convbonesp);
-
-
-	s_convbonesp->addParts1(*s_convbonemidashi[0]);
-	s_convbonesp->addParts1(*s_cbselmodel);
-	s_convbonesp->addParts2(*s_convbonemidashi[1]);
-	s_convbonesp->addParts2(*s_cbselbvh);
-	s_dsretargetctrls.push_back(s_cbselmodel);
-	s_dsretargetctrls.push_back(s_cbselbvh);
+	if (s_convboneSCWnd && s_convbonesp) {
+		s_convboneSCWnd->addParts(*s_convbonesp);
+	}
+	if (s_convbonesp && s_convbonemidashi[0]) {
+		s_convbonesp->addParts1(*s_convbonemidashi[0]);
+	}
+	if (s_convbonesp && s_cbselmodel) {
+		s_convbonesp->addParts1(*s_cbselmodel);
+	}
+	if (s_convbonesp && s_convbonemidashi[1]) {
+		s_convbonesp->addParts2(*s_convbonemidashi[1]);
+	}
+	if (s_convbonesp && s_cbselbvh) {
+		s_convbonesp->addParts2(*s_cbselbvh);
+	}
+	if (s_cbselmodel) {
+		s_dsretargetctrls.push_back(s_cbselmodel);
+	}
+	if (s_cbselbvh) {
+		s_dsretargetctrls.push_back(s_cbselbvh);
+	}
 
 
 	//2023/02/14
 	//convert実行、rtgファイル読み込みボタンは
 	//ボーン名対応表よりも　上に配置
 	//一番下までスクロールしなくても　操作できることが多くなるように
-	s_convbonesp->addParts1(*s_convboneconvert);
-	s_dsretargetctrls.push_back(s_convboneconvert);
-	s_convbonesp->addParts2(*s_rtgfileload);
-	s_dsretargetctrls.push_back(s_rtgfileload);
-
-	//2023/02/14
-	//境目に　空白
-	s_convbonesp->addParts1(*s_convbonespace1);
-	s_convbonesp->addParts2(*s_convbonespace2);
-
-	for (cbno = 0; cbno < s_convbonenum; cbno++) {
-		s_convbonesp->addParts1(*s_modelbone[cbno]);
-		s_convbonesp->addParts2(*s_bvhbone[cbno]);
-
-		//s_dsretargetctrls.push_back(s_modelbone[cbno]);
-		s_dsretargetctrls.push_back(s_bvhbone[cbno]);
+	if (s_convbonesp && s_convboneconvert) {
+		s_convbonesp->addParts1(*s_convboneconvert);
+	}
+	if (s_convboneconvert) {
+		s_dsretargetctrls.push_back(s_convboneconvert);
+	}
+	if (s_convbonesp && s_rtgfileload) {
+		s_convbonesp->addParts2(*s_rtgfileload);
+	}
+	if (s_rtgfileload) {
+		s_dsretargetctrls.push_back(s_rtgfileload);
 	}
 
 	//2023/02/14
 	//境目に　空白
-	s_convbonesp->addParts1(*s_convbonespace3);
-	s_convbonesp->addParts2(*s_convbonespace4);
+	if (s_convbonesp && s_convbonespace1) {
+		s_convbonesp->addParts1(*s_convbonespace1);
+	}
+	if (s_convbonesp && s_convbonespace2) {
+		s_convbonesp->addParts2(*s_convbonespace2);
+	}
+
+	for (cbno = 0; cbno < s_convbonenum; cbno++) {
+		if (s_convbonesp && s_modelbone[cbno]) {
+			s_convbonesp->addParts1(*s_modelbone[cbno]);
+		}
+		if (s_convbonesp && s_bvhbone[cbno]) {
+			s_convbonesp->addParts2(*s_bvhbone[cbno]);
+		}
+
+		//s_dsretargetctrls.push_back(s_modelbone[cbno]);
+		if (s_bvhbone[cbno]) {
+			s_dsretargetctrls.push_back(s_bvhbone[cbno]);
+		}
+	}
+
+	//2023/02/14
+	//境目に　空白
+	if (s_convbonesp && s_convbonespace3) {
+		s_convbonesp->addParts1(*s_convbonespace3);
+	}
+	if (s_convbonesp && s_convbonespace4) {
+		s_convbonesp->addParts2(*s_convbonespace4);
+	}
 
 	//Rtgファイル保存ボタンは　設定し終わってから押すので　一番下のまま
-	s_convbonesp->addParts1(*s_rtgfilesave);
-	s_dsretargetctrls.push_back(s_rtgfilesave);
-	s_convbonesp->addParts2(*s_convbonespace5);
+	if (s_convbonesp && s_rtgfilesave) {
+		s_convbonesp->addParts1(*s_rtgfilesave);
+		s_dsretargetctrls.push_back(s_rtgfilesave);
+	}
+	if (s_convbonesp && s_convbonespace5) {
+		s_convbonesp->addParts2(*s_convbonespace5);
+	}
 
-
-	s_convboneWnd->setListenMouse(false);
-	s_convboneWnd->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	if (s_convboneWnd) {
+		s_convboneWnd->setListenMouse(false);
+		s_convboneWnd->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	}
 
 	////////////
-	s_convboneWnd->setCloseListener([]() {
-		if (s_model) {
-			s_closeconvboneFlag = true;
-		}
-		});
-
+	if (s_convboneWnd) {
+		s_convboneWnd->setCloseListener([]() {
+			if (s_model) {
+				s_closeconvboneFlag = true;
+			}
+			});
+	}
 
 	//s_cbselmodel->setButtonListener([](){
 	//	if (s_model) {
@@ -16496,57 +16626,65 @@ int CreateConvBoneWnd()
 	//		s_convboneWnd->callRewrite();
 	//	}
 	//});
-	s_cbselbvh->setButtonListener([]() {
-		if (s_model) {
-			if (!s_convbone_model || (s_convbone_model != s_model)) {
-				::DSMessageBox(s_mainhwnd, L"Retry after selecting ShapeModel using ModelMenu Of MainWindow.", L"error!!!", MB_OK);
-			}
-			else {
-				SetConvBoneBvh();
-			}
-			s_convboneWnd->callRewrite();
-		}
-	});
-
-	for (cbno = 0; cbno < s_convbonenum; cbno++) {
-		s_bvhbone[cbno]->setButtonListener([cbno]() {
+	if (s_cbselbvh) {
+		s_cbselbvh->setButtonListener([]() {
 			if (s_model) {
-				SetConvBone(cbno);
-				//CModel* curmodel = s_modelindex[modelcnt].modelptr;
-				//curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
+				if (!s_convbone_model || (s_convbone_model != s_model)) {
+					::DSMessageBox(s_mainhwnd, L"Retry after selecting ShapeModel using ModelMenu Of MainWindow.", L"error!!!", MB_OK);
+				}
+				else {
+					SetConvBoneBvh();
+				}
 				s_convboneWnd->callRewrite();
 			}
-		});
+			});
 	}
 
-	s_convboneconvert->setButtonListener([]() {
-		if (s_model) {
-			if (s_retargetguiFlag == false) {
-				s_retargetguiFlag = true;
+	for (cbno = 0; cbno < s_convbonenum; cbno++) {
+		if (s_bvhbone[cbno]) {
+			s_bvhbone[cbno]->setButtonListener([cbno]() {
+				if (s_model) {
+					SetConvBone(cbno);
+					//CModel* curmodel = s_modelindex[modelcnt].modelptr;
+					//curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
+					s_convboneWnd->callRewrite();
+				}
+				});
+		}
+	}
+
+	if (s_convboneconvert) {
+		s_convboneconvert->setButtonListener([]() {
+			if (s_model) {
+				if (s_retargetguiFlag == false) {
+					s_retargetguiFlag = true;
+				}
 			}
-		}
-	});
+			});
+	}
 
-	s_rtgfilesave->setButtonListener([]() {
-		if (s_model) {
-			SaveRetargetFile();
-		}
-	});
+	if (s_rtgfilesave) {
+		s_rtgfilesave->setButtonListener([]() {
+			if (s_model) {
+				SaveRetargetFile();
+			}
+			});
+	}
+	if (s_rtgfileload) {
+		s_rtgfileload->setButtonListener([]() {
+			if (s_model) {
+				LoadRetargetFile(0);
+			}
+			});
+	}
+	if (s_convboneWnd) {
+		s_convboneWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
+		s_convboneWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
+		//１クリック目問題対応
+		s_convboneWnd->refreshPosAndSize();//2022/09/20
 
-	s_rtgfileload->setButtonListener([]() {
-		if (s_model) {
-			LoadRetargetFile(0);
-		}
-	});
-
-	s_convboneWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
-	s_convboneWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
-
-	//１クリック目問題対応
-	s_convboneWnd->refreshPosAndSize();//2022/09/20
-
-
-	s_convboneWnd->setVisible(false);
+		s_convboneWnd->setVisible(false);
+	}
 
 	return 0;
 }
