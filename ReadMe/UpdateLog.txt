@@ -1,5 +1,5 @@
 2023/03/08
-　EditMot 1.2.0.16 RC2
+　EditMot 1.2.0.16 RC3
  
 　Rig処理修正
 	UnderとPostに分けたのにも関わらず　フレーム範囲が広いと重かったのを修正
@@ -7,6 +7,10 @@
 
 　ModelPanelでmodelを切り替えたときに　ソフトが落ちることがある不具合修正
  
+　MameMedia読み込み時NULLチェック
+
+　OrgWindow作成時NULLチェック
+
 
 　おちゃっこLAB
 	https://ochakkolab.jp/

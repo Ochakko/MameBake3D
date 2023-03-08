@@ -10,7 +10,7 @@
 	#define WIDEN(x) WIDEN2(x)
 	#define __WFILE__ WIDEN(__FILE__)
 
-	#define CallF(cfunc,f) if(cfunc){ DbgOut( L"file %s, line %d\r\n", __WFILE__, __LINE__ ); _ASSERT( 0 ); f; }
+	#define CallF(cfunc,f) if(cfunc){ DbgOut( L"file %s, line %d\r\n", __WFILE__, __LINE__ ); _ASSERT( 0 ); PostQuitMessage(1); f; }
 #endif
 
 #ifndef DBGH

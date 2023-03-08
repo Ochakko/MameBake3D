@@ -978,13 +978,18 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 
 /*
 * 2023/03/08
-* EditMot 1.2.0.16 RC2
+* EditMot 1.2.0.16 RC3
 * 
 * Rig処理修正
 *	UnderとPostに分けたのにも関わらず　フレーム範囲が広いと重かったのを修正
 *	UnderRigからRigを呼び出すときの処理がUnderになっていなかったのを修正
 * 
 * ModelPanelでmodelを切り替えたときに　ソフトが落ちることがある不具合修正
+* 
+* MameMedia読み込み時NULLチェック
+* 
+* OrgWindow作成時NULLチェック
+* 
 * 
 */
 
@@ -4554,6 +4559,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	//hr = DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"..\\Media\\Shader\\Ochakko.fxo");
 	if (FAILED(hr)) {
 		_ASSERT(0);
+		PostQuitMessage(1);
 		return hr;
 	}
 	//ID3D11Blob*	l_pBlob_Effect = NULL;
@@ -4635,6 +4641,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 			// then cast to a char* to see it in the locals window
 		}
 		_ASSERT(0);
+		PostQuitMessage(1);
 		return hr;
 	}
 
@@ -4650,6 +4657,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 		g_texbank = new CTexBank(s_pdev);
 		if (!g_texbank) {
 			_ASSERT(0);
+			PostQuitMessage(1);
 			return 0;
 		}
 	}
@@ -4657,25 +4665,54 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_select = new CModel();
 	if (!s_select) {
 		_ASSERT(0);
+		PostQuitMessage(1);
 		return S_FALSE;
 	}
 	CallF(s_select->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\select_2.mqo", 0, 1.0f, 0), return S_FALSE);
 	CallF(s_select->MakeDispObj(), return S_FALSE;);
 
 	s_matred = s_select->GetMQOMaterialByName("matred");
-	_ASSERT(s_matred);
+	if (!s_matred) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	s_ringred = s_select->GetMQOMaterialByName("ringred");
-	_ASSERT(s_ringred);
+	if (!s_ringred) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	s_matblue = s_select->GetMQOMaterialByName("matblue");
-	_ASSERT(s_matblue);
+	if (!s_matblue) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	s_ringblue = s_select->GetMQOMaterialByName("ringblue");
-	_ASSERT(s_ringblue);
+	if (!s_ringblue) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	s_matgreen = s_select->GetMQOMaterialByName("matgreen");
-	_ASSERT(s_matgreen);
+	if (!s_matgreen) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	s_ringgreen = s_select->GetMQOMaterialByName("ringgreen");
-	_ASSERT(s_ringgreen);
+	if (!s_ringgreen) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	s_matyellow = s_select->GetMQOMaterialByName("matyellow");
-	_ASSERT(s_matyellow);
+	if (!s_matyellow) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 
 	//s_matredmat = s_matred->GetDif4F();
 	//s_ringredmat = s_ringred->GetDif4F();
@@ -4698,6 +4735,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_select_posture = new CModel();
 	if (!s_select_posture) {
 		_ASSERT(0);
+		PostQuitMessage(1);
 		return S_FALSE;
 	}
 	CallF(s_select_posture->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\select_2_posture.mqo", 0, 1.0f, 0), return S_FALSE);
@@ -4716,11 +4754,13 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 				s_rigmaterial_sphere[rigopemarkno] = s_rigopemark_sphere[rigopemarkno]->GetMQOMaterialByName("mat1");
 				if (!s_rigmaterial_sphere[rigopemarkno]) {
 					_ASSERT(0);
+					PostQuitMessage(1);
 					return S_FALSE;
 				}
 			}
 			else {
 				_ASSERT(0);
+				PostQuitMessage(1);
 				return S_FALSE;
 			}
 		}
@@ -4735,11 +4775,13 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 				s_rigmaterial_ringX[rigopemarkno] = s_rigopemark_ringX[rigopemarkno]->GetMQOMaterialByName("ringred");
 				if (!s_rigmaterial_ringX[rigopemarkno]) {
 					_ASSERT(0);
+					PostQuitMessage(1);
 					return S_FALSE;
 				}
 			}
 			else {
 				_ASSERT(0);
+				PostQuitMessage(1);
 				return S_FALSE;
 			}
 		}
@@ -4754,11 +4796,13 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 				s_rigmaterial_ringY[rigopemarkno] = s_rigopemark_ringY[rigopemarkno]->GetMQOMaterialByName("ringgreen");
 				if (!s_rigmaterial_ringY[rigopemarkno]) {
 					_ASSERT(0);
+					PostQuitMessage(1);
 					return S_FALSE;
 				}
 			}
 			else {
 				_ASSERT(0);
+				PostQuitMessage(1);
 				return S_FALSE;
 			}
 		}
@@ -4773,11 +4817,13 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 				s_rigmaterial_ringZ[rigopemarkno] = s_rigopemark_ringZ[rigopemarkno]->GetMQOMaterialByName("ringblue");
 				if (!s_rigmaterial_ringZ[rigopemarkno]) {
 					_ASSERT(0);
+					PostQuitMessage(1);
 					return S_FALSE;
 				}
 			}
 			else {
 				_ASSERT(0);
+				PostQuitMessage(1);
 				return S_FALSE;
 			}
 		}
@@ -4788,6 +4834,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_bmark = new CModel();
 	if (!s_bmark) {
 		_ASSERT(0);
+		PostQuitMessage(1);
 		return S_FALSE;
 	}
 	CallF(s_bmark->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\bonemark.mqo", 0, 1.0f, 0), return S_FALSE);
@@ -4799,6 +4846,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_ground = new CModel();
 	if (!s_ground) {
 		_ASSERT(0);
+		PostQuitMessage(1);
 		return S_FALSE;
 	}
 	CallF(s_ground->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\ground2.mqo", 0, 1.0f, 0), return S_FALSE);
@@ -4807,6 +4855,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_gplane = new CModel();
 	if (!s_gplane) {
 		_ASSERT(0);
+		PostQuitMessage(1);
 		return S_FALSE;
 	}
 	CallF(s_gplane->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\gplane.mqo", 0, 1.0f, 0), return S_FALSE);
@@ -4819,6 +4868,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_bcircle = new CMySprite(s_pdev);
 	if (!s_bcircle) {
 		_ASSERT(0);
+		PostQuitMessage(1);
 		return S_FALSE;
 	}
 
@@ -4829,12 +4879,14 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	lasten = wcsrchr(path, TEXT('\\'));
 	if (!lasten) {
 		_ASSERT(0);
+		PostQuitMessage(1);
 		return S_FALSE;
 	}
 	*lasten = 0L;
 	last2en = wcsrchr(path, TEXT('\\'));
 	if (!last2en) {
 		_ASSERT(0);
+		PostQuitMessage(1);
 		return S_FALSE;
 	}
 	*last2en = 0L;
@@ -4849,12 +4901,14 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	lasten = wcsrchr(mpath, TEXT('\\'));
 	if (!lasten) {
 		_ASSERT(0);
+		PostQuitMessage(1);
 		return S_FALSE;
 	}
 	*lasten = 0L;
 	last2en = wcsrchr(mpath, TEXT('\\'));
 	if (!last2en) {
 		_ASSERT(0);
+		PostQuitMessage(1);
 		return S_FALSE;
 	}
 	*last2en = 0L;
@@ -4869,6 +4923,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_undosprite = new CUndoSprite();
 	if (!s_undosprite) {
 		_ASSERT(0);
+		PostQuitMessage(1);
 		return S_FALSE;
 	}
 	CallF(s_undosprite->CreateSprites(s_pdev, pd3dImmediateContext, mpath), return S_FALSE);
@@ -4881,6 +4936,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	s_fpssprite = new CFpsSprite();
 	if (!s_fpssprite) {
 		_ASSERT(0);
+		PostQuitMessage(1);
 		return S_FALSE;
 	}
 	CallF(s_fpssprite->CreateSprites(s_pdev, pd3dImmediateContext, mpath), return S_FALSE);
@@ -4888,150 +4944,314 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 
 
 	s_spundo[0].sprite = new CMySprite(s_pdev);
-	_ASSERT(s_spundo[0].sprite);
+	if (!s_spundo[0].sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spundo[0].sprite->Create(pd3dImmediateContext, mpath, L"Undo_1.png", 0, 0), return S_FALSE);
 	s_spundo[1].sprite = new CMySprite(s_pdev);
-	_ASSERT(s_spundo[1].sprite);
+	if (!s_spundo[1].sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spundo[1].sprite->Create(pd3dImmediateContext, mpath, L"Redo_1.png", 0, 0), return S_FALSE);
 
 	s_spaxis[0].sprite = new CMySprite(s_pdev);
-	_ASSERT(s_spaxis[0].sprite);
+	if (!s_spaxis[0].sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spaxis[0].sprite->Create(pd3dImmediateContext, mpath, L"X.gif", 0, 0), return S_FALSE);
 	s_spaxis[1].sprite = new CMySprite(s_pdev);
-	_ASSERT(s_spaxis[1].sprite);
+	if (!s_spaxis[1].sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spaxis[1].sprite->Create(pd3dImmediateContext, mpath, L"Y.gif", 0, 0), return S_FALSE);
 	s_spaxis[2].sprite = new CMySprite(s_pdev);
-	_ASSERT(s_spaxis[2].sprite);
+	if (!s_spaxis[2].sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spaxis[2].sprite->Create(pd3dImmediateContext, mpath, L"Z.gif", 0, 0), return S_FALSE);
 
 	//SpriteSwitch RefPos
 	s_sprefpos.spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_sprefpos.spriteON);
+	if (!s_sprefpos.spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_sprefpos.spriteON->Create(pd3dImmediateContext, mpath, L"RefPosON.gif", 0, 0), return S_FALSE);
 	s_sprefpos.spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_sprefpos.spriteOFF);
+	if (!s_sprefpos.spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_sprefpos.spriteOFF->Create(pd3dImmediateContext, mpath, L"RefPosOFF.gif", 0, 0), return S_FALSE);
 
 	//SpriteSwitch LimitEul
 	s_splimiteul.spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_splimiteul.spriteON);
+	if (!s_splimiteul.spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_splimiteul.spriteON->Create(pd3dImmediateContext, mpath, L"LimitEul_ON.png", 0, 0), return S_FALSE);
 	s_splimiteul.spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_splimiteul.spriteOFF);
+	if (!s_splimiteul.spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_splimiteul.spriteOFF->Create(pd3dImmediateContext, mpath, L"LimitEul_OFF.png", 0, 0), return S_FALSE);
 
 	//SpriteSwitch Scraping
 	s_spscraping.spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_spscraping.spriteON);
+	if (!s_spscraping.spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spscraping.spriteON->Create(pd3dImmediateContext, mpath, L"WallScrapingIK_ON.png", 0, 0), return S_FALSE);
 	s_spscraping.spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_spscraping.spriteOFF);
+	if (!s_spscraping.spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spscraping.spriteOFF->Create(pd3dImmediateContext, mpath, L"WallScrapingIK_OFF.png", 0, 0), return S_FALSE);
 
 
 	//SpriteSwitch IKMode
 	s_spikmodesw[0].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_spikmodesw[0].spriteON);
+	if (!s_spikmodesw[0].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spikmodesw[0].spriteON->Create(pd3dImmediateContext, mpath, L"IKRot2ON.gif", 0, 0), return S_FALSE);
 	s_spikmodesw[0].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_spikmodesw[0].spriteOFF);
+	if (!s_spikmodesw[0].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spikmodesw[0].spriteOFF->Create(pd3dImmediateContext, mpath, L"IKRot2OFF.gif", 0, 0), return S_FALSE);
 	s_spikmodesw[1].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_spikmodesw[1].spriteON);
+	if (!s_spikmodesw[1].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spikmodesw[1].spriteON->Create(pd3dImmediateContext, mpath, L"IKMove2ON.gif", 0, 0), return S_FALSE);
 	s_spikmodesw[1].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_spikmodesw[1].spriteOFF);
+	if (!s_spikmodesw[1].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spikmodesw[1].spriteOFF->Create(pd3dImmediateContext, mpath, L"IKMove2OFF.gif", 0, 0), return S_FALSE);
 	s_spikmodesw[2].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_spikmodesw[2].spriteON);
+	if (!s_spikmodesw[2].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spikmodesw[2].spriteON->Create(pd3dImmediateContext, mpath, L"IKScale2ON.gif", 0, 0), return S_FALSE);
 	s_spikmodesw[2].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_spikmodesw[2].spriteOFF);
+	if (!s_spikmodesw[2].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spikmodesw[2].spriteOFF->Create(pd3dImmediateContext, mpath, L"IKScale2OFF.gif", 0, 0), return S_FALSE);
 
 
 	//SpriteSwitch ON
 	s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON);
+	if (!s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_CameraAndIK140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteON);
+	if (!s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispAndLimits140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_BRUSHPARAMS].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_BRUSHPARAMS].spriteON);
+	if (!s_spguisw[SPGUISW_BRUSHPARAMS].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spguisw[SPGUISW_BRUSHPARAMS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_BrushParams140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_BULLETPHYSICS].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_BULLETPHYSICS].spriteON);
+	if (!s_spguisw[SPGUISW_BULLETPHYSICS].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140ON.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON);
+	if (!s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_RefPos140ON.png", 0, 0), return S_FALSE);
 	//SpriteSwitch OFF
 	s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF);
+	if (!s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_CameraAndIK140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteOFF);
+	if (!s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispAndLimits140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_BRUSHPARAMS].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_BRUSHPARAMS].spriteOFF);
+	if (!s_spguisw[SPGUISW_BRUSHPARAMS].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spguisw[SPGUISW_BRUSHPARAMS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_BrushParams140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF);
+	if (!s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140OFF.png", 0, 0), return S_FALSE);
 	s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF);
+	if (!s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_RefPos140OFF.png", 0, 0), return S_FALSE);
 
 
 	//RigidSwitch ON
 	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteON);
+	if (!s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuRigid140ON.png", 0, 0), return S_FALSE);
 	s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON);
+	if (!s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuImpulse140ON.png", 0, 0), return S_FALSE);
 	s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteON);
+	if (!s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuGP140ON.png", 0, 0), return S_FALSE);
 	s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteON);
+	if (!s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuDamp140ON.png", 0, 0), return S_FALSE);
 	//RigidSwitch OFF
 	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteOFF);
+	if (!s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuRigid140OFF.png", 0, 0), return S_FALSE);
 	s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF);
+	if (!s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuImpulse140OFF.png", 0, 0), return S_FALSE);
 	s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteOFF);
+	if (!s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuGP140OFF.png", 0, 0), return S_FALSE);
 	s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteOFF);
+	if (!s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuDamp140OFF.png", 0, 0), return S_FALSE);
 
 	s_spretargetsw[SPRETARGETSW_RETARGET].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_spretargetsw[SPRETARGETSW_RETARGET].spriteON);
+	if (!s_spretargetsw[SPRETARGETSW_RETARGET].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spretargetsw[SPRETARGETSW_RETARGET].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateRetarget140ON.png", 0, 0), return S_FALSE);
 	s_spretargetsw[SPRETARGETSW_RETARGET].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_spretargetsw[SPRETARGETSW_RETARGET].spriteOFF);
+	if (!s_spretargetsw[SPRETARGETSW_RETARGET].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spretargetsw[SPRETARGETSW_RETARGET].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateRetarget140OFF.png", 0, 0), return S_FALSE);
 	s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteON = new CMySprite(s_pdev);
-	_ASSERT(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteON);
+	if (!s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateLimitEuler140ON.png", 0, 0), return S_FALSE);
 	s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF = new CMySprite(s_pdev);
-	_ASSERT(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF);
+	if (!s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateLimitEuler140OFF.png", 0, 0), return S_FALSE);
 
 	{
 		int aimno;
 		for (aimno = 0; aimno < SPAIMBARNUM; aimno++) {
 			s_spaimbar[aimno].spriteON = new CMySprite(s_pdev);
-			_ASSERT(s_spaimbar[aimno].spriteON);
+			if (!s_spaimbar[aimno].spriteON) {
+				_ASSERT(0);
+				PostQuitMessage(1);
+				return S_FALSE;
+			}
 			CallF(s_spaimbar[aimno].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140ON.png", 0, 0), return S_FALSE);
 			s_spaimbar[aimno].spriteOFF = new CMySprite(s_pdev);
-			_ASSERT(s_spaimbar[aimno].spriteOFF);
+			if (!s_spaimbar[aimno].spriteOFF) {
+				_ASSERT(0);
+				PostQuitMessage(1);
+				return S_FALSE;
+			}
 			CallF(s_spaimbar[aimno].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140OFF.png", 0, 0), return S_FALSE);
 		}
 	}
@@ -5039,40 +5259,76 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 		int aimno;
 		for (aimno = 0; aimno < SPMENU_MAX; aimno++) {
 			s_spmenuaimbar[aimno].spriteON = new CMySprite(s_pdev);
-			_ASSERT(s_spmenuaimbar[aimno].spriteON);
+			if (!s_spmenuaimbar[aimno].spriteON) {
+				_ASSERT(0);
+				PostQuitMessage(1);
+				return S_FALSE;
+			}
 			CallF(s_spmenuaimbar[aimno].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140ON.png", 0, 0), return S_FALSE);
 			s_spmenuaimbar[aimno].spriteOFF = new CMySprite(s_pdev);
-			_ASSERT(s_spmenuaimbar[aimno].spriteOFF);
+			if (!s_spmenuaimbar[aimno].spriteOFF) {
+				_ASSERT(0);
+				PostQuitMessage(1);
+				return S_FALSE;
+			}
 			CallF(s_spmenuaimbar[aimno].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140OFF.png", 0, 0), return S_FALSE);
 		}
 	}
 
 	{
 		s_spsel3d.spriteON = new CMySprite(s_pdev);
-		_ASSERT(s_spsel3d.spriteON);
+		if (!s_spsel3d.spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
 		CallF(s_spsel3d.spriteON->Create(pd3dImmediateContext, mpath, L"button101_Select.tif", 0, 0), return S_FALSE);
 		s_spsel3d.spriteOFF = new CMySprite(s_pdev);
-		_ASSERT(s_spsel3d.spriteOFF);
+		if (!s_spsel3d.spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
 		CallF(s_spsel3d.spriteOFF->Create(pd3dImmediateContext, mpath, L"button101_UnSelect.tif", 0, 0), return S_FALSE);
 	}
 
 
 
 	s_spcam[SPR_CAM_I].sprite = new CMySprite(s_pdev);
-	_ASSERT(s_spcam[SPR_CAM_I].sprite);
+	if (!s_spcam[SPR_CAM_I].sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spcam[SPR_CAM_I].sprite->Create(pd3dImmediateContext, mpath, L"cam_i.gif", 0, 0), return S_FALSE);
 	s_spcam[SPR_CAM_KAI].sprite = new CMySprite(s_pdev);
-	_ASSERT(s_spcam[SPR_CAM_KAI].sprite);
+	if (!s_spcam[SPR_CAM_KAI].sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spcam[SPR_CAM_KAI].sprite->Create(pd3dImmediateContext, mpath, L"cam_kai.gif", 0, 0), return S_FALSE);
 	s_spcam[SPR_CAM_KAKU].sprite = new CMySprite(s_pdev);
-	_ASSERT(s_spcam[SPR_CAM_KAKU].sprite);
+	if (!s_spcam[SPR_CAM_KAKU].sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spcam[SPR_CAM_KAKU].sprite->Create(pd3dImmediateContext, mpath, L"cam_kaku.gif", 0, 0), return S_FALSE);
 
 	s_sprig[SPRIG_INACTIVE].sprite = new CMySprite(s_pdev);
-	_ASSERT(s_sprig[SPRIG_INACTIVE].sprite);
+	if (!s_sprig[SPRIG_INACTIVE].sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_sprig[SPRIG_INACTIVE].sprite->Create(pd3dImmediateContext, mpath, L"RigOFF.gif", 0, 0), return S_FALSE);
 	s_sprig[SPRIG_ACTIVE].sprite = new CMySprite(s_pdev);
-	_ASSERT(s_sprig[SPRIG_ACTIVE].sprite);
+	if (!s_sprig[SPRIG_ACTIVE].sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_sprig[SPRIG_ACTIVE].sprite->Create(pd3dImmediateContext, mpath, L"RigON.gif", 0, 0), return S_FALSE);
 
 	//s_spbt.sprite = new CMySprite(s_pdev);
@@ -5080,7 +5336,11 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	//CallF(s_spbt.sprite->Create(pd3dImmediateContext, mpath, L"BtApply.png", 0, 0), return S_FALSE);
 
 	s_spmousehere.sprite = new CMySprite(s_pdev);
-	_ASSERT(s_spmousehere.sprite);
+	if (!s_spmousehere.sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spmousehere.sprite->Create(pd3dImmediateContext, mpath, L"img_l105.png", 0, 0), return S_FALSE);
 
 	{
@@ -5091,7 +5351,11 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 		//_ASSERT(g_mouseherebmp);
 		//g_tranbmp = 0xFF000000;
 		g_mousehereimage = new Gdiplus::Image(pngpath);
-		_ASSERT(g_mousehereimage);
+		if (!g_mousehereimage) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
 	}
 
 	{
@@ -5102,31 +5366,59 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 		//_ASSERT(g_mouseherebmp);
 		//g_tranbmp = 0xFF000000;
 		g_menuaimbarimage = new Gdiplus::Image(pngpath);
-		_ASSERT(g_menuaimbarimage);
+		if (!g_menuaimbarimage) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
 	}
 
 
 	s_spret2prev.sprite = new CMySprite(s_pdev);
-	_ASSERT(s_spret2prev.sprite);
+	if (!s_spret2prev.sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spret2prev.sprite->Create(pd3dImmediateContext, mpath, L"img_ret2prev.gif", 0, 0), return S_FALSE);
 
 	s_spcplw2w.sprite = new CMySprite(s_pdev);
-	_ASSERT(s_spcplw2w.sprite);
+	if (!s_spcplw2w.sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spcplw2w.sprite->Create(pd3dImmediateContext, mpath, L"BakeLW2W.png", 0, 0), return S_FALSE);
 
 	s_spsmooth.sprite = new CMySprite(s_pdev);
-	_ASSERT(s_spsmooth.sprite);
+	if (!s_spsmooth.sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spsmooth.sprite->Create(pd3dImmediateContext, mpath, L"SmoothFilter.png", 0, 0), return S_FALSE);
 
 	s_spconstexe.sprite = new CMySprite(s_pdev);
-	_ASSERT(s_spconstexe.sprite);
+	if (!s_spconstexe.sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spconstexe.sprite->Create(pd3dImmediateContext, mpath, L"Constraint_Execute.png", 0, 0), return S_FALSE);
 	s_spconstrefresh.sprite = new CMySprite(s_pdev);
-	_ASSERT(s_spconstrefresh.sprite);
+	if (!s_spconstrefresh.sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_spconstrefresh.sprite->Create(pd3dImmediateContext, mpath, L"Constraint_refresh.png", 0, 0), return S_FALSE);
 
 	s_mousecenteron.sprite = new CMySprite(s_pdev);
-	_ASSERT(s_mousecenteron.sprite);
+	if (!s_mousecenteron.sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
 	CallF(s_mousecenteron.sprite->Create(pd3dImmediateContext, mpath, L"MouseCenterButtonON.png", 0, 0), return S_FALSE);
 
 	///////
@@ -5157,6 +5449,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	if (FAILED(s_pdev->CreateBlendState(&blendDesc, &g_blendState)))
 	{
 		_ASSERT(0);
+		PostQuitMessage(1);
 		return S_FALSE;
 	}
 	/*
@@ -15781,205 +16074,254 @@ int CreateModelPanel()
 		0, 0, 0,				//カラー
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
-	if (!s_modelpanel.panel) {
-		_ASSERT(0);
-		return 1;
-	}
 
-	s_modelpanel.panel->setVisible(false);//作成中
-
-	s_modelpanel.panel->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
+	if (s_modelpanel.panel) {
+		s_modelpanel.panel->setVisible(false);//作成中
+		s_modelpanel.panel->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
 
 
-	//スクロールウインドウ
-	s_modelpanel.scroll = new OWP_ScrollWnd(L"ModelPanelScroll");
-	if (!s_modelpanel.scroll) {
-		_ASSERT(0);
-		return 1;
-	}
-	//要素数が変わったときには指定し忘れないように！！！
-	s_modelpanel.scroll->setLineDataSize(modelnum + 3);
-	s_modelpanel.scroll->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight - 30));
-	s_modelpanel.panel->addParts(*(s_modelpanel.scroll));
-	s_modelpanel.panel->setPos(s_modelpanelpos);
-	s_modelpanel.scroll->setPos(WindowPos(0, 30));
-
-	int modelcnt;
-
-	if (modelnum > 0) {
-
-		for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
-			CModel* curmodel = s_modelindex[modelcnt].modelptr;
-			_ASSERT(curmodel);
-
-			if (modelcnt == 0) {
-				bool limitnamelen = true;
-				s_modelpanel.radiobutton = new OWP_RadioButton(curmodel->GetFileName(), limitnamelen);
-			}
-			else {
-				s_modelpanel.radiobutton->addLine(curmodel->GetFileName());
-			}
-		}
-
-		//s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
-		s_modelpanel.separator = new OWP_Separator(s_modelpanel.panel, true);									// セパレータ1（境界線による横方向2分割）
-		if (!s_modelpanel.separator) {
+		//スクロールウインドウ
+		s_modelpanel.scroll = new OWP_ScrollWnd(L"ModelPanelScroll");
+		if (!s_modelpanel.scroll) {
 			_ASSERT(0);
 			return 1;
 		}
-		s_modelpanel.separator->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight));
-		s_modelpanel.separator->setPos(OrgWinGUI::WindowPos(0, 0));
-		
-		// セパレータ2（境界線による横方向2分割）
-		s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, true);									// セパレータ2（境界線による横方向2分割）
-		if (!s_modelpanel.separator2) {
-			_ASSERT(0);
-			return 1;
-		}
-		s_modelpanel.separator2->setSize(WindowSize(s_modelwindowwidth / 2, s_modelwindowheight));
-		s_modelpanel.separator2->setPos(OrgWinGUI::WindowPos(0, 0));
+		//要素数が変わったときには指定し忘れないように！！！
+		s_modelpanel.scroll->setLineDataSize(modelnum + 3);
+		s_modelpanel.scroll->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight - 30));
+		s_modelpanel.panel->addParts(*(s_modelpanel.scroll));
+		s_modelpanel.panel->setPos(s_modelpanelpos);
+		s_modelpanel.scroll->setPos(WindowPos(0, 30));
 
+		int modelcnt;
 
-		for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
-			CModel* curmodel = s_modelindex[modelcnt].modelptr;
-			OWP_CheckBoxA* owpCheckBox = new OWP_CheckBoxA(L"Show/Hide", curmodel->GetModelDisp());
-			s_modelpanel.checkvec.push_back(owpCheckBox);
-			OWP_Button* owpButton = new OWP_Button(L"delete");
-			s_modelpanel.delbutton.push_back(owpButton);
-		}
+		if (modelnum > 0) {
 
+			for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
+				CModel* curmodel = s_modelindex[modelcnt].modelptr;
+				_ASSERT(curmodel);
 
-		//s_modelpanel.panel->addParts(*(s_modelpanel.separator));
-		s_modelpanel.scroll->addParts(*(s_modelpanel.separator));
-
-		s_modelpanel.separator->addParts1(*(s_modelpanel.radiobutton));
-		s_modelpanel.separator->addParts2(*(s_modelpanel.separator2));
-
-		for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
-			OWP_CheckBoxA* curcb = s_modelpanel.checkvec[modelcnt];
-			s_modelpanel.separator2->addParts1(*curcb);
-
-			OWP_Button* curbutton = s_modelpanel.delbutton[modelcnt];
-			s_modelpanel.separator2->addParts2(*curbutton);
-		}
-
-		s_modelpanel.modelindex = s_curmodelmenuindex;
-		s_modelpanel.radiobutton->setSelectIndex(s_modelpanel.modelindex);
-
-		//s_modelpanel.scroll->inView(s_modelpanel.modelindex);
-		s_modelpanel.scroll->setShowPosLine(s_savemodelpanelshowposline);
-
-		//s_modelpanel.scroll->addParts(*(s_modelpanel.separator));
-		//s_modelpanel.panel->addParts(*(s_modelpanel.scroll));
-
-	}
-
-
-	//if (s_modelpanel.panel && s_modelpanel.scroll) {
-	//	if (s_modelpanel.separator) {
-	//		s_modelpanel.scroll->addParts(*(s_modelpanel.separator));
-	//	}
-	//	s_modelpanel.panel->addParts(*(s_modelpanel.scroll));
-	//	s_modelpanel.scroll->setPos(OrgWinGUI::WindowPos(0, 30));
-	//}
-
-
-	//s_modelpanel.panel->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-////////////
-	s_modelpanel.panel->setCloseListener([]() {
-		if (s_model) {
-			s_closemodelFlag = true;
-		}
-	});
-
-	for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
-		s_modelpanel.checkvec[modelcnt]->setButtonListener([modelcnt]() {
-			if (s_model) {
-				if (modelcnt < s_modelindex.size()) {
-					CModel* curmodel = s_modelindex[modelcnt].modelptr;
-					if (curmodel) {
-						//s_modelpanel.checkvec[modelcnt]->setValue(!(s_modelpanel.checkvec[modelcnt]->getValue()));
-						curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
-						s_modelpanel.panel->callRewrite();
+				if (modelcnt == 0) {
+					bool limitnamelen = true;
+					s_modelpanel.radiobutton = new OWP_RadioButton(curmodel->GetFileName(), limitnamelen);
+					if (!s_modelpanel.radiobutton) {
+						_ASSERT(0);
+						return 1;
+					}
+				}
+				else {
+					if (s_modelpanel.radiobutton) {
+						s_modelpanel.radiobutton->addLine(curmodel->GetFileName());
 					}
 				}
 			}
-		});
 
-		s_modelpanel.delbutton[modelcnt]->setButtonListener([modelcnt]() {
-			if (s_model) {
-				if ((modelcnt < s_modelindex.size()) && (s_modelindex.size() >= 2)) {//全部消すときはメインメニューから
-					CModel* curmodel = s_modelindex[modelcnt].modelptr;
-					if ((s_underdelmotion == false) && (s_opedelmotioncnt < 0) && //Motion削除と同時は禁止 
-						(s_opedelmodelcnt < 0) && curmodel && !s_underdelmodel) {
-						s_underdelmodel = true;
-						//bool ondelbutton = true;
-						//OnDelModel(modelcnt, ondelbutton);//s_modelpanel.modelindexはs_modelのindexなので違う
+			//s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
+			s_modelpanel.separator = new OWP_Separator(s_modelpanel.panel, true);									// セパレータ1（境界線による横方向2分割）
+			if (!s_modelpanel.separator) {
+				_ASSERT(0);
+				return 1;
+			}
+			s_modelpanel.separator->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight));
+			s_modelpanel.separator->setPos(OrgWinGUI::WindowPos(0, 0));
 
-						//ここでOnDelModelを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
-						s_opedelmodelcnt = modelcnt;
+			// セパレータ2（境界線による横方向2分割）
+			s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, true);									// セパレータ2（境界線による横方向2分割）
+			if (!s_modelpanel.separator2) {
+				_ASSERT(0);
+				return 1;
+			}
+			s_modelpanel.separator2->setSize(WindowSize(s_modelwindowwidth / 2, s_modelwindowheight));
+			s_modelpanel.separator2->setPos(OrgWinGUI::WindowPos(0, 0));
 
-						s_model = 0;//カレントモデルに影響しないように
 
-						Sleep(100);//ボタン連打でメニューのモーション数が実際より減ることがあったので
+			for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
+				CModel* curmodel = s_modelindex[modelcnt].modelptr;
+				if (curmodel) {
+					OWP_CheckBoxA* owpCheckBox = new OWP_CheckBoxA(L"Show/Hide", curmodel->GetModelDisp());
+					if (owpCheckBox) {
+						s_modelpanel.checkvec.push_back(owpCheckBox);
+						OWP_Button* owpButton = new OWP_Button(L"delete");
+						if (owpButton) {
+							s_modelpanel.delbutton.push_back(owpButton);
+						}
+						else {
+							_ASSERT(0);
+							return 1;
+						}
+					}
+					else {
+						_ASSERT(0);
+						return 1;
 					}
 				}
 			}
-		});
-	}
 
-	if (s_modelpanel.radiobutton) {
-		s_modelpanel.radiobutton->setSelectListener([]() {
-			if (s_model) {
-				int curindex = s_modelpanel.radiobutton->getSelectIndex();
-				if ((s_opeselectmodelcnt < 0) && !s_underselectmodel && (curindex >= 0) && (curindex < s_modelindex.size())) {
-					//s_modelpanel.modelindex = curindex;
-					//OnModelMenu(true, s_modelpanel.modelindex, 1);
-					//s_modelpanel.panel->callRewrite();
 
-					//ここでOnModelMenuを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
-					s_underselectmodel = true;
-					s_opeselectmodelcnt = curindex;
+			//s_modelpanel.panel->addParts(*(s_modelpanel.separator));
+			if (s_modelpanel.scroll) {
+				s_modelpanel.scroll->addParts(*(s_modelpanel.separator));
+			}
+			if (s_modelpanel.separator) {
+				if (s_modelpanel.radiobutton) {
+					s_modelpanel.separator->addParts1(*(s_modelpanel.radiobutton));
+				}
+				if (s_modelpanel.separator2) {
+					s_modelpanel.separator->addParts2(*(s_modelpanel.separator2));
 				}
 			}
-		});
+
+
+			for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
+				if (s_modelpanel.separator2) {
+					OWP_CheckBoxA* curcb = s_modelpanel.checkvec[modelcnt];
+					if (curcb) {
+						s_modelpanel.separator2->addParts1(*curcb);
+					}
+					OWP_Button* curbutton = s_modelpanel.delbutton[modelcnt];
+					if (curbutton) {
+						s_modelpanel.separator2->addParts2(*curbutton);
+					}
+				}
+			}
+
+			s_modelpanel.modelindex = s_curmodelmenuindex;
+			if (s_modelpanel.radiobutton) {
+				s_modelpanel.radiobutton->setSelectIndex(s_modelpanel.modelindex);
+			}
+
+			//s_modelpanel.scroll->inView(s_modelpanel.modelindex);
+			if (s_modelpanel.scroll) {
+				s_modelpanel.scroll->setShowPosLine(s_savemodelpanelshowposline);
+			}
+
+
+			//s_modelpanel.scroll->addParts(*(s_modelpanel.separator));
+			//s_modelpanel.panel->addParts(*(s_modelpanel.scroll));
+
+		}
+
+
+		//if (s_modelpanel.panel && s_modelpanel.scroll) {
+		//	if (s_modelpanel.separator) {
+		//		s_modelpanel.scroll->addParts(*(s_modelpanel.separator));
+		//	}
+		//	s_modelpanel.panel->addParts(*(s_modelpanel.scroll));
+		//	s_modelpanel.scroll->setPos(OrgWinGUI::WindowPos(0, 30));
+		//}
+
+
+		//s_modelpanel.panel->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	////////////
+		if (s_modelpanel.panel) {
+			s_modelpanel.panel->setCloseListener([]() {
+				if (s_model) {
+					s_closemodelFlag = true;
+				}
+				});
+		}
+
+		for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
+			if (s_modelpanel.checkvec[modelcnt]) {
+				s_modelpanel.checkvec[modelcnt]->setButtonListener([modelcnt]() {
+					if (s_model) {
+						if (modelcnt < s_modelindex.size()) {
+							CModel* curmodel = s_modelindex[modelcnt].modelptr;
+							if (curmodel) {
+								//s_modelpanel.checkvec[modelcnt]->setValue(!(s_modelpanel.checkvec[modelcnt]->getValue()));
+								curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
+							}
+						}
+						if (s_modelpanel.panel) {
+							s_modelpanel.panel->callRewrite();
+						}
+					}
+					});
+			}
+
+			if (s_modelpanel.delbutton[modelcnt]) {
+				s_modelpanel.delbutton[modelcnt]->setButtonListener([modelcnt]() {
+					if (s_model) {
+						if ((modelcnt < s_modelindex.size()) && (s_modelindex.size() >= 2)) {//全部消すときはメインメニューから
+							CModel* curmodel = s_modelindex[modelcnt].modelptr;
+							if ((s_underdelmotion == false) && (s_opedelmotioncnt < 0) && //Motion削除と同時は禁止 
+								(s_opedelmodelcnt < 0) && curmodel && !s_underdelmodel) {
+								s_underdelmodel = true;
+								//bool ondelbutton = true;
+								//OnDelModel(modelcnt, ondelbutton);//s_modelpanel.modelindexはs_modelのindexなので違う
+
+								//ここでOnDelModelを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+								s_opedelmodelcnt = modelcnt;
+
+								s_model = 0;//カレントモデルに影響しないように
+
+								Sleep(100);//ボタン連打でメニューのモーション数が実際より減ることがあったので
+							}
+						}
+					}
+					});
+			}
+		}
+
+		if (s_modelpanel.radiobutton) {
+			s_modelpanel.radiobutton->setSelectListener([]() {
+				if (s_model) {
+					int curindex = s_modelpanel.radiobutton->getSelectIndex();
+					if ((s_opeselectmodelcnt < 0) && !s_underselectmodel && (curindex >= 0) && (curindex < s_modelindex.size())) {
+						//s_modelpanel.modelindex = curindex;
+						//OnModelMenu(true, s_modelpanel.modelindex, 1);
+						//s_modelpanel.panel->callRewrite();
+
+						//ここでOnModelMenuを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+						s_underselectmodel = true;
+						s_opeselectmodelcnt = curindex;
+					}
+				}
+				});
+		}
+
+		//if (s_firstmodelpanelpos) {
+		//	if (g_4kresolution) {
+		//		s_modelpanelpos = WindowPos(s_toolwidth, MAINMENUAIMBARH);
+		//	}
+		//	else {
+		//		RECT wnd3drect;
+		//		if (s_mainhwnd) {
+		//			GetWindowRect(s_mainhwnd, &wnd3drect);
+		//			s_modelpanelpos = WindowPos(wnd3drect.left + 100, wnd3drect.top + 500);
+		//		}
+		//		else {
+		//			s_modelpanelpos = WindowPos(200, s_2ndposy);
+		//		}
+		//	}
+		//	s_firstmodelpanelpos = false;
+		//}
+		//s_modelpanel.panel->setPos(s_modelpanelpos);
+
+		////s_modelpanel.panel->setSize(WindowSize(200, 100));//880
+		//s_modelpanel.panel->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight));
+
+		s_rcmodelpanel.top = s_modelpanelpos.y;
+		s_rcmodelpanel.bottom = s_modelpanelpos.y + s_modelwindowheight;
+		s_rcmodelpanel.left = s_modelpanelpos.x;
+		s_rcmodelpanel.right = s_modelpanelpos.x + s_modelwindowwidth;
+
+		//if (g_4kresolution) {
+		//	//4K時は　フレーム組み込み表示
+		//	s_modelpanel.panel->setVisible(true);
+		//	s_dispmodel = true;//!!!!!!!!!!!!!!!!! modelpanelのdispflag
+		//}
+		//else {
+		if (s_modelpanel.panel) {
+			s_modelpanel.panel->setVisible(false);
+		}
 	}
-
-	//if (s_firstmodelpanelpos) {
-	//	if (g_4kresolution) {
-	//		s_modelpanelpos = WindowPos(s_toolwidth, MAINMENUAIMBARH);
-	//	}
-	//	else {
-	//		RECT wnd3drect;
-	//		if (s_mainhwnd) {
-	//			GetWindowRect(s_mainhwnd, &wnd3drect);
-	//			s_modelpanelpos = WindowPos(wnd3drect.left + 100, wnd3drect.top + 500);
-	//		}
-	//		else {
-	//			s_modelpanelpos = WindowPos(200, s_2ndposy);
-	//		}
-	//	}
-	//	s_firstmodelpanelpos = false;
-	//}
-	//s_modelpanel.panel->setPos(s_modelpanelpos);
-
-	////s_modelpanel.panel->setSize(WindowSize(200, 100));//880
-	//s_modelpanel.panel->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight));
-
-	s_rcmodelpanel.top = s_modelpanelpos.y;
-	s_rcmodelpanel.bottom = s_modelpanelpos.y + s_modelwindowheight;
-	s_rcmodelpanel.left = s_modelpanelpos.x;
-	s_rcmodelpanel.right = s_modelpanelpos.x + s_modelwindowwidth;
-
-	//if (g_4kresolution) {
-	//	//4K時は　フレーム組み込み表示
-	//	s_modelpanel.panel->setVisible(true);
-	//	s_dispmodel = true;//!!!!!!!!!!!!!!!!! modelpanelのdispflag
-	//}
-	//else {
-		s_modelpanel.panel->setVisible(false);
-		s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanelのdispflag
+	else {
+		_ASSERT(0);
+		return 1;
+	}
+	s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanelのdispflag
 	//}
 
 	return 0;
@@ -16098,155 +16440,190 @@ int CreateMotionPanel()
 		0, 0, 0,				//カラー
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
-	if (!s_motionpanel.panel) {
-		_ASSERT(0);
-		return 1;
-	}
-
-
-	s_motionpanel.panel->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
+	if (s_motionpanel.panel) {
+		s_motionpanel.panel->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
 
 
 
-	if (s_model) {
-		int motioncnt = 0;
-		std::map<int, MOTINFO*>::iterator itrmi;
-		for (itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++) {
-			MOTINFO* curmi = (MOTINFO*)(itrmi->second);
-			if (curmi) {
-				WCHAR wmotname[MAX_PATH] = { 0L };
-				MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, curmi->motname, 256, wmotname, MAX_PATH);
-				if (motioncnt == 0) {
-					bool limitnamelen = true;
-					s_motionpanel.radiobutton = new OWP_RadioButton(wmotname, limitnamelen);
-				}
-				else {
-					s_motionpanel.radiobutton->addLine(wmotname);
-				}
-
-				motioncnt++;
-			}
-		}
-
-		//スクロールウインドウ
-		s_motionpanel.scroll = new OWP_ScrollWnd(L"MotionPanelScroll");
-		if (!s_motionpanel.scroll) {
-			_ASSERT(0);
-			return 1;
-		}
-		//要素数が変わったときには指定し忘れないように！！！
-		s_motionpanel.scroll->setLineDataSize(motionnum + 3);
-		s_motionpanel.scroll->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight - 30));
-		s_motionpanel.panel->addParts(*(s_motionpanel.scroll));
-		s_motionpanel.panel->setPos(s_motionpanelpos);
-		s_motionpanel.scroll->setPos(WindowPos(0, 30));
-
-		s_motionpanel.separator = new OWP_Separator(s_motionpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
-		if (!s_motionpanel.separator) {
-			_ASSERT(0);
-			return 1;
-		}
-		//s_motionpanel.separator->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight));
-		//s_motionpanel.scroll->addParts(*(s_motionpanel.separator));
-		s_motionpanel.scroll->addParts(*(s_motionpanel.separator));
-
-		s_motionpanel.separator->addParts1(*(s_motionpanel.radiobutton));//add once
-
-		std::map<int, MOTINFO*>::iterator itrmi2;
-		for (itrmi2 = s_model->GetMotInfoBegin(); itrmi2 != s_model->GetMotInfoEnd(); itrmi2++) {
-			MOTINFO* curmi = (MOTINFO*)(itrmi2->second);
-			if (curmi) {
-				OWP_Button* owpButton = new OWP_Button(L"delete");
-				s_motionpanel.delbutton.push_back(owpButton);
-				s_motionpanel.separator->addParts2(*owpButton);
-			}
-		}
-
-
-		s_motionpanel.modelindex = s_curmodelmenuindex;
-		//s_motionpanel.radiobutton->setSelectIndex(0);
 		if (s_model) {
-			s_motionpanel.radiobutton->setSelectIndex(s_motmenuindexmap[s_model]);//!!!!
-			//s_motionpanel.scroll->inView(s_motmenuindexmap[s_model]);
-			s_motionpanel.scroll->setShowPosLine(s_savemotionpanelshowposline);
+			int motioncnt = 0;
+			std::map<int, MOTINFO*>::iterator itrmi;
+			for (itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++) {
+				MOTINFO* curmi = (MOTINFO*)(itrmi->second);
+				if (curmi) {
+					WCHAR wmotname[MAX_PATH] = { 0L };
+					MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, curmi->motname, 256, wmotname, MAX_PATH);
+					if (motioncnt == 0) {
+						bool limitnamelen = true;
+						s_motionpanel.radiobutton = new OWP_RadioButton(wmotname, limitnamelen);
+						if (!s_motionpanel.radiobutton) {
+							_ASSERT(0);
+							return 1;
+						}
+					}
+					else {
+						if (s_motionpanel.radiobutton) {
+							if (wmotname[0] != 0L) {
+								s_motionpanel.radiobutton->addLine(wmotname);
+							}
+							else {
+								s_motionpanel.radiobutton->addLine(L"NoName");
+							}
+						}
+					}
+
+					motioncnt++;
+				}
+			}
+
+			//スクロールウインドウ
+			s_motionpanel.scroll = new OWP_ScrollWnd(L"MotionPanelScroll");
+			if (!s_motionpanel.scroll) {
+				_ASSERT(0);
+				return 1;
+			}
+			//要素数が変わったときには指定し忘れないように！！！
+			s_motionpanel.scroll->setLineDataSize(motionnum + 3);
+			s_motionpanel.scroll->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight - 30));
+			s_motionpanel.panel->addParts(*(s_motionpanel.scroll));
+			s_motionpanel.panel->setPos(s_motionpanelpos);
+			s_motionpanel.scroll->setPos(WindowPos(0, 30));
+
+			s_motionpanel.separator = new OWP_Separator(s_motionpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
+			if (!s_motionpanel.separator) {
+				_ASSERT(0);
+				return 1;
+			}
+			//s_motionpanel.separator->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight));
+			//s_motionpanel.scroll->addParts(*(s_motionpanel.separator));
+			if (s_motionpanel.separator) {
+				s_motionpanel.scroll->addParts(*(s_motionpanel.separator));
+				if (s_motionpanel.radiobutton) {
+					s_motionpanel.separator->addParts1(*(s_motionpanel.radiobutton));//add once
+				}
+			}
+
+			if (s_model) {
+				std::map<int, MOTINFO*>::iterator itrmi2;
+				for (itrmi2 = s_model->GetMotInfoBegin(); itrmi2 != s_model->GetMotInfoEnd(); itrmi2++) {
+					MOTINFO* curmi = (MOTINFO*)(itrmi2->second);
+					if (curmi) {
+						OWP_Button* owpButton = new OWP_Button(L"delete");
+						if (owpButton) {
+							s_motionpanel.delbutton.push_back(owpButton);
+							s_motionpanel.separator->addParts2(*owpButton);
+						}
+						else {
+							_ASSERT(0);
+							return 1;
+						}
+					}
+				}
+			}
+
+
+			s_motionpanel.modelindex = s_curmodelmenuindex;
+			//s_motionpanel.radiobutton->setSelectIndex(0);
+			if (s_model) {
+				if (s_motionpanel.radiobutton) {
+					s_motionpanel.radiobutton->setSelectIndex(s_motmenuindexmap[s_model]);//!!!!
+				}
+				//s_motionpanel.scroll->inView(s_motmenuindexmap[s_model]);
+				if (s_motionpanel.scroll) {
+					s_motionpanel.scroll->setShowPosLine(s_savemotionpanelshowposline);
+				}
+			}
+			else {
+				_ASSERT(0);
+				return 1;
+			}
+
 		}
 		else {
 			_ASSERT(0);
-			return 1;
+			return 0;//s_model == NULL : 0 return
 		}
 
-	}
-	else {
 
+		if (s_motionpanel.panel) {
+			s_motionpanel.panel->setVisible(false);//作成中非表示
 
+			s_motionpanel.panel->setCloseListener([]() {
+				if (s_model) {
+					s_closemotionFlag = true;
+				}
+				});
 
+		}
 
-	}
-
-	s_motionpanel.panel->setVisible(false);//作成中非表示
-	
-
-////////////
-	s_motionpanel.panel->setCloseListener([]() {
 		if (s_model) {
-			s_closemotionFlag = true;
+			int delmenuindex = 0;
+			for (delmenuindex = 0; delmenuindex < s_model->GetMotInfoSize(); delmenuindex++) {
+				if (s_motionpanel.delbutton[delmenuindex]) {
+					s_motionpanel.delbutton[delmenuindex]->setButtonListener([delmenuindex]() {
+						if ((s_underdelmodel == false) && (s_opedelmodelcnt < 0) && //Model削除と同時は禁止
+							(s_opedelmotioncnt < 0) && !s_underdelmotion && s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
+							s_opedelmotioncnt = delmenuindex;
+							s_underdelmotion = true;
+							//bool ondelbutton = true;
+							//OnDelMotion(delmenuindex, ondelbutton);
+
+							//ここでOnDelMotionを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+
+							Sleep(100);//ボタン連打でメニューのモーション数が実際より減ることがあったので
+						}
+						});
+				}
+				else {
+					_ASSERT(0);
+					return 1;
+				}
+			}
 		}
-		});
 
-	if (s_model) {
-		int delmenuindex = 0;
-		for (delmenuindex = 0; delmenuindex < s_model->GetMotInfoSize(); delmenuindex++) {
-			s_motionpanel.delbutton[delmenuindex]->setButtonListener([delmenuindex]() {
-				if ((s_underdelmodel == false) && (s_opedelmodelcnt < 0) && //Model削除と同時は禁止
-					(s_opedelmotioncnt < 0) && !s_underdelmotion && s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
-					s_opedelmotioncnt = delmenuindex;
-					s_underdelmotion = true;
-					//bool ondelbutton = true;
-					//OnDelMotion(delmenuindex, ondelbutton);
+		if (s_motionpanel.radiobutton) {
+			s_motionpanel.radiobutton->setSelectListener([]() {
+				if (s_model) {
+					int curindex = s_motionpanel.radiobutton->getSelectIndex();
+					if ((s_opeselectmotioncnt < 0) && !s_underselectmotion && (curindex >= 0) && (curindex < s_model->GetMotInfoSize())) {
+						s_opeselectmotioncnt = curindex;
+						s_underselectmotion = true;
+						//int motionindex = curindex;
+						//OnAnimMenu(true, motionindex, 1);
+						//s_motionpanel.panel->callRewrite();
 
-					//ここでOnDelMotionを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
-
-					Sleep(100);//ボタン連打でメニューのモーション数が実際より減ることがあったので
+						//ここでOnAnimMenuを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+					}
 				}
 				});
 		}
-	}
 
-	if (s_motionpanel.radiobutton) {
-		s_motionpanel.radiobutton->setSelectListener([]() {
-			if (s_model) {
-				int curindex = s_motionpanel.radiobutton->getSelectIndex();
-				if ((s_opeselectmotioncnt < 0) && !s_underselectmotion && (curindex >= 0) && (curindex < s_model->GetMotInfoSize())) {
-					s_opeselectmotioncnt = curindex;
-					s_underselectmotion = true;
-					//int motionindex = curindex;
-					//OnAnimMenu(true, motionindex, 1);
-					//s_motionpanel.panel->callRewrite();
+		//s_motionpanel.panel->setPos(s_motionpanelpos);
+		//s_motionpanel.panel->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight));
 
-					//ここでOnAnimMenuを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
-				}
+		s_rcmotionpanel.top = s_motionpanelpos.y;
+		s_rcmotionpanel.bottom = s_motionpanelpos.y + s_motionwindowheight;
+		s_rcmotionpanel.left = s_motionpanelpos.x;
+		s_rcmotionpanel.right = s_motionpanelpos.x + s_motionwindowwidth;
+
+		if (g_4kresolution) {
+			//4K時は　フレーム組み込み表示
+			if (s_motionpanel.panel) {
+				s_motionpanel.panel->setVisible(true);
 			}
-		});
-	}
-	
-	//s_motionpanel.panel->setPos(s_motionpanelpos);
-	//s_motionpanel.panel->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight));
-
-	s_rcmotionpanel.top = s_motionpanelpos.y;
-	s_rcmotionpanel.bottom = s_motionpanelpos.y + s_motionwindowheight;
-	s_rcmotionpanel.left = s_motionpanelpos.x;
-	s_rcmotionpanel.right = s_motionpanelpos.x + s_motionwindowwidth;
-
-	if (g_4kresolution) {
-		//4K時は　フレーム組み込み表示
-		s_motionpanel.panel->setVisible(true);
-		s_dispmotion = true;//!!!!!!!!!!!!!!!!! motionpanelのdispflag
+			s_dispmotion = true;//!!!!!!!!!!!!!!!!! motionpanelのdispflag
+		}
+		else {
+			if (s_motionpanel.panel) {
+				s_motionpanel.panel->setVisible(false);
+			}
+			s_dispmotion = false;//!!!!!!!!!!!!!!!!! motionpanelのdispflag
+		}
 	}
 	else {
-		s_motionpanel.panel->setVisible(false);
-		s_dispmotion = false;//!!!!!!!!!!!!!!!!! motionpanelのdispflag
+		_ASSERT(0);
+		return 1;
 	}
-
 
 	return 0;
 }
@@ -16391,299 +16768,325 @@ int CreateConvBoneWnd()
 		0, 0, 0,				//カラー
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
-
-	s_convboneWnd->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
-
-	//スクロールウインドウ
-	s_convboneSCWnd = new OWP_ScrollWnd(L"ConvBoneScWnd");
-	//s_convboneSCWnd->setLineDataSize(s_convbonenum + 4);
-	//2023/02/14
-	//要素数が変わったときには指定し忘れないように！！！
-	s_convboneSCWnd->setLineDataSize(s_convbonenum + 8);
-	s_convboneWnd->addParts(*s_convboneSCWnd);
-
-
-
-	WCHAR bvhbonename[MAX_PATH];
-	int cbno = 0;
-	map<int, CBone*>::iterator itrbone;
-	for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
-		CBone* curbone = itrbone->second;
-		if (curbone) {
-			const WCHAR* wbonename = curbone->GetWBoneName();
-			_ASSERT(wbonename);
-			s_modelbone[cbno] = new OWP_Label(wbonename);
-			_ASSERT(s_modelbone[cbno]);
-			s_modelbone_bone[cbno] = curbone;
-
-			swprintf_s(bvhbonename, MAX_PATH, L"NotSet_%03d", cbno);
-			s_bvhbone[cbno] = new OWP_Button(bvhbonename);
-			_ASSERT(s_bvhbone[cbno]);
-			s_bvhbone_bone[cbno] = 0;
-
-			s_convbonemap[curbone] = 0;
-
-			DbgOut(L"convbone %d : (%s,  %s)\n", cbno, wbonename, bvhbonename);
-
-			cbno++;
-		}
-	}
-	DbgOut(L"\n\n");
-	if (cbno != s_convbonenum) {
-		_ASSERT(0);
-		return 1;
-	}
-
-	s_convbonesp = new OWP_Separator(s_convboneWnd, false, 0.5, true);									// セパレータ1（境界線による横方向2分割）
-
-	//s_cbselmodel = new OWP_Button(L"SelectShapeModel");
-	WCHAR strtext[256] = { 0L };
-	swprintf_s(strtext, 256, L"Model: %s", s_model->GetFileName());
-	s_cbselmodel = new OWP_Label(strtext);
-
-	s_cbselbvh = new OWP_Button(L"SelectMotionModel");
-	if (!s_cbselbvh) {
-		_ASSERT(0);
-		return 1;
-	}
-	s_convboneconvert = new OWP_Button(L"ConvertButton");
-	if (!s_convboneconvert) {
-		_ASSERT(0);
-		return 1;
-	}
-	s_convbonespace1 = new OWP_Label(L"--------------");
-	if (!s_convbonespace1) {
-		_ASSERT(0);
-		return 1;
-	}
-	s_convbonespace2 = new OWP_Label(L"--------------");
-	if (!s_convbonespace2) {
-		_ASSERT(0);
-		return 1;
-	}
-	s_convbonespace3 = new OWP_Label(L"--------------");
-	if (!s_convbonespace3) {
-		_ASSERT(0);
-		return 1;
-	}
-	s_convbonespace4 = new OWP_Label(L"--------------");
-	if (!s_convbonespace4) {
-		_ASSERT(0);
-		return 1;
-	}
-	s_convbonespace5 = new OWP_Label(L"              ");
-	if (!s_convbonespace5) {
-		_ASSERT(0);
-		return 1;
-	}
-	s_rtgfilesave = new OWP_Button(L"Save RtgFile");
-	if (!s_rtgfilesave) {
-		_ASSERT(0);
-		return 1;
-	}
-	s_rtgfileload = new OWP_Button(L"Load RtgFile");
-	if (!s_rtgfileload) {
-		_ASSERT(0);
-		return 1;
-	}
-	s_convbonemidashi[0] = new OWP_Label(L"ShapeSide");
-	if (!s_convbonemidashi) {
-		_ASSERT(0);
-		return 1;
-	}
-	s_convbonemidashi[1] = new OWP_Label(L"MotionSide");
-	if (!s_convbonemidashi) {
-		_ASSERT(0);
-		return 1;
-	}
-
-	COLORREF importantcolR = RGB(168, 129, 129);
-	COLORREF importantcolG = RGB(0, 240, 0);
-	COLORREF importantcolW = RGB(240, 240, 240);
-	if (s_convboneconvert) {
-		s_convboneconvert->setTextColor(importantcolG);
-	}
-	if (s_rtgfilesave) {
-		s_rtgfilesave->setTextColor(importantcolG);
-	}
-	if (s_rtgfileload) {
-		s_rtgfileload->setTextColor(importantcolG);
-	}
-	if (s_cbselbvh) {
-		s_cbselbvh->setTextColor(importantcolR);
-	}
-	if (s_cbselmodel) {
-		s_cbselmodel->setTextColor(importantcolR);
-	}
-	if (s_convbonespace1) {
-		s_convbonespace1->setTextColor(importantcolW);
-	}
-	if (s_convbonespace2) {
-		s_convbonespace2->setTextColor(importantcolW);
-	}
-	if (s_convbonespace3) {
-		s_convbonespace3->setTextColor(importantcolW);
-	}
-
-	if (s_convboneSCWnd && s_convbonesp) {
-		s_convboneSCWnd->addParts(*s_convbonesp);
-	}
-	if (s_convbonesp && s_convbonemidashi[0]) {
-		s_convbonesp->addParts1(*s_convbonemidashi[0]);
-	}
-	if (s_convbonesp && s_cbselmodel) {
-		s_convbonesp->addParts1(*s_cbselmodel);
-	}
-	if (s_convbonesp && s_convbonemidashi[1]) {
-		s_convbonesp->addParts2(*s_convbonemidashi[1]);
-	}
-	if (s_convbonesp && s_cbselbvh) {
-		s_convbonesp->addParts2(*s_cbselbvh);
-	}
-	if (s_cbselmodel) {
-		s_dsretargetctrls.push_back(s_cbselmodel);
-	}
-	if (s_cbselbvh) {
-		s_dsretargetctrls.push_back(s_cbselbvh);
-	}
-
-
-	//2023/02/14
-	//convert実行、rtgファイル読み込みボタンは
-	//ボーン名対応表よりも　上に配置
-	//一番下までスクロールしなくても　操作できることが多くなるように
-	if (s_convbonesp && s_convboneconvert) {
-		s_convbonesp->addParts1(*s_convboneconvert);
-	}
-	if (s_convboneconvert) {
-		s_dsretargetctrls.push_back(s_convboneconvert);
-	}
-	if (s_convbonesp && s_rtgfileload) {
-		s_convbonesp->addParts2(*s_rtgfileload);
-	}
-	if (s_rtgfileload) {
-		s_dsretargetctrls.push_back(s_rtgfileload);
-	}
-
-	//2023/02/14
-	//境目に　空白
-	if (s_convbonesp && s_convbonespace1) {
-		s_convbonesp->addParts1(*s_convbonespace1);
-	}
-	if (s_convbonesp && s_convbonespace2) {
-		s_convbonesp->addParts2(*s_convbonespace2);
-	}
-
-	for (cbno = 0; cbno < s_convbonenum; cbno++) {
-		if (s_convbonesp && s_modelbone[cbno]) {
-			s_convbonesp->addParts1(*s_modelbone[cbno]);
-		}
-		if (s_convbonesp && s_bvhbone[cbno]) {
-			s_convbonesp->addParts2(*s_bvhbone[cbno]);
-		}
-
-		//s_dsretargetctrls.push_back(s_modelbone[cbno]);
-		if (s_bvhbone[cbno]) {
-			s_dsretargetctrls.push_back(s_bvhbone[cbno]);
-		}
-	}
-
-	//2023/02/14
-	//境目に　空白
-	if (s_convbonesp && s_convbonespace3) {
-		s_convbonesp->addParts1(*s_convbonespace3);
-	}
-	if (s_convbonesp && s_convbonespace4) {
-		s_convbonesp->addParts2(*s_convbonespace4);
-	}
-
-	//Rtgファイル保存ボタンは　設定し終わってから押すので　一番下のまま
-	if (s_convbonesp && s_rtgfilesave) {
-		s_convbonesp->addParts1(*s_rtgfilesave);
-		s_dsretargetctrls.push_back(s_rtgfilesave);
-	}
-	if (s_convbonesp && s_convbonespace5) {
-		s_convbonesp->addParts2(*s_convbonespace5);
-	}
-
 	if (s_convboneWnd) {
-		s_convboneWnd->setListenMouse(false);
-		s_convboneWnd->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	}
+		s_convboneWnd->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
 
-	////////////
-	if (s_convboneWnd) {
-		s_convboneWnd->setCloseListener([]() {
-			if (s_model) {
-				s_closeconvboneFlag = true;
-			}
-			});
-	}
+		//スクロールウインドウ
+		s_convboneSCWnd = new OWP_ScrollWnd(L"ConvBoneScWnd");
+		if (!s_convboneSCWnd) {
+			_ASSERT(0);
+			return 1;
+		}
 
-	//s_cbselmodel->setButtonListener([](){
-	//	if (s_model) {
-	//		SetConvBoneModel();
-	//		s_convboneWnd->callRewrite();
-	//	}
-	//});
-	if (s_cbselbvh) {
-		s_cbselbvh->setButtonListener([]() {
-			if (s_model) {
-				if (!s_convbone_model || (s_convbone_model != s_model)) {
-					::DSMessageBox(s_mainhwnd, L"Retry after selecting ShapeModel using ModelMenu Of MainWindow.", L"error!!!", MB_OK);
+		//s_convboneSCWnd->setLineDataSize(s_convbonenum + 4);
+		//2023/02/14
+		//要素数が変わったときには指定し忘れないように！！！
+		s_convboneSCWnd->setLineDataSize(s_convbonenum + 8);
+		s_convboneWnd->addParts(*s_convboneSCWnd);
+
+
+
+		WCHAR bvhbonename[MAX_PATH];
+		int cbno = 0;
+		map<int, CBone*>::iterator itrbone;
+		for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
+			CBone* curbone = itrbone->second;
+			if (curbone) {
+				const WCHAR* wbonename = curbone->GetWBoneName();
+				_ASSERT(wbonename);
+				s_modelbone[cbno] = new OWP_Label(wbonename);
+				if (s_modelbone[cbno]) {
+					s_modelbone_bone[cbno] = curbone;
+
+					swprintf_s(bvhbonename, MAX_PATH, L"NotSet_%03d", cbno);
+					s_bvhbone[cbno] = new OWP_Button(bvhbonename);
+					if (s_bvhbone[cbno]) {
+						s_bvhbone_bone[cbno] = 0;
+						s_convbonemap[curbone] = 0;
+						DbgOut(L"convbone %d : (%s,  %s)\n", cbno, wbonename, bvhbonename);
+					}
+					else {
+						_ASSERT(0);
+						return 1;
+					}
 				}
 				else {
-					SetConvBoneBvh();
+					_ASSERT(0);
+					return 1;
 				}
-				s_convboneWnd->callRewrite();
-			}
-			});
-	}
 
-	for (cbno = 0; cbno < s_convbonenum; cbno++) {
-		if (s_bvhbone[cbno]) {
-			s_bvhbone[cbno]->setButtonListener([cbno]() {
+				cbno++;
+			}
+		}
+		DbgOut(L"\n\n");
+		if (cbno != s_convbonenum) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		s_convbonesp = new OWP_Separator(s_convboneWnd, false, 0.5, true);									// セパレータ1（境界線による横方向2分割）
+		if (!s_convbonesp) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		//s_cbselmodel = new OWP_Button(L"SelectShapeModel");
+		WCHAR strtext[256] = { 0L };
+		swprintf_s(strtext, 256, L"Model: %s", s_model->GetFileName());
+		s_cbselmodel = new OWP_Label(strtext);
+		if (!s_cbselmodel) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		s_cbselbvh = new OWP_Button(L"SelectMotionModel");
+		if (!s_cbselbvh) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_convboneconvert = new OWP_Button(L"ConvertButton");
+		if (!s_convboneconvert) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_convbonespace1 = new OWP_Label(L"--------------");
+		if (!s_convbonespace1) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_convbonespace2 = new OWP_Label(L"--------------");
+		if (!s_convbonespace2) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_convbonespace3 = new OWP_Label(L"--------------");
+		if (!s_convbonespace3) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_convbonespace4 = new OWP_Label(L"--------------");
+		if (!s_convbonespace4) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_convbonespace5 = new OWP_Label(L"              ");
+		if (!s_convbonespace5) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_rtgfilesave = new OWP_Button(L"Save RtgFile");
+		if (!s_rtgfilesave) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_rtgfileload = new OWP_Button(L"Load RtgFile");
+		if (!s_rtgfileload) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_convbonemidashi[0] = new OWP_Label(L"ShapeSide");
+		if (!s_convbonemidashi) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_convbonemidashi[1] = new OWP_Label(L"MotionSide");
+		if (!s_convbonemidashi) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		COLORREF importantcolR = RGB(168, 129, 129);
+		COLORREF importantcolG = RGB(0, 240, 0);
+		COLORREF importantcolW = RGB(240, 240, 240);
+		if (s_convboneconvert) {
+			s_convboneconvert->setTextColor(importantcolG);
+		}
+		if (s_rtgfilesave) {
+			s_rtgfilesave->setTextColor(importantcolG);
+		}
+		if (s_rtgfileload) {
+			s_rtgfileload->setTextColor(importantcolG);
+		}
+		if (s_cbselbvh) {
+			s_cbselbvh->setTextColor(importantcolR);
+		}
+		if (s_cbselmodel) {
+			s_cbselmodel->setTextColor(importantcolR);
+		}
+		if (s_convbonespace1) {
+			s_convbonespace1->setTextColor(importantcolW);
+		}
+		if (s_convbonespace2) {
+			s_convbonespace2->setTextColor(importantcolW);
+		}
+		if (s_convbonespace3) {
+			s_convbonespace3->setTextColor(importantcolW);
+		}
+
+		if (s_convboneSCWnd && s_convbonesp) {
+			s_convboneSCWnd->addParts(*s_convbonesp);
+		}
+		if (s_convbonesp && s_convbonemidashi[0]) {
+			s_convbonesp->addParts1(*s_convbonemidashi[0]);
+		}
+		if (s_convbonesp && s_cbselmodel) {
+			s_convbonesp->addParts1(*s_cbselmodel);
+		}
+		if (s_convbonesp && s_convbonemidashi[1]) {
+			s_convbonesp->addParts2(*s_convbonemidashi[1]);
+		}
+		if (s_convbonesp && s_cbselbvh) {
+			s_convbonesp->addParts2(*s_cbselbvh);
+		}
+		if (s_cbselmodel) {
+			s_dsretargetctrls.push_back(s_cbselmodel);
+		}
+		if (s_cbselbvh) {
+			s_dsretargetctrls.push_back(s_cbselbvh);
+		}
+
+
+		//2023/02/14
+		//convert実行、rtgファイル読み込みボタンは
+		//ボーン名対応表よりも　上に配置
+		//一番下までスクロールしなくても　操作できることが多くなるように
+		if (s_convbonesp && s_convboneconvert) {
+			s_convbonesp->addParts1(*s_convboneconvert);
+		}
+		if (s_convboneconvert) {
+			s_dsretargetctrls.push_back(s_convboneconvert);
+		}
+		if (s_convbonesp && s_rtgfileload) {
+			s_convbonesp->addParts2(*s_rtgfileload);
+		}
+		if (s_rtgfileload) {
+			s_dsretargetctrls.push_back(s_rtgfileload);
+		}
+
+		//2023/02/14
+		//境目に　空白
+		if (s_convbonesp && s_convbonespace1) {
+			s_convbonesp->addParts1(*s_convbonespace1);
+		}
+		if (s_convbonesp && s_convbonespace2) {
+			s_convbonesp->addParts2(*s_convbonespace2);
+		}
+
+		for (cbno = 0; cbno < s_convbonenum; cbno++) {
+			if (s_convbonesp && s_modelbone[cbno]) {
+				s_convbonesp->addParts1(*s_modelbone[cbno]);
+			}
+			if (s_convbonesp && s_bvhbone[cbno]) {
+				s_convbonesp->addParts2(*s_bvhbone[cbno]);
+			}
+
+			//s_dsretargetctrls.push_back(s_modelbone[cbno]);
+			if (s_bvhbone[cbno]) {
+				s_dsretargetctrls.push_back(s_bvhbone[cbno]);
+			}
+		}
+
+		//2023/02/14
+		//境目に　空白
+		if (s_convbonesp && s_convbonespace3) {
+			s_convbonesp->addParts1(*s_convbonespace3);
+		}
+		if (s_convbonesp && s_convbonespace4) {
+			s_convbonesp->addParts2(*s_convbonespace4);
+		}
+
+		//Rtgファイル保存ボタンは　設定し終わってから押すので　一番下のまま
+		if (s_convbonesp && s_rtgfilesave) {
+			s_convbonesp->addParts1(*s_rtgfilesave);
+			s_dsretargetctrls.push_back(s_rtgfilesave);
+		}
+		if (s_convbonesp && s_convbonespace5) {
+			s_convbonesp->addParts2(*s_convbonespace5);
+		}
+
+		if (s_convboneWnd) {
+			s_convboneWnd->setListenMouse(false);
+			s_convboneWnd->setVisible(0);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		}
+
+		////////////
+		if (s_convboneWnd) {
+			s_convboneWnd->setCloseListener([]() {
 				if (s_model) {
-					SetConvBone(cbno);
-					//CModel* curmodel = s_modelindex[modelcnt].modelptr;
-					//curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
+					s_closeconvboneFlag = true;
+				}
+				});
+		}
+
+		//s_cbselmodel->setButtonListener([](){
+		//	if (s_model) {
+		//		SetConvBoneModel();
+		//		s_convboneWnd->callRewrite();
+		//	}
+		//});
+		if (s_cbselbvh) {
+			s_cbselbvh->setButtonListener([]() {
+				if (s_model) {
+					if (!s_convbone_model || (s_convbone_model != s_model)) {
+						::DSMessageBox(s_mainhwnd, L"Retry after selecting ShapeModel using ModelMenu Of MainWindow.", L"error!!!", MB_OK);
+					}
+					else {
+						SetConvBoneBvh();
+					}
 					s_convboneWnd->callRewrite();
 				}
 				});
 		}
-	}
 
-	if (s_convboneconvert) {
-		s_convboneconvert->setButtonListener([]() {
-			if (s_model) {
-				if (s_retargetguiFlag == false) {
-					s_retargetguiFlag = true;
+		for (cbno = 0; cbno < s_convbonenum; cbno++) {
+			if (s_bvhbone[cbno]) {
+				s_bvhbone[cbno]->setButtonListener([cbno]() {
+					if (s_model) {
+						SetConvBone(cbno);
+						//CModel* curmodel = s_modelindex[modelcnt].modelptr;
+						//curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
+						s_convboneWnd->callRewrite();
+					}
+					});
+			}
+		}
+
+		if (s_convboneconvert) {
+			s_convboneconvert->setButtonListener([]() {
+				if (s_model) {
+					if (s_retargetguiFlag == false) {
+						s_retargetguiFlag = true;
+					}
 				}
-			}
-			});
-	}
+				});
+		}
 
-	if (s_rtgfilesave) {
-		s_rtgfilesave->setButtonListener([]() {
-			if (s_model) {
-				SaveRetargetFile();
-			}
-			});
-	}
-	if (s_rtgfileload) {
-		s_rtgfileload->setButtonListener([]() {
-			if (s_model) {
-				LoadRetargetFile(0);
-			}
-			});
-	}
-	if (s_convboneWnd) {
-		s_convboneWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
-		s_convboneWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
-		//１クリック目問題対応
-		s_convboneWnd->refreshPosAndSize();//2022/09/20
+		if (s_rtgfilesave) {
+			s_rtgfilesave->setButtonListener([]() {
+				if (s_model) {
+					SaveRetargetFile();
+				}
+				});
+		}
+		if (s_rtgfileload) {
+			s_rtgfileload->setButtonListener([]() {
+				if (s_model) {
+					LoadRetargetFile(0);
+				}
+				});
+		}
+		if (s_convboneWnd) {
+			s_convboneWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
+			s_convboneWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
+			//１クリック目問題対応
+			s_convboneWnd->refreshPosAndSize();//2022/09/20
 
-		s_convboneWnd->setVisible(false);
+			s_convboneWnd->setVisible(false);
+		}
+	}
+	else{
+		_ASSERT(0);
+		return 1;
 	}
 
 	return 0;
@@ -26037,59 +26440,63 @@ int CreateTimelineWnd()
 		true,					//表示・非表示状態
 		//70, 50, 70);				//カラー
 		0, 0, 0);				//カラー
+	if (s_timelineWnd) {
+		s_rctreewnd.right = s_timelinewidth;
+		s_rctreewnd.bottom = s_timelineheight;
 
-	s_rctreewnd.right = s_timelinewidth;
-	s_rctreewnd.bottom = s_timelineheight;
-
-	s_timelineWnd->callRewrite();
-
-
-	// ウィンドウの閉じるボタンのイベントリスナーに
-	// 終了フラグcloseFlagをオンにするラムダ関数を登録する
-	s_timelineWnd->setCloseListener([]() {
-		if (s_model) {
-			s_closeFlag = true;
-		}
-		});
+		s_timelineWnd->callRewrite();
 
 
-	// ウィンドウのキーボードイベントリスナーに
-	// コピー/カット/ペーストフラグcopyFlag/cutFlag/pasteFlagをオンにするラムダ関数を登録する
-	// コピー等のキーボードを使用する処理はキーボードイベントリスナーを使用しなくても
-	// メインループ内でマイフレームキー状態を監視することで作成可能である。
-	s_timelineWnd->setKeyboardEventListener([](const KeyboardEvent& e) {
-		if (s_model) {
-			if (e.ctrlKey && !e.repeat && e.onDown) {
-				switch (e.keyCode) {
-				case 'C':
-					s_copyFlag = true;
-					break;
-				case 'B':
-					s_symcopyFlag = true;
-					break;
-				case 'X':
-					s_cutFlag = true;
-					break;
-				case 'V':
-					s_pasteFlag = true;
-					break;
-				case 'P':
-					//g_previewFlag = 1;
-					s_calclimitedwmState = 1;
-					break;
-				case 'S':
-					g_previewFlag = 0;
-					break;
-				case 'D':
-					s_deleteFlag = true;
-					break;
-				default:
-					break;
+		// ウィンドウの閉じるボタンのイベントリスナーに
+		// 終了フラグcloseFlagをオンにするラムダ関数を登録する
+		s_timelineWnd->setCloseListener([]() {
+			if (s_model) {
+				s_closeFlag = true;
+			}
+			});
+
+
+		// ウィンドウのキーボードイベントリスナーに
+		// コピー/カット/ペーストフラグcopyFlag/cutFlag/pasteFlagをオンにするラムダ関数を登録する
+		// コピー等のキーボードを使用する処理はキーボードイベントリスナーを使用しなくても
+		// メインループ内でマイフレームキー状態を監視することで作成可能である。
+		s_timelineWnd->setKeyboardEventListener([](const KeyboardEvent& e) {
+			if (s_model) {
+				if (e.ctrlKey && !e.repeat && e.onDown) {
+					switch (e.keyCode) {
+					case 'C':
+						s_copyFlag = true;
+						break;
+					case 'B':
+						s_symcopyFlag = true;
+						break;
+					case 'X':
+						s_cutFlag = true;
+						break;
+					case 'V':
+						s_pasteFlag = true;
+						break;
+					case 'P':
+						//g_previewFlag = 1;
+						s_calclimitedwmState = 1;
+						break;
+					case 'S':
+						g_previewFlag = 0;
+						break;
+					case 'D':
+						s_deleteFlag = true;
+						break;
+					default:
+						break;
+					}
 				}
 			}
-		}
 		});
-
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
 
 
 	return 0;
@@ -26128,236 +26535,246 @@ int CreateLongTimelineWnd()
 		true,					//表示・非表示状態
 		//70, 50, 70);				//カラー
 		0, 0, 0);				//カラー
-
-	s_rcltwnd.bottom = s_longtimelineheight;
-	s_rcltwnd.right = s_longtimelinewidth;
-
-
-	s_LtimelineWnd->callRewrite();
+	if (s_LtimelineWnd) {
+		s_rcltwnd.bottom = s_longtimelineheight;
+		s_rcltwnd.right = s_longtimelinewidth;
 
 
-	/////////
-	s_owpPlayerButton = new OWP_PlayerButton(s_longtimelinewidth);
-	//s_owpPlayerButton->setButtonSize(20);
-	s_LtimelineWnd->addParts(*s_owpPlayerButton);//owp_timelineより前
+		s_LtimelineWnd->callRewrite();
 
-	s_owpPlayerButton->setFrontPlayButtonListener([]() {
-		if (s_model) {
-			s_calclimitedwmState = 1; s_LstartFlag = true; s_LcursorFlag = true;
-			//s_LtimelineWnd->setDoneFlag(1);
+
+		/////////
+		s_owpPlayerButton = new OWP_PlayerButton(s_longtimelinewidth);
+		if (s_owpPlayerButton) {
+			//s_owpPlayerButton->setButtonSize(20);
+			s_LtimelineWnd->addParts(*s_owpPlayerButton);//owp_timelineより前
+
+			s_owpPlayerButton->setFrontPlayButtonListener([]() {
+				if (s_model) {
+					s_calclimitedwmState = 1; s_LstartFlag = true; s_LcursorFlag = true;
+					//s_LtimelineWnd->setDoneFlag(1);
+				}
+				});
+			s_owpPlayerButton->setBackPlayButtonListener([]() {
+				if (s_model) {
+					s_calclimitedwmState = 11; s_LstartFlag = true; s_LcursorFlag = true;
+					//s_LtimelineWnd->setDoneFlag(1);
+				}
+				});
+
+
+			s_owpPlayerButton->setFrontStepButtonListener([]() {
+				//##################################
+				//means to step to the last frame
+				//##################################
+				if (s_model) {
+					//s_LstartFlag = true; s_LcursorFlag = true; s_lastkeyFlag = true;
+					//s_LtimelineWnd->setDoneFlag(1);
+
+					s_LstopFlag = true;
+					g_previewFlag = 0;
+					s_LcursorFlag = true;
+					s_lastkeyFlag = true;
+				}
+				});
+			s_owpPlayerButton->setBackStepButtonListener([]() {
+				//##################################
+				//means to step to the first frame
+				//##################################
+				if (s_model) {
+					//s_LstartFlag = true; s_LcursorFlag = true; s_firstkeyFlag = true;
+					//s_LtimelineWnd->setDoneFlag(1);
+
+					s_LstopFlag = true;
+					g_previewFlag = 0;
+					s_LcursorFlag = true;
+					s_firstkeyFlag = true;
+				}
+				});
+
+
+			//s_owpPlayerButton->setOneFpsButtonListener([]() {
+			//	if (s_model) {
+
+			//		int tmponefps;
+			//		if (s_onefps == 0) {
+			//			tmponefps = 1;
+			//		}
+			//		else if (s_onefps == 1) {
+			//			tmponefps = 2;
+			//		}
+			//		else if (s_onefps == 2) {
+			//			tmponefps = 0;
+			//		}
+			//		else {
+			//			tmponefps = 0;
+			//		}
+			//		s_onefps = tmponefps;
+
+			//		//s_LtimelineWnd->setDoneFlag(1);
+			//	}
+			//	});
+			//s_owpPlayerButton->setStopButtonListener([]() {
+			//	if (s_model) {
+			//		s_LstopFlag = true; s_LcursorFlag = true; g_previewFlag = 0;
+			//		//s_LtimelineWnd->setDoneFlag(1);
+			//	}
+			//	});
+			s_owpPlayerButton->setResetButtonListener([]() {
+				//##############################################
+				// means to stop preview and step to first key 
+				//##############################################
+				if (s_model) {
+					if (s_owpLTimeline) {
+						s_LstopFlag = true;
+						g_previewFlag = 0;
+						s_LcursorFlag = true;
+						//s_firstkeyFlag = true;
+						////s_LtimelineWnd->setDoneFlag(1);
+					}
+				}
+				});
+
+			s_owpPlayerButton->setSelectToLastButtonListener([]() {
+				if (s_model) {
+					//g_underselecttolast = true;  s_LcursorFlag = true; g_selecttolastFlag = true;
+					//g_underselecttolast = false;  s_LcursorFlag = true; g_selecttolastFlag = true;
+					////s_LtimelineWnd->setDoneFlag(1);
+
+					if (s_owpLTimeline) {
+						s_LstopFlag = true;
+						g_previewFlag = 0;
+						s_LcursorFlag = true;
+						g_selecttolastFlag = true;
+						//s_LtimelineWnd->setDoneFlag(1);
+					}
+				}
+				});
+			//s_owpPlayerButton->setBtResetButtonListener([]() {
+			//	if (s_model) {
+			//		s_btresetFlag = true;
+			//		//StartBt(s_model, TRUE, 0, 1);
+			//		//s_LtimelineWnd->setDoneFlag(1);
+			//	}
+			//	});
+			//s_owpPlayerButton->setPrevRangeButtonListener([]() {
+			//	if (s_model) {
+			//		//g_undereditrange = true; s_prevrangeFlag = true;
+			//		////s_LtimelineWnd->setDoneFlag(1);
+
+			//		RollbackCurBoneNo();//2022/11/07
+			//		s_undoFlag = true;//2022/11/02 選択範囲だけの履歴をやめて　アンドゥに
+
+			//		//2022/11/27 playerbuttonからundoredoすると　s_LupFlagとs_selectFlagがtrueになり　PrepairUndoが呼ばれる
+			//		//undoredo結果が　SaveUndoMotionされないように　s_undoredoFromPlayerButtonフラグを立てる
+			//		s_undoredoFromPlayerButton = true;
+			//	}
+			//	});
+			//s_owpPlayerButton->setNextRangeButtonListener([]() {
+			//	if (s_model) {
+			//		//g_undereditrange = true; s_nextrangeFlag = true;
+			//		////s_LtimelineWnd->setDoneFlag(1);
+
+			//		RollbackCurBoneNo();//2022/11/07
+			//		s_redoFlag = true;//2022/11/02 選択範囲だけの履歴をやめて　リドゥに
+
+			//		//2022/11/27 playerbuttonからundoredoすると　s_LupFlagとs_selectFlagがtrueになり　PrepairUndoが呼ばれる
+			//		//undoredo結果が　SaveUndoMotionされないように　s_undoredoFromPlayerButtonフラグを立てる
+			//		s_undoredoFromPlayerButton = true;
+			//	}
+			//	});
+			//s_owpPlayerButton->setPlusDispButtonListener([]() {
+			//	if (s_model && s_owpEulerGraph) {
+			//		s_owpEulerGraph->PlusDisp();
+			//		s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+			//		s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+			//		s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+			//		//s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+			//		//s_LtimelineWnd->setDoneFlag(1);
+			//	}
+			//	});
+			//s_owpPlayerButton->setMinusDispButtonListener([]() {
+			//	if (s_model && s_owpEulerGraph) {
+			//		s_owpEulerGraph->MinusDisp();
+			//		s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+			//		s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+			//		s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+			//		//s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+			//		//s_LtimelineWnd->setDoneFlag(1);
+			//	}
+			//	});
+			//s_owpPlayerButton->setPlusOffsetDispButtonListener([]() {
+			//	if (s_model && s_owpEulerGraph) {
+			//		s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
+			//		//s_LtimelineWnd->setDoneFlag(1);
+			//	}
+			//	});
+			//s_owpPlayerButton->setMinusOffsetDispButtonListener([]() {
+			//	if (s_model && s_owpEulerGraph) {
+			//		s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
+			//		//s_LtimelineWnd->setDoneFlag(1);
+			//	}
+			//	});
+			//s_owpPlayerButton->setResetDispButtonListener([]() {
+			//	if (s_model && s_owpEulerGraph) {
+			//		s_owpEulerGraph->ResetScaleAndOffset();
+			//		//s_LtimelineWnd->setDoneFlag(1);
+			//	}
+			//	});
+
+
+			//###################################
+			//s_owpLTimelineの関連ラムダをコメントとしてコピペ
+			//###################################
+			//s_owpLTimeline->setCursorListener([]() { s_LcursorFlag = true; });
+			//s_owpLTimeline->setSelectListener([]() { s_selectFlag = true; });
+			//s_owpLTimeline->setMouseMDownListener([]() {
+			//	s_timelinembuttonFlag = true;
+			//	if (s_mbuttoncnt == 0) {
+			//		s_mbuttoncnt = 1;
+			//	}
+			//	else {
+			//		s_mbuttoncnt = 0;
+			//	}
+			//});
+			//s_owpLTimeline->setMouseWheelListener([]() {
+			//	s_timelinewheelFlag = true;
+			//});
 		}
-		});
-	s_owpPlayerButton->setBackPlayButtonListener([]() {
-		if (s_model) {
-			s_calclimitedwmState = 11; s_LstartFlag = true; s_LcursorFlag = true;
-			//s_LtimelineWnd->setDoneFlag(1);
+		else {
+			_ASSERT(0);
+			return 1;
 		}
-		});
 
-
-	s_owpPlayerButton->setFrontStepButtonListener([]() {
-		//##################################
-		//means to step to the last frame
-		//##################################
-		if (s_model) {
-			//s_LstartFlag = true; s_LcursorFlag = true; s_lastkeyFlag = true;
-			//s_LtimelineWnd->setDoneFlag(1);
-
-			s_LstopFlag = true;
-			g_previewFlag = 0;
-			s_LcursorFlag = true;
-			s_lastkeyFlag = true;
-		}
-		});
-	s_owpPlayerButton->setBackStepButtonListener([]() {
-		//##################################
-		//means to step to the first frame
-		//##################################
-		if (s_model) {
-			//s_LstartFlag = true; s_LcursorFlag = true; s_firstkeyFlag = true;
-			//s_LtimelineWnd->setDoneFlag(1);
-
-			s_LstopFlag = true;
-			g_previewFlag = 0;
-			s_LcursorFlag = true;
-			s_firstkeyFlag = true;
-		}
-		});
-
-
-	//s_owpPlayerButton->setOneFpsButtonListener([]() {
-	//	if (s_model) {
-
-	//		int tmponefps;
-	//		if (s_onefps == 0) {
-	//			tmponefps = 1;
-	//		}
-	//		else if (s_onefps == 1) {
-	//			tmponefps = 2;
-	//		}
-	//		else if (s_onefps == 2) {
-	//			tmponefps = 0;
-	//		}
-	//		else {
-	//			tmponefps = 0;
-	//		}
-	//		s_onefps = tmponefps;
-
-	//		//s_LtimelineWnd->setDoneFlag(1);
-	//	}
-	//	});
-	//s_owpPlayerButton->setStopButtonListener([]() {
-	//	if (s_model) {
-	//		s_LstopFlag = true; s_LcursorFlag = true; g_previewFlag = 0;
-	//		//s_LtimelineWnd->setDoneFlag(1);
-	//	}
-	//	});
-	s_owpPlayerButton->setResetButtonListener([]() {
-		//##############################################
-		// means to stop preview and step to first key 
-		//##############################################
-		if (s_model) {
-			if (s_owpLTimeline) {
-				s_LstopFlag = true;
-				g_previewFlag = 0;
-				s_LcursorFlag = true;
-				//s_firstkeyFlag = true;
-				////s_LtimelineWnd->setDoneFlag(1);
+		//####################################
+		//s_LtimelineWndのラムダ　s_owpLTimelineではない。
+		//####################################
+		s_LtimelineWnd->setCloseListener([]() {
+			if (s_model) {
+				s_LcloseFlag = true;
 			}
-		}
-		});
-
-	s_owpPlayerButton->setSelectToLastButtonListener([]() {
-		if (s_model) {
-			//g_underselecttolast = true;  s_LcursorFlag = true; g_selecttolastFlag = true;
-			//g_underselecttolast = false;  s_LcursorFlag = true; g_selecttolastFlag = true;
-			////s_LtimelineWnd->setDoneFlag(1);
-
-			if (s_owpLTimeline) {
-				s_LstopFlag = true;
-				g_previewFlag = 0;
-				s_LcursorFlag = true;
-				g_selecttolastFlag = true;
-				//s_LtimelineWnd->setDoneFlag(1);
+			});
+		s_LtimelineWnd->setLDownListener([]() {
+			if (s_model) {
+				g_underselectingframe = 1;
 			}
-		}
-		});
-	//s_owpPlayerButton->setBtResetButtonListener([]() {
-	//	if (s_model) {
-	//		s_btresetFlag = true;
-	//		//StartBt(s_model, TRUE, 0, 1);
-	//		//s_LtimelineWnd->setDoneFlag(1);
-	//	}
-	//	});
-	//s_owpPlayerButton->setPrevRangeButtonListener([]() {
-	//	if (s_model) {
-	//		//g_undereditrange = true; s_prevrangeFlag = true;
-	//		////s_LtimelineWnd->setDoneFlag(1);
+			});
+		s_LtimelineWnd->setLUpListener([]() {
+			if (s_model) {
+				s_LupFlag = true;
+			}
+			});
 
-	//		RollbackCurBoneNo();//2022/11/07
-	//		s_undoFlag = true;//2022/11/02 選択範囲だけの履歴をやめて　アンドゥに
-
-	//		//2022/11/27 playerbuttonからundoredoすると　s_LupFlagとs_selectFlagがtrueになり　PrepairUndoが呼ばれる
-	//		//undoredo結果が　SaveUndoMotionされないように　s_undoredoFromPlayerButtonフラグを立てる
-	//		s_undoredoFromPlayerButton = true;
-	//	}
-	//	});
-	//s_owpPlayerButton->setNextRangeButtonListener([]() {
-	//	if (s_model) {
-	//		//g_undereditrange = true; s_nextrangeFlag = true;
-	//		////s_LtimelineWnd->setDoneFlag(1);
-
-	//		RollbackCurBoneNo();//2022/11/07
-	//		s_redoFlag = true;//2022/11/02 選択範囲だけの履歴をやめて　リドゥに
-
-	//		//2022/11/27 playerbuttonからundoredoすると　s_LupFlagとs_selectFlagがtrueになり　PrepairUndoが呼ばれる
-	//		//undoredo結果が　SaveUndoMotionされないように　s_undoredoFromPlayerButtonフラグを立てる
-	//		s_undoredoFromPlayerButton = true;
-	//	}
-	//	});
-	//s_owpPlayerButton->setPlusDispButtonListener([]() {
-	//	if (s_model && s_owpEulerGraph) {
-	//		s_owpEulerGraph->PlusDisp();
-	//		s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
-	//		s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
-	//		s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
-	//		//s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
-	//		//s_LtimelineWnd->setDoneFlag(1);
-	//	}
-	//	});
-	//s_owpPlayerButton->setMinusDispButtonListener([]() {
-	//	if (s_model && s_owpEulerGraph) {
-	//		s_owpEulerGraph->MinusDisp();
-	//		s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
-	//		s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
-	//		s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
-	//		//s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
-	//		//s_LtimelineWnd->setDoneFlag(1);
-	//	}
-	//	});
-	//s_owpPlayerButton->setPlusOffsetDispButtonListener([]() {
-	//	if (s_model && s_owpEulerGraph) {
-	//		s_owpEulerGraph->MinusOffset();//上に動かすにはオフセットを減らす
-	//		//s_LtimelineWnd->setDoneFlag(1);
-	//	}
-	//	});
-	//s_owpPlayerButton->setMinusOffsetDispButtonListener([]() {
-	//	if (s_model && s_owpEulerGraph) {
-	//		s_owpEulerGraph->PlusOffset();//下に動かすにはオフセットを増やす
-	//		//s_LtimelineWnd->setDoneFlag(1);
-	//	}
-	//	});
-	//s_owpPlayerButton->setResetDispButtonListener([]() {
-	//	if (s_model && s_owpEulerGraph) {
-	//		s_owpEulerGraph->ResetScaleAndOffset();
-	//		//s_LtimelineWnd->setDoneFlag(1);
-	//	}
-	//	});
-
-
-	//###################################
-	//s_owpLTimelineの関連ラムダをコメントとしてコピペ
-	//###################################
-	//s_owpLTimeline->setCursorListener([]() { s_LcursorFlag = true; });
-	//s_owpLTimeline->setSelectListener([]() { s_selectFlag = true; });
-	//s_owpLTimeline->setMouseMDownListener([]() {
-	//	s_timelinembuttonFlag = true;
-	//	if (s_mbuttoncnt == 0) {
-	//		s_mbuttoncnt = 1;
-	//	}
-	//	else {
-	//		s_mbuttoncnt = 0;
-	//	}
-	//});
-	//s_owpLTimeline->setMouseWheelListener([]() {
-	//	s_timelinewheelFlag = true;
-	//});
-
-	//####################################
-	//s_LtimelineWndのラムダ　s_owpLTimelineではない。
-	//####################################
-	s_LtimelineWnd->setCloseListener([]() {
-		if (s_model) {
-			s_LcloseFlag = true;
-		}
-		});
-	s_LtimelineWnd->setLDownListener([]() {
-		if (s_model) {
-			g_underselectingframe = 1;
-		}
-		});
-	s_LtimelineWnd->setLUpListener([]() {
-		if (s_model) {
-			s_LupFlag = true;
-		}
-		});
-
-
-	s_LtimelineWnd->setPos(WindowPos(s_toolwidth, s_2ndposy));
-	s_LtimelineWnd->setSizeMin(OrgWinGUI::WindowSize(100, 100));
-	s_LtimelineWnd->setSize(WindowSize(s_longtimelinewidth, s_longtimelineheight));
-	//s_LtimelineWnd->refreshPosAndSize();//2022/09/20
-	s_LtimelineWnd->callRewrite();
+		s_LtimelineWnd->setPos(WindowPos(s_toolwidth, s_2ndposy));
+		s_LtimelineWnd->setSizeMin(OrgWinGUI::WindowSize(100, 100));
+		s_LtimelineWnd->setSize(WindowSize(s_longtimelinewidth, s_longtimelineheight));
+		//s_LtimelineWnd->refreshPosAndSize();//2022/09/20
+		s_LtimelineWnd->callRewrite();
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
 
 	return 0;
 }
@@ -26391,85 +26808,139 @@ int CreateDmpAnimWnd()
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 
-	s_dmpgroupcheck = new OWP_CheckBoxA(L"SetToAllRigidsMeansToSetToSameGroup", 0);
-	s_dmpanimLlabel = new OWP_Label(L"posSpringDumpingPerFrame");
-	s_dmpanimLSlider = new OWP_Slider(0.0, 1.0, 0.0);
-	s_dmpanimAlabel = new OWP_Label(L"rotSpringDumpingPerFrame");
-	s_dmpanimASlider = new OWP_Slider(0.0, 1.0, 0.0);
-	s_dmpanimB = new OWP_Button(L"SetToAllRigids");
+	if (s_dmpanimWnd) {
 
-	int slw2 = 500;
-	s_dmpanimLSlider->setSize(WindowSize(slw2, 40));
-	s_dmpanimASlider->setSize(WindowSize(slw2, 40));
-
-	s_dmpanimWnd->addParts(*s_dmpgroupcheck);
-	s_dmpanimWnd->addParts(*s_dmpanimLlabel);
-	s_dmpanimWnd->addParts(*s_dmpanimLSlider);
-	s_dmpanimWnd->addParts(*s_dmpanimAlabel);
-	s_dmpanimWnd->addParts(*s_dmpanimASlider);
-	s_dmpanimWnd->addParts(*s_dmpanimB);
-
-
-	s_dsdampctrls.push_back(s_dmpgroupcheck);
-	s_dsdampctrls.push_back(s_dmpanimLlabel);
-	s_dsdampctrls.push_back(s_dmpanimLSlider);
-	s_dsdampctrls.push_back(s_dmpanimAlabel);
-	s_dsdampctrls.push_back(s_dmpanimASlider);
-	s_dsdampctrls.push_back(s_dmpanimB);
-
-
-	s_dmpanimWnd->setCloseListener([]() {
-		if (s_model) {
-			s_DcloseFlag = true;
+		s_dmpgroupcheck = new OWP_CheckBoxA(L"SetToAllRigidsMeansToSetToSameGroup", 0);
+		if (!s_dmpgroupcheck) {
+			_ASSERT(0);
+			return 1;
 		}
-		});
+		s_dmpanimLlabel = new OWP_Label(L"posSpringDumpingPerFrame");
+		if (!s_dmpanimLlabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_dmpanimLSlider = new OWP_Slider(0.0, 1.0, 0.0);
+		if (!s_dmpanimLSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_dmpanimAlabel = new OWP_Label(L"rotSpringDumpingPerFrame");
+		if (!s_dmpanimAlabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_dmpanimASlider = new OWP_Slider(0.0, 1.0, 0.0);
+		if (!s_dmpanimASlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_dmpanimB = new OWP_Button(L"SetToAllRigids");
+		if (!s_dmpanimB) {
+			_ASSERT(0);
+			return 1;
+		}
 
-	s_dmpanimLSlider->setCursorListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
-			if (curre) {
-				float val = (float)s_dmpanimLSlider->getValue();
-				curre->SetDampanimL(val);
+		int slw2 = 500;
+		if (s_dmpanimLSlider) {
+			s_dmpanimLSlider->setSize(WindowSize(slw2, 40));
+			s_dmpanimASlider->setSize(WindowSize(slw2, 40));
+		}
+
+		if (s_dmpanimWnd) {
+			if (s_dmpgroupcheck) {
+				s_dmpanimWnd->addParts(*s_dmpgroupcheck);
 			}
-			s_dmpanimWnd->callRewrite();						//再描画
-		}
-		});
-	s_dmpanimASlider->setCursorListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
-			if (curre) {
-				float val = (float)s_dmpanimASlider->getValue();
-				curre->SetDampanimA(val);
+			if (s_dmpanimLlabel) {
+				s_dmpanimWnd->addParts(*s_dmpanimLlabel);
 			}
-			s_dmpanimWnd->callRewrite();						//再描画
+			if (s_dmpanimLSlider) {
+				s_dmpanimWnd->addParts(*s_dmpanimLSlider);
+			}
+			if (s_dmpanimAlabel) {
+				s_dmpanimWnd->addParts(*s_dmpanimAlabel);
+			}
+			if (s_dmpanimASlider) {
+				s_dmpanimWnd->addParts(*s_dmpanimASlider);
+			}
+			if (s_dmpanimB) {
+				s_dmpanimWnd->addParts(*s_dmpanimB);
+			}
 		}
-		});
-	s_dmpanimB->setButtonListener([]() {
-		if (s_model && (s_rgdindexmap[s_model] >= 0)) {
-			float valL = (float)s_dmpanimLSlider->getValue();
-			float valA = (float)s_dmpanimASlider->getValue();
-			int chkg = (int)s_dmpgroupcheck->getValue();
-			int gid = -1;
-			if (chkg) {
-				CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
-				if (curre) {
-					gid = curre->GetGroupid();
+
+
+		s_dsdampctrls.push_back(s_dmpgroupcheck);
+		s_dsdampctrls.push_back(s_dmpanimLlabel);
+		s_dsdampctrls.push_back(s_dmpanimLSlider);
+		s_dsdampctrls.push_back(s_dmpanimAlabel);
+		s_dsdampctrls.push_back(s_dmpanimASlider);
+		s_dsdampctrls.push_back(s_dmpanimB);
+
+		if (s_dmpanimWnd) {
+			s_dmpanimWnd->setCloseListener([]() {
+				if (s_model) {
+					s_DcloseFlag = true;
 				}
-				else {
-					gid = -1;
-				}
+				});
+
+			if (s_dmpanimLSlider) {
+				s_dmpanimLSlider->setCursorListener([]() {
+					if (s_model) {
+						CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
+						if (curre) {
+							float val = (float)s_dmpanimLSlider->getValue();
+							curre->SetDampanimL(val);
+						}
+						s_dmpanimWnd->callRewrite();						//再描画
+					}
+					});
 			}
-			s_model->SetAllDampAnimData(gid, s_rgdindexmap[s_model], valL, valA);
+			if (s_dmpanimASlider) {
+				s_dmpanimASlider->setCursorListener([]() {
+					if (s_model) {
+						CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
+						if (curre) {
+							float val = (float)s_dmpanimASlider->getValue();
+							curre->SetDampanimA(val);
+						}
+						s_dmpanimWnd->callRewrite();						//再描画
+					}
+					});
+			}
+			if (s_dmpanimB) {
+				s_dmpanimB->setButtonListener([]() {
+					if (s_model && (s_rgdindexmap[s_model] >= 0)) {
+						float valL = (float)s_dmpanimLSlider->getValue();
+						float valA = (float)s_dmpanimASlider->getValue();
+						int chkg = (int)s_dmpgroupcheck->getValue();
+						int gid = -1;
+						if (chkg) {
+							CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
+							if (curre) {
+								gid = curre->GetGroupid();
+							}
+							else {
+								gid = -1;
+							}
+						}
+						s_model->SetAllDampAnimData(gid, s_rgdindexmap[s_model], valL, valA);
+					}
+					});
+			}
+
+			s_dmpanimWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
+			s_dmpanimWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
+
+			//１クリック目問題対応
+			s_dmpanimWnd->refreshPosAndSize();//2022/09/20
+
+			s_dmpanimWnd->callRewrite();
 		}
-		});
-
-	s_dmpanimWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
-	s_dmpanimWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
-
-	//１クリック目問題対応
-	s_dmpanimWnd->refreshPosAndSize();//2022/09/20
-
-	s_dmpanimWnd->callRewrite();
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
 
 	return 0;
 }
@@ -26503,41 +26974,46 @@ int CreateMainMenuAimBarWnd()
 		0, 0, 0,				//カラー
 		true, true);					//サイズ変更の可否
 
+	if (s_mainmenuaimbarWnd) {
+		//s_sidemenuWnd->setCloseListener([]() { s_ScloseFlag = true; });
+
+		s_mainmenuaimbarWnd->setBlackTheme();
+		s_mainmenulabel = new OWP_Label(L".");
+		if (s_mainmenulabel) {
+			s_mainmenuaimbarWnd->addParts(*s_mainmenulabel);
+
+			//450, 32
+			s_rcmainmenuaimbarwnd.top = 0;
+			s_rcmainmenuaimbarwnd.left = 0;
+			s_rcmainmenuaimbarwnd.bottom = MAINMENUAIMBARH;
+
+			s_mainmenuaimbarWnd->setPos(WindowPos(0, 0));
+			//if (g_4kresolution) {
+			//	s_mainmenuaimbarWnd->setSize(WindowSize(1200 * 2, MAINMENUAIMBARH));
+			//	s_rcmainmenuaimbarwnd.right = 1200 * 2;
+			//}
+			//else {
+			//	s_mainmenuaimbarWnd->setSize(WindowSize(1200, MAINMENUAIMBARH));
+			//	s_rcmainmenuaimbarwnd.right = 1200;
+			//}
+			s_mainmenuaimbarWnd->setSize(WindowSize(windowposx, MAINMENUAIMBARH));
+			s_rcmainmenuaimbarwnd.right = windowposx;
+
+			//１クリック目問題対応
+			s_mainmenuaimbarWnd->refreshPosAndSize();//2022/09/20
 
 
-	//s_sidemenuWnd->setCloseListener([]() { s_ScloseFlag = true; });
-
-	s_mainmenuaimbarWnd->setBlackTheme();
-
-
-	s_mainmenulabel = new OWP_Label(L".");
-	s_mainmenuaimbarWnd->addParts(*s_mainmenulabel);
-
-
-	//450, 32
-	s_rcmainmenuaimbarwnd.top = 0;
-	s_rcmainmenuaimbarwnd.left = 0;
-	s_rcmainmenuaimbarwnd.bottom = MAINMENUAIMBARH;
-
-
-	s_mainmenuaimbarWnd->setPos(WindowPos(0, 0));
-	//if (g_4kresolution) {
-	//	s_mainmenuaimbarWnd->setSize(WindowSize(1200 * 2, MAINMENUAIMBARH));
-	//	s_rcmainmenuaimbarwnd.right = 1200 * 2;
-	//}
-	//else {
-	//	s_mainmenuaimbarWnd->setSize(WindowSize(1200, MAINMENUAIMBARH));
-	//	s_rcmainmenuaimbarwnd.right = 1200;
-	//}
-	s_mainmenuaimbarWnd->setSize(WindowSize(windowposx, MAINMENUAIMBARH));
-	s_rcmainmenuaimbarwnd.right = windowposx;
-
-	//１クリック目問題対応
-	s_mainmenuaimbarWnd->refreshPosAndSize();//2022/09/20
-
-
-	s_mainmenuaimbarWnd->callRewrite();						//再描画
-
+			s_mainmenuaimbarWnd->callRewrite();						//再描画
+		}
+		else {
+			_ASSERT(0);
+			return 1;
+		}
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
 
 	return 0;
 
@@ -26562,84 +27038,136 @@ int CreateSideMenuWnd()
 		0, 0, 0,				//カラー
 		true, true);					//サイズ変更の可否
 
-
-	s_sidemenusp = new OWP_Separator(s_sidemenuWnd, true, 0.5, true);
-	s_sidemenuWnd->addParts(*s_sidemenusp);
-
-	s_sidemenusp1 = new OWP_Separator(s_sidemenuWnd, true, 0.5, true);
-	s_sidemenusp2 = new OWP_Separator(s_sidemenuWnd, true, 0.5, true);
-	s_sidemenusp->addParts1(*s_sidemenusp1);
-	s_sidemenusp->addParts2(*s_sidemenusp2);
-
-	s_sidemenu_rigid = new OWP_Button(L"Rigid");
-	s_sidemenu_limiteul = new OWP_Button(L"LimitEul");
-	s_sidemenu_copyhistory = new OWP_Button(L"CopyHistory");
-	s_sidemenu_retarget = new OWP_Button(L"Retarget");
-
-	s_sidemenusp1->addParts1(*s_sidemenu_rigid);
-	s_sidemenusp1->addParts2(*s_sidemenu_limiteul);
-
-	s_sidemenusp2->addParts1(*s_sidemenu_copyhistory);
-	s_sidemenusp2->addParts2(*s_sidemenu_retarget);
-
-
-	s_sidemenuWnd->setCloseListener([]() {
-		if (s_model) {
-			s_ScloseFlag = true;
+	if (!s_sidemenuWnd) {
+		s_sidemenusp = new OWP_Separator(s_sidemenuWnd, true, 0.5, true);
+		if (!s_sidemenusp) {
+			_ASSERT(0);
+			return 1;
 		}
-		});
+		s_sidemenuWnd->addParts(*s_sidemenusp);
 
-	s_sidemenu_rigid->setButtonListener([]() {
-		if (s_model && (s_curboneno >= 0)) {
-			s_platemenukind = 1;
-			GUIMenuSetVisible(s_platemenukind, 1);
+		s_sidemenusp1 = new OWP_Separator(s_sidemenuWnd, true, 0.5, true);
+		if (!s_sidemenusp1) {
+			_ASSERT(0);
+			return 1;
 		}
+		s_sidemenusp2 = new OWP_Separator(s_sidemenuWnd, true, 0.5, true);
+		if (!s_sidemenusp2) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_sidemenusp->addParts1(*s_sidemenusp1);
+		s_sidemenusp->addParts2(*s_sidemenusp2);
+
+		s_sidemenu_rigid = new OWP_Button(L"Rigid");
+		if (!s_sidemenu_rigid) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_sidemenu_limiteul = new OWP_Button(L"LimitEul");
+		if (!s_sidemenu_limiteul) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_sidemenu_copyhistory = new OWP_Button(L"CopyHistory");
+		if (!s_sidemenu_copyhistory) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_sidemenu_retarget = new OWP_Button(L"Retarget");
+		if (!s_sidemenu_retarget) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		if (s_sidemenusp1) {
+			if (s_sidemenu_rigid) {
+				s_sidemenusp1->addParts1(*s_sidemenu_rigid);
+			}
+			if (s_sidemenu_limiteul) {
+				s_sidemenusp1->addParts2(*s_sidemenu_limiteul);
+			}
+		}
+		if (s_sidemenusp2) {
+			if (s_sidemenu_copyhistory) {
+				s_sidemenusp2->addParts1(*s_sidemenu_copyhistory);
+			}
+			if (s_sidemenu_retarget) {
+				s_sidemenusp2->addParts2(*s_sidemenu_retarget);
+			}
+		}
+
+		s_sidemenuWnd->setCloseListener([]() {
+			if (s_model) {
+				s_ScloseFlag = true;
+			}
+			});
+
+		if (s_sidemenu_rigid) {
+			s_sidemenu_rigid->setButtonListener([]() {
+				if (s_model && (s_curboneno >= 0)) {
+					s_platemenukind = 1;
+					GUIMenuSetVisible(s_platemenukind, 1);
+				}
+				s_sidemenuWnd->callRewrite();						//再描画
+				});
+		}
+		if (s_sidemenu_limiteul) {
+			s_sidemenu_limiteul->setButtonListener([]() {
+				if (s_model && (s_curboneno >= 0)) {
+					s_platemenukind = 2;
+					GUIMenuSetVisible(s_platemenukind, 2);
+				}
+				s_sidemenuWnd->callRewrite();						//再描画
+				});
+		}
+		if (s_sidemenu_copyhistory) {
+			s_sidemenu_copyhistory->setButtonListener([]() {
+				if (s_model && (s_curboneno >= 0)) {
+					s_selCopyHisotryFlag = true;
+				}
+				s_sidemenuWnd->callRewrite();						//再描画
+				});
+		}
+		if (s_sidemenu_retarget) {
+			s_sidemenu_retarget->setButtonListener([]() {
+				if (s_model && (s_curboneno >= 0)) {
+					s_platemenukind = 2;
+					GUIMenuSetVisible(s_platemenukind, 1);
+				}
+				s_sidemenuWnd->callRewrite();						//再描画
+				});
+		}
+
+		int windowposx;
+		if (g_4kresolution) {
+			windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+		}
+		else {
+			windowposx = s_timelinewidth + s_mainwidth + 16;
+		}
+
+		s_sidemenuWnd->setPos(WindowPos(windowposx, 0));
+
+		//450, 32
+		s_rcsidemenuwnd.top = 0;
+		s_rcsidemenuwnd.left = 0;
+		s_rcsidemenuwnd.bottom = s_sidemenuheight;
+		s_rcsidemenuwnd.right = s_sidemenuwidth;
+
+		//１クリック目問題対応
+		s_sidemenuWnd->refreshPosAndSize();//2022/09/20
+
+
 		s_sidemenuWnd->callRewrite();						//再描画
-		});
-	s_sidemenu_limiteul->setButtonListener([]() {
-		if (s_model && (s_curboneno >= 0)) {
-			s_platemenukind = 2;
-			GUIMenuSetVisible(s_platemenukind, 2);
-		}
-		s_sidemenuWnd->callRewrite();						//再描画
-		});
-	s_sidemenu_copyhistory->setButtonListener([]() {
-		if (s_model && (s_curboneno >= 0)) {
-			s_selCopyHisotryFlag = true;
-		}
-		s_sidemenuWnd->callRewrite();						//再描画
-		});
-	s_sidemenu_retarget->setButtonListener([]() {
-		if (s_model && (s_curboneno >= 0)) {
-			s_platemenukind = 2;
-			GUIMenuSetVisible(s_platemenukind, 1);
-		}
-		s_sidemenuWnd->callRewrite();						//再描画
-		});
 
-
-	int windowposx;
-	if (g_4kresolution) {
-		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
 	}
 	else {
-		windowposx = s_timelinewidth + s_mainwidth + 16;
+		_ASSERT(0);
+		return 1;
 	}
 
-	s_sidemenuWnd->setPos(WindowPos(windowposx, 0));
-
-	//450, 32
-	s_rcsidemenuwnd.top = 0;
-	s_rcsidemenuwnd.left = 0;
-	s_rcsidemenuwnd.bottom = s_sidemenuheight;
-	s_rcsidemenuwnd.right = s_sidemenuwidth;
-
-	//１クリック目問題対応
-	s_sidemenuWnd->refreshPosAndSize();//2022/09/20
-
-
-	s_sidemenuWnd->callRewrite();						//再描画
-
+	
 
 	return 0;
 }
@@ -26668,26 +27196,44 @@ int CreatePlaceFolderWnd()
 		0, 0, 0,				//カラー
 		true, true);					//サイズ変更の可否
 
-	s_placefolderlabel_1 = new OWP_Label(L"After Loading Model Data,");
-	s_placefolderlabel_2 = new OWP_Label(L"Click Frog Button, Change Plate Menu,");
-	s_placefolderlabel_3 = new OWP_Label(L"MainWindowGUI Menu->RigidBody Menu->Retarget Menu->MainWindowGUI Menu");
+	if (s_placefolderWnd) {
+		s_placefolderlabel_1 = new OWP_Label(L"After Loading Model Data,");
+		if (!s_placefolderlabel_1) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_placefolderlabel_2 = new OWP_Label(L"Click Frog Button, Change Plate Menu,");
+		if (!s_placefolderlabel_2) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_placefolderlabel_3 = new OWP_Label(L"MainWindowGUI Menu->RigidBody Menu->Retarget Menu->MainWindowGUI Menu");
+		if (!s_placefolderlabel_3) {
+			_ASSERT(0);
+			return 1;
+		}
 
-	s_placefolderWnd->addParts(*s_placefolderlabel_1);
-	s_placefolderWnd->addParts(*s_placefolderlabel_2);
-	s_placefolderWnd->addParts(*s_placefolderlabel_3);
+		s_placefolderWnd->addParts(*s_placefolderlabel_1);
+		s_placefolderWnd->addParts(*s_placefolderlabel_2);
+		s_placefolderWnd->addParts(*s_placefolderlabel_3);
 
 
 
-	s_placefolderWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
-	s_placefolderWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
+		s_placefolderWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
+		s_placefolderWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
 
-	//１クリック目問題対応
-	s_placefolderWnd->refreshPosAndSize();//2022/09/20
+		//１クリック目問題対応
+		s_placefolderWnd->refreshPosAndSize();//2022/09/20
 
 
-	s_placefolderWnd->callRewrite();						//再描画
+		s_placefolderWnd->callRewrite();						//再描画
 
-	s_placefolderWnd->setVisible(false);
+		s_placefolderWnd->setVisible(false);
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
 
 	return 0;
 
@@ -26737,737 +27283,960 @@ int CreateRigidWnd()
 		0, 0, 0,				//カラー
 		true, true);					//サイズ変更の可否
 
-	bool limitradionamelen = false;
+	if (s_rigidWnd) {
+		bool limitradionamelen = false;
 
-	s_groupcheck = new OWP_CheckBoxA(L"ToAll_MeansToSetToSameGroupRigids", 0);
-	s_sphrateSlider = new OWP_Slider(0.6, 20.0, 0.0);
-	s_boxzSlider = new OWP_Slider(0.6, 20.0, 0.0);
-	s_massSlider = new OWP_Slider(g_initmass, 30.0, 0.0);
-	//s_massSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
-	//s_massSeparator1 = new OWP_Separator(s_rigidWnd, true, 0.5, true);
-	//s_massSeparator2 = new OWP_Separator(s_rigidWnd, true, 0.5, true);
-	s_massB = new OWP_Button(L"MassToAll");
-	s_thicknessB = new OWP_Button(L"ThicknessToAll");
-	s_depthB = new OWP_Button(L"DepthToAll");
-	s_massspacelabel = new OWP_Label(L"(Space4)");
-	s_validSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
-	s_skipB = new OWP_Button(L"ToAll");
-	s_rigidskip = new OWP_CheckBoxA(L"Valid/Invalid (有効/無効)", 1);
-	s_forbidSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
-	s_forbidB = new OWP_Button(L"ToAll");
-	s_forbidrot = new OWP_CheckBoxA(L"ForbidRot", 0);
-	//s_allrigidenableB = new OWP_Button(L"ValidateAllRigids");
-	//s_allrigiddisableB = new OWP_Button(L"InvalidateAllRigids");
-	s_btgSlider = new OWP_Slider(-1.0, 1.0, -1.0);
-	s_btgscSlider = new OWP_Slider(10.0, 100.0, 0.0);
-	s_btgB = new OWP_Button(L"GToAll");
-	s_btforceSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
-	s_btforce = new OWP_CheckBoxA(L"RigidBodySimulation", 0);
-	s_btforceB = new OWP_Button(L"ToAll");
-
-	s_shplabel = new OWP_Label(L"Thickness");
-	s_boxzlabel = new OWP_Label(L"Depth");
-	s_massSLlabel = new OWP_Label(L"Mass");
-	s_btglabel = new OWP_Label(L"Gravity");
-	s_btgsclabel = new OWP_Label(L"ScaleOfGravity");
-
-	s_namelabel = new OWP_Label(L"BonaName:????");
-	s_lenglabel = new OWP_Label(L"BoneLength:*****[m]");
-
-
-	s_kB = new OWP_Button(L"SpringParamsToAll");
-	s_restB = new OWP_Button(L"RestitutionAndFrictionToAll");
-
-	s_colSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
-	s_colB = new OWP_Button(L"ToAll");
-	s_colradio = new OWP_RadioButton(L"Cone", limitradionamelen);
-	s_colradio->addLine(L"Capsule");
-	s_colradio->addLine(L"Sphere");
-	s_colradio->addLine(L"Rectangular");
-
-	s_lkradio = new OWP_RadioButton(L"[posSpring]very weak", limitradionamelen);
-	s_lkradio->addLine(L"[posSpring]weak");
-	s_lkradio->addLine(L"[posSpring]regular");
-	s_lkradio->addLine(L"[posSpring]custom");
-
-	//s_lkSlider = new OWP_Slider(g_initcuslk, 1e6, 1e4);//60000
-	//s_lkSlider = new OWP_Slider(g_initcuslk, 1e10, 1e8);//60000
-	s_lkSlider = new OWP_Slider(g_initcuslk, 1e4, 1e2);//60000
-	s_lklabel = new OWP_Label(L"posSpring customValue");
-
-	s_akradio = new OWP_RadioButton(L"[rotSpring]very weak", limitradionamelen);
-	s_akradio->addLine(L"[rotSpring]weak");
-	s_akradio->addLine(L"[rotSpring]regular");
-	s_akradio->addLine(L"[rotSpring]custom");
-
-	//s_akSlider = new OWP_Slider(g_initcusak, 6000.0f, 0.0f);//300
-	//s_akSlider = new OWP_Slider(g_initcusak, 30.0f, 0.0f);//300
-	//s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 30.0f);//300
-	//s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 10.0f);//300 ver10024
-	s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 2.0f);//2022/07/19
-	//s_akSlider = new OWP_Slider(g_initcusak, 1.0f, 0.0f);//2023/01/18
-	s_aklabel = new OWP_Label(L"rotSpring customValue");
-
-	s_restSlider = new OWP_Slider(0.5f, 1.0f, 0.0f);
-	s_restlabel = new OWP_Label(L"RigidRestitution");
-	s_fricSlider = new OWP_Slider(0.5f, 1.0f, 0.0f);
-	s_friclabel = new OWP_Label(L"RigidFriction");
-
-
-	s_ldmplabel = new OWP_Label(L"[posSpring]rateOfDumping");
-	s_admplabel = new OWP_Label(L"[rotSpring]rateOfDumping");
-	s_ldmpSlider = new OWP_Slider(g_l_dmp, 1.0, 0.0);
-	s_admpSlider = new OWP_Slider(g_a_dmp, 1.0, 0.0);
-	s_dmpB = new OWP_Button(L"DumpingToAll");
-	s_groupB = new OWP_Button(L"SetRigidGroupIDForConflict");
-	s_gcoliB = new OWP_Button(L"SetGroundGroupIDForConflict");
-
-
-
-
-	COLORREF colorToAll = RGB(64, 128 + 32, 128 + 32);
-	COLORREF colorValidInvalid = RGB(168, 129, 129);
-
-	s_groupcheck->setTextColor(colorToAll);
-	s_massB->setTextColor(colorToAll);
-	s_thicknessB->setTextColor(colorToAll);
-	s_depthB->setTextColor(colorToAll);
-	s_skipB->setTextColor(colorToAll);
-	s_forbidB->setTextColor(colorToAll);
-	s_btgB->setTextColor(colorToAll);
-	s_btforceB->setTextColor(colorToAll);
-	s_colB->setTextColor(colorToAll);
-	s_dmpB->setTextColor(colorToAll);
-	s_kB->setTextColor(colorToAll);
-	s_restB->setTextColor(colorToAll);
-
-
-	s_rigidskip->setTextColor(colorValidInvalid);
-	s_btforce->setTextColor(colorValidInvalid);
-
-
-
-	int slw = 350;
-
-	s_sphrateSlider->setSize(WindowSize(slw, 40));
-	s_boxzSlider->setSize(WindowSize(slw, 40));
-	s_massSlider->setSize(WindowSize(slw, 40));
-	s_btgSlider->setSize(WindowSize(slw, 40));
-	s_btgscSlider->setSize(WindowSize(slw, 40));
-	s_ldmpSlider->setSize(WindowSize(slw, 40));
-	s_admpSlider->setSize(WindowSize(slw, 40));
-	s_lkSlider->setSize(WindowSize(slw, 40));
-	s_akSlider->setSize(WindowSize(slw, 40));
-	s_restSlider->setSize(WindowSize(slw, 40));
-	s_fricSlider->setSize(WindowSize(slw, 40));
-
-
-	s_rigidWnd->addParts(*s_namelabel);
-	s_rigidWnd->addParts(*s_groupcheck);
-	s_rigidWnd->addParts(*s_shplabel);
-	s_rigidWnd->addParts(*s_sphrateSlider);
-	s_rigidWnd->addParts(*s_thicknessB);
-	s_rigidWnd->addParts(*s_boxzlabel);
-	s_rigidWnd->addParts(*s_boxzSlider);
-	s_rigidWnd->addParts(*s_depthB);
-	s_rigidWnd->addParts(*s_massSLlabel);
-	s_rigidWnd->addParts(*s_massSlider);
-	s_rigidWnd->addParts(*s_massB);
-
-	////s_rigidWnd->addParts(*s_massB);
-	////s_massB->setColor(64, 128, 128);
-	////s_thicknessB->setColor(64, 128, 128);
-	////s_depthB->setColor(64, 128, 128);
-	//s_rigidWnd->addParts(*s_massSeparator);
-	//s_massSeparator->addParts1(*s_massSeparator1);
-	//s_massSeparator->addParts2(*s_massSeparator2);
-	//s_massSeparator1->addParts1(*s_massB);
-	//s_massSeparator1->addParts2(*s_thicknessB);
-	//s_massSeparator2->addParts1(*s_depthB);
-	////s_massSeparator2->addParts2(*s_massspacelabel);
-
-	s_rigidWnd->addParts(*s_lenglabel);
-
-	s_rigidWnd->addParts(*s_validSeparator);
-	s_validSeparator->addParts1(*s_rigidskip);
-	s_validSeparator->addParts2(*s_skipB);
-	//s_rigidWnd->addParts(*s_rigidskip);
-
-	s_rigidWnd->addParts(*s_forbidSeparator);
-	s_forbidSeparator->addParts1(*s_forbidrot);
-	s_forbidSeparator->addParts2(*s_forbidB);
-	//s_rigidWnd->addParts(*s_forbidrot);
-	//s_rigidWnd->addParts(*s_allrigidenableB);
-	//s_rigidWnd->addParts(*s_allrigiddisableB);
-
-
-	s_rigidWnd->addParts(*s_colSeparator);
-	s_colSeparator->addParts1(*s_colradio);
-	s_colSeparator->addParts2(*s_colB);
-	//s_rigidWnd->addParts(*s_colradio);
-
-	s_rigidWnd->addParts(*s_lkradio);
-	s_rigidWnd->addParts(*s_lklabel);
-	s_rigidWnd->addParts(*s_lkSlider);
-	s_rigidWnd->addParts(*s_akradio);
-	s_rigidWnd->addParts(*s_aklabel);
-	s_rigidWnd->addParts(*s_akSlider);
-	s_rigidWnd->addParts(*s_kB);
-
-	s_rigidWnd->addParts(*s_restlabel);
-	s_rigidWnd->addParts(*s_restSlider);
-	s_rigidWnd->addParts(*s_friclabel);
-	s_rigidWnd->addParts(*s_fricSlider);
-	s_rigidWnd->addParts(*s_restB);
-
-
-	s_rigidWnd->addParts(*s_ldmplabel);
-	s_rigidWnd->addParts(*s_ldmpSlider);
-	s_rigidWnd->addParts(*s_admplabel);
-	s_rigidWnd->addParts(*s_admpSlider);
-	s_rigidWnd->addParts(*s_dmpB);
-
-	s_rigidWnd->addParts(*s_btglabel);
-	s_rigidWnd->addParts(*s_btgSlider);
-	s_rigidWnd->addParts(*s_btgsclabel);
-	s_rigidWnd->addParts(*s_btgscSlider);
-
-	s_rigidWnd->addParts(*s_btgB);
-
-	//s_rigidWnd->addParts(*s_btforce);
-	s_rigidWnd->addParts(*s_btforceSeparator);
-	s_btforceSeparator->addParts1(*s_btforce);
-	s_btforceSeparator->addParts2(*s_btforceB);
-
-	s_rigidWnd->addParts(*s_groupB);
-	s_rigidWnd->addParts(*s_gcoliB);
-	/////////
-	s_dsrigidctrls.push_back(s_namelabel);
-	s_dsrigidctrls.push_back(s_groupcheck);
-	s_dsrigidctrls.push_back(s_shplabel);
-	s_dsrigidctrls.push_back(s_sphrateSlider);
-	s_dsrigidctrls.push_back(s_boxzlabel);
-	s_dsrigidctrls.push_back(s_boxzSlider);
-	s_dsrigidctrls.push_back(s_massSLlabel);
-	s_dsrigidctrls.push_back(s_massSlider);
-	s_dsrigidctrls.push_back(s_massB);
-	s_dsrigidctrls.push_back(s_thicknessB);
-	s_dsrigidctrls.push_back(s_depthB);
-	s_dsrigidctrls.push_back(s_lenglabel);
-	s_dsrigidctrls.push_back(s_rigidskip);
-	s_dsrigidctrls.push_back(s_skipB);
-	s_dsrigidctrls.push_back(s_forbidrot);
-	s_dsrigidctrls.push_back(s_forbidB);
-	//s_dsrigidctrls.push_back(s_allrigidenableB);
-	//s_dsrigidctrls.push_back(s_allrigiddisableB);
-
-	s_dsrigidctrls.push_back(s_colradio);
-	s_dsrigidctrls.push_back(s_colB);
-
-	s_dsrigidctrls.push_back(s_lkradio);
-	s_dsrigidctrls.push_back(s_lklabel);
-	s_dsrigidctrls.push_back(s_lkSlider);
-	s_dsrigidctrls.push_back(s_akradio);
-	s_dsrigidctrls.push_back(s_aklabel);
-	s_dsrigidctrls.push_back(s_akSlider);
-	s_dsrigidctrls.push_back(s_kB);
-
-	s_dsrigidctrls.push_back(s_restlabel);
-	s_dsrigidctrls.push_back(s_restSlider);
-	s_dsrigidctrls.push_back(s_friclabel);
-	s_dsrigidctrls.push_back(s_fricSlider);
-	s_dsrigidctrls.push_back(s_restB);
-
-
-	s_dsrigidctrls.push_back(s_ldmplabel);
-	s_dsrigidctrls.push_back(s_ldmpSlider);
-	s_dsrigidctrls.push_back(s_admplabel);
-	s_dsrigidctrls.push_back(s_admpSlider);
-	s_dsrigidctrls.push_back(s_dmpB);
-
-	s_dsrigidctrls.push_back(s_btglabel);
-	s_dsrigidctrls.push_back(s_btgSlider);
-	s_dsrigidctrls.push_back(s_btgsclabel);
-	s_dsrigidctrls.push_back(s_btgscSlider);
-	s_dsrigidctrls.push_back(s_btgB);
-	s_dsrigidctrls.push_back(s_btforce);
-	s_dsrigidctrls.push_back(s_btforceB);
-
-	s_dsrigidctrls.push_back(s_groupB);
-	s_dsrigidctrls.push_back(s_gcoliB);
-
-
-	s_rigidWnd->setCloseListener([]() {
-		if (s_model) {
-			s_RcloseFlag = true;
+		s_groupcheck = new OWP_CheckBoxA(L"ToAll_MeansToSetToSameGroupRigids", 0);
+		if (!s_groupcheck) {
+			_ASSERT(0);
+			return 1;
 		}
-		});
+		s_sphrateSlider = new OWP_Slider(0.6, 20.0, 0.0);
+		if (!s_sphrateSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_boxzSlider = new OWP_Slider(0.6, 20.0, 0.0);
+		if (!s_boxzSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_massSlider = new OWP_Slider(g_initmass, 30.0, 0.0);
+		if (!s_massSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		//s_massSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+		//s_massSeparator1 = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+		//s_massSeparator2 = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+		s_massB = new OWP_Button(L"MassToAll");
+		if (!s_massB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_thicknessB = new OWP_Button(L"ThicknessToAll");
+		if (!s_thicknessB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_depthB = new OWP_Button(L"DepthToAll");
+		if (!s_depthB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_massspacelabel = new OWP_Label(L"(Space4)");
+		if (!s_massspacelabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_validSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+		if (!s_validSeparator) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_skipB = new OWP_Button(L"ToAll");
+		if (!s_skipB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_rigidskip = new OWP_CheckBoxA(L"Valid/Invalid (有効/無効)", 1);
+		if (!s_rigidskip) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_forbidSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+		if (!s_forbidSeparator) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_forbidB = new OWP_Button(L"ToAll");
+		if (!s_forbidB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_forbidrot = new OWP_CheckBoxA(L"ForbidRot", 0);
+		if (!s_forbidrot) {
+			_ASSERT(0);
+			return 1;
+		}
+		//s_allrigidenableB = new OWP_Button(L"ValidateAllRigids");
+		//s_allrigiddisableB = new OWP_Button(L"InvalidateAllRigids");
+		s_btgSlider = new OWP_Slider(-1.0, 1.0, -1.0);
+		if (!s_btgSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_btgscSlider = new OWP_Slider(10.0, 100.0, 0.0);
+		if (!s_btgscSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_btgB = new OWP_Button(L"GToAll");
+		if (!s_btgB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_btforceSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+		if (!s_btforceSeparator) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_btforce = new OWP_CheckBoxA(L"RigidBodySimulation", 0);
+		if (!s_btforce) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_btforceB = new OWP_Button(L"ToAll");
+		if (!s_btforceB) {
+			_ASSERT(0);
+			return 1;
+		}
 
-	s_sphrateSlider->setCursorListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
-				float val = (float)s_sphrateSlider->getValue();
-				curre->SetSphrate(val);
+		s_shplabel = new OWP_Label(L"Thickness");
+		if (!s_shplabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_boxzlabel = new OWP_Label(L"Depth");
+		if (!s_boxzlabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_massSLlabel = new OWP_Label(L"Mass");
+		if (!s_massSLlabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_btglabel = new OWP_Label(L"Gravity");
+		if (!s_btglabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_btgsclabel = new OWP_Label(L"ScaleOfGravity");
+		if (!s_btgsclabel) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		s_namelabel = new OWP_Label(L"BonaName:????");
+		if (!s_namelabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_lenglabel = new OWP_Label(L"BoneLength:*****[m]");
+		if (!s_lenglabel) {
+			_ASSERT(0);
+			return 1;
+		}
+
+
+		s_kB = new OWP_Button(L"SpringParamsToAll");
+		if (!s_kB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_restB = new OWP_Button(L"RestitutionAndFrictionToAll");
+		if (!s_restB) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		s_colSeparator = new OWP_Separator(s_rigidWnd, true, 0.5, true);
+		if (!s_colSeparator) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_colB = new OWP_Button(L"ToAll");
+		if (!s_colB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_colradio = new OWP_RadioButton(L"Cone", limitradionamelen);
+		if (!s_colradio) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_colradio->addLine(L"Capsule");
+		s_colradio->addLine(L"Sphere");
+		s_colradio->addLine(L"Rectangular");
+
+		s_lkradio = new OWP_RadioButton(L"[posSpring]very weak", limitradionamelen);
+		if (!s_lkradio) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_lkradio->addLine(L"[posSpring]weak");
+		s_lkradio->addLine(L"[posSpring]regular");
+		s_lkradio->addLine(L"[posSpring]custom");
+
+		//s_lkSlider = new OWP_Slider(g_initcuslk, 1e6, 1e4);//60000
+		//s_lkSlider = new OWP_Slider(g_initcuslk, 1e10, 1e8);//60000
+		s_lkSlider = new OWP_Slider(g_initcuslk, 1e4, 1e2);//60000
+		if (!s_lkSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_lklabel = new OWP_Label(L"posSpring customValue");
+		if (!s_lklabel) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		s_akradio = new OWP_RadioButton(L"[rotSpring]very weak", limitradionamelen);
+		if (!s_akradio) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_akradio->addLine(L"[rotSpring]weak");
+		s_akradio->addLine(L"[rotSpring]regular");
+		s_akradio->addLine(L"[rotSpring]custom");
+
+		//s_akSlider = new OWP_Slider(g_initcusak, 6000.0f, 0.0f);//300
+		//s_akSlider = new OWP_Slider(g_initcusak, 30.0f, 0.0f);//300
+		//s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 30.0f);//300
+		//s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 10.0f);//300 ver10024
+		s_akSlider = new OWP_Slider(g_initcusak, 3000.0f, 2.0f);//2022/07/19
+		if (!s_akSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		//s_akSlider = new OWP_Slider(g_initcusak, 1.0f, 0.0f);//2023/01/18
+		s_aklabel = new OWP_Label(L"rotSpring customValue");
+		if (!s_aklabel) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		s_restSlider = new OWP_Slider(0.5f, 1.0f, 0.0f);
+		if (!s_restSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_restlabel = new OWP_Label(L"RigidRestitution");
+		if (!s_restlabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_fricSlider = new OWP_Slider(0.5f, 1.0f, 0.0f);
+		if (!s_fricSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_friclabel = new OWP_Label(L"RigidFriction");
+		if (!s_friclabel) {
+			_ASSERT(0);
+			return 1;
+		}
+
+
+		s_ldmplabel = new OWP_Label(L"[posSpring]rateOfDumping");
+		if (!s_ldmplabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_admplabel = new OWP_Label(L"[rotSpring]rateOfDumping");
+		if (!s_admplabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_ldmpSlider = new OWP_Slider(g_l_dmp, 1.0, 0.0);
+		if (!s_ldmpSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_admpSlider = new OWP_Slider(g_a_dmp, 1.0, 0.0);
+		if (!s_admpSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_dmpB = new OWP_Button(L"DumpingToAll");
+		if (!s_dmpB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_groupB = new OWP_Button(L"SetRigidGroupIDForConflict");
+		if (!s_groupB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_gcoliB = new OWP_Button(L"SetGroundGroupIDForConflict");
+		if (!s_gcoliB) {
+			_ASSERT(0);
+			return 1;
+		}
+
+
+
+
+		COLORREF colorToAll = RGB(64, 128 + 32, 128 + 32);
+		COLORREF colorValidInvalid = RGB(168, 129, 129);
+
+		s_groupcheck->setTextColor(colorToAll);
+		s_massB->setTextColor(colorToAll);
+		s_thicknessB->setTextColor(colorToAll);
+		s_depthB->setTextColor(colorToAll);
+		s_skipB->setTextColor(colorToAll);
+		s_forbidB->setTextColor(colorToAll);
+		s_btgB->setTextColor(colorToAll);
+		s_btforceB->setTextColor(colorToAll);
+		s_colB->setTextColor(colorToAll);
+		s_dmpB->setTextColor(colorToAll);
+		s_kB->setTextColor(colorToAll);
+		s_restB->setTextColor(colorToAll);
+
+
+		s_rigidskip->setTextColor(colorValidInvalid);
+		s_btforce->setTextColor(colorValidInvalid);
+
+
+
+		int slw = 350;
+
+		s_sphrateSlider->setSize(WindowSize(slw, 40));
+		s_boxzSlider->setSize(WindowSize(slw, 40));
+		s_massSlider->setSize(WindowSize(slw, 40));
+		s_btgSlider->setSize(WindowSize(slw, 40));
+		s_btgscSlider->setSize(WindowSize(slw, 40));
+		s_ldmpSlider->setSize(WindowSize(slw, 40));
+		s_admpSlider->setSize(WindowSize(slw, 40));
+		s_lkSlider->setSize(WindowSize(slw, 40));
+		s_akSlider->setSize(WindowSize(slw, 40));
+		s_restSlider->setSize(WindowSize(slw, 40));
+		s_fricSlider->setSize(WindowSize(slw, 40));
+
+
+		s_rigidWnd->addParts(*s_namelabel);
+		s_rigidWnd->addParts(*s_groupcheck);
+		s_rigidWnd->addParts(*s_shplabel);
+		s_rigidWnd->addParts(*s_sphrateSlider);
+		s_rigidWnd->addParts(*s_thicknessB);
+		s_rigidWnd->addParts(*s_boxzlabel);
+		s_rigidWnd->addParts(*s_boxzSlider);
+		s_rigidWnd->addParts(*s_depthB);
+		s_rigidWnd->addParts(*s_massSLlabel);
+		s_rigidWnd->addParts(*s_massSlider);
+		s_rigidWnd->addParts(*s_massB);
+
+		////s_rigidWnd->addParts(*s_massB);
+		////s_massB->setColor(64, 128, 128);
+		////s_thicknessB->setColor(64, 128, 128);
+		////s_depthB->setColor(64, 128, 128);
+		//s_rigidWnd->addParts(*s_massSeparator);
+		//s_massSeparator->addParts1(*s_massSeparator1);
+		//s_massSeparator->addParts2(*s_massSeparator2);
+		//s_massSeparator1->addParts1(*s_massB);
+		//s_massSeparator1->addParts2(*s_thicknessB);
+		//s_massSeparator2->addParts1(*s_depthB);
+		////s_massSeparator2->addParts2(*s_massspacelabel);
+
+		s_rigidWnd->addParts(*s_lenglabel);
+
+		s_rigidWnd->addParts(*s_validSeparator);
+		s_validSeparator->addParts1(*s_rigidskip);
+		s_validSeparator->addParts2(*s_skipB);
+		//s_rigidWnd->addParts(*s_rigidskip);
+
+		s_rigidWnd->addParts(*s_forbidSeparator);
+		s_forbidSeparator->addParts1(*s_forbidrot);
+		s_forbidSeparator->addParts2(*s_forbidB);
+		//s_rigidWnd->addParts(*s_forbidrot);
+		//s_rigidWnd->addParts(*s_allrigidenableB);
+		//s_rigidWnd->addParts(*s_allrigiddisableB);
+
+
+		s_rigidWnd->addParts(*s_colSeparator);
+		s_colSeparator->addParts1(*s_colradio);
+		s_colSeparator->addParts2(*s_colB);
+		//s_rigidWnd->addParts(*s_colradio);
+
+		s_rigidWnd->addParts(*s_lkradio);
+		s_rigidWnd->addParts(*s_lklabel);
+		s_rigidWnd->addParts(*s_lkSlider);
+		s_rigidWnd->addParts(*s_akradio);
+		s_rigidWnd->addParts(*s_aklabel);
+		s_rigidWnd->addParts(*s_akSlider);
+		s_rigidWnd->addParts(*s_kB);
+
+		s_rigidWnd->addParts(*s_restlabel);
+		s_rigidWnd->addParts(*s_restSlider);
+		s_rigidWnd->addParts(*s_friclabel);
+		s_rigidWnd->addParts(*s_fricSlider);
+		s_rigidWnd->addParts(*s_restB);
+
+
+		s_rigidWnd->addParts(*s_ldmplabel);
+		s_rigidWnd->addParts(*s_ldmpSlider);
+		s_rigidWnd->addParts(*s_admplabel);
+		s_rigidWnd->addParts(*s_admpSlider);
+		s_rigidWnd->addParts(*s_dmpB);
+
+		s_rigidWnd->addParts(*s_btglabel);
+		s_rigidWnd->addParts(*s_btgSlider);
+		s_rigidWnd->addParts(*s_btgsclabel);
+		s_rigidWnd->addParts(*s_btgscSlider);
+
+		s_rigidWnd->addParts(*s_btgB);
+
+		//s_rigidWnd->addParts(*s_btforce);
+		s_rigidWnd->addParts(*s_btforceSeparator);
+		s_btforceSeparator->addParts1(*s_btforce);
+		s_btforceSeparator->addParts2(*s_btforceB);
+
+		s_rigidWnd->addParts(*s_groupB);
+		s_rigidWnd->addParts(*s_gcoliB);
+		/////////
+		s_dsrigidctrls.push_back(s_namelabel);
+		s_dsrigidctrls.push_back(s_groupcheck);
+		s_dsrigidctrls.push_back(s_shplabel);
+		s_dsrigidctrls.push_back(s_sphrateSlider);
+		s_dsrigidctrls.push_back(s_boxzlabel);
+		s_dsrigidctrls.push_back(s_boxzSlider);
+		s_dsrigidctrls.push_back(s_massSLlabel);
+		s_dsrigidctrls.push_back(s_massSlider);
+		s_dsrigidctrls.push_back(s_massB);
+		s_dsrigidctrls.push_back(s_thicknessB);
+		s_dsrigidctrls.push_back(s_depthB);
+		s_dsrigidctrls.push_back(s_lenglabel);
+		s_dsrigidctrls.push_back(s_rigidskip);
+		s_dsrigidctrls.push_back(s_skipB);
+		s_dsrigidctrls.push_back(s_forbidrot);
+		s_dsrigidctrls.push_back(s_forbidB);
+		//s_dsrigidctrls.push_back(s_allrigidenableB);
+		//s_dsrigidctrls.push_back(s_allrigiddisableB);
+
+		s_dsrigidctrls.push_back(s_colradio);
+		s_dsrigidctrls.push_back(s_colB);
+
+		s_dsrigidctrls.push_back(s_lkradio);
+		s_dsrigidctrls.push_back(s_lklabel);
+		s_dsrigidctrls.push_back(s_lkSlider);
+		s_dsrigidctrls.push_back(s_akradio);
+		s_dsrigidctrls.push_back(s_aklabel);
+		s_dsrigidctrls.push_back(s_akSlider);
+		s_dsrigidctrls.push_back(s_kB);
+
+		s_dsrigidctrls.push_back(s_restlabel);
+		s_dsrigidctrls.push_back(s_restSlider);
+		s_dsrigidctrls.push_back(s_friclabel);
+		s_dsrigidctrls.push_back(s_fricSlider);
+		s_dsrigidctrls.push_back(s_restB);
+
+
+		s_dsrigidctrls.push_back(s_ldmplabel);
+		s_dsrigidctrls.push_back(s_ldmpSlider);
+		s_dsrigidctrls.push_back(s_admplabel);
+		s_dsrigidctrls.push_back(s_admpSlider);
+		s_dsrigidctrls.push_back(s_dmpB);
+
+		s_dsrigidctrls.push_back(s_btglabel);
+		s_dsrigidctrls.push_back(s_btgSlider);
+		s_dsrigidctrls.push_back(s_btgsclabel);
+		s_dsrigidctrls.push_back(s_btgscSlider);
+		s_dsrigidctrls.push_back(s_btgB);
+		s_dsrigidctrls.push_back(s_btforce);
+		s_dsrigidctrls.push_back(s_btforceB);
+
+		s_dsrigidctrls.push_back(s_groupB);
+		s_dsrigidctrls.push_back(s_gcoliB);
+
+
+		s_rigidWnd->setCloseListener([]() {
+			if (s_model) {
+				s_RcloseFlag = true;
 			}
-			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
-	s_boxzSlider->setCursorListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
-				float val = (float)s_boxzSlider->getValue();
-				curre->SetBoxzrate(val);
-			}
-			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
+			});
 
-	s_massSlider->setCursorListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
-				float val = (float)s_massSlider->getValue();
-				curre->SetMass(val);
+		s_sphrateSlider->setCursorListener([]() {
+			if (s_model && s_rigidWnd) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					if (s_sphrateSlider) {
+						float val = (float)s_sphrateSlider->getValue();
+						curre->SetSphrate(val);
+					}
+				}
+				s_rigidWnd->callRewrite();						//再描画
 			}
-			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
+			});
+		s_boxzSlider->setCursorListener([]() {
+			if (s_model && s_rigidWnd) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					if (s_boxzSlider) {
+						float val = (float)s_boxzSlider->getValue();
+						curre->SetBoxzrate(val);
+					}
+				}
+				s_rigidWnd->callRewrite();						//再描画
+			}
+			});
 
-	s_ldmpSlider->setCursorListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
-				float val = (float)s_ldmpSlider->getValue();
-				curre->SetLDamping(val);
+		s_massSlider->setCursorListener([]() {
+			if (s_model && s_rigidWnd) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					if (s_massSlider) {
+						float val = (float)s_massSlider->getValue();
+						curre->SetMass(val);
+					}
+				}
+				s_rigidWnd->callRewrite();						//再描画
 			}
-			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
-	s_admpSlider->setCursorListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
-				float val = (float)s_admpSlider->getValue();
-				curre->SetADamping(val);
-			}
-			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
+			});
 
-	s_lkSlider->setCursorListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
-				float val = (float)s_lkSlider->getValue();
-				curre->SetCusLk(val);
+		s_ldmpSlider->setCursorListener([]() {
+			if (s_model && s_rigidWnd) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					if (s_ldmpSlider) {
+						float val = (float)s_ldmpSlider->getValue();
+						curre->SetLDamping(val);
+					}
+				}
+				s_rigidWnd->callRewrite();						//再描画
 			}
-			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
-	s_akSlider->setCursorListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
-				float val = (float)s_akSlider->getValue();
-				curre->SetCusAk(val);
+			});
+		s_admpSlider->setCursorListener([]() {
+			if (s_model && s_rigidWnd) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					if (s_admpSlider) {
+						float val = (float)s_admpSlider->getValue();
+						curre->SetADamping(val);
+					}
+				}
+				s_rigidWnd->callRewrite();						//再描画
 			}
-			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
+			});
+
+		s_lkSlider->setCursorListener([]() {
+			if (s_model && s_rigidWnd) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					if (s_lkSlider) {
+						float val = (float)s_lkSlider->getValue();
+						curre->SetCusLk(val);
+					}
+				}
+				s_rigidWnd->callRewrite();						//再描画
+			}
+			});
+		s_akSlider->setCursorListener([]() {
+			if (s_model && s_rigidWnd) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					if (s_akSlider) {
+						float val = (float)s_akSlider->getValue();
+						curre->SetCusAk(val);
+					}
+				}
+				s_rigidWnd->callRewrite();						//再描画
+			}
+			});
 
 
-	s_restSlider->setCursorListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
-				float val = (float)s_restSlider->getValue();
-				curre->SetRestitution(val);
+		s_restSlider->setCursorListener([]() {
+			if (s_model && s_rigidWnd) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					if (s_restSlider) {
+						float val = (float)s_restSlider->getValue();
+						curre->SetRestitution(val);
+					}
+				}
+				s_rigidWnd->callRewrite();						//再描画
 			}
-			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
-	s_fricSlider->setCursorListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
-				float val = (float)s_fricSlider->getValue();
-				curre->SetFriction(val);
+			});
+		s_fricSlider->setCursorListener([]() {
+			if (s_model && s_rigidWnd) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					if (s_fricSlider) {
+						float val = (float)s_fricSlider->getValue();
+						curre->SetFriction(val);
+					}
+				}
+				s_rigidWnd->callRewrite();						//再描画
 			}
-			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
-	s_rigidskip->setButtonListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
+			});
+		s_rigidskip->setButtonListener([]() {
+			if (s_model && s_rigidWnd) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					if (s_rigidskip) {
+						bool validflag = s_rigidskip->getValue();
+						if (validflag == false) {
+							curre->SetSkipflag(1);
+						}
+						else {
+							curre->SetSkipflag(0);
+						}
+					}
+				}
+				s_rigidWnd->callRewrite();						//再描画
+			}
+			});
+		s_skipB->setButtonListener([]() {
+			if (s_model && s_rigidskip && s_groupcheck) {
 				bool validflag = s_rigidskip->getValue();
+				bool skipflag;
 				if (validflag == false) {
-					curre->SetSkipflag(1);
+					skipflag = true;
 				}
 				else {
-					curre->SetSkipflag(0);
+					skipflag = false;
 				}
-			}
-			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
-	s_skipB->setButtonListener([]() {
-		if (s_model) {
-			bool validflag = s_rigidskip->getValue();
-			bool skipflag;
-			if (validflag == false) {
-				skipflag = true;
-			}
-			else {
-				skipflag = false;
-			}
-			int chkg = (int)s_groupcheck->getValue();
-			int gid = -1;
-			if (chkg) {
-				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-				if (curre) {
-					gid = curre->GetGroupid();
-				}
-				else {
-					gid = -1;
-				}
-			}
-			s_model->SetAllSkipflagData(gid, s_reindexmap[s_model], skipflag);
-		}
-		});
-
-	s_forbidrot->setButtonListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
-				bool validflag = s_forbidrot->getValue();
-				if (validflag == false) {
-					curre->SetForbidRotFlag(0);
-				}
-				else {
-					curre->SetForbidRotFlag(1);
-				}
-			}
-			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
-	s_forbidB->setButtonListener([]() {
-		if (s_model) {
-			bool validflag = s_forbidrot->getValue();
-			int chkg = (int)s_groupcheck->getValue();
-			int gid = -1;
-			if (chkg) {
-				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-				if (curre) {
-					gid = curre->GetGroupid();
-				}
-				else {
-					gid = -1;
-				}
-			}
-			s_model->SetAllForbidrotData(gid, s_reindexmap[s_model], validflag);
-		}
-		});
-
-	//s_allrigidenableB->setButtonListener([](){
-	//	if (s_model){
-	//		s_model->EnableAllRigidElem(s_reindexmap[s_model]);
-	//	}
-	//	s_rigidWnd->callRewrite();						//再描画
-	//});
-	//s_allrigiddisableB->setButtonListener([](){
-	//	if (s_model){
-	//		s_model->DisableAllRigidElem(s_reindexmap[s_model]);
-	//	}
-	//	s_rigidWnd->callRewrite();						//再描画
-	//});
-
-
-	s_btforce->setButtonListener([]() {
-		if (s_model && (s_curboneno >= 0)) {
-			CBone* curbone = s_model->GetBoneByID(s_curboneno);
-			if (curbone) {
-				CBone* parentbone = curbone->GetParent();
-				if (parentbone) {
-					bool kinflag = s_btforce->getValue();
-					if (kinflag == false) {
-						parentbone->SetBtForce(0);
+				int chkg = (int)s_groupcheck->getValue();
+				int gid = -1;
+				if (chkg) {
+					CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+					if (curre) {
+						gid = curre->GetGroupid();
 					}
 					else {
-						parentbone->SetBtForce(1);
+						gid = -1;
+					}
+				}
+				s_model->SetAllSkipflagData(gid, s_reindexmap[s_model], skipflag);
+			}
+			});
+
+		s_forbidrot->setButtonListener([]() {
+			if (s_model && s_rigidWnd && s_forbidrot) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					bool validflag = s_forbidrot->getValue();
+					if (validflag == false) {
+						curre->SetForbidRotFlag(0);
+					}
+					else {
+						curre->SetForbidRotFlag(1);
+					}
+				}
+				s_rigidWnd->callRewrite();						//再描画
+			}
+			});
+		s_forbidB->setButtonListener([]() {
+			if (s_model && s_forbidrot && s_groupcheck) {
+				bool validflag = s_forbidrot->getValue();
+				int chkg = (int)s_groupcheck->getValue();
+				int gid = -1;
+				if (chkg) {
+					CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+					if (curre) {
+						gid = curre->GetGroupid();
+					}
+					else {
+						gid = -1;
+					}
+				}
+				s_model->SetAllForbidrotData(gid, s_reindexmap[s_model], validflag);
+			}
+			});
+
+		//s_allrigidenableB->setButtonListener([](){
+		//	if (s_model){
+		//		s_model->EnableAllRigidElem(s_reindexmap[s_model]);
+		//	}
+		//	s_rigidWnd->callRewrite();						//再描画
+		//});
+		//s_allrigiddisableB->setButtonListener([](){
+		//	if (s_model){
+		//		s_model->DisableAllRigidElem(s_reindexmap[s_model]);
+		//	}
+		//	s_rigidWnd->callRewrite();						//再描画
+		//});
+
+
+		s_btforce->setButtonListener([]() {
+			if (s_model && (s_curboneno >= 0) && s_btforce) {
+				CBone* curbone = s_model->GetBoneByID(s_curboneno);
+				if (curbone) {
+					CBone* parentbone = curbone->GetParent();
+					if (parentbone) {
+						bool kinflag = s_btforce->getValue();
+						if (kinflag == false) {
+							parentbone->SetBtForce(0);
+						}
+						else {
+							parentbone->SetBtForce(1);
+						}
 					}
 				}
 			}
-		}
-		s_rigidWnd->callRewrite();						//再描画
-		});
-
-	s_btgSlider->setCursorListener([]() {
-		if (s_model) {
-			float btg = (float)s_btgSlider->getValue();
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
-				curre->SetBtg(btg);
-			}
 			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
-	s_btgscSlider->setCursorListener([]() {
-		if (s_model) {
-			float btgsc = (float)s_btgscSlider->getValue();
-			if (s_model && (s_reindexmap[s_model] >= 0)) {
-				REINFO tmpinfo = s_model->GetRigidElemInfo(s_reindexmap[s_model]);
-				tmpinfo.btgscale = btgsc;
-				s_model->SetRigidElemInfo(s_reindexmap[s_model], tmpinfo);
-			}
-			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
+			});
 
-	s_colradio->setSelectListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
+		s_btgSlider->setCursorListener([]() {
+			if (s_model && s_rigidWnd && s_btgSlider) {
+				float btg = (float)s_btgSlider->getValue();
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					curre->SetBtg(btg);
+				}
+				s_rigidWnd->callRewrite();						//再描画
+			}
+			});
+		s_btgscSlider->setCursorListener([]() {
+			if (s_model && s_rigidWnd && s_btgscSlider) {
+				float btgsc = (float)s_btgscSlider->getValue();
+				if (s_model && (s_reindexmap[s_model] >= 0)) {
+					REINFO tmpinfo = s_model->GetRigidElemInfo(s_reindexmap[s_model]);
+					tmpinfo.btgscale = btgsc;
+					s_model->SetRigidElemInfo(s_reindexmap[s_model], tmpinfo);
+				}
+				s_rigidWnd->callRewrite();						//再描画
+			}
+			});
+
+		s_colradio->setSelectListener([]() {
+			if (s_model && s_rigidWnd && s_colradio) {
+				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+				if (curre) {
+					int val = s_colradio->getSelectIndex();
+					curre->SetColtype(val);
+				}
+				s_rigidWnd->callRewrite();						//再描画
+			}
+			});
+		s_colB->setButtonListener([]() {
+			if (s_model && s_colradio && s_groupcheck) {
 				int val = s_colradio->getSelectIndex();
-				curre->SetColtype(val);
-			}
-			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
-	s_colB->setButtonListener([]() {
-		if (s_model) {
-			int val = s_colradio->getSelectIndex();
-			int chkg = (int)s_groupcheck->getValue();
-			int gid = -1;
-			if (chkg) {
-				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-				if (curre) {
-					gid = curre->GetGroupid();
-				}
-				else {
-					gid = -1;
-				}
-			}
-			s_model->SetAllColtypeData(gid, s_reindexmap[s_model], val);
-		}
-		});
-
-	s_lkradio->setSelectListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
-				int val = s_lkradio->getSelectIndex();
-				curre->SetLKindex(val);
-			}
-			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
-	s_akradio->setSelectListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
-				int val = s_akradio->getSelectIndex();
-				curre->SetAKindex(val);
-			}
-			s_rigidWnd->callRewrite();						//再描画
-		}
-		});
-
-	s_kB->setButtonListener([]() {
-		if (s_model) {
-			int lindex = s_lkradio->getSelectIndex();
-			int aindex = s_akradio->getSelectIndex();
-			float cuslk = (float)s_lkSlider->getValue();
-			float cusak = (float)s_akSlider->getValue();
-			int chkg = (int)s_groupcheck->getValue();
-			int gid = -1;
-			if (chkg) {
-				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-				if (curre) {
-					gid = curre->GetGroupid();
-				}
-				else {
-					gid = -1;
-				}
-			}
-			s_model->SetAllKData(gid, s_reindexmap[s_model], lindex, aindex, cuslk, cusak);
-		}
-		});
-	s_restB->setButtonListener([]() {
-		if (s_model) {
-			float rest = (float)s_restSlider->getValue();
-			float fric = (float)s_fricSlider->getValue();
-			int chkg = (int)s_groupcheck->getValue();
-			int gid = -1;
-			if (chkg) {
-				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-				if (curre) {
-					gid = curre->GetGroupid();
-				}
-				else {
-					gid = -1;
-				}
-			}
-			s_model->SetAllRestData(gid, s_reindexmap[s_model], rest, fric);
-		}
-		});
-	s_dmpB->setButtonListener([]() {
-		if (s_model) {
-			float ldmp = (float)s_ldmpSlider->getValue();
-			float admp = (float)s_admpSlider->getValue();
-			int chkg = (int)s_groupcheck->getValue();
-			int gid = -1;
-			if (chkg) {
-				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-				if (curre) {
-					gid = curre->GetGroupid();
-				}
-				else {
-					gid = -1;
-				}
-			}
-			s_model->SetAllDmpData(gid, s_reindexmap[s_model], ldmp, admp);
-		}
-		});
-
-	s_groupB->setButtonListener([]() {
-		if (s_model) {
-			CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-			if (curre) {
-				CColiIDDlg dlg(curre);
-				s_pcolidlg = &dlg;
-				s_undercolidlg = true;
-
-				dlg.DoModal();
-				if (dlg.m_setgroup == 1) {
-					if (s_model) {
-						s_model->SetColiIDtoGroup(curre);
+				int chkg = (int)s_groupcheck->getValue();
+				int gid = -1;
+				if (chkg) {
+					CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+					if (curre) {
+						gid = curre->GetGroupid();
+					}
+					else {
+						gid = -1;
 					}
 				}
-
-				s_undercolidlg = false;
-				s_pcolidlg = 0;
-
+				s_model->SetAllColtypeData(gid, s_reindexmap[s_model], val);
 			}
-		}
-		});
-	s_gcoliB->setButtonListener([]() {
-		if (s_model) {
-			if (s_bpWorld) {
-				CGColiIDDlg dlg(s_bpWorld->m_coliids, s_bpWorld->m_myselfflag);
-				s_pgcolidlg = &dlg;
-				s_undergcolidlg = true;
+			});
 
-				int dlgret = (int)dlg.DoModal();
-				if (dlgret == IDOK) {
-					s_bpWorld->m_coliids = dlg.m_coliids;
-					s_bpWorld->m_myselfflag = dlg.m_myself;
-					s_bpWorld->RemakeG();
-				}
-
-				s_undergcolidlg = false;
-				s_pgcolidlg = 0;
-			}
-		}
-		});
-
-	s_massB->setButtonListener([]() {
-		if (s_model) {
-			float mass = (float)s_massSlider->getValue();
-			int chkg = (int)s_groupcheck->getValue();
-			int gid = -1;
-			if (chkg) {
+		s_lkradio->setSelectListener([]() {
+			if (s_model && s_rigidWnd && s_lkradio) {
 				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 				if (curre) {
-					gid = curre->GetGroupid();
+					int val = s_lkradio->getSelectIndex();
+					curre->SetLKindex(val);
 				}
-				else {
-					gid = -1;
-				}
+				s_rigidWnd->callRewrite();						//再描画
 			}
-			s_model->SetAllMassData(gid, s_reindexmap[s_model], mass);
-		}
-		//		_ASSERT( 0 );
-		});
-	s_thicknessB->setButtonListener([]() {
-		if (s_model) {
-			float sphrate = (float)s_sphrateSlider->getValue();
-			int chkg = (int)s_groupcheck->getValue();
-			int gid = -1;
-			if (chkg) {
+			});
+		s_akradio->setSelectListener([]() {
+			if (s_model && s_rigidWnd && s_akradio) {
 				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 				if (curre) {
-					gid = curre->GetGroupid();
+					int val = s_akradio->getSelectIndex();
+					curre->SetAKindex(val);
 				}
-				else {
-					gid = -1;
-				}
+				s_rigidWnd->callRewrite();						//再描画
 			}
-			s_model->SetAllSphrateData(gid, s_reindexmap[s_model], sphrate);
-		}
-		//		_ASSERT( 0 );
-		});
-	s_depthB->setButtonListener([]() {
-		if (s_model) {
-			float boxzrate = (float)s_boxzSlider->getValue();
-			int chkg = (int)s_groupcheck->getValue();
-			int gid = -1;
-			if (chkg) {
+			});
+
+		s_kB->setButtonListener([]() {
+			if (s_model && s_lkradio && s_akradio && s_lkSlider && s_akSlider && s_groupcheck) {
+				int lindex = s_lkradio->getSelectIndex();
+				int aindex = s_akradio->getSelectIndex();
+				float cuslk = (float)s_lkSlider->getValue();
+				float cusak = (float)s_akSlider->getValue();
+				int chkg = (int)s_groupcheck->getValue();
+				int gid = -1;
+				if (chkg) {
+					CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+					if (curre) {
+						gid = curre->GetGroupid();
+					}
+					else {
+						gid = -1;
+					}
+				}
+				s_model->SetAllKData(gid, s_reindexmap[s_model], lindex, aindex, cuslk, cusak);
+			}
+			});
+		s_restB->setButtonListener([]() {
+			if (s_model && s_restSlider && s_fricSlider && s_groupcheck) {
+				float rest = (float)s_restSlider->getValue();
+				float fric = (float)s_fricSlider->getValue();
+				int chkg = (int)s_groupcheck->getValue();
+				int gid = -1;
+				if (chkg) {
+					CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+					if (curre) {
+						gid = curre->GetGroupid();
+					}
+					else {
+						gid = -1;
+					}
+				}
+				s_model->SetAllRestData(gid, s_reindexmap[s_model], rest, fric);
+			}
+			});
+		s_dmpB->setButtonListener([]() {
+			if (s_model && s_ldmpSlider && s_admpSlider && s_groupcheck) {
+				float ldmp = (float)s_ldmpSlider->getValue();
+				float admp = (float)s_admpSlider->getValue();
+				int chkg = (int)s_groupcheck->getValue();
+				int gid = -1;
+				if (chkg) {
+					CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+					if (curre) {
+						gid = curre->GetGroupid();
+					}
+					else {
+						gid = -1;
+					}
+				}
+				s_model->SetAllDmpData(gid, s_reindexmap[s_model], ldmp, admp);
+			}
+			});
+
+		s_groupB->setButtonListener([]() {
+			if (s_model) {
 				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
 				if (curre) {
-					gid = curre->GetGroupid();
-				}
-				else {
-					gid = -1;
-				}
-			}
-			s_model->SetAllBoxzrateData(gid, s_reindexmap[s_model], boxzrate);
-		}
-		//		_ASSERT( 0 );
-		});
-	s_btgB->setButtonListener([]() {
-		if (s_model) {
-			float btg = (float)s_btgSlider->getValue();
-			int chkg = (int)s_groupcheck->getValue();
-			int gid = -1;
-			if (chkg) {
-				CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-				if (curre) {
-					gid = curre->GetGroupid();
-				}
-				else {
-					gid = -1;
+					CColiIDDlg dlg(curre);
+					s_pcolidlg = &dlg;
+					s_undercolidlg = true;
+
+					dlg.DoModal();
+					if (dlg.m_setgroup == 1) {
+						if (s_model) {
+							s_model->SetColiIDtoGroup(curre);
+						}
+					}
+
+					s_undercolidlg = false;
+					s_pcolidlg = 0;
+
 				}
 			}
-			s_model->SetAllBtgData(gid, s_reindexmap[s_model], btg);
-		}
-		});
-	s_btforceB->setButtonListener([]() {
-		if (s_model) {
-			bool kinflag = s_btforce->getValue();
-			s_model->SetAllBtforceData(s_reindexmap[s_model], kinflag);
-		}
-		});
+			});
+		s_gcoliB->setButtonListener([]() {
+			if (s_model) {
+				if (s_bpWorld) {
+					CGColiIDDlg dlg(s_bpWorld->m_coliids, s_bpWorld->m_myselfflag);
+					s_pgcolidlg = &dlg;
+					s_undergcolidlg = true;
 
-	s_rigidWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
-	s_rigidWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
+					int dlgret = (int)dlg.DoModal();
+					if (dlgret == IDOK) {
+						s_bpWorld->m_coliids = dlg.m_coliids;
+						s_bpWorld->m_myselfflag = dlg.m_myself;
+						s_bpWorld->RemakeG();
+					}
 
-	//１クリック目問題対応
-	s_rigidWnd->refreshPosAndSize();//2022/09/20
+					s_undergcolidlg = false;
+					s_pgcolidlg = 0;
+				}
+			}
+			});
+
+		s_massB->setButtonListener([]() {
+			if (s_model && s_massSlider && s_groupcheck) {
+				float mass = (float)s_massSlider->getValue();
+				int chkg = (int)s_groupcheck->getValue();
+				int gid = -1;
+				if (chkg) {
+					CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+					if (curre) {
+						gid = curre->GetGroupid();
+					}
+					else {
+						gid = -1;
+					}
+				}
+				s_model->SetAllMassData(gid, s_reindexmap[s_model], mass);
+			}
+			//		_ASSERT( 0 );
+			});
+		s_thicknessB->setButtonListener([]() {
+			if (s_model && s_sphrateSlider && s_groupcheck) {
+				float sphrate = (float)s_sphrateSlider->getValue();
+				int chkg = (int)s_groupcheck->getValue();
+				int gid = -1;
+				if (chkg) {
+					CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+					if (curre) {
+						gid = curre->GetGroupid();
+					}
+					else {
+						gid = -1;
+					}
+				}
+				s_model->SetAllSphrateData(gid, s_reindexmap[s_model], sphrate);
+			}
+			//		_ASSERT( 0 );
+			});
+		s_depthB->setButtonListener([]() {
+			if (s_model && s_boxzSlider && s_groupcheck) {
+				float boxzrate = (float)s_boxzSlider->getValue();
+				int chkg = (int)s_groupcheck->getValue();
+				int gid = -1;
+				if (chkg) {
+					CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+					if (curre) {
+						gid = curre->GetGroupid();
+					}
+					else {
+						gid = -1;
+					}
+				}
+				s_model->SetAllBoxzrateData(gid, s_reindexmap[s_model], boxzrate);
+			}
+			//		_ASSERT( 0 );
+			});
+		s_btgB->setButtonListener([]() {
+			if (s_model && s_btgSlider && s_groupcheck) {
+				float btg = (float)s_btgSlider->getValue();
+				int chkg = (int)s_groupcheck->getValue();
+				int gid = -1;
+				if (chkg) {
+					CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
+					if (curre) {
+						gid = curre->GetGroupid();
+					}
+					else {
+						gid = -1;
+					}
+				}
+				s_model->SetAllBtgData(gid, s_reindexmap[s_model], btg);
+			}
+			});
+		s_btforceB->setButtonListener([]() {
+			if (s_model && s_btforce) {
+				bool kinflag = s_btforce->getValue();
+				s_model->SetAllBtforceData(s_reindexmap[s_model], kinflag);
+			}
+			});
+
+		s_rigidWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
+		s_rigidWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
+
+		//１クリック目問題対応
+		s_rigidWnd->refreshPosAndSize();//2022/09/20
 
 
-	s_rigidWnd->callRewrite();						//再描画
-	s_rigidWnd->setVisible(false);
+		s_rigidWnd->callRewrite();						//再描画
+		s_rigidWnd->setVisible(false);
 
-	s_rcrigidwnd.top = s_sidemenuheight;
-	s_rcrigidwnd.left = 0;
+		s_rcrigidwnd.top = s_sidemenuheight;
+		s_rcrigidwnd.left = 0;
 
-	s_rcrigidwnd.bottom = s_sideheight;
-	s_rcrigidwnd.right = s_sidewidth;
+		s_rcrigidwnd.bottom = s_sideheight;
+		s_rcrigidwnd.right = s_sidewidth;
 
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
 
+	
 	return 0;
 }
 
@@ -27499,116 +28268,163 @@ int CreateImpulseWnd()
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 
-	s_impgroupcheck = new OWP_CheckBoxA(L"SetToAllRigidSMeansToSetSameGroup", 0);
-
-	s_impxSlider = new OWP_Slider(0.0, 50.0, -50.0);
-	s_impySlider = new OWP_Slider(0.0, 50.0, -50.0);
-	s_impzSlider = new OWP_Slider(0.0, 50.0, -50.0);
-	s_impscaleSlider = new OWP_Slider(1.0, 10.0, 0.0);
-	s_impxlabel = new OWP_Label(L"Impulse X");
-	s_impylabel = new OWP_Label(L"Impulse Y");
-	s_impzlabel = new OWP_Label(L"Impulse Z");
-	s_impscalelabel = new OWP_Label(L"ScaleOfImpulse ");
-	s_impallB = new OWP_Button(L"SetImpulseToAllRigies");
-
-	int slw = 350;
-
-	s_impzSlider->setSize(WindowSize(slw, 40));
-	s_impySlider->setSize(WindowSize(slw, 40));
-
-	s_impWnd->addParts(*s_impgroupcheck);
-	s_impWnd->addParts(*s_impxlabel);
-	s_impWnd->addParts(*s_impxSlider);
-	s_impWnd->addParts(*s_impylabel);
-	s_impWnd->addParts(*s_impySlider);
-	s_impWnd->addParts(*s_impzlabel);
-	s_impWnd->addParts(*s_impzSlider);
-	s_impWnd->addParts(*s_impscalelabel);
-	s_impWnd->addParts(*s_impscaleSlider);
-	s_impWnd->addParts(*s_impallB);
-	/////////
-	s_dsimpulsectrls.push_back(s_impgroupcheck);
-	s_dsimpulsectrls.push_back(s_impxlabel);
-	s_dsimpulsectrls.push_back(s_impxSlider);
-	s_dsimpulsectrls.push_back(s_impylabel);
-	s_dsimpulsectrls.push_back(s_impySlider);
-	s_dsimpulsectrls.push_back(s_impzlabel);
-	s_dsimpulsectrls.push_back(s_impzSlider);
-	s_dsimpulsectrls.push_back(s_impscalelabel);
-	s_dsimpulsectrls.push_back(s_impscaleSlider);
-	s_dsimpulsectrls.push_back(s_impallB);
-
-
-	s_impWnd->setCloseListener([]() {
-		if (s_model) {
-			s_IcloseFlag = true;
+	if (s_impWnd) {
+		s_impgroupcheck = new OWP_CheckBoxA(L"SetToAllRigidSMeansToSetSameGroup", 0);
+		if (!s_impgroupcheck) {
+			_ASSERT(0);
+			return 1;
 		}
-		});
+		s_impxSlider = new OWP_Slider(0.0, 50.0, -50.0);
+		if (!s_impxSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_impySlider = new OWP_Slider(0.0, 50.0, -50.0);
+		if (!s_impySlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_impzSlider = new OWP_Slider(0.0, 50.0, -50.0);
+		if (!s_impzSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_impscaleSlider = new OWP_Slider(1.0, 10.0, 0.0);
+		if (!s_impscaleSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_impxlabel = new OWP_Label(L"Impulse X");
+		if (!s_impxlabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_impylabel = new OWP_Label(L"Impulse Y");
+		if (!s_impylabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_impzlabel = new OWP_Label(L"Impulse Z");
+		if (!s_impzlabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_impscalelabel = new OWP_Label(L"ScaleOfImpulse ");
+		if (!s_impscalelabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_impallB = new OWP_Button(L"SetImpulseToAllRigies");
+		if (!s_impallB) {
+			_ASSERT(0);
+			return 1;
+		}
 
-	s_impzSlider->setCursorListener([]() {
-		if (s_model) {
-			float val = (float)s_impzSlider->getValue();
+		int slw = 350;
+
+		s_impzSlider->setSize(WindowSize(slw, 40));
+		s_impySlider->setSize(WindowSize(slw, 40));
+
+		s_impWnd->addParts(*s_impgroupcheck);
+		s_impWnd->addParts(*s_impxlabel);
+		s_impWnd->addParts(*s_impxSlider);
+		s_impWnd->addParts(*s_impylabel);
+		s_impWnd->addParts(*s_impySlider);
+		s_impWnd->addParts(*s_impzlabel);
+		s_impWnd->addParts(*s_impzSlider);
+		s_impWnd->addParts(*s_impscalelabel);
+		s_impWnd->addParts(*s_impscaleSlider);
+		s_impWnd->addParts(*s_impallB);
+		/////////
+		s_dsimpulsectrls.push_back(s_impgroupcheck);
+		s_dsimpulsectrls.push_back(s_impxlabel);
+		s_dsimpulsectrls.push_back(s_impxSlider);
+		s_dsimpulsectrls.push_back(s_impylabel);
+		s_dsimpulsectrls.push_back(s_impySlider);
+		s_dsimpulsectrls.push_back(s_impzlabel);
+		s_dsimpulsectrls.push_back(s_impzSlider);
+		s_dsimpulsectrls.push_back(s_impscalelabel);
+		s_dsimpulsectrls.push_back(s_impscaleSlider);
+		s_dsimpulsectrls.push_back(s_impallB);
+
+
+		s_impWnd->setCloseListener([]() {
 			if (s_model) {
-				s_model->SetImp(s_curboneno, 2, val);
+				s_IcloseFlag = true;
 			}
-			s_impWnd->callRewrite();						//再描画
-		}
-		});
-	s_impySlider->setCursorListener([]() {
-		if (s_model) {
-			float val = (float)s_impySlider->getValue();
-			if (s_model) {
-				s_model->SetImp(s_curboneno, 1, val);
-			}
-			s_impWnd->callRewrite();						//再描画
-		}
-		});
-	s_impxSlider->setCursorListener([]() {
-		if (s_model) {
-			float val = (float)s_impxSlider->getValue();
-			if (s_model) {
-				s_model->SetImp(s_curboneno, 0, val);
-			}
-			s_impWnd->callRewrite();						//再描画
-		}
-		});
-	s_impscaleSlider->setCursorListener([]() {
-		if (s_model) {
-			float scale = (float)s_impscaleSlider->getValue();
-			g_impscale = scale;
-			s_impWnd->callRewrite();						//再描画
-		}
-		});
-	s_impallB->setButtonListener([]() {
-		if (s_model) {
-			float impx = (float)s_impxSlider->getValue();
-			float impy = (float)s_impySlider->getValue();
-			float impz = (float)s_impzSlider->getValue();
-			int chkg = (int)s_impgroupcheck->getValue();
-			int gid = -1;
-			if (chkg) {
-				CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
-				if (curre) {
-					gid = curre->GetGroupid();
+			});
+
+		s_impzSlider->setCursorListener([]() {
+			if (s_model && s_impWnd && s_impzSlider) {
+				float val = (float)s_impzSlider->getValue();
+				if (s_model) {
+					s_model->SetImp(s_curboneno, 2, val);
 				}
-				else {
-					gid = -1;
-				}
+				s_impWnd->callRewrite();						//再描画
 			}
-			s_model->SetAllImpulseData(gid, impx, impy, impz);
-		}
-		});
-	//////////
+			});
+		s_impySlider->setCursorListener([]() {
+			if (s_model && s_impWnd && s_impySlider) {
+				float val = (float)s_impySlider->getValue();
+				if (s_model) {
+					s_model->SetImp(s_curboneno, 1, val);
+				}
+				s_impWnd->callRewrite();						//再描画
+			}
+			});
+		s_impxSlider->setCursorListener([]() {
+			if (s_model && s_impWnd && s_impxSlider) {
+				float val = (float)s_impxSlider->getValue();
+				if (s_model) {
+					s_model->SetImp(s_curboneno, 0, val);
+				}
+				s_impWnd->callRewrite();						//再描画
+			}
+			});
+		s_impscaleSlider->setCursorListener([]() {
+			if (s_model && s_impWnd && s_impscaleSlider) {
+				float scale = (float)s_impscaleSlider->getValue();
+				g_impscale = scale;
+				s_impWnd->callRewrite();						//再描画
+			}
+			});
+		s_impallB->setButtonListener([]() {
+			if (s_model && s_impxSlider && s_impySlider && s_impzSlider && s_impgroupcheck) {
+				float impx = (float)s_impxSlider->getValue();
+				float impy = (float)s_impySlider->getValue();
+				float impz = (float)s_impzSlider->getValue();
+				int chkg = (int)s_impgroupcheck->getValue();
+				int gid = -1;
+				if (chkg) {
+					CRigidElem* curre = s_model->GetRgdRigidElem(s_rgdindexmap[s_model], s_curboneno);
+					if (curre) {
+						gid = curre->GetGroupid();
+					}
+					else {
+						gid = -1;
+					}
+				}
+				s_model->SetAllImpulseData(gid, impx, impy, impz);
+			}
+			});
+		//////////
 
 
-	s_impWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
-	s_impWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
+		s_impWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
+		s_impWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
 
-	//１クリック目問題対応
-	s_impWnd->refreshPosAndSize();//2022/09/20
+		//１クリック目問題対応
+		s_impWnd->refreshPosAndSize();//2022/09/20
 
-	s_impWnd->callRewrite();
+		s_impWnd->callRewrite();
 
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
+
+	
 	return 0;
 }
 
@@ -27641,137 +28457,187 @@ int CreateGPlaneWnd()
 		true,					//閉じられるか否か
 		true);					//サイズ変更の可否
 
-	s_ghSlider = new OWP_Slider(-1.5, 5.0, -15.0);
-	s_gsizexSlider = new OWP_Slider(5.0, 50.0, -50.0);
-	s_gsizezSlider = new OWP_Slider(5.0, 50.0, -50.0);
-	s_ghlabel = new OWP_Label(L"Height");
-	s_gsizexlabel = new OWP_Label(L"SizeOfX");
-	s_gsizezlabel = new OWP_Label(L"SizeOfZ");
-	s_gpdisp = new OWP_CheckBoxA(L"Display", 1);
-
-	s_grestSlider = new OWP_Slider(0.5, 1.0, 0.0);
-	s_gfricSlider = new OWP_Slider(0.5, 1.0, 0.0);
-	s_grestlabel = new OWP_Label(L"Restitution");
-	s_gfriclabel = new OWP_Label(L"Friction");
-
-
-	int slw = 350;
-
-	s_ghSlider->setSize(WindowSize(slw, 40));
-	s_gsizexSlider->setSize(WindowSize(slw, 40));
-	s_gsizezSlider->setSize(WindowSize(slw, 40));
-	s_grestSlider->setSize(WindowSize(slw, 40));
-	s_gfricSlider->setSize(WindowSize(slw, 40));
-
-	s_gpWnd->addParts(*s_ghlabel);
-	s_gpWnd->addParts(*s_ghSlider);
-	s_gpWnd->addParts(*s_gsizexlabel);
-	s_gpWnd->addParts(*s_gsizexSlider);
-	s_gpWnd->addParts(*s_gsizezlabel);
-	s_gpWnd->addParts(*s_gsizezSlider);
-	s_gpWnd->addParts(*s_gpdisp);
-
-	s_gpWnd->addParts(*s_grestlabel);
-	s_gpWnd->addParts(*s_grestSlider);
-	s_gpWnd->addParts(*s_gfriclabel);
-	s_gpWnd->addParts(*s_gfricSlider);
-	/////////
-	s_dsgpctrls.push_back(s_ghlabel);
-	s_dsgpctrls.push_back(s_ghSlider);
-	s_dsgpctrls.push_back(s_gsizexlabel);
-	s_dsgpctrls.push_back(s_gsizexSlider);
-	s_dsgpctrls.push_back(s_gsizezlabel);
-	s_dsgpctrls.push_back(s_gsizezSlider);
-	s_dsgpctrls.push_back(s_gpdisp);
-
-	s_dsgpctrls.push_back(s_grestlabel);
-	s_dsgpctrls.push_back(s_grestSlider);
-	s_dsgpctrls.push_back(s_gfriclabel);
-	s_dsgpctrls.push_back(s_gfricSlider);
-
-	s_gpWnd->setCloseListener([]() {
-		if (s_model) {
-			s_GcloseFlag = true;
+	if (s_gpWnd) {
+		s_ghSlider = new OWP_Slider(-1.5, 5.0, -15.0);
+		if (!s_ghSlider) {
+			_ASSERT(0);
+			return 1;
 		}
-		});
+		s_gsizexSlider = new OWP_Slider(5.0, 50.0, -50.0);
+		if (!s_gsizexSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_gsizezSlider = new OWP_Slider(5.0, 50.0, -50.0);
+		if (!s_gsizezSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_ghlabel = new OWP_Label(L"Height");
+		if (!s_ghlabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_gsizexlabel = new OWP_Label(L"SizeOfX");
+		if (!s_gsizexlabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_gsizezlabel = new OWP_Label(L"SizeOfZ");
+		if (!s_gsizezlabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_gpdisp = new OWP_CheckBoxA(L"Display", 1);
+		if (!s_gpdisp) {
+			_ASSERT(0);
+			return 1;
+		}
 
-	s_ghSlider->setCursorListener([]() {
-		if (s_model) {
-			if (s_bpWorld) {
-				s_bpWorld->m_gplaneh = (float)s_ghSlider->getValue();
-				s_bpWorld->RemakeG();
+		s_grestSlider = new OWP_Slider(0.5, 1.0, 0.0);
+		if (!s_grestSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_gfricSlider = new OWP_Slider(0.5, 1.0, 0.0);
+		if (!s_gfricSlider) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_grestlabel = new OWP_Label(L"Restitution");
+		if (!s_grestlabel) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_gfriclabel = new OWP_Label(L"Friction");
+		if (!s_gfriclabel) {
+			_ASSERT(0);
+			return 1;
+		}
 
-				ChaVector3 tra(0.0f, 0.0f, 0.0f);
-				ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
-				CallF(s_gplane->MultDispObj(mult, tra), return);
 
-				s_gpWnd->callRewrite();						//再描画
+		int slw = 350;
+
+		s_ghSlider->setSize(WindowSize(slw, 40));
+		s_gsizexSlider->setSize(WindowSize(slw, 40));
+		s_gsizezSlider->setSize(WindowSize(slw, 40));
+		s_grestSlider->setSize(WindowSize(slw, 40));
+		s_gfricSlider->setSize(WindowSize(slw, 40));
+
+		s_gpWnd->addParts(*s_ghlabel);
+		s_gpWnd->addParts(*s_ghSlider);
+		s_gpWnd->addParts(*s_gsizexlabel);
+		s_gpWnd->addParts(*s_gsizexSlider);
+		s_gpWnd->addParts(*s_gsizezlabel);
+		s_gpWnd->addParts(*s_gsizezSlider);
+		s_gpWnd->addParts(*s_gpdisp);
+
+		s_gpWnd->addParts(*s_grestlabel);
+		s_gpWnd->addParts(*s_grestSlider);
+		s_gpWnd->addParts(*s_gfriclabel);
+		s_gpWnd->addParts(*s_gfricSlider);
+		/////////
+		s_dsgpctrls.push_back(s_ghlabel);
+		s_dsgpctrls.push_back(s_ghSlider);
+		s_dsgpctrls.push_back(s_gsizexlabel);
+		s_dsgpctrls.push_back(s_gsizexSlider);
+		s_dsgpctrls.push_back(s_gsizezlabel);
+		s_dsgpctrls.push_back(s_gsizezSlider);
+		s_dsgpctrls.push_back(s_gpdisp);
+
+		s_dsgpctrls.push_back(s_grestlabel);
+		s_dsgpctrls.push_back(s_grestSlider);
+		s_dsgpctrls.push_back(s_gfriclabel);
+		s_dsgpctrls.push_back(s_gfricSlider);
+
+		s_gpWnd->setCloseListener([]() {
+			if (s_model) {
+				s_GcloseFlag = true;
 			}
-		}
-		});
-	s_gsizexSlider->setCursorListener([]() {
-		if (s_model) {
-			if (s_bpWorld && s_gplane) {
-				s_bpWorld->m_gplanesize.x = (float)s_gsizexSlider->getValue();
+			});
 
-				ChaVector3 tra(0.0f, 0.0f, 0.0f);
-				ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
-				CallF(s_gplane->MultDispObj(mult, tra), return);
-				s_gpWnd->callRewrite();						//再描画
+		s_ghSlider->setCursorListener([]() {
+			if (s_model) {
+				if (s_bpWorld && s_gpWnd && s_ghSlider) {
+					s_bpWorld->m_gplaneh = (float)s_ghSlider->getValue();
+					s_bpWorld->RemakeG();
+
+					ChaVector3 tra(0.0f, 0.0f, 0.0f);
+					ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
+					CallF(s_gplane->MultDispObj(mult, tra), return);
+
+					s_gpWnd->callRewrite();						//再描画
+				}
 			}
-		}
-		});
-	s_gsizezSlider->setCursorListener([]() {
-		if (s_model) {
-			if (s_bpWorld && s_gplane) {
-				s_bpWorld->m_gplanesize.y = (float)s_gsizezSlider->getValue();
+			});
+		s_gsizexSlider->setCursorListener([]() {
+			if (s_model && s_gpWnd && s_gsizexSlider) {
+				if (s_bpWorld && s_gplane) {
+					s_bpWorld->m_gplanesize.x = (float)s_gsizexSlider->getValue();
 
-				ChaVector3 tra(0.0f, 0.0f, 0.0f);
-				ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
-				CallF(s_gplane->MultDispObj(mult, tra), return);
-				s_gpWnd->callRewrite();						//再描画
+					ChaVector3 tra(0.0f, 0.0f, 0.0f);
+					ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
+					CallF(s_gplane->MultDispObj(mult, tra), return);
+					s_gpWnd->callRewrite();						//再描画
+				}
 			}
-		}
-		});
-	s_gpdisp->setButtonListener([]() {
-		if (s_model) {
-			if (s_bpWorld) {
-				bool dispflag = s_gpdisp->getValue();
-				s_bpWorld->m_gplanedisp = (int)dispflag;
-				s_gpWnd->callRewrite();						//再描画
+			});
+		s_gsizezSlider->setCursorListener([]() {
+			if (s_model && s_gpWnd && s_gsizezSlider) {
+				if (s_bpWorld && s_gplane) {
+					s_bpWorld->m_gplanesize.y = (float)s_gsizezSlider->getValue();
+
+					ChaVector3 tra(0.0f, 0.0f, 0.0f);
+					ChaVector3 mult(s_bpWorld->m_gplanesize.x, 1.0f, s_bpWorld->m_gplanesize.y);
+					CallF(s_gplane->MultDispObj(mult, tra), return);
+					s_gpWnd->callRewrite();						//再描画
+				}
 			}
-		}
-		});
-	s_grestSlider->setCursorListener([]() {
-		if (s_model) {
-			if (s_bpWorld && s_gplane) {
-				s_bpWorld->m_restitution = (float)s_grestSlider->getValue();
-				s_bpWorld->RemakeG();
-
-				s_gpWnd->callRewrite();						//再描画
+			});
+		s_gpdisp->setButtonListener([]() {
+			if (s_model && s_gpWnd && s_gpdisp) {
+				if (s_bpWorld) {
+					bool dispflag = s_gpdisp->getValue();
+					s_bpWorld->m_gplanedisp = (int)dispflag;
+					s_gpWnd->callRewrite();						//再描画
+				}
 			}
-		}
-		});
-	s_gfricSlider->setCursorListener([]() {
-		if (s_model) {
-			if (s_bpWorld && s_gplane) {
-				s_bpWorld->m_friction = (float)s_gfricSlider->getValue();
-				s_bpWorld->RemakeG();
+			});
+		s_grestSlider->setCursorListener([]() {
+			if (s_model && s_gpWnd && s_grestSlider) {
+				if (s_bpWorld && s_gplane) {
+					s_bpWorld->m_restitution = (float)s_grestSlider->getValue();
+					s_bpWorld->RemakeG();
 
-				s_gpWnd->callRewrite();						//再描画
+					s_gpWnd->callRewrite();						//再描画
+				}
 			}
-		}
-		});
+			});
+		s_gfricSlider->setCursorListener([]() {
+			if (s_model && s_gpWnd && s_gfricSlider) {
+				if (s_bpWorld && s_gplane) {
+					s_bpWorld->m_friction = (float)s_gfricSlider->getValue();
+					s_bpWorld->RemakeG();
+
+					s_gpWnd->callRewrite();						//再描画
+				}
+			}
+			});
 
 
-	s_gpWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
-	s_gpWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
+		s_gpWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
+		s_gpWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
 
-	//１クリック目問題対応
-	s_gpWnd->refreshPosAndSize();//2022/09/20
+		//１クリック目問題対応
+		s_gpWnd->refreshPosAndSize();//2022/09/20
 
-	s_gpWnd->callRewrite();
-
+		s_gpWnd->callRewrite();
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
+	
 	return 0;
 }
 
@@ -27799,211 +28665,285 @@ int CreateToolWnd()
 
 	//s_toolWnd->callRewrite();
 
-
-	s_toolSelBoneB = new OWP_Button(_T("コマンド対象ボーン target bone"));
-	s_toolSelectCopyFileName = new OWP_Button(_T("コピー履歴選択 sel cp history"));
-	s_toolCopyB = new OWP_Button(_T("コピー copy"));
-	s_toolSymCopyB = new OWP_Button(_T("対称コピー sym copy"));
-	//s_toolCutB = new OWP_Button(_T("カット"));
-	s_toolPasteB = new OWP_Button(_T("ペースト paste"));
-	s_toolInitMPB = new OWP_Button(_T("姿勢初期化 init"));
-	//s_toolDeleteB = new OWP_Button(_T("削除"));
-	//s_toolMarkB = new OWP_Button(_T("マーク作成"));
-	s_toolMotPropB = new OWP_Button(_T("プロパティ property"));
-	s_toolFilter1B = new OWP_Button(_T("平滑化(all) smoothing"));
-	s_toolFilter2B = new OWP_Button(_T("平滑化(Parent One) smoothing"));
-	s_toolFilter3B = new OWP_Button(_T("平滑化(Parent Deeper) smoothing"));
-	s_toolInterpolate1B = new OWP_Button(_T("補間(all) interpolate"));
-	s_toolInterpolate2B = new OWP_Button(_T("補間(Parent One) interpolate"));
-	s_toolInterpolate3B = new OWP_Button(_T("補間(Parent Deeper) interpolate"));
-	s_toolZeroFrameB = new OWP_Button(_T("Edit 0 Frame"));
-	s_toolSkipRenderBoneMarkB = new OWP_Button(_T("jointマークスキップ(Deeper)"));
-	s_toolSkipRenderBoneMarkB2 = new OWP_Button(_T("jointマークスキップReset(Deeper)"));
-	//s_tool180deg = new OWP_Button(_T("180度修正 180deg Adjust Euler"));
-	s_toolScaleInitAllB = new OWP_Button(_T("ScaleAllInit(ギザギザしたら押す)"));
-
-	s_toolWnd->addParts(*s_toolSelBoneB);
-	s_toolWnd->addParts(*s_toolSelectCopyFileName);
-	s_toolWnd->addParts(*s_toolCopyB);
-	s_toolWnd->addParts(*s_toolSymCopyB);
-	s_toolWnd->addParts(*s_toolPasteB);
-	s_toolWnd->addParts(*s_toolInitMPB);
-	//s_toolWnd->addParts(*s_toolMarkB);
-	s_toolWnd->addParts(*s_toolMotPropB);
-	s_toolWnd->addParts(*s_toolFilter1B);
-	s_toolWnd->addParts(*s_toolFilter2B);
-	s_toolWnd->addParts(*s_toolFilter3B);
-	s_toolWnd->addParts(*s_toolInterpolate1B);
-	s_toolWnd->addParts(*s_toolInterpolate2B);
-	s_toolWnd->addParts(*s_toolInterpolate3B);
-	s_toolWnd->addParts(*s_toolZeroFrameB);
-	s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB);
-	s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB2);
-	//s_toolWnd->addParts(*s_tool180deg);
-	s_toolWnd->addParts(*s_toolScaleInitAllB);
-
-	s_dstoolctrls.push_back(s_toolSelBoneB);
-	s_dstoolctrls.push_back(s_toolCopyB);
-	s_dstoolctrls.push_back(s_toolSymCopyB);
-	s_dstoolctrls.push_back(s_toolPasteB);
-	s_dstoolctrls.push_back(s_toolInitMPB);
-	//s_dstoolctrls.push_back(s_toolMarkB);
-	s_dstoolctrls.push_back(s_toolMotPropB);
-	s_dstoolctrls.push_back(s_toolFilter1B);
-	s_dstoolctrls.push_back(s_toolFilter2B);
-	s_dstoolctrls.push_back(s_toolFilter3B);
-	s_dstoolctrls.push_back(s_toolInterpolate1B);
-	s_dstoolctrls.push_back(s_toolInterpolate2B);
-	s_dstoolctrls.push_back(s_toolInterpolate3B);
-	s_dstoolctrls.push_back(s_toolZeroFrameB);
-	s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB);
-	s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB2);
-	//s_dstoolctrls.push_back(s_tool180deg);
-	s_dstoolctrls.push_back(s_toolScaleInitAllB);
-
-
-	s_toolWnd->setCloseListener([]() {
-		if (s_model) {
-			if (s_closetoolFlag == false) {
-				s_closetoolFlag = true;
-			}
+	if (s_toolWnd) {
+		s_toolSelBoneB = new OWP_Button(_T("コマンド対象ボーン target bone"));
+		if (!s_toolSelBoneB) {
+			_ASSERT(0);
+			return 1;
 		}
-		});
-	//s_toolWnd->setHoverListener([]() { SetCapture(s_toolWnd->getHWnd()); });
-	//s_toolWnd->setLeaveListener([]() { ReleaseCapture(); });
-	s_toolSelectCopyFileName->setButtonListener([]() {
-		if (s_model) {
-			if (s_selCopyHisotryFlag == false) {
-				s_selCopyHisotryFlag = true;
-			}
+		s_toolSelectCopyFileName = new OWP_Button(_T("コピー履歴選択 sel cp history"));
+		if (!s_toolSelectCopyFileName) {
+			_ASSERT(0);
+			return 1;
 		}
-		});
-	s_toolCopyB->setButtonListener([]() {
-		if (s_model) {
-			if (s_copyFlag == false) {
-				s_copyFlag = true;
-			}
+		s_toolCopyB = new OWP_Button(_T("コピー copy"));
+		if (!s_toolCopyB) {
+			_ASSERT(0);
+			return 1;
 		}
-		});
-	s_toolZeroFrameB->setButtonListener([]() {
-		if (s_model) {
-			if (s_owpLTimeline) {
-				if (s_zeroFrameFlag == false) {
-					s_LstopFlag = true;
-					g_previewFlag = 0;
-					s_LcursorFlag = true;
-					s_zeroFrameFlag = true;
+		s_toolSymCopyB = new OWP_Button(_T("対称コピー sym copy"));
+		if (!s_toolSymCopyB) {
+			_ASSERT(0);
+			return 1;
+		}
+		//s_toolCutB = new OWP_Button(_T("カット"));
+		s_toolPasteB = new OWP_Button(_T("ペースト paste"));
+		if (!s_toolPasteB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_toolInitMPB = new OWP_Button(_T("姿勢初期化 init"));
+		if (!s_toolInitMPB) {
+			_ASSERT(0);
+			return 1;
+		}
+		//s_toolDeleteB = new OWP_Button(_T("削除"));
+		//s_toolMarkB = new OWP_Button(_T("マーク作成"));
+		s_toolMotPropB = new OWP_Button(_T("プロパティ property"));
+		if (!s_toolMotPropB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_toolFilter1B = new OWP_Button(_T("平滑化(all) smoothing"));
+		if (!s_toolFilter1B) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_toolFilter2B = new OWP_Button(_T("平滑化(Parent One) smoothing"));
+		if (!s_toolFilter2B) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_toolFilter3B = new OWP_Button(_T("平滑化(Parent Deeper) smoothing"));
+		if (!s_toolFilter3B) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_toolInterpolate1B = new OWP_Button(_T("補間(all) interpolate"));
+		if (!s_toolInterpolate1B) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_toolInterpolate2B = new OWP_Button(_T("補間(Parent One) interpolate"));
+		if (!s_toolInterpolate2B) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_toolInterpolate3B = new OWP_Button(_T("補間(Parent Deeper) interpolate"));
+		if (!s_toolInterpolate3B) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_toolZeroFrameB = new OWP_Button(_T("Edit 0 Frame"));
+		if (!s_toolZeroFrameB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_toolSkipRenderBoneMarkB = new OWP_Button(_T("jointマークスキップ(Deeper)"));
+		if (!s_toolSkipRenderBoneMarkB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_toolSkipRenderBoneMarkB2 = new OWP_Button(_T("jointマークスキップReset(Deeper)"));
+		if (!s_toolSkipRenderBoneMarkB2) {
+			_ASSERT(0);
+			return 1;
+		}
+		//s_tool180deg = new OWP_Button(_T("180度修正 180deg Adjust Euler"));
+		s_toolScaleInitAllB = new OWP_Button(_T("ScaleAllInit(ギザギザしたら押す)"));
+		if (!s_toolScaleInitAllB) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		s_toolWnd->addParts(*s_toolSelBoneB);
+		s_toolWnd->addParts(*s_toolSelectCopyFileName);
+		s_toolWnd->addParts(*s_toolCopyB);
+		s_toolWnd->addParts(*s_toolSymCopyB);
+		s_toolWnd->addParts(*s_toolPasteB);
+		s_toolWnd->addParts(*s_toolInitMPB);
+		//s_toolWnd->addParts(*s_toolMarkB);
+		s_toolWnd->addParts(*s_toolMotPropB);
+		s_toolWnd->addParts(*s_toolFilter1B);
+		s_toolWnd->addParts(*s_toolFilter2B);
+		s_toolWnd->addParts(*s_toolFilter3B);
+		s_toolWnd->addParts(*s_toolInterpolate1B);
+		s_toolWnd->addParts(*s_toolInterpolate2B);
+		s_toolWnd->addParts(*s_toolInterpolate3B);
+		s_toolWnd->addParts(*s_toolZeroFrameB);
+		s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB);
+		s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB2);
+		//s_toolWnd->addParts(*s_tool180deg);
+		s_toolWnd->addParts(*s_toolScaleInitAllB);
+
+		s_dstoolctrls.push_back(s_toolSelBoneB);
+		s_dstoolctrls.push_back(s_toolCopyB);
+		s_dstoolctrls.push_back(s_toolSymCopyB);
+		s_dstoolctrls.push_back(s_toolPasteB);
+		s_dstoolctrls.push_back(s_toolInitMPB);
+		//s_dstoolctrls.push_back(s_toolMarkB);
+		s_dstoolctrls.push_back(s_toolMotPropB);
+		s_dstoolctrls.push_back(s_toolFilter1B);
+		s_dstoolctrls.push_back(s_toolFilter2B);
+		s_dstoolctrls.push_back(s_toolFilter3B);
+		s_dstoolctrls.push_back(s_toolInterpolate1B);
+		s_dstoolctrls.push_back(s_toolInterpolate2B);
+		s_dstoolctrls.push_back(s_toolInterpolate3B);
+		s_dstoolctrls.push_back(s_toolZeroFrameB);
+		s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB);
+		s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB2);
+		//s_dstoolctrls.push_back(s_tool180deg);
+		s_dstoolctrls.push_back(s_toolScaleInitAllB);
+
+
+		s_toolWnd->setCloseListener([]() {
+			if (s_model) {
+				if (s_closetoolFlag == false) {
+					s_closetoolFlag = true;
 				}
 			}
-		}
-		});
+			});
+		//s_toolWnd->setHoverListener([]() { SetCapture(s_toolWnd->getHWnd()); });
+		//s_toolWnd->setLeaveListener([]() { ReleaseCapture(); });
+		s_toolSelectCopyFileName->setButtonListener([]() {
+			if (s_model) {
+				if (s_selCopyHisotryFlag == false) {
+					s_selCopyHisotryFlag = true;
+				}
+			}
+			});
+		s_toolCopyB->setButtonListener([]() {
+			if (s_model) {
+				if (s_copyFlag == false) {
+					s_copyFlag = true;
+				}
+			}
+			});
+		s_toolZeroFrameB->setButtonListener([]() {
+			if (s_model) {
+				if (s_owpLTimeline) {
+					if (s_zeroFrameFlag == false) {
+						s_LstopFlag = true;
+						g_previewFlag = 0;
+						s_LcursorFlag = true;
+						s_zeroFrameFlag = true;
+					}
+				}
+			}
+			});
 
-	s_toolSymCopyB->setButtonListener([]() {
-		if (s_model) {
-			if (s_symcopyFlag == false) {
-				s_symcopyFlag = true;
+		s_toolSymCopyB->setButtonListener([]() {
+			if (s_model) {
+				if (s_symcopyFlag == false) {
+					s_symcopyFlag = true;
+				}
 			}
-		}
-		});
-	s_toolPasteB->setButtonListener([]() {
-		if (s_model) {
-			if (s_pasteFlag == false) {
-				s_pasteFlag = true;
+			});
+		s_toolPasteB->setButtonListener([]() {
+			if (s_model) {
+				if (s_pasteFlag == false) {
+					s_pasteFlag = true;
+				}
 			}
-		}
-		});
-	s_toolMotPropB->setButtonListener([]() {
-		if (s_model) {
-			if (s_motpropFlag == false) {
-				s_motpropFlag = true;
+			});
+		s_toolMotPropB->setButtonListener([]() {
+			if (s_model) {
+				if (s_motpropFlag == false) {
+					s_motpropFlag = true;
+				}
 			}
-		}
-		});
-	//s_toolMarkB->setButtonListener( [](){ s_markFlag = true; } );
-	s_toolSelBoneB->setButtonListener([]() {
-		if (s_model) {
-			if (s_selboneFlag == false) {
-				s_selboneFlag = true;
+			});
+		//s_toolMarkB->setButtonListener( [](){ s_markFlag = true; } );
+		s_toolSelBoneB->setButtonListener([]() {
+			if (s_model) {
+				if (s_selboneFlag == false) {
+					s_selboneFlag = true;
+				}
 			}
-		}
-		});
-	s_toolInitMPB->setButtonListener([]() {
-		if (s_model) {
-			if (s_initmpFlag == false) {
-				s_initmpFlag = true;
+			});
+		s_toolInitMPB->setButtonListener([]() {
+			if (s_model) {
+				if (s_initmpFlag == false) {
+					s_initmpFlag = true;
+				}
 			}
-		}
-		});
-	s_toolFilter1B->setButtonListener([]() {
-		if (s_model) {
-			if (s_filterState == 0) {
-				s_filterState = 1;
-				//s_filternodlg = false;
+			});
+		s_toolFilter1B->setButtonListener([]() {
+			if (s_model) {
+				if (s_filterState == 0) {
+					s_filterState = 1;
+					//s_filternodlg = false;
+				}
 			}
-		}
-		});
-	s_toolFilter2B->setButtonListener([]() {
-		if (s_model) {
-			if (s_filterState == 0) {
-				s_filterState = 2;
-				//s_filternodlg = false;
+			});
+		s_toolFilter2B->setButtonListener([]() {
+			if (s_model) {
+				if (s_filterState == 0) {
+					s_filterState = 2;
+					//s_filternodlg = false;
+				}
 			}
-		}
-		});
-	s_toolFilter3B->setButtonListener([]() {
-		if (s_model) {
-			if (s_filterState == 0) {
-				s_filterState = 3;
-				//s_filternodlg = false;
+			});
+		s_toolFilter3B->setButtonListener([]() {
+			if (s_model) {
+				if (s_filterState == 0) {
+					s_filterState = 3;
+					//s_filternodlg = false;
+				}
 			}
-		}
-		});
-	s_toolInterpolate1B->setButtonListener([]() {
-		if (s_model && (s_interpolateState == 0)) {
-			s_interpolateState = 1;//all
-		}
-		});
-	s_toolInterpolate2B->setButtonListener([]() {
-		if (s_model && (s_interpolateState == 0)) {
-			s_interpolateState = 2;//parent one
-		}
-		});
-	s_toolInterpolate3B->setButtonListener([]() {
-		if (s_model && (s_interpolateState == 0)) {
-			s_interpolateState = 3;//parent deeper
-		}
-		});
-	s_toolSkipRenderBoneMarkB->setButtonListener([]() {
-		if (s_model && (s_skipJointMark == 0)) {
-			s_skipJointMark = 1;//deeper
-		}
-		});
-	s_toolSkipRenderBoneMarkB2->setButtonListener([]() {
-		if (s_model && (s_skipJointMark == 0)) {
-			s_skipJointMark = 2;//deeper
-		}
-		});
-	//s_tool180deg->setButtonListener([]() {
-	//	if (s_model && (s_180DegFlag == false)) {
-	//		s_180DegFlag = true;
-	//	}
-	//});
-	s_toolScaleInitAllB->setButtonListener([]() {
-		if (s_model && (s_scaleAllInitFlag == false)) {
-			s_scaleAllInitFlag = true;
-		}
-		});
+			});
+		s_toolInterpolate1B->setButtonListener([]() {
+			if (s_model && (s_interpolateState == 0)) {
+				s_interpolateState = 1;//all
+			}
+			});
+		s_toolInterpolate2B->setButtonListener([]() {
+			if (s_model && (s_interpolateState == 0)) {
+				s_interpolateState = 2;//parent one
+			}
+			});
+		s_toolInterpolate3B->setButtonListener([]() {
+			if (s_model && (s_interpolateState == 0)) {
+				s_interpolateState = 3;//parent deeper
+			}
+			});
+		s_toolSkipRenderBoneMarkB->setButtonListener([]() {
+			if (s_model && (s_skipJointMark == 0)) {
+				s_skipJointMark = 1;//deeper
+			}
+			});
+		s_toolSkipRenderBoneMarkB2->setButtonListener([]() {
+			if (s_model && (s_skipJointMark == 0)) {
+				s_skipJointMark = 2;//deeper
+			}
+			});
+		//s_tool180deg->setButtonListener([]() {
+		//	if (s_model && (s_180DegFlag == false)) {
+		//		s_180DegFlag = true;
+		//	}
+		//});
+		s_toolScaleInitAllB->setButtonListener([]() {
+			if (s_model && (s_scaleAllInitFlag == false)) {
+				s_scaleAllInitFlag = true;
+			}
+			});
 
 
-	s_rctoolwnd.top = 0;
-	s_rctoolwnd.left = 0;
-	s_toolWnd->setPos(WindowPos(0, s_2ndposy));
-	s_rctoolwnd.bottom = s_toolheight;
-	s_rctoolwnd.right = s_toolwidth;
+		s_rctoolwnd.top = 0;
+		s_rctoolwnd.left = 0;
+		s_toolWnd->setPos(WindowPos(0, s_2ndposy));
+		s_rctoolwnd.bottom = s_toolheight;
+		s_rctoolwnd.right = s_toolwidth;
 
 
-	s_toolWnd->autoResizeAllParts();
-	s_toolWnd->refreshPosAndSize();//これを呼ばないと1回目のクリック位置がずれることがある。
+		s_toolWnd->autoResizeAllParts();
+		s_toolWnd->refreshPosAndSize();//これを呼ばないと1回目のクリック位置がずれることがある。
+
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
 
 
 	return 0;
@@ -28069,81 +29009,93 @@ int CreateLayerWnd()
 			true);					//サイズ変更の可否
 	}
 
-	s_layerWnd->setVisible(false);
+	if (s_layerWnd) {
+		s_layerWnd->setVisible(false);
 
-	// レイヤーウィンドウパーツを作成
-	s_owpLayerTable = new OWP_LayerTable(_T("レイヤーテーブル"));
-	WCHAR label[256];
-	wcscpy_s(label, 256, L"dummy name");
-	s_owpLayerTable->newLine(label, 0);
-
-	// ウィンドウにウィンドウパーツを登録
-	s_layerWnd->addParts(*s_owpLayerTable);
-
-
-	s_layerWnd->setCloseListener([]() {
-		if (s_model) {
-			s_closeobjFlag = true;
+		// レイヤーウィンドウパーツを作成
+		s_owpLayerTable = new OWP_LayerTable(_T("レイヤーテーブル"));
+		if (!s_owpLayerTable) {
+			_ASSERT(0);
+			return 1;
 		}
-		});
+		WCHAR label[256];
+		wcscpy_s(label, 256, L"dummy name");
+		s_owpLayerTable->newLine(label, 0);
 
-	//レイヤーのカーソルリスナー
-	s_owpLayerTable->setCursorListener([]() {
-		//_tprintf_s( _T("CurrentLayer: Index=%3d Name=%s\n"),
-		//			owpLayerTable->getCurrentLine(),
-		//			owpLayerTable->getCurrentLineName().c_str() );
-		});
+		// ウィンドウにウィンドウパーツを登録
+		s_layerWnd->addParts(*s_owpLayerTable);
 
-	//レイヤーの移動リスナー
-	s_owpLayerTable->setLineShiftListener([](int from, int to) {
-		//_tprintf_s( _T("ShiftLayer: fromIndex=%3d toIndex=%3d\n"), from, to );
-		});
 
-	//レイヤーの可視状態変更リスナー
-	s_owpLayerTable->setChangeVisibleListener([](int index) {
-		if (s_model) {
-			CMQOObject* curobj = (CMQOObject*)(s_owpLayerTable->getObj(index));
-			if (curobj) {
-				if (s_owpLayerTable->getVisible(index)) {
-					curobj->SetDispFlag(1);
-				}
-				else {
-					curobj->SetDispFlag(0);
+		s_layerWnd->setCloseListener([]() {
+			if (s_model) {
+				s_closeobjFlag = true;
+			}
+			});
+
+		//レイヤーのカーソルリスナー
+		s_owpLayerTable->setCursorListener([]() {
+			//_tprintf_s( _T("CurrentLayer: Index=%3d Name=%s\n"),
+			//			owpLayerTable->getCurrentLine(),
+			//			owpLayerTable->getCurrentLineName().c_str() );
+			});
+
+		//レイヤーの移動リスナー
+		s_owpLayerTable->setLineShiftListener([](int from, int to) {
+			//_tprintf_s( _T("ShiftLayer: fromIndex=%3d toIndex=%3d\n"), from, to );
+			});
+
+		//レイヤーの可視状態変更リスナー
+		s_owpLayerTable->setChangeVisibleListener([](int index) {
+			if (s_model && s_owpLayerTable) {
+				CMQOObject* curobj = (CMQOObject*)(s_owpLayerTable->getObj(index));
+				if (curobj) {
+					if (s_owpLayerTable->getVisible(index)) {
+						curobj->SetDispFlag(1);
+					}
+					else {
+						curobj->SetDispFlag(0);
+					}
 				}
 			}
+			});
+
+		//レイヤーのロック状態変更リスナー
+		s_owpLayerTable->setChangeLockListener([](int index) {
+			//if( owpLayerTable->getLock(index) ){
+			//	_tprintf_s( _T("ChangeLock: Index=%3d Lock='True'  Name=%s\n"),
+			//				index,
+			//				owpLayerTable->getName(index).c_str() );
+			//}else{
+			//	_tprintf_s( _T("ChangeLock: Index=%3d Lock='False' Name=%s\n"),
+			//				index,
+			//				owpLayerTable->getName(index).c_str() );
+			//}
+			});
+
+		//レイヤーのプロパティコールリスナー
+		s_owpLayerTable->setCallPropertyListener([](int index) {
+			//_tprintf_s( _T("CallProperty: Index=%3d Name=%s\n"),
+			//			index,
+			//			owpLayerTable->getName(index).c_str() );
+			});
+
+		RECT wnd3drect;
+		if (s_mainhwnd) {
+			GetWindowRect(s_mainhwnd, &wnd3drect);
+			s_layerWnd->setPos(WindowPos(wnd3drect.left + 750, wnd3drect.top + 500));
 		}
-		});
+		else {
+			s_layerWnd->setPos(WindowPos(600, 200));
+		}
+		s_layerWnd->setVisible(false);
 
-	//レイヤーのロック状態変更リスナー
-	s_owpLayerTable->setChangeLockListener([](int index) {
-		//if( owpLayerTable->getLock(index) ){
-		//	_tprintf_s( _T("ChangeLock: Index=%3d Lock='True'  Name=%s\n"),
-		//				index,
-		//				owpLayerTable->getName(index).c_str() );
-		//}else{
-		//	_tprintf_s( _T("ChangeLock: Index=%3d Lock='False' Name=%s\n"),
-		//				index,
-		//				owpLayerTable->getName(index).c_str() );
-		//}
-		});
-
-	//レイヤーのプロパティコールリスナー
-	s_owpLayerTable->setCallPropertyListener([](int index) {
-		//_tprintf_s( _T("CallProperty: Index=%3d Name=%s\n"),
-		//			index,
-		//			owpLayerTable->getName(index).c_str() );
-		});
-
-	RECT wnd3drect;
-	if (s_mainhwnd) {
-		GetWindowRect(s_mainhwnd, &wnd3drect);
-		s_layerWnd->setPos(WindowPos(wnd3drect.left + 750, wnd3drect.top + 500));
 	}
 	else {
-		s_layerWnd->setPos(WindowPos(600, 200));
+		_ASSERT(0);
+		return 1;
 	}
-	s_layerWnd->setVisible(false);
 
+	
 	return 0;
 
 }
