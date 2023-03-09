@@ -977,8 +977,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 */
 
 /*
-* 2023/03/08
-* EditMot 1.2.0.16 RC4
+* 2023/03/09
+* EditMot 1.2.0.16 RC5
 * 
 * Rig処理修正
 *	UnderとPostに分けたのにも関わらず　フレーム範囲が広いと重かったのを修正
@@ -9223,12 +9223,12 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 	//	//}
 	//	StartBt(s_model, TRUE, 1, 1);
 	//	break;
-	//case IDC_PHYSICS_MV_SLIDER:
-	//	RollbackCurBoneNo();
-	//	g_physicsmvrate = (float)(g_SampleUI.GetSlider(IDC_PHYSICS_MV_SLIDER)->GetValue()) * 0.01f;
-	//	swprintf_s(sz, 100, L"EditRate : %.3f", g_physicsmvrate);
-	//	g_SampleUI.GetStatic(IDC_STATIC_PHYSICS_MV_SLIDER)->SetText(sz);
-	//	break;
+	case IDC_PHYSICS_MV_SLIDER:
+		RollbackCurBoneNo();
+		g_physicsmvrate = (float)(g_SampleUI.GetSlider(IDC_PHYSICS_MV_SLIDER)->GetValue()) * 0.01f;
+		swprintf_s(sz, 100, L"EditRate : %.3f", g_physicsmvrate);
+		g_SampleUI.GetStatic(IDC_STATIC_PHYSICS_MV_SLIDER)->SetText(sz);
+		break;
 	//	//case IDC_APPLY_BT:
 	//	//	if (s_model){
 	//	//		s_model->BulletSimulationStop();
@@ -27045,7 +27045,7 @@ int CreateSideMenuWnd()
 		0, 0, 0,				//カラー
 		true, true);					//サイズ変更の可否
 
-	if (!s_sidemenuWnd) {
+	if (s_sidemenuWnd) {
 		s_sidemenusp = new OWP_Separator(s_sidemenuWnd, true, 0.5, true);
 		if (!s_sidemenusp) {
 			_ASSERT(0);
