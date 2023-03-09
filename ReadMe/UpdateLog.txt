@@ -1,5 +1,5 @@
 2023/03/09
-　EditMot 1.2.0.16 RC5
+　EditMot 1.2.0.16 release
  
 　Rig処理修正
 	UnderとPostに分けたのにも関わらず　フレーム範囲が広いと重かったのを修正
