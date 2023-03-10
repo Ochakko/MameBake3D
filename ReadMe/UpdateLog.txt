@@ -1,3 +1,8 @@
+2023/03/10
+	動画
+	基本機能　モーキャプの動きを盛れ！
+	https://youtu.be/DV9gYsgDzz0
+
 2023/03/09
 　EditMot 1.2.0.16 release
  
