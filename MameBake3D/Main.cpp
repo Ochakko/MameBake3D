@@ -1548,6 +1548,7 @@ static bool s_undercolidlg = false;
 static CGColiIDDlg* s_pgcolidlg = 0;
 static bool s_undergcolidlg = false;
 static HWND s_motpropdlghwnd = 0;
+static HWND s_cameradollydlgwnd = 0;
 static HWND s_savechadlghwnd = 0;
 static HWND s_bvhdlghwnd = 0;
 static HWND s_saveredlghwnd = 0;
@@ -2624,6 +2625,8 @@ int InitializeMainWindow(CREATESTRUCT* createWindowArgs);
 static HWND CreateMainWindow();
 static HWND Create3DWnd();
 static CInfoWindow* CreateInfoWnd();
+static int CreateCameraDollyWnd();
+static int ShowCameraDollyDlg();
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -2715,6 +2718,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 
 LRESULT CALLBACK OpenMqoDlgProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK MotPropDlgProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK CameraDollyDlgProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK OpenBvhDlgProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
@@ -3479,6 +3483,8 @@ INT WINAPI wWinMain(
 	CreateInfoWnd();
 	CreateSideMenuWnd();
 	CreateMainMenuAimBarWnd();
+
+	CreateCameraDollyWnd();
 
 	//CallF( InitializeSdkObjects(), return 1 );
 
@@ -4408,6 +4414,7 @@ void InitApp()
 	s_motionpanel.delbutton.clear();
 	s_motionpanel.modelindex = -1;
 
+	s_cameradollydlgwnd = 0;
 
 	{
 		char strtitle[256];
@@ -6050,8 +6057,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		s_copyhistorydlg.DestroyWindow();
 	}
 
-
-
+	if (s_cameradollydlgwnd) {
+		DestroyWindow(s_cameradollydlgwnd);
+		s_cameradollydlgwnd = 0;
+	}
 
 	CloseDbgFile();
 	if (g_infownd) {
@@ -8170,6 +8179,11 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				RecalcAxisX_All();
 				ActivatePanel(1);
 				//return 0;
+				break;
+			case ID_CAMERADOLLY:
+				ActivatePanel(0);
+				ShowCameraDollyDlg();
+				ActivatePanel(1);
 				break;
 			case 29800:
 				ActivatePanel(0);
@@ -15252,6 +15266,89 @@ LRESULT CALLBACK MotPropDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 }
 
+LRESULT CALLBACK CameraDollyDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+
+
+	float posvalue = 0.0f;
+	WCHAR strpos[256] = { 0L };
+
+
+	switch (msg) {
+	case WM_INITDIALOG:
+	{
+		SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
+
+		swprintf_s(strpos, 256, L"%.3f", g_camEye.x);
+		SetDlgItemTextW(hDlgWnd, IDC_DOLLYX, strpos);
+		swprintf_s(strpos, 256, L"%.3f", g_camEye.y);
+		SetDlgItemTextW(hDlgWnd, IDC_DOLLYY, strpos);
+		swprintf_s(strpos, 256, L"%.3f", g_camEye.z);
+		SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ, strpos);
+
+		//RECT dlgrect;
+		//GetWindowRect(hDlgWnd, &dlgrect);
+		//SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+
+		s_cameradollydlgwnd = hDlgWnd;
+	}
+	//SetDlgItemText( hDlgWnd, IDC_MULT, strmult );
+	return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			ShowWindow(hDlgWnd, SW_HIDE);
+			break;
+		case IDCANCEL:
+			ShowWindow(hDlgWnd, SW_HIDE);
+			break;
+		case IDC_APPLYDOLLY:
+		{
+			GetDlgItemTextW(hDlgWnd, IDC_DOLLYX, strpos, 256);
+			posvalue = (float)_wtof(strpos);
+			if ((posvalue >= FLT_MIN) && (posvalue <= FLT_MAX)) {
+				g_camEye.x = posvalue;
+			}
+
+			GetDlgItemTextW(hDlgWnd, IDC_DOLLYY, strpos, 256);
+			posvalue = (float)_wtof(strpos);
+			if ((posvalue >= FLT_MIN) && (posvalue <= FLT_MAX)) {
+				g_camEye.y = posvalue;
+			}
+
+			GetDlgItemTextW(hDlgWnd, IDC_DOLLYZ, strpos, 256);
+			posvalue = (float)_wtof(strpos);
+			if ((posvalue >= FLT_MIN) && (posvalue <= FLT_MAX)) {
+				g_camEye.z = posvalue;
+			}
+
+			ChaVector3 diffv;
+			diffv = g_camEye - g_camtargetpos;
+			s_camdist = (float)ChaVector3LengthDbl(&diffv);
+
+			g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+			s_matView = g_Camera->GetViewMatrix();
+			s_matProj = g_Camera->GetProjMatrix();
+
+		}
+			break;
+		default:
+			return FALSE;
+		}
+		break;
+	case WM_CLOSE:
+		ShowWindow(hDlgWnd, SW_HIDE);
+		break;
+	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
+		return FALSE;
+	}
+	return TRUE;
+
+}
+
+
+
 LRESULT CALLBACK RetargetBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	WCHAR strnumcnt[1024] = { 0L };
@@ -16547,7 +16644,7 @@ int CreateMotionPanel()
 
 		}
 		else {
-			_ASSERT(0);
+			//_ASSERT(0);
 			return 0;//s_model == NULL : 0 return
 		}
 
@@ -31782,6 +31879,11 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				ActivatePanel(1);
 				//return 0;
 				break;
+			case ID_CAMERADOLLY:
+				ActivatePanel(0);
+				ShowCameraDollyDlg();
+				ActivatePanel(1);
+				break;
 			case 29800:
 				ActivatePanel(0);
 				//RegistKey();
@@ -32090,7 +32192,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.16 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.17 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -33365,6 +33467,7 @@ void InitDSValues()
 	s_pgcolidlg = 0;
 	s_undergcolidlg = false;
 	s_motpropdlghwnd = 0;
+	s_cameradollydlgwnd = 0;
 	s_savechadlghwnd = 0;
 	s_bvhdlghwnd = 0;
 	s_saveredlghwnd = 0;
@@ -39621,7 +39724,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.16 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.17 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
@@ -42205,3 +42308,39 @@ int DispTipRig()
 	return 0;
 }
 
+int CreateCameraDollyWnd()
+{
+
+	//CCameraDollyDlg dlg(g_camEye);
+	//dlg.DoModal();
+	//g_camEye = dlg.GetCameraPos();
+
+	HWND hDlgWnd = CreateDialogW((HMODULE)GetModuleHandle(NULL), 
+		MAKEINTRESOURCE(IDD_DOLLYDLG), s_mainhwnd, (DLGPROC)CameraDollyDlgProc);
+	if (hDlgWnd == NULL) {
+		return 1;
+	}
+	s_cameradollydlgwnd = hDlgWnd;
+	ShowWindow(s_cameradollydlgwnd, SW_HIDE);
+
+	return 0;
+}
+
+int ShowCameraDollyDlg()
+{
+	if (s_cameradollydlgwnd) {
+		WCHAR strpos[256] = { 0L };
+
+		swprintf_s(strpos, 256, L"%.3f", g_camEye.x);
+		SetDlgItemTextW(s_cameradollydlgwnd, IDC_DOLLYX, strpos);
+		swprintf_s(strpos, 256, L"%.3f", g_camEye.y);
+		SetDlgItemTextW(s_cameradollydlgwnd, IDC_DOLLYY, strpos);
+		swprintf_s(strpos, 256, L"%.3f", g_camEye.z);
+		SetDlgItemTextW(s_cameradollydlgwnd, IDC_DOLLYZ, strpos);
+
+		ShowWindow(s_cameradollydlgwnd, SW_SHOW);
+		UpdateWindow(s_cameradollydlgwnd);
+	}
+
+	return 0;
+}

@@ -270,7 +270,7 @@ int CMySprite::OnRender(ID3D11DeviceContext* pd3dImmediateContext, ID3D11Resourc
 
 	ID3D11ShaderResourceView* texresview = 0;
 	CTexElem* findtex = g_texbank->GetTexElem(m_texid);
-	if (findtex) {
+	if (findtex && findtex->IsValid()) {
 		texresview = findtex->GetPTex();
 		_ASSERT(texresview);
 	}

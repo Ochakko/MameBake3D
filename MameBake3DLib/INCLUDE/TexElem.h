@@ -63,6 +63,13 @@ public:
 		m_pool = srcval;
 	};
 
+	bool IsValid() {
+		return m_validflag;
+	}
+	void SetValidFlag(bool srcflag) {
+		m_validflag = srcflag;
+	}
+
 	//void SetTransCol( D3DXCOLOR srcval ){
 	//	m_transcol = srcval;
 	//};
@@ -78,7 +85,7 @@ private:
 	//D3DXCOLOR* m_transcol;
 	ID3D11Resource* m_ptex;
 	ID3D11ShaderResourceView* m_ResView;
-
+	bool m_validflag;
 };
 
 #endif

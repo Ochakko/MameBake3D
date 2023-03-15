@@ -4315,7 +4315,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 				eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
 			}
 			else {
-				_ASSERT(0);
+				//_ASSERT(0);
 				curwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
 				eulq = ChaMatrix2Q(curwm);
 			}
@@ -4329,7 +4329,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 		}
 	}
 	else {
-		_ASSERT(0);
+		//_ASSERT(0);
 		eulq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 	}
 
@@ -5438,7 +5438,7 @@ int CBone::SetLocalEul(bool limitdegflag, int srcmotid, double srcframe, ChaVect
 			}
 		}
 		else {
-			_ASSERT(0);
+			//_ASSERT(0);
 			return 1;
 		}
 	}
@@ -5497,7 +5497,7 @@ ChaVector3 CBone::GetLocalEul(bool limitdegflag, int srcmotid, double srcframe, 
 			}
 		}
 		else {
-			_ASSERT(0);
+			//_ASSERT(0);
 			reteul = ChaVector3(0.0f, 0.0f, 0.0f);
 		}
 	}
@@ -8037,7 +8037,7 @@ int CBone::CreateIndexedMotionPoint(int srcmotid, double animleng)
 	//###############################################
 
 	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
-		_ASSERT(0);
+		//_ASSERT(0);
 		return 1;
 	}
 	if (animleng < 1.0) {

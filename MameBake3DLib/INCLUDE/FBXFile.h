@@ -3,6 +3,7 @@
 
 #include <fbxsdk.h>
 #include <stdio.h>
+#include <ChaVecCalc.h>
 
 class CBVHFile;
 
@@ -59,6 +60,8 @@ class CBone;
 	FbxDouble FbxGetMaterialShininessProperty(const FbxSurfaceMaterial* pMaterial);
 	int IsValidFbxCluster(FbxCluster* cluster);
 
+	int CalcLocalNodeMatForMesh(FbxNode* pNode, ChaMatrix* dstnodemat);
+
 
 #else
 	extern int InitializeSdkObjects();
@@ -73,6 +76,8 @@ class CBone;
 	extern FbxDouble3 FbxGetMaterialProperty(const FbxSurfaceMaterial* pMaterial, const char* pPropertyName, const char* pFactorPropertyName, char** ppTextureName);
 	extern FbxDouble FbxGetMaterialShininessProperty(const FbxSurfaceMaterial* pMaterial);
 	extern int IsValidFbxCluster(FbxCluster* cluster);
+
+	extern int CalcLocalNodeMatForMesh(FbxNode* pNode, ChaMatrix* dstnodemat);
 
 #endif
 

@@ -331,6 +331,7 @@ static FbxAnimEvaluator* s_animevaluator = 0;
 extern bool g_btsimurecflag;
 
 extern CRITICAL_SECTION g_CritSection_GetGP;
+extern int CalcLocalMeshMat(FbxMesh* pMesh, ChaMatrix* dstmeshmat);//FbxFile.cpp
 
 
 /*
@@ -956,8 +957,9 @@ _ASSERT(m_bonelist[0]);
 	CreateBoneUpdateMatrix();
 
 
-
-	CreateFBXMeshReq( pRootNode );
+	ChaMatrix firstmeshmat;
+	firstmeshmat.SetIdentity();
+	CreateFBXMeshReq(pRootNode, firstmeshmat);
 
 	DbgOut(L"fbx bonenum %d\r\n", (int)m_bonelist.size());
 _ASSERT(m_bonelist[0]);
@@ -3207,12 +3209,14 @@ int CModel::AddDefMaterial()
 }
 
 
-int CModel::CreateFBXMeshReq( FbxNode* pNode )
+int CModel::CreateFBXMeshReq( FbxNode* pNode, ChaMatrix srcparentmeshmat)
 {
 	if (!pNode) {
 		return 0;
 	}
 
+	ChaMatrix curmeshmat;
+	curmeshmat.SetIdentity();
 	FbxNodeAttribute *pAttrib = pNode->GetNodeAttribute();
 	if ( pAttrib ) {
 		FbxNodeAttribute::EType type = (FbxNodeAttribute::EType)(pAttrib->GetAttributeType());
@@ -3222,17 +3226,20 @@ int CModel::CreateFBXMeshReq( FbxNode* pNode )
 
 		int shapecnt;
 		CMQOObject* newobj = 0;
+		ChaMatrix localmeshmat;
+		localmeshmat.SetIdentity();
 
 		switch ( type )
 		{
 			case FbxNodeAttribute::eMesh:
-
-				newobj = GetFBXMesh( pNode, pAttrib );     // メッシュを作成
+				CalcLocalNodeMatForMesh(pNode, &localmeshmat);
+				curmeshmat = localmeshmat * srcparentmeshmat;
+				newobj = GetFBXMesh(pNode, pAttrib, curmeshmat);     // メッシュを作成
 				if (newobj){
 					shapecnt = pNode->GetMesh()->GetShapeCount();
 					if (shapecnt > 0){
 						sprintf_s(mes, 256, "%s, shapecnt %d", pNode->GetName(), shapecnt);
-						MessageBoxA(NULL, mes, "check", MB_OK);
+						//MessageBoxA(NULL, mes, "check", MB_OK);
 					}
 				}
 				break;
@@ -3242,6 +3249,8 @@ int CModel::CreateFBXMeshReq( FbxNode* pNode )
 //				GetFBXMesh( pAttrib, pNode->GetName() );     // メッシュを作成
 				break;
 			default:
+				CalcLocalNodeMatForMesh(pNode, &localmeshmat);
+				curmeshmat = localmeshmat * srcparentmeshmat;
 				break;
 		}
 	}
@@ -3252,7 +3261,7 @@ int CModel::CreateFBXMeshReq( FbxNode* pNode )
 	{
 		FbxNode *pChild = pNode->GetChild(i);  // 子ノードを取得
 		if (pChild) {
-			CreateFBXMeshReq(pChild);
+			CreateFBXMeshReq(pChild, curmeshmat);
 		}
 	}
 
@@ -3279,7 +3288,7 @@ int CModel::CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime s
 }
 
 
-CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
+CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib, ChaMatrix curmeshmat)
 {
 	if (!pNode || !pAttrib) {
 		_ASSERT(0);
@@ -3294,6 +3303,17 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 		_ASSERT(0);
 		return 0;
 	}
+
+
+
+	ChaMatrix globalmeshmat;
+	globalmeshmat.SetIdentity();
+	FbxTime fbxtime;
+	fbxtime.SetSecondDouble(0.0);
+	FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime);
+	globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
+
+
 
 	CMQOObject* newobj = new CMQOObject();
 	_ASSERT( newobj );
@@ -3358,6 +3378,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 		}
 	}
 
+
 //頂点
 	int PolygonNum       = pMesh->GetPolygonCount();
 	int PolygonVertexNum = pMesh->GetPolygonVertexCount();
@@ -3373,11 +3394,16 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib )
 	newobj->SetPointBuf( (ChaVector3*)malloc( sizeof( ChaVector3 ) * controlNum ) );
 	//for ( int i = 0; i < controlNum; ++i ) {
 	for (int i = 0; i < controlNum; i++) {
-		ChaVector3* curctrl = newobj->GetPointBuf() + i;
-		curctrl->x = (float)src[ i ][ 0 ];
-		curctrl->y = (float)src[ i ][ 1 ];
-		curctrl->z = (float)src[ i ][ 2 ];
+		ChaVector3 tmpp;
+		tmpp.x = (float)src[ i ][ 0 ];
+		tmpp.y = (float)src[ i ][ 1 ];
+		tmpp.z = (float)src[ i ][ 2 ];
 		//curctrl->w = (float)src[ i ][ 3 ];
+
+		ChaVector3* curctrl = newobj->GetPointBuf() + i;
+		//ChaVector3TransformCoord(curctrl, &tmpp, &invmeshmat);
+		//ChaVector3TransformCoord(curctrl, &tmpp, &curmeshmat);
+		ChaVector3TransformCoord(curctrl, &tmpp, &globalmeshmat);
 
 //DbgOut( L"GetFBXMesh : ctrl %d, (%f, %f, %f)\r\n",
 //	i, curctrl->x, curctrl->y, curctrl->z );
@@ -12890,6 +12916,13 @@ int CModel::IKRotateAxisDeltaUnderIK(
 
 				//2023/03/04 制限角度に引っ掛かった場合には　やめて　次のジョイントの回転へ
 				if ((ismovable2 == 0) && (g_wallscrapingikflag == 0)) {
+
+					//2023/03/14 continueの前にすべきこと追加
+					//RotAndTraBoneQReq内でGetMotionPointがNULLの場合にも　ismovable2 == 0
+					lastbone = curbone;
+					curbone = curbone->GetParent();
+					levelcnt++;
+					
 					continue;
 				}
 

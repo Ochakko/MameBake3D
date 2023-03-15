@@ -46,6 +46,7 @@ CTexElem::~CTexElem()
 int CTexElem::InitParams()
 {
 	m_id = -1;
+	m_validflag = false;
 	ZeroMemory( m_name, sizeof( WCHAR ) * MAX_PATH );
 	ZeroMemory( m_path, sizeof( WCHAR ) * MAX_PATH );
 	m_transparent = 0;
@@ -120,7 +121,7 @@ int CTexElem::CreateTexData(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 
 	if (FAILED(hr)) {
 		DbgOut(L"TexElem : CreateTexData : CreateTextureFromFileEx error!!! %x, path : %s, name : %s\r\n", hr, m_path, m_name);
-		_ASSERT( 0 );
+		//_ASSERT( 0 );
 		return -1;
 	}
 

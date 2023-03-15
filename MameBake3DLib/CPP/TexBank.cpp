@@ -109,10 +109,18 @@ int CTexBank::AddTex(ID3D11DeviceContext* pd3dImmediateContext,const WCHAR* srcp
 	//if (srccol) {
 	//	newelem->SetTransCol(*srccol);
 	//}
-	CallF( newelem->CreateTexData( m_pdev, pd3dImmediateContext), return 1 );
+	//CallF( newelem->CreateTexData( m_pdev, pd3dImmediateContext), return 1 );
 
-	m_texmap[ newelem->GetID() ] = newelem;
+	int result1 = newelem->CreateTexData(m_pdev, pd3dImmediateContext);
+	if (result1 == 0) {
+		newelem->SetValidFlag(true);
+	}
+	else {
+		newelem->SetValidFlag(false);
+	}
+	m_texmap[newelem->GetID()] = newelem;
 	*dstid = newelem->GetID();
+
 
 	return 0;
 }
@@ -134,8 +142,11 @@ int CTexBank::Restore(ID3D11DeviceContext* pd3dImmediateContext)
 	map<int,CTexElem*>::iterator itr;
 	for( itr = m_texmap.begin(); itr != m_texmap.end(); itr++ ){
 		CTexElem* telem = itr->second;
-		if( telem ){
-			CallF( telem->CreateTexData( m_pdev, pd3dImmediateContext), return 1 );
+		if( telem && telem->IsValid()){
+			int result1 = telem->CreateTexData( m_pdev, pd3dImmediateContext);
+			if (result1 != 0) {
+				telem->SetValidFlag(false);
+			}
 		}
 	}
 

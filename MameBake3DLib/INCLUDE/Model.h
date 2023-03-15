@@ -843,10 +843,10 @@ private:
 
 
 	//int InitFBXManager( FbxManager** ppSdkManager, FbxImporter** ppImporter, FbxScene** ppScene, char* utfname );
-	int CreateFBXMeshReq( FbxNode* pNode );
+	int CreateFBXMeshReq(FbxNode* pNode, ChaMatrix srcparentmeshmat);
 	int CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 
-	CMQOObject* GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib );
+	CMQOObject* GetFBXMesh(FbxNode* pNode, FbxNodeAttribute* pAttrib, ChaMatrix curmeshmat);
 	int GetFBXShape(FbxMesh* pMesh, CMQOObject* curobj, FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 	//int ComputeShapeDeformation(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename );
 	//int ComputeShapeDeformation2(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename );

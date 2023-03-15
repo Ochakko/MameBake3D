@@ -813,7 +813,7 @@ int CDispObj::RenderNormal(ID3D11DeviceContext* pd3d11DeviceContext, CMQOMateria
 			ID3D11ShaderResourceView* texresview = 0;
 			if (curmat->GetTexID() >= 0) {
 				CTexElem* findtex = g_texbank->GetTexElem(curmat->GetTexID());
-				if (findtex) {
+				if (findtex && findtex->IsValid()) {
 					texresview = findtex->GetPTex();
 					_ASSERT(texresview);
 				}
@@ -1236,7 +1236,7 @@ int CDispObj::RenderNormalPM3(ID3D11DeviceContext* pd3d11DeviceContext, int ligh
 		ID3D11ShaderResourceView* texresview = 0;
 		if (curmat->GetTexID() >= 0) {
 			CTexElem* findtex = g_texbank->GetTexElem(curmat->GetTexID());
-			if (findtex) {
+			if (findtex && findtex->IsValid()) {
 				texresview = findtex->GetPTex();
 				_ASSERT(texresview);
 			}
