@@ -8493,11 +8493,12 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 
 			FbxAnimLayer* panimlayer = GetParModel()->GetCurrentAnimLayer();
 			if (panimlayer) {
-				FbxProperty nodeproperty;
-				pNode->GetAnimationEvaluator()->GetPropertyCurveNode(nodeproperty, panimlayer);
+				const char* strChannel;
+				strChannel = FBXSDK_CURVENODE_COMPONENT_X;
+				FbxAnimCurve* lCurve;
 				bool createflag = false;
-				FbxAnimCurve* panimcurve = nodeproperty.GetCurve(panimlayer, createflag);
-				if (panimcurve) {
+				lCurve = pNode->LclTranslation.GetCurve(panimlayer, strChannel, createflag);
+				if (lCurve) {
 					globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
 				}
 				else {
