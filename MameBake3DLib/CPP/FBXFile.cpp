@@ -1977,80 +1977,80 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 	return 0;
 }
 
-int CalcLocalNodeMatForMesh(FbxNode* pNode, ChaMatrix* dstmeshmat)
-{
-	if (!pNode || !dstmeshmat) {
-		_ASSERT(0);
-		return 1;
-	}
-
-	ChaMatrix retmat;
-	retmat.SetIdentity();
-
-	if (pNode) {
-		FbxTime fbxtime;
-		fbxtime.SetSecondDouble(0.0);
-		FbxDouble3 fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);
-		FbxDouble3 fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);
-		FbxDouble3 fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);
-		
-		EFbxRotationOrder rotationorder;
-		pNode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
-		FbxDouble3 fbxRotOff = pNode->GetRotationOffset(FbxNode::eSourcePivot);
-		FbxDouble3 fbxRotPiv = pNode->GetRotationPivot(FbxNode::eSourcePivot);
-		FbxDouble3 fbxPreRot = pNode->GetPreRotation(FbxNode::eSourcePivot);
-		FbxDouble3 fbxPostRot = pNode->GetPostRotation(FbxNode::eSourcePivot);
-		FbxDouble3 fbxSclOff = pNode->GetScalingOffset(FbxNode::eSourcePivot);
-		FbxDouble3 fbxSclPiv = pNode->GetScalingPivot(FbxNode::eSourcePivot);
-		bool rotationActive = pNode->GetRotationActive();
-
-
-		ChaMatrix fbxT, fbxRoff, fbxRp, fbxRpre, fbxR, fbxRpost, fbxRpinv, fbxSoff, fbxSp, fbxS, fbxSpinv;
-		fbxT.SetIdentity();
-		fbxRoff.SetIdentity();
-		fbxRp.SetIdentity();
-		fbxRpre.SetIdentity();
-		fbxR.SetIdentity();
-		fbxRpost.SetIdentity();
-		fbxRpinv.SetIdentity();
-		fbxSoff.SetIdentity();
-		fbxSp.SetIdentity();
-		fbxS.SetIdentity();
-		fbxSpinv.SetIdentity();
-
-		fbxT.SetTranslation(ChaVector3((float)fbxLclPos[0], (float)fbxLclPos[1], (float)fbxLclPos[2]));
-		fbxRoff.SetTranslation(ChaVector3((float)fbxRotOff[0], (float)fbxRotOff[1], (float)fbxRotOff[2]));
-		fbxRp.SetTranslation(ChaVector3((float)fbxRotPiv[0], (float)fbxRotPiv[1], (float)fbxRotPiv[2]));
-		fbxRpre.SetXYZRotation(0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
-		fbxR.SetXYZRotation(0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
-		fbxRpost.SetXYZRotation(0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
-		fbxRpinv = ChaMatrixInv(fbxRp);
-		fbxSoff.SetTranslation(ChaVector3((float)fbxSclOff[0], (float)fbxSclOff[1], (float)fbxSclOff[2]));
-		fbxSp.SetTranslation(ChaVector3((float)fbxSclPiv[0], (float)fbxSclPiv[1], (float)fbxSclPiv[2]));
-		fbxS.SetScale(ChaVector3((float)fbxLclScl[0], (float)fbxLclScl[1], (float)fbxLclScl[2]));
-		fbxSpinv = ChaMatrixInv(fbxSp);
-
-		//#############################################################################
-		//Transform = T * Roff * Rp * Rpre * R * Rpost * Rp-1 * Soff * Sp * S * Sp-1
-		//#############################################################################
-
-		ChaMatrix localnodemat, localnodeanimmat;
-		localnodeanimmat = fbxT * fbxRoff * fbxRp * fbxRpre * fbxR * fbxRpost * fbxRpinv * fbxSoff * fbxSp * fbxS * fbxSpinv;
-
-		//0フレームアニメ無し : fbxRとfbxS無し
-		localnodemat = fbxT * fbxRoff * fbxRp * fbxRpre * fbxRpost * fbxRpinv * fbxSoff * fbxSp * fbxSpinv;
-	
-		//*dstmeshmat = localnodeanimmat;
-		*dstmeshmat = localnodemat;
-	}
-	else {
-		_ASSERT(0);
-		return 1;
-	}
-
-	return 0;
-
-}
+//int CalcLocalNodeMatForMesh(FbxNode* pNode, ChaMatrix* dstmeshmat)
+//{
+//	if (!pNode || !dstmeshmat) {
+//		_ASSERT(0);
+//		return 1;
+//	}
+//
+//	ChaMatrix retmat;
+//	retmat.SetIdentity();
+//
+//	if (pNode) {
+//		FbxTime fbxtime;
+//		fbxtime.SetSecondDouble(0.0);
+//		FbxDouble3 fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);
+//		FbxDouble3 fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);
+//		FbxDouble3 fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);
+//		
+//		EFbxRotationOrder rotationorder;
+//		pNode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+//		FbxDouble3 fbxRotOff = pNode->GetRotationOffset(FbxNode::eSourcePivot);
+//		FbxDouble3 fbxRotPiv = pNode->GetRotationPivot(FbxNode::eSourcePivot);
+//		FbxDouble3 fbxPreRot = pNode->GetPreRotation(FbxNode::eSourcePivot);
+//		FbxDouble3 fbxPostRot = pNode->GetPostRotation(FbxNode::eSourcePivot);
+//		FbxDouble3 fbxSclOff = pNode->GetScalingOffset(FbxNode::eSourcePivot);
+//		FbxDouble3 fbxSclPiv = pNode->GetScalingPivot(FbxNode::eSourcePivot);
+//		bool rotationActive = pNode->GetRotationActive();
+//
+//
+//		ChaMatrix fbxT, fbxRoff, fbxRp, fbxRpre, fbxR, fbxRpost, fbxRpinv, fbxSoff, fbxSp, fbxS, fbxSpinv;
+//		fbxT.SetIdentity();
+//		fbxRoff.SetIdentity();
+//		fbxRp.SetIdentity();
+//		fbxRpre.SetIdentity();
+//		fbxR.SetIdentity();
+//		fbxRpost.SetIdentity();
+//		fbxRpinv.SetIdentity();
+//		fbxSoff.SetIdentity();
+//		fbxSp.SetIdentity();
+//		fbxS.SetIdentity();
+//		fbxSpinv.SetIdentity();
+//
+//		fbxT.SetTranslation(ChaVector3((float)fbxLclPos[0], (float)fbxLclPos[1], (float)fbxLclPos[2]));
+//		fbxRoff.SetTranslation(ChaVector3((float)fbxRotOff[0], (float)fbxRotOff[1], (float)fbxRotOff[2]));
+//		fbxRp.SetTranslation(ChaVector3((float)fbxRotPiv[0], (float)fbxRotPiv[1], (float)fbxRotPiv[2]));
+//		fbxRpre.SetXYZRotation(0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
+//		fbxR.SetXYZRotation(0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
+//		fbxRpost.SetXYZRotation(0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
+//		fbxRpinv = ChaMatrixInv(fbxRp);
+//		fbxSoff.SetTranslation(ChaVector3((float)fbxSclOff[0], (float)fbxSclOff[1], (float)fbxSclOff[2]));
+//		fbxSp.SetTranslation(ChaVector3((float)fbxSclPiv[0], (float)fbxSclPiv[1], (float)fbxSclPiv[2]));
+//		fbxS.SetScale(ChaVector3((float)fbxLclScl[0], (float)fbxLclScl[1], (float)fbxLclScl[2]));
+//		fbxSpinv = ChaMatrixInv(fbxSp);
+//
+//		//#############################################################################
+//		//Transform = T * Roff * Rp * Rpre * R * Rpost * Rp-1 * Soff * Sp * S * Sp-1
+//		//#############################################################################
+//
+//		ChaMatrix localnodemat, localnodeanimmat;
+//		localnodeanimmat = fbxT * fbxRoff * fbxRp * fbxRpre * fbxR * fbxRpost * fbxRpinv * fbxSoff * fbxSp * fbxS * fbxSpinv;
+//
+//		//0フレームアニメ無し : fbxRとfbxS無し
+//		localnodemat = fbxT * fbxRoff * fbxRp * fbxRpre * fbxRpost * fbxRpinv * fbxSoff * fbxSp * fbxSpinv;
+//	
+//		//*dstmeshmat = localnodeanimmat;
+//		*dstmeshmat = localnodemat;
+//	}
+//	else {
+//		_ASSERT(0);
+//		return 1;
+//	}
+//
+//	return 0;
+//
+//}
 
 
 void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lBindMatrix)

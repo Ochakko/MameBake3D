@@ -466,6 +466,8 @@ int CModel::InitParams()
 {
 	m_iktargetbonevec.clear();
 
+	m_currentanimlayer = 0;
+
 	m_fromBvh = false;
 	m_fromNoBindPose = false;
 
@@ -959,7 +961,7 @@ _ASSERT(m_bonelist[0]);
 
 	ChaMatrix firstmeshmat;
 	firstmeshmat.SetIdentity();
-	CreateFBXMeshReq(pRootNode, firstmeshmat);
+	CreateFBXMeshReq(pRootNode);
 
 	DbgOut(L"fbx bonenum %d\r\n", (int)m_bonelist.size());
 _ASSERT(m_bonelist[0]);
@@ -3209,7 +3211,7 @@ int CModel::AddDefMaterial()
 }
 
 
-int CModel::CreateFBXMeshReq( FbxNode* pNode, ChaMatrix srcparentmeshmat)
+int CModel::CreateFBXMeshReq( FbxNode* pNode)
 {
 	if (!pNode) {
 		return 0;
@@ -3226,15 +3228,11 @@ int CModel::CreateFBXMeshReq( FbxNode* pNode, ChaMatrix srcparentmeshmat)
 
 		int shapecnt;
 		CMQOObject* newobj = 0;
-		ChaMatrix localmeshmat;
-		localmeshmat.SetIdentity();
 
 		switch ( type )
 		{
 			case FbxNodeAttribute::eMesh:
-				CalcLocalNodeMatForMesh(pNode, &localmeshmat);
-				curmeshmat = localmeshmat * srcparentmeshmat;
-				newobj = GetFBXMesh(pNode, pAttrib, curmeshmat);     // メッシュを作成
+				newobj = GetFBXMesh(pNode, pAttrib);     // メッシュを作成
 				if (newobj){
 					shapecnt = pNode->GetMesh()->GetShapeCount();
 					if (shapecnt > 0){
@@ -3247,10 +3245,11 @@ int CModel::CreateFBXMeshReq( FbxNode* pNode, ChaMatrix srcparentmeshmat)
 //			case FbxNodeAttribute::eNURBS_SURFACE:
 //                lConverter.TriangulateInPlace(pNode);
 //				GetFBXMesh( pAttrib, pNode->GetName() );     // メッシュを作成
-				break;
+//				break;
+			case FbxNodeAttribute::eNull:
+			case FbxNodeAttribute::eSkeleton:
+					break;
 			default:
-				CalcLocalNodeMatForMesh(pNode, &localmeshmat);
-				curmeshmat = localmeshmat * srcparentmeshmat;
 				break;
 		}
 	}
@@ -3261,7 +3260,7 @@ int CModel::CreateFBXMeshReq( FbxNode* pNode, ChaMatrix srcparentmeshmat)
 	{
 		FbxNode *pChild = pNode->GetChild(i);  // 子ノードを取得
 		if (pChild) {
-			CreateFBXMeshReq(pChild, curmeshmat);
+			CreateFBXMeshReq(pChild);
 		}
 	}
 
@@ -3288,7 +3287,7 @@ int CModel::CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime s
 }
 
 
-CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib, ChaMatrix curmeshmat)
+CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 {
 	if (!pNode || !pAttrib) {
 		_ASSERT(0);
@@ -3400,10 +3399,12 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib, ChaMat
 		tmpp.z = (float)src[ i ][ 2 ];
 		//curctrl->w = (float)src[ i ][ 3 ];
 
+
+		//eNullのtransformによるメッシュ頂点の変換
+		//アニメーションカーブが無い場合には　CBone::GetFbxAnimでworldmatをidentityにしないと副作用が出る
 		ChaVector3* curctrl = newobj->GetPointBuf() + i;
-		//ChaVector3TransformCoord(curctrl, &tmpp, &invmeshmat);
-		//ChaVector3TransformCoord(curctrl, &tmpp, &curmeshmat);
 		ChaVector3TransformCoord(curctrl, &tmpp, &globalmeshmat);
+
 
 //DbgOut( L"GetFBXMesh : ctrl %d, (%f, %f, %f)\r\n",
 //	i, curctrl->x, curctrl->y, curctrl->z );
@@ -4270,6 +4271,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 
 			FbxAnimLayer* mCurrentAnimLayer;
 			mCurrentAnimLayer = lCurrentAnimationStack->GetMember<FbxAnimLayer>();
+			SetCurrentAnimLayer(mCurrentAnimLayer);
 
 			//pScene->GetEvaluator()->SetContext(lCurrentAnimationStack);
 			pScene->SetCurrentAnimationStack(lCurrentAnimationStack);

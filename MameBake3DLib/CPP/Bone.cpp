@@ -8419,6 +8419,10 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 	if (GetGetAnimFlag() == 0) {
 		SetGetAnimFlag(1);
 	}
+	if (!GetParModel()) {
+		_ASSERT(0);
+		return 1;
+	}
 
 	FbxTime fbxtime;
 	fbxtime.SetSecondDouble(0.0);
@@ -8486,7 +8490,26 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 			//###############
 			//calc globalmat
 			//###############
-			globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
+
+			FbxAnimLayer* panimlayer = GetParModel()->GetCurrentAnimLayer();
+			if (panimlayer) {
+				FbxProperty nodeproperty;
+				pNode->GetAnimationEvaluator()->GetPropertyCurveNode(nodeproperty, panimlayer);
+				bool createflag = false;
+				FbxAnimCurve* panimcurve = nodeproperty.GetCurve(panimlayer, createflag);
+				if (panimcurve) {
+					globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
+				}
+				else {
+					//キーが無い場合　mesh(pointbuf * meshmat)位置そのまま
+					globalmat.SetIdentity();
+				}
+			}
+			else {
+				globalmat.SetIdentity();
+			}
+
+			
 			//globalmat = (ChaMatrixInv(curbone->GetNodeMat()) * chaGlobalSRT);
 			curmp->SetWorldMat(globalmat);//anglelimit無し
 			curmp->SetLimitedWM(globalmat);//初期値はそのまま

@@ -15286,6 +15286,14 @@ LRESULT CALLBACK CameraDollyDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		swprintf_s(strpos, 256, L"%.3f", g_camEye.z);
 		SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ, strpos);
 
+		swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.x);
+		SetDlgItemTextW(hDlgWnd, IDC_DOLLYX2, strpos);
+		swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.y);
+		SetDlgItemTextW(hDlgWnd, IDC_DOLLYY2, strpos);
+		swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.z);
+		SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ2, strpos);
+
+
 		//RECT dlgrect;
 		//GetWindowRect(hDlgWnd, &dlgrect);
 		//SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
@@ -15294,6 +15302,7 @@ LRESULT CALLBACK CameraDollyDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 	}
 	//SetDlgItemText( hDlgWnd, IDC_MULT, strmult );
 	return FALSE;
+
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
 		case IDOK:
@@ -15302,29 +15311,90 @@ LRESULT CALLBACK CameraDollyDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		case IDCANCEL:
 			ShowWindow(hDlgWnd, SW_HIDE);
 			break;
+		case IDC_GETDOLLY:
+		{
+			swprintf_s(strpos, 256, L"%.3f", g_camEye.x);
+			SetDlgItemTextW(hDlgWnd, IDC_DOLLYX, strpos);
+			swprintf_s(strpos, 256, L"%.3f", g_camEye.y);
+			SetDlgItemTextW(hDlgWnd, IDC_DOLLYY, strpos);
+			swprintf_s(strpos, 256, L"%.3f", g_camEye.z);
+			SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ, strpos);
+
+			swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.x);
+			SetDlgItemTextW(hDlgWnd, IDC_DOLLYX2, strpos);
+			swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.y);
+			SetDlgItemTextW(hDlgWnd, IDC_DOLLYY2, strpos);
+			swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.z);
+			SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ2, strpos);
+		}
+			break;
+
 		case IDC_APPLYDOLLY:
 		{
+			ChaVector3 savecameye = g_camEye;
+			ChaVector3 savetarget = g_camtargetpos;
+			g_befcamtargetpos = g_camtargetpos;
+
 			GetDlgItemTextW(hDlgWnd, IDC_DOLLYX, strpos, 256);
 			posvalue = (float)_wtof(strpos);
-			if ((posvalue >= FLT_MIN) && (posvalue <= FLT_MAX)) {
+			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
 				g_camEye.x = posvalue;
 			}
-
 			GetDlgItemTextW(hDlgWnd, IDC_DOLLYY, strpos, 256);
 			posvalue = (float)_wtof(strpos);
-			if ((posvalue >= FLT_MIN) && (posvalue <= FLT_MAX)) {
+			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
 				g_camEye.y = posvalue;
 			}
-
 			GetDlgItemTextW(hDlgWnd, IDC_DOLLYZ, strpos, 256);
 			posvalue = (float)_wtof(strpos);
-			if ((posvalue >= FLT_MIN) && (posvalue <= FLT_MAX)) {
+			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
 				g_camEye.z = posvalue;
 			}
 
+
+			GetDlgItemTextW(hDlgWnd, IDC_DOLLYX2, strpos, 256);
+			posvalue = (float)_wtof(strpos);
+			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
+				g_camtargetpos.x = posvalue;
+			}
+			GetDlgItemTextW(hDlgWnd, IDC_DOLLYY2, strpos, 256);
+			posvalue = (float)_wtof(strpos);
+			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
+				g_camtargetpos.y = posvalue;
+			}
+			GetDlgItemTextW(hDlgWnd, IDC_DOLLYZ2, strpos, 256);
+			posvalue = (float)_wtof(strpos);
+			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
+				g_camtargetpos.z = posvalue;
+			}
+
+			
 			ChaVector3 diffv;
 			diffv = g_camEye - g_camtargetpos;
 			s_camdist = (float)ChaVector3LengthDbl(&diffv);
+			if (s_camdist <= 1e-4) {
+				//rollback
+
+				g_camEye = savecameye;
+				g_camtargetpos = savetarget;
+				ChaVector3 diffv2;
+				diffv2 = g_camEye - g_camtargetpos;
+				s_camdist = (float)ChaVector3LengthDbl(&diffv2);
+
+				swprintf_s(strpos, 256, L"%.3f", g_camEye.x);
+				SetDlgItemTextW(hDlgWnd, IDC_DOLLYX, strpos);
+				swprintf_s(strpos, 256, L"%.3f", g_camEye.y);
+				SetDlgItemTextW(hDlgWnd, IDC_DOLLYY, strpos);
+				swprintf_s(strpos, 256, L"%.3f", g_camEye.z);
+				SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ, strpos);
+
+				swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.x);
+				SetDlgItemTextW(hDlgWnd, IDC_DOLLYX2, strpos);
+				swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.y);
+				SetDlgItemTextW(hDlgWnd, IDC_DOLLYY2, strpos);
+				swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.z);
+				SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ2, strpos);
+			}
 
 			g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 			s_matView = g_Camera->GetViewMatrix();

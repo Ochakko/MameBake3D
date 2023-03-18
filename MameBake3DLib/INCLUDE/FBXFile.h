@@ -60,7 +60,7 @@ class CBone;
 	FbxDouble FbxGetMaterialShininessProperty(const FbxSurfaceMaterial* pMaterial);
 	int IsValidFbxCluster(FbxCluster* cluster);
 
-	int CalcLocalNodeMatForMesh(FbxNode* pNode, ChaMatrix* dstnodemat);
+	//int CalcLocalNodeMatForMesh(FbxNode* pNode, ChaMatrix* dstnodemat);
 
 
 #else
@@ -77,7 +77,7 @@ class CBone;
 	extern FbxDouble FbxGetMaterialShininessProperty(const FbxSurfaceMaterial* pMaterial);
 	extern int IsValidFbxCluster(FbxCluster* cluster);
 
-	extern int CalcLocalNodeMatForMesh(FbxNode* pNode, ChaMatrix* dstnodemat);
+	//extern int CalcLocalNodeMatForMesh(FbxNode* pNode, ChaMatrix* dstnodemat);
 
 #endif
 

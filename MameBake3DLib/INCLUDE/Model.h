@@ -843,10 +843,10 @@ private:
 
 
 	//int InitFBXManager( FbxManager** ppSdkManager, FbxImporter** ppImporter, FbxScene** ppScene, char* utfname );
-	int CreateFBXMeshReq(FbxNode* pNode, ChaMatrix srcparentmeshmat);
+	int CreateFBXMeshReq(FbxNode* pNode);
 	int CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 
-	CMQOObject* GetFBXMesh(FbxNode* pNode, FbxNodeAttribute* pAttrib, ChaMatrix curmeshmat);
+	CMQOObject* GetFBXMesh(FbxNode* pNode, FbxNodeAttribute* pAttrib);
 	int GetFBXShape(FbxMesh* pMesh, CMQOObject* curobj, FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 	//int ComputeShapeDeformation(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename );
 	//int ComputeShapeDeformation2(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename );
@@ -1435,6 +1435,13 @@ public: //accesser
 		m_loadingmotionnum = srcval;
 	}
 
+	FbxAnimLayer* GetCurrentAnimLayer() {
+		return m_currentanimlayer;
+	}
+	void SetCurrentAnimLayer(FbxAnimLayer* currentanimlayer) {
+		m_currentanimlayer = currentanimlayer;
+	}
+
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];
@@ -1544,6 +1551,8 @@ private:
 	float m_setfl4x4[16 * MAXCLUSTERNUM];//SetShaderConst—p
 
 	std::vector<CBone*> m_iktargetbonevec;
+
+	FbxAnimLayer* m_currentanimlayer;
 
 	int m_loadbonecount;//GetFbxAnim—p
 };
