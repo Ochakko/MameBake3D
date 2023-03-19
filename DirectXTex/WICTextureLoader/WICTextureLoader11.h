@@ -1,5 +1,5 @@
 //--------------------------------------------------------------------------------------
-// File: WICTextureLoader.h
+// File: WICTextureLoader11.h
 //
 // Function for loading a WIC image and creating a Direct3D runtime texture for it
 // (auto-generating mipmaps if possible)
@@ -24,6 +24,9 @@
 #pragma once
 
 #include <d3d11_1.h>
+
+#pragma comment(lib,"dxguid.lib")
+#pragma comment(lib,"windowscodecs.lib")
 
 #include <cstddef>
 #include <cstdint>

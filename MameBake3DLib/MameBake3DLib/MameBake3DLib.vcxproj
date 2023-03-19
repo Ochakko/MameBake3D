@@ -109,7 +109,7 @@
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>..\..\MameBake3D\x64\Debug;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.1.1\lib\intel64\vc14;C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.1\lib\vs2019\x64\debug;..\Glut;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;winmm.lib;comctl32.lib;libfbxsdk.lib;wininet.lib;opengl32.lib;glu32.lib;Effects11.lib;d3d11.lib;D3DCompiler.lib;Shlwapi.lib;msimg32.lib;Gdiplus.lib;BulletPhysicsLib.lib;</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;winmm.lib;comctl32.lib;libfbxsdk.lib;wininet.lib;opengl32.lib;glu32.lib;Effects11.lib;d3d11.lib;D3DCompiler.lib;Shlwapi.lib;msimg32.lib;Gdiplus.lib;BulletPhysicsLib.lib;DirectXTex.lib;</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>LIBCPMT.lib;LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Lib>
   </ItemDefinitionGroup>
@@ -162,7 +162,7 @@
     </Link>
     <Lib>
       <AdditionalLibraryDirectories>..\..\MameBake3D\x64\Release;C:\Program Files (x86)\Intel\oneAPI\tbb\2021.1.1\lib\intel64\vc14;C:\Program Files\Autodesk\FBX\FBX SDK\2020.3.1\lib\vs2019\x64\release;..\Glut;</AdditionalLibraryDirectories>
-      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;winmm.lib;comctl32.lib;libfbxsdk.lib;wininet.lib;opengl32.lib;glu32.lib;Effects11.lib;d3d11.lib;D3DCompiler.lib;Shlwapi.lib;msimg32.lib;Gdiplus.lib;BulletPhysicsLib.lib;</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;winmm.lib;comctl32.lib;libfbxsdk.lib;wininet.lib;opengl32.lib;glu32.lib;Effects11.lib;d3d11.lib;D3DCompiler.lib;Shlwapi.lib;msimg32.lib;Gdiplus.lib;BulletPhysicsLib.lib;DirectXTex.lib;</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
     </Lib>
   </ItemDefinitionGroup>
@@ -229,10 +229,8 @@
     <ClCompile Include="..\CPP\ThreadingUpdateTimeline.cpp" />
     <ClCompile Include="..\CPP\UndoMotion.cpp" />
     <ClCompile Include="..\CPP\XMLIO.cpp" />
-    <ClCompile Include="..\DXUT\Core\DDSTextureLoader.cpp" />
     <ClCompile Include="..\DXUT\Core\DXUT.cpp" />
     <ClCompile Include="..\DXUT\Core\DXUTmisc.cpp" />
-    <ClCompile Include="..\DXUT\Core\WICTextureLoader.cpp" />
     <ClCompile Include="..\DXUT\Optional\DXUTgui.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -534,9 +532,7 @@
     <ClInclude Include="..\BTSRC\LinearMath\btTransformUtil.h" />
     <ClInclude Include="..\BTSRC\LinearMath\btVector3.h" />
     <ClInclude Include="..\BTSRC\LinearMath\TaskScheduler\btThreadSupportInterface.h" />
-    <ClInclude Include="..\DXUT\Core\DDSTextureLoader.h" />
     <ClInclude Include="..\DXUT\Core\DXUT.h" />
-    <ClInclude Include="..\DXUT\Core\WICTextureLoader.h" />
     <ClInclude Include="..\DXUT\Optional\DXUTgui.h" />
     <ClInclude Include="..\examples\MultiThreadedDemo\CommonRigidBodyMTBase.h" />
     <ClInclude Include="..\INCLUDE\BntFile.h" />

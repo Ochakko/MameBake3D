@@ -919,22 +919,24 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 	m_topbone = 0;
 
 	CreateFBXBoneReq( pScene, pRootNode, 0 );
-	if ((int)m_bonelist.size() <= 1){
+	if ((int)m_bonelist.size() <= 1){//!!!! 0の場合も通る
 		_ASSERT( 0 );
 		//delete (CBone*)(m_bonelist.begin()->second);
-		CBone* delbone = (CBone*)(m_bonelist.begin()->second);
-		if (delbone) {
-			CBone::InvalidateBone(delbone);
+		if (!m_bonelist.empty()) {
+			CBone* delbone = (CBone*)(m_bonelist.begin()->second);
+			if (delbone) {
+				CBone::InvalidateBone(delbone);
+			}
 		}
 		m_bonelist.clear();
 		m_topbone = 0;
-		_ASSERT(0);
+		//_ASSERT(0);
 	}
 	CBone* chkbone = m_bonelist[0];
 	if( !chkbone ){
 		//CBone* dummybone = new CBone( this );
 		CBone* dummybone = CBone::GetNewBone(this);
-		_ASSERT( dummybone );
+		//_ASSERT( dummybone );
 		if (dummybone){
 			dummybone->SetName("RootNode_");
 			m_bonelist[0] = dummybone;
@@ -948,7 +950,7 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 			}
 			//m_topbone = dummybone;
 		}
-		_ASSERT(0);
+		//_ASSERT(0);
 	}
 
 	//CreateExtendBoneReq(m_topbone);

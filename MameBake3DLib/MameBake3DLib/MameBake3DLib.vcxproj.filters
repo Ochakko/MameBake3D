@@ -159,12 +159,6 @@
     <ClCompile Include="..\CPP\stdafx.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="..\DXUT\Core\WICTextureLoader.cpp">
-      <Filter>DXUT_WIC_DDS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\DXUT\Core\DDSTextureLoader.cpp">
-      <Filter>DXUT_WIC_DDS</Filter>
-    </ClCompile>
     <ClCompile Include="..\BTSRC\clew\clew.c">
       <Filter>BulletSrcHeader</Filter>
     </ClCompile>
@@ -342,12 +336,6 @@
       <Filter>ソース ファイル</Filter>
     </ClInclude>
     <ClInclude Include="..\DXUT\Core\DXUT.h">
-      <Filter>DXUT_WIC_DDS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\DXUT\Core\WICTextureLoader.h">
-      <Filter>DXUT_WIC_DDS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\DXUT\Core\DDSTextureLoader.h">
       <Filter>DXUT_WIC_DDS</Filter>
     </ClInclude>
     <ClInclude Include="..\BTSRC\BulletCollision\BroadphaseCollision\btAxisSweep3.h">

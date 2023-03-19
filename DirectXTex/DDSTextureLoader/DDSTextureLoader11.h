@@ -1,5 +1,5 @@
 //--------------------------------------------------------------------------------------
-// File: DDSTextureLoader.h
+// File: DDSTextureLoader11.h
 //
 // Functions for loading a DDS texture and creating a Direct3D runtime resource for it
 //
@@ -18,6 +18,8 @@
 
 #include <d3d11_1.h>
 
+#pragma comment(lib,"dxguid.lib")
+
 #include <cstddef>
 #include <cstdint>
 
@@ -28,11 +30,11 @@ namespace DirectX
 #define DDS_ALPHA_MODE_DEFINED
     enum DDS_ALPHA_MODE : uint32_t
     {
-        DDS_ALPHA_MODE_UNKNOWN       = 0,
-        DDS_ALPHA_MODE_STRAIGHT      = 1,
+        DDS_ALPHA_MODE_UNKNOWN = 0,
+        DDS_ALPHA_MODE_STRAIGHT = 1,
         DDS_ALPHA_MODE_PREMULTIPLIED = 2,
-        DDS_ALPHA_MODE_OPAQUE        = 3,
-        DDS_ALPHA_MODE_CUSTOM        = 4,
+        DDS_ALPHA_MODE_OPAQUE = 3,
+        DDS_ALPHA_MODE_CUSTOM = 4,
     };
 #endif
 
