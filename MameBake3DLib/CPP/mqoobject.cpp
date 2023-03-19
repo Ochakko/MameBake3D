@@ -903,7 +903,7 @@ int CMQOObject::MakeDispObj( ID3D11Device* pdev, map<int,CMQOMaterial*>& srcmat,
 		CallF( m_dispobj->CreateDispObj( pdev, m_pm3, hasbone ), return 1 );
 	}else if( m_pm4 && m_pm4->GetCreateOptFlag() ){
 		if( hasbone ){
-			CallF( m_pm4->SetPm3Inf( this ), return 1 );
+			CallF(m_pm4->SetPm3Inf(this), return 1);
 		}
 
 		m_dispobj = new CDispObj();

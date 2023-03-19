@@ -158,7 +158,7 @@ int CTexElem::CreateTexData(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 		if (FAILED(hr0)) {
 			_ASSERT(0);
 			DbgOut(L"TexElem : CreateTexData : GetMetadataFromTGAFile error!!! %x, path : %s, name : %s\r\n",
-				hr1, m_path, m_name);
+				hr0, m_path, m_name);
 			return -1;
 		}
 
@@ -186,7 +186,7 @@ int CTexElem::CreateTexData(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 		if (FAILED(hr0)) {
 			_ASSERT(0);
 			DbgOut(L"TexElem : CreateTexData : GetMetadataFromDDSFile error!!! %x, path : %s, name : %s\r\n",
-				hr1, m_path, m_name);
+				hr0, m_path, m_name);
 			return -1;
 		}
 
@@ -214,7 +214,7 @@ int CTexElem::CreateTexData(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 		if (FAILED(hr0)) {
 			_ASSERT(0);
 			DbgOut(L"TexElem : CreateTexData : GetMetadataFromWICFile error!!! %x, path : %s, name : %s\r\n",
-				hr1, m_path, m_name);
+				hr0, m_path, m_name);
 			return -1;
 		}
 

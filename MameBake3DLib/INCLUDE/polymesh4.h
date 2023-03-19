@@ -31,7 +31,7 @@ public:
 	int ChkAlphaNum( std::map<int,CMQOMaterial*>& srcmat );
 	int CalcBound();
 
-	int SetPm3Inf( CMQOObject* srcobj );
+	int SetPm3Inf(CMQOObject* srcobj);
 	int UpdateMorphBuffer( ChaVector3* mpoint );
 
 	int DumpInfBone( CMQOObject* srcobj, std::map<int,CBone*>& srcbonelist );

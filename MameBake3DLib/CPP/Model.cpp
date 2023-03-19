@@ -918,10 +918,10 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 
 	m_topbone = 0;
 
-	CreateFBXBoneReq( pScene, pRootNode, 0 );
-	if ((int)m_bonelist.size() <= 1){//!!!! 0の場合も通る
-		_ASSERT( 0 );
-		//delete (CBone*)(m_bonelist.begin()->second);
+	
+	CreateFBXBoneReq(pScene, pRootNode, 0);
+	if ((int)m_bonelist.size() <= 0){
+		//_ASSERT( 0 );
 		if (!m_bonelist.empty()) {
 			CBone* delbone = (CBone*)(m_bonelist.begin()->second);
 			if (delbone) {
@@ -932,26 +932,24 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 		m_topbone = 0;
 		//_ASSERT(0);
 	}
-	CBone* chkbone = m_bonelist[0];
-	if( !chkbone ){
-		//CBone* dummybone = new CBone( this );
-		CBone* dummybone = CBone::GetNewBone(this);
-		//_ASSERT( dummybone );
-		if (dummybone){
-			dummybone->SetName("RootNode_");
-			m_bonelist[0] = dummybone;
 
-			//pd3dImmediateContext = DXUTGetD3D11DeviceContext();
-			dummybone->LoadCapsuleShape(m_pdev, pd3dImmediateContext);//!!!!!!!!!!
 
-			if (m_topbone) {
-				dummybone->AddChild(m_topbone);
+	WCHAR* findmqo = wcsstr((WCHAR*)this->GetFileName(), L".mqo");
+	if (findmqo == 0) {//mqo以外の場合には　m_topbone必要
+		if (m_bonelist.empty()) {
+			CBone* dummybone = CBone::GetNewBone(this);
+			//_ASSERT( dummybone );
+			if (dummybone) {
+				dummybone->SetName("RootNode_");
+				m_bonelist[0] = dummybone;
+
+				dummybone->LoadCapsuleShape(m_pdev, pd3dImmediateContext);//!!!!!!!!!!
 				m_topbone = dummybone;
 			}
-			//m_topbone = dummybone;
+			//_ASSERT(0);
 		}
-		//_ASSERT(0);
 	}
+
 
 	//CreateExtendBoneReq(m_topbone);
 
@@ -2219,6 +2217,7 @@ int CModel::GetShapeWeight(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAn
 int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 {
 	if( !m_topbone ){
+		//_ASSERT(0);
 		return 0;//!!!!!!!!!!!
 	}
 
@@ -5192,88 +5191,128 @@ int CModel::GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode )
 	int skinCount  = pMesh->GetDeformerCount( FbxDeformer::eSkin );
 
 	int makecnt = 0;
-	//for ( int i = 0; i < skinCount; ++i ) {
-	for (int i = 0; i < skinCount; i++) {
-		// i番目のスキンを取得
-		FbxSkin* skin = (FbxSkin*)( pMesh->GetDeformer( i, FbxDeformer::eSkin ) );
+	if (skinCount >= 1) {
+		//for ( int i = 0; i < skinCount; ++i ) {
+		for (int i = 0; i < skinCount; i++) {
+			// i番目のスキンを取得
+			FbxSkin* skin = (FbxSkin*)(pMesh->GetDeformer(i, FbxDeformer::eSkin));
 
-		// クラスターの数を取得
-		int clusterNum = skin->GetClusterCount();
-DbgOut( L"fbx : skin : org clusternum %d\r\n", clusterNum );
+			// クラスターの数を取得
+			int clusterNum = skin->GetClusterCount();
+			DbgOut(L"fbx : skin : org clusternum %d\r\n", clusterNum);
 
-		for ( int j = 0; j < clusterNum; ++j ) {
-			// j番目のクラスタを取得
-			FbxCluster* cluster = skin->GetCluster( j );
+			for (int j = 0; j < clusterNum; ++j) {
+				// j番目のクラスタを取得
+				FbxCluster* cluster = skin->GetCluster(j);
 
-			int validflag = IsValidFbxCluster( cluster );
-			if( validflag == 0 ){
-				continue;
-			}
-
-			//const char* bonename = ((FbxNode*)cluster->GetLink())->GetName();
-			char bonename2[256];
-			strcpy_s(bonename2, 256, ((FbxNode*)cluster->GetLink())->GetName());
-			TermJointRepeats(bonename2);
-//			int namelen = (int)strlen( clustername );
-			WCHAR wname[256];
-			::ZeroMemory( wname, sizeof( WCHAR ) * 256 );
-			MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, bonename2, -1, wname, 256 );
-//			DbgOut( L"cluster (%d, %d), name : %s\r\n", i, j, wname );
-
-			CBone* curbone = m_bonename[ (char*)bonename2 ];
-
-			if( curbone ){
-				int curclusterno = newobj->GetClusterSize();
-
-				if( curclusterno >= MAXCLUSTERNUM ){
-					WCHAR wmes[256];
-					swprintf_s( wmes, 256, L"１つのパーツに影響できるボーンの制限数(%d個)を超えました。読み込めません。", MAXCLUSTERNUM );
-					MessageBoxW( NULL, wmes, L"ボーン数エラー", MB_OK );
-					_ASSERT( 0 );
-					return 1;
+				int validflag = IsValidFbxCluster(cluster);
+				if (validflag == 0) {
+					continue;
 				}
 
+				//const char* bonename = ((FbxNode*)cluster->GetLink())->GetName();
+				char bonename2[256];
+				strcpy_s(bonename2, 256, ((FbxNode*)cluster->GetLink())->GetName());
+				TermJointRepeats(bonename2);
+				//			int namelen = (int)strlen( clustername );
+				WCHAR wname[256];
+				::ZeroMemory(wname, sizeof(WCHAR) * 256);
+				MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, bonename2, -1, wname, 256);
+				//			DbgOut( L"cluster (%d, %d), name : %s\r\n", i, j, wname );
 
-				newobj->PushBackCluster( curbone );
+				CBone* curbone = m_bonename[(char*)bonename2];
 
-				int pointNum = cluster->GetControlPointIndicesCount();
-				int* pointAry = cluster->GetControlPointIndices();
-				double* weightAry = cluster->GetControlPointWeights();
+				if (curbone) {
+					int curclusterno = newobj->GetClusterSize();
 
-				FbxCluster::ELinkMode lClusterMode = (FbxCluster::ELinkMode)cluster->GetLinkMode();
-				int index;
+					if (curclusterno >= MAXCLUSTERNUM) {
+						WCHAR wmes[256];
+						swprintf_s(wmes, 256, L"１つのパーツに影響できるボーンの制限数(%d個)を超えました。読み込めません。", MAXCLUSTERNUM);
+						MessageBoxW(NULL, wmes, L"ボーン数エラー", MB_OK);
+						_ASSERT(0);
+						return 1;
+					}
+
+
+					newobj->PushBackCluster(curbone);
+
+					int pointNum = cluster->GetControlPointIndicesCount();
+					int* pointAry = cluster->GetControlPointIndices();
+					double* weightAry = cluster->GetControlPointWeights();
+
+					FbxCluster::ELinkMode lClusterMode = (FbxCluster::ELinkMode)cluster->GetLinkMode();
+					int index;
+					float weight;
+					for (int i2 = 0; i2 < pointNum; i2++) {
+						// 頂点インデックスとウェイトを取得
+						index = pointAry[i2];
+						weight = (float)weightAry[i2];
+
+						int isadditive;
+						if (lClusterMode == FbxCluster::eAdditive) {
+							isadditive = 1;
+						}
+						else {
+							isadditive = 0;
+						}
+
+						if ((lClusterMode == FbxCluster::eAdditive) || (weight >= 0.05f)) {
+							//if ((lClusterMode == FbxCluster::eAdditive)){
+							newobj->AddInfBone(curclusterno, index, weight, isadditive);
+						}
+					}
+
+					makecnt++;
+
+				}
+				else {
+					//RootNodeという名前のジョイントが無いときにもここを通る
+					//_ASSERT( 0 );
+				}
+
+			}
+
+			newobj->NormalizeInfBone();
+		}
+	}
+	else {
+		//#################################
+		//boneが　TopBoneただ１つだけの場合
+		//#################################
+
+		CBone* curbone = GetTopBone();
+
+		if (curbone) {
+			newobj->PushBackCluster(curbone);
+
+			CPolyMesh4* pm4 = newobj->GetPm4();
+			if (pm4) {
+				int pointNum = pm4->GetOrgPointNum();
+
+				int pointindex;
 				float weight;
-				for ( int i2 = 0; i2 < pointNum; i2++ ) {
+				for (pointindex = 0; pointindex < pointNum; pointindex++) {
 					// 頂点インデックスとウェイトを取得
-					index  = pointAry[ i2 ];
-					weight = (float)weightAry[ i2 ];
+
+					weight = 1.0f;//topbone１つに1.0の重み
 
 					int isadditive;
-					if( lClusterMode == FbxCluster::eAdditive ){
-						isadditive = 1;
-					}else{
-						isadditive = 0;
-					}
-
-					if( (lClusterMode == FbxCluster::eAdditive) || (weight >= 0.05f) ){
-					//if ((lClusterMode == FbxCluster::eAdditive)){
-						newobj->AddInfBone( curclusterno, index, weight, isadditive );
-					}
+					isadditive = 1;
+					int curclusterno = 0;
+					newobj->AddInfBone(curclusterno, pointindex, weight, isadditive);
 				}
 
 				makecnt++;
-
-			}else{
-				//RootNodeという名前のジョイントが無いときにもここを通る
-				//_ASSERT( 0 );
 			}
-
 		}
-
+		else {
+			//RootNodeという名前のジョイントが無いときにもここを通る
+			//_ASSERT( 0 );
+		}
 		newobj->NormalizeInfBone();
-
-
 	}
+
+	
 
 	DbgOut( L"fbx skin : make cluster %d\r\n", makecnt );
 

@@ -574,7 +574,7 @@ int CPolyMesh4::SetPm3InfNoSkin( ID3D11Device* pdev, CMQOObject* srcobj, int clu
 	return 0;
 }
 
-int CPolyMesh4::SetPm3Inf( CMQOObject* srcobj )
+int CPolyMesh4::SetPm3Inf(CMQOObject* srcobj)
 {
 	if (!m_pm3inf || !m_triface) {
 		_ASSERT(0);
