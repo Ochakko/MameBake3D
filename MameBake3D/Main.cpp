@@ -3753,6 +3753,11 @@ void InitApp()
 
 	//g_edgesmp = false;
 
+
+	s_layerWnd = 0;
+	s_owpLayerTable = 0;
+	
+
 	g_zcmpalways = false;
 	g_lightflag = 1;
 
@@ -16962,7 +16967,6 @@ int CreateConvBoneWnd()
 		s_convboneWnd->addParts(*s_convboneSCWnd);
 
 
-
 		WCHAR bvhbonename[MAX_PATH];
 		int cbno = 0;
 		map<int, CBone*>::iterator itrbone;
@@ -29140,10 +29144,12 @@ int CreateLayerWnd()
 		return 0;
 	}
 
+	WindowSize layersize;
 
 	////
 	// ウィンドウを作成
 	if (g_4kresolution) {
+		layersize = WindowSize(150 * 2, 200 * 2);
 		s_layerWnd = new OrgWindow(
 			1,
 			_T("LayerTool"),		//ウィンドウクラス名
@@ -29152,7 +29158,7 @@ int CreateLayerWnd()
 			//WindowPos(250, 645),		//位置
 			//WindowPos(250, 660),		//位置
 			WindowPos(2000, 660),		//位置
-			WindowSize(150 * 2, 200 * 2),		//サイズ
+			layersize,		//サイズ
 			_T("LayerTool"),	//タイトル
 			//s_mainhwnd,					//親ウィンドウハンドル
 			//s_3dwnd,
@@ -29165,6 +29171,7 @@ int CreateLayerWnd()
 			true);					//サイズ変更の可否
 	}
 	else {
+		layersize = WindowSize(150, 200);
 		s_layerWnd = new OrgWindow(
 			1,
 			_T("LayerTool"),		//ウィンドウクラス名
@@ -29173,7 +29180,7 @@ int CreateLayerWnd()
 			//WindowPos(250, 645),		//位置
 			//WindowPos(250, 660),		//位置
 			WindowPos(2000, 660),		//位置
-			WindowSize(150, 200),		//サイズ
+			layersize,		//サイズ
 			_T("LayerTool"),	//タイトル
 			//s_mainhwnd,					//親ウィンドウハンドル
 			//s_3dwnd,
@@ -29195,12 +29202,18 @@ int CreateLayerWnd()
 			_ASSERT(0);
 			return 1;
 		}
+
+
+		s_owpLayerTable->setSize(WindowSize(layersize.x - 30, layersize.y));
+		s_layerWnd->addParts(*s_owpLayerTable);
+
+
 		WCHAR label[256];
 		wcscpy_s(label, 256, L"dummy name");
 		s_owpLayerTable->newLine(label, 0);
 
 		// ウィンドウにウィンドウパーツを登録
-		s_layerWnd->addParts(*s_owpLayerTable);
+		//s_layerWnd->addParts(*s_owpLayerTable);
 
 
 		s_layerWnd->setCloseListener([]() {
@@ -32979,18 +32992,32 @@ int OnMouseMoveFunc()
 			deltadist *= 0.250f;
 		}
 
+		float savecamdist = s_camdist;
+
 		s_camdist += deltadist;
 		//if (s_camdist < 0.0001f) {
 		//	s_camdist = 0.0001f;
 		//}
-		if (s_camdist < 0.01f) {//2022/10/29 0.0001では近づきすぎたときに固まるので0.01に変更
-			s_camdist = 0.01f;
+		if (s_camdist >= 0.01f) {//2022/10/29 0.0001では近づきすぎたときに固まるので0.01に変更
+			ChaVector3 camvec = g_camEye - g_camtargetpos;
+			ChaVector3Normalize(&camvec, &camvec);
+			g_befcamEye = g_camEye;
+			g_camEye = g_camtargetpos + camvec * s_camdist;
+		}
+		else {
+
+			//2023/03/23
+			//カメラ位置がターゲットに近づきすぎた場合　止めないで　ターゲット位置を視線方向に延長するように
+
+			ChaVector3 camvec2 = g_camtargetpos - g_camEye;
+			ChaVector3Normalize(&camvec2, &camvec2);
+			g_camtargetpos = g_camEye + camvec2 * savecamdist * 3.0f;
+			g_befcamEye = g_camEye;
+			g_camEye = g_camtargetpos - camvec2 * savecamdist * 3.0f;
+
+			s_camdist = savecamdist * 3.0f;
 		}
 
-		ChaVector3 camvec = g_camEye - g_camtargetpos;
-		ChaVector3Normalize(&camvec, &camvec);
-		g_befcamEye = g_camEye;
-		g_camEye = g_camtargetpos + camvec * s_camdist;
 		//!!!!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 

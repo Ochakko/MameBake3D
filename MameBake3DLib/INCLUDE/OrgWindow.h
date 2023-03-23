@@ -8886,7 +8886,8 @@ void s_dummyfunc()
 					int barSize = (y1 - y0 - 4) * showLineNum / (int)lineData.size();
 					int barStart = (y1 - y0 - 4) * showPosLine / (int)lineData.size();
 					if (showLineNum < (int)lineData.size()) {
-						hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
+						//hdcM->setPenAndBrush(NULL, RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)));
+						hdcM->setPenAndBrush(NULL, RGB(240, 240, 240));//2023/03/23
 						Rectangle(hdcM->hDC, x0 + 2, y0 + 2 + barStart, x1 - 2, y0 + 2 + barStart + barSize + 1);
 					}
 				}

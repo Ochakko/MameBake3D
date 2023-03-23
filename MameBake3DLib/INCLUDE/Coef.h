@@ -356,7 +356,7 @@ typedef struct tag_hinfo
 
 	void Init() {
 		minh = FLT_MAX;//有効値で置き換わるようにMAX
-		maxh = FLT_MIN;//有効値で置き換わるようにMIN
+		maxh = -FLT_MAX;//有効値で置き換わるようにMIN(-MAX)
 		height = 0.0f;
 	};
 }HINFO;

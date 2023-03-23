@@ -5670,6 +5670,16 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 					ChaVector3 firstpos = boneptr->GetJointFPos();
 
 					ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
+					ChaVector3 cam2mark = scpos - g_camEye;
+					ChaVector3Normalize(&cam2mark, &cam2mark);
+					ChaVector3 camdir = g_camtargetpos - g_camEye;
+					ChaVector3Normalize(&camdir, &camdir);
+					double dot1 = ChaVector3Dot(&cam2mark, &camdir);
+					if (dot1 < 0.0f) {
+						//2023/03/23 カメラの後ろにあるマークが　逆さに表示されないように
+						continue;
+					}
+
 					scpos.z = 0.0f;
 					bcircleptr->SetPos(scpos);
 					ChaVector2 bsize;
@@ -5850,6 +5860,16 @@ void CModel::RenderBoneCircleReq(ID3D11DeviceContext* pd3dImmediateContext, CBtO
 				ChaVector3 firstpos = childbone->GetJointFPos();
 				ChaVector3 scpos;
 				ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
+
+				ChaVector3 cam2mark = scpos - g_camEye;
+				ChaVector3Normalize(&cam2mark, &cam2mark);
+				ChaVector3 camdir = g_camtargetpos - g_camEye;
+				ChaVector3Normalize(&camdir, &camdir);
+				double dot1 = ChaVector3Dot(&cam2mark, &camdir);
+				if (dot1 < 0.0f) {
+					//2023/03/23 カメラの後ろにあるマークが　逆さに表示されないように
+					return;
+				}
 				scpos.z = 0.0f;
 
 				bcircleptr->SetPos(scpos);

@@ -8167,7 +8167,7 @@ int CBone::AdditiveCurrentToAngleLimit()
 
 			ChaVector3 calceul;
 			float cureul[3];
-			float maxeul[3] = { FLT_MIN, FLT_MIN, FLT_MIN };//必ず更新されるようにMIN
+			float maxeul[3] = { -FLT_MAX, -FLT_MAX, -FLT_MAX };//必ず更新されるようにMIN(-MAX)
 			float mineul[3] = { FLT_MAX, FLT_MAX, FLT_MAX };//必ず更新されるようにMAX
 			for (curframe = 1.0; curframe < frameleng; curframe += 1.0) {
 				//calceul = CalcLocalEulXYZ(-1, curmotid, curframe, BEFEUL_BEFFRAME, 0);
@@ -8244,7 +8244,7 @@ int CBone::AdditiveAllMotionsToAngleLimit()
 {
 	if (m_parmodel) {
 
-		float maxeul[3] = { FLT_MIN, FLT_MIN, FLT_MIN };//必ず更新されるようにMIN
+		float maxeul[3] = { -FLT_MAX, -FLT_MAX, -FLT_MAX };//必ず更新されるようにMIN(-MAX)
 		float mineul[3] = { FLT_MAX, FLT_MAX, FLT_MAX };//必ず更新されるようにMAX
 
 		int motionnum = m_parmodel->GetMotInfoSize();
