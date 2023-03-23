@@ -616,7 +616,8 @@ int CDispObj::CreateVBandIBLine()
 	return 0;
 }
 
-int CDispObj::RenderNormal(ID3D11DeviceContext* pd3d11DeviceContext, CMQOMaterial* rmaterial, int lightflag, ChaVector4 diffusemult)
+int CDispObj::RenderNormal(bool withalpha,
+	ID3D11DeviceContext* pd3d11DeviceContext, CMQOMaterial* rmaterial, int lightflag, ChaVector4 diffusemult)
 {
 	// Only PM4
 
@@ -651,6 +652,12 @@ int CDispObj::RenderNormal(ID3D11DeviceContext* pd3d11DeviceContext, CMQOMateria
 			diffuse.y = curdif4f.y * diffusemult.y;
 			diffuse.z = curdif4f.z * diffusemult.z;
 
+			if ((withalpha == false) && (diffuse.w <= 0.99999f)) {
+				continue;
+			}
+			if ((withalpha == true) && (diffuse.w > 0.99999f)) {
+				continue;
+			}
 
 
 			if (diffuse.w <= 0.99999f) {
@@ -1130,7 +1137,8 @@ int CDispObj::RenderNormal(ID3D11DeviceContext* pd3d11DeviceContext, CMQOMateria
 //	return 0;
 //}
 
-int CDispObj::RenderNormalPM3(ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, ChaVector4 diffusemult )
+int CDispObj::RenderNormalPM3(bool withalpha,
+	ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, ChaVector4 diffusemult )
 {
 	if( !m_pm3 ){
 		return 0;
@@ -1159,6 +1167,14 @@ int CDispObj::RenderNormalPM3(ID3D11DeviceContext* pd3d11DeviceContext, int ligh
 		diffuse.x = curdif4f.x * diffusemult.x;
 		diffuse.y = curdif4f.y * diffusemult.y;
 		diffuse.z = curdif4f.z * diffusemult.z;
+
+		if ((withalpha == false) && (diffuse.w <= 0.99999f)) {
+			continue;
+		}
+		if ((withalpha == true) && (diffuse.w > 0.99999f)) {
+			continue;
+		}
+
 
 		hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));
 		_ASSERT(SUCCEEDED(hr));
@@ -1297,7 +1313,8 @@ int CDispObj::RenderNormalPM3(ID3D11DeviceContext* pd3d11DeviceContext, int ligh
 }
 
 
-int CDispObj::RenderLine(ID3D11DeviceContext* pd3d11DeviceContext, ChaVector4 diffusemult )
+int CDispObj::RenderLine(bool withalpha,
+	ID3D11DeviceContext* pd3d11DeviceContext, ChaVector4 diffusemult )
 {
 	if( !m_extline ){
 		return 0;
@@ -1313,6 +1330,15 @@ int CDispObj::RenderLine(ID3D11DeviceContext* pd3d11DeviceContext, ChaVector4 di
 	diffuse.x = m_extline->m_color.x * diffusemult.x;
 	diffuse.y = m_extline->m_color.y * diffusemult.y;
 	diffuse.z = m_extline->m_color.z * diffusemult.z;
+
+	if ((withalpha == false) && (diffuse.w <= 0.99999f)) {
+		return 0;
+	}
+	if ((withalpha == true) && (diffuse.w > 0.99999f)) {
+		return 0;
+	}
+
+
 
 	hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));
 	_ASSERT(SUCCEEDED(hr));

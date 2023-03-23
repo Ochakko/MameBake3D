@@ -14117,7 +14117,8 @@ int RenderSelectFunc(ID3D11DeviceContext* pd3dImmediateContext)
 		int lightflag = 1;
 		//ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.7f);
-		s_select->OnRender(pd3dImmediateContext, lightflag, diffusemult);
+		bool withalpha = true;
+		s_select->OnRender(withalpha, pd3dImmediateContext, lightflag, diffusemult);
 	}
 	//pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
@@ -14134,7 +14135,8 @@ int RenderSelectPostureFunc(ID3D11DeviceContext* pd3dImmediateContext)
 		int lightflag = 1;
 		//ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 0.7f);
-		s_select_posture->OnRender(pd3dImmediateContext, lightflag, diffusemult);
+		bool withalpha = true;
+		s_select_posture->OnRender(withalpha, pd3dImmediateContext, lightflag, diffusemult);
 	}
 	//pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 
@@ -14250,7 +14252,8 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 							int lightflag = 0;
 							//ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 							ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
-							currigmodel->OnRender(pd3dImmediateContext, lightflag, diffusemult);
+							bool withalpha = false;
+							currigmodel->OnRender(withalpha, pd3dImmediateContext, lightflag, diffusemult);
 							//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 							//pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 						
@@ -29335,7 +29338,8 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 									renderalpha = refstartalpha * renderalpha0 * renderalpha0 * renderalpha0 * (double)g_refalpha * 0.01f;
 									ChaVector4 refdiffusemult = ChaVector4(1.0f, 1.0f, 1.0f, (float)renderalpha);
 
-									s_model->OnRender(pd3dImmediateContext, lightflag, refdiffusemult, btflag1);//render model at reference pos
+									bool withalpha = true;
+									s_model->OnRender(withalpha, pd3dImmediateContext, lightflag, refdiffusemult, btflag1);//render model at reference pos
 								}
 							}
 							rendercount++;
@@ -29366,7 +29370,10 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 									}
 								}
 							}
-							s_model->OnRender(pd3dImmediateContext, lightflag2, diffusemult, btflag2);
+							bool withalpha = false;
+							s_model->OnRender(withalpha, pd3dImmediateContext, lightflag2, diffusemult, btflag2);
+							withalpha = true;
+							s_model->OnRender(withalpha, pd3dImmediateContext, lightflag2, diffusemult, btflag2);
 						}
 
 
@@ -29411,41 +29418,52 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 	}
 
 
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
+	int rendercount;
+	for (rendercount = 0; rendercount < 2; rendercount++) {
+		bool withalpha;
+		if (rendercount == 0) {
+			withalpha = false;
+		}
+		else {
+			withalpha = true;
+		}
 
-		//if (curmodel && curmodel->GetLoadedFlag() && curmodel->GetModelDisp()){
-		if (curmodel && curmodel->m_loadedflag && curmodel->m_modeldisp) {//curmodelが作成途中の場合を考えて、先頭から２つのpublicデータメンバーを参照する
-			int lightflag = 1;
-			ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
-			int btflag = 0;
-			if ((g_previewFlag != 4) && (g_previewFlag != 5)) {
-				btflag = 0;
-			}
-			else {
-				if (g_previewFlag == 4) {
-					btflag = 1;
+		vector<MODELELEM>::iterator itrmodel;
+		for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+			CModel* curmodel = itrmodel->modelptr;
+
+			//if (curmodel && curmodel->GetLoadedFlag() && curmodel->GetModelDisp()){
+			if (curmodel && curmodel->m_loadedflag && curmodel->m_modeldisp) {//curmodelが作成途中の場合を考えて、先頭から２つのpublicデータメンバーを参照する
+				int lightflag = 1;
+				ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
+				int btflag = 0;
+				if ((g_previewFlag != 4) && (g_previewFlag != 5)) {
+					btflag = 0;
 				}
 				else {
-					//previewFlag == 5
-					if ((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))) {
-						btflag = 2;//2022/07/09
+					if (g_previewFlag == 4) {
+						btflag = 1;
+					}
+					else {
+						//previewFlag == 5
+						if ((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))) {
+							btflag = 2;//2022/07/09
+						}
 					}
 				}
-			}
 
-			if (curmodel == s_model) {
-				//render reference pose
-				if (s_sprefpos.state) {
-					OnRenderRefPose(pd3dImmediateContext, s_model);
+				if (curmodel == s_model) {
+					//render reference pose
+					if (s_sprefpos.state) {
+						OnRenderRefPose(pd3dImmediateContext, s_model);
+					}
+					else {
+						curmodel->OnRender(withalpha, pd3dImmediateContext, g_lightflag, diffusemult, btflag);
+					}
 				}
 				else {
-					curmodel->OnRender(pd3dImmediateContext, g_lightflag, diffusemult, btflag);
+					curmodel->OnRender(withalpha, pd3dImmediateContext, g_lightflag, diffusemult, btflag);
 				}
-			}
-			else {
-				curmodel->OnRender(pd3dImmediateContext, g_lightflag, diffusemult, btflag);
 			}
 		}
 	}
@@ -29460,7 +29478,8 @@ int OnRenderGround(ID3D11DeviceContext* pd3dImmediateContext)
 		//g_pEffect->SetMatrix(g_hmWorld, &(s_matWorld.D3DX()));
 
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
-		s_ground->OnRender(pd3dImmediateContext, 0, diffusemult);
+		bool withalpha = false;
+		s_ground->OnRender(withalpha, pd3dImmediateContext, 0, diffusemult);
 	}
 	if (s_gplane && s_bpWorld && s_bpWorld->m_gplanedisp) {
 		ChaMatrix gpmat = s_inimat;
@@ -29469,7 +29488,8 @@ int OnRenderGround(ID3D11DeviceContext* pd3dImmediateContext)
 		//g_pEffect->SetMatrix(g_hmWorld, &(gpmat.D3DX()));
 
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
-		s_gplane->OnRender(pd3dImmediateContext, 0, diffusemult);
+		bool withalpha = false;
+		s_gplane->OnRender(withalpha, pd3dImmediateContext, 0, diffusemult);
 	}
 
 	return 0;

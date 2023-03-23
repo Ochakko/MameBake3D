@@ -934,8 +934,8 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 	}
 
 
-	WCHAR* findmqo = wcsstr((WCHAR*)this->GetFileName(), L".mqo");
-	if (findmqo == 0) {//mqo以外の場合には　m_topbone必要
+	//WCHAR* findmqo = wcsstr((WCHAR*)this->GetFileName(), L".mqo");
+	//if (findmqo == 0) {//mqo以外の場合には　m_topbone必要
 		if (m_bonelist.empty()) {
 			CBone* dummybone = CBone::GetNewBone(this);
 			//_ASSERT( dummybone );
@@ -948,7 +948,7 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 			}
 			//_ASSERT(0);
 		}
-	}
+	//}
 
 
 	//CreateExtendBoneReq(m_topbone);
@@ -1115,29 +1115,83 @@ int CModel::CreateMaterialTexture(ID3D11DeviceContext* pd3dImmediateContext)
 	return 0;
 }
 
-int CModel::OnRender(ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int btflag )
+int CModel::OnRender(bool withalpha, 
+	ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int btflag )
 {
 	map<int,CMQOObject*>::iterator itr;
 	for( itr = m_object.begin(); itr != m_object.end(); itr++ ){
 		CMQOObject* curobj = itr->second;
 		if( curobj && curobj->GetDispFlag() ){
 			if( curobj->GetDispObj() ){
-				CallF( SetShaderConst( curobj, btflag ), return 1 );
 
 				CMQOMaterial* rmaterial = 0;
 				if( curobj->GetPm3() ){
-					//g_pEffect->SetMatrix( g_hmWorld, &m_matWorld );
-					CallF( curobj->GetDispObj()->RenderNormalPM3(pd3dImmediateContext, lightflag, diffusemult ), return 1 );
+					bool found_alpha = false;
+					bool found_noalpha = false;
+					int blno;
+					for (blno = 0; blno < curobj->GetPm3()->GetOptMatNum(); blno++) {
+						MATERIALBLOCK* currb = curobj->GetPm3()->GetMatBlock() + blno;
+						CMQOMaterial* curmat;
+						curmat = currb->mqomat;
+						if (!curmat) {
+							continue;
+						}
+						if ((curmat->GetDif4F().w * diffusemult.w) <= 0.99999f) {
+							found_alpha = true;
+						}
+						else {
+							found_noalpha = true;
+						}
+					}
+					if ((withalpha == false) && (found_noalpha == false)) {
+						//不透明描画時　１つも不透明がなければ　レンダースキップ
+						continue;
+					}
+					if ((withalpha == true) && (found_alpha == false)) {
+						//半透明描画時　１つも半透明がなければ　レンダースキップ
+						continue;
+					}
+
+					CallF(SetShaderConst(curobj, btflag), return 1);
+					CallF( curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult ), return 1 );
 				}
 				else if (curobj->GetPm4()){
+					bool found_alpha = false;
+					bool found_noalpha = false;
+					std::map<int, CMQOMaterial*>::iterator itrmaterial;
+					for (itrmaterial = curobj->GetMaterialBegin(); itrmaterial != curobj->GetMaterialEnd(); itrmaterial++) {
+						CMQOMaterial* curmaterial = itrmaterial->second;
+						if (curmaterial) {
+							if ((curmaterial->GetDif4F().w * diffusemult.w) <= 0.99999f) {
+								found_alpha = true;
+							}
+							else {
+								found_noalpha = true;
+							}
+						}
+					}
+					if ((withalpha == false) && (found_noalpha == false)) {
+						//不透明描画時　１つも不透明がなければ　レンダースキップ
+						continue;
+					}
+					if ((withalpha == true) && (found_alpha == false)) {
+						//半透明描画時　１つも半透明がなければ　レンダースキップ
+						continue;
+					}
+					CallF(SetShaderConst(curobj, btflag), return 1);
 					rmaterial = curobj->GetMaterialBegin()->second;
-					CallF( curobj->GetDispObj()->RenderNormal(pd3dImmediateContext, rmaterial, lightflag, diffusemult ), return 1 );
+					CallF( curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, rmaterial, lightflag, diffusemult ), return 1 );
 				}else{
 					_ASSERT( 0 );
 				}
 			}
-			if( curobj->GetDispLine() ){
-				CallF( curobj->GetDispLine()->RenderLine(pd3dImmediateContext, diffusemult ), return 1 );
+			if (curobj->GetDispLine()) {
+				if ((withalpha == false) && ((curobj->GetExtLine()->m_color.w * diffusemult.w) > 0.99999f)) {
+					CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult), return 1);
+				}
+				else if ((withalpha == true) && (((curobj->GetExtLine()->m_color.w * diffusemult.w) <= 0.99999f))) {
+					CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult), return 1);
+				}
 			}
 		}
 	}
@@ -5363,7 +5417,15 @@ int CModel::RenderRefArrow(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 		g_hmWorld->SetMatrix((float*)&(bmmat.data[MATI_11]));
 		//g_pEffect->SetMatrix(g_hmWorld, &(bmmat.D3DX()));
 		this->UpdateMatrix(limitdegflag, &bmmat, &m_matVP);
-		CallF(this->OnRender(pd3dImmediateContext, 0, diffusemult), return 1);
+
+		bool withalpha;
+		if (diffusemult.w <= 0.99999f) {
+			withalpha = true;
+		}
+		else {
+			withalpha = false;
+		}
+		CallF(this->OnRender(withalpha, pd3dImmediateContext, 0, diffusemult), return 1);
 	}
 
 	return 0;
@@ -5495,8 +5557,9 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 							else{
 								difmult = ChaVector4(0.25f, 0.5f, 0.5f, 0.5f);
 							}
+							bool withalpha = true;
 							if (g_bonemarkflag) {
-								CallF(bmarkptr->OnRender(pd3dImmediateContext, 0, difmult), return 1);
+								CallF(bmarkptr->OnRender(withalpha, pd3dImmediateContext, 0, difmult), return 1);
 							}
 						}
 
@@ -5537,10 +5600,11 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 							difmult = ChaVector4(0.25f, 0.5f, 0.5f, 0.5f);
 						}
 
+						bool withalpha = true;
 						if (g_rigidmarkflag) {
 							//if ((curre->GetSkipflag() == 0) && srcbone->GetParent() && srcbone->GetParent()->GetParent()) {//有効にされている場合のみ表示　RootNodeなども表示しない
 							if (curre->GetSkipflag() == 0) {//有効にされている場合のみ表示
-								CallF(boneptr->GetCurColDisp(childbone)->OnRender(pd3dImmediateContext, 0, difmult), return 1);
+								CallF(boneptr->GetCurColDisp(childbone)->OnRender(withalpha, pd3dImmediateContext, 0, difmult), return 1);
 							}
 						}
 					}
@@ -5741,9 +5805,10 @@ void CModel::RenderCapsuleReq(bool limitdegflag, ID3D11DeviceContext* pd3dImmedi
 			else{
 				difmult = ChaVector4(0.25f, 0.5f, 0.5f, 0.5f);
 			}
+			bool withalpha = true;
 			//if ((curre->GetSkipflag() == 0) && srcbone->GetParent() && srcbone->GetParent()->GetParent()) {//有効にされている場合のみ表示　RootNodeなども表示しない
 			if (curre->GetSkipflag() == 0) {//有効にされている場合のみ表示
-				CallF(srcbone->GetCurColDisp(childbone)->OnRender(pd3dImmediateContext, 0, difmult), return);
+				CallF(srcbone->GetCurColDisp(childbone)->OnRender(withalpha, pd3dImmediateContext, 0, difmult), return);
 			}
 		}
 		//}

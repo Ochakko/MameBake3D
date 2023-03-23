@@ -180,7 +180,7 @@ public:
  * @param (int btflag = 0) IN bulletのシミュレーション中であるかどうかのフラグ。
  * @return 成功したら０。
  */
-	int OnRender(ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int btflag = 0 );
+	int OnRender(bool withalpha, ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int btflag = 0 );
 
 	int RenderRefArrow(bool limitdegflag, ID3D11DeviceContext* pd3dImmediateContext, 
 		CBone* boneptr, ChaVector4 diffusemult, int refmult, std::vector<ChaVector3> vecbonepos);

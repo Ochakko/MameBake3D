@@ -71,7 +71,8 @@ public:
  * @param (ChaVector4 diffusemult) IN ディフューズ色に掛け算する比率。
  * @return 成功したら０。
  */
-	int RenderNormal(ID3D11DeviceContext* pd3d11DeviceContext, CMQOMaterial* rmaterial, int lightflag, ChaVector4 diffusemult );
+	int RenderNormal(bool withalpha, 
+		ID3D11DeviceContext* pd3d11DeviceContext, CMQOMaterial* rmaterial, int lightflag, ChaVector4 diffusemult );
 
 /**
  * @fn
@@ -82,7 +83,8 @@ public:
  * @return 成功したら０。
  * @detail FBXデータは１オブジェクトにつき１マテリアル(材質)だが、メタセコイアデータは１オブジェクトに複数マテリアルが設定されていることが多い。
  */
-	int RenderNormalPM3(ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, ChaVector4 diffusemult );
+	int RenderNormalPM3(bool withalpha, 
+		ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, ChaVector4 diffusemult );
 
 /**
  * @fn
@@ -91,7 +93,8 @@ public:
  * @param (ChaVector4 diffusemult) IN ディフューズ色に掛け算する比率。
  * @return 成功したら０。
  */
-	int RenderLine(ID3D11DeviceContext* pd3d11DeviceContext, ChaVector4 diffusemult );
+	int RenderLine(bool withalpha,
+		ID3D11DeviceContext* pd3d11DeviceContext, ChaVector4 diffusemult );
 
 /**
  * @fn
