@@ -1120,6 +1120,15 @@ ChaVector3::~ChaVector3()
 
 }
 
+void ChaVector3::Clamp(float srcmin, float srcmax)
+{
+	float tmpx = max(srcmin, min(srcmax, x));
+	float tmpy = max(srcmin, min(srcmax, y));
+	float tmpz = max(srcmin, min(srcmax, z));
+	x = tmpx;
+	y = tmpy;
+	z = tmpz;
+}
 
 ChaVector3 ChaVector3::operator= (ChaVector3 v) { this->x = v.x; this->y = v.y; this->z = v.z; return *this; };
 ChaVector3 ChaVector3::operator* (float srcw) const { return ChaVector3((float)((double)this->x * (double)srcw), (float)((double)this->y * (double)srcw), (float)((double)this->z * (double)srcw)); }
@@ -1219,6 +1228,16 @@ ChaVector4 &ChaVector4::operator-= (const ChaVector4 &v) { *this = *this - v; re
 
 ChaVector4 ChaVector4::operator- () const { return *this * -1.0; }
 
+void ChaVector4::Clamp(float srcmin, float srcmax)
+{
+	float tmpx = max(srcmin, min(srcmax, x));
+	float tmpy = max(srcmin, min(srcmax, y));
+	float tmpz = max(srcmin, min(srcmax, z));
+	float tmpw = max(srcmin, min(srcmax, w));
+	x = tmpx;
+	y = tmpy;
+	z = tmpz;
+}
 
 ChaMatrix::ChaMatrix()
 {

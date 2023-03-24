@@ -217,6 +217,8 @@ public:
 	ChaMatrix MakeXYZRotMat(CQuaternion* srcaxisq);
 	ChaMatrix MakeScaleMat();
 
+	void Clamp(float srcmin, float srcmax);
+
 #ifdef CONVD3DX11
 	DirectX::XMFLOAT3 D3DX();
 	DirectX::XMVECTOR XMVECTOR(float w);
@@ -259,6 +261,9 @@ public:
 
 	bool operator== (const ChaVector4 &v) const { return x == v.x && y == v.y && z == v.z && w == v.w; };
 	bool operator!= (const ChaVector4 &v) const { return !(*this == v); };
+
+	void Clamp(float srcmin, float srcmax);
+
 
 #ifdef CONVD3DX11
 	DirectX::XMFLOAT4 D3DX();

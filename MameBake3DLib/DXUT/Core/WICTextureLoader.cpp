@@ -840,7 +840,7 @@ namespace
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT DirectX::CreateWICTextureFromMemory(
+HRESULT DirectX::CreateWICTextureFromMemory_old(
     ID3D11Device* d3dDevice,
     const uint8_t* wicData,
     size_t wicDataSize,
@@ -848,7 +848,7 @@ HRESULT DirectX::CreateWICTextureFromMemory(
     ID3D11ShaderResourceView** textureView,
     size_t maxsize) noexcept
 {
-    return CreateWICTextureFromMemoryEx(d3dDevice, nullptr,
+    return CreateWICTextureFromMemoryEx_old(d3dDevice, nullptr,
         wicData, wicDataSize,
         maxsize,
         D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0,
@@ -857,7 +857,7 @@ HRESULT DirectX::CreateWICTextureFromMemory(
 }
 
 _Use_decl_annotations_
-HRESULT DirectX::CreateWICTextureFromMemory(
+HRESULT DirectX::CreateWICTextureFromMemory_old(
     ID3D11Device* d3dDevice,
     ID3D11DeviceContext* d3dContext,
     const uint8_t* wicData,
@@ -866,7 +866,7 @@ HRESULT DirectX::CreateWICTextureFromMemory(
     ID3D11ShaderResourceView** textureView,
     size_t maxsize) noexcept
 {
-    return CreateWICTextureFromMemoryEx(d3dDevice, d3dContext,
+    return CreateWICTextureFromMemoryEx_old(d3dDevice, d3dContext,
         wicData, wicDataSize,
         maxsize,
         D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0,
@@ -875,7 +875,7 @@ HRESULT DirectX::CreateWICTextureFromMemory(
 }
 
 _Use_decl_annotations_
-HRESULT DirectX::CreateWICTextureFromMemoryEx(
+HRESULT DirectX::CreateWICTextureFromMemoryEx_old(
     ID3D11Device* d3dDevice,
     const uint8_t* wicData,
     size_t wicDataSize,
@@ -888,7 +888,7 @@ HRESULT DirectX::CreateWICTextureFromMemoryEx(
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView) noexcept
 {
-    return CreateWICTextureFromMemoryEx(d3dDevice, nullptr,
+    return CreateWICTextureFromMemoryEx_old(d3dDevice, nullptr,
         wicData, wicDataSize,
         maxsize,
         usage, bindFlags, cpuAccessFlags, miscFlags,
@@ -897,7 +897,7 @@ HRESULT DirectX::CreateWICTextureFromMemoryEx(
 }
 
 _Use_decl_annotations_
-HRESULT DirectX::CreateWICTextureFromMemoryEx(
+HRESULT DirectX::CreateWICTextureFromMemoryEx_old(
     ID3D11Device* d3dDevice,
     ID3D11DeviceContext* d3dContext,
     const uint8_t* wicData,
@@ -985,14 +985,14 @@ HRESULT DirectX::CreateWICTextureFromMemoryEx(
 
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-HRESULT DirectX::CreateWICTextureFromFile(
+HRESULT DirectX::CreateWICTextureFromFile_old(
     ID3D11Device* d3dDevice,
     const wchar_t* fileName,
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView,
     size_t maxsize) noexcept
 {
-    return CreateWICTextureFromFileEx(d3dDevice, nullptr,
+    return CreateWICTextureFromFileEx_old(d3dDevice, nullptr,
         fileName, maxsize,
         D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0,
         WIC_LOADER_DEFAULT,
@@ -1000,7 +1000,7 @@ HRESULT DirectX::CreateWICTextureFromFile(
 }
 
 _Use_decl_annotations_
-HRESULT DirectX::CreateWICTextureFromFile(
+HRESULT DirectX::CreateWICTextureFromFile_old(
     ID3D11Device* d3dDevice,
     ID3D11DeviceContext* d3dContext,
     const wchar_t* fileName,
@@ -1008,7 +1008,7 @@ HRESULT DirectX::CreateWICTextureFromFile(
     ID3D11ShaderResourceView** textureView,
     size_t maxsize) noexcept
 {
-    return CreateWICTextureFromFileEx(d3dDevice, d3dContext,
+    return CreateWICTextureFromFileEx_old(d3dDevice, d3dContext,
         fileName,
         maxsize,
         D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0,
@@ -1017,7 +1017,7 @@ HRESULT DirectX::CreateWICTextureFromFile(
 }
 
 _Use_decl_annotations_
-HRESULT DirectX::CreateWICTextureFromFileEx(
+HRESULT DirectX::CreateWICTextureFromFileEx_old(
     ID3D11Device* d3dDevice,
     const wchar_t* fileName,
     size_t maxsize,
@@ -1029,7 +1029,7 @@ HRESULT DirectX::CreateWICTextureFromFileEx(
     ID3D11Resource** texture,
     ID3D11ShaderResourceView** textureView) noexcept
 {
-    return CreateWICTextureFromFileEx(d3dDevice, nullptr,
+    return CreateWICTextureFromFileEx_old(d3dDevice, nullptr,
         fileName,
         maxsize,
         usage, bindFlags, cpuAccessFlags, miscFlags,
@@ -1038,7 +1038,7 @@ HRESULT DirectX::CreateWICTextureFromFileEx(
 }
 
 _Use_decl_annotations_
-HRESULT DirectX::CreateWICTextureFromFileEx(
+HRESULT DirectX::CreateWICTextureFromFileEx_old(
     ID3D11Device* d3dDevice,
     ID3D11DeviceContext* d3dContext,
     const wchar_t* fileName,

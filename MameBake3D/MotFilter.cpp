@@ -212,8 +212,9 @@ int CMotFilter::CallFilterFunc(bool edgesmp, bool limitdegflag,
 		//all joints
 		bool saveunderik = g_underIKRot;
 		g_underIKRot = true;
+		bool firstbroflag = false;
 		FilterReq(edgesmp, limitdegflag, srcmodel, 
-			srcmodel->GetTopBone(), srcmotid, srcstartframe, srcendframe);
+			srcmodel->GetTopBone(), srcmotid, srcstartframe, srcendframe, firstbroflag);
 		g_underIKRot = saveunderik;
 	}
 	else if (srcopekind == 2) {
@@ -232,8 +233,9 @@ int CMotFilter::CallFilterFunc(bool edgesmp, bool limitdegflag,
 		//selecting joint and deeper
 		bool saveunderik = g_underIKRot;
 		g_underIKRot = true;
+		bool firstbroflag = false;
 		FilterReq(edgesmp, limitdegflag, 
-			srcmodel, srcbone, srcmotid, srcstartframe, srcendframe);
+			srcmodel, srcbone, srcmotid, srcstartframe, srcendframe, firstbroflag);
 		g_underIKRot = saveunderik;
 	}
 	else {
@@ -513,7 +515,8 @@ int CMotFilter::FilterFunc(bool edgesmp, bool limitdegflag,
 }
 
 void CMotFilter::FilterReq(bool edgesmp, bool limitdegflag, 
-	CModel* srcmodel, CBone* curbone, int srcmotid, int srcstartframe, int srcendframe)
+	CModel* srcmodel, CBone* curbone, 
+	int srcmotid, int srcstartframe, int srcendframe, bool broflag)
 {
 	if (curbone) {
 
@@ -526,12 +529,13 @@ void CMotFilter::FilterReq(bool edgesmp, bool limitdegflag,
 
 
 		if (curbone->GetChild()){
+			bool broflag2 = true;
 			FilterReq(edgesmp, limitdegflag, 
-				srcmodel, curbone->GetChild(), srcmotid, srcstartframe, srcendframe);
+				srcmodel, curbone->GetChild(), srcmotid, srcstartframe, srcendframe, broflag2);
 		}
-		if (curbone->GetBrother()){
+		if (curbone->GetBrother() && broflag){
 			FilterReq(edgesmp, limitdegflag, 
-				srcmodel, curbone->GetBrother(), srcmotid, srcstartframe, srcendframe);
+				srcmodel, curbone->GetBrother(), srcmotid, srcstartframe, srcendframe, broflag);
 		}
 	}
 }

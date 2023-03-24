@@ -946,8 +946,8 @@ private:
 	int AdjustBoneTra(bool limitdegflag, CEditRange* erptr, CBone* lastpar);
 
 	void SetFirstFrameBonePosReq(CBone* srcbone, int srcmotid, HINFO* phinfo);
-	void InterpolateBetweenSelectionReq(bool limitdegflag, CBone* srcbone, 
-		double srcstartframe, double srcendframe, bool oneflag);
+	void InterpolateBetweenSelectionReq(bool limitdegflag, CBone* interpolatebone, 
+		double srcstartframe, double srcendframe, bool oneflag, bool broflag);
 
 
 	int DbgDumpBoneReq(CBone* boneptr, int broflag);
@@ -1442,6 +1442,48 @@ public: //accesser
 		m_currentanimlayer = currentanimlayer;
 	}
 
+	ChaVector4 GetMaterialDispRate()
+	{
+		return m_materialdisprate;
+	}
+	float GetDiffuseDispRate()
+	{
+		return m_materialdisprate.x;
+	}
+	float GetSpecularDispRate()
+	{
+		return m_materialdisprate.y;
+	}
+	float GetEmissiveDispRate()
+	{
+		return m_materialdisprate.z;
+	}
+	float GetAmbientDispRate()
+	{
+		return m_materialdisprate.w;
+	}
+
+	void SetMaterialDispRate(ChaVector4 srcrate)
+	{
+		m_materialdisprate = srcrate;
+	}
+	void SetDiffuseDispRate(float srcval)
+	{
+		m_materialdisprate.x = srcval;
+	}
+	void SetSpecularDispRate(float srcval)
+	{
+		m_materialdisprate.y = srcval;
+	}
+	void SetEmissiveDispRate(float srcval)
+	{
+		m_materialdisprate.z = srcval;
+	}
+	void SetAmbientDispRate(float srcval)
+	{
+		m_materialdisprate.w = srcval;
+	}
+
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];
@@ -1553,6 +1595,9 @@ private:
 	std::vector<CBone*> m_iktargetbonevec;
 
 	FbxAnimLayer* m_currentanimlayer;
+
+	ChaVector4 m_materialdisprate;//diffuse, specular, emissive, ambient
+
 
 	int m_loadbonecount;//GetFbxAnim—p
 };

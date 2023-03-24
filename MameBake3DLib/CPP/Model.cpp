@@ -466,6 +466,7 @@ int CModel::InitParams()
 {
 	m_iktargetbonevec.clear();
 
+	m_materialdisprate = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);//diffuse, specular, emissive, ambient
 	m_currentanimlayer = 0;
 
 	m_fromBvh = false;
@@ -1118,6 +1119,8 @@ int CModel::CreateMaterialTexture(ID3D11DeviceContext* pd3dImmediateContext)
 int CModel::OnRender(bool withalpha, 
 	ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int btflag )
 {
+	ChaVector4 materialdisprate = GetMaterialDispRate();
+
 	map<int,CMQOObject*>::iterator itr;
 	for( itr = m_object.begin(); itr != m_object.end(); itr++ ){
 		CMQOObject* curobj = itr->second;
@@ -1153,7 +1156,7 @@ int CModel::OnRender(bool withalpha,
 					}
 
 					CallF(SetShaderConst(curobj, btflag), return 1);
-					CallF( curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult ), return 1 );
+					CallF( curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate ), return 1 );
 				}
 				else if (curobj->GetPm4()){
 					bool found_alpha = false;
@@ -1180,17 +1183,17 @@ int CModel::OnRender(bool withalpha,
 					}
 					CallF(SetShaderConst(curobj, btflag), return 1);
 					rmaterial = curobj->GetMaterialBegin()->second;
-					CallF( curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, rmaterial, lightflag, diffusemult ), return 1 );
+					CallF( curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, rmaterial, lightflag, diffusemult, materialdisprate ), return 1 );
 				}else{
 					_ASSERT( 0 );
 				}
 			}
 			if (curobj->GetDispLine()) {
 				if ((withalpha == false) && ((curobj->GetExtLine()->m_color.w * diffusemult.w) > 0.99999f)) {
-					CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult), return 1);
+					CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult, materialdisprate), return 1);
 				}
 				else if ((withalpha == true) && (((curobj->GetExtLine()->m_color.w * diffusemult.w) <= 0.99999f))) {
-					CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult), return 1);
+					CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult, materialdisprate), return 1);
 				}
 			}
 		}
@@ -5666,11 +5669,11 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 					//CBone* parentbone = boneptr->GetParent();
 					//CBone* childbone = boneptr->GetChild();
 					ChaMatrix transmat = bcmat * m_matVP;
-					ChaVector3 scpos;
+					ChaVector3 wpos, scpos;
 					ChaVector3 firstpos = boneptr->GetJointFPos();
 
-					ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
-					ChaVector3 cam2mark = scpos - g_camEye;
+					ChaVector3TransformCoord(&wpos, &firstpos, &bcmat);
+					ChaVector3 cam2mark = wpos - g_camEye;
 					ChaVector3Normalize(&cam2mark, &cam2mark);
 					ChaVector3 camdir = g_camtargetpos - g_camEye;
 					ChaVector3Normalize(&camdir, &camdir);
@@ -5680,6 +5683,7 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 						continue;
 					}
 
+					ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
 					scpos.z = 0.0f;
 					bcircleptr->SetPos(scpos);
 					ChaVector2 bsize;
@@ -5855,13 +5859,13 @@ void CModel::RenderBoneCircleReq(ID3D11DeviceContext* pd3dImmediateContext, CBtO
 				//ChaVector3 firstpos = ChaVector3(0.0f, 0.0f, 0.0f);
 				//
 				//ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
-
-				ChaMatrix transmat = srcbone->GetBtMat() * m_matVP;
+				ChaMatrix btmat = srcbone->GetBtMat();
+				ChaMatrix transmat = btmat * m_matVP;
 				ChaVector3 firstpos = childbone->GetJointFPos();
-				ChaVector3 scpos;
-				ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
+				ChaVector3 wpos, scpos;
+				ChaVector3TransformCoord(&wpos, &firstpos, &btmat);
 
-				ChaVector3 cam2mark = scpos - g_camEye;
+				ChaVector3 cam2mark = wpos - g_camEye;
 				ChaVector3Normalize(&cam2mark, &cam2mark);
 				ChaVector3 camdir = g_camtargetpos - g_camEye;
 				ChaVector3Normalize(&camdir, &camdir);
@@ -5870,6 +5874,8 @@ void CModel::RenderBoneCircleReq(ID3D11DeviceContext* pd3dImmediateContext, CBtO
 					//2023/03/23 カメラの後ろにあるマークが　逆さに表示されないように
 					return;
 				}
+
+				ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
 				scpos.z = 0.0f;
 
 				bcircleptr->SetPos(scpos);
@@ -12279,7 +12285,7 @@ int CModel::RigControlPostRig(bool limitdegflag, int depthcnt,
 
 
 int CModel::InterpolateBetweenSelection(bool limitdegflag, double srcstartframe, double srcendframe, 
-	CBone* srcbone, int srckind)
+	CBone* interpolatebone, int srckind)
 {
 	//2023/02/06
 	//return operationgJointNo
@@ -12290,35 +12296,37 @@ int CModel::InterpolateBetweenSelection(bool limitdegflag, double srcstartframe,
 		return operatingjointno;
 	}
 
-	if (!srcbone) {
+	if (!interpolatebone) {
 		return operatingjointno;
 	}
 
-	CBone* parentone;
-	if (srcbone->GetParent()) {
-		parentone = srcbone->GetParent();
-	}
-	else {
-		parentone = srcbone;
-	}
+	//CBone* parentone;
+	//if (srcbone->GetParent()) {
+	//	parentone = srcbone->GetParent();
+	//}
+	//else {
+	//	parentone = srcbone;
+	//}
+
+	bool firstbroflag = false;
 
 	if (srckind == 1) {
 		//all
 		bool oneflag = false;
-		InterpolateBetweenSelectionReq(limitdegflag, GetTopBone(), srcstartframe, srcendframe, oneflag);
+		InterpolateBetweenSelectionReq(limitdegflag, GetTopBone(), srcstartframe, srcendframe, oneflag, firstbroflag);
 		operatingjointno = GetTopBone()->GetBoneNo();
 	}
 	else if (srckind == 2) {
 		//parent one
 		bool oneflag = true;
-		InterpolateBetweenSelectionReq(limitdegflag, parentone, srcstartframe, srcendframe, oneflag);
-		operatingjointno = parentone->GetBoneNo();
+		InterpolateBetweenSelectionReq(limitdegflag, interpolatebone, srcstartframe, srcendframe, oneflag, firstbroflag);
+		operatingjointno = interpolatebone->GetBoneNo();
 	}
 	else if (srckind == 3) {
 		//parent deeper
 		bool oneflag = false;
-		InterpolateBetweenSelectionReq(limitdegflag, parentone, srcstartframe, srcendframe, oneflag);
-		operatingjointno = parentone->GetBoneNo();
+		InterpolateBetweenSelectionReq(limitdegflag, interpolatebone, srcstartframe, srcendframe, oneflag, firstbroflag);
+		operatingjointno = interpolatebone->GetBoneNo();
 	}
 	else {
 		//unknown
@@ -12331,7 +12339,7 @@ int CModel::InterpolateBetweenSelection(bool limitdegflag, double srcstartframe,
 }
 
 void CModel::InterpolateBetweenSelectionReq(bool limitdegflag, CBone* srcbone, 
-	double srcstartframe, double srcendframe, bool oneflag)
+	double srcstartframe, double srcendframe, bool oneflag, bool broflag)
 {
 	if (!srcbone){
 		return;
@@ -12393,10 +12401,11 @@ void CModel::InterpolateBetweenSelectionReq(bool limitdegflag, CBone* srcbone,
 
 		if (oneflag == false) {
 			if (srcbone->GetChild()) {
-				InterpolateBetweenSelectionReq(limitdegflag, srcbone->GetChild(), roundingstartframe, roundingendframe, oneflag);
+				bool broflag2 = true;
+				InterpolateBetweenSelectionReq(limitdegflag, srcbone->GetChild(), roundingstartframe, roundingendframe, oneflag, broflag2);
 			}
-			if (srcbone->GetBrother()) {
-				InterpolateBetweenSelectionReq(limitdegflag, srcbone->GetBrother(), roundingstartframe, roundingendframe, oneflag);
+			if (srcbone->GetBrother() && broflag) {
+				InterpolateBetweenSelectionReq(limitdegflag, srcbone->GetBrother(), roundingstartframe, roundingendframe, oneflag, broflag);
 			}
 		}
 	}

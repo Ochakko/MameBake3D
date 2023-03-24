@@ -1549,6 +1549,7 @@ static CGColiIDDlg* s_pgcolidlg = 0;
 static bool s_undergcolidlg = false;
 static HWND s_motpropdlghwnd = 0;
 static HWND s_cameradollydlgwnd = 0;
+static HWND s_materialratedlgwnd = 0;
 static HWND s_savechadlghwnd = 0;
 static HWND s_bvhdlghwnd = 0;
 static HWND s_saveredlghwnd = 0;
@@ -1991,17 +1992,16 @@ static OWP_Button* s_toolMotPropB = 0;
 static OWP_Button* s_toolMarkB = 0;
 static OWP_Button* s_toolSelBoneB = 0;
 static OWP_Button* s_toolInitMPB = 0;
-static OWP_Button* s_toolFilter1B = 0;
-static OWP_Button* s_toolFilter2B = 0;
-static OWP_Button* s_toolFilter3B = 0;
-static OWP_Button* s_toolInterpolate1B = 0;
-static OWP_Button* s_toolInterpolate2B = 0;
-static OWP_Button* s_toolInterpolate3B = 0;
+static OWP_Button* s_toolInterpolateB = 0;
+static OWP_Button* s_toolFilterB = 0;
 static OWP_Button* s_toolSelectCopyFileName = 0;
 static OWP_Button* s_toolSkipRenderBoneMarkB = 0;
 static OWP_Button* s_toolSkipRenderBoneMarkB2 = 0;
 static OWP_Button* s_tool180deg = 0;
 static OWP_Button* s_toolScaleInitAllB = 0;
+static OWP_Button* s_toolCameraDollyB = 0;
+static OWP_Button* s_toolMaterialRateB = 0;
+
 
 #define CONVBONEMAX		256
 static OrgWindow* s_convboneWnd = 0;
@@ -2066,6 +2066,7 @@ static bool s_motpropFlag = false;
 static bool s_markFlag = false;
 static bool s_selboneFlag = false;
 static bool s_initmpFlag = false;
+static bool s_filterFlag = false;
 static int  s_filterState = 0;
 static bool s_smoothFlag = false;//s_spsmoothボタン用
 static bool s_constexeFlag = false;//s_spconstexeボタン用
@@ -2076,10 +2077,13 @@ static bool s_delallmodelFlag = false;
 static bool s_changeupdatethreadsFlag = false;
 static bool s_newmotFlag = false;
 static bool s_delcurmotFlag = false;
+static bool s_interpolateFlag = false;
 static int s_interpolateState = 0;
 static int s_skipJointMark = 0;
 static bool s_180DegFlag = false;
 static bool s_scaleAllInitFlag = false;
+static bool s_cameradollyFlag = false;
+static bool s_materialrateFlag = false;
 
 static bool s_firstkeyFlag = false;
 static bool s_lastkeyFlag = false;
@@ -2163,6 +2167,8 @@ static CEditRange s_previewrange;
 #define MENUOFFSET_INITMPFROMTOOL		(MENUOFFSET_SETCONVBONE + 500)
 #define MENUOFFSET_BONERCLICK			(MENUOFFSET_INITMPFROMTOOL + 100)
 #define MENUOFFSET_GETSYMROOTMODE		(MENUOFFSET_BONERCLICK + 100)
+#define MENUOFFSET_INTERPOLATEFROMTOOL		(MENUOFFSET_GETSYMROOTMODE + 30)
+#define MENUOFFSET_FILTERFROMTOOL		(MENUOFFSET_INTERPOLATEFROMTOOL + 30)
 
 
 #define SPAXISNUM	3
@@ -2627,6 +2633,8 @@ static HWND Create3DWnd();
 static CInfoWindow* CreateInfoWnd();
 static int CreateCameraDollyWnd();
 static int ShowCameraDollyDlg();
+static int CreateMaterialRateWnd();
+static int ShowMaterialRateDlg();
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -2719,6 +2727,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 LRESULT CALLBACK OpenMqoDlgProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK MotPropDlgProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK CameraDollyDlgProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK MaterialRateDlgProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK OpenBvhDlgProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
@@ -3029,6 +3038,8 @@ static void InsertCopyMPReq(bool limitdegflag, CBone* curbone, double curframe);
 static int InsertSymMP(bool limitdegflag, CBone* curbone, double curframe, int symrootmode);
 static void InsertSymMPReq(bool limitdegflag, CBone* curbone, double curframe, int symrootmode);
 
+static int InterpolateFromTool();
+static int FilterFromTool();
 static int InitMpFromTool();
 //static int InitMP( CBone* curbone, double curframe );
 //static void InitMPReq(CBone* curbone, double curframe);
@@ -3485,6 +3496,7 @@ INT WINAPI wWinMain(
 	CreateMainMenuAimBarWnd();
 
 	CreateCameraDollyWnd();
+	CreateMaterialRateWnd();
 
 	//CallF( InitializeSdkObjects(), return 1 );
 
@@ -3757,6 +3769,8 @@ void InitApp()
 	s_layerWnd = 0;
 	s_owpLayerTable = 0;
 	
+	s_cameradollyFlag = false;
+	s_materialrateFlag = false;
 
 	g_zcmpalways = false;
 	g_lightflag = 1;
@@ -3930,11 +3944,13 @@ void InitApp()
 	s_markFlag = false;
 	s_selboneFlag = false;
 	s_initmpFlag = false;
+	s_filterFlag = false;
 	s_filterState = 0;
 	s_smoothFlag = false;
 	s_constexeFlag = false;
 	s_constrefreshFlag = false;
 	//s_filternodlg = false;
+	s_interpolateFlag = false;
 	s_interpolateState = 0;
 	s_skipJointMark = 0;
 	s_firstkeyFlag = false;
@@ -4240,17 +4256,15 @@ void InitApp()
 	s_toolMarkB = 0;
 	s_toolSelBoneB = 0;
 	s_toolInitMPB = 0;
-	s_toolFilter1B = 0;
-	s_toolFilter2B = 0;
-	s_toolFilter3B = 0;
-	s_toolInterpolate1B = 0;
-	s_toolInterpolate2B = 0;
-	s_toolInterpolate3B = 0;
+	s_toolFilterB = 0;
+	s_toolInterpolateB = 0;
 	s_toolSelectCopyFileName = 0;
 	s_toolSkipRenderBoneMarkB = 0;
 	s_toolSkipRenderBoneMarkB2 = 0;
 	s_tool180deg = 0;
 	s_toolScaleInitAllB = 0;
+	s_toolCameraDollyB = 0;
+	s_toolMaterialRateB = 0;
 
 	s_customrigbone = 0;
 	s_customrigdlg = 0;
@@ -4420,6 +4434,7 @@ void InitApp()
 	s_motionpanel.modelindex = -1;
 
 	s_cameradollydlgwnd = 0;
+	s_materialratedlgwnd = 0;
 
 	{
 		char strtitle[256];
@@ -6066,6 +6081,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		DestroyWindow(s_cameradollydlgwnd);
 		s_cameradollydlgwnd = 0;
 	}
+	if (s_materialratedlgwnd) {
+		DestroyWindow(s_materialratedlgwnd);
+		s_materialratedlgwnd = 0;
+	}
 
 	CloseDbgFile();
 	if (g_infownd) {
@@ -6243,29 +6262,13 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_toolInitMPB;
 		s_toolInitMPB = 0;
 	}
-	if (s_toolFilter1B) {
-		delete s_toolFilter1B;
-		s_toolFilter1B = 0;
+	if (s_toolFilterB) {
+		delete s_toolFilterB;
+		s_toolFilterB = 0;
 	}
-	if (s_toolFilter2B) {
-		delete s_toolFilter2B;
-		s_toolFilter2B = 0;
-	}
-	if (s_toolFilter3B) {
-		delete s_toolFilter3B;
-		s_toolFilter3B = 0;
-	}
-	if (s_toolInterpolate1B) {
-		delete s_toolInterpolate1B;
-		s_toolInterpolate1B = 0;
-	}
-	if (s_toolInterpolate2B) {
-		delete s_toolInterpolate2B;
-		s_toolInterpolate2B = 0;
-	}
-	if (s_toolInterpolate3B) {
-		delete s_toolInterpolate3B;
-		s_toolInterpolate3B = 0;
+	if (s_toolInterpolateB) {
+		delete s_toolInterpolateB;
+		s_toolInterpolateB = 0;
 	}
 	if (s_toolSelectCopyFileName) {
 		delete s_toolSelectCopyFileName;
@@ -7901,8 +7904,43 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			}
 		}
 
+		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_INTERPOLATEFROMTOOL)) && 
+			(menuid < (ID_RMENU_0 + MENUOFFSET_INTERPOLATEFROMTOOL + 3))) {
+			if (s_model && s_model->GetTopBone() && curbone) {
+				s_interpolateState = (menuid - ID_RMENU_0 - MENUOFFSET_INTERPOLATEFROMTOOL + 1);
+
+				CBone* interpolatebone;
+				if (s_ikkind == 0) {
+					interpolatebone = opebone;
+				}
+				else {
+					interpolatebone = curbone;
+				}
 
 
+				int operatingjointno = -1;
+				operatingjointno = s_model->InterpolateBetweenSelection(g_limitdegflag,
+					s_buttonselectstart, s_buttonselectend, interpolatebone, s_interpolateState);
+
+				if ((g_limitdegflag == true) && (operatingjointno >= 0)) {
+					bool allframeflag = false;
+					bool setcursorflag = false;
+					bool onpasteflag = false;
+					CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
+				}
+				refreshEulerGraph();
+				PrepairUndo();
+				s_interpolateState = 0;
+			}
+		}
+		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_FILTERFROMTOOL)) &&
+			(menuid < (ID_RMENU_0 + MENUOFFSET_FILTERFROMTOOL + 3))) {
+			if (s_model && s_model->GetTopBone() && curbone) {
+				s_filterState = (menuid - ID_RMENU_0 - MENUOFFSET_FILTERFROMTOOL + 1);
+				FilterFuncDlg();
+				s_filterState = 0;
+			}
+		}
 		//else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_INITMPFROMTOOL)) && (menuid <= (ID_RMENU_0 + 3 * 3 + MENUOFFSET_INITMPFROMTOOL))) {
 		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_INITMPFROMTOOL)) && (menuid <= (ID_RMENU_0 + 3 * 4 + MENUOFFSET_INITMPFROMTOOL))) {//### 2022/07/04
 			if (s_model) {
@@ -15276,11 +15314,8 @@ LRESULT CALLBACK MotPropDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 LRESULT CALLBACK CameraDollyDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
-
-
 	float posvalue = 0.0f;
 	WCHAR strpos[256] = { 0L };
-
 
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -22379,6 +22414,97 @@ int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag)//default :
 }
 
 
+LRESULT CALLBACK MaterialRateDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+	WCHAR strval[256] = { 0L };
+	float value = 1.0f;
+	ChaVector4 tmpmaterialrate = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	switch (msg) {
+	case WM_INITDIALOG:
+	{
+		SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
+
+		if (s_model) {
+			ChaVector4 materialdisprate = s_model->GetMaterialDispRate();
+
+			swprintf_s(strval, 256, L"%.3f", materialdisprate.x);
+			SetDlgItemTextW(hDlgWnd, IDC_EDIT_DIFFUSERATE, strval);
+			swprintf_s(strval, 256, L"%.3f", materialdisprate.y);
+			SetDlgItemTextW(hDlgWnd, IDC_EDIT_SPECULARRATE, strval);
+			swprintf_s(strval, 256, L"%.3f", materialdisprate.z);
+			SetDlgItemTextW(hDlgWnd, IDC_EDIT_EMISSIVERATE, strval);
+			swprintf_s(strval, 256, L"%.3f", materialdisprate.w);
+			SetDlgItemTextW(hDlgWnd, IDC_EDIT_AMBIENTRATE, strval);
+		}
+
+		//RECT dlgrect;
+		//GetWindowRect(hDlgWnd, &dlgrect);
+		//SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+
+		s_materialratedlgwnd = hDlgWnd;
+
+		return FALSE;
+	}
+	break;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			ShowWindow(hDlgWnd, SW_HIDE);
+			break;
+		case IDCANCEL:
+			ShowWindow(hDlgWnd, SW_HIDE);
+			break;
+		case IDC_APPLYMATERIALRATE:
+		{
+			if (s_model) {
+				tmpmaterialrate = s_model->GetMaterialDispRate();
+
+				const float maxvalue = 10000.0f;
+
+				GetDlgItemTextW(hDlgWnd, IDC_EDIT_DIFFUSERATE, strval, 256);
+				value = (float)_wtof(strval);
+				if ((value >= 0.0f) && (value <= maxvalue)) {
+					tmpmaterialrate.x = value;
+				}
+				GetDlgItemTextW(hDlgWnd, IDC_EDIT_SPECULARRATE, strval, 256);
+				value = (float)_wtof(strval);
+				if ((value >= 0.0f) && (value <= maxvalue)) {
+					tmpmaterialrate.y = value;
+				}
+				GetDlgItemTextW(hDlgWnd, IDC_EDIT_EMISSIVERATE, strval, 256);
+				value = (float)_wtof(strval);
+				if ((value >= 0.0f) && (value <= maxvalue)) {
+					tmpmaterialrate.z = value;
+				}
+				GetDlgItemTextW(hDlgWnd, IDC_EDIT_AMBIENTRATE, strval, 256);
+				value = (float)_wtof(strval);
+				if ((value >= 0.0f) && (value <= maxvalue)) {
+					tmpmaterialrate.w = value;
+				}
+
+				s_model->SetMaterialDispRate(tmpmaterialrate);
+
+			}
+
+		}
+		break;
+		default:
+			return FALSE;
+		}
+		break;
+	case WM_CLOSE:
+		ShowWindow(hDlgWnd, SW_HIDE);
+		break;
+	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
+		return FALSE;
+	}
+	return TRUE;
+
+}
+
+
 LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	switch (msg) {
@@ -22882,8 +23008,8 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 		}
 		break;
 	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
 		return FALSE;
-		break;
 	}
 	return TRUE;
 
@@ -24728,43 +24854,24 @@ int OnFrameToolWnd()
 		s_skipJointMark = 0;
 	}
 
-
-	if (s_interpolateState != 0) {
-
-		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()) {
-			//s_model->SaveUndoMotion(s_curboneno, s_curbaseno, (double)g_applyrate);
-
-			//int keynum;
-			//double startframe, endframe, applyframe;
-			//s_editrange.Clear();
-			//s_editrange.SetRange(s_owpLTimeline->getSelectedKey(), s_owpLTimeline->getCurrentTime());
-			//s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
-			//s_model->InterpolateBetweenSelection(startframe, endframe);
-
-			CBone* curbone = 0;
-			if (s_curboneno >= 0) {
-				curbone = s_model->GetBoneByID(s_curboneno);
-			}
-			else {
-				curbone = 0;
-			}
-
-			int operatingjointno = -1;
-			operatingjointno = s_model->InterpolateBetweenSelection(g_limitdegflag,
-				s_buttonselectstart, s_buttonselectend, curbone, s_interpolateState);
-
-			if ((g_limitdegflag == true) && (operatingjointno >= 0)) {
-				bool allframeflag = false;
-				bool setcursorflag = false;
-				bool onpasteflag = false;
-				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
-			}
-			refreshEulerGraph();
-			PrepairUndo();
-
+	if (s_cameradollyFlag) {
+		if (s_model) {
+			ShowCameraDollyDlg();
 		}
+		s_cameradollyFlag = false;
+	}
+	if (s_materialrateFlag) {
+		if (s_model) {
+			ShowMaterialRateDlg();
+		}
+		s_materialrateFlag = false;
+	}
 
-		s_interpolateState = 0;
+	if (s_interpolateFlag) {
+		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()) {
+			InterpolateFromTool();
+		}
+		s_interpolateFlag = false;
 	}
 
 
@@ -25042,10 +25149,9 @@ int OnFrameToolWnd()
 	}
 
 
-	if (s_filterState != 0) {//ToolWindowの平滑化ボタン用
-		FilterFuncDlg();
-		s_filterState = 0;
-		//s_filternodlg = false;
+	if (s_filterFlag) {//ToolWindowの平滑化ボタン用
+		FilterFromTool();
+		s_filterFlag = false;
 	}
 
 	if (s_smoothFlag) {//s_spsmoothボタン用
@@ -28885,33 +28991,13 @@ int CreateToolWnd()
 			_ASSERT(0);
 			return 1;
 		}
-		s_toolFilter1B = new OWP_Button(_T("平滑化(all) smoothing"));
-		if (!s_toolFilter1B) {
+		s_toolFilterB = new OWP_Button(_T("平滑化 smoothing"));
+		if (!s_toolFilterB) {
 			_ASSERT(0);
 			return 1;
 		}
-		s_toolFilter2B = new OWP_Button(_T("平滑化(Parent One) smoothing"));
-		if (!s_toolFilter2B) {
-			_ASSERT(0);
-			return 1;
-		}
-		s_toolFilter3B = new OWP_Button(_T("平滑化(Parent Deeper) smoothing"));
-		if (!s_toolFilter3B) {
-			_ASSERT(0);
-			return 1;
-		}
-		s_toolInterpolate1B = new OWP_Button(_T("補間(all) interpolate"));
-		if (!s_toolInterpolate1B) {
-			_ASSERT(0);
-			return 1;
-		}
-		s_toolInterpolate2B = new OWP_Button(_T("補間(Parent One) interpolate"));
-		if (!s_toolInterpolate2B) {
-			_ASSERT(0);
-			return 1;
-		}
-		s_toolInterpolate3B = new OWP_Button(_T("補間(Parent Deeper) interpolate"));
-		if (!s_toolInterpolate3B) {
+		s_toolInterpolateB = new OWP_Button(_T("補間 interpolate"));
+		if (!s_toolInterpolateB) {
 			_ASSERT(0);
 			return 1;
 		}
@@ -28936,6 +29022,18 @@ int CreateToolWnd()
 			_ASSERT(0);
 			return 1;
 		}
+		s_toolCameraDollyB = new OWP_Button(_T("カメラ数値ドリー (CameraDolly)"));
+		if (!s_toolCameraDollyB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_toolMaterialRateB = new OWP_Button(_T("モデルマテリアル倍率MaterialRate"));
+		if (!s_toolMaterialRateB) {
+			_ASSERT(0);
+			return 1;
+		}
+
+
 
 		s_toolWnd->addParts(*s_toolSelBoneB);
 		s_toolWnd->addParts(*s_toolSelectCopyFileName);
@@ -28945,17 +29043,15 @@ int CreateToolWnd()
 		s_toolWnd->addParts(*s_toolInitMPB);
 		//s_toolWnd->addParts(*s_toolMarkB);
 		s_toolWnd->addParts(*s_toolMotPropB);
-		s_toolWnd->addParts(*s_toolFilter1B);
-		s_toolWnd->addParts(*s_toolFilter2B);
-		s_toolWnd->addParts(*s_toolFilter3B);
-		s_toolWnd->addParts(*s_toolInterpolate1B);
-		s_toolWnd->addParts(*s_toolInterpolate2B);
-		s_toolWnd->addParts(*s_toolInterpolate3B);
+		s_toolWnd->addParts(*s_toolFilterB);
+		s_toolWnd->addParts(*s_toolInterpolateB);
 		s_toolWnd->addParts(*s_toolZeroFrameB);
 		s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB);
 		s_toolWnd->addParts(*s_toolSkipRenderBoneMarkB2);
 		//s_toolWnd->addParts(*s_tool180deg);
 		s_toolWnd->addParts(*s_toolScaleInitAllB);
+		s_toolWnd->addParts(*s_toolCameraDollyB);
+		s_toolWnd->addParts(*s_toolMaterialRateB);
 
 		s_dstoolctrls.push_back(s_toolSelBoneB);
 		s_dstoolctrls.push_back(s_toolCopyB);
@@ -28964,17 +29060,15 @@ int CreateToolWnd()
 		s_dstoolctrls.push_back(s_toolInitMPB);
 		//s_dstoolctrls.push_back(s_toolMarkB);
 		s_dstoolctrls.push_back(s_toolMotPropB);
-		s_dstoolctrls.push_back(s_toolFilter1B);
-		s_dstoolctrls.push_back(s_toolFilter2B);
-		s_dstoolctrls.push_back(s_toolFilter3B);
-		s_dstoolctrls.push_back(s_toolInterpolate1B);
-		s_dstoolctrls.push_back(s_toolInterpolate2B);
-		s_dstoolctrls.push_back(s_toolInterpolate3B);
+		s_dstoolctrls.push_back(s_toolFilterB);
+		s_dstoolctrls.push_back(s_toolInterpolateB);
 		s_dstoolctrls.push_back(s_toolZeroFrameB);
 		s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB);
 		s_dstoolctrls.push_back(s_toolSkipRenderBoneMarkB2);
 		//s_dstoolctrls.push_back(s_tool180deg);
 		s_dstoolctrls.push_back(s_toolScaleInitAllB);
+		s_dstoolctrls.push_back(s_toolCameraDollyB);
+		s_dstoolctrls.push_back(s_toolMaterialRateB);
 
 
 		s_toolWnd->setCloseListener([]() {
@@ -29049,43 +29143,16 @@ int CreateToolWnd()
 				}
 			}
 			});
-		s_toolFilter1B->setButtonListener([]() {
+		s_toolFilterB->setButtonListener([]() {
 			if (s_model) {
-				if (s_filterState == 0) {
-					s_filterState = 1;
-					//s_filternodlg = false;
+				if (s_filterFlag == false) {
+					s_filterFlag = true;
 				}
 			}
 			});
-		s_toolFilter2B->setButtonListener([]() {
-			if (s_model) {
-				if (s_filterState == 0) {
-					s_filterState = 2;
-					//s_filternodlg = false;
-				}
-			}
-			});
-		s_toolFilter3B->setButtonListener([]() {
-			if (s_model) {
-				if (s_filterState == 0) {
-					s_filterState = 3;
-					//s_filternodlg = false;
-				}
-			}
-			});
-		s_toolInterpolate1B->setButtonListener([]() {
-			if (s_model && (s_interpolateState == 0)) {
-				s_interpolateState = 1;//all
-			}
-			});
-		s_toolInterpolate2B->setButtonListener([]() {
-			if (s_model && (s_interpolateState == 0)) {
-				s_interpolateState = 2;//parent one
-			}
-			});
-		s_toolInterpolate3B->setButtonListener([]() {
-			if (s_model && (s_interpolateState == 0)) {
-				s_interpolateState = 3;//parent deeper
+		s_toolInterpolateB->setButtonListener([]() {
+			if (s_model && (s_interpolateFlag == false)) {
+				s_interpolateFlag = true;
 			}
 			});
 		s_toolSkipRenderBoneMarkB->setButtonListener([]() {
@@ -29106,6 +29173,16 @@ int CreateToolWnd()
 		s_toolScaleInitAllB->setButtonListener([]() {
 			if (s_model && (s_scaleAllInitFlag == false)) {
 				s_scaleAllInitFlag = true;
+			}
+			});
+		s_toolCameraDollyB->setButtonListener([]() {
+			if (s_model && (s_cameradollyFlag == false)) {
+				s_cameradollyFlag = true;
+			}
+			});
+		s_toolMaterialRateB->setButtonListener([]() {
+			if (s_model && (s_materialrateFlag == false)) {
+				s_materialrateFlag = true;
 			}
 			});
 
@@ -30022,6 +30099,178 @@ void SkipJointMarkReq(int srcstate, CBone* srcbone, bool setbrotherflag)
 
 }
 
+int FilterFromTool()
+{
+	int modelnum = (int)s_modelindex.size();
+	if (modelnum <= 0) {
+		return 0;
+	}
+	if (s_curboneno < 0) {
+		return 0;
+	}
+	if (!s_model) {
+		return 0;
+	}
+	if (!s_owpTimeline || !s_owpLTimeline) {
+		return 0;
+	}
+	MOTINFO* mi = s_model->GetCurMotInfo();
+	if (!mi) {
+		return 0;
+	}
+
+
+	HWND parwnd;
+	//parwnd = s_3dwnd;
+	parwnd = s_3dwnd;
+
+	CRMenuMain* rmenu;
+	rmenu = new CRMenuMain(IDR_RMENU);
+	if (!rmenu) {
+		return 1;
+	}
+	int ret;
+	ret = rmenu->Create(parwnd, MENUOFFSET_FILTERFROMTOOL);
+	if (ret) {
+		return 1;
+	}
+
+	HMENU submenu = rmenu->GetSubMenu();
+	POINT pt;
+	GetCursorPos(&pt);
+
+
+	CRMenuMain* rsubmenu[3];
+	ZeroMemory(rsubmenu, sizeof(CRMenuMain*) * 3);
+
+	int menunum;
+	menunum = GetMenuItemCount(submenu);
+	int menuno;
+	for (menuno = 0; menuno < menunum; menuno++)
+	{
+		RemoveMenu(submenu, 0, MF_BYPOSITION);
+	}
+	//s_customrigmenuindex.clear();
+
+	int subnum = 3;
+	int setmenuid;
+
+	WCHAR strinitmpsub[3][32] = { L"AllBones", L"SelectedOne", L"Deeper" };
+	int subno;
+	for (subno = 0; subno < 3; subno++) {
+		setmenuid = ID_RMENU_0 + MENUOFFSET_FILTERFROMTOOL + subno;
+		AppendMenu(submenu, MF_STRING, setmenuid, strinitmpsub[subno]);
+	}
+
+	/////////////
+	s_cursubmenu = rmenu->GetSubMenu();
+
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+	int initmode = -1;
+	int menuid;
+	menuid = rmenu->TrackPopupMenu(pt);
+
+	for (subno = 0; subno < 3; subno++) {
+		CRMenuMain* delsubmenu = rsubmenu[subno];
+		if (delsubmenu) {
+			delete delsubmenu;
+		}
+	}
+
+	rmenu->Destroy();
+	delete rmenu;
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+
+	return 0;
+}
+
+
+int InterpolateFromTool()
+{
+	int modelnum = (int)s_modelindex.size();
+	if (modelnum <= 0) {
+		return 0;
+	}
+	if (s_curboneno < 0) {
+		return 0;
+	}
+	if (!s_model) {
+		return 0;
+	}
+	if (!s_owpTimeline || !s_owpLTimeline) {
+		return 0;
+	}
+	MOTINFO* mi = s_model->GetCurMotInfo();
+	if (!mi) {
+		return 0;
+	}
+
+
+	HWND parwnd;
+	//parwnd = s_3dwnd;
+	parwnd = s_3dwnd;
+
+	CRMenuMain* rmenu;
+	rmenu = new CRMenuMain(IDR_RMENU);
+	if (!rmenu) {
+		return 1;
+	}
+	int ret;
+	ret = rmenu->Create(parwnd, MENUOFFSET_INTERPOLATEFROMTOOL);
+	if (ret) {
+		return 1;
+	}
+
+	HMENU submenu = rmenu->GetSubMenu();
+	POINT pt;
+	GetCursorPos(&pt);
+
+
+	CRMenuMain* rsubmenu[3];
+	ZeroMemory(rsubmenu, sizeof(CRMenuMain*) * 3);
+
+	int menunum;
+	menunum = GetMenuItemCount(submenu);
+	int menuno;
+	for (menuno = 0; menuno < menunum; menuno++)
+	{
+		RemoveMenu(submenu, 0, MF_BYPOSITION);
+	}
+	//s_customrigmenuindex.clear();
+
+	int subnum = 3;
+	int setmenuid;
+
+	WCHAR strinitmpsub[3][32] = { L"AllBones", L"SelectedOne", L"Deeper" };
+	int subno;
+	for (subno = 0; subno < 3; subno++) {
+		setmenuid = ID_RMENU_0 + MENUOFFSET_INTERPOLATEFROMTOOL + subno;
+		AppendMenu(submenu, MF_STRING, setmenuid, strinitmpsub[subno]);
+	}
+
+	/////////////
+	s_cursubmenu = rmenu->GetSubMenu();
+
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+	int initmode = -1;
+	int menuid;
+	menuid = rmenu->TrackPopupMenu(pt);
+
+	for (subno = 0; subno < 3; subno++) {
+		CRMenuMain* delsubmenu = rsubmenu[subno];
+		if (delsubmenu) {
+			delete delsubmenu;
+		}
+	}
+
+	rmenu->Destroy();
+	delete rmenu;
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+
+	return 0;
+}
+
+
 int InitMpFromTool()
 {
 	int modelnum = (int)s_modelindex.size();
@@ -30073,13 +30322,13 @@ int InitMpFromTool()
 	{
 		RemoveMenu(submenu, 0, MF_BYPOSITION);
 	}
-	s_customrigmenuindex.clear();
+	//s_customrigmenuindex.clear();
 
 	int subnum = 3;
-	int subsubnum = 3;
+	int subsubnum = 4;
 	int setmenuid;
 
-	WCHAR strinitmpsub[3][32] = { L"AllBones", L"OneSelectedBone", L"SelectedAndChildren" };
+	WCHAR strinitmpsub[3][32] = { L"AllBones", L"SelectedOne", L"Deeper" };
 	WCHAR strinitmpsubsub[4][32] = { L"InitRotAndPosAndScale", L"InitRot", L"InitPos", L"InitScale" };
 
 	int subno;
@@ -30118,48 +30367,6 @@ int InitMpFromTool()
 	int initmode = -1;
 	int menuid;
 	menuid = rmenu->TrackPopupMenu(pt);
-	//if ((menuid >= ID_RMENU_0) && (menuid <= (ID_RMENU_0 + 3 * 3))){
-	//	int subid = (menuid - ID_RMENU_0) / 3;
-	//	int initmode = (menuid - ID_RMENU_0) - subid * 3;
-
-	//	s_copymotvec.clear();
-	//	s_copyKeyInfoList.clear();
-	//	s_copyKeyInfoList = s_owpLTimeline->getSelectedKey();
-	//	s_editrange.SetRange(s_copyKeyInfoList, s_owpTimeline->getCurrentTime());
-
-	//	if (subid == 0){
-	//		list<KeyInfo>::iterator itrcp;
-	//		for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
-	//			double curframe = itrcp->time;
-	//			CBone* topbone = s_model->GetTopBone();
-	//			if (topbone){
-	//				InitMpByEulReq(initmode, topbone, mi->motid, curframe);//topbone req
-	//			}
-	//		}
-	//	}
-	//	else if (subid == 1){
-	//		CBone* curbone = s_model->GetBoneByID(s_curboneno);
-	//		if (curbone){
-	//			list<KeyInfo>::iterator itrcp;
-	//			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
-	//				double curframe = itrcp->time;
-	//				InitMpByEul(initmode, curbone, mi->motid, curframe);//curbone
-	//			}
-	//		}
-	//	}
-	//	else if (subid == 2){
-	//		CBone* curbone = s_model->GetBoneByID(s_curboneno);
-	//		if (curbone){
-	//			list<KeyInfo>::iterator itrcp;
-	//			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++){
-	//				double curframe = itrcp->time;
-	//				InitMpByEulReq(initmode, curbone, mi->motid, curframe);//curbone req
-	//			}
-	//		}
-	//	}
-
-	//	UpdateEditedEuler();
-	//}
 
 	for (subno = 0; subno < 3; subno++) {
 		CRMenuMain* delsubmenu = rsubmenu[subno];
@@ -42211,7 +42418,7 @@ int FilterFuncDlg()
 					CBone* curbone = 0;
 					curbone = s_model->GetBoneByID(s_curboneno);
 					if (curbone) {
-						if (curbone->GetParent()) {
+						if ((s_ikkind == 0) && curbone->GetParent()) {
 							opebone = curbone->GetParent();
 						}
 						else {
@@ -42443,6 +42650,52 @@ int CreateCameraDollyWnd()
 	return 0;
 }
 
+int CreateMaterialRateWnd()
+{
+
+	//CCameraDollyDlg dlg(g_camEye);
+	//dlg.DoModal();
+	//g_camEye = dlg.GetCameraPos();
+
+	HWND hDlgWnd = CreateDialogW((HMODULE)GetModuleHandle(NULL),
+		MAKEINTRESOURCE(IDD_MATERIALRATEDLG), s_mainhwnd, (DLGPROC)MaterialRateDlgProc);
+	if (hDlgWnd == NULL) {
+		return 1;
+	}
+	s_materialratedlgwnd = hDlgWnd;
+	ShowWindow(s_materialratedlgwnd, SW_HIDE);
+
+	return 0;
+}
+
+
+int ShowMaterialRateDlg()
+{
+
+	if (s_materialratedlgwnd) {
+		if (s_model) {
+			WCHAR strval[256] = { 0L };
+			ChaVector4 materialdisprate = s_model->GetMaterialDispRate();
+
+			swprintf_s(strval, 256, L"%.3f", materialdisprate.x);
+			SetDlgItemTextW(s_materialratedlgwnd, IDC_EDIT_DIFFUSERATE, strval);
+			swprintf_s(strval, 256, L"%.3f", materialdisprate.y);
+			SetDlgItemTextW(s_materialratedlgwnd, IDC_EDIT_SPECULARRATE, strval);
+			swprintf_s(strval, 256, L"%.3f", materialdisprate.z);
+			SetDlgItemTextW(s_materialratedlgwnd, IDC_EDIT_EMISSIVERATE, strval);
+			swprintf_s(strval, 256, L"%.3f", materialdisprate.w);
+			SetDlgItemTextW(s_materialratedlgwnd, IDC_EDIT_AMBIENTRATE, strval);
+
+			ShowWindow(s_materialratedlgwnd, SW_SHOW);
+			UpdateWindow(s_materialratedlgwnd);
+
+		}
+
+	}
+
+	return 0;
+}
+
 int ShowCameraDollyDlg()
 {
 	if (s_cameradollydlgwnd) {
@@ -42454,6 +42707,14 @@ int ShowCameraDollyDlg()
 		SetDlgItemTextW(s_cameradollydlgwnd, IDC_DOLLYY, strpos);
 		swprintf_s(strpos, 256, L"%.3f", g_camEye.z);
 		SetDlgItemTextW(s_cameradollydlgwnd, IDC_DOLLYZ, strpos);
+
+		swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.x);
+		SetDlgItemTextW(s_cameradollydlgwnd, IDC_DOLLYX2, strpos);
+		swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.y);
+		SetDlgItemTextW(s_cameradollydlgwnd, IDC_DOLLYY2, strpos);
+		swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.z);
+		SetDlgItemTextW(s_cameradollydlgwnd, IDC_DOLLYZ2, strpos);
+
 
 		ShowWindow(s_cameradollydlgwnd, SW_SHOW);
 		UpdateWindow(s_cameradollydlgwnd);

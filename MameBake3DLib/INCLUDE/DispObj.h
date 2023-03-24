@@ -72,7 +72,8 @@ public:
  * @return 成功したら０。
  */
 	int RenderNormal(bool withalpha, 
-		ID3D11DeviceContext* pd3d11DeviceContext, CMQOMaterial* rmaterial, int lightflag, ChaVector4 diffusemult );
+		ID3D11DeviceContext* pd3d11DeviceContext, CMQOMaterial* rmaterial, int lightflag, 
+		ChaVector4 diffusemult, ChaVector4 materialdisprate);
 
 /**
  * @fn
@@ -84,7 +85,8 @@ public:
  * @detail FBXデータは１オブジェクトにつき１マテリアル(材質)だが、メタセコイアデータは１オブジェクトに複数マテリアルが設定されていることが多い。
  */
 	int RenderNormalPM3(bool withalpha, 
-		ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, ChaVector4 diffusemult );
+		ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, 
+		ChaVector4 diffusemult, ChaVector4 materialdisprate );
 
 /**
  * @fn
@@ -94,7 +96,8 @@ public:
  * @return 成功したら０。
  */
 	int RenderLine(bool withalpha,
-		ID3D11DeviceContext* pd3d11DeviceContext, ChaVector4 diffusemult );
+		ID3D11DeviceContext* pd3d11DeviceContext, 
+		ChaVector4 diffusemult, ChaVector4 materialdisprate);
 
 /**
  * @fn

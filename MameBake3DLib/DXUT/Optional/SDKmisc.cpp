@@ -20,6 +20,9 @@
 #include "WICTextureLoader.h"
 #include "ScreenGrab.h"
 
+#include "..\\..\\DirectXTex\\DirectXTex\\DirectXTex.h"
+#include "..\\..\\DirectXTex\\WICTextureLoader\\WICTextureLoader11.h"
+
 using namespace DirectX;
 
 //--------------------------------------------------------------------------------------

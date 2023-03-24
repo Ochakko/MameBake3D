@@ -137,8 +137,12 @@ int CChaFile::WriteChaFile(bool limitdegflag, BPWorld* srcbpw, WCHAR* projdir, W
 int CChaFile::WriteFileInfo()
 {
 
-	CallF( Write2File( "  <FileInfo>\r\n    <kind>ChatCats3D_ProjectFile</kind>\r\n    <version>1001</version>\r\n    <type>0</type>\r\n  </FileInfo>\r\n" ), return 1 );
-
+	//CallF( Write2File( "  <FileInfo>\r\n    <kind>ChatCats3D_ProjectFile</kind>\r\n    <version>1001</version>\r\n    <type>0</type>\r\n  </FileInfo>\r\n" ), return 1 );
+	
+	//version 1002 : 2023/03/24
+	CallF(Write2File("  <FileInfo>\r\n    <kind>ChatCats3D_ProjectFile</kind>\r\n    <version>1002</version>\r\n    <type>0</type>\r\n  </FileInfo>\r\n"), return 1);
+	
+	
 	CallF( Write2File( "  <ProjectInfo>\r\n" ), return 1 );
 	CallF(Write2File("    <CharaNum>%d</CharaNum>\r\n", (int)m_modelindex.size()), return 1);
 	CallF( Write2File( "  </ProjectInfo>\r\n" ), return 1 );
@@ -164,6 +168,14 @@ int CChaFile::WriteChara(bool limitdegflag, MODELELEM* srcme, WCHAR* projname)
 	CallF(Write2File("    <ModelPositionX>%f</ModelPositionX>\r\n", curmodel->GetModelPosition().x), return 1);
 	CallF(Write2File("    <ModelPositionY>%f</ModelPositionY>\r\n", curmodel->GetModelPosition().y), return 1);
 	CallF(Write2File("    <ModelPositionZ>%f</ModelPositionZ>\r\n", curmodel->GetModelPosition().z), return 1);
+
+	ChaVector4 materialdisprate = curmodel->GetMaterialDispRate();
+	CallF(Write2File("    <DiffuseDispRate>%f</DiffuseDispRate>\r\n", materialdisprate.x), return 1);
+	CallF(Write2File("    <SpecularDispRate>%f</SpecularDispRate>\r\n", materialdisprate.y), return 1);
+	CallF(Write2File("    <EmissiveDispRate>%f</EmissiveDispRate>\r\n", materialdisprate.z), return 1);
+	CallF(Write2File("    <AmbientDispRate>%f</AmbientDispRate>\r\n", materialdisprate.w), return 1);
+
+
 
 	CallF( Write2File( "    <RGDMORPH>%d</RGDMORPH>\r\n", curmodel->GetRgdMorphIndex() ), return 1 );
 
@@ -514,6 +526,14 @@ int CChaFile::ReadChara(bool limitdegflag, int charanum, int characnt, XMLIOBUF*
 	Read_Float(xmlbuf, "<ModelPositionY>", "</ModelPositionY>", &posy);
 	Read_Float(xmlbuf, "<ModelPositionZ>", "</ModelPositionZ>", &posz);
 
+	ChaVector4 materialdisprate = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	Read_Float(xmlbuf, "<DiffuseDispRate>", "</DiffuseDispRate>", &materialdisprate.x);
+	Read_Float(xmlbuf, "<SpecularDispRate>", "</SpecularDispRate>", &materialdisprate.y);
+	Read_Float(xmlbuf, "<EmissiveDispRate>", "</EmissiveDispRate>", &materialdisprate.z);
+	Read_Float(xmlbuf, "<AmbientDispRate>", "</AmbientDispRate>", &materialdisprate.w);
+
+
 	CallF( Read_Float( xmlbuf, "<ModelMult>", "</ModelMult>", &modelmult ), return 1 );
 
 	CallF( Read_Int( xmlbuf, "<CURRE>", "</CURRE>", &curre ), return 1 );
@@ -559,7 +579,7 @@ int CChaFile::ReadChara(bool limitdegflag, int charanum, int characnt, XMLIOBUF*
 	//newmodel->m_tmpmotspeed = m_motspeed;
 
 	newmodel->SetModelPosition(ChaVector3(posx, posy, posz));
-
+	newmodel->SetMaterialDispRate(materialdisprate);
 
 	if( refnum > 0 ){
 		int refcnt;

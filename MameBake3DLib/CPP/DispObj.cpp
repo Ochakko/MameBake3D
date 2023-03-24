@@ -617,7 +617,8 @@ int CDispObj::CreateVBandIBLine()
 }
 
 int CDispObj::RenderNormal(bool withalpha,
-	ID3D11DeviceContext* pd3d11DeviceContext, CMQOMaterial* rmaterial, int lightflag, ChaVector4 diffusemult)
+	ID3D11DeviceContext* pd3d11DeviceContext, CMQOMaterial* rmaterial, int lightflag, 
+	ChaVector4 diffusemult, ChaVector4 materialdisprate)
 {
 	// Only PM4
 
@@ -646,11 +647,11 @@ int CDispObj::RenderNormal(bool withalpha,
 
 			ChaVector4 diffuse;
 			ChaVector4 curdif4f = curmat->GetDif4F();
-
 			diffuse.w = curdif4f.w * diffusemult.w;
-			diffuse.x = curdif4f.x * diffusemult.x;
-			diffuse.y = curdif4f.y * diffusemult.y;
-			diffuse.z = curdif4f.z * diffusemult.z;
+			diffuse.x = curdif4f.x * diffusemult.x * materialdisprate.x;
+			diffuse.y = curdif4f.y * diffusemult.y * materialdisprate.x;
+			diffuse.z = curdif4f.z * diffusemult.z * materialdisprate.x;
+			//diffuse.Clamp(0.0f, 1.0f);
 
 			if ((withalpha == false) && (diffuse.w <= 0.99999f)) {
 				continue;
@@ -682,17 +683,25 @@ int CDispObj::RenderNormal(bool withalpha,
 
 			hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));
 			_ASSERT(SUCCEEDED(hr));
-			ChaVector3 tmpamb = curmat->GetAmb3F();
+
+			ChaVector3 tmpamb = curmat->GetAmb3F() * materialdisprate.w;
+			//tmpamb.Clamp(0.0f, 1.0f);
 			hr = g_hambient->SetRawValue(&tmpamb, 0, sizeof(ChaVector3));
 			_ASSERT(SUCCEEDED(hr));
-			ChaVector3 tmpspc = curmat->GetSpc3F();
+			
+			ChaVector3 tmpspc = curmat->GetSpc3F() * materialdisprate.y;
+			//tmpspc.Clamp(0.0f, 1.0f);
 			hr = g_hspecular->SetRawValue(&tmpspc, 0, sizeof(ChaVector3));
 			_ASSERT(SUCCEEDED(hr));
+			
 			hr = g_hpower->SetFloat(curmat->GetPower());
 			_ASSERT(SUCCEEDED(hr));
-			ChaVector3 tmpemi = curmat->GetEmi3F();
-				hr = g_hemissive->SetRawValue(&tmpemi, 0, sizeof(ChaVector3));
+			
+			ChaVector3 tmpemi = curmat->GetEmi3F() * materialdisprate.z;
+			//tmpemi.Clamp(0.0f, 1.0f);
+			hr = g_hemissive->SetRawValue(&tmpemi, 0, sizeof(ChaVector3));
 			_ASSERT(SUCCEEDED(hr));
+			
 			hr = g_hPm3Scale->SetRawValue(&m_scale, 0, sizeof(ChaVector3));
 			_ASSERT(SUCCEEDED(hr));
 
@@ -1138,7 +1147,8 @@ int CDispObj::RenderNormal(bool withalpha,
 //}
 
 int CDispObj::RenderNormalPM3(bool withalpha,
-	ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, ChaVector4 diffusemult )
+	ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, 
+	ChaVector4 diffusemult, ChaVector4 materialdisprate)
 {
 	if( !m_pm3 ){
 		return 0;
@@ -1164,9 +1174,10 @@ int CDispObj::RenderNormalPM3(bool withalpha,
 		ChaVector4 diffuse;
 		ChaVector4 curdif4f = curmat->GetDif4F();
 		diffuse.w = curdif4f.w * diffusemult.w;
-		diffuse.x = curdif4f.x * diffusemult.x;
-		diffuse.y = curdif4f.y * diffusemult.y;
-		diffuse.z = curdif4f.z * diffusemult.z;
+		diffuse.x = curdif4f.x * diffusemult.x * materialdisprate.x;
+		diffuse.y = curdif4f.y * diffusemult.y * materialdisprate.x;
+		diffuse.z = curdif4f.z * diffusemult.z * materialdisprate.x;
+		//diffuse.Clamp(0.0f, 1.0f);
 
 		if ((withalpha == false) && (diffuse.w <= 0.99999f)) {
 			continue;
@@ -1178,15 +1189,18 @@ int CDispObj::RenderNormalPM3(bool withalpha,
 
 		hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));
 		_ASSERT(SUCCEEDED(hr));
-		ChaVector3 tmpamb = curmat->GetAmb3F();
+		ChaVector3 tmpamb = curmat->GetAmb3F() * materialdisprate.w;
+		//tmpamb.Clamp(0.0f, 1.0f);
 		hr = g_hambient->SetRawValue(&tmpamb, 0, sizeof(ChaVector3));
 		_ASSERT(SUCCEEDED(hr));
-		ChaVector3 tmpspc = curmat->GetSpc3F();
+		ChaVector3 tmpspc = curmat->GetSpc3F() * materialdisprate.y;
+		//tmpspc.Clamp(0.0f, 1.0f);
 		hr = g_hspecular->SetRawValue(&tmpspc, 0, sizeof(ChaVector3));
 		_ASSERT(SUCCEEDED(hr));
 		hr = g_hpower->SetFloat(curmat->GetPower());
 		_ASSERT(SUCCEEDED(hr));
-		ChaVector3 tmpemi = curmat->GetEmi3F();
+		ChaVector3 tmpemi = curmat->GetEmi3F() * materialdisprate.z;
+		//tmpemi.Clamp(0.0f, 1.0f);
 		hr = g_hemissive->SetRawValue(&tmpemi, 0, sizeof(ChaVector3));
 		_ASSERT(SUCCEEDED(hr));
 		hr = g_hPm3Scale->SetRawValue(&m_scale, 0, sizeof(ChaVector3));
@@ -1314,7 +1328,8 @@ int CDispObj::RenderNormalPM3(bool withalpha,
 
 
 int CDispObj::RenderLine(bool withalpha,
-	ID3D11DeviceContext* pd3d11DeviceContext, ChaVector4 diffusemult )
+	ID3D11DeviceContext* pd3d11DeviceContext, 
+	ChaVector4 diffusemult, ChaVector4 materialdisprate)
 {
 	if( !m_extline ){
 		return 0;
@@ -1327,9 +1342,10 @@ int CDispObj::RenderLine(bool withalpha,
 
 	ChaVector4 diffuse;
 	diffuse.w = m_extline->m_color.w * diffusemult.w;
-	diffuse.x = m_extline->m_color.x * diffusemult.x;
-	diffuse.y = m_extline->m_color.y * diffusemult.y;
-	diffuse.z = m_extline->m_color.z * diffusemult.z;
+	diffuse.x = m_extline->m_color.x * diffusemult.x * materialdisprate.x;
+	diffuse.y = m_extline->m_color.y * diffusemult.y * materialdisprate.x;
+	diffuse.z = m_extline->m_color.z * diffusemult.z * materialdisprate.x;
+	//diffuse.Clamp(0.0f, 1.0f);
 
 	if ((withalpha == false) && (diffuse.w <= 0.99999f)) {
 		return 0;
