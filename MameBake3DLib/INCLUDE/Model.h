@@ -1356,21 +1356,35 @@ public: //accesser
 		m_initaxismatx = srcval;
 	};
 
-	void SetModelPosition(ChaVector3 srcpos){
-		m_modelposition = srcpos;
+	void SetModelPosition(ChaVector3 srcpos) {
+		m_modelposition = srcpos;//ì«Ç›çûÇ›éûà íu
 	};
-	ChaVector3 GetModelPosition(){
-		return m_modelposition;
+	ChaVector3 GetModelPosition() {
+		return m_modelposition;//ì«Ç›çûÇ›éûà íu
 	};
-	void SetWorldMatFromCamera(ChaMatrix srcmat){
+	void SetModelRotation(ChaVector3 srcdir) {
+		m_modelrotation = srcdir;
+	};
+	ChaVector3 GetModelRotation() {
+		return m_modelrotation;
+	};
+	void CalcModelWorldMatOnLoad();
+
+
+	//void SetWorldMatFromCamera(ChaMatrix srcmat){
+	//	m_worldmat = srcmat;
+	//	m_worldmat.data[MATI_41] = m_modelposition.x;
+	//	m_worldmat.data[MATI_42] = m_modelposition.y;
+	//	m_worldmat.data[MATI_43] = m_modelposition.z;
+	//};
+	void SetWorldMat(ChaMatrix srcmat) {
 		m_worldmat = srcmat;
-		m_worldmat.data[MATI_41] = m_modelposition.x;
-		m_worldmat.data[MATI_42] = m_modelposition.y;
-		m_worldmat.data[MATI_43] = m_modelposition.z;
 	};
 	ChaMatrix GetWorldMat()
 	{
 		return m_worldmat;
+		//m_worldmat = CalcModelWorldMatOnLoad();
+		//return m_worldmat;
 	};
 
 	int GetFbxComment(char* dstcomment, int dstlen)
@@ -1582,7 +1596,8 @@ private:
 	int m_undo_firstflag;
 
 	ChaMatrix m_worldmat;
-	ChaVector3 m_modelposition;
+	ChaVector3 m_modelposition;//ì«Ç›çûÇ›éûà íu
+	ChaVector3 m_modelrotation;//ì«Ç›çûÇ›éûå¸Ç´
 
 	std::vector<PHYSIKREC> m_physikrec0;
 	std::vector<PHYSIKREC> m_physikrec;

@@ -1655,10 +1655,10 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bi
 	}
 
 	ChaMatrix tmpzerofm = GetNodeMat() * GetCurrentZeroFrameMat(limitdegflag, 1);
-	ChaMatrix tmplimwm = GetNodeMat() * GetCurrentWorldMat();
+	ChaMatrix tmplimwm = GetNodeMat() * GetCurrentWorldMat(false);
 	ChaMatrix tmpbtmat = GetNodeMat() * GetBtMat();
 	ChaMatrix tmpchildzerofm = childbone->GetNodeMat() * childbone->GetCurrentZeroFrameMat(limitdegflag, 1);
-	ChaMatrix tmpchildlimwm = childbone->GetNodeMat() * childbone->GetCurrentWorldMat();
+	ChaMatrix tmpchildlimwm = childbone->GetNodeMat() * childbone->GetCurrentWorldMat(false);
 	ChaMatrix tmpchildbtmat = childbone->GetNodeMat() * childbone->GetBtMat();
 	//ChaMatrix tmpchildbtmat;
 	ChaMatrix tmpparentzerofm;
@@ -1666,7 +1666,7 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bi
 	ChaMatrix tmpparentbtmat;
 	if (GetParent()) {
 		tmpparentzerofm = GetParent()->GetNodeMat() * GetParent()->GetCurrentZeroFrameMat(limitdegflag, 1);
-		tmpparentlimwm = GetParent()->GetNodeMat() * GetParent()->GetCurrentWorldMat();
+		tmpparentlimwm = GetParent()->GetNodeMat() * GetParent()->GetCurrentWorldMat(false);
 		tmpparentbtmat = GetParent()->GetNodeMat() * GetParent()->GetBtMat();
 	}
 	else {
@@ -1938,9 +1938,9 @@ float CBone::CalcAxisMatX_RigidBody(bool limitdegflag, bool dir2xflag, int bindf
 	else {
 		if ((g_previewFlag != 5) && (g_previewFlag != 4)) {
 			ChaMatrix tmpzerofm = GetNodeMat() * GetCurrentZeroFrameMat(limitdegflag, 1);
-			ChaMatrix tmplimwm = GetNodeMat() * GetCurrentWorldMat();
+			ChaMatrix tmplimwm = GetNodeMat() * GetCurrentWorldMat(true);
 			ChaMatrix tmpchildzerofm = childbone->GetNodeMat() * childbone->GetCurrentZeroFrameMat(limitdegflag, 1);
-			ChaMatrix tmpchildlimwm = childbone->GetNodeMat() * childbone->GetCurrentWorldMat();
+			ChaMatrix tmpchildlimwm = childbone->GetNodeMat() * childbone->GetCurrentWorldMat(true);
 
 			if (setstartflag == 1) {
 				ChaVector3TransformCoord(&aftbonepos, &zeropos, &tmpzerofm);
@@ -6161,7 +6161,7 @@ ChaMatrix CBone::GetWorldMat(bool limitdegflag,
 	return curmat;
 }
 
-ChaMatrix CBone::GetCurrentWorldMat()
+ChaMatrix CBone::GetCurrentWorldMat(bool multmodelwm)
 {
 	//CMotionPoint curmp;
 	//curmp = GetCurMp();
@@ -6184,13 +6184,22 @@ ChaMatrix CBone::GetCurrentWorldMat()
 			CMotionPoint tmpmp;
 			int existflag = 0;
 			CalcFBXMotion(currentlimitdegflag, curmotid, curframe, &tmpmp, &existflag);
-			newworldmat = GetWorldMat(currentlimitdegflag, curmotid, curframe, &tmpmp) * GetParModel()->GetWorldMat();
-
+			newworldmat = GetWorldMat(currentlimitdegflag, curmotid, curframe, &tmpmp);
+			if (multmodelwm == true) {
+				newworldmat = newworldmat * GetParModel()->GetWorldMat();
+			}
 			return newworldmat;
 		}
 		else {
 			_ASSERT(0);
-			return GetParModel()->GetWorldMat();
+			if (multmodelwm == true) {
+				return GetParModel()->GetWorldMat();
+			}
+			else {
+				ChaMatrix initmat;
+				initmat.SetIdentity();
+				return initmat;
+			}
 		}
 	}
 	else {
@@ -6820,7 +6829,7 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CBone* childbone, ChaMatrix* dstmat, C
 	//}
 
 
-	curworld = GetCurrentWorldMat();
+	curworld = GetCurrentWorldMat(true);
 
 
 	//current
@@ -6867,7 +6876,7 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CBone* childbone, ChaMatrix* dstmat, C
 			if (kinematicbone) {
 				ChaMatrix befparentwm, curparentwm;
 				befparentwm = kinematicbone->GetBtMat();//実質一回前の　BtMat
-				curparentwm = kinematicbone->GetCurrentWorldMat();//カレントのKinematic姿勢
+				curparentwm = kinematicbone->GetCurrentWorldMat(true);//カレントのKinematic姿勢
 
 				jointfpos = kinematicbone->GetJointFPos();
 				ChaVector3 befparentpos, curparentpos;
@@ -7028,7 +7037,7 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CBone* childbone, ChaMatrix* dstmat, C
 ChaVector3 CBone::GetChildWorld(){
 	if (g_previewFlag != 5){
 		//ChaVector3TransformCoord(&m_childworld, &m_jointfpos, &m_curmp.GetWorldMat());
-		ChaMatrix tmplimwm = GetCurrentWorldMat();
+		ChaMatrix tmplimwm = GetCurrentWorldMat(true);
 		ChaVector3TransformCoord(&m_childworld, &m_jointfpos, &tmplimwm);
 	}
 	else{
@@ -9034,7 +9043,10 @@ void CBone::SetIKTargetFlag(bool srcflag)
 			MOTINFO* curmi = GetParModel()->GetCurMotInfo();
 			if (curmi) {
 				CMotionPoint curmp = GetCurMp();
-				ChaMatrix curwm = GetWorldMat(g_limitdegflag, curmi->motid, curmi->curframe, &curmp);
+
+				//2023/03/24 model座標系：modelのworldmatを打ち消す
+				ChaMatrix curwm = GetWorldMat(g_limitdegflag, curmi->motid, curmi->curframe, &curmp) * ChaMatrixInv(GetParModel()->GetWorldMat());
+				
 				ChaVector3 jointpos0, jointpos1;
 				jointpos0 = GetJointFPos();
 				ChaVector3TransformCoord(&jointpos1, &jointpos0, &curwm);

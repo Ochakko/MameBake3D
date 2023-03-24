@@ -1550,6 +1550,7 @@ static bool s_undergcolidlg = false;
 static HWND s_motpropdlghwnd = 0;
 static HWND s_cameradollydlgwnd = 0;
 static HWND s_materialratedlgwnd = 0;
+static HWND s_modelworldmatdlgwnd = 0;
 static HWND s_savechadlghwnd = 0;
 static HWND s_bvhdlghwnd = 0;
 static HWND s_saveredlghwnd = 0;
@@ -1823,13 +1824,7 @@ static CFpsSprite* s_fpssprite = 0;
 
 static int s_fbxbunki = 1;
 
-
-//static ChaMatrix s_matWorld;
-//static ChaMatrix s_matProj;
-////static ChaMatrix s_matW, s_matVP;
-//static ChaMatrix s_matVP;
-//static ChaMatrix s_matView;
-static ChaMatrix s_matWorld;
+static ChaMatrix s_matWorld;//シーン(カメラ)のworldmat. modelのworldmatでは無い.
 static ChaMatrix s_matProj;
 static ChaMatrix s_matVP;
 static ChaMatrix s_matView;
@@ -2001,6 +1996,7 @@ static OWP_Button* s_tool180deg = 0;
 static OWP_Button* s_toolScaleInitAllB = 0;
 static OWP_Button* s_toolCameraDollyB = 0;
 static OWP_Button* s_toolMaterialRateB = 0;
+static OWP_Button* s_toolModelWorldMatB = 0;
 
 
 #define CONVBONEMAX		256
@@ -2084,6 +2080,7 @@ static bool s_180DegFlag = false;
 static bool s_scaleAllInitFlag = false;
 static bool s_cameradollyFlag = false;
 static bool s_materialrateFlag = false;
+static bool s_modelworldmatFlag = false;
 
 static bool s_firstkeyFlag = false;
 static bool s_lastkeyFlag = false;
@@ -2635,6 +2632,8 @@ static int CreateCameraDollyWnd();
 static int ShowCameraDollyDlg();
 static int CreateMaterialRateWnd();
 static int ShowMaterialRateDlg();
+static int CreateModelWorldMatWnd();
+static int ShowModelWorldMatDlg();
 
 //--------------------------------------------------------------------------------------
 // Forward declarations 
@@ -2728,6 +2727,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK MotPropDlgProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK CameraDollyDlgProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK MaterialRateDlgProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK ModelWorldMatDlgProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK OpenBvhDlgProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
@@ -3497,6 +3497,8 @@ INT WINAPI wWinMain(
 
 	CreateCameraDollyWnd();
 	CreateMaterialRateWnd();
+	CreateModelWorldMatWnd();
+
 
 	//CallF( InitializeSdkObjects(), return 1 );
 
@@ -3771,6 +3773,7 @@ void InitApp()
 	
 	s_cameradollyFlag = false;
 	s_materialrateFlag = false;
+	s_modelworldmatFlag = false;
 
 	g_zcmpalways = false;
 	g_lightflag = 1;
@@ -4265,6 +4268,7 @@ void InitApp()
 	s_toolScaleInitAllB = 0;
 	s_toolCameraDollyB = 0;
 	s_toolMaterialRateB = 0;
+	s_toolModelWorldMatB = 0;
 
 	s_customrigbone = 0;
 	s_customrigdlg = 0;
@@ -4435,6 +4439,7 @@ void InitApp()
 
 	s_cameradollydlgwnd = 0;
 	s_materialratedlgwnd = 0;
+	s_modelworldmatdlgwnd = 0;
 
 	{
 		char strtitle[256];
@@ -6085,6 +6090,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		DestroyWindow(s_materialratedlgwnd);
 		s_materialratedlgwnd = 0;
 	}
+	if (s_modelworldmatdlgwnd) {
+		DestroyWindow(s_modelworldmatdlgwnd);
+		s_modelworldmatdlgwnd = 0;
+	}
 
 	CloseDbgFile();
 	if (g_infownd) {
@@ -6289,6 +6298,18 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	if (s_toolScaleInitAllB) {
 		delete s_toolScaleInitAllB;
 		s_toolScaleInitAllB = 0;
+	}
+	if (s_toolCameraDollyB) {
+		delete s_toolCameraDollyB;
+		s_toolCameraDollyB = 0;
+	}
+	if (s_toolMaterialRateB) {
+		delete s_toolMaterialRateB;
+		s_toolMaterialRateB = 0;
+	}
+	if (s_toolModelWorldMatB) {
+		delete s_toolModelWorldMatB;
+		s_toolModelWorldMatB = 0;
 	}
 
 
@@ -7114,14 +7135,14 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		s_matWorld.data[MATI_41] = 0.0f;
 		s_matWorld.data[MATI_42] = 0.0f;
 		s_matWorld.data[MATI_43] = 0.0f;
-		//s_matW = s_matWorld;
+		////s_matW = s_matWorld;
 		s_matVP = s_matView * s_matProj;
 
-		int modelno;
-		int modelnum = (int)s_modelindex.size();
-		for (modelno = 0; modelno < modelnum; modelno++) {
-			s_modelindex[modelno].modelptr->SetWorldMatFromCamera(s_matWorld);
-		}
+		//int modelno;
+		//int modelnum = (int)s_modelindex.size();
+		//for (modelno = 0; modelno < modelnum; modelno++) {
+		//	s_modelindex[modelno].modelptr->SetWorldMatFromCamera(s_matWorld);
+		//}
 
 
 		double nextframe = 0.0;
@@ -13466,8 +13487,6 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 
 
 
-
-
 	if (cMdlSets > 0) {
 		CheckMenuItem(s_mainmenu, 61000 + selindex, MF_CHECKED);
 
@@ -14020,6 +14039,10 @@ int refreshModelPanel()
 
 float CalcSelectScale(CBone* curboneptr)
 {
+	if (!s_model) {
+		return 0.0f;
+	}
+
 	MODELBOUND mb;
 	s_model->GetModelBound(&mb);
 	double modelr = (double)mb.r;
@@ -14105,7 +14128,8 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 		ChaVector3 bonepos = curboneptr->GetWorldPos(g_limitdegflag, curmi->motid, curmi->curframe);
 
 		//s_selectmat = scalemat * s_selm;
-		s_selectmat = s_selm;
+		//s_selectmat = s_selm;
+		s_selectmat = s_selm * s_model->GetWorldMat();//2023/03/34
 		ChaMatrixNormalizeRot(&s_selectmat);
 		s_selectmat = scalemat * s_selectmat;
 
@@ -14297,6 +14321,8 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 							ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
 							bool withalpha = false;
 							currigmodel->OnRender(withalpha, pd3dImmediateContext, lightflag, diffusemult);
+							withalpha = true;
+							currigmodel->OnRender(withalpha, pd3dImmediateContext, lightflag, diffusemult);
 							//s_pdev->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 							//pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 						
@@ -14325,7 +14351,24 @@ int CalcTargetPos(ChaVector3* dstpos)
 	float t;
 	t = ChaVector3Dot(&sb, &n) / ChaVector3Dot(&se, &n);
 
-	*dstpos = start3d * (1.0f - t) + end3d * t;
+	ChaVector3 targetwm = start3d * (1.0f - t) + end3d * t;
+	ChaVector3 targetlocal; 
+	ChaMatrix invmodelwm;
+	if (s_model) {
+		//########################################################
+		//2023/03/24
+		//model座標系で計算：modelのWorldMatの影響を無くして計算
+		//########################################################
+
+		invmodelwm = ChaMatrixInv(s_model->GetWorldMat());
+		ChaVector3TransformCoord(&targetlocal, &targetwm, &invmodelwm);
+	}
+	else {
+		targetlocal = targetwm;
+	}
+
+	*dstpos = targetlocal;
+
 	return 0;
 }
 
@@ -14354,11 +14397,12 @@ int CalcPickRay(ChaVector3* startptr, ChaVector3* endptr)
 
 	ChaMatrix mView;
 	ChaMatrix mProj;
+	
 	mProj = g_Camera->GetProjMatrix();
 	mView = s_matView;
 	ChaMatrix mVP, invmVP;
 	mVP = mView * mProj;
-	ChaMatrixInverse(&invmVP, NULL, &mVP);
+	ChaMatrixInverse(&invmVP, NULL, &mVP);//2023/03/24 model座標系　model->GetWorldMat()の効果は打ち消しておく
 
 	ChaVector3TransformCoord(startptr, &startsc, &invmVP);
 	ChaVector3TransformCoord(endptr, &endsc, &invmVP);
@@ -22413,6 +22457,120 @@ int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag)//default :
 	return 0;
 }
 
+LRESULT CALLBACK ModelWorldMatDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+	WCHAR strval[256] = { 0L };
+	float value = 0.0f;
+	ChaVector3 tmppos = ChaVector3(0.0f, 0.0f, 0.0f);
+	ChaVector3 tmprot = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	switch (msg) {
+	case WM_INITDIALOG:
+	{
+		SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
+
+		if (s_model) {
+			tmppos = s_model->GetModelPosition();
+			tmprot = s_model->GetModelRotation();
+
+			swprintf_s(strval, 256, L"%.3f", tmppos.x);
+			SetDlgItemTextW(hDlgWnd, IDC_EDIT_POSITIONX, strval);
+			swprintf_s(strval, 256, L"%.3f", tmppos.y);
+			SetDlgItemTextW(hDlgWnd, IDC_EDIT_POSITIONY, strval);
+			swprintf_s(strval, 256, L"%.3f", tmppos.z);
+			SetDlgItemTextW(hDlgWnd, IDC_EDIT_POSITIONZ, strval);
+
+			swprintf_s(strval, 256, L"%.3f", tmprot.x);
+			SetDlgItemTextW(hDlgWnd, IDC_EDIT_ROTATIONX, strval);
+			swprintf_s(strval, 256, L"%.3f", tmprot.y);
+			SetDlgItemTextW(hDlgWnd, IDC_EDIT_ROTATIONY, strval);
+			swprintf_s(strval, 256, L"%.3f", tmprot.z);
+			SetDlgItemTextW(hDlgWnd, IDC_EDIT_ROTATIONZ, strval);
+
+		}
+
+		//RECT dlgrect;
+		//GetWindowRect(hDlgWnd, &dlgrect);
+		//SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+
+		s_modelworldmatdlgwnd = hDlgWnd;
+
+		return FALSE;
+	}
+	break;
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDOK:
+			ShowWindow(hDlgWnd, SW_HIDE);
+			break;
+		case IDCANCEL:
+			ShowWindow(hDlgWnd, SW_HIDE);
+			break;
+		case IDC_APPLYMODELWORLDMAT:
+		{
+			if (s_model) {
+				tmppos = s_model->GetModelPosition();
+				tmprot = s_model->GetModelRotation();
+				const float maxvalue = 100000.0f;
+				const float minvalue = -maxvalue;
+				const float maxvalue2 = 10000.0f;
+				const float minvalue2 = -maxvalue;
+
+				GetDlgItemTextW(hDlgWnd, IDC_EDIT_POSITIONX, strval, 256);
+				value = (float)_wtof(strval);
+				if ((value >= minvalue) && (value <= maxvalue)) {
+					tmppos.x = value;
+				}
+				GetDlgItemTextW(hDlgWnd, IDC_EDIT_POSITIONY, strval, 256);
+				value = (float)_wtof(strval);
+				if ((value >= minvalue) && (value <= maxvalue)) {
+					tmppos.y = value;
+				}
+				GetDlgItemTextW(hDlgWnd, IDC_EDIT_POSITIONZ, strval, 256);
+				value = (float)_wtof(strval);
+				if ((value >= minvalue) && (value <= maxvalue)) {
+					tmppos.z = value;
+				}
+
+				GetDlgItemTextW(hDlgWnd, IDC_EDIT_ROTATIONX, strval, 256);
+				value = (float)_wtof(strval);
+				if ((value >= minvalue) && (value <= maxvalue)) {
+					tmprot.x = value;
+				}
+				GetDlgItemTextW(hDlgWnd, IDC_EDIT_ROTATIONY, strval, 256);
+				value = (float)_wtof(strval);
+				if ((value >= minvalue) && (value <= maxvalue)) {
+					tmprot.y = value;
+				}
+				GetDlgItemTextW(hDlgWnd, IDC_EDIT_ROTATIONZ, strval, 256);
+				value = (float)_wtof(strval);
+				if ((value >= minvalue) && (value <= maxvalue)) {
+					tmprot.z = value;
+				}
+
+
+				s_model->SetModelPosition(tmppos);
+				s_model->SetModelRotation(tmprot);
+				s_model->CalcModelWorldMatOnLoad();
+			}
+
+		}
+		break;
+		default:
+			return FALSE;
+		}
+		break;
+	case WM_CLOSE:
+		ShowWindow(hDlgWnd, SW_HIDE);
+		break;
+	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
+		return FALSE;
+	}
+	return TRUE;
+
+}
+
 
 LRESULT CALLBACK MaterialRateDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
@@ -24866,6 +25024,13 @@ int OnFrameToolWnd()
 		}
 		s_materialrateFlag = false;
 	}
+	if (s_modelworldmatFlag) {
+		if (s_model) {
+			ShowModelWorldMatDlg();
+		}
+		s_modelworldmatFlag = false;
+	}
+
 
 	if (s_interpolateFlag) {
 		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()) {
@@ -29032,6 +29197,11 @@ int CreateToolWnd()
 			_ASSERT(0);
 			return 1;
 		}
+		s_toolModelWorldMatB = new OWP_Button(_T("モデル位置向きModelWorldMat"));
+		if (!s_toolModelWorldMatB) {
+			_ASSERT(0);
+			return 1;
+		}
 
 
 
@@ -29052,6 +29222,7 @@ int CreateToolWnd()
 		s_toolWnd->addParts(*s_toolScaleInitAllB);
 		s_toolWnd->addParts(*s_toolCameraDollyB);
 		s_toolWnd->addParts(*s_toolMaterialRateB);
+		s_toolWnd->addParts(*s_toolModelWorldMatB);
 
 		s_dstoolctrls.push_back(s_toolSelBoneB);
 		s_dstoolctrls.push_back(s_toolCopyB);
@@ -29069,6 +29240,7 @@ int CreateToolWnd()
 		s_dstoolctrls.push_back(s_toolScaleInitAllB);
 		s_dstoolctrls.push_back(s_toolCameraDollyB);
 		s_dstoolctrls.push_back(s_toolMaterialRateB);
+		s_dstoolctrls.push_back(s_toolModelWorldMatB);
 
 
 		s_toolWnd->setCloseListener([]() {
@@ -29183,6 +29355,11 @@ int CreateToolWnd()
 		s_toolMaterialRateB->setButtonListener([]() {
 			if (s_model && (s_materialrateFlag == false)) {
 				s_materialrateFlag = true;
+			}
+			});
+		s_toolModelWorldMatB->setButtonListener([]() {
+			if (s_model && (s_modelworldmatFlag == false)) {
+				s_modelworldmatFlag = true;
 			}
 			});
 
@@ -41919,6 +42096,9 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 	if (!curbone) {
 		return retmat;
 	}
+	if (!curbone->GetParModel()) {
+		return retmat;
+	}
 
 	//int multworld = 1;
 	ChaMatrix selm;
@@ -41936,6 +42116,7 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 		//selm.SetIdentity();
 		selm = curbone->GetWorldMat(g_limitdegflag, curmotid, curframe, 0);
 	}
+
 	//selm.data[MATI_41] = 0.0f;
 	//selm.data[MATI_42] = 0.0f;
 	//selm.data[MATI_43] = 0.0f;
@@ -41946,7 +42127,17 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 	ChaMatrixIdentity(&scalemat);
 	ChaMatrixScaling(&scalemat, s_selectscale, s_selectscale, s_selectscale);
 
-	ChaVector3 curbonepos = curbone->GetWorldPos(g_limitdegflag, curmotid, curframe);
+	//ChaVector3 curbonepos = curbone->GetWorldPos(g_limitdegflag, curmotid, curframe);//world座標系
+	//ChaMatrix invmodelwm = ChaMatrixInv(curbone->GetParModel()->GetWorldMat());
+	//ChaVector3 curbonepos;
+	//ChaVector3TransformCoord(&curbonepos, &curbonepos0, &invmodelwm);
+
+	ChaVector3 jointpos = curbone->GetJointFPos();
+	ChaMatrix curwm = curbone->GetWorldMat(g_limitdegflag, curmotid, curframe, 0);
+	ChaVector3 curbonepos;
+	ChaVector3TransformCoord(&curbonepos, &jointpos, &curwm);
+
+
 	float curboneleng = (float)curbone->GetBoneLeng();
 	float multoffset;
 	if (curboneleng != 0.0f) {
@@ -42001,7 +42192,12 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 		curbonepos.x + offsetvec.x, curbonepos.y + offsetvec.y, curbonepos.z + offsetvec.z);
 
 	//retmat = scalemat * tramat;
-	retmat = ChaMatrixFromSRT(true, true, curbone->GetNodeMat(), &scalemat, &curbonerotmat, &tramat);
+	//retmat = ChaMatrixFromSRT(true, true, curbone->GetNodeMat(), &scalemat, &curbonerotmat, &tramat);
+
+	retmat = scalemat * curbonerotmat;
+	retmat.SetTranslation(ChaVector3(curbonepos.x + offsetvec.x, curbonepos.y + offsetvec.y, curbonepos.z + offsetvec.z));
+	retmat = retmat * curbone->GetParModel()->GetWorldMat();
+
 
 	return retmat;
 }
@@ -42055,7 +42251,7 @@ int PickRigBone(UIPICKINFO* ppickinfo, bool forrigtip, int* dstrigno)//default:f
 							int colliobj;
 							bool excludeinvface = true;
 							colliobj = currigmodel->CollisionNoBoneObj_Mouse(&chkpickinfo, "obj1", excludeinvface);
-							if (colliobj) {
+							if (colliobj > 0) {
 								RollbackCurBoneNo();
 
 								if (forrigtip == false) {
@@ -42091,6 +42287,11 @@ int PickRigBone(UIPICKINFO* ppickinfo, bool forrigtip, int* dstrigno)//default:f
 								}
 
 								return chkboneno;//!!!!!!!!!!!!!!!!!!!!!!!!!!!! found !!!!!!!!!!!!!!!!!!
+							}
+							else {
+								if (dstrigno) {
+									*dstrigno = -1;
+								}
 							}
 						}
 					}
@@ -42650,6 +42851,71 @@ int CreateCameraDollyWnd()
 	return 0;
 }
 
+int CreateModelWorldMatWnd()
+{
+
+	//CCameraDollyDlg dlg(g_camEye);
+	//dlg.DoModal();
+	//g_camEye = dlg.GetCameraPos();
+
+	HWND hDlgWnd = CreateDialogW((HMODULE)GetModuleHandle(NULL),
+		MAKEINTRESOURCE(IDD_MODELWORLDMATDLG), s_mainhwnd, (DLGPROC)ModelWorldMatDlgProc);
+	if (hDlgWnd == NULL) {
+		return 1;
+	}
+	s_modelworldmatdlgwnd = hDlgWnd;
+	ShowWindow(s_modelworldmatdlgwnd, SW_HIDE);
+
+	return 0;
+}
+
+int ShowModelWorldMatDlg()
+{
+
+	if (s_modelworldmatdlgwnd) {
+		if (s_model) {
+			WCHAR strname[256] = { 0L };
+			ZeroMemory(strname, sizeof(WCHAR) * 256);
+			size_t namelen = wcslen(s_model->GetFileName());
+			if (namelen <= 255) {
+				wcscpy_s(strname, 256, s_model->GetFileName());
+			}
+			else {
+				wcsncpy_s(strname, 256, s_model->GetFileName(), 255);
+			}
+			SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_STATICMODELNAME, strname);
+
+
+			ChaVector3 tmppos = s_model->GetModelPosition();
+			ChaVector3 tmprot = s_model->GetModelRotation();
+
+			WCHAR strval[256] = { 0L };
+			swprintf_s(strval, 256, L"%.3f", tmppos.x);
+			SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_POSITIONX, strval);
+			swprintf_s(strval, 256, L"%.3f", tmppos.y);
+			SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_POSITIONY, strval);
+			swprintf_s(strval, 256, L"%.3f", tmppos.z);
+			SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_POSITIONZ, strval);
+
+			swprintf_s(strval, 256, L"%.3f", tmprot.x);
+			SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_ROTATIONX, strval);
+			swprintf_s(strval, 256, L"%.3f", tmprot.y);
+			SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_ROTATIONY, strval);
+			swprintf_s(strval, 256, L"%.3f", tmprot.z);
+			SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_ROTATIONZ, strval);
+
+
+			ShowWindow(s_modelworldmatdlgwnd, SW_SHOW);
+			UpdateWindow(s_modelworldmatdlgwnd);
+
+		}
+
+	}
+
+	return 0;
+}
+
+
 int CreateMaterialRateWnd()
 {
 
@@ -42674,6 +42940,18 @@ int ShowMaterialRateDlg()
 
 	if (s_materialratedlgwnd) {
 		if (s_model) {
+			WCHAR strname[256] = { 0L };
+			ZeroMemory(strname, sizeof(WCHAR) * 256);
+			size_t namelen = wcslen(s_model->GetFileName());
+			if (namelen <= 255) {
+				wcscpy_s(strname, 256, s_model->GetFileName());
+			}
+			else {
+				wcsncpy_s(strname, 256, s_model->GetFileName(), 255);
+			}
+			SetDlgItemTextW(s_materialratedlgwnd, IDC_STATICMODELNAME, strname);
+
+
 			WCHAR strval[256] = { 0L };
 			ChaVector4 materialdisprate = s_model->GetMaterialDispRate();
 

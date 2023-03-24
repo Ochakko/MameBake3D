@@ -498,7 +498,8 @@ int CModel::InitParams()
 
 	m_physicsikcnt = 0;
 	ChaMatrixIdentity(&m_worldmat);
-	m_modelposition = ChaVector3(0.0f, 0.0f, 0.0f);
+	m_modelposition = ChaVector3(0.0f, 0.0f, 0.0f);//読み込み時位置
+	m_modelrotation = ChaVector3(0.0f, 0.0f, 0.0f);//読み込み時向き
 	m_initaxismatx = 0;
 	m_loadedflag = false;
 	m_createbtflag = false;
@@ -2273,6 +2274,7 @@ int CModel::GetShapeWeight(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAn
 
 int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 {
+
 	if( !m_topbone ){
 		//_ASSERT(0);
 		return 0;//!!!!!!!!!!!
@@ -3039,7 +3041,8 @@ int CModel::CalcMouseLocalRay( UIPICKINFO* pickinfo, ChaVector3* startptr, ChaVe
 	
     ChaMatrix mWVP, invmWVP;
 	mWVP = m_matWorld * m_matVP;
-	ChaMatrixInverse( &invmWVP, NULL, &mWVP );
+	//ChaMatrixInverse( &invmWVP, NULL, &mWVP );
+	invmWVP = ChaMatrixInv(mWVP);
 
 	ChaVector3 startlocal, endlocal;
 
@@ -3082,11 +3085,11 @@ int CModel::TransformBone( int winx, int winy, int srcboneno, ChaVector3* worldp
 		if (g_previewFlag != 5){
 			if (curbone->GetParent()) {
 				//mW = curbone->GetParent()->GetCurMp().GetWorldMat();
-				mW = curbone->GetParent()->GetCurrentWorldMat();
+				mW = curbone->GetParent()->GetCurrentWorldMat(true);
 			}
 			else {
 				//mW = curbone->GetCurMp().GetWorldMat();
-				mW = curbone->GetCurrentWorldMat();
+				mW = curbone->GetCurrentWorldMat(true);
 			}
 		}
 		else{
@@ -5588,7 +5591,8 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 						boneptr->CalcRigidElemParams(childbone, 0);
 
 						//ChaMatrix worldcapsulemat = curre->GetCapsulemat(0) * GetWorldMat();
-						ChaMatrix worldcapsulemat = curre->GetCapsulematForColiShape(limitdegflag, 0) * GetWorldMat();//2023/01/18
+						//ChaMatrix worldcapsulemat = curre->GetCapsulematForColiShape(limitdegflag, 0) * GetWorldMat();//2023/01/18
+						ChaMatrix worldcapsulemat = curre->GetCapsulematForColiShape(limitdegflag, 0);//2023/03/24 modelのwmはすでに掛かっている
 
 						g_hmWorld->SetMatrix((float*)&(worldcapsulemat.data[MATI_11]));
 						boneptr->GetCurColDisp(childbone)->UpdateMatrix(limitdegflag, &worldcapsulemat, &m_matVP);
@@ -7239,14 +7243,14 @@ void CModel::SetBtMotionReq(bool limitdegflag, CBtObject* curbto, ChaMatrix* wma
 			//ChaMatrix curwm = curbone->GetCurMp().GetWorldMat();
 			ChaMatrix curwm;
 			curwm.SetIdentity();
-			curwm = curbone->GetCurrentWorldMat();
+			curwm = curbone->GetCurrentWorldMat(true);
 
 			ChaMatrix parentwm;
 			parentwm.SetIdentity();
 			if (curbone->GetParent()) {
 				//parentwm = curbone->GetParent()->GetWorldMat(curmotid, curframe);
 				//parentwm = curbone->GetParent()->GetCurMp().GetWorldMat();
-				parentwm = curbone->GetParent()->GetCurrentWorldMat();
+				parentwm = curbone->GetParent()->GetCurrentWorldMat(true);
 			}
 			else {
 				parentwm.SetIdentity();
@@ -9163,8 +9167,14 @@ bool CModel::CalcAxisAndRotForIKRotateAxis(int limitdegflag,
 	ChaVector3 srcikaxis,
 	ChaVector3* dstaxis, float* dstrotrad)
 {
-
 	//return nearflag : too near to move
+
+
+	//########################################################
+	//2023/03/24
+	//model座標系で計算：modelのWorldMatの影響を無くして計算
+	//########################################################
+
 
 	if (!parentbone || !firstbone || !dstaxis || !dstrotrad) {
 		_ASSERT(0);
@@ -9176,18 +9186,23 @@ bool CModel::CalcAxisAndRotForIKRotateAxis(int limitdegflag,
 		return true;
 	}
 
+	ChaMatrix invmodelwm = ChaMatrixInv(GetWorldMat());
+
 	ChaVector3 ikaxis = srcikaxis;//!!!!!!!!!!!!
 	ChaVector3Normalize(&ikaxis, &ikaxis);
 
-	ChaVector3 parworld, chilworld;
+	ChaVector3 modelparentpos, modelchildpos;
 	{
-		parworld = parentbone->GetWorldPos(limitdegflag, m_curmotinfo->motid, curframe);
-		ChaMatrix parworldmat = firstbone->GetParent()->GetWorldMat(limitdegflag, m_curmotinfo->motid, curframe, 0) * GetWorldMat();
+		ChaVector3 parentworld;
+		parentworld = parentbone->GetWorldPos(limitdegflag, m_curmotinfo->motid, curframe);
+		ChaVector3TransformCoord(&modelparentpos, &parentworld, &invmodelwm);
+
+		ChaMatrix parentmat = firstbone->GetParent()->GetWorldMat(limitdegflag, m_curmotinfo->motid, curframe, 0);// *GetWorldMat();
 		ChaVector3 tmpfirstfpos = firstbone->GetJointFPos();
-		ChaVector3TransformCoord(&chilworld, &tmpfirstfpos, &parworldmat);
+		ChaVector3TransformCoord(&modelchildpos, &tmpfirstfpos, &parentmat);
 	}
 
-	ChaVector3 childtotarget = targetpos - chilworld;
+	ChaVector3 childtotarget = targetpos - modelchildpos;
 	double distance = ChaVector3LengthDbl(&childtotarget);
 	//if (distance <= 0.10f) {
 	//	return true;
@@ -9195,9 +9210,9 @@ bool CModel::CalcAxisAndRotForIKRotateAxis(int limitdegflag,
 
 
 	ChaVector3 parbef, chilbef, tarbef;
-	parbef = parworld;
-	CalcShadowToPlane(chilworld, ikaxis, parworld, &chilbef);
-	CalcShadowToPlane(targetpos, ikaxis, parworld, &tarbef);
+	parbef = modelparentpos;
+	CalcShadowToPlane(modelchildpos, ikaxis, modelparentpos, &chilbef);
+	CalcShadowToPlane(targetpos, ikaxis, modelparentpos, &tarbef);
 
 	ChaVector3 vec0, vec1;
 	vec0 = chilbef - parbef;
@@ -9227,6 +9242,13 @@ int CModel::CalcAxisAndRotForIKRotate(int limitdegflag,
 	double curframe, ChaVector3 targetpos, 
 	ChaVector3* dstaxis, float* dstrotrad)
 {
+
+	//########################################################
+	//2023/03/24
+	//model座標系で計算：modelのWorldMatの影響を無くして計算
+	//########################################################
+
+
 	if (!parentbone || !firstbone || !dstaxis || !dstrotrad) {
 		_ASSERT(0);
 		return 1;
@@ -9237,22 +9259,32 @@ int CModel::CalcAxisAndRotForIKRotate(int limitdegflag,
 		return 1;
 	}
 
-	ChaVector3 ikaxis = g_camtargetpos - g_camEye;
+	ChaMatrix invmodelwm;
+	invmodelwm = ChaMatrixInv(GetWorldMat());
+	ChaVector3 modelcamtarget, modelcameye;
+	ChaVector3TransformCoord(&modelcamtarget, &g_camtargetpos, &invmodelwm);
+	ChaVector3TransformCoord(&modelcameye, &g_camEye, &invmodelwm);
+
+	//ChaVector3 ikaxis = g_camtargetpos - g_camEye;
+	ChaVector3 ikaxis = modelcamtarget - modelcameye;
 	ChaVector3Normalize(&ikaxis, &ikaxis);
 
-	ChaVector3 parworld, chilworld;
+	ChaVector3 modelparentpos, modelchildpos;
 	{
-		parworld = parentbone->GetWorldPos(limitdegflag, m_curmotinfo->motid, curframe);
-		ChaMatrix parworldmat = firstbone->GetParent()->GetWorldMat(limitdegflag, m_curmotinfo->motid, curframe, 0) * GetWorldMat();
+		ChaVector3 parentworld, childworld;
+		parentworld = parentbone->GetWorldPos(limitdegflag, m_curmotinfo->motid, curframe);
+		ChaVector3TransformCoord(&modelparentpos, &parentworld, &invmodelwm);
+
+		ChaMatrix parentmat = firstbone->GetParent()->GetWorldMat(limitdegflag, m_curmotinfo->motid, curframe, 0);// *GetWorldMat();
 		ChaVector3 tmpfirstfpos = firstbone->GetJointFPos();
-		ChaVector3TransformCoord(&chilworld, &tmpfirstfpos, &parworldmat);
+		ChaVector3TransformCoord(&modelchildpos, &tmpfirstfpos, &parentmat);
 	}
 
 
 	ChaVector3 parbef, chilbef, tarbef;
-	parbef = parworld;
-	CalcShadowToPlane(chilworld, ikaxis, parworld, &chilbef);
-	CalcShadowToPlane(targetpos, ikaxis, parworld, &tarbef);
+	parbef = modelparentpos;
+	CalcShadowToPlane(modelchildpos, ikaxis, modelparentpos, &chilbef);
+	CalcShadowToPlane(targetpos, ikaxis, modelparentpos, &tarbef);
 
 	ChaVector3 vec0, vec1;
 	vec0 = chilbef - parbef;
@@ -9301,7 +9333,7 @@ int CModel::CalcAxisAndRotForIKRotateVert(int limitdegflag,
 	chilworld = ChaVector3(0.0f, 0.0f, 0.0f);
 	{
 		parworld = parentbone->GetWorldPos(limitdegflag, m_curmotinfo->motid, curframe);
-		ChaMatrix parworldmat = firstbone->GetParent()->GetWorldMat(limitdegflag, m_curmotinfo->motid, curframe, 0) * GetWorldMat();
+		ChaMatrix parworldmat = firstbone->GetParent()->GetWorldMat(limitdegflag, m_curmotinfo->motid, curframe, 0);// *GetWorldMat();
 		ChaVector3 tmpfirstfpos = firstbone->GetJointFPos();
 		ChaVector3TransformCoord(&chilworld, &tmpfirstfpos, &parworldmat);
 	}
@@ -14227,7 +14259,7 @@ int CModel::IKTargetVec(bool limitdegflag, CEditRange* erptr, double srcframe, b
 	for (itrtargetbone = m_iktargetbonevec.begin(); itrtargetbone != m_iktargetbonevec.end(); itrtargetbone++) {
 		CBone* srcbone = *itrtargetbone;
 		if (srcbone && srcbone->GetParent() && srcbone->GetIKTargetFlag()) {
-			ChaVector3 iktargetpos = srcbone->GetIKTargetPos();
+			ChaVector3 iktargetpos = srcbone->GetIKTargetPos();//model座標系
 			int calccount;
 			const int calccountmax = 30;
 			for (calccount = 0; calccount < calccountmax; calccount++) {
@@ -16193,25 +16225,24 @@ void CModel::GetHipsBoneReq(CBone* srcbone, CBone** dstppbone)
 	}
 }
 
-//void CModel::Adjust180DegReq(CBone* srcbone)
-//{
-//	if (srcbone) {
-//		MOTINFO* curmi = GetCurMotInfo();
-//		if (curmi) {
-//			int srcmotid = curmi->motid;
-//			double srcleng = curmi->frameleng;
-//			srcbone->Adjust180Deg(srcmotid, srcleng);
-//
-//
-//			if (srcbone->GetBrother()) {
-//				Adjust180DegReq(srcbone->GetBrother());
-//			}
-//			if (srcbone->GetChild()) {
-//				Adjust180DegReq(srcbone->GetChild());
-//			}
-//		}
-//	}
-//	return;
-//}
+void CModel::CalcModelWorldMatOnLoad()
+{
+	ChaMatrix scalemat;
+	scalemat.SetIdentity();
+	ChaMatrix rotmat;
+	rotmat.SetIdentity();
+	rotmat.SetXYZRotation(0, GetModelRotation());
+	ChaMatrix tramat;
+	tramat.SetIdentity();
+	tramat.SetTranslation(GetModelPosition());
+	ChaMatrix modelnodemat;
+	modelnodemat.SetIdentity();
+
+	ChaMatrix worldmatonload;
+	worldmatonload.SetIdentity();
+	worldmatonload = ChaMatrixFromSRT(true, true, modelnodemat, &scalemat, &rotmat, &tramat);
+
+	m_worldmat = worldmatonload;
+}
 
 
