@@ -8511,14 +8511,28 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 					globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
 				}
 				else {
-					//キーが無い場合　mesh(pointbuf * meshmat)位置そのまま
-					globalmat.SetIdentity();
+					//カーブが無い場合
+					if (GetParModel()->GetMqoObjectSize() >= 1) {
+						//mesh(pointbuf * meshmat)位置そのまま
+
+						//UnityでAssetをfbx出力する際に
+						//SkinMesh + Animationを選んだのに
+						//アニメーションコントローラを対応付けないで出力した場合を
+						//カーブの有無(無)とメッシュの有無(有)で検出
+						//その場合
+						//そのままでは　モーションが合わず傾いたりするので　Identityで初期化する
+						globalmat.SetIdentity();
+					}
+					else {
+						//カーブを持たないモーションだけのfbxは　ここを通る
+						globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
+					}
 				}
 			}
 			else {
 				globalmat.SetIdentity();
 			}
-
+			
 			
 			//globalmat = (ChaMatrixInv(curbone->GetNodeMat()) * chaGlobalSRT);
 			curmp->SetWorldMat(globalmat);//anglelimit無し
