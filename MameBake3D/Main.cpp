@@ -11511,10 +11511,12 @@ void CalcTotalBound()
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
-		MODELBOUND mb;
-		curmodel->GetModelBound(&mb);
-		if (mb.r != 0.0f) {
-			AddModelBound(&s_totalmb, &mb);
+		if (curmodel) {
+			MODELBOUND mb;
+			curmodel->GetModelBound(&mb);
+			if (mb.r != 0.0f) {
+				AddModelBound(&s_totalmb, &mb);
+			}
 		}
 	}
 
@@ -33042,7 +33044,12 @@ int OnMouseMoveFunc()
 							s_editmotionflag = s_curboneno;
 						}
 						else if (s_ikkind == 2) {
-							ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
+							//ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
+
+							ChaVector3 modelobjworld;
+							ChaMatrix invmodelwm = ChaMatrixInv(s_model->GetWorldMat());
+							ChaVector3TransformCoord(&modelobjworld, &s_pickinfo.objworld, &invmodelwm);
+							ChaVector3 diffvec = targetpos - modelobjworld;
 							AddBoneScale2(diffvec);
 							s_editmotionflag = s_curboneno;
 						}

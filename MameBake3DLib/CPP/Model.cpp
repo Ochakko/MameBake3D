@@ -4438,7 +4438,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 
 			//マルチスレッド読み込み
 			//if ((m_LoadFbxAnim != NULL) && (m_bonelist.size() >= (LOADFBXANIMTHREAD * 4))) {
-			if ((m_LoadFbxAnim != NULL) && (m_bonelist.size() >= 2)) {
+			if ((m_LoadFbxAnim != NULL) && (m_bonelist.size() >= 1)) {
 				int loadcount;
 				for (loadcount = 0; loadcount < m_creatednum_loadfbxanim; loadcount++) {
 					CThreadingLoadFbx* curload = m_LoadFbxAnim + loadcount;
