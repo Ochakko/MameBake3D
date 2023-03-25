@@ -33032,7 +33032,12 @@ int OnMouseMoveFunc()
 							//UpdateEditedEuler();
 						}
 						else if (s_ikkind == 1) {
-							ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
+							//ChaVector3 diffvec = targetpos - s_pickinfo.objworld;
+
+							ChaVector3 modelobjworld;
+							ChaMatrix invmodelwm = ChaMatrixInv(s_model->GetWorldMat());
+							ChaVector3TransformCoord(&modelobjworld, &s_pickinfo.objworld, &invmodelwm);
+							ChaVector3 diffvec = targetpos - modelobjworld;
 							AddBoneTra2(diffvec);
 							s_editmotionflag = s_curboneno;
 						}
