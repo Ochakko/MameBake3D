@@ -355,24 +355,44 @@ namespace MameBake3DLibRetarget {
 
 
 				//if (srcbone == srcmodel->GetTopBone()) {//モデル側の最初のボーンの処理時
-				if (modelfirstbone && (srcbone == modelfirstbone)) {//モデル側の最初のボーンの処理時
+				//if (modelfirstbone && (srcbone == modelfirstbone)) {//モデル側の最初のボーンの処理時
 
-					//firsthipbvhmatとfirsthipmodelmatは　この関数の参照引数　一度セットして使いまわす
-					
-					//#######################################################################################
-					//2022/12/21 ver1.1.0.10へ向けて
-					//式10033と前提条件を合わせる
-					//bvh側の0フレーム姿勢がIdentityになるように　InvFirstMat * NodeMat を掛ける
-					//#######################################################################################
-					firsthipbvhmat = ChaMatrixInv(bvhbone->GetFirstMat()) * bvhbone->GetNodeMat() * bvhmp.GetAnimMat();
-					firsthipbvhmat.data[MATI_41] = 0.0f;
-					firsthipbvhmat.data[MATI_42] = 0.0f;
-					firsthipbvhmat.data[MATI_43] = 0.0f;
+				//	//firsthipbvhmatとfirsthipmodelmatは　この関数の参照引数　一度セットして使いまわす
+				//	
+				//	//#######################################################################################
+				//	//2022/12/21 ver1.1.0.10へ向けて
+				//	//式10033と前提条件を合わせる
+				//	//bvh側の0フレーム姿勢がIdentityになるように　InvFirstMat * NodeMat を掛ける
+				//	//#######################################################################################
+				//	firsthipbvhmat = ChaMatrixInv(bvhbone->GetFirstMat()) * bvhbone->GetNodeMat() * bvhmp.GetAnimMat();
+				//	firsthipbvhmat.data[MATI_41] = 0.0f;
+				//	firsthipbvhmat.data[MATI_42] = 0.0f;
+				//	firsthipbvhmat.data[MATI_43] = 0.0f;
 
-					firsthipmodelmat = modelmp.GetWorldMat();
-					firsthipmodelmat.data[MATI_41] = 0.0f;
-					firsthipmodelmat.data[MATI_42] = 0.0f;
-					firsthipmodelmat.data[MATI_43] = 0.0f;
+				//	firsthipmodelmat = modelmp.GetWorldMat();
+				//	firsthipmodelmat.data[MATI_41] = 0.0f;
+				//	firsthipmodelmat.data[MATI_42] = 0.0f;
+				//	firsthipmodelmat.data[MATI_43] = 0.0f;
+				//}
+
+
+				//#########################################################################################
+				//2023/03/26 ver1.2.0.18へ向けて
+				//bvh側model側　両方とも０フレームにアニメが在っても　リターゲットがうまくいくように　修正
+				//#########################################################################################
+				if (bvhbone->GetParent()) {
+					firsthipbvhmat = ChaMatrixInv(bvhbone->GetParent()->GetWorldMat(false, bvhmotid, 0.0, 0)) * bvhbone->GetParent()->GetWorldMat(false, bvhmotid, roundingframe, 0);
+				}
+				else {
+					//firsthipbvhmat.SetIdentity();
+					firsthipbvhmat = ChaMatrixInv(bvhbone->GetWorldMat(false, bvhmotid, 0.0, 0)) * bvhbone->GetWorldMat(false, bvhmotid, roundingframe, 0);
+				}
+				if (srcbone->GetParent()) {
+					firsthipmodelmat = ChaMatrixInv(srcbone->GetParent()->GetWorldMat(false, modelmotid, 0.0, 0)) * srcbone->GetParent()->GetWorldMat(false, modelmotid, roundingframe, 0);
+				}
+				else {
+					//firsthipmodelmat.SetIdentity();
+					firsthipmodelmat = ChaMatrixInv(srcbone->GetWorldMat(false, modelmotid, 0.0, 0)) * srcbone->GetWorldMat(false, modelmotid, roundingframe, 0);
 				}
 
 
@@ -421,8 +441,15 @@ namespace MameBake3DLibRetarget {
 					//bvh側の0フレーム姿勢がIdentityになるように　InvFirstMat * NodeMat を掛ける
 					//#######################################################################################
 					ChaMatrix offsetforbvhmat, offsetformodelmat;
-					offsetforbvhmat = ChaMatrixInv(bvhbone->GetFirstMat()) * bvhbone->GetNodeMat();
-					offsetformodelmat.SetIdentity();
+					//offsetforbvhmat = ChaMatrixInv(bvhbone->GetFirstMat()) * bvhbone->GetNodeMat();
+					//offsetformodelmat.SetIdentity();
+					
+					//#########################################################################################
+					//2023/03/26 ver1.2.0.18へ向けて
+					//bvh側model側　両方とも０フレームにアニメが在っても　リターゲットがうまくいくように　修正
+					//#########################################################################################
+					offsetforbvhmat = ChaMatrixInv(bvhbone->GetWorldMat(false, bvhmotid, 0.0, 0));
+					offsetformodelmat = ChaMatrixInv(srcbone->GetWorldMat(false, modelmotid, 0.0, 0));
 
 
 					//######
@@ -521,18 +548,28 @@ namespace MameBake3DLibRetarget {
 					//
 					//補足：invhips * (inv)zeroframemat * hipsは　model座標系というかhips座標系のzeroframe姿勢の計算
 
+
 				//式10033 以下６行
 					ChaMatrix curbvhmat;
 					CQuaternion convQ;
 					convQ = bvhQ *
 						(invfirsthipmodelQ * (zeroframemodelQ * invmodelQ) * firsthipmodelQ) *
 						(invfirsthipbvhQ * invzeroframebvhQ * firsthipbvhQ);
-					curbvhmat = convQ.MakeRotMatX();//2022/12/21 テスト(bvh121, Rokokoバインドポーズ無し, Rokokoバインドポーズ有り)済　OK
+					curbvhmat = convQ.MakeRotMatX();
 					//式10033
 					//2022/10/30テストの式をクォータニオン(及びクォータニオンの掛け算の順番)にして　ジンバルロックが起こり難いように
 
 
 					rotq.RotationMatrix(curbvhmat);//回転だけ採用する
+
+					//2023/03/26　補足
+					//FKRotate-->RotBoneQReqに回転を渡して　既存の姿勢にrotqを掛けることになる
+					//リターゲット結果の側(model側)のモーションは
+					//Identityではなく　最初のモーションの０フレームの姿勢で初期化しておく
+					//bvh側とmodel側の０フレームの見かけ上の姿勢が同じであることが　リターゲット条件
+					//０フレーム姿勢からの変化分を利用して　軸の違いなどを吸収して計算する
+
+
 
 
 					//traanim = bvhbone->CalcLocalTraAnim(bvhmotid, roundingframe);//移動はこちらから取得
@@ -543,8 +580,6 @@ namespace MameBake3DLibRetarget {
 					//	traanim -= firstdiff;
 					//}
 					//traanim = traanim * hrate;
-
-
 
 
 					//################################################################################

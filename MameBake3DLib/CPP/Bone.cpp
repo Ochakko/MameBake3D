@@ -8836,6 +8836,7 @@ int CBone::InitMP(bool limitdegflag, int srcmotid, double srcframe)
 
 	if (firstmp) {
 		ChaMatrix firstanim = firstmp->GetWorldMat();
+
 		//SetFirstMat(firstanim);//リターゲット時のbvhbone->GetFirstMatで効果
 
 		CMotionPoint* curmp = GetMotionPoint(srcmotid, roundingframe);
@@ -8860,6 +8861,7 @@ int CBone::InitMP(bool limitdegflag, int srcmotid, double srcframe)
 			//ChaVector3 cureul = GetLocalEul(firstmotid, 0.0, 0);//motid == 1は１つ目のモーション
 			//SetLocalEul(srcmotid, roundingframe, cureul, curmp);
 			ChaVector3 cureul = firstmp->GetLocalEul();
+
 			curmp->SetLocalEul(cureul);
 			curmp->SetLimitedLocalEul(cureul);
 			//if (limitdegflag == true) {
