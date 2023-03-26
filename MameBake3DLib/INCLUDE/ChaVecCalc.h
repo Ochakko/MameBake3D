@@ -127,6 +127,7 @@ public:
 	void SetXYZRotation(CQuaternion* srcaxisq, CQuaternion srcq);//èâä˙âªÇµÇ»Ç¢
 	void SetScale(ChaVector3 srcscale);//èâä˙âªÇµÇ»Ç¢
 	void SetBasis(ChaMatrix srcmat);//èâä˙âªÇµÇ»Ç¢Å@copy3x3
+	void SetRotation(EFbxRotationOrder rotorder, CQuaternion* srcaxisq, ChaVector3 srceul);//èâä˙âªÇµÇ»Ç¢
 
 
 public:
@@ -217,6 +218,9 @@ public:
 	ChaMatrix MakeXYZRotMat(CQuaternion* srcaxisq);
 	ChaMatrix MakeScaleMat();
 
+	FbxDouble3 ConvRotOrder2XYZ(EFbxRotationOrder rotorder);//src:*this, dst:return value
+
+
 	void Clamp(float srcmin, float srcmax);
 
 #ifdef CONVD3DX11
@@ -292,6 +296,7 @@ public:
 	int SetAxisAndRot(ChaVector3 srcaxis, float phai);
 	int SetAxisAndRot(ChaVector3 srcaxis, double phai);
 
+	int SetRotation(EFbxRotationOrder rotorder, CQuaternion* srcaxisq, ChaVector3 srceul);
 	int SetRotationXYZ(CQuaternion* axisq, ChaVector3 srcdeg);
 	int SetRotationRadXYZ(CQuaternion* axisq, ChaVector3 srcrad);
 	int SetRotationZXY(CQuaternion* axisq, ChaVector3 srcdeg);

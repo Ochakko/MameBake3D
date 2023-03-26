@@ -439,6 +439,8 @@ int CBone::InitParams()
 	m_fbxSclPiv = FbxDouble3(0.0, 0.0, 0.0);
 	m_fbxLclScl = FbxDouble3(0.0, 0.0, 0.0);
 	m_fbxrotationActive = false;
+	m_rotationorder = eEulerXYZ;
+
 
 	m_ikstopflag = false;
 	m_iktargetflag = false;
@@ -9013,6 +9015,10 @@ void CBone::SaveFbxNodePosture(FbxNode* pNode)
 		m_fbxSclOff = pNode->GetScalingOffset(FbxNode::eSourcePivot);
 		m_fbxSclPiv = pNode->GetScalingPivot(FbxNode::eSourcePivot);
 		m_fbxrotationActive = pNode->GetRotationActive();
+
+		EFbxRotationOrder rotationorder;
+//		pNode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+
 	}
 }
 
@@ -9022,28 +9028,38 @@ void CBone::RestoreFbxNodePosture(FbxNode* pNode)
 {
 
 	if (pNode) {
+		ChaVector3 roteul, preroteul, postroteul;
+		FbxDouble3 roteulxyz, preroteulxyz, postroteulxyz;
+
+		roteul = ChaVector3(m_fbxLclRot[0], m_fbxLclRot[1], m_fbxLclRot[2]);
+		preroteul = ChaVector3(m_fbxPreRot[0], m_fbxPreRot[1], m_fbxPreRot[2]);
+		postroteul = ChaVector3(m_fbxPostRot[0], m_fbxPostRot[1], m_fbxPostRot[2]);
+		roteulxyz = roteul.ConvRotOrder2XYZ(m_rotationorder);
+		preroteulxyz = preroteul.ConvRotOrder2XYZ(m_rotationorder);
+		postroteulxyz = postroteul.ConvRotOrder2XYZ(m_rotationorder);
+
+
+		pNode->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);//書き出しはXYZ
+
 
 		pNode->LclTranslation.Set(m_fbxLclPos);
-		pNode->LclRotation.Set(m_fbxLclRot);
+		//pNode->LclRotation.Set(m_fbxLclRot);
+		pNode->LclRotation.Set(roteulxyz);//書き出しはXYZ
 		pNode->LclScaling.Set(m_fbxLclScl);
 
 		pNode->SetRotationOffset(FbxNode::eSourcePivot, m_fbxRotOff);
-		//pNode->SetRotationOffset(FbxNode::eDestinationPivot, m_fbxRotOff);
 
 		pNode->SetRotationPivot(FbxNode::eSourcePivot, m_fbxRotPiv);
-		//pNode->SetRotationPivot(FbxNode::eDestinationPivot, m_fbxRotPiv);
 
-		pNode->SetPreRotation(FbxNode::eSourcePivot, m_fbxPreRot);
-		//pNode->SetPreRotation(FbxNode::eDestinationPivot, m_fbxPreRot);
+		//pNode->SetPreRotation(FbxNode::eSourcePivot, m_fbxPreRot);
+		pNode->SetPreRotation(FbxNode::eSourcePivot, preroteulxyz);//書き出しはXYZ
 
-		pNode->SetPostRotation(FbxNode::eSourcePivot, m_fbxPostRot);
-		//pNode->SetPostRotation(FbxNode::eDestinationPivot, m_fbxPostRot);
+		//pNode->SetPostRotation(FbxNode::eSourcePivot, m_fbxPostRot);
+		pNode->SetPostRotation(FbxNode::eSourcePivot, postroteulxyz);//書き出しはXYZ
 
 		pNode->SetScalingOffset(FbxNode::eSourcePivot, m_fbxSclOff);
-		//pNode->SetScalingOffset(FbxNode::eDestinationPivot, m_fbxSclOff);
 
 		pNode->SetScalingPivot(FbxNode::eSourcePivot, m_fbxSclPiv);
-		//pNode->SetScalingPivot(FbxNode::eDestinationPivot, m_fbxSclPiv);
 
 		pNode->SetRotationActive(m_fbxrotationActive);
 	}

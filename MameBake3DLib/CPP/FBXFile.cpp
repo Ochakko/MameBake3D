@@ -1916,20 +1916,19 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 
 		curbone->SaveFbxNodePosture(pNode);//2023/02/16
 
-		FbxTime fbxtime;
-		fbxtime.SetSecondDouble(0.0);
-		FbxDouble3 fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);
-		FbxDouble3 fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);
-		FbxDouble3 fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);
+		FbxDouble3 fbxLclPos = curbone->GetFbxLclPos();
+		FbxDouble3 fbxLclRot = curbone->GetFbxLclRot();
+		FbxDouble3 fbxLclScl = curbone->GetFbxLclScl();
 
-		FbxDouble3 fbxRotOff = pNode->GetRotationOffset(FbxNode::eSourcePivot);
-		FbxDouble3 fbxRotPiv = pNode->GetRotationPivot(FbxNode::eSourcePivot);
-		FbxDouble3 fbxPreRot = pNode->GetPreRotation(FbxNode::eSourcePivot);
-		FbxDouble3 fbxPostRot = pNode->GetPostRotation(FbxNode::eSourcePivot);
-		FbxDouble3 fbxSclOff = pNode->GetScalingOffset(FbxNode::eSourcePivot);
-		FbxDouble3 fbxSclPiv = pNode->GetScalingPivot(FbxNode::eSourcePivot);
-		bool rotationActive = pNode->GetRotationActive();
+		FbxDouble3 fbxRotOff = curbone->GetFbxRotOff();
+		FbxDouble3 fbxRotPiv = curbone->GetFbxRotPiv();
+		FbxDouble3 fbxPreRot = curbone->GetFbxPreRot();
+		FbxDouble3 fbxPostRot = curbone->GetFbxPostRot();
+		FbxDouble3 fbxSclOff = curbone->GetFbxSclOff();
+		FbxDouble3 fbxSclPiv = curbone->GetFbxSclPiv();
 
+		bool rotationActive = curbone->GetFbxRotationActive();
+		EFbxRotationOrder rotationorder = curbone->GetFbxRotationOrder();
 
 		ChaMatrix fbxT, fbxRoff, fbxRp, fbxRpre, fbxR, fbxRpost, fbxRpinv, fbxSoff, fbxSp, fbxS, fbxSpinv;
 		fbxT.SetIdentity();
@@ -1947,9 +1946,16 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 		fbxT.SetTranslation(ChaVector3((float)fbxLclPos[0], (float)fbxLclPos[1], (float)fbxLclPos[2]));
 		fbxRoff.SetTranslation(ChaVector3((float)fbxRotOff[0], (float)fbxRotOff[1], (float)fbxRotOff[2]));
 		fbxRp.SetTranslation(ChaVector3((float)fbxRotPiv[0], (float)fbxRotPiv[1], (float)fbxRotPiv[2]));
-		fbxRpre.SetXYZRotation(0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
-		fbxR.SetXYZRotation(0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
-		fbxRpost.SetXYZRotation(0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
+
+		//fbxRpre.SetXYZRotation(0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
+		//fbxR.SetXYZRotation(0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
+		//fbxRpost.SetXYZRotation(0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
+
+		//2023/03/27 : rotationorder‘Î‰ž
+		fbxRpre.SetRotation(rotationorder, 0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
+		fbxR.SetRotation(rotationorder, 0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
+		fbxRpost.SetRotation(rotationorder, 0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
+
 		fbxRpinv = ChaMatrixInv(fbxRp);
 		fbxSoff.SetTranslation(ChaVector3((float)fbxSclOff[0], (float)fbxSclOff[1], (float)fbxSclOff[2]));
 		fbxSp.SetTranslation(ChaVector3((float)fbxSclPiv[0], (float)fbxSclPiv[1], (float)fbxSclPiv[2]));

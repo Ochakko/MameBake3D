@@ -1374,6 +1374,40 @@ public: //accesser
 	}
 
 
+	FbxDouble3 GetFbxLclPos() {
+		return m_fbxLclPos;
+	}
+	FbxDouble3 GetFbxRotOff() {
+		return m_fbxRotOff;
+	}
+	FbxDouble3 GetFbxRotPiv() {
+		return m_fbxRotPiv;
+	}
+	FbxDouble3 GetFbxPreRot() {
+		return m_fbxPreRot;
+	}
+	FbxDouble3 GetFbxLclRot() {
+		return m_fbxLclRot;
+	}
+	FbxDouble3 GetFbxPostRot() {
+		return m_fbxPostRot;
+	}
+	FbxDouble3 GetFbxSclOff() {
+		return m_fbxSclOff;
+	}
+	FbxDouble3 GetFbxSclPiv() {
+		return m_fbxSclPiv;
+	}
+	FbxDouble3 GetFbxLclScl() {
+		return m_fbxLclScl;
+	}
+	bool GetFbxRotationActive() {
+		return m_fbxrotationActive;
+	}
+	EFbxRotationOrder GetFbxRotationOrder() {
+		return m_rotationorder;
+	}
+
 
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
@@ -1528,6 +1562,7 @@ private:
 	FbxDouble3 m_fbxSclPiv;
 	FbxDouble3 m_fbxLclScl;
 	bool m_fbxrotationActive;
+	EFbxRotationOrder m_rotationorder;
 
 	bool m_ikstopflag;
 	bool m_iktargetflag;

@@ -25,11 +25,15 @@ extern LONG g_retargetbatchflag;
 
 namespace MameBake3DLibRetarget {
 
-	static void RetargetReq(CModel* srcmodel, CModel* srcbvhmodel, CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate, ChaMatrix& firsthipbvhmat, ChaMatrix& firsthipmodelmat, std::map<CBone*, CBone*>& sconvbonemap);
-	static int ConvBoneRotation(CModel* srcmodel, CModel* srcbvhmodel, int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate, ChaMatrix& firsthipbvhmat, ChaMatrix& firsthipmodelmat);
+	static void RetargetReq(CModel* srcmodel, CModel* srcbvhmodel, CBone* modelbone, 
+		double srcframe, CBone* befbvhbone, float hrate, std::map<CBone*, CBone*>& sconvbonemap);
+	static int ConvBoneRotation(CModel* srcmodel, CModel* srcbvhmodel, int selfflag, 
+		CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate);
 
 
-	int Retarget(CModel* srcmodel, CModel* srcbvhmodel, ChaMatrix smatVP, std::map<CBone*, CBone*>& sconvbonemap, int (*srcAddMotionFunc)(const WCHAR* wfilename, double srcmotleng), int (*srcInitCurMotionFunc)(int selectflag, double expandmotion))
+	int Retarget(CModel* srcmodel, CModel* srcbvhmodel, ChaMatrix smatVP, 
+		std::map<CBone*, CBone*>& sconvbonemap, 
+		int (*srcAddMotionFunc)(const WCHAR* wfilename, double srcmotleng), int (*srcInitCurMotionFunc)(int selectflag, double expandmotion))
 	{
 
 		//retargetは　unlimitedに対して行い　unlimitedにセットする
@@ -94,7 +98,12 @@ namespace MameBake3DLibRetarget {
 				befbvhbone = bvhtopbone;
 			}
 		}
-		//befbvhbone = srcbvhmodel->GetTopBone();
+		else {
+			::MessageBox(NULL, L"bvhside motion is not found error.", L"error!!!", MB_OK);
+			g_underRetargetFlag = false;
+			return 1;
+		}
+
 
 		HINFO bvhhi;
 		bvhhi.minh = 1e7;
@@ -131,22 +140,17 @@ namespace MameBake3DLibRetarget {
 			if (modelbone) {
 				ChaMatrix dummyvpmat;
 				ChaMatrixIdentity(&dummyvpmat);
-				srcbvhmodel->SetMotionFrame(frame);
+
 				ChaMatrix tmpbvhwm = srcbvhmodel->GetWorldMat();
-				ChaMatrix tmpwm = srcmodel->GetWorldMat();
+				srcbvhmodel->SetMotionFrame(frame);
 				srcbvhmodel->UpdateMatrix(limitdegflag, &tmpbvhwm, &dummyvpmat);
+
+				ChaMatrix tmpwm = srcmodel->GetWorldMat();
 				srcmodel->SetMotionFrame(frame);
 				srcmodel->UpdateMatrix(limitdegflag, &tmpwm, &dummyvpmat);
 
-				CBone* befbvhbone2 = srcbvhmodel->GetTopBone();
-
-				ChaMatrix firsthipbvhmat;
-				ChaMatrix firsthipmodelmat;
-				ChaMatrixIdentity(&firsthipbvhmat);
-				ChaMatrixIdentity(&firsthipmodelmat);
-
-				if (befbvhbone2) {
-					RetargetReq(srcmodel, srcbvhmodel, modelbone, frame, befbvhbone2, hrate, firsthipbvhmat, firsthipmodelmat, sconvbonemap);
+				if (bvhtopbone) {
+					RetargetReq(srcmodel, srcbvhmodel, modelbone, frame, bvhtopbone, hrate, sconvbonemap);
 				}
 			}
 		}
@@ -167,7 +171,8 @@ namespace MameBake3DLibRetarget {
 
 
 
-	void RetargetReq(CModel* srcmodel, CModel* srcbvhmodel, CBone* modelbone, double srcframe, CBone* befbvhbone, float hrate, ChaMatrix& firsthipbvhmat, ChaMatrix& firsthipmodelmat, std::map<CBone*, CBone*>& sconvbonemap)
+	void RetargetReq(CModel* srcmodel, CModel* srcbvhmodel, CBone* modelbone, 
+		double srcframe, CBone* befbvhbone, float hrate, std::map<CBone*, CBone*>& sconvbonemap)
 	{
 		if (!srcmodel || !srcbvhmodel) {
 			return;
@@ -180,19 +185,19 @@ namespace MameBake3DLibRetarget {
 
 		CBone* bvhbone = sconvbonemap[modelbone];
 		if (bvhbone) {
-			ConvBoneRotation(srcmodel, srcbvhmodel, 1, modelbone, bvhbone, srcframe, befbvhbone, hrate, firsthipbvhmat, firsthipmodelmat);
+			ConvBoneRotation(srcmodel, srcbvhmodel, 1, modelbone, bvhbone, srcframe, befbvhbone, hrate);
 		}
 		else {
-			ConvBoneRotation(srcmodel, srcbvhmodel, 0, modelbone, 0, srcframe, befbvhbone, hrate, firsthipbvhmat, firsthipmodelmat);
+			ConvBoneRotation(srcmodel, srcbvhmodel, 0, modelbone, 0, srcframe, befbvhbone, hrate);
 		}
 
 
 		if (modelbone->GetChild()) {
 			if (bvhbone) {
-				RetargetReq(srcmodel, srcbvhmodel, modelbone->GetChild(), srcframe, bvhbone, hrate, firsthipbvhmat, firsthipmodelmat, sconvbonemap);
+				RetargetReq(srcmodel, srcbvhmodel, modelbone->GetChild(), srcframe, bvhbone, hrate, sconvbonemap);
 			}
 			else {
-				RetargetReq(srcmodel, srcbvhmodel, modelbone->GetChild(), srcframe, befbvhbone, hrate, firsthipbvhmat, firsthipmodelmat, sconvbonemap);
+				RetargetReq(srcmodel, srcbvhmodel, modelbone->GetChild(), srcframe, befbvhbone, hrate, sconvbonemap);
 			}
 		}
 		if (modelbone->GetBrother()) {
@@ -200,13 +205,14 @@ namespace MameBake3DLibRetarget {
 			//	ConvBoneConvertReq(modelbone->GetBrother(), srcframe, bvhbone, hrate);
 			//}
 			//else{
-			RetargetReq(srcmodel, srcbvhmodel, modelbone->GetBrother(), srcframe, befbvhbone, hrate, firsthipbvhmat, firsthipmodelmat, sconvbonemap);
+			RetargetReq(srcmodel, srcbvhmodel, modelbone->GetBrother(), srcframe, befbvhbone, hrate, sconvbonemap);
 			//}
 		}
 
 	}
 
-	int ConvBoneRotation(CModel* srcmodel, CModel* srcbvhmodel, int selfflag, CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate, ChaMatrix& firsthipbvhmat, ChaMatrix& firsthipmodelmat)
+	int ConvBoneRotation(CModel* srcmodel, CModel* srcbvhmodel, int selfflag, 
+		CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate)
 	{
 
 		//retargetは　unlimitedに対して行い　unlimitedにセットする
@@ -238,9 +244,6 @@ namespace MameBake3DLibRetarget {
 
 		double roundingframe = (double)((int)(srcframe + 0.0001));
 
-		//static ChaMatrix s_firsthipmat;
-		//static ChaMatrix s_invfirsthipmat;
-
 		MOTINFO* bvhmi;
 		int bvhmotid;
 
@@ -263,27 +266,9 @@ namespace MameBake3DLibRetarget {
 		bool onaddmotion = true;//for getbychain
 		CMotionPoint bvhmp;
 		if (bvhbone) {
-			//CMotionPoint* pbvhmp = 0;
-			//pbvhmp = bvhbone->GetMotionPoint(bvhmotid, roundingframe, onaddmotion);
-			//if (pbvhmp) {
-			//	bvhmp = *pbvhmp;
-			//}
-			//else {
-			//	_ASSERT(0);
-			//	return 1;
-			//}
 			bvhmp = bvhbone->GetCurMp();
 		}
 		else {
-			//CMotionPoint* pbvhmp = 0;
-			//pbvhmp = befbvhbone->GetMotionPoint(bvhmotid, roundingframe, onaddmotion);
-			//if (pbvhmp) {
-			//	bvhmp = *pbvhmp;
-			//}
-			//else {
-			//	_ASSERT(0);
-			//	return 1;
-			//}
 			bvhmp = befbvhbone->GetCurMp();
 		}
 
@@ -380,19 +365,22 @@ namespace MameBake3DLibRetarget {
 				//2023/03/26 ver1.2.0.18へ向けて
 				//bvh側model側　両方とも０フレームにアニメが在っても　リターゲットがうまくいくように　修正
 				//#########################################################################################
+				ChaMatrix bvhparentmat, modelparentmat;
+				bvhparentmat.SetIdentity();
+				modelparentmat.SetIdentity();
 				if (bvhbone->GetParent()) {
-					firsthipbvhmat = ChaMatrixInv(bvhbone->GetParent()->GetWorldMat(false, bvhmotid, 0.0, 0)) * bvhbone->GetParent()->GetWorldMat(false, bvhmotid, roundingframe, 0);
+					bvhparentmat = ChaMatrixInv(bvhbone->GetParent()->GetWorldMat(false, bvhmotid, 0.0, 0)) * bvhbone->GetParent()->GetWorldMat(false, bvhmotid, roundingframe, 0);
 				}
 				else {
-					//firsthipbvhmat.SetIdentity();
-					firsthipbvhmat = ChaMatrixInv(bvhbone->GetWorldMat(false, bvhmotid, 0.0, 0)) * bvhbone->GetWorldMat(false, bvhmotid, roundingframe, 0);
+					//bvhparentmat.SetIdentity();
+					bvhparentmat = ChaMatrixInv(bvhbone->GetWorldMat(false, bvhmotid, 0.0, 0)) * bvhbone->GetWorldMat(false, bvhmotid, roundingframe, 0);
 				}
 				if (srcbone->GetParent()) {
-					firsthipmodelmat = ChaMatrixInv(srcbone->GetParent()->GetWorldMat(false, modelmotid, 0.0, 0)) * srcbone->GetParent()->GetWorldMat(false, modelmotid, roundingframe, 0);
+					modelparentmat = ChaMatrixInv(srcbone->GetParent()->GetWorldMat(false, modelmotid, 0.0, 0)) * srcbone->GetParent()->GetWorldMat(false, modelmotid, roundingframe, 0);
 				}
 				else {
-					//firsthipmodelmat.SetIdentity();
-					firsthipmodelmat = ChaMatrixInv(srcbone->GetWorldMat(false, modelmotid, 0.0, 0)) * srcbone->GetWorldMat(false, modelmotid, roundingframe, 0);
+					//modelparentmat.SetIdentity();
+					modelparentmat = ChaMatrixInv(srcbone->GetWorldMat(false, modelmotid, 0.0, 0)) * srcbone->GetWorldMat(false, modelmotid, roundingframe, 0);
 				}
 
 
@@ -455,34 +443,20 @@ namespace MameBake3DLibRetarget {
 					//######
 					//model
 					//######
-						//model firsthip
-					ChaMatrix firsthipmodelS, firsthipmodelR, firsthipmodelT;
-					ChaMatrix invfirsthipmodelS, invfirsthipmodelR, invfirsthipmodelT;
-					CQuaternion firsthipmodelQ, invfirsthipmodelQ;
-					GetSRTMatrix2(firsthipmodelmat, &firsthipmodelS, &firsthipmodelR, &firsthipmodelT);
-					GetSRTMatrix2(ChaMatrixInv(firsthipmodelmat), &invfirsthipmodelS, &invfirsthipmodelR, &invfirsthipmodelT);
-					firsthipmodelQ.RotationMatrix(firsthipmodelR);
-					invfirsthipmodelQ.RotationMatrix(invfirsthipmodelR);
+						//model parent
+					CQuaternion modelparentQ, invmodelparentQ;
+					modelparentQ.RotationMatrix(modelparentmat);
+					invmodelparentQ.RotationMatrix(ChaMatrixInv(modelparentmat));
 
-					//model firstframe globalposition
-					//ChaMatrix invfirstmodelS, invfirstmodelR, invfirstmodelT;
-					//CQuaternion invfirstmodelQ;
-					//GetSRTMatrix2(ChaMatrixInv(bvhbone->GetFirstMat()), &invfirstmodelS, &invfirstmodelR, &invfirstmodelT);
-					//invfirstmodelQ.RotationMatrix(invfirstmodelR);
-
-					//model current
+						//model current
 					ChaMatrix invmodelcurrentmat;
-					ChaMatrix invmodelS, invmodelR, invmodelT;
 					CQuaternion invmodelQ;
-					//invmodelcurrentmat = ChaMatrixInv(srcbone->GetNodeMat() * modelmp.GetWorldMat());
 					invmodelcurrentmat = ChaMatrixInv(offsetformodelmat * modelmp.GetWorldMat());
-					GetSRTMatrix2(invmodelcurrentmat, &invmodelS, &invmodelR, &invmodelT);
-					invmodelQ.RotationMatrix(invmodelR);
+					invmodelQ.RotationMatrix(invmodelcurrentmat);
 
-					//model zeroframe anim
+						//model zeroframe anim
 					ChaMatrix zeroframemodelmat;
 					CQuaternion zeroframemodelQ;
-					//zeroframemodelmat = srcbone->GetNodeMat() * srcbone->GetCurrentZeroFrameMat(1);
 					zeroframemodelmat = offsetformodelmat * srcbone->GetCurrentZeroFrameMat(limitdegflag, 1);
 					zeroframemodelQ.RotationMatrix(zeroframemodelmat);
 
@@ -490,53 +464,23 @@ namespace MameBake3DLibRetarget {
 					//######
 					//bvh
 					//######
-						//bvh firsthip
-					ChaMatrix firsthipbvhS, firsthipbvhR, firsthipbvhT;
-					ChaMatrix invfirsthipbvhS, invfirsthipbvhR, invfirsthipbvhT;
-					CQuaternion firsthipbvhQ, invfirsthipbvhQ;
-					GetSRTMatrix2(firsthipbvhmat, &firsthipbvhS, &firsthipbvhR, &firsthipbvhT);
-					GetSRTMatrix2(ChaMatrixInv(firsthipbvhmat), &invfirsthipbvhS, &invfirsthipbvhR, &invfirsthipbvhT);
-					firsthipbvhQ.RotationMatrix(firsthipbvhR);
-					invfirsthipbvhQ.RotationMatrix(invfirsthipbvhR);
+						//bvh parent
+					CQuaternion bvhparentQ, invbvhparentQ;
+					bvhparentQ.RotationMatrix(bvhparentmat);
+					invbvhparentQ.RotationMatrix(ChaMatrixInv(bvhparentmat));
 
-					////bvh firstframe globalposition
-					ChaMatrix firstbvhS, firstbvhR, firstbvhT;
-					CQuaternion firstbvhQ;
-					ChaMatrix invfirstbvhS, invfirstbvhR, invfirstbvhT;
-					CQuaternion invfirstbvhQ;
-					GetSRTMatrix2(bvhbone->GetFirstMat(), &firstbvhS, &firstbvhR, &firstbvhT);
-					firstbvhQ.RotationMatrix(firstbvhR);
-					GetSRTMatrix2(ChaMatrixInv(bvhbone->GetFirstMat()), &invfirstbvhS, &invfirstbvhR, &invfirstbvhT);
-					invfirstbvhQ.RotationMatrix(invfirstbvhR);
+						//bvh current
+					ChaMatrix bvhcurrentmat;
+					CQuaternion bvhQ;
+					bvhcurrentmat = offsetforbvhmat * bvhmp.GetAnimMat();
+					bvhQ.RotationMatrix(bvhcurrentmat);
 
-					////bvh zeroframe anim
-					//ChaMatrix zeroframebvhmat;
-					//CQuaternion zeroframebvhQ;
-					//zeroframebvhmat = bvhbone->GetCurrentZeroFrameMat(1);
-					//zeroframebvhQ.RotationMatrix(zeroframebvhmat);
-					//bvh invzeroframe anim
+
+						////bvh zeroframe anim
 					ChaMatrix zeroframebvhmat;
-					ChaMatrix invzeroframebvhmat;
 					CQuaternion invzeroframebvhQ;
 					zeroframebvhmat = offsetforbvhmat * bvhbone->GetCurrentZeroFrameMat(limitdegflag, 1);
-					//invzeroframebvhmat = ChaMatrixInv(bvhbone->GetNodeMat() * bvhbone->GetCurrentZeroFrameMat(1));
-					invzeroframebvhmat = ChaMatrixInv(zeroframebvhmat);
-					invzeroframebvhQ.RotationMatrix(invzeroframebvhmat);
-
-					//bvh current
-					ChaMatrix bvhcurrentmat, invbvhcurrentmat;
-					ChaMatrix bvhS, bvhR, bvhT;
-					CQuaternion bvhQ;
-					//bvhcurrentmat = bvhbone->GetNodeMat() * bvhmp.GetWorldMat();
-					bvhcurrentmat = offsetforbvhmat * bvhmp.GetAnimMat();
-					invbvhcurrentmat = ChaMatrixInv(bvhcurrentmat);
-					GetSRTMatrix2(bvhcurrentmat, &bvhS, &bvhR, &bvhT);
-					bvhQ.RotationMatrix(bvhR);
-					////bvh inv current
-					//ChaMatrix invbvhS, invbvhR, invbvhT;
-					//CQuaternion invbvhQ;
-					//GetSRTMatrix2(ChaMatrixInv(bvhmp.GetWorldMat()), &invbvhS, &invbvhR, &invbvhT);
-					//invbvhQ.RotationMatrix(invbvhR);
+					invzeroframebvhQ.RotationMatrix(ChaMatrixInv(zeroframebvhmat));
 
 
 				//10033準備の式
@@ -547,14 +491,21 @@ namespace MameBake3DLibRetarget {
 					//	bvhmp.GetWorldMat();//2022/10/30 テスト(bvh120, bvh121, Rokoko)済　OK
 					//
 					//補足：invhips * (inv)zeroframemat * hipsは　model座標系というかhips座標系のzeroframe姿勢の計算
+					// 
+					// 
 
+
+				//###############################################################################################
+				//2023/03/27 修正：　firsthipbvhmatはbvhparentmatに　firsthipmodelmatはmodelparentmatに置き換え
+				//hips座標系ではなく　parent座標系で計算
+				//###############################################################################################
 
 				//式10033 以下６行
 					ChaMatrix curbvhmat;
 					CQuaternion convQ;
 					convQ = bvhQ *
-						(invfirsthipmodelQ * (zeroframemodelQ * invmodelQ) * firsthipmodelQ) *
-						(invfirsthipbvhQ * invzeroframebvhQ * firsthipbvhQ);
+						(invmodelparentQ * (zeroframemodelQ * invmodelQ) * modelparentQ) *
+						(invbvhparentQ * invzeroframebvhQ * bvhparentQ);
 					curbvhmat = convQ.MakeRotMatX();
 					//式10033
 					//2022/10/30テストの式をクォータニオン(及びクォータニオンの掛け算の順番)にして　ジンバルロックが起こり難いように
@@ -612,7 +563,7 @@ namespace MameBake3DLibRetarget {
 						GetSRTandTraAnim(bvhbone->GetWorldMat(limitdegflag, bvhmotid, 0.0, 0), bvhbone->GetNodeMat(),
 							&bvhsmat0, &bvhrmat0, &bvhtmat0, &bvhtanimmat0);
 					}
-					//traanim = ChaMatrixTraVec(bvhtanimmat);
+
 					traanim = ChaMatrixTraVec(bvhtanimmat) - ChaMatrixTraVec(bvhtanimmat0);//2023/01/08
 					traanim = traanim * hrate;
 				}

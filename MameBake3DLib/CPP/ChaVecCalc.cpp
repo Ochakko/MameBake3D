@@ -1130,6 +1130,25 @@ void ChaVector3::Clamp(float srcmin, float srcmax)
 	z = tmpz;
 }
 
+FbxDouble3 ChaVector3::ConvRotOrder2XYZ(EFbxRotationOrder rotorder)
+{
+	//src:*this, dst:return value
+
+	CQuaternion rotq;
+	rotq.SetRotation(rotorder, 0, *this);
+
+	ChaVector3 eulxyz = ChaVector3(0.0f, 0.0f, 0.0f);
+	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	int isfirstbone = 0;
+	int isendbone = 0;
+	int notmodify180flag = 1;
+	rotq.Q2EulXYZusingQ(0, befeul, &eulxyz, isfirstbone, isendbone, notmodify180flag);
+
+	return FbxDouble3(eulxyz.x, eulxyz.y, eulxyz.z);
+}
+
+
+
 ChaVector3 ChaVector3::operator= (ChaVector3 v) { this->x = v.x; this->y = v.y; this->z = v.z; return *this; };
 ChaVector3 ChaVector3::operator* (float srcw) const { return ChaVector3((float)((double)this->x * (double)srcw), (float)((double)this->y * (double)srcw), (float)((double)this->z * (double)srcw)); }
 ChaVector3 &ChaVector3::operator*= (float srcw) { *this = *this * srcw; return *this; }
@@ -1331,6 +1350,18 @@ void ChaMatrix::SetTranslation(ChaVector3 srctra)
 	data[MATI_42] = srctra.y;
 	data[MATI_43] = srctra.z;
 }
+
+void ChaMatrix::SetRotation(EFbxRotationOrder rotorder, CQuaternion* axisq, ChaVector3 srceul)
+{
+	//初期化しない
+	CQuaternion rotq;
+	rotq.SetRotation(rotorder, axisq, srceul);
+	ChaMatrix rotmat;
+	rotmat = rotq.MakeRotMatX();
+
+	SetBasis(rotmat);
+}
+
 void ChaMatrix::SetXYZRotation(CQuaternion* srcaxisq, ChaVector3 srceul)
 {
 	//初期化しない
@@ -1895,6 +1926,70 @@ int CQuaternion::SetAxisAndRot(ChaVector3 srcaxis, double phai)
 //
 //	return 0;
 //}
+
+
+int CQuaternion::SetRotation(EFbxRotationOrder rotorder, CQuaternion* srcaxisq, ChaVector3 srceul)
+{
+	CQuaternion axisQ, invaxisQ;
+	if (srcaxisq) {
+		axisQ = *srcaxisq;
+		axisQ.inv(&invaxisQ);
+	}
+	else {
+		axisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		invaxisQ.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	}
+
+	CQuaternion q, qx, qy, qz;
+	float cosx, sinx, cosy, siny, cosz, sinz;
+
+	double phaix, phaiy, phaiz;
+	phaix = QuaternionLimitPhai((double)srceul.x * DEG2PAI);
+	phaiy = QuaternionLimitPhai((double)srceul.y * DEG2PAI);
+	phaiz = QuaternionLimitPhai((double)srceul.z * DEG2PAI);
+
+	cosx = (float)cos(phaix * 0.5);
+	sinx = (float)sin(phaix * 0.5);
+	cosy = (float)cos(phaiy * 0.5);
+	siny = (float)sin(phaiy * 0.5);
+	cosz = (float)cos(phaiz * 0.5);
+	sinz = (float)sin(phaiz * 0.5);
+
+	qx.SetParams(cosx, sinx, 0.0f, 0.0f);
+	qy.SetParams(cosy, 0.0f, siny, 0.0f);
+	qz.SetParams(cosz, 0.0f, 0.0f, sinz);
+
+	switch (rotorder) {
+	case eEulerXYZ:
+		q = axisQ * qz * qy * qx * invaxisQ;
+		break;
+	case eEulerXZY:
+		q = axisQ * qy * qz * qx * invaxisQ;
+		break;
+	case eEulerYZX:
+		q = axisQ * qx * qz * qy * invaxisQ;
+		break;
+	case eEulerYXZ:
+		q = axisQ * qz * qx * qy * invaxisQ;
+		break;
+	case eEulerZXY:
+		q = axisQ * qy * qx * qz * invaxisQ;
+		break;
+	case eEulerZYX:
+		q = axisQ * qx * qy * qz * invaxisQ;
+		break;
+	case eSphericXYZ:
+		q = axisQ * qz * qy * qx * invaxisQ;
+		break;
+	default:
+		q = axisQ * qz * qy * qx * invaxisQ;
+		break;
+	}
+
+	*this = q;
+
+	return 0;
+}
 
 
 int CQuaternion::SetRotationXYZ(CQuaternion* axisq, ChaVector3 srcdeg)
