@@ -1,5 +1,5 @@
 2023/03/27
-	EditMot 1.2.0.19 RC1
+	EditMot 1.2.0.19 release
 
 	リターゲット修正
 		指など　モーション側のジョイントを指定しないでも　おかしくならないように
@@ -7,21 +7,6 @@
 	回転順序修正
 		fbxの回転順序取得部分が　テストのためにコメントアウトしたままになっていたのを修正
 
-
-2023/03/27
-	EditMot 1.2.0.18 release
-
-	リターゲット修正
-		モデル側モーション側両方の０フレームにアニメが設定されていても正常にリターゲット
-		bvhだけはなく　UnityAssetのfbxモーションについてもテスト
-
-	回転順序に対応
-		読み込みは　fbxファイルソースの通りの回転順序
-		書き出しは　XYZの回転順序
-		オイラーグラフ表示は　XYZの回転順序
-
-	ドキュメント追加
-		Documants/TroubleShooting/JointSelectionDiviateAtTreeEditor.docx
 
 　おちゃっこLAB
 	https://ochakkolab.jp/
@@ -41,6 +26,21 @@
 
 	動画　制限角度をキャプチャーする
 		https://youtu.be/mkkpo5cmLBs
+
+2023/03/27
+	EditMot 1.2.0.18 release
+
+	リターゲット修正
+		モデル側モーション側両方の０フレームにアニメが設定されていても正常にリターゲット
+		bvhだけはなく　UnityAssetのfbxモーションについてもテスト
+
+	回転順序に対応
+		読み込みは　fbxファイルソースの通りの回転順序
+		書き出しは　XYZの回転順序
+		オイラーグラフ表示は　XYZの回転順序
+
+	ドキュメント追加
+		Documants/TroubleShooting/JointSelectionDiviateAtTreeEditor.docx
 
 
 2023/03/25
