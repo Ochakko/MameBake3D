@@ -134,7 +134,8 @@ namespace MameBake3DLibRetarget {
 
 
 		double frame;
-		for (frame = 0.0; frame < motleng; frame += 1.0) {
+		//for (frame = 0.0; frame < motleng; frame += 1.0) {
+		for (frame = 1.0; frame < motleng; frame += 1.0) {//2023/03/27 : 0フレームはInitMPの姿勢のままにする
 			//s_sethipstra = 0;
 
 			if (modelbone) {
@@ -187,9 +188,12 @@ namespace MameBake3DLibRetarget {
 		if (bvhbone) {
 			ConvBoneRotation(srcmodel, srcbvhmodel, 1, modelbone, bvhbone, srcframe, befbvhbone, hrate);
 		}
-		else {
-			ConvBoneRotation(srcmodel, srcbvhmodel, 0, modelbone, 0, srcframe, befbvhbone, hrate);
-		}
+
+		//2023/03/27 コメントアウト : 対応bvhboneが無い場合は　InitMPの姿勢のままにする
+		//else {
+		//	ConvBoneRotation(srcmodel, srcbvhmodel, 0, modelbone, 0, srcframe, befbvhbone, hrate);
+		//}
+
 
 
 		if (modelbone->GetChild()) {
@@ -217,6 +221,12 @@ namespace MameBake3DLibRetarget {
 
 		//retargetは　unlimitedに対して行い　unlimitedにセットする
 		bool limitdegflag = false;
+
+
+		//2023/03/27 : 対応bvhboneが無い場合には　InitMPの姿勢のままにする
+		if (!bvhbone) {
+			return 0;
+		}
 
 
 
@@ -269,7 +279,8 @@ namespace MameBake3DLibRetarget {
 			bvhmp = bvhbone->GetCurMp();
 		}
 		else {
-			bvhmp = befbvhbone->GetCurMp();
+			//bvhmp = befbvhbone->GetCurMp();
+			return 0;
 		}
 
 
@@ -573,16 +584,22 @@ namespace MameBake3DLibRetarget {
 				}
 			}
 			else {
-				rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-				traanim = ChaVector3(0.0f, 0.0f, 0.0f);
+				//rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+				//traanim = ChaVector3(0.0f, 0.0f, 0.0f);
+
+				return 0;
 			}
 
 			bool onretarget = true;
 			if (bvhbone) {
-				srcmodel->FKRotate(limitdegflag, onretarget, 1, bvhbone, 1, traanim, roundingframe, curboneno, rotq);
+				int reqflag = 1;//!!!!!!!!! 編集結果を再帰的に子供に伝えるので　bvhboneが無い場合には処理をしないで良い
+				int traanimflag = 1;
+				srcmodel->FKRotate(limitdegflag, onretarget, reqflag, bvhbone, 
+					traanimflag, traanim, roundingframe, curboneno, rotq);
 			}
 			else {
-				srcmodel->FKRotate(limitdegflag, onretarget, 0, befbvhbone, 0, traanim, roundingframe, curboneno, rotq);
+				//srcmodel->FKRotate(limitdegflag, onretarget, 0, befbvhbone, 0, traanim, roundingframe, curboneno, rotq);
+				return 0;
 			}
 		}
 
