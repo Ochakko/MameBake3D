@@ -1947,14 +1947,23 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 		fbxRoff.SetTranslation(ChaVector3((float)fbxRotOff[0], (float)fbxRotOff[1], (float)fbxRotOff[2]));
 		fbxRp.SetTranslation(ChaVector3((float)fbxRotPiv[0], (float)fbxRotPiv[1], (float)fbxRotPiv[2]));
 
-		//fbxRpre.SetXYZRotation(0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
-		//fbxR.SetXYZRotation(0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
-		//fbxRpost.SetXYZRotation(0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
+		////2023/03/27 : rotationorder対応
+		//fbxRpre.SetRotation(rotationorder, 0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
+		//fbxR.SetRotation(rotationorder, 0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
+		//fbxRpost.SetRotation(rotationorder, 0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
+		//fbxRpre.SetRotation(rotationorder, 0, ChaVector3((float)fbxPreRot[1], (float)fbxPreRot[2], (float)fbxPreRot[0]));
+		//fbxR.SetRotation(rotationorder, 0, ChaVector3((float)fbxLclRot[1], (float)fbxLclRot[2], (float)fbxLclRot[0]));
+		//fbxRpost.SetRotation(rotationorder, 0, ChaVector3((float)fbxPostRot[1], (float)fbxPostRot[2], (float)fbxPostRot[0]));
 
-		//2023/03/27 : rotationorder対応
-		fbxRpre.SetRotation(rotationorder, 0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
-		fbxR.SetRotation(rotationorder, 0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
-		fbxRpost.SetRotation(rotationorder, 0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
+
+		//#################################################################################################
+		//2023/03/28 : 試行錯誤の結果 --> ジョイントの初期向きとしての角度は　常に　XYZの回転順序のようだ
+		//fbxの内容をそのままXYZ順序で扱えば良いみたい
+		//#################################################################################################
+		fbxRpre.SetXYZRotation(0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
+		fbxR.SetXYZRotation(0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
+		fbxRpost.SetXYZRotation(0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
+
 
 		fbxRpinv = ChaMatrixInv(fbxRp);
 		fbxSoff.SetTranslation(ChaVector3((float)fbxSclOff[0], (float)fbxSclOff[1], (float)fbxSclOff[2]));

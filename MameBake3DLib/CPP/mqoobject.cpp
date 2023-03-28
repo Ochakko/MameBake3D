@@ -234,6 +234,9 @@ void CMQOObject::InitParams()
 	m_shapeweight.clear();
 	m_mpoint = 0;
 	m_findshape.clear();
+
+	m_meshmat.SetIdentity();
+
 //	next = 0;
 }
 

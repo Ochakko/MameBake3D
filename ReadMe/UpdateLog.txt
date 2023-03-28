@@ -1,4 +1,23 @@
 2023/03/27
+	EditMot 1.2.0.20 へ向けて
+
+	初期姿勢としてのジョイントの向きの回転順序
+		試行錯誤の結果　初期姿勢としてのジョイントの向きの回転順序は　モーションの回転順序に関わらず　常にXYZの順であるようだ
+
+	トランスフォームノードについて考え中
+		トランスフォームノードの影響をメッシュとジョイントに対してevalしておけば　トランスフォームノードを書き出さなくてもうまくいくと思っていた
+		しかし　実際には　トランスフォームノード書き出しをしない場合　保存するたびに　その分だけ回転してしまうようだ
+		対応するかどうかも含めて　どうするか考え中　３つの内のどれかになると思う
+			１，EditMotでは対応せずに Mayaでトランスフォームのフリーズをする
+			２，EditMot側で　トランスフォームのフリーズをする
+			３，EditMotの書き出し方を変えて　トランスフォームノードも書き出す
+
+	リターゲット設定ファイル追加
+		Test/RetargetSettingFileExample/Rokoko_bvh.rtg
+		Test/RetargetSettingFileExample/Hunt2Hunt.rtg
+
+
+2023/03/27
 	EditMot 1.2.0.19 release
 
 	リターゲット修正
@@ -7,25 +26,6 @@
 	回転順序修正
 		fbxの回転順序取得部分が　テストのためにコメントアウトしたままになっていたのを修正
 
-
-　おちゃっこLAB
-	https://ochakkolab.jp/
-
-　YouTubeチャンネル
-	https://www.youtube.com/@ochakkolab
-
-	動画
-		いろいろ直った物理でボクシングの動画	
-		https://youtu.be/Zr7fT1gsCl4
-
-	動画　作り直した位置コンストレイント
-		https://youtu.be/8p13H6MGQZ8
-
-	動画　変な風には曲がらない位置コンストレイント
-		https://youtu.be/9Xt8cxjByeA
-
-	動画　制限角度をキャプチャーする
-		https://youtu.be/mkkpo5cmLBs
 
 2023/03/27
 	EditMot 1.2.0.18 release

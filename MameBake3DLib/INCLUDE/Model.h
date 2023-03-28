@@ -1129,6 +1129,8 @@ public: //accesser
 		return m_topbone;
 	};
 	void GetHipsBoneReq(CBone* srcbone, CBone** dstppbone);
+	bool IncludeRootOrReference(FbxNode* ptopnode);
+	void GetRootOrReferenceReq(FbxNode* srcnode, FbxNode** dstppnode);
 
 
 	CBtObject* GetTopBt(){

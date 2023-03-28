@@ -1141,8 +1141,10 @@ FbxDouble3 ChaVector3::ConvRotOrder2XYZ(EFbxRotationOrder rotorder)
 	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 	int isfirstbone = 0;
 	int isendbone = 0;
-	int notmodify180flag = 1;
+	int notmodify180flag = 0;
+	int orderxyz = 0;//xyz
 	rotq.Q2EulXYZusingQ(0, befeul, &eulxyz, isfirstbone, isendbone, notmodify180flag);
+	//rotq.Q2EulXYZusingMat(orderxyz, 0, befeul, &eulxyz, isfirstbone, isendbone, notmodify180flag);
 
 	return FbxDouble3(eulxyz.x, eulxyz.y, eulxyz.z);
 }
@@ -1947,6 +1949,7 @@ int CQuaternion::SetRotation(EFbxRotationOrder rotorder, CQuaternion* srcaxisq, 
 	phaix = QuaternionLimitPhai((double)srceul.x * DEG2PAI);
 	phaiy = QuaternionLimitPhai((double)srceul.y * DEG2PAI);
 	phaiz = QuaternionLimitPhai((double)srceul.z * DEG2PAI);
+
 
 	cosx = (float)cos(phaix * 0.5);
 	sinx = (float)sin(phaix * 0.5);
@@ -3314,28 +3317,28 @@ int CQuaternion::Q2EulXYZusingMat(int rotorder, CQuaternion* axisq, ChaVector3 b
 		z = gamma;
 	}
 
-	const double PI2 = PAI * 2.0;
+	//const double PI2 = PAI * 2.0;
 
-	if (x > PAI) {
-		x -= PI2;
-	}
-	else if (x < -PAI) {
-		x += PI2;
-	}
+	//if (x > PAI) {
+	//	x -= PI2;
+	//}
+	//else if (x < -PAI) {
+	//	x += PI2;
+	//}
 
-	if (y > PAI) {
-		y -= PI2;
-	}
-	else if (y < -PAI) {
-		y += PI2;
-	}
-	
-	if (z > PAI) {
-		z -= PI2;
-	}
-	else if (z < -PAI) {
-		z += PI2;
-	}
+	//if (y > PAI) {
+	//	y -= PI2;
+	//}
+	//else if (y < -PAI) {
+	//	y += PI2;
+	//}
+	//
+	//if (z > PAI) {
+	//	z -= PI2;
+	//}
+	//else if (z < -PAI) {
+	//	z += PI2;
+	//}
 
 	ChaVector3 Euler;
 	Euler.x = (float)(x * 180.0 / PAI);

@@ -4305,28 +4305,26 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 	CMotionPoint* curmp = 0;
 	curmp = GetMotionPoint(srcmotid, roundingframe);
 	if (curmp) {
+		ChaMatrix curwm;
+		curwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
 		if (GetParent()) {
 			isfirstbone = 0;
 
-			ChaMatrix curwm, parentwm, eulmat;
 			CMotionPoint* parentmp = 0;
+			ChaMatrix parentwm;
 			parentmp = GetParent()->GetMotionPoint(srcmotid, roundingframe);
 			if (parentmp) {
-				curwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
 				parentwm = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, parentmp);
 				eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
 			}
 			else {
 				//_ASSERT(0);
-				curwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
 				eulq = ChaMatrix2Q(curwm);
 			}
 		}
 		else {
 			isfirstbone = 1;
 
-			ChaMatrix curwm;
-			curwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
 			eulq = ChaMatrix2Q(curwm);
 		}
 	}
@@ -9016,8 +9014,7 @@ void CBone::SaveFbxNodePosture(FbxNode* pNode)
 		m_fbxSclPiv = pNode->GetScalingPivot(FbxNode::eSourcePivot);
 		m_fbxrotationActive = pNode->GetRotationActive();
 
-		EFbxRotationOrder rotationorder;
-		pNode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+		pNode->GetRotationOrder(FbxNode::eSourcePivot, m_rotationorder);
 
 	}
 }
@@ -9028,34 +9025,37 @@ void CBone::RestoreFbxNodePosture(FbxNode* pNode)
 {
 
 	if (pNode) {
-		ChaVector3 roteul, preroteul, postroteul;
-		FbxDouble3 roteulxyz, preroteulxyz, postroteulxyz;
 
-		roteul = ChaVector3((float)m_fbxLclRot[0], (float)m_fbxLclRot[1], (float)m_fbxLclRot[2]);
-		preroteul = ChaVector3((float)m_fbxPreRot[0], (float)m_fbxPreRot[1], (float)m_fbxPreRot[2]);
-		postroteul = ChaVector3((float)m_fbxPostRot[0], (float)m_fbxPostRot[1], (float)m_fbxPostRot[2]);
-		roteulxyz = roteul.ConvRotOrder2XYZ(m_rotationorder);
-		preroteulxyz = preroteul.ConvRotOrder2XYZ(m_rotationorder);
-		postroteulxyz = postroteul.ConvRotOrder2XYZ(m_rotationorder);
-
+		//#################################################################################################
+		//2023/03/28 : 試行錯誤の結果 --> ジョイントの初期向きとしての角度は　常に　XYZの回転順序のようだ
+		//fbxの内容をそのままXYZ順序で扱えば良いみたい
+		//#################################################################################################
+		//ChaVector3 roteul, preroteul, postroteul;
+		//FbxDouble3 roteulxyz, preroteulxyz, postroteulxyz;
+		//roteul = ChaVector3((float)m_fbxLclRot[0], (float)m_fbxLclRot[1], (float)m_fbxLclRot[2]);
+		//preroteul = ChaVector3((float)m_fbxPreRot[0], (float)m_fbxPreRot[1], (float)m_fbxPreRot[2]);
+		//postroteul = ChaVector3((float)m_fbxPostRot[0], (float)m_fbxPostRot[1], (float)m_fbxPostRot[2]);
+		//roteulxyz = roteul.ConvRotOrder2XYZ(m_rotationorder);
+		//preroteulxyz = preroteul.ConvRotOrder2XYZ(m_rotationorder);
+		//postroteulxyz = postroteul.ConvRotOrder2XYZ(m_rotationorder);
 
 		pNode->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);//書き出しはXYZ
 
 
 		pNode->LclTranslation.Set(m_fbxLclPos);
-		//pNode->LclRotation.Set(m_fbxLclRot);
-		pNode->LclRotation.Set(roteulxyz);//書き出しはXYZ
+		pNode->LclRotation.Set(m_fbxLclRot);
+		//pNode->LclRotation.Set(roteulxyz);//書き出しはXYZ
 		pNode->LclScaling.Set(m_fbxLclScl);
 
 		pNode->SetRotationOffset(FbxNode::eSourcePivot, m_fbxRotOff);
 
 		pNode->SetRotationPivot(FbxNode::eSourcePivot, m_fbxRotPiv);
 
-		//pNode->SetPreRotation(FbxNode::eSourcePivot, m_fbxPreRot);
-		pNode->SetPreRotation(FbxNode::eSourcePivot, preroteulxyz);//書き出しはXYZ
+		pNode->SetPreRotation(FbxNode::eSourcePivot, m_fbxPreRot);
+		//pNode->SetPreRotation(FbxNode::eSourcePivot, preroteulxyz);//書き出しはXYZ
 
-		//pNode->SetPostRotation(FbxNode::eSourcePivot, m_fbxPostRot);
-		pNode->SetPostRotation(FbxNode::eSourcePivot, postroteulxyz);//書き出しはXYZ
+		pNode->SetPostRotation(FbxNode::eSourcePivot, m_fbxPostRot);
+		//pNode->SetPostRotation(FbxNode::eSourcePivot, postroteulxyz);//書き出しはXYZ
 
 		pNode->SetScalingOffset(FbxNode::eSourcePivot, m_fbxSclOff);
 

@@ -3452,6 +3452,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 	// コピー
 	newobj->SetVertex( controlNum );
 	newobj->SetPointBuf( (ChaVector3*)malloc( sizeof( ChaVector3 ) * controlNum ) );
+	newobj->SetMeshMat(globalmeshmat);
 	//for ( int i = 0; i < controlNum; ++i ) {
 	for (int i = 0; i < controlNum; i++) {
 		ChaVector3 tmpp;
@@ -3465,6 +3466,9 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 		//アニメーションカーブが無い場合には　CBone::GetFbxAnimでworldmatをidentityにしないと副作用が出る
 		ChaVector3* curctrl = newobj->GetPointBuf() + i;
 		ChaVector3TransformCoord(curctrl, &tmpp, &globalmeshmat);
+
+
+		//*curctrl = tmpp;
 
 
 //DbgOut( L"GetFBXMesh : ctrl %d, (%f, %f, %f)\r\n",
@@ -4127,6 +4131,7 @@ CBone* CModel::CreateNewFbxBone(FbxNodeAttribute::EType type, FbxNode* curnode, 
 	TermJointRepeats(newbonename);
 	newbone->SetName(newbonename);
 	newbone->SetFbxNodeOnLoad(curnode);
+	
 
 	m_bonelist[newbone->GetBoneNo()] = newbone;
 	m_bonename[newbone->GetBoneName()] = newbone;
@@ -4210,12 +4215,15 @@ int CModel::GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAt
 		return 1;
 	}
 
+
+
 	CBone* tmptopbone = m_topbone;
 	CBone* newbone = 0;
-	if (!m_topbone && (strstr(curnode->GetName(), "Root") == 0) && (strstr(curnode->GetName(), "Reference") == 0)) {
-		//最初のボーンで　名前にRootもReferenceも無い場合　Rootボーンを作成
+	if (!m_topbone && !IncludeRootOrReference(pScene->GetRootNode())) {
+		//最初のボーンで　ノードツリーにRootもReferenceも無い場合　Rootボーンを作成
 		tmptopbone = CreateNewFbxBone(FbxNodeAttribute::eSkeleton, 0, 0);
 	}
+
 
 	//通常のボーン　または　名前にRoot, Referenceが入っている場合のボーン　作成
 	newbone = CreateNewFbxBone(type, curnode, parnode);
@@ -16203,6 +16211,42 @@ int CModel::InitMP(bool limitdegflag, CBone* curbone, int srcmotid, double curfr
 	
 
 	return 0;
+}
+
+
+bool CModel::IncludeRootOrReference(FbxNode* ptopnode)
+{
+	FbxNode* foundnode = 0;
+	GetRootOrReferenceReq(ptopnode, &foundnode);
+	if (foundnode != 0) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+void CModel::GetRootOrReferenceReq(FbxNode* srcnode, FbxNode** dstppnode)
+{
+	if (srcnode && dstppnode && !(*dstppnode)) {
+
+		if ((strstr(srcnode->GetName(), "Root") != 0) || (strstr(srcnode->GetName(), "Reference") != 0)) {
+			*dstppnode = srcnode;
+			return;
+		}
+
+		if (!(*dstppnode)) {
+			int childNodeNum;
+			childNodeNum = srcnode->GetChildCount();
+			for (int i = 0; i < childNodeNum; i++)
+			{
+				FbxNode* pChild = srcnode->GetChild(i);  // 子ノードを取得
+				if (pChild) {
+					GetRootOrReferenceReq(pChild, dstppnode);
+				}
+			}
+		}
+	}
+
 }
 
 void CModel::GetHipsBoneReq(CBone* srcbone, CBone** dstppbone)
