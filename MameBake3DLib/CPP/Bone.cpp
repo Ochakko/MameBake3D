@@ -317,6 +317,9 @@ int CBone::InitParams()
 
 	m_fbxnodeonload = 0;//2022/11/01
 
+	m_offsetmat.SetIdentity();
+	m_hasmotioncurve = false;
+
 	m_curmp.InitParams();
 	m_calccurmp.InitParams();
 	m_axisq.InitParams();
@@ -8506,8 +8509,20 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 				strChannel = FBXSDK_CURVENODE_COMPONENT_X;
 				FbxAnimCurve* lCurve;
 				bool createflag = false;
+
 				lCurve = pNode->LclTranslation.GetCurve(panimlayer, strChannel, createflag);
 				if (lCurve) {
+					SetHasMotionCurve(true);
+				}
+				else {
+					SetHasMotionCurve(false);
+				}
+
+				//if ((GetType() == FBXBONE_NULL) && (!lCurve)) {
+				if (GetType() == FBXBONE_NULL) {//Curve‚Ì—L–³‚ÉŠÖŒW‚È‚­Null‚Ìê‡
+					globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
+				}
+				else if (lCurve) {
 					globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
 				}
 				else {
@@ -8530,6 +8545,7 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 				}
 			}
 			else {
+				SetHasMotionCurve(false);
 				globalmat.SetIdentity();
 			}
 			
@@ -9040,7 +9056,6 @@ void CBone::RestoreFbxNodePosture(FbxNode* pNode)
 		//postroteulxyz = postroteul.ConvRotOrder2XYZ(m_rotationorder);
 
 		pNode->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);//‘‚«o‚µ‚ÍXYZ
-
 
 		pNode->LclTranslation.Set(m_fbxLclPos);
 		pNode->LclRotation.Set(m_fbxLclRot);

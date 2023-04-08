@@ -885,8 +885,8 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 	m_oldaxis_atloading = 0;
 	if (forcenewaxisflag == 0){
 		if (sceneinfo){
-			FbxString oldauther = "OpenRDB user";
-			if (sceneinfo->mAuthor == oldauther){
+			FbxString oldauthor = "OpenRDB user";
+			if (sceneinfo->mAuthor == oldauthor){
 				_ASSERT(0);
 				FbxString oldrevision = "rev. 1.0";
 				if (sceneinfo->mRevision == oldrevision){
@@ -921,7 +921,7 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 	m_topbone = 0;
 
 	
-	CreateFBXBoneReq(pScene, pRootNode, 0);
+	CreateFBXBoneReq(pScene, pRootNode, 0, 0);
 	if ((int)m_bonelist.size() <= 0){
 		//_ASSERT( 0 );
 		if (!m_bonelist.empty()) {
@@ -3366,13 +3366,22 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 
 
 
-	ChaMatrix globalmeshmat;
+	ChaMatrix globalmeshmat;//頂点用
+	ChaMatrix globalnormalmat;//法線用
 	globalmeshmat.SetIdentity();
-	FbxTime fbxtime;
-	fbxtime.SetSecondDouble(0.0);
-	FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime);
-	globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
+	globalnormalmat.SetIdentity();
+	{
+		globalmeshmat.SetIdentity();
+		FbxTime fbxtime;
+		fbxtime.SetSecondDouble(0.0);
+		FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime);
+		globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
 
+		globalnormalmat = globalmeshmat;
+		globalnormalmat.SetTranslation(ChaVector3(0.0f, 0.0f, 0.0f));
+		globalnormalmat.data[MATI_44] = 0.0f;
+	}
+	
 
 
 	CMQOObject* newobj = new CMQOObject();
@@ -3455,20 +3464,24 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 	newobj->SetMeshMat(globalmeshmat);
 	//for ( int i = 0; i < controlNum; ++i ) {
 	for (int i = 0; i < controlNum; i++) {
+		//ChaVector3* curctrl = newobj->GetPointBuf() + i;
+		//curctrl->x = (float)src[i][0];
+		//curctrl->y = (float)src[i][1];
+		//curctrl->z = (float)src[i][2];
+		////curctrl->w = (float)src[i][3];
+
 		ChaVector3 tmpp;
 		tmpp.x = (float)src[ i ][ 0 ];
 		tmpp.y = (float)src[ i ][ 1 ];
 		tmpp.z = (float)src[ i ][ 2 ];
 		//curctrl->w = (float)src[ i ][ 3 ];
-
-
 		//eNullのtransformによるメッシュ頂点の変換
 		//アニメーションカーブが無い場合には　CBone::GetFbxAnimでworldmatをidentityにしないと副作用が出る
 		ChaVector3* curctrl = newobj->GetPointBuf() + i;
 		ChaVector3TransformCoord(curctrl, &tmpp, &globalmeshmat);
 
 
-		//*curctrl = tmpp;
+		////*curctrl = tmpp;
 
 
 //DbgOut( L"GetFBXMesh : ctrl %d, (%f, %f, %f)\r\n",
@@ -3628,9 +3641,13 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 			  //for ( int i = 0; i < normalNum; ++i ) {
 				for (int i2 = 0; i2 < normalNum; i2++) {
 					ChaVector3* curn = newobj->GetNormal() + i2;
-					curn->x = (float)normalElem->GetDirectArray().GetAt( i2 )[ 0 ];
-					curn->y = (float)normalElem->GetDirectArray().GetAt( i2 )[ 1 ];
-					curn->z = (float)normalElem->GetDirectArray().GetAt( i2 )[ 2 ];
+					ChaVector3 tmpn;
+					tmpn.x = (float)normalElem->GetDirectArray().GetAt( i2 )[ 0 ];
+					tmpn.y = (float)normalElem->GetDirectArray().GetAt( i2 )[ 1 ];
+					tmpn.z = (float)normalElem->GetDirectArray().GetAt( i2 )[ 2 ];
+
+					ChaVector3TransformCoord(curn, &tmpn, &globalnormalmat);
+
 				}
 		   }else if ( refMode == FbxLayerElement::eIndexToDirect ){
 //DbgOut( L"GetFBXMesh : %s : ref eIndexToDirect\r\n", wname );
@@ -3646,9 +3663,12 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 				    FbxVector4 lCurrentNormal;
 					lCurrentNormal = normalElem->GetDirectArray().GetAt(lNormalIndex);
 					ChaVector3* curn = newobj->GetNormal() + lIndex;
-					curn->x = static_cast<float>(lCurrentNormal[0]);
-					curn->y = static_cast<float>(lCurrentNormal[1]);
-					curn->z = static_cast<float>(lCurrentNormal[2]);
+					ChaVector3 tmpn;
+					tmpn.x = static_cast<float>(lCurrentNormal[0]);
+					tmpn.y = static_cast<float>(lCurrentNormal[1]);
+					tmpn.z = static_cast<float>(lCurrentNormal[2]);
+
+					ChaVector3TransformCoord(curn, &tmpn, &globalnormalmat);
 				}
 		   }
 		} else if ( mappingMode == FbxLayerElement::eByControlPoint ) {
@@ -3667,9 +3687,12 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 				//for ( int i = 0; i < normalNum; ++i ) {
 				for (int i2 = 0; i2 < normalNum; i2++) {
 					ChaVector3* curn = newobj->GetNormal() + i2;
-					curn->x = (float)normalElem->GetDirectArray().GetAt( i2 )[ 0 ];
-					curn->y = (float)normalElem->GetDirectArray().GetAt( i2 )[ 1 ];
-					curn->z = (float)normalElem->GetDirectArray().GetAt( i2 )[ 2 ];
+					ChaVector3 tmpn;
+					tmpn.x = (float)normalElem->GetDirectArray().GetAt( i2 )[ 0 ];
+					tmpn.y = (float)normalElem->GetDirectArray().GetAt( i2 )[ 1 ];
+					tmpn.z = (float)normalElem->GetDirectArray().GetAt( i2 )[ 2 ];
+
+					ChaVector3TransformCoord(curn, &tmpn, &globalnormalmat);
 				}
 		   }else{
 //DbgOut( L"GetFBXMesh : %s : ref %d\r\n", wname, refMode );
@@ -4006,101 +4029,124 @@ DbgOut( L"SetMQOMaterial : texture %s\r\n", wname );
 
 
 
-void CModel::CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode )
+void CModel::CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode, FbxNode* parentbonenode)
 {
 //	EFbxRotationOrder lRotationOrder0 = eEulerZXY;
 //	EFbxRotationOrder lRotationOrder1 = eEulerXYZ;
+
+	WCHAR wname[256];
+	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, pNode->GetName(), -1, wname, 256);
+	//if (wcsstr(wname, L"Character") != 0) {
+	//	_ASSERT(0);
+	//}
+	const char* nodetypename = pNode->GetTypeName();
 
 	FbxNodeAttribute *pAttrib = pNode->GetNodeAttribute();
 	if ( pAttrib ) {
 		FbxNodeAttribute::EType type = pAttrib->GetAttributeType();
 		//const char* nodename = pNode->GetName();
-		WCHAR wname[256];
-		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, pNode->GetName(), -1, wname, 256 );
-		if( type == FbxNodeAttribute::eSkeleton ){
-			DbgOut( L"CreateFbxBoneReq : pNode %s : type : skeleton\r\n", wname );
-		}else if( type == FbxNodeAttribute::eNull ){
-			DbgOut( L"CreateFbxBoneReq : pNode %s : type : null\r\n", wname );
-		}else{
-			DbgOut( L"CreateFbxBoneReq : pNode %s : type : other : %d\r\n", wname, type );
-		}
+		//		//const char* parnodename = parnode->GetName();
+		//		WCHAR parwname[256];
+		//		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, parnode->GetName(), -1, parwname, 256 );
 
-
-		FbxNode* parentbonenode = 0;
-		if( parnode ){
-			FbxNodeAttribute *parattr = parnode->GetNodeAttribute();
-			if ( parattr ) {
-				FbxNodeAttribute::EType partype = parattr->GetAttributeType();
-				//const char* parnodename = parnode->GetName();
-				WCHAR parwname[256];
-				MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, parnode->GetName(), -1, parwname, 256 );
-				if( partype == FbxNodeAttribute::eSkeleton ){
-					DbgOut( L"CreateFbxBoneReq : parnode %s : type : skeleton\r\n", parwname );
-				}else if( type == FbxNodeAttribute::eNull ){
-					DbgOut( L"CreateFbxBoneReq : parnode %s : type : null\r\n", parwname );
-				}else{
-					DbgOut( L"CreateFbxBoneReq : parnode %s : type : other : %d\r\n", parwname, partype );
-				}
-
-				switch ( partype )
-				{
-					case FbxNodeAttribute::eSkeleton:
-					case FbxNodeAttribute::eNull:
-						parentbonenode = parnode;
-						break;
-					default:
-						parentbonenode = 0;
-						break;
-				}
-			}else{
-				//const char* parnodename = parnode->GetName();
-				WCHAR parwname[256];
-				MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, parnode->GetName(), -1, parwname, 256 );
-				DbgOut( L"CreateFbxBoneReq : %s : parnode name %s : parattr NULL!!!!!\r\n", wname, parwname );
-			}
-		}else{
-			DbgOut( L"CreateFbxBoneReq : %s : parnode NULL!!!!\r\n", wname );
-		}
-
+/*
+typedef enum
+{
+ eUnknown,
+		eNull,
+		eMarker,
+		eSkeleton,
+		eMesh,
+		eNurbs,
+		ePatch,
+		eCamera,
+		eCameraStereo,
+		eCameraSwitcher,
+		eLight,
+		eOpticalReference,
+		eOpticalMarker,
+		eNurbsCurve,
+		eTrimNurbsSurface,
+		eBoundary,
+		eNurbsSurface,
+		eShape,
+		eLODGroup,
+		eSubDiv,
+		eCachedEffect,
+		eLine
+} FbxNodeAttribute;*/
 
 
 		switch ( type )
 		{
-			case FbxNodeAttribute::eSkeleton:
-			case FbxNodeAttribute::eNull:
-	
-				//EFbxRotationOrder lRotationOrder = eEULER_ZXY;
-				//pNode->SetRotationOrder(FbxNode::eSourcePivot , lRotationOrder0 );
-				//pNode->SetRotationOrder(FbxNode::eDestinationPivot , lRotationOrder1 );
-				
-				if (strcmp(pNode->GetName(), "RootNode") != 0){
-					if (parnode && (strcmp(parnode->GetName(), "RootNode") != 0)){
-						GetFBXBone(pScene, type, pAttrib, pNode, parentbonenode);
-					}
-					else{
-						GetFBXBone(pScene, type, pAttrib, pNode, 0);
-					}
+		case FbxNodeAttribute::eNull:
+		case FbxNodeAttribute::eSkeleton:
+			{
+				GetFBXBone(pScene, type, pNode, parentbonenode);
+				//if (strcmp(pNode->GetName(), "RootNode") != 0) {
+				//	if (parnode && (strcmp(parnode->GetName(), "RootNode") != 0)) {
+				//		GetFBXBone(pScene, type, pAttrib, pNode, parentbonenode);
+				//	}
+				//	else {
+				//		GetFBXBone(pScene, type, pAttrib, pNode, 0);
+				//	}
+				//}
+				//else {
+				//	//_ASSERT(0);
+				//}
+
+				int childNodeNum;
+				childNodeNum = pNode->GetChildCount();
+				for (int i = 0; i < childNodeNum; i++)
+				{
+					FbxNode* pChild = pNode->GetChild(i);  // 子ノードを取得
+					CreateFBXBoneReq(pScene, pChild, pNode, pNode);//pNode
 				}
-				else{
-					//_ASSERT(0);
-				}
+
+			}
 				break;
-			case FbxSkeleton::eRoot:
-				_ASSERT(0);
-				break;
+		case FbxSkeleton::eRoot:
 			default:
+			{
+				int childNodeNum;
+				childNodeNum = pNode->GetChildCount();
+				for (int i = 0; i < childNodeNum; i++)
+				{
+					FbxNode* pChild = pNode->GetChild(i);  // 子ノードを取得
+					CreateFBXBoneReq(pScene, pChild, pNode, parentbonenode);//parentbonenode
+				}
+			}
 				break;
 		}
 
 	}
+	else {
+		//eNullはattributeを持たないことがある　その場合はGetTypeNameが"Null"という文字列になっている
 
-	int childNodeNum;
-	childNodeNum = pNode->GetChildCount();
-	for ( int i = 0; i < childNodeNum; i++ )
-	{
-		FbxNode *pChild = pNode->GetChild(i);  // 子ノードを取得
-		CreateFBXBoneReq(pScene, pChild, pNode );
+		if ((strcmp(nodetypename, "Null") == 0) && (strcmp(pNode->GetName(), "RootNode") != 0)) {
+			GetFBXBone(pScene, FbxNodeAttribute::eNull, pNode, parentbonenode);
+
+			int childNodeNum;
+			childNodeNum = pNode->GetChildCount();
+			for (int i = 0; i < childNodeNum; i++)
+			{
+				FbxNode* pChild = pNode->GetChild(i);  // 子ノードを取得
+				CreateFBXBoneReq(pScene, pChild, pNode, pNode);//pNode
+				//CreateFBXBoneReq(pScene, pChild, pNode, parentbonenode);//pNode
+			}
+
+		}
+		else {
+			int childNodeNum;
+			childNodeNum = pNode->GetChildCount();
+			for (int i = 0; i < childNodeNum; i++)
+			{
+				FbxNode* pChild = pNode->GetChild(i);  // 子ノードを取得
+				CreateFBXBoneReq(pScene, pChild, pNode, parentbonenode);//parentbonenode
+			}
+		}
 	}
+
 
 	return;
 }
@@ -4108,6 +4154,11 @@ void CModel::CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode
 CBone* CModel::CreateNewFbxBone(FbxNodeAttribute::EType type, FbxNode* curnode, FbxNode* parnode)
 {
 	int settopflag = 0;
+
+	if (!curnode) {
+		_ASSERT(0);
+		return 0;
+	}
 
 	CBone* newbone = CBone::GetNewBone(this);
 	_ASSERT(newbone);
@@ -4208,21 +4259,21 @@ CBone* CModel::CreateNewFbxBone(FbxNodeAttribute::EType type, FbxNode* curnode, 
 }
 
 
-int CModel::GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, FbxNode* curnode, FbxNode* parnode )
+int CModel::GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNode* curnode, FbxNode* parnode )
 {
-	if (!pScene || !pAttrib || !curnode) {
+	if (!pScene || !curnode) {
 		_ASSERT(0);
 		return 1;
 	}
 
 
 
-	CBone* tmptopbone = m_topbone;
+	//CBone* tmptopbone = m_topbone;
 	CBone* newbone = 0;
-	if (!m_topbone && !IncludeRootOrReference(pScene->GetRootNode())) {
-		//最初のボーンで　ノードツリーにRootもReferenceも無い場合　Rootボーンを作成
-		tmptopbone = CreateNewFbxBone(FbxNodeAttribute::eSkeleton, 0, 0);
-	}
+	//if (!m_topbone && !IncludeRootOrReference(pScene->GetRootNode())) {
+	//	//最初のボーンで　ノードツリーにRootもReferenceも無い場合　Rootボーンを作成
+	//	tmptopbone = CreateNewFbxBone(FbxNodeAttribute::eSkeleton, 0, 0);
+	//}
 
 
 	//通常のボーン　または　名前にRoot, Referenceが入っている場合のボーン　作成
@@ -5022,6 +5073,32 @@ void CModel::CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double sr
 //	return 0;
 //}
 
+//void CModel::PostLoadNullNodeReq(CBone* srcbone, int srcmotid, double animlen)
+//{
+//	if (srcbone) {
+//
+//		if ((srcbone->GetType() == FBXBONE_NULL) && (srcbone->GetHasMotionCurve() == false)) {
+//			double curframe;
+//			for (curframe = 0.0; curframe < animlen; curframe += 1.0) {//関数呼び出し時にanimleng - 1している
+//				//ChaMatrix curwm = srcbone->GetWorldMat(false, srcmotid, curframe, 0);
+//				//ChaMatrix curnodemat = srcbone->GetNodeMat();
+//				//ChaMatrix newnodemat = srcbone->GetNodeAnimMat();
+//				//ChaMatrix newwm = ChaMatrixInv(newnodemat) * curnodemat * curwm;
+//				ChaMatrix newwm;
+//				newwm.SetIdentity();
+//				srcbone->UpdateCurrentWM(false, srcmotid, curframe, newwm);
+//			}
+//		}
+//
+//		if (srcbone->GetChild()) {
+//			PostLoadNullNodeReq(srcbone->GetChild(), srcmotid, animlen);
+//		}
+//		if (srcbone->GetBrother()) {
+//			PostLoadNullNodeReq(srcbone->GetBrother(), srcmotid, animlen);
+//		}
+//	}
+//
+//}
 
 int CModel::PostLoadFbxAnim(int srcmotid)
 {
@@ -5029,7 +5106,19 @@ int CModel::PostLoadFbxAnim(int srcmotid)
 	if (curmi) {
 		double animlen = curmi->frameleng;
 
+		//CBone* hipsbone = 0;
+		//GetHipsBoneReq(GetTopBone(), &hipsbone);
+		//if (hipsbone) {
+		//	double curframe;
+		//	for (curframe = 0.0; curframe < animlen; curframe += 1.0) {//関数呼び出し時にanimleng - 1している
+		//		ChaMatrix newwm = hipsbone->GetOffsetMat() * hipsbone->GetWorldMat(false, srcmotid, curframe, 0);
+		//		hipsbone->UpdateCurrentWM(false, srcmotid, curframe, newwm);
+		//	}
+		//}
 		PostLoadFbxAnimReq(srcmotid, animlen, m_topbone);
+
+		//PostLoadNullNodeReq(GetTopBone(), srcmotid, animlen);
+
 	}
 	return 0;
 }

@@ -143,7 +143,7 @@ static int WriteBindPose(FbxScene* pScene, int bvhflag = 0);
 static void WriteBindPoseReq( CFBXBone* fbxbone, FbxPose* lPose );
 
 
-
+static void FindHipsFbxBoneReq(CFBXBone* srcfbxbone, CFBXBone** ppfindfbxbone);
 static void AnimateSkeleton(bool limitdegflag, FbxScene* pScene, CModel* pmodel);
 static void AnimateBoneReq(bool limitdegflag, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int motmax);
 static int AnimateMorph(FbxScene* pScene, CModel* pmodel);
@@ -1618,6 +1618,25 @@ void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer )
 }
 
 
+void FindHipsFbxBoneReq(CFBXBone* srcfbxbone, CFBXBone** ppfindfbxbone)
+{
+	if (srcfbxbone && ppfindfbxbone && !(*ppfindfbxbone)) {
+		CBone* curbone = srcfbxbone->GetBone();
+		if (curbone && curbone->IsHipsBone()) {
+			*ppfindfbxbone = srcfbxbone;
+			return;
+		}
+
+		if (srcfbxbone->GetChild() && !(*ppfindfbxbone)) {
+			FindHipsFbxBoneReq(srcfbxbone->GetChild(), ppfindfbxbone);
+		}
+		if (srcfbxbone->GetBrother() && !(*ppfindfbxbone)) {
+			FindHipsFbxBoneReq(srcfbxbone->GetBrother(), ppfindfbxbone);
+		}
+	}
+}
+
+
 void AnimateSkeleton(bool limitdegflag, FbxScene* pScene, CModel* pmodel)
 {
 	static int s_dbgcnt = 0;
@@ -1691,7 +1710,17 @@ void AnimateSkeleton(bool limitdegflag, FbxScene* pScene, CModel* pmodel)
 
 		s_firstanimout = 1;
 		//AnimateBoneReq( pmodel->GetFromNoBindPoseFlag(), s_fbxbone, lAnimLayer, curmotid, maxframe );
+
+		//CFBXBone* hipsfbxbone = 0;
+		//FindHipsFbxBoneReq(s_fbxbone, &hipsfbxbone);
+		//if (hipsfbxbone) {
+		//	AnimateBoneReq(limitdegflag, hipsfbxbone, lAnimLayer, curmotid, maxframe);
+		//}
+		//else {
+		//	AnimateBoneReq(limitdegflag, s_fbxbone, lAnimLayer, curmotid, maxframe);
+		//}
 		AnimateBoneReq(limitdegflag, s_fbxbone, lAnimLayer, curmotid, maxframe);
+
 
 		pScene->AddMember(lAnimStack);//!!!!!!!!
 
@@ -1711,10 +1740,10 @@ void AnimateBoneReq(bool limitdegflag, CFBXBone* fbxbone, FbxAnimLayer* lAnimLay
     int lKeyIndex = 0;
     FbxNode* lSkel = 0;
 
-	if(fbxbone){
+	if (fbxbone) {
 		CBone* curbone = fbxbone->GetBone();
-		if( curbone ){
-
+		//if( curbone && (curbone->GetType() != FBXBONE_NULL)){
+		if (curbone) {
 			lSkel = fbxbone->GetSkelNode();
 			if (!lSkel){
 				_ASSERT( 0 );
@@ -2418,7 +2447,6 @@ CFBXBone* CreateFBXBoneOfBVH( FbxScene* pScene )
 	}
 
 
-
 	FbxNode* lSkeletonNode;
 	FbxString lNodeName( "RootNode" );
 	FbxSkeleton* lSkeletonNodeAttribute = FbxSkeleton::Create(pScene, lNodeName);
@@ -2645,60 +2673,88 @@ CFBXBone* CreateFBXBone(FbxScene* pScene, CModel* pmodel )
 
 	//_ASSERT(0);
 
-	FbxNode* lSkeletonNode2;
-	FbxString lNodeName2("RootNode");
-	FbxSkeleton* lSkeletonNodeAttribute2 = FbxSkeleton::Create(pScene, lNodeName2);
-	lSkeletonNodeAttribute2->SetSkeletonType(FbxSkeleton::eRoot);
-	lSkeletonNodeAttribute2->Size.Set(1.0);
-	lSkeletonNode2 = FbxNode::Create(pScene, lNodeName2.Buffer());
-	lSkeletonNode2->SetNodeAttribute(lSkeletonNodeAttribute2);
-	lSkeletonNode2->LclTranslation.Set(FbxVector4(0.0f, 0.0f, 0.0f));
+	FbxNode* lSkeletonNode = 0;
+	FbxSkeleton* lSkeletonNodeAttribute = 0;
+	const FbxNode* nodeonload = pmodel->GetBoneNode(topj);
+	FbxString lNodeName(topj->GetEngBoneName());
 
-	CFBXBone* fbxbone2 = new CFBXBone();
-	if (!fbxbone2){
-		_ASSERT(0);
-		return 0;
+
+	CFBXBone* fbxbone2 = 0;//RootNodeがまだ無かった場合の　新規RootNode
+
+	if (strstr(topj->GetBoneName(), "RootNode") == 0) {
+
+		//最初のノードがRootNodeではない場合
+
+		//１つ目に　eRootを新規
+		FbxNode* lSkeletonNode2;
+		FbxString lNodeName2("RootNode");
+		FbxSkeleton* lSkeletonNodeAttribute2 = FbxSkeleton::Create(pScene, lNodeName2);
+		lSkeletonNodeAttribute2->SetSkeletonType(FbxSkeleton::eRoot);
+		lSkeletonNodeAttribute2->Size.Set(1.0);
+		lSkeletonNode2 = FbxNode::Create(pScene, lNodeName2.Buffer());
+		lSkeletonNode2->SetNodeAttribute(lSkeletonNodeAttribute2);
+		lSkeletonNode2->LclTranslation.Set(FbxVector4(0.0f, 0.0f, 0.0f));
+
+		fbxbone2 = new CFBXBone();
+		if (!fbxbone2) {
+			_ASSERT(0);
+			return 0;
+		}
+		fbxbone2->SetType(FB_ROOT);
+		fbxbone2->SetBone(0);
+		fbxbone2->SetSkelNode(lSkeletonNode2);
+		s_fbxbone = fbxbone2;//!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+		//２つ目は　eNull　もしくは　eSkeleton
+		//if (topj->GetType() == FBXBONE_NULL) {
+		//	FbxNull* lNullAttribute = FbxNull::Create(pScene, lNodeName);
+		//	lSkeletonNode = FbxNode::Create(pScene, lNodeName.Buffer());
+		//	lSkeletonNode->SetNodeAttribute(lNullAttribute);
+		//	if (nodeonload) {
+		//		lSkeletonNode->Copy(*nodeonload);
+		//	}
+		//	else {
+		//		topj->RestoreFbxNodePosture(lSkeletonNode);
+		//	}
+		//}
+		//else {
+			lSkeletonNodeAttribute = FbxSkeleton::Create(pScene, lNodeName);
+			lSkeletonNodeAttribute->SetSkeletonType(FbxSkeleton::eLimbNode);
+			lSkeletonNodeAttribute->Size.Set(1.0);
+			lSkeletonNode = FbxNode::Create(pScene, lNodeName.Buffer());
+			lSkeletonNode->SetNodeAttribute(lSkeletonNodeAttribute);
+			if (nodeonload) {
+				lSkeletonNode->Copy(*nodeonload);
+			}
+			//else {
+			//	topj->RestoreFbxNodePosture(lSkeletonNode);
+			//}
+			topj->RestoreFbxNodePosture(lSkeletonNode);
+
+		//}
 	}
-	fbxbone2->SetType(FB_ROOT);
-	fbxbone2->SetBone(0);
-	fbxbone2->SetSkelNode(lSkeletonNode2);
-	s_fbxbone = fbxbone2;//!!!!!!!!!!!!!!!!!!!!!!!!!
+	else {
+
+		//topjがRootNodeの場合
+		
+		//１つ目はeRoot
+		lSkeletonNodeAttribute = FbxSkeleton::Create(pScene, lNodeName);
+		lSkeletonNodeAttribute->SetSkeletonType(FbxSkeleton::eRoot);
+		lSkeletonNodeAttribute->Size.Set(1.0);
+		lSkeletonNode = FbxNode::Create(pScene, lNodeName.Buffer());
+		lSkeletonNode->SetNodeAttribute(lSkeletonNodeAttribute);
+		if (nodeonload) {
+			lSkeletonNode->Copy(*nodeonload);
+		}
+		//else {
+		//	topj->RestoreFbxNodePosture(lSkeletonNode);
+		//}
+		topj->RestoreFbxNodePosture(lSkeletonNode);
+	}
 
 
-
-	FbxNode* lSkeletonNode;
-	FbxString lNodeName( topj->GetEngBoneName() );
-	//FbxString lNodeName("RootNode");
-	FbxSkeleton* lSkeletonNodeAttribute = FbxSkeleton::Create(pScene, lNodeName);
-	lSkeletonNodeAttribute->SetSkeletonType(FbxSkeleton::eLimbNode);
 	//lSkeletonNodeAttribute->SetSkeletonType(FbxSkeleton::eRoot);
-
-	lSkeletonNodeAttribute->Size.Set(1.0);
-
-	lSkeletonNode = FbxNode::Create(pScene,lNodeName.Buffer());
-	lSkeletonNode->SetNodeAttribute(lSkeletonNodeAttribute);
-	//lSkeletonNode->LclTranslation.Set(FbxVector4(topj->GetJointFPos().x, topj->GetJointFPos().y, topj->GetJointFPos().z));
-	topj->RestoreFbxNodePosture(lSkeletonNode);
-
-	//{
-	//	ChaMatrix tramat;
-	//	ChaMatrix zeroanim;//2022/08/18
-	//	ChaMatrixIdentity(&zeroanim);
-	//	CMotionPoint* firstmp = topj->GetMotionPoint(s_zeroframemotid, 0.0);
-	//	if (firstmp) {
-	//		//0フレームを編集した場合にはzeroanimはIdentity以外の姿勢になっている
-	//		zeroanim = firstmp->GetWorldMat();
-	//		tramat = topj->GetNodeMat() * zeroanim;
-	//	}
-	//	else {
-	//		tramat = topj->GetNodeMat() * zeroanim;
-	//	}
-	//	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
-	//	ChaVector3 jointpos;
-	//	ChaVector3TransformCoord(&zeropos, &jointpos, &tramat);
-	//	lSkeletonNode->LclTranslation.Set(FbxVector4(jointpos.x, jointpos.y, jointpos.z));
-	//}
-
 
 	CFBXBone* fbxbone = new CFBXBone();
 	if( !fbxbone ){
@@ -2710,8 +2766,11 @@ CFBXBone* CreateFBXBone(FbxScene* pScene, CModel* pmodel )
 	fbxbone->SetBone( topj );
 	fbxbone->SetSkelNode( lSkeletonNode );
 
-	fbxbone2->GetSkelNode()->AddChild(lSkeletonNode);
-	fbxbone2->AddChild(fbxbone);
+	if (fbxbone2) {
+		fbxbone2->GetSkelNode()->AddChild(lSkeletonNode);
+		fbxbone2->AddChild(fbxbone);
+	}
+
 	s_fbxbonenum++;
 
 	s_firsttopbone = fbxbone;//rootの最初の子供
@@ -2726,8 +2785,13 @@ CFBXBone* CreateFBXBone(FbxScene* pScene, CModel* pmodel )
 
 	//return fbxbone;
 
-	return fbxbone2;//!!!!!!!!!!
-
+	if (fbxbone2) {
+		return fbxbone2;//!!!!!!!!!!
+	}
+	else {
+		return fbxbone;
+	}
+	
 }
 
 void CreateFBXBoneReq( FbxScene* pScene, CBone* pbone, CFBXBone* parfbxbone )
@@ -2751,49 +2815,46 @@ void CreateFBXBoneReq( FbxScene* pScene, CBone* pbone, CFBXBone* parfbxbone )
 	sprintf_s( newname, 256, "%s", pbone->GetEngBoneName() );
 
 	FbxString lLimbNodeName1( newname );
-	FbxSkeleton* lSkeletonLimbNodeAttribute1 = FbxSkeleton::Create(pScene,lLimbNodeName1);
-	lSkeletonLimbNodeAttribute1->SetSkeletonType(FbxSkeleton::eLimbNode);
-	lSkeletonLimbNodeAttribute1->Size.Set(1.0);
-	FbxNode* lSkeletonLimbNode1 = FbxNode::Create(pScene,lLimbNodeName1.Buffer());
-	lSkeletonLimbNode1->SetNodeAttribute(lSkeletonLimbNodeAttribute1);
-	//lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x - parentpos.x, curpos.y - parentpos.y, curpos.z - parentpos.z));
-	pbone->RestoreFbxNodePosture(lSkeletonLimbNode1);
+	FbxNode* lSkeletonLimbNode1;
+	FbxSkeleton* lSkeletonLimbNodeAttribute1;
+	const FbxNode* nodeonload = pbone->GetParModel()->GetBoneNode(pbone);
+	//if (pbone->GetType() == FBXBONE_NULL) {
+	//	////lSkeletonLimbNodeAttribute1 = 0;
+	//	////lSkeletonLimbNode1 = FbxNode::Create(pScene, lLimbNodeName1.Buffer());
+	//	////lSkeletonLimbNode1->SetNodeAttribute(NULL);
+	//	//////lSkeletonNodeAttribute = 0;
+	//	//FbxNull* lNullAttribute = FbxNull::Create(pScene, lLimbNodeName1);
+	//	//lSkeletonLimbNode1 = FbxNode::Create(pScene, lLimbNodeName1.Buffer());
+	//	//lSkeletonLimbNode1->SetNodeAttribute(lNullAttribute);
 
-	//ChaVector3 curpos = ChaVector3(0.0f, 0.0f, 0.0f);
-	//{
-	//	ChaMatrix tramat;
-	//	ChaMatrix zeroanim;//2022/08/18
-	//	ChaMatrixIdentity(&zeroanim);
-	//	CMotionPoint* firstmp = pbone->GetMotionPoint(s_zeroframemotid, 0.0);
-	//	if (firstmp) {
-	//		//0フレームを編集した場合にはzeroanimはIdentity以外の姿勢になっている
-	//		zeroanim = firstmp->GetWorldMat();
-	//		tramat = pbone->GetNodeMat() * zeroanim;
+	//	FbxNull* lNullAttribute = FbxNull::Create(pScene, lLimbNodeName1);
+	//	lSkeletonLimbNode1 = FbxNode::Create(pScene, lLimbNodeName1.Buffer());
+	//	lSkeletonLimbNode1->SetNodeAttribute(lNullAttribute);
+	//	if (nodeonload) {
+	//		lSkeletonLimbNode1->Copy(*nodeonload);
 	//	}
 	//	else {
-	//		tramat = pbone->GetNodeMat() * zeroanim;
+	//		pbone->RestoreFbxNodePosture(lSkeletonLimbNode1);
 	//	}
-	//	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
-	//	ChaVector3TransformCoord(&zeropos, &curpos, &tramat);
+
 	//}
-	//ChaVector3 parentpos = ChaVector3(0.0f, 0.0f, 0.0);
-	//if (pbone->GetParent()) {
-	//	ChaMatrix tramat;
-	//	ChaMatrix zeroanim;//2022/08/18
-	//	ChaMatrixIdentity(&zeroanim);
-	//	CMotionPoint* firstmp = pbone->GetParent()->GetMotionPoint(s_zeroframemotid, 0.0);
-	//	if (firstmp) {
-	//		//0フレームを編集した場合にはzeroanimはIdentity以外の姿勢になっている
-	//		zeroanim = firstmp->GetWorldMat();
-	//		tramat = pbone->GetParent()->GetNodeMat() * zeroanim;
-	//	}
-	//	else {
-	//		tramat = pbone->GetParent()->GetNodeMat() * zeroanim;
-	//	}
-	//	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
-	//	ChaVector3TransformCoord(&zeropos, &parentpos, &tramat);
+	//else {
+		lSkeletonLimbNodeAttribute1 = FbxSkeleton::Create(pScene, lLimbNodeName1);
+		lSkeletonLimbNodeAttribute1->SetSkeletonType(FbxSkeleton::eLimbNode);
+		lSkeletonLimbNodeAttribute1->Size.Set(1.0);
+		lSkeletonLimbNode1 = FbxNode::Create(pScene, lLimbNodeName1.Buffer());
+		lSkeletonLimbNode1->SetNodeAttribute(lSkeletonLimbNodeAttribute1);
+		if (nodeonload) {
+			lSkeletonLimbNode1->Copy(*nodeonload);
+		}
+		//else {
+		//	pbone->RestoreFbxNodePosture(lSkeletonLimbNode1);
+		//}
+		pbone->RestoreFbxNodePosture(lSkeletonLimbNode1);
 	//}
-	//lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x - parentpos.x, curpos.y - parentpos.y, curpos.z - parentpos.z));
+
+	////lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x - parentpos.x, curpos.y - parentpos.y, curpos.z - parentpos.z));
+	//pbone->RestoreFbxNodePosture(lSkeletonLimbNode1);
 
 
 	parfbxbone->GetSkelNode()->AddChild(lSkeletonLimbNode1);
@@ -3622,8 +3683,8 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 	bool oldbvh = false;
 	FbxDocumentInfo* sceneinfo = pScene->GetSceneInfo();
 	if (sceneinfo) {
-		FbxString oldauther = "OpenRDB user";
-		if (sceneinfo->mAuthor == oldauther) {
+		FbxString oldauthor = "OpenRDB user";
+		if (sceneinfo->mAuthor == oldauthor) {
 			_ASSERT(0);
 			FbxString currentrev1 = "rev. 2.7";
 			FbxString currentrev2 = "rev. 2.8";
@@ -3685,7 +3746,8 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 	if (lPositionFound) {//BindPoseがある場合。bvhはこちらではなくelseの方
 		curbone->SetBindMat(lGlobalPosition);
 
-		ChaMatrix nodemat, nodeanimmat;
+		ChaMatrix nodemat0, nodemat, nodeanimmat;
+		nodemat0.SetIdentity();
 		nodemat.SetIdentity();
 		nodeanimmat.SetIdentity();
 		ChaMatrix localnodemat, localnodeanimmat;
@@ -3697,8 +3759,10 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 			parentnodemat = curbone->GetParent()->GetNodeMat();
 			parentnodeanimmat = curbone->GetParent()->GetNodeAnimMat();
 		}
-		//nodemat = localnodemat * parentnodemat;
+		nodemat0 = localnodemat * parentnodemat;
 		nodeanimmat = localnodeanimmat * parentnodeanimmat;//!!!!!!!!! bindmatと同じ
+		
+		
 		//nodemat = nodeanimmat;
 
 		nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);//!!!!!! nodeanimmatと同じ
