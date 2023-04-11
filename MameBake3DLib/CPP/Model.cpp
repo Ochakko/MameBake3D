@@ -881,34 +881,33 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 	}
 
 	FbxDocumentInfo* sceneinfo = pScene->GetSceneInfo();
-	m_fbxcomment = sceneinfo->mComment;
-	m_oldaxis_atloading = 0;
-	if (forcenewaxisflag == 0){
-		if (sceneinfo){
+	if (sceneinfo) {
+		m_fbxcomment = sceneinfo->mComment;
+		m_oldaxis_atloading = 0;
+		if (forcenewaxisflag == 0) {
 			FbxString oldauthor = "OpenRDB user";
-			if (sceneinfo->mAuthor == oldauthor){
+			if (sceneinfo->mAuthor == oldauthor) {
 				_ASSERT(0);
 				FbxString oldrevision = "rev. 1.0";
-				if (sceneinfo->mRevision == oldrevision){
+				if (sceneinfo->mRevision == oldrevision) {
 					m_oldaxis_atloading = 1;//!!!!!!!!!!!!!!!!!!!!
 				}
 			}
+		}
+		FbxString bvhmark = "BVH animation";
+		if (sceneinfo->mKeywords == bvhmark) {
+			SetFromBvhFlag(true);
+		}
+		else {
+			SetFromBvhFlag(false);
+		}
 
-			FbxString bvhmark = "BVH animation";
-			if (sceneinfo->mKeywords == bvhmark) {
-				SetFromBvhFlag(true);
-			}
-			else {
-				SetFromBvhFlag(false);
-			}
-
-			FbxString nobindposemark = "skinmesh animation, start from no bindpose fbx";
-			if (sceneinfo->mKeywords == nobindposemark) {
-				SetFromNoBindPoseFlag(true);
-			}
-			else {
-				SetFromNoBindPoseFlag(false);
-			}
+		FbxString nobindposemark = "skinmesh animation, start from no bindpose fbx";
+		if (sceneinfo->mKeywords == nobindposemark) {
+			SetFromNoBindPoseFlag(true);
+		}
+		else {
+			SetFromNoBindPoseFlag(false);
 		}
 	}
 
@@ -3347,6 +3346,82 @@ int CModel::CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime s
 	return 0;
 }
 
+void CModel::CalcMeshMatReq(FbxNode* pNode, ChaMatrix* pmeshmat)
+{
+	if (pNode) {
+
+		FbxDouble3 fbxLclPos;
+		FbxDouble3 fbxRotOff;
+		FbxDouble3 fbxRotPiv;
+		FbxDouble3 fbxPreRot;
+		FbxDouble3 fbxLclRot;
+		FbxDouble3 fbxPostRot;
+		FbxDouble3 fbxSclOff;
+		FbxDouble3 fbxSclPiv;
+		FbxDouble3 fbxLclScl;
+		bool fbxrotationActive;
+		EFbxRotationOrder rotationorder;
+
+		FbxTime fbxtime;
+		fbxtime.SetSecondDouble(0.0);
+		fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
+		fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+		fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
+		fbxRotOff = pNode->GetRotationOffset(FbxNode::eSourcePivot);
+		fbxRotPiv = pNode->GetRotationPivot(FbxNode::eSourcePivot);
+		fbxPreRot = pNode->GetPreRotation(FbxNode::eSourcePivot);
+		fbxPostRot = pNode->GetPostRotation(FbxNode::eSourcePivot);
+		fbxSclOff = pNode->GetScalingOffset(FbxNode::eSourcePivot);
+		fbxSclPiv = pNode->GetScalingPivot(FbxNode::eSourcePivot);
+		fbxrotationActive = pNode->GetRotationActive();
+		pNode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+
+
+		ChaMatrix fbxT, fbxRoff, fbxRp, fbxRpre, fbxR, fbxRpost, fbxRpinv, fbxSoff, fbxSp, fbxS, fbxSpinv;
+		fbxT.SetIdentity();
+		fbxRoff.SetIdentity();
+		fbxRp.SetIdentity();
+		fbxRpre.SetIdentity();
+		fbxR.SetIdentity();
+		fbxRpost.SetIdentity();
+		fbxRpinv.SetIdentity();
+		fbxSoff.SetIdentity();
+		fbxSp.SetIdentity();
+		fbxS.SetIdentity();
+		fbxSpinv.SetIdentity();
+
+		fbxT.SetTranslation(ChaVector3((float)fbxLclPos[0], (float)fbxLclPos[1], (float)fbxLclPos[2]));
+		fbxRoff.SetTranslation(ChaVector3((float)fbxRotOff[0], (float)fbxRotOff[1], (float)fbxRotOff[2]));
+		fbxRp.SetTranslation(ChaVector3((float)fbxRotPiv[0], (float)fbxRotPiv[1], (float)fbxRotPiv[2]));
+		fbxRpre.SetXYZRotation(0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
+		fbxR.SetXYZRotation(0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
+		fbxRpost.SetXYZRotation(0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
+		fbxRpinv = ChaMatrixInv(fbxRp);
+		fbxSoff.SetTranslation(ChaVector3((float)fbxSclOff[0], (float)fbxSclOff[1], (float)fbxSclOff[2]));
+		fbxSp.SetTranslation(ChaVector3((float)fbxSclPiv[0], (float)fbxSclPiv[1], (float)fbxSclPiv[2]));
+		fbxS.SetScale(ChaVector3((float)fbxLclScl[0], (float)fbxLclScl[1], (float)fbxLclScl[2]));
+		fbxSpinv = ChaMatrixInv(fbxSp);
+
+		ChaMatrix parentmeshmat;//pmeshmatに対してはparent
+		parentmeshmat = fbxT * fbxRoff * fbxRp * fbxRpre * fbxR * fbxRpost * fbxRpinv * fbxSoff * fbxSp * fbxS * fbxSpinv;
+
+		////0フレームアニメ無し : fbxRとfbxS無し
+		//ChaMatrix parentmeshmat;//pmeshmatに対してはparent
+		//parentmeshmat = fbxT * fbxRoff * fbxRp * fbxRpre * fbxRpost * fbxRpinv * fbxSoff * fbxSp * fbxSpinv;
+		ChaMatrix meshmat;
+
+		meshmat = *pmeshmat * parentmeshmat;
+		*pmeshmat = meshmat;
+
+		//parentをさかのぼって計算
+		if (pNode->GetParent()) {
+			CalcMeshMatReq(pNode->GetParent(), pmeshmat);
+
+		}
+	}
+
+}
+
 
 CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 {
@@ -3372,10 +3447,13 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 	globalnormalmat.SetIdentity();
 	{
 		globalmeshmat.SetIdentity();
-		FbxTime fbxtime;
-		fbxtime.SetSecondDouble(0.0);
-		FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime);
+
+		FbxTime fbxtime0;
+		fbxtime0.SetSecondDouble(0.0);
+		FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
 		globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
+
+		//CalcMeshMatReq(pNode, &globalmeshmat);
 
 		globalnormalmat = globalmeshmat;
 		globalnormalmat.SetTranslation(ChaVector3(0.0f, 0.0f, 0.0f));
@@ -3479,7 +3557,6 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 		//アニメーションカーブが無い場合には　CBone::GetFbxAnimでworldmatをidentityにしないと副作用が出る
 		ChaVector3* curctrl = newobj->GetPointBuf() + i;
 		ChaVector3TransformCoord(curctrl, &tmpp, &globalmeshmat);
-
 
 		////*curctrl = tmpp;
 
@@ -6220,6 +6297,12 @@ int CModel::SetDefaultBonePos(FbxScene* pScene)
 
 	//CBone* secbone = m_topbone->GetChild();
 	CBone* secbone = m_topbone;
+
+	//CBone* hipsbone = 0;
+	//GetHipsBoneReq(m_topbone, &hipsbone);
+	//if (!hipsbone) {
+	//	hipsbone = m_topbone;
+	//}
 
 	FbxAMatrix inimat;
 	inimat.SetIdentity();

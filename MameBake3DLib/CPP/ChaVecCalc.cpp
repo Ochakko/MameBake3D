@@ -568,23 +568,39 @@ void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, Cha
 
 
 	//2021/12/01
-	if (((len1 - 1.0) > 0.0) && ((len1 - 1.0) < 0.00001)) {
+	//fabs : 2023/04/11
+	if ((fabs(len1 - 1.0) > 0.0) && (fabs(len1 - 1.0) < 0.00001)) {
 		len1 = 1.0;//誤差で急に大きさが変わるのを防止
 	}
-	if (len1 < 0.00001) {
-		len1 = 0.00001;//0scale禁止
+	if (fabs(len1) < 0.00001) {
+		if (len1 >= 0.0f) {
+			len1 = 0.00001;//0scale禁止
+		}
+		else {
+			len1 = -0.00001;//0scale禁止
+		}
 	}
-	if (((len2 - 1.0) > 0.0) && ((len2 - 1.0) < 0.00001)) {
+	if ((fabs(len2 - 1.0) > 0.0) && (fabs(len2 - 1.0) < 0.00001)) {
 		len2 = 1.0;//誤差で急に大きさが変わるのを防止
 	}
-	if (len2 < 0.00001) {
-		len2 = 0.00001;//0scale禁止
+	if (fabs(len2) < 0.00001) {
+		if (len2 >= 0.0f) {
+			len2 = 0.00001;//0scale禁止
+		}
+		else {
+			len2 = -0.00001;//0scale禁止
+		}
 	}
-	if (((len3 - 1.0) > 0.0) && ((len3 - 1.0) < 0.00001)) {
+	if ((fabs(len3 - 1.0) > 0.0) && (fabs(len3 - 1.0) < 0.00001)) {
 		len3 = 1.0;//誤差で急に大きさが変わるのを防止
 	}
-	if (len3 < 0.00001) {
-		len3 = 0.00001;//0scale禁止
+	if (fabs(len3) < 0.00001) {
+		if (len3 >= 0.0f) {
+			len3 = 0.00001;//0scale禁止
+		}
+		else {
+			len3 = -0.00001;//0scale禁止
+		}
 	}
 
 
@@ -596,33 +612,45 @@ void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, Cha
 		rmatptr->data[MATI_11] = (float)((double)tmpmat1.data[MATI_11] / len1);
 		rmatptr->data[MATI_12] = (float)((double)tmpmat1.data[MATI_12] / len1);
 		rmatptr->data[MATI_13] = (float)((double)tmpmat1.data[MATI_13] / len1);
+
+		tvecptr->x /= len1;
 	}
 	else {
 		rmatptr->data[MATI_11] = 1.0f;
 		rmatptr->data[MATI_12] = 0.0f;
 		rmatptr->data[MATI_13] = 0.0f;
+
+		tvecptr->x = 0.0f;
 	}
 
 	if (len2 != 0.0f) {
 		rmatptr->data[MATI_21] = (float)((double)tmpmat1.data[MATI_21] / len2);
 		rmatptr->data[MATI_22] = (float)((double)tmpmat1.data[MATI_22] / len2);
 		rmatptr->data[MATI_23] = (float)((double)tmpmat1.data[MATI_23] / len2);
+
+		tvecptr->y /= len2;
 	}
 	else {
 		rmatptr->data[MATI_21] = 0.0f;
 		rmatptr->data[MATI_22] = 1.0f;
 		rmatptr->data[MATI_23] = 0.0f;
+
+		tvecptr->y = 0.0f;
 	}
 
 	if (len3 != 0.0f) {
 		rmatptr->data[MATI_31] = (float)((double)tmpmat1.data[MATI_31] / len3);
 		rmatptr->data[MATI_32] = (float)((double)tmpmat1.data[MATI_32] / len3);
 		rmatptr->data[MATI_33] = (float)((double)tmpmat1.data[MATI_33] / len3);
+
+		tvecptr->z /= len3;
 	}
 	else {
 		rmatptr->data[MATI_31] = 0.0f;
 		rmatptr->data[MATI_32] = 0.0f;
 		rmatptr->data[MATI_33] = 1.0f;
+
+		tvecptr->z = 0.0f;
 	}
 
 

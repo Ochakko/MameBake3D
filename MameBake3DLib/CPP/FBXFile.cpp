@@ -439,27 +439,30 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene, char* fbxdate )
 
     // create scene info
     FbxDocumentInfo* sceneInfo = FbxDocumentInfo::Create(pSdkManager,"SceneInfo");
-	sceneInfo->mTitle = "scene made by MameBake3D";
-	sceneInfo->mSubject = "skinmesh and animation";
-	sceneInfo->mAuthor = "OchakkoLab";
-	//sceneInfo->mRevision = "rev. 2.2";
-	//sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
-	//sceneInfo->mRevision = "rev. 2.5";//since 2022/09/05 about PM11:40
-	//sceneInfo->mRevision = "rev. 2.6";//since 2022/10/31 about PM09:00
-	//sceneInfo->mRevision = "rev. 2.7";//since 2022/11/23 about PM07:00
-	sceneInfo->mRevision = "rev. 2.8";//since 2022/12/30 about PM05:00 for version1.1.0.10
-	//######################################################################
-	//rev変更時は　FbxSetDefaultBonePosReq のoldbvh処理部分も更新する必要有
-	//######################################################################
+	if (sceneInfo) {
+		sceneInfo->mTitle = "scene made by MameBake3D";
+		sceneInfo->mSubject = "skinmesh and animation";
+		sceneInfo->mAuthor = "OchakkoLab";
+		//sceneInfo->mRevision = "rev. 2.2";
+		//sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
+		//sceneInfo->mRevision = "rev. 2.5";//since 2022/09/05 about PM11:40
+		//sceneInfo->mRevision = "rev. 2.6";//since 2022/10/31 about PM09:00
+		//sceneInfo->mRevision = "rev. 2.7";//since 2022/11/23 about PM07:00
+		sceneInfo->mRevision = "rev. 2.8";//since 2022/12/30 about PM05:00 for version1.1.0.10
+		//######################################################################
+		//rev変更時は　FbxSetDefaultBonePosReq のoldbvh処理部分も更新する必要有
+		//######################################################################
 
-	sceneInfo->mKeywords = "BVH animation";
-	//sceneInfo->mComment = "no particular comments required.";
-	sceneInfo->mComment = fbxdate;//!!!!!!!!!!!!!!!//since 2021/05/11 about AM12:00
+		sceneInfo->mKeywords = "BVH animation";
+		//sceneInfo->mComment = "no particular comments required.";
+		sceneInfo->mComment = fbxdate;//!!!!!!!!!!!!!!!//since 2021/05/11 about AM12:00
 
 
-    // we need to add the sceneInfo before calling AddThumbNailToScene because
-    // that function is asking the scene for the sceneInfo.
-    pScene->SetSceneInfo(sceneInfo);
+		// we need to add the sceneInfo before calling AddThumbNailToScene because
+		// that function is asking the scene for the sceneInfo.
+		pScene->SetSceneInfo(sceneInfo);
+	}
+	
 
 //    AddThumbnailToScene(pScene);
 
@@ -564,36 +567,38 @@ bool CreateScene(bool limitdegflag, FbxManager *pSdkManager, FbxScene* pScene, C
 
 	// create scene info
 	FbxDocumentInfo* sceneInfo = FbxDocumentInfo::Create(pSdkManager, "SceneInfo");
-	sceneInfo->mTitle = "scene made by MameBake3D";
-	sceneInfo->mSubject = "skinmesh and animation";
-	sceneInfo->mAuthor = "OchakkoLab";
-	//sceneInfo->mRevision = "rev. 2.2";
-	//sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
-	//sceneInfo->mRevision = "rev. 2.4";//since 2022/07/05 about PM3:00
-	//sceneInfo->mRevision = "rev. 2.5";//since 2022/09/05 about PM11:40
-	//sceneInfo->mRevision = "rev. 2.6";//since 2022/10/31 about PM09:00
-	//sceneInfo->mRevision = "rev. 2.7";//since 2022/11/23 about PM07:00
-	sceneInfo->mRevision = "rev. 2.8";//since 2022/12/30 about PM05:00 for version1.1.0.10
-	//######################################################################
-	//rev変更時は　FbxSetDefaultBonePosReq のoldbvh処理部分も更新する必要有
-	//######################################################################
+	if (sceneInfo) {
+		sceneInfo->mTitle = "scene made by MameBake3D";
+		sceneInfo->mSubject = "skinmesh and animation";
+		sceneInfo->mAuthor = "OchakkoLab";
+		//sceneInfo->mRevision = "rev. 2.2";
+		//sceneInfo->mRevision = "rev. 2.3";//since 2021/05/11 about AM12:00
+		//sceneInfo->mRevision = "rev. 2.4";//since 2022/07/05 about PM3:00
+		//sceneInfo->mRevision = "rev. 2.5";//since 2022/09/05 about PM11:40
+		//sceneInfo->mRevision = "rev. 2.6";//since 2022/10/31 about PM09:00
+		//sceneInfo->mRevision = "rev. 2.7";//since 2022/11/23 about PM07:00
+		sceneInfo->mRevision = "rev. 2.8";//since 2022/12/30 about PM05:00 for version1.1.0.10
+		//######################################################################
+		//rev変更時は　FbxSetDefaultBonePosReq のoldbvh処理部分も更新する必要有
+		//######################################################################
 
 
-	if (pmodel->GetHasBindPose() && (pmodel->GetFromNoBindPoseFlag() == false)) {
-		sceneInfo->mKeywords = "skinmesh animation";
-	}
-	else {
-		sceneInfo->mKeywords = "skinmesh animation, start from no bindpose fbx";
+		if (pmodel->GetHasBindPose() && (pmodel->GetFromNoBindPoseFlag() == false)) {
+			sceneInfo->mKeywords = "skinmesh animation";
+		}
+		else {
+			sceneInfo->mKeywords = "skinmesh animation, start from no bindpose fbx";
+		}
+
+		//sceneInfo->mComment = "no particular comments required.";
+		sceneInfo->mComment = fbxdate;//!!!!!!!!!!!!!!!//since 2021/05/11 about AM12:00
+
+
+		// we need to add the sceneInfo before calling AddThumbNailToScene because
+		// that function is asking the scene for the sceneInfo.
+		pScene->SetSceneInfo(sceneInfo);
 	}
 	
-	//sceneInfo->mComment = "no particular comments required.";
-	sceneInfo->mComment = fbxdate;//!!!!!!!!!!!!!!!//since 2021/05/11 about AM12:00
-
-
-	// we need to add the sceneInfo before calling AddThumbNailToScene because
-	// that function is asking the scene for the sceneInfo.
-	pScene->SetSceneInfo(sceneInfo);
-
 	//    AddThumbnailToScene(pScene);
 
 	FbxNode* lRootNode = pScene->GetRootNode();
@@ -1211,9 +1216,13 @@ BOOL LinkToTopBoneFunc(FbxCluster* lCluster, FbxSkin* lSkin, FbxScene* pScene, F
 
 			if (lCluster) {
 				FbxScene* lScene = pMesh->GetScene();
-				FbxAMatrix MeshMatrix = pMesh->EvaluateGlobalTransform();
+
+				FbxTime fbxtime0;
+				fbxtime0.SetSecondDouble(0.0);
+
+				FbxAMatrix MeshMatrix = pMesh->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
 				lCluster->SetTransformMatrix(MeshMatrix);
-				FbxAMatrix SkelMatrix = lSkel->EvaluateGlobalTransform();
+				FbxAMatrix SkelMatrix = lSkel->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
 				lCluster->SetTransformLinkMatrix(SkelMatrix);
 
 				lSkin->AddCluster(lCluster);
@@ -1374,9 +1383,13 @@ BOOL LinkMeshToSkeletonFunc(FbxCluster* lCluster, CFBXBone* fbxbone, FbxSkin* lS
 
 		if (lCluster) {
 			FbxScene* lScene = pMesh->GetScene();
-			FbxAMatrix MeshMatrix = pMesh->EvaluateGlobalTransform();
+
+			FbxTime fbxtime0;
+			fbxtime0.SetSecondDouble(0.0);
+
+			FbxAMatrix MeshMatrix = pMesh->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
 			lCluster->SetTransformMatrix(MeshMatrix);
-			FbxAMatrix SkelMatrix = lSkel->EvaluateGlobalTransform();
+			FbxAMatrix SkelMatrix = lSkel->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
 			lCluster->SetTransformLinkMatrix(SkelMatrix);
 
 			lSkin->AddCluster(lCluster);
@@ -1711,15 +1724,16 @@ void AnimateSkeleton(bool limitdegflag, FbxScene* pScene, CModel* pmodel)
 		s_firstanimout = 1;
 		//AnimateBoneReq( pmodel->GetFromNoBindPoseFlag(), s_fbxbone, lAnimLayer, curmotid, maxframe );
 
-		//CFBXBone* hipsfbxbone = 0;
-		//FindHipsFbxBoneReq(s_fbxbone, &hipsfbxbone);
-		//if (hipsfbxbone) {
-		//	AnimateBoneReq(limitdegflag, hipsfbxbone, lAnimLayer, curmotid, maxframe);
-		//}
-		//else {
-		//	AnimateBoneReq(limitdegflag, s_fbxbone, lAnimLayer, curmotid, maxframe);
-		//}
-		AnimateBoneReq(limitdegflag, s_fbxbone, lAnimLayer, curmotid, maxframe);
+		CFBXBone* hipsfbxbone = 0;
+		FindHipsFbxBoneReq(s_fbxbone, &hipsfbxbone);
+		if (hipsfbxbone) {
+			AnimateBoneReq(limitdegflag, hipsfbxbone, lAnimLayer, curmotid, maxframe);
+		}
+		else {
+			AnimateBoneReq(limitdegflag, s_fbxbone, lAnimLayer, curmotid, maxframe);
+		}
+
+		//AnimateBoneReq(limitdegflag, s_fbxbone, lAnimLayer, curmotid, maxframe);//<--- transform nodeの分　保存の度に回る
 
 
 		pScene->AddMember(lAnimStack);//!!!!!!!!
@@ -1891,7 +1905,16 @@ int WriteBindPose(FbxScene* pScene, int bvhflag)
 		_ASSERT( 0 );
 	}
 
-	WriteBindPoseReq( s_fbxbone, lPose );
+
+	CFBXBone* hipsfbxbone = 0;
+	FindHipsFbxBoneReq(s_fbxbone, &hipsfbxbone);
+	if (hipsfbxbone) {
+		WriteBindPoseReq(hipsfbxbone, lPose);
+	}
+	else {
+		WriteBindPoseReq(s_fbxbone, lPose);
+	}
+	//WriteBindPoseReq(s_fbxbone, lPose);
 
 	pScene->AddPose(lPose);
 
@@ -2666,6 +2689,11 @@ CFBXBone* CreateFBXBone(FbxScene* pScene, CModel* pmodel )
 	s_fbxbonenum = 0;
 
 	CBone* topj = pmodel->GetTopBone();
+	//CBone* topj = 0;
+	//pmodel->GetHipsBoneReq(pmodel->GetTopBone(), &topj);
+	//if (!topj) {
+	//	topj = pmodel->GetTopBone();
+	//}
 	if( !topj ){
 		_ASSERT( 0 );
 		return 0;
@@ -3092,9 +3120,13 @@ void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene
 
 		if (lCluster) {
 			FbxScene* lScene = pMesh->GetScene();
-			FbxAMatrix MeshMatrix = pMesh->EvaluateGlobalTransform();
+
+			FbxTime fbxtime0;
+			fbxtime0.SetSecondDouble(0.0);
+
+			FbxAMatrix MeshMatrix = pMesh->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
 			lCluster->SetTransformMatrix(MeshMatrix);
-			FbxAMatrix SkelMatrix = lSkel->EvaluateGlobalTransform();
+			FbxAMatrix SkelMatrix = lSkel->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
 			lCluster->SetTransformLinkMatrix(SkelMatrix);
 
 			lSkin->AddCluster(lCluster);
@@ -3764,9 +3796,8 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 		
 		
 		//nodemat = nodeanimmat;
-
 		nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);//!!!!!! nodeanimmatと同じ
-
+		//nodemat = nodemat0;
 
 		//curbone->SetPositionFound(lPositionFound);//!!!
 		curbone->SetPositionFound(true);//!!! 2022/07/30 bone markを表示するためtrueに。
