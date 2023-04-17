@@ -1407,18 +1407,6 @@ public: //accesser
 	EFbxRotationOrder GetFbxRotationOrder() {
 		return m_rotationorder;
 	}
-	void SetOffsetMat(ChaMatrix srcmat) {
-		m_offsetmat = srcmat;
-	}
-	ChaMatrix GetOffsetMat() {
-		return m_offsetmat;
-	}
-	void SetHasMotionCurve(bool srcflag) {
-		m_hasmotioncurve = srcflag;
-	}
-	bool GetHasMotionCurve() {
-		return m_hasmotioncurve;
-	}
 
 
 private:
@@ -1584,8 +1572,6 @@ private:
 	std::vector<IKROTREC> m_ikrotrec_u;
 	std::vector<IKROTREC> m_ikrotrec_v;
 
-	ChaMatrix m_offsetmat;
-	bool m_hasmotioncurve;
 
 	CBone* m_parent;
 	CBone* m_child;

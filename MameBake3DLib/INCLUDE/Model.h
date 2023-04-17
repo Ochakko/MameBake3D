@@ -818,7 +818,6 @@ private:
 	void WaitLoadFbxAnimFinished();
 	int PostLoadFbxAnim(int srcmotid);
 	void PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone);
-	void PostLoadNullNodeReq(CBone* srcbone, int srcmotid, double animlen);
 
 	//void MakeBoneReq( CBone* parentbone, CMQOFace* curface, ChaVector3* pointptr, int broflag, int* errcntptr );
 
@@ -847,18 +846,17 @@ private:
 	int CreateFBXMeshReq(FbxNode* pNode);
 	int CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 
-
-	void CalcMeshMatReq(FbxNode* pNode, ChaMatrix* pmeshmat);
 	CMQOObject* GetFBXMesh(FbxNode* pNode, FbxNodeAttribute* pAttrib);
 	int GetFBXShape(FbxMesh* pMesh, CMQOObject* curobj, FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 	//int ComputeShapeDeformation(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename );
 	//int ComputeShapeDeformation2(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename );
 
 	int SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* material );
-	void CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode, FbxNode* parentbonenode);
+	void CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode );
 	//void CreateExtendBoneReq(CBone* srcbone);
-	int GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNode* curnode, FbxNode* parnode );
+	int GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, FbxNode* curnode, FbxNode* parnode );
 	CBone* CreateNewFbxBone(FbxNodeAttribute::EType type, FbxNode* curnode, FbxNode* parnode);
+
 
 	int CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncachebatchflag );
 	//void CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng );
@@ -1131,8 +1129,6 @@ public: //accesser
 		return m_topbone;
 	};
 	void GetHipsBoneReq(CBone* srcbone, CBone** dstppbone);
-	bool IncludeRootOrReference(FbxNode* ptopnode);
-	void GetRootOrReferenceReq(FbxNode* srcnode, FbxNode** dstppnode);
 
 
 	CBtObject* GetTopBt(){

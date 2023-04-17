@@ -310,14 +310,6 @@ public:
 		dstmap = m_shapevert;
 	};
 
-	ChaMatrix GetMeshMat()
-	{
-		return m_meshmat;
-	}
-	void SetMeshMat(ChaMatrix srcmat)
-	{
-		m_meshmat = srcmat;
-	}
 
 private:
 	int m_objfrom;
@@ -397,7 +389,6 @@ private:
 	//fbx GetFBXMesh()
 	int m_normalmappingmode;//0:eByPolygonVertex, 1:eByControlPoint
 
-	ChaMatrix m_meshmat;
 
 };
 

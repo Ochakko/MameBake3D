@@ -205,6 +205,7 @@
     <ClCompile Include="..\CPP\mqomaterial.cpp" />
     <ClCompile Include="..\CPP\mqoobject.cpp" />
     <ClCompile Include="..\CPP\MySprite.cpp" />
+    <ClCompile Include="..\CPP\NodeOnLoad.cpp" />
     <ClCompile Include="..\CPP\OrgWindow.cpp" />
     <ClCompile Include="..\CPP\polymesh3.cpp" />
     <ClCompile Include="..\CPP\polymesh4.cpp" />
@@ -574,6 +575,7 @@
     <ClInclude Include="..\INCLUDE\mqomaterial.h" />
     <ClInclude Include="..\INCLUDE\mqoobject.h" />
     <ClInclude Include="..\INCLUDE\MySprite.h" />
+    <ClInclude Include="..\INCLUDE\NodeOnLoad.h" />
     <ClInclude Include="..\INCLUDE\OrgWindow.h" />
     <ClInclude Include="..\INCLUDE\polymesh3.h" />
     <ClInclude Include="..\INCLUDE\polymesh4.h" />

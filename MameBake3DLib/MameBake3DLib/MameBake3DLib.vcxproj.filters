@@ -204,6 +204,9 @@
     <ClCompile Include="..\DXUT\Core\WICTextureLoader.cpp">
       <Filter>DXUT_WIC_DDS</Filter>
     </ClCompile>
+    <ClCompile Include="..\CPP\NodeOnLoad.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h">
@@ -1273,6 +1276,9 @@
     </ClInclude>
     <ClInclude Include="..\DXUT\Core\WICTextureLoader.h">
       <Filter>DXUT_WIC_DDS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\NodeOnLoad.h">
+      <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
