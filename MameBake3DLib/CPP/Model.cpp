@@ -74,6 +74,9 @@
 #include <ThreadingLoadFbx.h>
 #include <ThreadingUpdateMatrix.h>
 
+#include <NodeOnLoad.h>
+
+
 #include <DXUT.h>
 #include <io.h>
 
@@ -465,6 +468,10 @@ CModel::~CModel()
 int CModel::InitParams()
 {
 	m_iktargetbonevec.clear();
+	m_nodeonload = 0;
+	m_node2mqoobj.clear();
+	m_node2bone.clear();
+
 
 	m_materialdisprate = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);//diffuse, specular, emissive, ambient
 	m_currentanimlayer = 0;
@@ -584,6 +591,9 @@ int CModel::DestroyObjs()
 
 	DestroyBtObject();
 
+
+	DestroyNodeOnLoadReq(m_nodeonload);
+	m_nodeonload = 0;
 
 
 	InitParams();
@@ -881,34 +891,33 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 	}
 
 	FbxDocumentInfo* sceneinfo = pScene->GetSceneInfo();
-	m_fbxcomment = sceneinfo->mComment;
-	m_oldaxis_atloading = 0;
-	if (forcenewaxisflag == 0){
-		if (sceneinfo){
-			FbxString oldauther = "OpenRDB user";
-			if (sceneinfo->mAuthor == oldauther){
+	if (sceneinfo) {
+		m_fbxcomment = sceneinfo->mComment;
+		m_oldaxis_atloading = 0;
+		if (forcenewaxisflag == 0) {
+			FbxString oldauthor = "OpenRDB user";
+			if (sceneinfo->mAuthor == oldauthor) {
 				_ASSERT(0);
 				FbxString oldrevision = "rev. 1.0";
-				if (sceneinfo->mRevision == oldrevision){
+				if (sceneinfo->mRevision == oldrevision) {
 					m_oldaxis_atloading = 1;//!!!!!!!!!!!!!!!!!!!!
 				}
 			}
+		}
+		FbxString bvhmark = "BVH animation";
+		if (sceneinfo->mKeywords == bvhmark) {
+			SetFromBvhFlag(true);
+		}
+		else {
+			SetFromBvhFlag(false);
+		}
 
-			FbxString bvhmark = "BVH animation";
-			if (sceneinfo->mKeywords == bvhmark) {
-				SetFromBvhFlag(true);
-			}
-			else {
-				SetFromBvhFlag(false);
-			}
-
-			FbxString nobindposemark = "skinmesh animation, start from no bindpose fbx";
-			if (sceneinfo->mKeywords == nobindposemark) {
-				SetFromNoBindPoseFlag(true);
-			}
-			else {
-				SetFromNoBindPoseFlag(false);
-			}
+		FbxString nobindposemark = "skinmesh animation, start from no bindpose fbx";
+		if (sceneinfo->mKeywords == nobindposemark) {
+			SetFromNoBindPoseFlag(true);
+		}
+		else {
+			SetFromNoBindPoseFlag(false);
 		}
 	}
 
@@ -964,6 +973,13 @@ _ASSERT(m_bonelist[0]);
 	ChaMatrix firstmeshmat;
 	firstmeshmat.SetIdentity();
 	CreateFBXMeshReq(pRootNode);
+
+
+	//jointとmeshを読み込んだ後で
+	m_nodeonload = new CNodeOnLoad(pRootNode);
+	CreateNodeOnLoadReq(m_nodeonload);
+
+
 
 	DbgOut(L"fbx bonenum %d\r\n", (int)m_bonelist.size());
 _ASSERT(m_bonelist[0]);
@@ -3271,6 +3287,125 @@ int CModel::AddDefMaterial()
 	return 0;
 }
 
+void CModel::CreateNodeOnLoadReq(CNodeOnLoad* newnodeonload)
+{
+	if (!newnodeonload) {
+		_ASSERT(0);
+		return;
+	}
+
+	FbxNode* pNode = newnodeonload->GetNode();
+
+	if (!pNode) {
+		_ASSERT(0);
+		return;
+	}
+	const char* srcname = pNode->GetName();
+
+
+	FbxNodeAttribute* pAttrib = pNode->GetNodeAttribute();
+	if (pAttrib) {
+		FbxNodeAttribute::EType type = (FbxNodeAttribute::EType)(pAttrib->GetAttributeType());
+
+		switch (type)
+		{
+		case FbxNodeAttribute::eMesh:
+		{
+			newnodeonload->SetType(NOL_MESH);
+			map<FbxNode*, CMQOObject*>::iterator itrmqoobj;
+			itrmqoobj = m_node2mqoobj.find(pNode);
+			if (itrmqoobj != m_node2mqoobj.end()) {
+				newnodeonload->SetMqoObject(itrmqoobj->second);
+			}
+			else {
+				_ASSERT(0);
+				newnodeonload->SetMqoObject(0);
+			}
+		}
+			break;
+		case FbxNodeAttribute::eSkeleton:
+		{
+			newnodeonload->SetType(NOL_SKELETON);
+			map<FbxNode*, CBone*>::iterator itrbone;
+			itrbone = m_node2bone.find(pNode);
+			if (itrbone != m_node2bone.end()) {
+				newnodeonload->SetBone(itrbone->second);
+			}
+			else {
+				_ASSERT(0);
+				newnodeonload->SetBone(0);
+			}
+		}
+			break;
+		case FbxNodeAttribute::eNull:
+		{
+			newnodeonload->SetType(NOL_NULL);
+			map<FbxNode*, CBone*>::iterator itrbone;
+			itrbone = m_node2bone.find(pNode);
+			if (itrbone != m_node2bone.end()) {
+				newnodeonload->SetBone(itrbone->second);
+			}
+			else {
+				//_ASSERT(0);
+				newnodeonload->SetBone(0);
+			}
+		}
+			break;
+		default:
+			newnodeonload->SetType(NOL_OTHER);
+			break;
+		}
+	}
+	else {
+		newnodeonload->SetType(NOL_NULL);
+		map<FbxNode*, CBone*>::iterator itrbone;
+		itrbone = m_node2bone.find(pNode);
+		if (itrbone != m_node2bone.end()) {
+			newnodeonload->SetBone(itrbone->second);
+		}
+		else {
+			//_ASSERT(0);
+			newnodeonload->SetBone(0);
+		}
+	}
+
+
+	int childNodeNum;
+	childNodeNum = pNode->GetChildCount();
+	for (int i = 0; i < childNodeNum; i++)
+	{
+		FbxNode* pChild = pNode->GetChild(i);  // 子ノードを取得
+		if (pChild) {
+			CNodeOnLoad* childnodeonload = new CNodeOnLoad(pChild);
+			newnodeonload->AddChildOnLoad(childnodeonload);
+			CreateNodeOnLoadReq(childnodeonload);
+		}
+	}
+}
+
+void CModel::DestroyNodeOnLoadReq(CNodeOnLoad* delnodeonload)
+{
+	if (delnodeonload) {
+		vector<CNodeOnLoad*> savechild;
+		savechild.clear();
+		int childnum = delnodeonload->GetChildNum();
+		int childno;
+		for (childno = 0; childno < childnum; childno++) {
+			CNodeOnLoad* pchild = delnodeonload->GetChild(childno);
+			savechild.push_back(pchild);
+		}
+
+		delete delnodeonload;
+
+
+		for (childno = 0; childno < childnum; childno++) {
+			CNodeOnLoad* pchild = savechild[childno];
+			if (pchild) {
+				DestroyNodeOnLoadReq(pchild);
+			}
+		}
+	}
+}
 
 int CModel::CreateFBXMeshReq( FbxNode* pNode)
 {
@@ -3366,13 +3501,25 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 
 
 
-	ChaMatrix globalmeshmat;
+	ChaMatrix globalmeshmat;//頂点用
+	ChaMatrix globalnormalmat;//法線用
 	globalmeshmat.SetIdentity();
-	FbxTime fbxtime;
-	fbxtime.SetSecondDouble(0.0);
-	FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime);
-	globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
+	globalnormalmat.SetIdentity();
+	{
+		globalmeshmat.SetIdentity();
 
+		FbxTime fbxtime0;
+		fbxtime0.SetSecondDouble(0.0);
+		FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
+		globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
+
+		//CalcMeshMatReq(pNode, &globalmeshmat);
+
+		globalnormalmat = globalmeshmat;
+		globalnormalmat.SetTranslation(ChaVector3(0.0f, 0.0f, 0.0f));
+		globalnormalmat.data[MATI_44] = 0.0f;
+	}
+	
 
 
 	CMQOObject* newobj = new CMQOObject();
@@ -3384,6 +3531,8 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 	newobj->SetObjFrom( OBJFROM_FBX );
 	newobj->SetName( (char*)pNode->GetName() );
 	m_object[ newobj->GetObjectNo() ] = newobj;
+	m_node2mqoobj[pNode] = newobj;
+
 
 	WCHAR wname[256] = L"none for debug";
 	//ZeroMemory( wname, sizeof( WCHAR ) * 256 );
@@ -3452,6 +3601,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 	// コピー
 	newobj->SetVertex( controlNum );
 	newobj->SetPointBuf( (ChaVector3*)malloc( sizeof( ChaVector3 ) * controlNum ) );
+	newobj->SetMeshMat(globalmeshmat);
 	//for ( int i = 0; i < controlNum; ++i ) {
 	for (int i = 0; i < controlNum; i++) {
 		ChaVector3 tmpp;
@@ -3624,9 +3774,13 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 			  //for ( int i = 0; i < normalNum; ++i ) {
 				for (int i2 = 0; i2 < normalNum; i2++) {
 					ChaVector3* curn = newobj->GetNormal() + i2;
-					curn->x = (float)normalElem->GetDirectArray().GetAt( i2 )[ 0 ];
-					curn->y = (float)normalElem->GetDirectArray().GetAt( i2 )[ 1 ];
-					curn->z = (float)normalElem->GetDirectArray().GetAt( i2 )[ 2 ];
+					ChaVector3 tmpn;
+					tmpn.x = (float)normalElem->GetDirectArray().GetAt( i2 )[ 0 ];
+					tmpn.y = (float)normalElem->GetDirectArray().GetAt( i2 )[ 1 ];
+					tmpn.z = (float)normalElem->GetDirectArray().GetAt( i2 )[ 2 ];
+
+					ChaVector3TransformCoord(curn, &tmpn, &globalnormalmat);
+
 				}
 		   }else if ( refMode == FbxLayerElement::eIndexToDirect ){
 //DbgOut( L"GetFBXMesh : %s : ref eIndexToDirect\r\n", wname );
@@ -3642,9 +3796,12 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 				    FbxVector4 lCurrentNormal;
 					lCurrentNormal = normalElem->GetDirectArray().GetAt(lNormalIndex);
 					ChaVector3* curn = newobj->GetNormal() + lIndex;
-					curn->x = static_cast<float>(lCurrentNormal[0]);
-					curn->y = static_cast<float>(lCurrentNormal[1]);
-					curn->z = static_cast<float>(lCurrentNormal[2]);
+					ChaVector3 tmpn;
+					tmpn.x = static_cast<float>(lCurrentNormal[0]);
+					tmpn.y = static_cast<float>(lCurrentNormal[1]);
+					tmpn.z = static_cast<float>(lCurrentNormal[2]);
+
+					ChaVector3TransformCoord(curn, &tmpn, &globalnormalmat);
 				}
 		   }
 		} else if ( mappingMode == FbxLayerElement::eByControlPoint ) {
@@ -3663,9 +3820,12 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 				//for ( int i = 0; i < normalNum; ++i ) {
 				for (int i2 = 0; i2 < normalNum; i2++) {
 					ChaVector3* curn = newobj->GetNormal() + i2;
-					curn->x = (float)normalElem->GetDirectArray().GetAt( i2 )[ 0 ];
-					curn->y = (float)normalElem->GetDirectArray().GetAt( i2 )[ 1 ];
-					curn->z = (float)normalElem->GetDirectArray().GetAt( i2 )[ 2 ];
+					ChaVector3 tmpn;
+					tmpn.x = (float)normalElem->GetDirectArray().GetAt( i2 )[ 0 ];
+					tmpn.y = (float)normalElem->GetDirectArray().GetAt( i2 )[ 1 ];
+					tmpn.z = (float)normalElem->GetDirectArray().GetAt( i2 )[ 2 ];
+
+					ChaVector3TransformCoord(curn, &tmpn, &globalnormalmat);
 				}
 		   }else{
 //DbgOut( L"GetFBXMesh : %s : ref %d\r\n", wname, refMode );
@@ -4007,6 +4167,7 @@ void CModel::CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode
 //	EFbxRotationOrder lRotationOrder0 = eEulerZXY;
 //	EFbxRotationOrder lRotationOrder1 = eEulerXYZ;
 
+	const char* nodename = pNode->GetName();
 	FbxNodeAttribute *pAttrib = pNode->GetNodeAttribute();
 	if ( pAttrib ) {
 		FbxNodeAttribute::EType type = pAttrib->GetAttributeType();
@@ -4210,6 +4371,8 @@ int CModel::GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAt
 		return 1;
 	}
 
+
+
 	CBone* tmptopbone = m_topbone;
 	CBone* newbone = 0;
 	if (!m_topbone && (strstr(curnode->GetName(), "Root") == 0) && (strstr(curnode->GetName(), "Reference") == 0)) {
@@ -4217,8 +4380,10 @@ int CModel::GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAt
 		tmptopbone = CreateNewFbxBone(FbxNodeAttribute::eSkeleton, 0, 0);
 	}
 
+
 	//通常のボーン　または　名前にRoot, Referenceが入っている場合のボーン　作成
 	newbone = CreateNewFbxBone(type, curnode, parnode);
+	m_node2bone[curnode] = newbone;
 
 	return 0;
 }
@@ -5272,7 +5437,12 @@ int CModel::GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode )
 
 				//const char* bonename = ((FbxNode*)cluster->GetLink())->GetName();
 				char bonename2[256];
-				strcpy_s(bonename2, 256, ((FbxNode*)cluster->GetLink())->GetName());
+				FbxNode* clusterlink = (FbxNode*)cluster->GetLink();
+				if (!clusterlink) {
+					_ASSERT(0);
+					continue;
+				}
+				strcpy_s(bonename2, 256, clusterlink->GetName());
 				TermJointRepeats(bonename2);
 				//			int namelen = (int)strlen( clustername );
 				WCHAR wname[256];
@@ -16203,6 +16373,42 @@ int CModel::InitMP(bool limitdegflag, CBone* curbone, int srcmotid, double curfr
 	
 
 	return 0;
+}
+
+
+bool CModel::IncludeRootOrReference(FbxNode* ptopnode)
+{
+	FbxNode* foundnode = 0;
+	GetRootOrReferenceReq(ptopnode, &foundnode);
+	if (foundnode != 0) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+void CModel::GetRootOrReferenceReq(FbxNode* srcnode, FbxNode** dstppnode)
+{
+	if (srcnode && dstppnode && !(*dstppnode)) {
+
+		if ((strstr(srcnode->GetName(), "Root") != 0) || (strstr(srcnode->GetName(), "Reference") != 0)) {
+			*dstppnode = srcnode;
+			return;
+		}
+
+		if (!(*dstppnode)) {
+			int childNodeNum;
+			childNodeNum = srcnode->GetChildCount();
+			for (int i = 0; i < childNodeNum; i++)
+			{
+				FbxNode* pChild = srcnode->GetChild(i);  // 子ノードを取得
+				if (pChild) {
+					GetRootOrReferenceReq(pChild, dstppnode);
+				}
+			}
+		}
+	}
+
 }
 
 void CModel::GetHipsBoneReq(CBone* srcbone, CBone** dstppbone)

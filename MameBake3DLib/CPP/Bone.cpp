@@ -6521,18 +6521,38 @@ ChaVector3 CBone::CalcFbxScaleAnim(bool limitdegflag, int srcmotid, double srcfr
 	ChaMatrix rmat;
 	ChaVector3 iniscale = ChaVector3(1.0f, 1.0f, 1.0f);
 
+
 	ChaMatrix wmanim = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-	ChaMatrix fbxwm = GetNodeMat() * wmanim;
+	ChaMatrix fbxwm;
+	if (GetType() != FBXBONE_NULL) {
+		//fbxwm = GetNodeMat() * wmanim;
+		fbxwm = wmanim;
+	}
+	else {
+		fbxwm = wmanim;
+	}
+	
 	ChaMatrix parentfbxwm;
 	parentfbxwm.SetIdentity();
 	if (GetParent()) {
 		ChaMatrix parentwmanim = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-		parentfbxwm = GetParent()->GetNodeMat() * parentwmanim;
+		if (GetParent()->GetType() != FBXBONE_NULL) {
+			//parentfbxwm = GetParent()->GetNodeMat() * parentwmanim;
+			parentfbxwm = parentwmanim;
+		}
+		else {
+			//parentfbxwm.SetIdentity();
+			//parentfbxwm = GetParent()->GetNodeMat();
+			parentfbxwm = parentwmanim;
+		}
 	}
 
 	ChaMatrix localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
 
 	GetSRTMatrix(localfbxmat, &svec, &rmat, &tvec);
+
+	
+
 	return svec;
 }
 
@@ -6696,18 +6716,50 @@ ChaVector3 CBone::CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe)
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
 	ChaMatrix wmanim = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-	ChaMatrix fbxwm = GetNodeMat() * wmanim;
+	ChaMatrix fbxwm;
+	//if (GetType() != FBXBONE_NULL) {
+	//	fbxwm = GetNodeMat() * wmanim;
+	//}
+	//else {
+	//	//fbxwm.SetIdentity();
+	//	fbxwm = GetNodeMat();
+	//}
+	fbxwm = GetNodeMat() * wmanim;//eNULL自体のアニメーション書き出しは　しないことに
+
 	ChaMatrix parentfbxwm;
 	parentfbxwm.SetIdentity();
 	if (GetParent()) {
 		ChaMatrix parentwmanim = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-		parentfbxwm = GetParent()->GetNodeMat() * parentwmanim;
+		if (GetParent()->GetType() != FBXBONE_NULL) {//書き出し中にparentがeNullの場合はある
+			parentfbxwm = GetParent()->GetNodeMat() * parentwmanim;
+		}
+		else {
+			//parentfbxwm.SetIdentity();
+			parentfbxwm = GetParent()->GetNodeMat();
+		}
 	}
 
 	ChaMatrix localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
 
-	ChaVector3 fbxtra = ChaVector3(localfbxmat.data[MATI_41], localfbxmat.data[MATI_42], localfbxmat.data[MATI_43]);
-	return fbxtra;
+	ChaVector3 svec, tvec;
+	ChaMatrix rmat;
+	GetSRTMatrix(localfbxmat, &svec, &rmat, &tvec);
+
+	ChaVector3 rettvec = tvec;
+	if (svec.x != 0.0f) {
+		rettvec.x /= svec.x;
+	}
+	if (svec.y != 0.0f) {
+		rettvec.y /= svec.y;
+	}
+	if (svec.z != 0.0f) {
+		rettvec.z /= svec.z;
+	}
+
+	return rettvec;
+
+	//ChaVector3 fbxtra = ChaVector3(localfbxmat.data[MATI_41], localfbxmat.data[MATI_42], localfbxmat.data[MATI_43]);
+	//return fbxtra;
 
 }
 
@@ -8508,8 +8560,28 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 				strChannel = FBXSDK_CURVENODE_COMPONENT_X;
 				FbxAnimCurve* lCurve;
 				bool createflag = false;
+
 				lCurve = pNode->LclTranslation.GetCurve(panimlayer, strChannel, createflag);
-				if (lCurve) {
+
+				//if ((GetType() == FBXBONE_NULL) && (!lCurve)) {
+				if (GetType() == FBXBONE_NULL) {//Curveの有無に関係なくNullの場合
+
+					if (GetChild()) {
+						//###################################################################
+						//transform nodeのnull
+						//NodeMatに姿勢はセットされているが　アニメーションとしてはIdentity
+						//###################################################################
+						globalmat.SetIdentity();
+					}
+					else {
+						//######################
+						//endjointのnull
+						//######################
+						globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
+					}
+					
+				}
+				else if (lCurve) {
 					globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
 				}
 				else {
@@ -9004,9 +9076,9 @@ void CBone::SaveFbxNodePosture(FbxNode* pNode)
 
 		FbxTime fbxtime;
 		fbxtime.SetSecondDouble(0.0);
-		m_fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);
-		m_fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);
-		m_fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);
+		m_fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
+		m_fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+		m_fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
 
 		m_fbxRotOff = pNode->GetRotationOffset(FbxNode::eSourcePivot);
 		m_fbxRotPiv = pNode->GetRotationPivot(FbxNode::eSourcePivot);

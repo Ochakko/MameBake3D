@@ -10,6 +10,8 @@
 
 #include <ChaVecCalc.h>
 
+#include <vector>
+
 enum {
 	NOL_NONE,
 	NOL_NULL,
@@ -64,14 +66,32 @@ public:
 	{
 		return m_mqoobject;
 	}
+	void AddChildOnLoad(CNodeOnLoad* srcchild)
+	{
+		m_childonload.push_back(srcchild);
+	}
+	int GetChildNum()
+	{
+		return (int)m_childonload.size();
+	}
+	CNodeOnLoad* GetChild(int srcindex)
+	{
+		int childnum = GetChildNum();
+		if ((srcindex >= 0) && (srcindex < childnum)) {
+			return m_childonload[srcindex];
+		}
+		else {
+			_ASSERT(0);
+			return 0;
+		}
+	}
 private:
 	int m_type;
 	FbxNode* m_pnode;
 	CBone* m_bone;
 	CMQOObject* m_mqoobject;
 
-	//chain‚à•K—v
-
+	std::vector<CNodeOnLoad*> m_childonload;
 };
 
 

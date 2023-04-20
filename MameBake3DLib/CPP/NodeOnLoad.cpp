@@ -54,6 +54,7 @@ void CNodeOnLoad::InitParams()
 	m_pnode = 0;
 	m_bone = 0;
 	m_mqoobject = 0;
+	m_childonload.clear();
 }
 void CNodeOnLoad::DestroyObjes()
 {

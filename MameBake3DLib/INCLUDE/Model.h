@@ -22,7 +22,6 @@
 #include <UndoMotion.h>
 
 
-
 //using namespace std;
 
 class CMQOMaterial;
@@ -37,6 +36,7 @@ class CRigidElem;
 class CEditRange;
 class CThreadingLoadFbx;
 class CThreadingUpdateMatrix;
+class CNodeOnLoad;
 
 typedef struct funcmpparams
 {
@@ -845,6 +845,9 @@ private:
 	//int InitFBXManager( FbxManager** ppSdkManager, FbxImporter** ppImporter, FbxScene** ppScene, char* utfname );
 	int CreateFBXMeshReq(FbxNode* pNode);
 	int CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
+	void CreateNodeOnLoadReq(CNodeOnLoad* newnodeonload);
+	void DestroyNodeOnLoadReq(CNodeOnLoad* delnodeonload);
+
 
 	CMQOObject* GetFBXMesh(FbxNode* pNode, FbxNodeAttribute* pAttrib);
 	int GetFBXShape(FbxMesh* pMesh, CMQOObject* curobj, FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
@@ -1129,6 +1132,8 @@ public: //accesser
 		return m_topbone;
 	};
 	void GetHipsBoneReq(CBone* srcbone, CBone** dstppbone);
+	bool IncludeRootOrReference(FbxNode* ptopnode);
+	void GetRootOrReferenceReq(FbxNode* srcnode, FbxNode** dstppnode);
 
 
 	CBtObject* GetTopBt(){
@@ -1497,7 +1502,10 @@ public: //accesser
 	{
 		m_materialdisprate.w = srcval;
 	}
-
+	CNodeOnLoad* GetNodeOnLoad()
+	{
+		return m_nodeonload;
+	}
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];
@@ -1613,6 +1621,9 @@ private:
 
 	ChaVector4 m_materialdisprate;//diffuse, specular, emissive, ambient
 
+	CNodeOnLoad* m_nodeonload;//CNodeOnLoad of Root Node.
+	std::map<FbxNode*, CMQOObject*> m_node2mqoobj;
+	std::map<FbxNode*, CBone*> m_node2bone;
 
 	int m_loadbonecount;//GetFbxAnim—p
 };
