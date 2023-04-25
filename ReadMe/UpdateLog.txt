@@ -5,7 +5,10 @@
 		モーション以外は　出来るだけ同じように書き出すことに
 
 	FbxSdk2020.3.1 --> 2020.3.2へバージョンアップ
-	
+		
+	法線とUVの読み込み修正
+		Maya2024で出力した2020.3.2のfbxを読み込んでテストOK
+
 	リターゲット設定ファイル追加
 		Test/RetargetSettingFileExample/Rokoko_bvh.rtg
 		Test/RetargetSettingFileExample/Hunt2Hunt.rtg
