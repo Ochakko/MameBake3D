@@ -971,37 +971,17 @@ public: //accesser
 	CModel* GetParModel(){ return m_parmodel; };
 	//void SetParModel( CModel* srcpar ){ m_parmodel = srcpar; };//parmodel‚²‚Æ‚Ìm_boneno‚É’ˆÓIII
 
-	CBone* GetParent(){ return m_parent; };
+	
+	CBone* GetParent(bool excludenullflag = true);
+	CBone* GetChild(bool excludenullflag = true);
+	CBone* GetBrother(bool excludenullflag = true);
+	CBone* GetSister(bool excludenullflag = true);
+
+
 	void SetParent( CBone* srcpar ){ m_parent = srcpar; };
-
-	CBone* GetChild(){ return m_child; };
 	void SetChild( CBone* srcchil ){ m_child = srcchil; };
-
-	CBone* GetBrother(){ return m_brother; };
 	void SetBrother( CBone* srcbro ){ m_brother = srcbro; };
-	CBone* GetSister() {
-		CBone* parbone = GetParent();
-		if (parbone) {
-			CBone* firstbrobone = parbone->GetChild();
-			CBone* nextbone = firstbrobone;
-			while (nextbone) {
-				if (nextbone) {
-					if (nextbone->GetBrother() == this) {
-						return nextbone;//!!!!!!!!!!!!
-					}
-					nextbone = nextbone->GetBrother();
-				}
-				else {
-					return 0;
-				}
-			}
-			return 0;
-		}
-		else {
-			return 0;
-		}
-		return 0;
-	};
+
 	bool IsBranchBone()
 	{
 		CBone* chksister = GetSister();

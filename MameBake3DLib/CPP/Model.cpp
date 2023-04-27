@@ -2464,13 +2464,20 @@ int CModel::FillTimeLine(OrgWinGUI::OWP_Timeline& timeline, map<int, int>& linen
 		CBone* curbone = itrbone->second;
 		_ASSERT( curbone );
 
-		if (curbone) {
+		//if (curbone) {
+		if (curbone && (curbone->GetType() != FBXBONE_NULL) && (strstr(curbone->GetBoneName(), "Root") == 0)) {//2023/04/27
+			//eNullはTreeViewに表示しない　Root, RootNodeもTreeViewに表示しない　TreeViewに表示しないものにはモーションも付けない
 
 			FillTimeLineOne(curbone, lineno,
 				timeline,
 				lineno2boneno, boneno2lineno);
 
 			lineno++;
+		}
+		else {
+			//eNullはここを通る
+			
+			//_ASSERT(0);
 		}
 
 
@@ -2976,7 +2983,12 @@ int CModel::PickBone( UIPICKINFO* pickinfo )
 	map<int, CBone*>::iterator itrbone;
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 		CBone* curbone = itrbone->second;
-		if( curbone && !curbone->GetSkipRenderBoneMark()){//ボーンマーク表示をスキップしているボーンはPick対象から外す 2022/09/16
+
+		//if( curbone && !curbone->GetSkipRenderBoneMark()){
+		
+		//ボーンマーク表示をスキップしているボーンはPick対象から外す 2022/09/16
+		//eNullもPick対象から外す 2023/04/27
+		if (curbone && !curbone->GetSkipRenderBoneMark() && (curbone->GetType() != FBXBONE_NULL)) {
 			cmpsc.x = ( 1.0f + curbone->GetChildScreen().x ) * fw;
 			cmpsc.y = ( 1.0f - curbone->GetChildScreen().y ) * fh;
 			cmpsc.z = curbone->GetChildScreen().z;
@@ -4385,7 +4397,13 @@ CBone* CModel::CreateNewFbxBone(FbxNodeAttribute::EType type, FbxNode* curnode, 
 	//const char* strextend;
 	//strextend = strstr(newbone->GetBoneName(), "_extend_");
 	//if (!strextend) {
-	if (type == FbxNodeAttribute::eSkeleton) {
+	if ((strstr(newbone->GetBoneName(), "Root") != 0) ||
+		(strstr(newbone->GetBoneName(), "Reference") != 0)) {
+
+		newbone->SetType(FBXBONE_NULL);
+
+	}
+	else if (type == FbxNodeAttribute::eSkeleton) {
 		newbone->SetType(FBXBONE_NORMAL);
 	}
 	else if (type == FbxNodeAttribute::eNull) {
@@ -16529,4 +16547,35 @@ void CModel::CalcModelWorldMatOnLoad()
 	m_worldmat = worldmatonload;
 }
 
+CBone* CModel::GetTopBone(bool excludenullflag)
+{
+	CBone* ptopbone = 0;
+	GetTopBoneReq(m_topbone, &ptopbone, excludenullflag);
+	return ptopbone;
+}
+void CModel::GetTopBoneReq(CBone* srcbone, CBone** pptopbone, bool excludenullflag)
+{
+	if (srcbone && pptopbone && !(*pptopbone)) {
 
+		if (excludenullflag == true) {
+			if (srcbone->GetType() != FBXBONE_NULL) {
+				*pptopbone = srcbone;
+				return;
+			}
+		}
+		else {
+			*pptopbone = srcbone;
+			return;
+		}
+
+		if (!(*pptopbone)) {
+			if (srcbone->GetBrother(excludenullflag)) {
+				GetTopBoneReq(srcbone->GetBrother(excludenullflag), pptopbone, excludenullflag);
+			}
+			if (srcbone->GetChild(excludenullflag))
+			{
+				GetTopBoneReq(srcbone->GetChild(excludenullflag), pptopbone, excludenullflag);
+			}
+		}
+	}
+}

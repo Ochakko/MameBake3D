@@ -1128,9 +1128,11 @@ public: //accesser
 
 
 
-	CBone* GetTopBone(){
-		return m_topbone;
-	};
+	CBone* GetTopBone(bool excludenullflag = true);
+	void GetTopBoneReq(CBone* srcbone, CBone** pptopbone, bool excludenullflag = true);
+	//CBone* GetTopBone() {
+	//	return m_topbone;
+	//};
 	void GetHipsBoneReq(CBone* srcbone, CBone** dstppbone);
 	bool IncludeRootOrReference(FbxNode* ptopnode);
 	void GetRootOrReferenceReq(FbxNode* srcnode, FbxNode** dstppnode);

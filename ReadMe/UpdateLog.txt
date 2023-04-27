@@ -1,4 +1,4 @@
-2023/04/11
+2023/04/27
 	EditMot 1.2.0.20 へ向けて
 
 	トランスフォームノード(eNull)の読み書きに対応
@@ -8,6 +8,13 @@
 		
 	法線とUVの読み込み修正
 		Maya2024で出力した2020.3.2のfbxを読み込んでテストOK
+
+	トランスフォームノード(eNull)にはモーションを付けないように
+		トランスフォームノード(eNull)は
+			TreeViewに表示しない
+			PickBoneで選択しない
+			IK対象にしない
+			名前が"Root", "Reference"のジョイントに対しても同様
 
 	リターゲット設定ファイル追加
 		Test/RetargetSettingFileExample/Rokoko_bvh.rtg

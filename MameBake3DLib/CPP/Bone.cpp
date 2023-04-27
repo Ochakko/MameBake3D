@@ -9174,3 +9174,88 @@ bool CBone::GetIKTargetFlag()
 	return m_iktargetflag;
 }
 
+CBone* CBone::GetParent(bool excludenullflag)
+{
+	if (m_parent) {
+		if (excludenullflag == true) {
+			if (m_parent->GetType() != FBXBONE_NULL) {
+				return m_parent;
+			}
+			else {
+				return m_parent->GetParent(excludenullflag);
+			}
+		}
+		else {
+			return m_parent;
+		}
+	}
+	else {
+		return 0;
+	}
+};
+
+CBone* CBone::GetChild(bool excludenullflag)
+{ 
+	if (m_child) {
+		if (excludenullflag == true) {
+			if (m_child->GetType() != FBXBONE_NULL) {
+				return m_child;
+			}
+			else {
+				return m_child->GetChild(excludenullflag);
+			}
+		}
+		else {
+			return m_child;
+		}
+	}
+	else {
+		return 0;
+	}
+};
+
+CBone* CBone::GetBrother(bool excludenullflag)
+{ 
+	if (m_brother) {
+		if (excludenullflag == true) {
+			if (m_brother->GetType() != FBXBONE_NULL) {
+				return m_brother;
+			}
+			else {
+				return m_brother->GetBrother(excludenullflag);
+			}
+		}
+		else {
+			return m_brother;
+		}
+	}
+	else {
+		return 0;
+	}
+};
+CBone* CBone::GetSister(bool excludenullflag) 
+{
+	CBone* parbone = GetParent(excludenullflag);
+	if (parbone) {
+		CBone* firstbrobone = parbone->GetChild(excludenullflag);
+		CBone* nextbone = firstbrobone;
+		while (nextbone) {
+			if (nextbone) {
+				if (nextbone->GetBrother(excludenullflag) == this) {
+					return nextbone;//!!!!!!!!!!!!
+				}
+				nextbone = nextbone->GetBrother(excludenullflag);
+			}
+			else {
+				return 0;
+			}
+		}
+		return 0;
+	}
+	else {
+		return 0;
+	}
+	return 0;
+};
+
+
