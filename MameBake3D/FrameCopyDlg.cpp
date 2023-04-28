@@ -217,7 +217,7 @@ LRESULT CFrameCopyDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHan
 	for( itrbone = m_model->GetBoneListBegin(); itrbone != m_model->GetBoneListEnd(); itrbone++ ){
 		int chkboneno = itrbone->first;
 		CBone* chkbone = itrbone->second;
-		if (chkbone){
+		if (chkbone && (chkbone->GetType() != FBXBONE_NULL)){
 			CBone* valbone = m_validelemmap[chkboneno];
 			CBone* invalbone = m_invalidelemmap[chkboneno];
 

@@ -139,6 +139,13 @@ int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone)
 	RIGELEM rigelem[4];
 	}CUSTOMRIG;
 	*/
+
+	if (!srcmodel) {
+		WCHAR strerr[256];
+		swprintf_s(strerr, 256, L"ÉGÉâÅ[ÅBownerModel NULL");
+		::MessageBox(NULL, strerr, L"ì¸óÕÉGÉâÅ[", MB_OK);
+		return 0;
+	}
 	if (!parentbone) {
 		WCHAR strerr[256];
 		swprintf_s(strerr, 256, L"ÉGÉâÅ[ÅBownerbone NULL");
@@ -224,6 +231,12 @@ int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone)
 
 int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem)
 {
+	if (!srcmodel) {
+		_ASSERT(0);
+		return 0;
+	}
+
+
 	if (srcrigelem.rigrigboneno >= 0) {
 		CBone* ownerbone = srcmodel->GetBoneByID(srcrigelem.rigrigboneno);
 		if (ownerbone) {
@@ -254,6 +267,16 @@ int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem)
 			_ASSERT(0);
 			return 0;
 		}
+
+
+		if (chkbone->GetType() == FBXBONE_NULL) {
+			WCHAR strerr[256];
+			swprintf_s(strerr, 256, L"ÉGÉâÅ[ÅBeNullÇ…ÇÕê›íËÇ≈Ç´Ç‹ÇπÇÒÅB");
+			::MessageBox(NULL, strerr, L"ì¸óÕÉGÉâÅ[", MB_OK);
+			_ASSERT(0);
+			return 0;
+		}
+
 
 		int uvno;
 		for (uvno = 0; uvno < 2; uvno++) {
@@ -483,6 +506,7 @@ int CBone::InitParamsForReUse(CModel* srcparmodel)
 
 int CBone::SetParams(CModel* parmodel)
 {
+
 	m_parmodel = parmodel;
 	//_ASSERT(m_parmodel);
 
@@ -497,6 +521,12 @@ int CBone::SetParams(CModel* parmodel)
 	g_bonecntmap[m_parmodel] = m_boneno + 1;
 
 	m_firstcalcrigid = true;
+
+
+	if (!parmodel) {
+		_ASSERT(0);
+		return 1;
+	}
 
 	return 0;
 }
@@ -599,6 +629,11 @@ int CBone::AddChild( CBone* childptr )
 
 int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, bool callingbythread)
 {
+	if (!wmat || !vpmat) {
+		_ASSERT(0);
+		return 1;
+	}
+
 
 	//2023/01/18 íçà”èëèCê≥
 	//UpdateMatrixÇÃsrcframeÇÕåoâﬂéûä‘åvéZÇçló∂ÇµÇΩÅ@ïÇìÆè¨êîóLÇËÇÃéûä‘Ç™ìnÇ≥ÇÍÇÈ
@@ -607,6 +642,10 @@ int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMat
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
 
 	int existflag = 0;
 
@@ -674,8 +713,8 @@ int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMat
 		ChaVector3 jpos = GetJointFPos();
 
 		ChaMatrix wmat2, wvpmat;
-		if (m_parent){
-			wmat2 = m_parent->GetBtMat();// **wmat;
+		if (GetParent()){
+			wmat2 = GetParent()->GetBtMat();// **wmat;
 		}
 		else{
 			wmat2 = GetBtMat();// **wmat;
@@ -699,6 +738,11 @@ int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMat
 int CBone::CopyLimitedWorldToWorld(int srcmotid, double srcframe)//êßå¿äpìxóLÇËÇÃépê®Çêßå¿ñ≥ÇµÇÃépê®Ç…ÉRÉsÅ[Ç∑ÇÈ
 {
 	double roundingframe = (double)((int)srcframe + 0.0001);
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
 
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, roundingframe);
@@ -756,6 +800,11 @@ int CBone::CopyLimitedWorldToWorld(int srcmotid, double srcframe)//êßå¿äpìxóLÇËÇ
 int CBone::CopyWorldToLimitedWorld(int srcmotid, double srcframe)//êßå¿äpìxñ≥ÇµÇÃépê®Çêßå¿óLÇËÇÃépê®Ç…ÉRÉsÅ[Ç∑ÇÈ
 {
 	double roundingframe = (double)((int)srcframe + 0.0001);
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
 
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, roundingframe);
@@ -818,6 +867,12 @@ int CBone::ApplyNewLimitsToWM(int srcmotid, double srcframe)
 
 	double roundingframe = (double)((int)srcframe + 0.0001);
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+
 	ChaMatrix curwm;
 	curwm.SetIdentity();
 
@@ -849,6 +904,11 @@ int CBone::ApplyNewLimitsToWM(int srcmotid, double srcframe)
 int CBone::ClearLimitedWorldMat(int srcmotid, double srcframe0)
 {
 	int existflag = 0;
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
 
 	//ChaMatrix newworldmat;
 	//ChaMatrixIdentity(&newworldmat);
@@ -1031,7 +1091,24 @@ int CBone::ClearLimitedWorldMat(int srcmotid, double srcframe0)
 
 CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr)
 {
+
 	EnterCriticalSection(&m_CritSection_AddMP);
+
+	if (!existptr) {
+		_ASSERT(0);
+		LeaveCriticalSection(&m_CritSection_AddMP);
+		return 0;
+	}
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		if (existptr) {
+			*existptr = 0;
+		}
+		LeaveCriticalSection(&m_CritSection_AddMP);
+		return 0;
+	}
+
 
 	if ((srcmotid <= 0) || (srcmotid > (m_motionkey.size() + 1))) {// on add : Ç–Ç∆Ç¬ëÂÇ´Ç≠ÇƒÇ‡â¬ : ëºÇÃïîï™Ç≈ÇÃÉ`ÉFÉbÉNÇÕ motid > m_motionkey.size()
 		_ASSERT(0);
@@ -1124,6 +1201,26 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 int CBone::CalcFBXMotion(bool limitdegflag, 
 	int srcmotid, double srcframe, CMotionPoint* dstmpptr, int* existptr)
 {
+	if (!dstmpptr || !existptr) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		if (dstmpptr) {
+			ChaMatrix inimat;
+			inimat.SetIdentity();
+			dstmpptr->SetWorldMat(inimat);
+			dstmpptr->SetLimitedWM(inimat);
+			dstmpptr->SetFrame(srcframe);
+		}
+		return 0;
+	}
+
+
+
 	CMotionPoint* befptr = 0;
 	CMotionPoint* nextptr = 0;
 	CallF( GetBefNextMP( srcmotid, srcframe, &befptr, &nextptr, existptr ), return 1 );
@@ -1139,11 +1236,34 @@ void CBone::ResetMotionCache()
 
 int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr, bool onaddmotion)//default : onaddmotion = false
 {
+
+	if (!ppbef || !ppnext || !existptr) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	//########################################################################################
 	//ï¿óÒâªÇÕÉ{Å[ÉìíPà Ç…Ç∑ÇÈÇÕÇ∏Ç»ÇÃÇ≈Å@ÉNÉäÉeÉBÉJÉãÉZÉNÉVÉáÉìÇ…ÇÕÉGÉìÉ^Å[ÇµÇ»Ç¢Ç±Ç∆Ç…Ç∑ÇÈ
 	//########################################################################################
 
 	//EnterCriticalSection(&m_CritSection_GetBefNext);
+
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		if (ppbef) {
+			*ppbef = 0;
+		}
+		if (ppnext) {
+			*ppnext = 0;
+		}
+		if (existptr) {
+			*existptr = 0;
+		}
+		return 0;
+	}
+
+
 
 	CMotionPoint* pbef = 0;
 	//CMotionPoint* pcur = m_motionkey[srcmotid -1];
@@ -1366,9 +1486,21 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 int CBone::CalcFBXFrame(bool limitdegflag, double srcframe, CMotionPoint* befptr, CMotionPoint* nextptr, int existflag, CMotionPoint* dstmpptr)
 {
 
+	if (!dstmpptr) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	//GetWorldMatëŒçÙ(ñ¢åvéZéûÇÃéÊìæä‹Çﬁ)ÇÃÇΩÇﬂÅ@SetFrameÇ…ÇÕ roundingframeÇégóp
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		dstmpptr->InitParams();
+		dstmpptr->SetFrame(roundingframe);
+		return 0;
+	}
 
 
 	if( existflag == 1 ){
@@ -1472,6 +1604,13 @@ int CBone::DeleteMotion( int srcmotid )
 
 int CBone::DeleteMPOutOfRange( int motid, double srcleng )
 {
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+
 	if ((motid <= 0) || (motid > m_motionkey.size())) {
 		_ASSERT(0);
 		return 1;
@@ -1624,7 +1763,6 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bi
 	//ÇÊÇ¡ÇƒAXISKIND_CURRENTÇÃèÍçáÅ@êeÇ©ÇÁÇ›ÇΩÅ@currentÇÃNodeMatÇ…currentÇÃGetLimitedWorldMatÇä|ÇØÇΩÇ‡ÇÃÇ™äÓèÄÇ∆Ç»ÇÈ
 	//#########################################################################################################################
 
-
 	bool ishipsjoint = IsHipsBone();
 
 
@@ -1643,6 +1781,16 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bi
 		*dstmat = inimat;
 		return 0.0f;
 	}
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		ChaMatrix inimat;
+		ChaMatrixIdentity(&inimat);
+		*dstmat = inimat;
+		return 0.0f;
+	}
+
+
 
 	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
 
@@ -1839,6 +1987,14 @@ float CBone::CalcAxisMatX_NodeMat(CBone* childbone, ChaMatrix* dstmat)
 		*dstmat = inimat;
 		return 0.0f;
 	}
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		ChaMatrix inimat;
+		ChaMatrixIdentity(&inimat);
+		*dstmat = inimat;
+		return 0.0f;
+	}
+
 
 	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
 
@@ -1915,6 +2071,13 @@ float CBone::CalcAxisMatX_RigidBody(bool limitdegflag, bool dir2xflag, int bindf
 	}
 	if (!childbone) {
 		_ASSERT(0);
+		ChaMatrix inimat;
+		ChaMatrixIdentity(&inimat);
+		*dstmat = inimat;
+		return 0.0f;
+	}
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
 		ChaMatrix inimat;
 		ChaMatrixIdentity(&inimat);
 		*dstmat = inimat;
@@ -2129,6 +2292,13 @@ int CBone::CalcAxisMatZ_aft(ChaVector3 curpos, ChaVector3 childpos, ChaMatrix* d
 		return 0;
 	}
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		*dstmat = retmat;
+		return 0;
+	}
+
+
 	ChaVector3 startpos, endpos, upvec;
 
 	ChaVector3 vecx0, vecy0, vecz0;
@@ -2288,6 +2458,12 @@ int CBone::CalcAxisMatZ_aft(ChaVector3 curpos, ChaVector3 childpos, ChaMatrix* d
 int CBone::CalcRigidElemParams( CBone* childbone, int setstartflag )
 {
 	
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+
 	//çÑëÃÇÃå`èÛ(m_coldisp)Çï°êîÇÃéqãüÇ≈égÇ¢Ç‹ÇÌÇµÇƒÇ¢ÇÈÅBégópÇ∑ÇÈÇΩÇ—Ç…Ç±ÇÃä÷êîÇ≈ëÂÇ´Ç≥ÇÉZÉbÉgÇµÇƒÇ¢ÇÈÅB
 	if (!childbone) {
 		_ASSERT(0);
@@ -2469,33 +2645,38 @@ int CBone::CalcAxisMat( int firstflag, float delta )
 	return 0;
 }
 */
-int CBone::CalcLocalAxisMat( ChaMatrix motmat, ChaMatrix axismatpar, ChaMatrix gaxisy )
-{
-	ChaMatrix startpar0 = axismatpar;
-	startpar0.data[MATI_41] = 0.0f;
-	startpar0.data[MATI_42] = 0.0f;
-	startpar0.data[MATI_43] = 0.0f;
-
-	ChaMatrix starty = gaxisy;
-	starty.data[MATI_41] = 0.0f;
-	starty.data[MATI_42] = 0.0f;
-	starty.data[MATI_43] = 0.0f;
-
-	ChaMatrix motmat0 = motmat;
-	motmat0.data[MATI_41] = 0.0f;
-	motmat0.data[MATI_42] = 0.0f;
-	motmat0.data[MATI_43] = 0.0f;
-
-	ChaMatrix invmotmat;
-	ChaMatrixInverse( &invmotmat, NULL, &motmat0 );
-
-	m_axismat_par = startpar0 * invmotmat;
-
-	return 0;
-}
+//int CBone::CalcLocalAxisMat( ChaMatrix motmat, ChaMatrix axismatpar, ChaMatrix gaxisy )
+//{
+//	ChaMatrix startpar0 = axismatpar;
+//	startpar0.data[MATI_41] = 0.0f;
+//	startpar0.data[MATI_42] = 0.0f;
+//	startpar0.data[MATI_43] = 0.0f;
+//
+//	ChaMatrix starty = gaxisy;
+//	starty.data[MATI_41] = 0.0f;
+//	starty.data[MATI_42] = 0.0f;
+//	starty.data[MATI_43] = 0.0f;
+//
+//	ChaMatrix motmat0 = motmat;
+//	motmat0.data[MATI_41] = 0.0f;
+//	motmat0.data[MATI_42] = 0.0f;
+//	motmat0.data[MATI_43] = 0.0f;
+//
+//	ChaMatrix invmotmat;
+//	ChaMatrixInverse( &invmotmat, NULL, &motmat0 );
+//
+//	m_axismat_par = startpar0 * invmotmat;
+//
+//	return 0;
+//}
 
 int CBone::CreateRigidElem( CBone* parentbone, int reflag, std::string rename, int impflag, std::string impname )
 {
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
 	if (!parentbone){
 		return 0;
 	}
@@ -2536,6 +2717,12 @@ int CBone::CreateRigidElem( CBone* parentbone, int reflag, std::string rename, i
 
 int CBone::SetGroupNoByName( CRigidElem* curre, CBone* childbone )
 {
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+
 	char* groupmark = strstr( childbone->m_bonename, "_G_" );
 	if( groupmark ){
 		char* numstart = groupmark + 3;
@@ -2563,6 +2750,12 @@ int CBone::SetGroupNoByName( CRigidElem* curre, CBone* childbone )
 
 int CBone::SetCurrentRigidElem( std::string curname )
 {
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+
 	m_rigidelemname = curname;
 
 	/*
@@ -2590,16 +2783,20 @@ int CBone::SetCurrentRigidElem( std::string curname )
 
 CMotionPoint* CBone::AddBoneTraReq(bool limitdegflag, CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra, ChaMatrix befparentwm, ChaMatrix newparentwm)
 {
-
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		_ASSERT(0);
+		return 0;
+	}
 
 	int existflag = 0;
 	//CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
 	//if( !curmp || !existflag ){
 	CMotionPoint* curmp = GetMotionPoint(srcmotid, roundingframe);
-	if(!curmp){
-		_ASSERT( 0 );
+	if (!curmp) {
+		_ASSERT(0);
 		return 0;
 	}
 
@@ -2613,7 +2810,7 @@ CMotionPoint* CBone::AddBoneTraReq(bool limitdegflag, CMotionPoint* parmp, int s
 	bool infooutflag = false;
 
 	//curmp->SetBefWorldMat( curmp->GetWorldMat() );
-	if( parmp ){
+	if (parmp) {
 		//ChaMatrix invbefpar;
 		//ChaMatrix tmpparbefwm = parmp->GetBefWorldMat();//!!!!!!! 2022/12/23 à¯êîÇ…Ç∑ÇÈÇ◊Ç´
 		//ChaMatrixInverse( &invbefpar, NULL, &tmpparbefwm );
@@ -2626,10 +2823,10 @@ CMotionPoint* CBone::AddBoneTraReq(bool limitdegflag, CMotionPoint* parmp, int s
 
 		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 	}
-	else{
+	else {
 		ChaMatrix tramat;
 		tramat.SetIdentity();//2023/02/12
-		ChaMatrixTranslation( &tramat, srctra.x, srctra.y, srctra.z );
+		ChaMatrixTranslation(&tramat, srctra.x, srctra.y, srctra.z);
 		ChaMatrix tmpmat = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp) * tramat;
 		bool directsetflag = true;
 		int onlycheck = 0;
@@ -2639,28 +2836,38 @@ CMotionPoint* CBone::AddBoneTraReq(bool limitdegflag, CMotionPoint* parmp, int s
 		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 	}
 
-	curmp->SetAbsMat( GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp) );
+	curmp->SetAbsMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
 
-	if (m_child){
-		m_child->AddBoneTraReq(limitdegflag, curmp, srcmotid, roundingframe, srctra, currentbefwm, currentnewwm);
+	if (GetChild()) {
+		GetChild()->AddBoneTraReq(limitdegflag, curmp, srcmotid, roundingframe, srctra, currentbefwm, currentnewwm);
 	}
-	if (m_brother && parmp){
-		m_brother->AddBoneTraReq(limitdegflag, parmp, srcmotid, roundingframe, srctra, befparentwm, newparentwm);
+	if (GetBrother() && parmp) {
+		GetBrother()->AddBoneTraReq(limitdegflag, parmp, srcmotid, roundingframe, srctra, befparentwm, newparentwm);
 	}
-
 	return curmp;
+
 }
 
 
 CMotionPoint* CBone::AddBoneScaleReq(bool limitdegflag, CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srcscale, ChaMatrix befparentwm, ChaMatrix newparentwm)
 {
+
+
 	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		_ASSERT(0);
+		return 0;
+	}
+
 
 	int existflag = 0;
 	//CMotionPoint* curmp = AddMotionPoint(srcmotid, srcframe, &existflag);
 	//if (!curmp || !existflag) {
 	CMotionPoint* curmp = GetMotionPoint(srcmotid, roundingframe);
-	if(!curmp){
+	if (!curmp) {
 		_ASSERT(0);
 		return 0;
 	}
@@ -2783,11 +2990,11 @@ CMotionPoint* CBone::AddBoneScaleReq(bool limitdegflag, CMotionPoint* parmp, int
 
 	curmp->SetAbsMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
 
-	if (m_child) {
-		m_child->AddBoneScaleReq(limitdegflag, curmp, srcmotid, roundingframe, srcscale, currentbefwm, currentnewwm);
+	if (GetChild()) {
+		GetChild()->AddBoneScaleReq(limitdegflag, curmp, srcmotid, roundingframe, srcscale, currentbefwm, currentnewwm);
 	}
-	if (m_brother && parmp) {
-		m_brother->AddBoneScaleReq(limitdegflag, parmp, srcmotid, roundingframe, srcscale, befparentwm, newparentwm);
+	if (GetBrother() && parmp) {
+		GetBrother()->AddBoneScaleReq(limitdegflag, parmp, srcmotid, roundingframe, srcscale, befparentwm, newparentwm);
 	}
 
 	return curmp;
@@ -2801,12 +3008,18 @@ CMotionPoint* CBone::PasteRotReq(bool limitdegflag, int srcmotid, double srcfram
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		_ASSERT(0);
+		return 0;
+	}
+
 	int existflag0 = 0;
 	//CMotionPoint* srcmp = AddMotionPoint( srcmotid, srcframe, &existflag0 );
 	//if( !existflag0 || !srcmp ){
 	CMotionPoint* srcmp = GetMotionPoint(srcmotid, roundingframe);
 	if (!srcmp) {
-		_ASSERT( 0 );
+		_ASSERT(0);
 		return 0;
 	}
 
@@ -2815,13 +3028,13 @@ CMotionPoint* CBone::PasteRotReq(bool limitdegflag, int srcmotid, double srcfram
 	//if( !existflag || !curmp ){
 	CMotionPoint* curmp = GetMotionPoint(srcmotid, roundingframe);
 	if (!curmp) {
-		_ASSERT( 0 );
+		_ASSERT(0);
 		return 0;
 	}
-	
+
 	//curmp->SetBefWorldMat( curmp->GetWorldMat() );
-	curmp->SetWorldMat( GetWorldMat(limitdegflag, srcmotid, roundingframe, srcmp) );
-	curmp->SetAbsMat( srcmp->GetAbsMat() );
+	curmp->SetWorldMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, srcmp));
+	curmp->SetAbsMat(srcmp->GetAbsMat());
 
 
 	//ÉIÉCÉâÅ[äpèâä˙âª
@@ -2833,14 +3046,13 @@ CMotionPoint* CBone::PasteRotReq(bool limitdegflag, int srcmotid, double srcfram
 	SetLocalEul(limitdegflag, srcmotid, roundingframe, cureul, 0);
 
 
-	if( m_child ){
-		m_child->PasteRotReq(limitdegflag, srcmotid, roundingframe, dstframe);
+	if (GetChild()) {
+		GetChild()->PasteRotReq(limitdegflag, srcmotid, roundingframe, dstframe);
 	}
-	if( m_brother ){
-		m_brother->PasteRotReq(limitdegflag, srcmotid, roundingframe, dstframe);
+	if (GetBrother()) {
+		GetBrother()->PasteRotReq(limitdegflag, srcmotid, roundingframe, dstframe);
 	}
 	return curmp;
-
 }
 
 ChaMatrix CBone::CalcNewLocalRotMatFromQofIK(bool limitdegflag, int srcmotid, double srcframe, CQuaternion qForRot, ChaMatrix* dstsmat, ChaMatrix* dstrmat, ChaMatrix* dsttanimmat)
@@ -2853,6 +3065,22 @@ ChaMatrix CBone::CalcNewLocalRotMatFromQofIK(bool limitdegflag, int srcmotid, do
 		_ASSERT(0);
 		return newlocalrotmat;
 	}
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		if (dstsmat) {
+			dstsmat->SetIdentity();
+		}
+		if (dstrmat) {
+			dstrmat->SetIdentity();
+		}
+		if (dsttanimmat) {
+			dsttanimmat->SetIdentity();
+		}
+
+		return newlocalrotmat;
+	}
+
 
 	ChaMatrix currentwm;
 	//limitedworldmat = GetLimitedWorldMat(srcmotid, roundingframe);//Ç±Ç±ÇGetLimitedWorldMatÇ…Ç∑ÇÈÇ∆ÇPâÒñ⁄ÇÃIKÇ™óêÇÍÇÈÅBÇQâÒñ⁄ÇÃIKà»ç~ÇÕOKÅB
@@ -2925,6 +3153,11 @@ ChaMatrix CBone::CalcNewLocalTAnimMatFromSRTraAnim(ChaMatrix srcnewlocalrotmat,
 	ChaMatrix newtanimmatrotated;
 	newtanimmatrotated.SetIdentity();
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return newtanimmatrotated;
+	}
+
 	//if (g_underRetargetFlag == false) {
 
 		//traanimÇÉçÅ[ÉJÉãâÒì]Ç∑ÇÈÅ@ÇΩÇæÇµÉäÉ^Å[ÉQÉbÉgéûà»äO (IKéûÇ»Ç«Ç…âÒì]Ç∑ÇÈ)
@@ -2972,6 +3205,12 @@ void CBone::UpdateCurrentWM(bool limitdegflag, int srcmotid, double srcframe,
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return;
+	}
+
+
 	ChaMatrix befwm;
 	befwm.SetIdentity();
 	befwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
@@ -3018,6 +3257,12 @@ void CBone::UpdateParentWMReq(bool limitdegflag, bool setbroflag, int srcmotid, 
 	//directsetÇ≈Å@parentÇÃépê®ÇçXêVÅ@çƒãA
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return;
+	}
+
 
 	ChaMatrix currentbefwm;
 	ChaMatrix currentnewwm;
@@ -3070,6 +3315,12 @@ CMotionPoint* CBone::RotBoneQReq(bool limitdegflag, bool infooutflag,
 	//##############################################################
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
 
 	CMotionPoint* curmp = GetMotionPoint(srcmotid, roundingframe);
 	if (!curmp) {
@@ -3135,16 +3386,16 @@ CMotionPoint* CBone::RotBoneQReq(bool limitdegflag, bool infooutflag,
 	curmp->SetAbsMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
 
 
-	if (m_child && curmp){
+	if (GetChild() && curmp){
 		bool setbroflag2 = true;
-		m_child->UpdateParentWMReq(limitdegflag, setbroflag2, srcmotid, roundingframe,
+		GetChild()->UpdateParentWMReq(limitdegflag, setbroflag2, srcmotid, roundingframe,
 			currentbefwm, currentnewwm);
 	}
-	if (m_brother && parentbone){
-		bool setbroflag3 = true;
-		m_child->UpdateParentWMReq(limitdegflag, setbroflag3, srcmotid, roundingframe,
-			srcbefparentwm, srcnewparentwm);
-	}
+	//if (GetBrother() && parentbone){
+	//	bool setbroflag3 = true;
+	//	GetBrother()->UpdateParentWMReq(limitdegflag, setbroflag3, srcmotid, roundingframe,
+	//		srcbefparentwm, srcnewparentwm);
+	//}
 	return curmp;
 }
 
@@ -3152,6 +3403,12 @@ CMotionPoint* CBone::RotBoneQReq(bool limitdegflag, bool infooutflag,
 int CBone::SaveSRT(bool limitdegflag, int srcmotid, double srcframe)
 {
 	double curframe = (double)((int)(srcframe + 0.0001));
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, curframe);
 	if (curmp) {
@@ -3202,8 +3459,12 @@ int CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 	
 	int ismovable = 1;//for return value
 
-
 	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
 
 	CMotionPoint* curmp = GetMotionPoint(srcmotid, roundingframe);
 	if (!curmp) {
@@ -3633,6 +3894,11 @@ CMotionPoint* CBone::RotBoneQOne(bool limitdegflag, CBone* srcparentbone, CMotio
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
 	int existflag = 0;
 	//CMotionPoint* curmp = AddMotionPoint(srcmotid, srcframe, &existflag);
 	//if (!existflag || !curmp){
@@ -3672,6 +3938,11 @@ CMotionPoint* CBone::SetAbsMatReq(bool limitdegflag, int broflag,
 {
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
 	int existflag = 0;
 	//CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
 	//if( !existflag || !curmp ){
@@ -3698,11 +3969,11 @@ CMotionPoint* CBone::SetAbsMatReq(bool limitdegflag, int broflag,
 		srcmotid, roundingframe, firstmp->GetAbsMat(),
 		onlycheck, fromiktarget);
 
-	if( m_child ){
-		m_child->SetAbsMatReq(limitdegflag, 1, srcmotid, roundingframe, firstframe);
+	if(GetChild()){
+		GetChild()->SetAbsMatReq(limitdegflag, 1, srcmotid, roundingframe, firstframe);
 	}
-	if( m_brother && broflag ){
-		m_brother->SetAbsMatReq(limitdegflag, 1, srcmotid, roundingframe, firstframe);
+	if(GetBrother() && broflag){
+		GetBrother()->SetAbsMatReq(limitdegflag, 1, srcmotid, roundingframe, firstframe);
 	}
 	return curmp;
 }
@@ -3750,6 +4021,12 @@ int CBone::AddBoneMarkIfNot( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, in
 		_ASSERT(0);
 		return 1;
 	}
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
 
 	map<double, int> curmark;
 	map<int, map<double, int>>::iterator itrcur;
@@ -3801,6 +4078,12 @@ int CBone::DelBoneMarkRange( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, in
 
 int CBone::AddBoneMotMark( int motid, OWP_Timeline* owpTimeline, int curlineno, double startframe, double endframe, int flag )
 {
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+
 	if( startframe != endframe ){
 		AddBoneMarkIfNot( motid, owpTimeline, curlineno, startframe, flag );
 		AddBoneMarkIfNot( motid, owpTimeline, curlineno, endframe, flag );
@@ -3814,7 +4097,21 @@ int CBone::AddBoneMotMark( int motid, OWP_Timeline* owpTimeline, int curlineno, 
 
 int CBone::CalcLocalInfo(bool limitdegflag, int motid, double frameno, CMotionPoint* pdstmp )
 {
+	if (!pdstmp) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	double roundingframe = (double)((int)(frameno + 0.0001));
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		CMotionPoint inimp;
+		*pdstmp = inimp;
+		return 0;
+	}
+
+
 
 	CMotionPoint* pcurmp = 0;
 	CMotionPoint* pparmp = 0;
@@ -3883,6 +4180,19 @@ int CBone::CalcLocalInfo(bool limitdegflag, int motid, double frameno, CMotionPo
 
 int CBone::CalcCurrentLocalInfo(CMotionPoint* pdstmp)
 {
+	if (!pdstmp) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		CMotionPoint inimp;
+		*pdstmp = inimp;
+		return 0;
+	}
+
+
 	CMotionPoint curmp;
 	CMotionPoint parmp;
 	
@@ -3934,12 +4244,24 @@ int CBone::CalcCurrentLocalInfo(CMotionPoint* pdstmp)
 
 int CBone::CalcBtLocalInfo(CMotionPoint* pdstmp)
 {
-	if (m_parent) {
+	if (!pdstmp) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		CMotionPoint inimp;
+		*pdstmp = inimp;
+		return 0;
+	}
+
+	if (GetParent()) {
 		CMotionPoint setmp;
 		ChaMatrix parentbtmat;
 		ChaMatrix currentbtmat;
 		ChaMatrix localbtmat;
-		parentbtmat = m_parent->GetBtMat();
+		parentbtmat = GetParent()->GetBtMat();
 		currentbtmat = GetBtMat();
 		localbtmat = currentbtmat * ChaMatrixInv(parentbtmat);
 
@@ -4029,16 +4351,21 @@ int CBone::GetBoneNum()
 {
 	int retnum = 0;
 
-	if( !m_child ){
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+	if(!GetChild()){
 		return 0;
 	}else{
 		retnum++;
 	}
 
-	CBone* cbro = m_child->m_brother;
+	CBone* cbro = GetChild()->GetBrother();
 	while( cbro ){
 		retnum++;
-		cbro = cbro->m_brother;
+		cbro = cbro->GetBrother();
 	}
 
 	return retnum;
@@ -4076,16 +4403,16 @@ void CBone::CalcFirstAxisMatX()
 
 }
 */
-void CBone::CalcFirstAxisMatZ()
-{
-	ChaVector3 curpos;
-	ChaVector3 childpos;
-
-	if (m_parent){
-		CalcAxisMatZ_aft(m_parent->GetJointFPos(), GetJointFPos(), &m_firstaxismatZ);
-	}
-
-}
+//void CBone::CalcFirstAxisMatZ()
+//{
+//	ChaVector3 curpos;
+//	ChaVector3 childpos;
+//
+//	if (m_parent){
+//		CalcAxisMatZ_aft(m_parent->GetJointFPos(), GetJointFPos(), &m_firstaxismatZ);
+//	}
+//
+//}
 
 int CBone::CalcBoneDepth()
 {
@@ -4129,6 +4456,11 @@ ChaVector3 CBone::GetBefEul(bool limitdegflag, int srcmotid, double srcframe)
 
 	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 
+	if (GetType() != FBXBONE_NORMAL) {
+		return befeul;
+	}
+
+
 	//1Ç¬ëOÇÃÉtÉåÅ[ÉÄÇÃEULÇÕÇ∑Ç≈Ç…åvéZÇ≥ÇÍÇƒÇ¢ÇÈÇ∆âºíËÇ∑ÇÈÅB
 	double befframe;
 	befframe = roundingframe - 1.0;
@@ -4163,6 +4495,11 @@ ChaVector3 CBone::GetUnlimitedBefEul(int srcmotid, double srcframe)
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
 	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	if (GetType() != FBXBONE_NORMAL) {
+		return befeul;
+	}
+
 
 	//1Ç¬ëOÇÃÉtÉåÅ[ÉÄÇÃEULÇÕÇ∑Ç≈Ç…åvéZÇ≥ÇÍÇƒÇ¢ÇÈÇ∆âºíËÇ∑ÇÈÅB
 	double befframe;
@@ -4199,6 +4536,10 @@ int CBone::GetNotModify180Flag(int srcmotid, double srcframe)
 	//2023/02/04
 	//ModifyEuler360()ÇÃì‡óeÇïœÇ¶ÇΩÇÃÇ≈Å@ëSÉtÉåÅ[ÉÄmodifyÇ∑ÇÈ
 	//int notmodify180flag = 0;
+
+	if (GetType() != FBXBONE_NORMAL) {
+		return 1;
+	}
 
 
 	//2023/01/14
@@ -4263,6 +4604,12 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	if (GetType() != FBXBONE_NORMAL) {
+		return cureul;
+	}
+
+
 
 	const WCHAR* bonename = GetWBoneName();
 	//if (wcscmp(bonename, L"RootNode") == 0){
@@ -4903,6 +5250,12 @@ int CBone::SetWorldMatFromEul(bool limitdegflag, int inittraflag, int setchildfl
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, roundingframe);
 	if (!curmp) {
@@ -5107,6 +5460,12 @@ ChaMatrix CBone::CalcWorldMatFromEul(bool limitdegflag, int inittraflag, int set
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return retmat;
+	}
+
+
 	//anglelimitÇÇµÇΩå„ÇÃÉIÉCÉâÅ[äpÇ™ìnÇ≥ÇÍÇÈÅBanglelimitÇÕCBone::SetWorldMatÇ≈èàóùÇ∑ÇÈÅB
 	//if (!m_child) {
 	//	return retmat;
@@ -5175,6 +5534,12 @@ int CBone::SetWorldMatFromEulAndScaleAndTra(bool limitdegflag, int inittraflag, 
 	//}
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
 
 	ChaMatrix newscalemat;
 	newscalemat.SetIdentity();//2023/02/12 î≤ÇØóéÇøÇƒÇΩ
@@ -5250,11 +5615,17 @@ int CBone::SetWorldMatFromEulAndScaleAndTra(bool limitdegflag, int inittraflag, 
 int CBone::SetWorldMatFromQAndTra(bool limitdegflag, int setchildflag, 
 	ChaMatrix befwm, CQuaternion axisq, CQuaternion srcq, ChaVector3 srctra, int srcmotid, double srcframe)
 {
-	if (!m_child){
+	if (!GetChild()){
 		return 0;
 	}
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
 
 	CQuaternion invaxisq;
 	axisq.inv(&invaxisq);
@@ -5344,6 +5715,12 @@ int CBone::SetWorldMatFromEulAndTra(bool limitdegflag, int setchildflag,
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+
 	ChaMatrix newtramat;
 	ChaMatrixIdentity(&newtramat);
 	ChaMatrixTranslation(&newtramat, srctra.x, srctra.y, srctra.z);//TraAnimÇÇªÇÃÇ‹Ç‹
@@ -5420,6 +5797,11 @@ int CBone::SetLocalEul(bool limitdegflag, int srcmotid, double srcframe, ChaVect
 {
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
 	if (srcmp) {
 		if (limitdegflag == false) {
 			srcmp->SetLocalEul(srceul);
@@ -5453,6 +5835,13 @@ ChaVector3 CBone::GetLocalEul(bool limitdegflag, int srcmotid, double srcframe, 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
 	ChaVector3 reteul = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return reteul;
+	}
+
+
 	if (srcmp) {
 		if (limitdegflag == false) {
 			reteul = srcmp->GetLocalEul();
@@ -5513,6 +5902,12 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 	int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget)
 {
 	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
 
 	//if pose is change, return 1 else return 0
 	CMotionPoint* curmp;
@@ -5679,11 +6074,17 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 
 int CBone::ChkMovableEul(ChaVector3 srceul)
 {
-
 	//2023/01/10 : éñëOåvéZÇµÇƒÇ®Ç´ÇΩÇ¢èÍçáÇ»Ç«Ç™Ç†ÇÈÇÃÇ≈Å@à»â∫ÇRçsÇÃèåèÇÕÇ±ÇÃä÷êîÇÃåƒÇ—èoÇµå≥Ç≈çsÇ§
 	//if (g_limitdegflag == false){
 	//	return 1;//movable
 	//}
+
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
 
 	SetAngleLimitOff(&m_anglelimit);
 
@@ -5723,6 +6124,13 @@ int CBone::ChkMovableEul(ChaVector3 srceul)
 
 float CBone::LimitAngle(enum tag_axiskind srckind, float srcval)
 {
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0.0f;
+	}
+
+
 
 	SetAngleLimitOff(&m_anglelimit);
 	if (m_anglelimit.limitoff[srckind] == 1){
@@ -5768,6 +6176,12 @@ ChaVector3 CBone::LimitEul(ChaVector3 srceul, ChaVector3 srcbefeul)
 	ChaVector3 reteul = ChaVector3(0.0f, 0.0f, 0.0f);
 	ChaVector3 tmpeul = ChaVector3(0.0f, 0.0f, 0.0f);
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return reteul;
+	}
+
+
 	tmpeul.x = LimitAngle(AXIS_X, srceul.x);
 	tmpeul.y = LimitAngle(AXIS_Y, srceul.y);
 	tmpeul.z = LimitAngle(AXIS_Z, srceul.z);
@@ -5786,6 +6200,15 @@ ChaVector3 CBone::LimitEul(ChaVector3 srceul, ChaVector3 srcbefeul)
 ANGLELIMIT CBone::GetAngleLimit(bool limitdegflag, int getchkflag)
 {
 	::SetAngleLimitOff(&m_anglelimit);
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		m_anglelimit.chkeul[AXIS_X] = 0.0f;
+		m_anglelimit.chkeul[AXIS_Y] = 0.0f;
+		m_anglelimit.chkeul[AXIS_Z] = 0.0f;
+		return m_anglelimit;
+	}
+
 
 	if (getchkflag == 1) {
 
@@ -5844,6 +6267,12 @@ ANGLELIMIT CBone::GetAngleLimit(bool limitdegflag, int getchkflag)
 
 int CBone::SwapAngleLimitUpperLowerIfRev()
 {
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+
 	int axiskind;
 	for (axiskind = AXIS_X; axiskind < AXIS_MAX; axiskind++) {
 		if (m_anglelimit.lower[axiskind] > m_anglelimit.upper[axiskind]) {
@@ -5861,6 +6290,12 @@ int CBone::SwapAngleLimitUpperLowerIfRev()
 void CBone::SetAngleLimit(bool limitdegflag, ANGLELIMIT srclimit)
 {
 	m_anglelimit = srclimit;
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return;
+	}
+
 
 	//int axiskind;
 	//for (axiskind = AXIS_X; axiskind < AXIS_MAX; axiskind++){
@@ -5941,6 +6376,12 @@ void CBone::SetAngleLimit(bool limitdegflag, ANGLELIMIT srclimit)
 
 int CBone::GetFreeCustomRigNo()
 {
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return -1;
+	}
+
+
 	int rigno;
 	int findrigno = -1;
 	for (rigno = 0; rigno < MAXRIGNUM; rigno++){
@@ -6034,6 +6475,13 @@ ChaMatrix CBone::CalcSymXMat2(bool limitdegflag, int srcmotid, double srcframe, 
 	//ChaVector3 symscale = ChaVector3(1.0f, 1.0f, 1.0f);
 	//symscale = CalcLocalScaleAnim(srcmotid, roundingframe);
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return directsetmat;
+	}
+
+
+
 	int rotcenterflag1 = 1;
 	if (GetParent()){
 		directsetmat = CalcLocalSymScaleRotMat(limitdegflag, rotcenterflag1, srcmotid, roundingframe);
@@ -6097,6 +6545,12 @@ ChaMatrix CBone::GetWorldMat(bool limitdegflag,
 
 	ChaMatrix curmat;
 	ChaMatrixIdentity(&curmat);
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return curmat;
+	}
+
 
 	if (srcmp) {
 		if (limitdegflag == false) {
@@ -6171,6 +6625,14 @@ ChaMatrix CBone::GetCurrentWorldMat(bool multmodelwm)
 
 	bool currentlimitdegflag = g_limitdegflag;
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		ChaMatrix inimat;
+		inimat.SetIdentity();
+		return inimat;
+	}
+
+
 	MOTINFO* curmi = 0;
 	if (GetParModel()) {
 		curmi = GetParModel()->GetCurMotInfo();
@@ -6217,6 +6679,11 @@ int CBone::SetWorldMat(bool limitdegflag,
 {
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
 	if (srcmp) {
 		if (limitdegflag == false) {
 			srcmp->SetWorldMat(srcmat);
@@ -6248,14 +6715,21 @@ ChaMatrix CBone::CalcLocalScaleRotMat(bool limitdegflag, int rotcenterflag, int 
 {
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		ChaMatrix inimat;
+		inimat.SetIdentity();
+		return inimat;
+	}
+
 	ChaMatrix curmat;
 	curmat = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 
 	ChaMatrix parmat, invparmat;
 	ChaMatrixIdentity(&parmat);
 	ChaMatrixIdentity(&invparmat);
-	if (m_parent) {
-		parmat = m_parent->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+	if (GetParent()) {
+		parmat = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 		invparmat = ChaMatrixInv(parmat);
 	}
 	ChaMatrix localmat;
@@ -6293,6 +6767,12 @@ ChaMatrix CBone::CalcLocalScaleRotMat(bool limitdegflag, int rotcenterflag, int 
 ChaMatrix CBone::CalcLocalSymScaleRotMat(bool limitdegflag, int rotcenterflag, int srcmotid, double srcframe)
 {
 	ChaMatrix retmat;
+	retmat.SetIdentity();
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return retmat;
+	}
 
 	int symboneno = 0;
 	int existflag = 0;
@@ -6392,7 +6872,14 @@ ChaMatrix CBone::CalcLocalSymScaleRotMat(bool limitdegflag, int rotcenterflag, i
 
 ChaVector3 CBone::CalcLocalSymScaleVec(bool limitdegflag, int srcmotid, double srcframe)
 {
-	ChaVector3 retscale;
+	ChaVector3 retscale = ChaVector3(1.0f, 1.0f, 1.0f);
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return retscale;
+	}
+
+
 
 	int symboneno = 0;
 	int existflag = 0;
@@ -6426,6 +6913,12 @@ ChaVector3 CBone::CalcLocalSymScaleVec(bool limitdegflag, int srcmotid, double s
 ChaVector3 CBone::CalcLocalTraAnim(bool limitdegflag, int srcmotid, double srcframe)
 {
 	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return ChaVector3(0.0f, 0.0f, 0.0f);
+	}
+
 
 	ChaMatrix curmat;
 	curmat = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
@@ -6469,6 +6962,12 @@ ChaVector3 CBone::CalcLocalSymTraAnim(bool limitdegflag, int srcmotid, double sr
 {
 
 	ChaVector3 rettra = ChaVector3(0.0f, 0.0f, 0.0);//scaleÇ…ê›íËÇ≥ÇÍÇƒÇ¢ÇƒÇ‡rotcenterÇÃà íuÇ…Ç»ÇÈ
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return rettra;
+	}
+
 
 	//int symboneno = 0;
 	//int existflag = 0;
@@ -6522,6 +7021,7 @@ ChaVector3 CBone::CalcFbxScaleAnim(bool limitdegflag, int srcmotid, double srcfr
 	ChaVector3 iniscale = ChaVector3(1.0f, 1.0f, 1.0f);
 
 
+
 	ChaMatrix wmanim = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 	ChaMatrix fbxwm;
 	if (GetType() != FBXBONE_NULL) {
@@ -6561,6 +7061,12 @@ ChaVector3 CBone::CalcFbxScaleAnim(bool limitdegflag, int srcmotid, double srcfr
 ChaVector3 CBone::CalcLocalScaleAnim(bool limitdegflag, int srcmotid, double srcframe)
 {
 	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return ChaVector3(1.0f, 1.0f, 1.0f);
+	}
+
 
 	ChaVector3 svec, tvec;
 	ChaMatrix rmat;
@@ -6609,6 +7115,12 @@ ChaVector3 CBone::CalcLocalScaleAnim(bool limitdegflag, int srcmotid, double src
 int CBone::PasteMotionPoint(bool limitdegflag, int srcmotid, double srcframe, CMotionPoint srcmp)
 {
 	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
 
 	CMotionPoint* newmp = 0;
 	newmp = GetMotionPoint(srcmotid, roundingframe);
@@ -6765,6 +7277,12 @@ ChaVector3 CBone::CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe)
 
 int CBone::QuaternionInOrder(bool limitdegflag, int srcmotid, double srcframe, CQuaternion* srcdstq)
 {
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+
 	CQuaternion beflocalq;
 	CMotionPoint befmp;
 	double befframe = srcframe - 1.0;
@@ -6852,7 +7370,6 @@ int CBone::CalcNewBtMat(CRigidElem* srcre, CBone* childbone, ChaMatrix* dstmat, 
 //#################################################
 int CBone::CalcNewBtMat(CModel* srcmodel, CBone* childbone, ChaMatrix* dstmat, ChaVector3* dstpos)
 {
-
 	//srcframe : éûä‘ï‚ä‘óLÇË
 
 	ChaMatrixIdentity(dstmat);
@@ -6861,6 +7378,15 @@ int CBone::CalcNewBtMat(CModel* srcmodel, CBone* childbone, ChaMatrix* dstmat, C
 	if (!childbone || !dstmat || !dstpos){
 		return 1;
 	}
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		dstmat->SetIdentity();
+		*dstpos = ChaVector3(0.0f, 0.0f, 0.0f);
+		return 0;
+	}
+
+
 
 	ChaVector3 jointfpos;
 	ChaMatrix curworld;
@@ -7096,8 +7622,8 @@ ChaVector3 CBone::GetChildWorld(){
 	}
 	else{
 		ChaMatrix wmat;
-		if (m_parent){
-			wmat = m_parent->GetBtMat();
+		if (GetParent()){
+			wmat = GetParent()->GetBtMat();
 		}
 		else{
 			wmat = GetBtMat();
@@ -7111,6 +7637,7 @@ ChaVector3 CBone::GetChildWorld(){
 
 int CBone::LoadCapsuleShape(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext)
 {
+
 	WCHAR wfilename[MAX_PATH];
 	WCHAR mpath[MAX_PATH];
 
@@ -7176,6 +7703,12 @@ CModel* CBone::GetColDisp(CBone* childbone, int srcindex)
 		return 0;
 	}
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+
 	CRigidElem* curre = GetRigidElem(childbone);
 	if (!curre) {
 		_ASSERT(0);
@@ -7200,6 +7733,12 @@ CModel* CBone::GetCurColDisp(CBone* childbone)
 		return 0;
 	}
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+
 	CRigidElem* curre = GetRigidElem(childbone);
 	if (!curre){
 		_ASSERT(0);
@@ -7215,8 +7754,15 @@ CModel* CBone::GetCurColDisp(CBone* childbone)
 	return curcoldisp;
 }
 
-void CBone::SetRigidElemOfMap(std::string srcstr, CBone* srcbone, CRigidElem* srcre){
+void CBone::SetRigidElemOfMap(std::string srcstr, CBone* srcbone, CRigidElem* srcre)
+{
 	
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return;
+	}
+
+
 	std::map<std::string, std::map<CBone*, CRigidElem*>>::iterator itrremap;
 	itrremap = m_remap.find(srcstr);
 	if (itrremap != m_remap.end()){
@@ -7269,6 +7815,14 @@ ChaMatrix CBone::GetCurrentZeroFrameMatFunc(bool limitdegflag, int updateflag, i
 	//static ChaMatrix s_firstgetmatrix;
 	//static ChaMatrix s_invfirstgetmatrix;
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		ChaMatrix inimat;
+		ChaMatrixIdentity(&inimat);
+		return inimat;
+	}
+
+
 	if ((m_curmotid <= 0) || (m_curmotid > m_motionkey.size())) {
 		//_ASSERT(0);
 		ChaMatrix inimat;
@@ -7313,6 +7867,14 @@ ChaMatrix CBone::GetCurrentZeroFrameMat(bool limitdegflag, int updateflag)
 	//ZeroFrameÇÃï“èWëOÇ∆ï“èWå„ÇÃÉ|Å[ÉYÇÃdiffÇÇ∆ÇÈïKóvÇ™Ç†ÇÈèÍçáÇ…ëŒâûÇ∑ÇÈ
 	//updateflagÇ™1ÇÃèÍçáÇ…ç≈êVèÓïÒÅB0ÇÃèÍçáÇ…ëOâÒÇÃéÊìæèÓïÒÇ∆ìØÇ∂Ç‡ÇÃÇï‘Ç∑ÅB
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		ChaMatrix inimat;
+		ChaMatrixIdentity(&inimat);
+		return inimat;
+	}
+
+
 	int inverseflag = 0;
 	return GetCurrentZeroFrameMatFunc(limitdegflag, updateflag, inverseflag);
 
@@ -7322,6 +7884,14 @@ ChaMatrix CBone::GetCurrentZeroFrameInvMat(bool limitdegflag, int updateflag)
 {
 	//ZeroFrameÇÃï“èWëOÇ∆ï“èWå„ÇÃÉ|Å[ÉYÇÃdiffÇÇ∆ÇÈïKóvÇ™Ç†ÇÈèÍçáÇ…ëŒâûÇ∑ÇÈ
 	//updateflagÇ™1ÇÃèÍçáÇ…ç≈êVèÓïÒÅB0ÇÃèÍçáÇ…ëOâÒÇÃéÊìæèÓïÒÇ∆ìØÇ∂Ç‡ÇÃÇï‘Ç∑ÅB
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		ChaMatrix inimat;
+		ChaMatrixIdentity(&inimat);
+		return inimat;
+	}
+
 
 	int inverseflag = 1;
 	return GetCurrentZeroFrameMatFunc(limitdegflag, updateflag, inverseflag);
@@ -7563,6 +8133,11 @@ ChaMatrix CBone::CalcParentGlobalMat(int srcmotid, double srcframe)
 		return retmat;
 	}
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return retmat;
+	}
+
 
 	CalcParentGlobalMatReq(&retmat, GetParent(), srcmotid, srcframe);
 
@@ -7573,11 +8148,18 @@ ChaMatrix CBone::CalcParentGlobalMat(int srcmotid, double srcframe)
 
 void CBone::CalcParentGlobalMatReq(ChaMatrix* dstmat, CBone* srcbone, int srcmotid, double srcframe)
 {
-	if (!srcbone) {
+	if (!srcbone || !dstmat) {
 		return;
 	}
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		dstmat->SetIdentity();
+		return;
+	}
+
 
 	CMotionPoint* curmp;
 	bool onaddmotion = true;
@@ -7604,6 +8186,10 @@ ChaMatrix CBone::CalcParentGlobalSRT(int srcmotid, double srcframe)
 		return retmat;
 	}
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return retmat;
+	}
 
 	CalcParentGlobalSRTReq(&retmat, GetParent(), srcmotid, srcframe);
 
@@ -7619,6 +8205,12 @@ void CBone::CalcParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone, int srcmot
 	}
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		dstmat->SetIdentity();
+	}
+
 
 	CMotionPoint* mpptr = GetMotionPoint(srcmotid, roundingframe);
 	if (!mpptr) {
@@ -7643,6 +8235,10 @@ ChaMatrix CBone::CalcFirstParentGlobalSRT()
 	if (!GetParent()) {
 		return retmat;
 	}
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return retmat;
+	}
 
 
 	CalcFirstParentGlobalSRTReq(&retmat, GetParent());
@@ -7657,6 +8253,12 @@ void CBone::CalcFirstParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone)
 	if (!srcbone || !dstmat) {
 		return;
 	}
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		dstmat->SetIdentity();
+	}
+
 
 	ChaMatrix firstSRT = srcbone->GetFirstSRT();
 	*dstmat = *dstmat * firstSRT;//childmat * currentmat   (currentmat * parentmat)
@@ -7686,6 +8288,12 @@ ChaVector3 CBone::GetLimitedLocalEul(int srcmotid, double srcframe)
 {
 	ChaVector3 reteul = ChaVector3(0.0f, 0.0f, 0.0f);
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return reteul;
+	}
+
+
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
 	CMotionPoint* curmp;
@@ -7703,6 +8311,12 @@ ChaVector3 CBone::GetLimitedLocalEul(int srcmotid, double srcframe)
 ChaVector3 CBone::GetUnlimitedLocalEul(int srcmotid, double srcframe)
 {
 	ChaVector3 reteul = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return reteul;
+	}
+
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
@@ -8070,6 +8684,12 @@ ChaVector3 CBone::GetWorldPos(bool limitdegflag, int srcmotid, double srcframe)
 		return retpos;
 	}
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return retpos;
+	}
+
+
 	ChaVector3 jointpos;
 	jointpos = GetJointFPos();
 	ChaMatrix newworldmat = GetWorldMat(limitdegflag, srcmotid, srcframe, 0);
@@ -8098,6 +8718,12 @@ int CBone::CreateIndexedMotionPoint(int srcmotid, double animleng)
 	//###############################################
 	//2022/11/01 AddMotionPointAllì‡Ç≈çsÇ§ÇÊÇ§Ç…ïœçX
 	//###############################################
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
 
 	if ((srcmotid <= 0) || (srcmotid > m_motionkey.size())) {
 		//_ASSERT(0);
@@ -8221,6 +8847,12 @@ int CBone::AdditiveCurrentToAngleLimit()
 	//ÇÊÇ¡ÇƒëSÉtÉåÅ[ÉÄÇÃÉIÉCÉâÅ[äpÇåvéZÇµÇƒÅ@ç≈ëÂílÇ∆ç≈è¨ílÇãÅÇﬂÇƒÅ@ÇªÇÍÇêßå¿Ç∆ÇµÇƒÉZÉbÉgÇ∑ÇÈ
 	//#########################################################################################################################
 
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+
 	if (m_parmodel) {
 		MOTINFO* curmi = m_parmodel->GetCurMotInfo();
 		if (curmi) {
@@ -8305,6 +8937,13 @@ int CBone::AdditiveCurrentToAngleLimit()
 
 int CBone::AdditiveAllMotionsToAngleLimit()
 {
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+
 	if (m_parmodel) {
 
 		float maxeul[3] = { -FLT_MAX, -FLT_MAX, -FLT_MAX };//ïKÇ∏çXêVÇ≥ÇÍÇÈÇÊÇ§Ç…MIN(-MAX)
@@ -8486,6 +9125,12 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 		_ASSERT(0);
 		return 1;
 	}
+
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
 
 	FbxTime fbxtime;
 	fbxtime.SetSecondDouble(0.0);
@@ -8855,6 +9500,12 @@ int CBone::InitMP(bool limitdegflag, int srcmotid, double srcframe)
 	if (!GetParModel()) {
 		return 0;
 	}
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return 0;
+	}
+
+
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
@@ -9140,6 +9791,12 @@ void CBone::RestoreFbxNodePosture(FbxNode* pNode)
 
 void CBone::SetIKTargetFlag(bool srcflag)
 {
+	//2023/04/28
+	if (GetType() != FBXBONE_NORMAL) {
+		return;
+	}
+
+
 	m_iktargetflag = srcflag;
 
 	if (srcflag == true) {

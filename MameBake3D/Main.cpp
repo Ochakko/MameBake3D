@@ -14294,7 +14294,7 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 		std::map<int, CBone*>::iterator itrbone;
 		for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
 			CBone* curbone = (CBone*)itrbone->second;
-			if (curbone) {
+			if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
 				int rigno;
 				for (rigno = 0; rigno < MAXRIGNUM; rigno++) {
 					CUSTOMRIG currig = curbone->GetCustomRig(rigno);
@@ -17053,7 +17053,7 @@ int CreateConvBoneWnd()
 		map<int, CBone*>::iterator itrbone;
 		for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
 			CBone* curbone = itrbone->second;
-			if (curbone) {
+			if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
 				const WCHAR* wbonename = curbone->GetWBoneName();
 				_ASSERT(wbonename);
 				s_modelbone[cbno] = new OWP_Label(wbonename);
@@ -17561,7 +17561,7 @@ int SetConvBone(int cbno)
 	map<int, CBone*>::iterator itrbone;
 	for (itrbone = s_convbone_bvh->GetBoneListBegin(); itrbone != s_convbone_bvh->GetBoneListEnd(); itrbone++) {
 		CBone* curbone = itrbone->second;
-		if (curbone) {
+		if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
 			int boneno = curbone->GetBoneNo();
 			int setmenuid = ID_RMENU_0 + boneno + 1 + MENUOFFSET_SETCONVBONE;
 			AppendMenu(submenu, MF_STRING, setmenuid, curbone->GetWBoneName());
@@ -17642,7 +17642,7 @@ int InitJointPair2ConvBoneWnd()
 	map<int, CBone*>::iterator itrbone;
 	for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
 		CBone* curbone = itrbone->second;
-		if (curbone) {
+		if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
 			swprintf_s(bvhbonename, MAX_PATH, L"NotSet_%03d", cbno);
 			(s_bvhbone[cbno])->setName(bvhbonename);
 			s_bvhbone_bone[cbno] = 0;
@@ -17671,7 +17671,7 @@ int SetJointPair2ConvBoneWnd()
 	map<int, CBone*>::iterator itrbone;
 	for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
 		CBone* curbone = itrbone->second;
-		if (curbone) {
+		if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
 			CBone* bvhbone = s_convbonemap[curbone];
 			if (bvhbone) {
 				swprintf_s(bvhbonename, MAX_PATH, bvhbone->GetWBoneName());
@@ -31662,7 +31662,7 @@ int SetRigRigCombo(HWND hDlgWnd, int elemno)
 		map<int, CBone*>::iterator itrcurrigrigbone;
 		for (itrcurrigrigbone = s_model->GetBoneListBegin(); itrcurrigrigbone != s_model->GetBoneListEnd(); itrcurrigrigbone++) {
 			currigrigbone = itrcurrigrigbone->second;
-			if (currigrigbone) {
+			if (currigrigbone && (currigrigbone->GetType() != FBXBONE_NULL)) {
 				WCHAR rigrigbonename[256];
 				ZeroMemory(rigrigbonename, sizeof(WCHAR) * 256);
 				wcscpy_s(rigrigbonename, 256, currigrigbone->GetWBoneName());
@@ -42234,7 +42234,7 @@ int PickRigBone(UIPICKINFO* ppickinfo, bool forrigtip, int* dstrigno)//default:f
 		std::map<int, CBone*>::iterator itrbone;
 		for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
 			CBone* curbone = (CBone*)itrbone->second;
-			if (curbone) {
+			if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
 				int rigno;
 				for (rigno = 0; rigno < MAXRIGNUM; rigno++) {
 					CUSTOMRIG currig = curbone->GetCustomRig(rigno);
@@ -42388,7 +42388,7 @@ int SetTimelineHasRigFlag()
 	std::map<int, CBone*>::iterator itrbone;
 	for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
 		CBone* curbone = (CBone*)itrbone->second;
-		if (curbone) {
+		if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
 			bool hasrigflag = s_model->ChkBoneHasRig(curbone);
 			s_owpTimeline->setHasRigFlag(curbone->GetWBoneName(), hasrigflag);
 		}

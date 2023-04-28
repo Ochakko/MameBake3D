@@ -589,7 +589,7 @@ private:
  * @return 成功したら０。
  * @detail 計算結果はGetAxisMatPar()で取得する。
  */
-	int CalcLocalAxisMat( ChaMatrix motmat, ChaMatrix axismatpar, ChaMatrix gaxisy );
+	//int CalcLocalAxisMat( ChaMatrix motmat, ChaMatrix axismatpar, ChaMatrix gaxisy );
 
 /**
  * @fn
@@ -631,7 +631,7 @@ private:
 
 	//void SetStartMat2Req();
 	//void CalcFirstAxisMatX();
-	void CalcFirstAxisMatZ();
+	//void CalcFirstAxisMatZ();
 
 	void InitAngleLimit();
 	float LimitAngle(enum tag_axiskind srckind, float srcval);
@@ -1040,11 +1040,11 @@ public: //accesser
 		return m_firstaxismatX;
 	};
 	*/
-	ChaMatrix GetFirstAxisMatZ()
-	{
-		CalcFirstAxisMatZ();
-		return m_firstaxismatZ;
-	};
+	//ChaMatrix GetFirstAxisMatZ()
+	//{
+	//	CalcFirstAxisMatZ();
+	//	return m_firstaxismatZ;
+	//};
 
 	CMotionPoint* GetMotionPoint(int srcmotid, double srcframe, bool onaddmotion = false){
 		//存在するときだけ返す。

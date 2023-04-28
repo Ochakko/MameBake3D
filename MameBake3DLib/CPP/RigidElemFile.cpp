@@ -545,7 +545,9 @@ int CRigidElemFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 				curre->SetDampanimA(dmpanimA);
 			}
 			else{
-				_ASSERT(0);
+				if (childbone->IsHipsBone() == false) {//hips‚Ì‚Æ‚«‚É‚Í³í
+					_ASSERT(0);
+				}
 			}
 		}
 		else{
