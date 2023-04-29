@@ -1083,9 +1083,11 @@ public: //accesser
 		}
 	};
 
-	int GetBoneListSize(){
+	int GetBoneListSize(){//eNullä‹Çﬁ
 		return (int)m_bonelist.size();
 	};
+	int GetBoneForMotionSize();//eNullä‹Ç‹Ç»Ç¢
+
 	std::map<int,CBone*>::iterator GetBoneListBegin(){
 		return m_bonelist.begin();
 	};

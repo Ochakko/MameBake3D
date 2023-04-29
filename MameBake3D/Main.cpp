@@ -7878,7 +7878,8 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				s_cbselbvh->setName(strmes);
 				COLORREF importantcol = RGB(168, 129, 129);
 				s_cbselbvh->setTextColor(importantcol);
-				s_maxboneno = s_convbone_bvh->GetBoneListSize();
+				//s_maxboneno = s_convbone_bvh->GetBoneListSize();
+				s_maxboneno = s_convbone_bvh->GetBoneForMotionSize();
 			}
 		}
 
@@ -10693,7 +10694,8 @@ int RetargetFile(char* fbxpath)
 			s_model = s_convbone_model_batch;
 			s_convbone_model = s_convbone_model_batch;
 			s_convbone_bvh = newmodel;
-			s_maxboneno = s_convbone_bvh->GetBoneListSize();
+			//s_maxboneno = s_convbone_bvh->GetBoneListSize();
+			s_maxboneno = s_convbone_bvh->GetBoneForMotionSize();
 
 			WCHAR wretargetfilename[MAX_PATH] = { 0L };
 			char retargetfilename[MAX_PATH] = { 0 };
@@ -12057,7 +12059,8 @@ int AddTimeLine(int newmotid, bool dorefreshtl)
 	EnterCriticalSection(&s_CritSection_LTimeline);
 
 	//EraseKeyList();
-	if (s_model && s_model->GetBoneListSize() > 0) {
+	//if (s_model && s_model->GetBoneListSize() > 0) {
+	if (s_model && (s_model->GetBoneForMotionSize() > 0)) {
 
 		if (!s_owpTimeline) {
 			//OWP_Timeline* owpTimeline = 0;
@@ -16996,14 +16999,16 @@ int CreateConvBoneWnd()
 		::MessageBox(s_mainhwnd, L"modelメニューでmodelを選択して下さい", L"model not selected !!!", MB_OK);
 		return 0;
 	}
-	if (s_model->GetBoneListSize() <= 1) {
+	//if (s_model->GetBoneListSize() <= 1) {
+	if (s_model->GetBoneForMotionSize() <= 1) {
 		return 0;
 	}
 
 
 	s_convbone_model = s_model;
 
-	s_convbonenum = s_model->GetBoneListSize();
+	//s_convbonenum = s_model->GetBoneListSize();
+	s_convbonenum = s_model->GetBoneForMotionSize();
 	if (s_convbonenum >= CONVBONEMAX) {
 		_ASSERT(0);
 		return 1;
@@ -17049,6 +17054,7 @@ int CreateConvBoneWnd()
 
 
 		WCHAR bvhbonename[MAX_PATH];
+		int listno = 0;
 		int cbno = 0;
 		map<int, CBone*>::iterator itrbone;
 		for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
@@ -17079,6 +17085,7 @@ int CreateConvBoneWnd()
 
 				cbno++;
 			}
+			listno++;
 		}
 		DbgOut(L"\n\n");
 		if (cbno != s_convbonenum) {
@@ -17570,7 +17577,8 @@ int SetConvBone(int cbno)
 			}
 		}
 	}
-	s_maxboneno = s_convbone_bvh->GetBoneListSize();
+	//s_maxboneno = s_convbone_bvh->GetBoneListSize();
+	s_maxboneno = s_convbone_bvh->GetBoneForMotionSize();
 
 	POINT pt;
 	GetCursorPos(&pt);

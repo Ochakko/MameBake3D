@@ -16677,3 +16677,18 @@ void CModel::GetTopBoneReq(CBone* srcbone, CBone** pptopbone, bool excludenullfl
 		}
 	}
 }
+
+
+int CModel::GetBoneForMotionSize() {//eNull含まない
+	int retsize = 0;
+	std::map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+		CBone* curbone = itrbone->second;
+		if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
+			retsize++;
+		}
+	}
+	return retsize;
+};
+
+

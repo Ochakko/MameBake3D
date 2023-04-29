@@ -18,7 +18,12 @@
 
 	書き出し時のRootNodeは新たに作成しない
 		RootNode*が増えないように
-		CreateNode時に自動的に作成されるRootNodeを使用する
+		CreateScene時に自動的に作成されるRootNodeを使用する
+
+
+	1.2.0.20へ向けての変更中に生じた不具合修正
+		リターゲット用のConvBoneWndにジョイント名が表示されない不具合修正
+
 
 	リターゲット設定ファイル追加
 		Test/RetargetSettingFileExample/Rokoko_bvh.rtg

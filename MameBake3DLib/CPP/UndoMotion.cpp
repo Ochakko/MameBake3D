@@ -133,7 +133,8 @@ int CUndoMotion::SaveUndoMotion(bool limitdegflag, CModel* pmodel, int curboneno
 	if( pmodel->GetCurMotInfo()->motid < 0 ){
 		return 2;
 	}
-	if( pmodel->GetBoneListSize()<= 0 ){
+	//if( pmodel->GetBoneListSize()<= 0 ){
+	if (pmodel->GetBoneForMotionSize() <= 0) {
 		return 2;
 	}
 

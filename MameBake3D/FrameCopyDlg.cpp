@@ -195,7 +195,7 @@ LRESULT CFrameCopyDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHan
 
 	GetDlgItemTextW( IDC_SLOTNAME, &(m_slotname[m_slotno][0]), SLOTNAMELEN );
 
-	int bonenum = m_model->GetBoneListSize();
+	//int bonenum = m_model->GetBoneListSize();//eNullŠÜ‚Þ
 
 	m_validelemmap.clear();
 	m_invalidelemmap.clear();
@@ -253,8 +253,8 @@ int CFrameCopyDlg::FillTree()
 {
 	//m_selecteditem = hRoot;
 
-	int shdnum;
-	shdnum = m_model->GetBoneListSize();
+	//int shdnum;
+	//shdnum = m_model->GetBoneListSize();//eNullŠÜ‚Þ
 
 	m_timap.clear();
 
@@ -641,16 +641,16 @@ int CFrameCopyDlg::SetTree2ListReq( int validorinvalid, int srcno, int addbrofla
 {
 
 	CBone* curbone = 0;
-	int bonenum = m_model->GetBoneListSize();
+	int bonenum = m_model->GetBoneListSize();//eNullŠÜ‚Þ
 
 	if( (srcno >= 0) && (srcno < bonenum) ){
 	
 		curbone = m_model->GetBoneByID( srcno );
 		if( curbone ){
 			if( validorinvalid == 0 ){
-				m_validelemmap[ srcno ] = curbone;
+				m_validelemmap[ srcno ] = curbone;//[boneno]
 			}else{
-				m_invalidelemmap[ srcno ] = curbone;
+				m_invalidelemmap[ srcno ] = curbone;//[boneno]
 			}
 		}
 	}else{
