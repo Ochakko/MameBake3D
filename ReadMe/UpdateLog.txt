@@ -1,5 +1,5 @@
-2023/04/28
-	EditMot 1.2.0.20 へ向けて
+2023/05/04
+	EditMot 1.2.0.20 RC1
 
 	トランスフォームノード(eNull)の読み書きに対応
 		モーション以外は　出来るだけ同じように書き出すことに
@@ -10,24 +10,39 @@
 		Maya2024で出力した2020.3.2のfbxを読み込んでテストOK
 
 	トランスフォームノード(eNull)にはモーションを付けないように
-		トランスフォームノード(eNull)は
-			TreeViewに表示しない
-			PickBoneで選択しない
-			IK対象にしない
-			名前が"Root", "Reference"のジョイントに対しても同様
 
 	書き出し時のRootNodeは新たに作成しない
 		RootNode*が増えないように
 		CreateScene時に自動的に作成されるRootNodeを使用する
 
-
-	1.2.0.20へ向けての変更中に生じた不具合修正
-		リターゲット用のConvBoneWndにジョイント名が表示されない不具合修正
-
-
 	リターゲット設定ファイル追加
 		Test/RetargetSettingFileExample/Rokoko_bvh.rtg
 		Test/RetargetSettingFileExample/Hunt2Hunt.rtg
+		Test/RetargetSettingFileExample/Hunt_Rokoko.rtg
+
+	ドキュメント追加
+		Documants/TroubleShooting/HipsPostureIsNotPastedOnLimitDegON.docx
+
+
+　おちゃっこLAB
+	https://ochakkolab.jp/
+
+　YouTubeチャンネル
+	https://www.youtube.com/@ochakkolab
+
+	動画
+		いろいろ直った物理でボクシングの動画	
+		https://youtu.be/Zr7fT1gsCl4
+
+	動画　作り直した位置コンストレイント
+		https://youtu.be/8p13H6MGQZ8
+
+	動画　変な風には曲がらない位置コンストレイント
+		https://youtu.be/9Xt8cxjByeA
+
+	動画　制限角度をキャプチャーする
+		https://youtu.be/mkkpo5cmLBs
+
 
 
 2023/03/27

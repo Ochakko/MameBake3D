@@ -7038,11 +7038,20 @@ ChaVector3 CBone::CalcFbxScaleAnim(bool limitdegflag, int srcmotid, double srcfr
 		ChaMatrix parentwmanim = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 		if (GetParent()->GetType() != FBXBONE_NULL) {
 			//parentfbxwm = GetParent()->GetNodeMat() * parentwmanim;
+
+			//ver. 1.2.0.20
+			//Hipsよりも上の階層にスケールを設定したトランスフォームノードがある場合のテスト結果により
+			//FbxScale計算に　NodeMatは使用しない
 			parentfbxwm = parentwmanim;
 		}
 		else {
 			//parentfbxwm.SetIdentity();
 			//parentfbxwm = GetParent()->GetNodeMat();
+
+
+			//ver. 1.2.0.20
+			//Hipsよりも上の階層にスケールを設定したトランスフォームノードがある場合のテスト結果により
+			//FbxScale計算に　NodeMatは使用しない
 			parentfbxwm = parentwmanim;
 		}
 	}
@@ -7257,6 +7266,11 @@ ChaVector3 CBone::CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe)
 	ChaMatrix rmat;
 	GetSRTMatrix(localfbxmat, &svec, &rmat, &tvec);
 
+
+
+	//ver. 1.2.0.20
+	//Hipsよりも上の階層にスケールを設定したトランスフォームノードがある場合のテスト結果により
+	//FbxTraはFbxScaleで割る
 	ChaVector3 rettvec = tvec;
 	if (svec.x != 0.0f) {
 		rettvec.x /= svec.x;
@@ -7267,6 +7281,7 @@ ChaVector3 CBone::CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe)
 	if (svec.z != 0.0f) {
 		rettvec.z /= svec.z;
 	}
+
 
 	return rettvec;
 

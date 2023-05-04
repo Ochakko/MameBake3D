@@ -26068,6 +26068,7 @@ int OnSpriteUndo()
 			//	ApplyNewLimitsToWM(s_model);//2022/12/18
 			//}
 
+
 			//limitedへの変更を　worldに反映
 			if (g_limitdegflag == true) {
 				bool allframeflag = false;
@@ -26079,6 +26080,9 @@ int OnSpriteUndo()
 				}
 				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
 			}
+
+
+
 
 			refreshEulerGraph();
 
