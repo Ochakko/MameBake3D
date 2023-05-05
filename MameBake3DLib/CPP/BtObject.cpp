@@ -326,7 +326,11 @@ int CBtObject::CreateObject(bool limitdegflag, int srcmotid, double srcframe, CB
 	btVector3 btv(btScalar(centerA.x), btScalar(centerA.y), btScalar(centerA.z));
 	btTransform transform;
 	transform.setIdentity();
-	//transform.setRotation(btq);//2023/05/05 TheHuntのCoatを物理シミュしたところ　グローバル軸が正解らしい
+	//transform.setRotation(btq);
+	//2023/05/05 TheHuntのCoatを物理シミュしたところ　剛体の軸はグローバル座標系が正解らしい
+	//バージョンアップによりfbxmotionはNodeMatのinvを掛けたものに変更した
+	//fbxmotionにNodeMatのinvを掛けた結果がidentityの時に　向きはグローバル基準軸となる
+	//bulletとfbxmotionは　グローバル基準軸で軸が一致し　そのまま流し込むことが可能となる
 	transform.setOrigin(btv);
 	m_btq.SetParams(btq.getW(), btq.getX(), btq.getY(), btq.getZ());//2023/01/17
 
@@ -360,7 +364,11 @@ int CBtObject::CreateObject(bool limitdegflag, int srcmotid, double srcframe, CB
 	btVector3 localbtv(0.0f, 0.0f, 0.0f);
 	btTransform localtransform;
 	localtransform.setIdentity();
-	//localtransform.setRotation(localbtq);//2023/05/05 TheHuntのCoatを物理シミュしたところ　グローバル軸が正解らしい
+	//localtransform.setRotation(localbtq);
+	//2023/05/05 TheHuntのCoatを物理シミュしたところ　剛体の軸はグローバル座標系が正解らしい
+	//バージョンアップによりfbxmotionはNodeMatのinvを掛けたものに変更した
+	//fbxmotionにNodeMatのinvを掛けた結果がidentityの時に　向きはグローバル基準軸となる
+	//bulletとfbxmotionは　グローバル基準軸で軸が一致し　そのまま流し込むことが可能となる
 	localtransform.setOrigin(localbtv);
 
 
@@ -495,7 +503,11 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 	rotq.inv(&invrotq);
 
 	//dsttra.setRotation(btQuaternion(invrotq.x, invrotq.y, invrotq.z, invrotq.w));
-	dsttra.setRotation(btQuaternion(0.0f, 0.0f, 0.0f, 1.0f));//2023/05/05 TheHuntのCoatを物理シミュしたところ　グローバル軸が正解らしい
+	dsttra.setRotation(btQuaternion(0.0f, 0.0f, 0.0f, 1.0f));
+	//2023/05/05 TheHuntのCoatを物理シミュしたところ　剛体の軸はグローバル座標系が正解らしい
+	//バージョンアップによりfbxmotionはNodeMatのinvを掛けたものに変更した
+	//fbxmotionにNodeMatのinvを掛けた結果がidentityの時に　向きはグローバル基準軸となる
+	//bulletとfbxmotionは　グローバル基準軸で軸が一致し　そのまま流し込むことが可能となる
 
 
 	btTransform rigidtra = curbto->m_rigidbody->getWorldTransform();
@@ -935,50 +947,80 @@ int CBtObject::SetEquilibriumPoint(bool limitdegflag, int lflag, int aflag)
 					lowereul = ChaVector3(btScalar(anglelimit.lower[0]), btScalar(anglelimit.lower[1]), btScalar(anglelimit.lower[2]));
 					uppereul = ChaVector3(btScalar(anglelimit.upper[0]), btScalar(anglelimit.upper[1]), btScalar(anglelimit.upper[2]));
 
-					CQuaternion lowereulq;
-					lowereulq.SetRotationXYZ(&eulaxisq, lowereul);
-					CQuaternion uppereulq;
-					uppereulq.SetRotationXYZ(&eulaxisq, uppereul);
 
-					btTransform lowereultra;
-					btTransform uppereultra;
-					lowereultra.setIdentity();
-					uppereultra.setIdentity();
-					btQuaternion lowerbteulq(lowereulq.x, lowereulq.y, lowereulq.z, lowereulq.w);
-					btQuaternion upperbteulq(uppereulq.x, uppereulq.y, uppereulq.z, uppereulq.w);
-					lowereultra.setRotation(lowerbteulq);
-					uppereultra.setRotation(upperbteulq);
-					btScalar lowereulz, lowereuly, lowereulx;
-					btScalar uppereulz, uppereuly, uppereulx;
-					lowereultra.getBasis().getEulerZYX(lowereulz, lowereuly, lowereulx, 1);//関数名とは裏腹に回転順序としてはXYZ
-					uppereultra.getBasis().getEulerZYX(uppereulz, uppereuly, uppereulx, 1);//関数名とは裏腹に回転順序としてはXYZ
+					//CQuaternion lowereulq;
+					//lowereulq.SetRotationXYZ(&eulaxisq, lowereul);
+					//CQuaternion uppereulq;
+					//uppereulq.SetRotationXYZ(&eulaxisq, uppereul);
+					//btTransform lowereultra;
+					//btTransform uppereultra;
+					//lowereultra.setIdentity();
+					//uppereultra.setIdentity();
+					//btQuaternion lowerbteulq(lowereulq.x, lowereulq.y, lowereulq.z, lowereulq.w);
+					//btQuaternion upperbteulq(uppereulq.x, uppereulq.y, uppereulq.z, uppereulq.w);
+					//lowereultra.setRotation(lowerbteulq);
+					//uppereultra.setRotation(upperbteulq);
+					//btScalar lowereulz, lowereuly, lowereulx;
+					//btScalar uppereulz, uppereuly, uppereulx;
+					//lowereultra.getBasis().getEulerZYX(lowereulz, lowereuly, lowereulx, 1);//関数名とは裏腹に回転順序としてはXYZ
+					//uppereultra.getBasis().getEulerZYX(uppereulz, uppereuly, uppereulx, 1);//関数名とは裏腹に回転順序としてはXYZ
+					//btScalar startx, endx, starty, endy, startz, endz;
+					//if (lowereulx <= uppereulx) {
+					//	startx = lowereulx;
+					//	endx = uppereulx;
+					//}
+					//else {
+					//	startx = uppereulx;
+					//	endx = lowereulx;
+					//}
+					//if (lowereuly <= uppereuly) {
+					//	starty = lowereuly;
+					//	endy = uppereuly;
+					//}
+					//else {
+					//	starty = uppereuly;
+					//	endy = lowereuly;
+					//}
+					//if (lowereulz <= uppereulz) {
+					//	startz = lowereulz;
+					//	endz = uppereulz;
+					//}
+					//else {
+					//	startz = uppereulz;
+					//	endz = lowereulz;
+					//}
 
 
+				//2023/05/05 TheHuntのCoatを物理シミュしたところ　剛体の軸はグローバル座標系が正解らしい
+				//バージョンアップによりfbxmotionはNodeMatのinvを掛けたものに変更した
+				//fbxmotionにNodeMatのinvを掛けた結果がidentityの時に　向きはグローバル基準軸となる
+				//bulletとfbxmotionは　グローバル基準軸で軸が一致し　そのまま流し込むことが可能となる
 					btScalar startx, endx, starty, endy, startz, endz;
-					if (lowereulx <= uppereulx) {
-						startx = lowereulx;
-						endx = uppereulx;
+					if (lowereul.x <= uppereul.x) {
+						startx = lowereul.x;
+						endx = uppereul.x;
 					}
 					else {
-						startx = uppereulx;
-						endx = lowereulx;
+						startx = uppereul.x;
+						endx = lowereul.x;
 					}
-					if (lowereuly <= uppereuly) {
-						starty = lowereuly;
-						endy = uppereuly;
-					}
-					else {
-						starty = uppereuly;
-						endy = lowereuly;
-					}
-					if (lowereulz <= uppereulz) {
-						startz = lowereulz;
-						endz = uppereulz;
+					if (lowereul.y <= uppereul.y) {
+						starty = lowereul.y;
+						endy = uppereul.y;
 					}
 					else {
-						startz = uppereulz;
-						endz = lowereulz;
+						starty = uppereul.y;
+						endy = lowereul.y;
 					}
+					if (lowereul.z <= uppereul.z) {
+						startz = lowereul.z;
+						endz = uppereul.z;
+					}
+					else {
+						startz = uppereul.z;
+						endz = lowereul.z;
+					}
+
 
 					dofC->setAngularLowerLimit(btVector3(startx, starty, startz));
 					dofC->setAngularUpperLimit(btVector3(endx, endy, endz));
