@@ -326,7 +326,7 @@ int CBtObject::CreateObject(bool limitdegflag, int srcmotid, double srcframe, CB
 	btVector3 btv(btScalar(centerA.x), btScalar(centerA.y), btScalar(centerA.z));
 	btTransform transform;
 	transform.setIdentity();
-	transform.setRotation(btq);
+	//transform.setRotation(btq);//2023/05/05 TheHuntのCoatを物理シミュしたところ　グローバル軸が正解らしい
 	transform.setOrigin(btv);
 	m_btq.SetParams(btq.getW(), btq.getX(), btq.getY(), btq.getZ());//2023/01/17
 
@@ -360,7 +360,7 @@ int CBtObject::CreateObject(bool limitdegflag, int srcmotid, double srcframe, CB
 	btVector3 localbtv(0.0f, 0.0f, 0.0f);
 	btTransform localtransform;
 	localtransform.setIdentity();
-	localtransform.setRotation(localbtq);
+	//localtransform.setRotation(localbtq);//2023/05/05 TheHuntのCoatを物理シミュしたところ　グローバル軸が正解らしい
 	localtransform.setOrigin(localbtv);
 
 
@@ -494,7 +494,8 @@ int CBtObject::CalcConstraintTransform(int chilflag, CRigidElem* curre, CBtObjec
 	CQuaternion invrotq;
 	rotq.inv(&invrotq);
 
-	dsttra.setRotation(btQuaternion(invrotq.x, invrotq.y, invrotq.z, invrotq.w));
+	//dsttra.setRotation(btQuaternion(invrotq.x, invrotq.y, invrotq.z, invrotq.w));
+	dsttra.setRotation(btQuaternion(0.0f, 0.0f, 0.0f, 1.0f));//2023/05/05 TheHuntのCoatを物理シミュしたところ　グローバル軸が正解らしい
 
 
 	btTransform rigidtra = curbto->m_rigidbody->getWorldTransform();

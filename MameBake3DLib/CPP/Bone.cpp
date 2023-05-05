@@ -9256,6 +9256,7 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 						//その場合
 						//そのままでは　モーションが合わず傾いたりするので　Identityで初期化する
 						globalmat.SetIdentity();
+
 					}
 					else {
 						//カーブを持たないモーションだけのfbxは　ここを通る
