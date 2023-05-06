@@ -1158,6 +1158,12 @@ void CreateSkinMeshReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 		return;
 	}
 
+	if (pmodel->GetNoBoneFlag() == true) {
+		_ASSERT(0);
+		return;
+	}
+
+
 	FbxNode* srcnode = ploadnode->GetNode();
 	FbxNode* psavenode = 0;
 
@@ -1185,66 +1191,71 @@ void CreateSkinMeshReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 
 								FbxGeometry* lSaveMeshAttribute = (FbxGeometry*)psavenode->GetNodeAttribute();
 
-								int skinno;
-								for (skinno = 0; skinno < loadskincount; skinno++) {
-									FbxSkin* lLoadSkin = (FbxSkin*)lLoadMeshAttribute->GetDeformer(skinno);
-									if (lLoadSkin) {
-										FbxSkin* lSaveSkin = FbxSkin::Create(pScene, lLoadSkin->GetName());
-										if (lSaveSkin) {
-											//lSaveSkin->Copy(*lLoadSkin);
+								if (loadskincount >= 1) {
+									int skinno;
+									for (skinno = 0; skinno < loadskincount; skinno++) {
+										FbxSkin* lLoadSkin = (FbxSkin*)lLoadMeshAttribute->GetDeformer(skinno);
+										if (lLoadSkin) {
+											FbxSkin* lSaveSkin = FbxSkin::Create(pScene, lLoadSkin->GetName());
+											if (lSaveSkin) {
+												//lSaveSkin->Copy(*lLoadSkin);
 
-											int loadclustercount = lLoadSkin->GetClusterCount();
-											int clusterno;
-											for (clusterno = 0; clusterno < loadclustercount; clusterno++) {
-												FbxCluster* lLoadCluster = lLoadSkin->GetCluster(clusterno);
-												if (lLoadCluster) {
-													FbxCluster* lSaveCluster = FbxCluster::Create(pScene, lLoadCluster->GetName());
-													if (lSaveCluster) {
-														//lSaveCluster->Copy(*lLoadCluster);
+												int loadclustercount = lLoadSkin->GetClusterCount();
+												int clusterno;
+												for (clusterno = 0; clusterno < loadclustercount; clusterno++) {
+													FbxCluster* lLoadCluster = lLoadSkin->GetCluster(clusterno);
+													if (lLoadCluster) {
+														FbxCluster* lSaveCluster = FbxCluster::Create(pScene, lLoadCluster->GetName());
+														if (lSaveCluster) {
+															//lSaveCluster->Copy(*lLoadCluster);
 
-														FbxNode* lLoadSkel = lLoadCluster->GetLink();
-														if (lLoadSkel) {
-															map<FbxNode*, FbxNode*>::iterator itrsaveskel;
-															itrsaveskel = s_loadnode2savenode.find(lLoadSkel);
-															if (itrsaveskel != s_loadnode2savenode.end()) {
-																FbxNode* lSaveSkel = itrsaveskel->second;
-																if (lSaveSkel) {
-																	lSaveCluster->SetLink(lSaveSkel);
+															FbxNode* lLoadSkel = lLoadCluster->GetLink();
+															if (lLoadSkel) {
+																map<FbxNode*, FbxNode*>::iterator itrsaveskel;
+																itrsaveskel = s_loadnode2savenode.find(lLoadSkel);
+																if (itrsaveskel != s_loadnode2savenode.end()) {
+																	FbxNode* lSaveSkel = itrsaveskel->second;
+																	if (lSaveSkel) {
+																		lSaveCluster->SetLink(lSaveSkel);
 
-																	lSaveCluster->SetLinkMode(lLoadCluster->GetLinkMode());
+																		lSaveCluster->SetLinkMode(lLoadCluster->GetLinkMode());
 
-																	FbxAMatrix clustertransformmat;
-																	lLoadCluster->GetTransformMatrix(clustertransformmat);
-																	lSaveCluster->SetTransformMatrix(clustertransformmat);
+																		FbxAMatrix clustertransformmat;
+																		lLoadCluster->GetTransformMatrix(clustertransformmat);
+																		lSaveCluster->SetTransformMatrix(clustertransformmat);
 
-																	FbxAMatrix clusterlinkmat;
-																	lLoadCluster->GetTransformLinkMatrix(clusterlinkmat);
-																	lSaveCluster->SetTransformLinkMatrix(clusterlinkmat);
+																		FbxAMatrix clusterlinkmat;
+																		lLoadCluster->GetTransformLinkMatrix(clusterlinkmat);
+																		lSaveCluster->SetTransformLinkMatrix(clusterlinkmat);
 
 
-																	int loadindicesnum = lLoadCluster->GetControlPointIndicesCount();
-																	int* ploadindices = lLoadCluster->GetControlPointIndices();
-																	double* ploadw = lLoadCluster->GetControlPointWeights();
+																		int loadindicesnum = lLoadCluster->GetControlPointIndicesCount();
+																		int* ploadindices = lLoadCluster->GetControlPointIndices();
+																		double* ploadw = lLoadCluster->GetControlPointWeights();
 
-																	//lSaveCluster->SetControlPointIWCount(loadindicesnum);
+																		//lSaveCluster->SetControlPointIWCount(loadindicesnum);
 
-																	if ((loadindicesnum > 0) && ploadindices && ploadw) {
-																		int index;
-																		for (index = 0; index < loadindicesnum; index++) {
-																			int curindex = *(ploadindices + index);
-																			double curw = *(ploadw + index);
-																			lSaveCluster->AddControlPointIndex(curindex, curw);
+																		if ((loadindicesnum > 0) && ploadindices && ploadw) {
+																			int index;
+																			for (index = 0; index < loadindicesnum; index++) {
+																				int curindex = *(ploadindices + index);
+																				double curw = *(ploadw + index);
+																				lSaveCluster->AddControlPointIndex(curindex, curw);
+																			}
+																		}
+																		else {
+																			//_ASSERT(0);
 																		}
 																	}
 																	else {
-																		//_ASSERT(0);
+																		_ASSERT(0);
 																	}
+
+																	lSaveSkin->AddCluster(lSaveCluster);
 																}
 																else {
 																	_ASSERT(0);
 																}
-
-																lSaveSkin->AddCluster(lSaveCluster);
 															}
 															else {
 																_ASSERT(0);
@@ -1258,14 +1269,15 @@ void CreateSkinMeshReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 														_ASSERT(0);
 													}
 												}
-												else {
-													_ASSERT(0);
-												}
-											}
 
-											lSaveMeshAttribute->AddDeformer(lSaveSkin);
+												lSaveMeshAttribute->AddDeformer(lSaveSkin);
+											}
 										}
 									}
+								}
+								else {
+									//_ASSERT(0);
+									//lSaveMeshAttribute->Copy(*lLoadMeshAttribute);
 								}
 							//}
 						}
@@ -1846,7 +1858,46 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene,
 	// set the shading mode to view texture
 	//lNode->SetShadingMode(FbxNode::eTextureShading);
 	// rotate the plane
-	lNode->LclRotation.Set(srcnode->LclRotation);
+	
+	
+	//lNode->LclRotation.Set(srcnode->LclRotation);
+	FbxDouble3 fbxLclPos;
+	FbxDouble3 fbxRotOff;
+	FbxDouble3 fbxRotPiv;
+	FbxDouble3 fbxPreRot;
+	FbxDouble3 fbxLclRot;
+	FbxDouble3 fbxPostRot;
+	FbxDouble3 fbxSclOff;
+	FbxDouble3 fbxSclPiv;
+	FbxDouble3 fbxLclScl;
+	bool fbxrotationActive;
+	EFbxRotationOrder rotationorder;
+	FbxTime fbxtime;
+	fbxtime.SetSecondDouble(0.0);
+	fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
+	fbxLclRot = srcnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+	fbxLclScl = srcnode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
+	fbxRotOff = srcnode->GetRotationOffset(FbxNode::eSourcePivot);
+	fbxRotPiv = srcnode->GetRotationPivot(FbxNode::eSourcePivot);
+	fbxPreRot = srcnode->GetPreRotation(FbxNode::eSourcePivot);
+	fbxPostRot = srcnode->GetPostRotation(FbxNode::eSourcePivot);
+	fbxSclOff = srcnode->GetScalingOffset(FbxNode::eSourcePivot);
+	fbxSclPiv = srcnode->GetScalingPivot(FbxNode::eSourcePivot);
+	fbxrotationActive = srcnode->GetRotationActive();
+	srcnode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+
+	lNode->SetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+	lNode->LclTranslation.Set(fbxLclPos);
+	lNode->LclRotation.Set(fbxLclRot);
+	lNode->LclScaling.Set(fbxLclScl);
+	lNode->SetRotationOffset(FbxNode::eSourcePivot, fbxRotOff);
+	lNode->SetRotationPivot(FbxNode::eSourcePivot, fbxRotPiv);
+	lNode->SetPreRotation(FbxNode::eSourcePivot, fbxPreRot);
+	lNode->SetPostRotation(FbxNode::eSourcePivot, fbxPostRot);
+	lNode->SetScalingOffset(FbxNode::eSourcePivot, fbxSclOff);
+	lNode->SetScalingPivot(FbxNode::eSourcePivot, fbxSclPiv);
+	lNode->SetRotationActive(fbxrotationActive);
+
 
 	// Set material mapping.
 	FbxGeometryElementMaterial* lLoadMaterialElement = lLoadMesh->GetElementMaterial(0);

@@ -1189,7 +1189,9 @@ public: //accesser
 		return m_curmotinfo;
 	};
 	void SetCurMotInfo( MOTINFO* srcinfo ){
-		m_curmotinfo = srcinfo;
+		if (m_curmotinfo) {
+			m_curmotinfo = srcinfo;
+		}
 	};
 	MOTINFO* GetFirstValidMotInfo()
 	{
@@ -1510,6 +1512,15 @@ public: //accesser
 	{
 		return m_nodeonload;
 	}
+	void SetNoBoneFlag(bool srcflag)
+	{
+		m_noboneflag = srcflag;
+	}
+	bool GetNoBoneFlag()
+	{
+		return m_noboneflag;
+	}
+
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];
@@ -1628,6 +1639,9 @@ private:
 	CNodeOnLoad* m_nodeonload;//CNodeOnLoad of Root Node.
 	std::map<FbxNode*, CMQOObject*> m_node2mqoobj;
 	std::map<FbxNode*, CBone*> m_node2bone;
+
+	bool m_noboneflag;
+
 
 	int m_loadbonecount;//GetFbxAnim—p
 };

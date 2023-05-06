@@ -564,6 +564,7 @@ int CModel::InitParams()
 
 	::ZeroMemory(m_setfl4x4, sizeof(float) * 16 * MAXCLUSTERNUM);//SetShaderConst用
 
+	m_noboneflag = false;
 
 	InitUndoMotion( 0 );
 
@@ -961,7 +962,11 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 				dummybone->LoadCapsuleShape(m_pdev, pd3dImmediateContext);//!!!!!!!!!!
 				m_topbone = dummybone;
 			}
+			SetNoBoneFlag(true);
 			//_ASSERT(0);
+		}
+		else {
+			SetNoBoneFlag(false);
 		}
 	//}
 
@@ -1088,6 +1093,7 @@ int CModel::LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* psc
 	if(!GetTopBone()){
 		return 0;
 	}
+
 
 	this->m_tlFunc = tlfunc;//未使用
 
@@ -4588,6 +4594,11 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 	SetLoadingMotionCount(lAnimStackCount);
 
 	DbgOut( L"FBX anim num %d\r\n", lAnimStackCount );
+
+
+	if (GetNoBoneFlag() == true) {
+		return 0;
+	}
 
 	if( lAnimStackCount <= 0 ){
 		//_ASSERT( 0 );

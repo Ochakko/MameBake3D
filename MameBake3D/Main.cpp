@@ -12147,90 +12147,91 @@ int AddTimeLine(int newmotid, bool dorefreshtl)
 				}
 				bool shortlabel = true;
 				s_owpLTimeline = new OWP_Timeline(shortlabel, L"EditRangeTimeLine");
-				s_owpLTimeline->setDispKeyFlag(true);
-				//s_LtimelineWnd->addParts(*s_owpLTimeline);//playerbuttonより後
-				s_LTSeparator->addParts1(*s_owpLTimeline);
-				s_owpLTimeline->setCursorListener([]() {
-					if (s_model) {
-						s_LcursorFlag = true;
-					}
-					});
-				s_owpLTimeline->setSelectListener([]() {
-					if (s_model) {
-						s_selectFlag = true;
-					}
-					});
-				s_owpLTimeline->setMouseMDownListener([]() {
-					if (s_model) {
-						s_timelinembuttonFlag = true;
-						//if (s_mbuttoncnt == 0) {
-						//	s_mbuttoncnt = 1;
-						//}
-						//else {
-						//	s_mbuttoncnt = 0;
-						//}
-					}
-					});
-				s_owpLTimeline->setMouseWheelListener([]() {
-					if (s_model) {
-						if ((g_keybuf['S'] & 0x80) == 0) {//Scroll の S
-							if (s_timelinewheelFlag == false) {
-								s_timelinewheelFlag = true;
-								s_timelineshowposFlag = false;
-								s_LcursorFlag = true;
+				if (s_owpLTimeline) {
+					s_owpLTimeline->setDispKeyFlag(true);
+					//s_LtimelineWnd->addParts(*s_owpLTimeline);//playerbuttonより後
+					s_LTSeparator->addParts1(*s_owpLTimeline);
+					s_owpLTimeline->setCursorListener([]() {
+						if (s_model) {
+							s_LcursorFlag = true;
+						}
+						});
+					s_owpLTimeline->setSelectListener([]() {
+						if (s_model) {
+							s_selectFlag = true;
+						}
+						});
+					s_owpLTimeline->setMouseMDownListener([]() {
+						if (s_model) {
+							s_timelinembuttonFlag = true;
+							//if (s_mbuttoncnt == 0) {
+							//	s_mbuttoncnt = 1;
+							//}
+							//else {
+							//	s_mbuttoncnt = 0;
+							//}
+						}
+						});
+					s_owpLTimeline->setMouseWheelListener([]() {
+						if (s_model) {
+							if ((g_keybuf['S'] & 0x80) == 0) {//Scroll の S
+								if (s_timelinewheelFlag == false) {
+									s_timelinewheelFlag = true;
+									s_timelineshowposFlag = false;
+									s_LcursorFlag = true;
+								}
+							}
+							else {
+								if (s_timelineshowposFlag == false) {
+									s_timelinewheelFlag = false;
+									s_timelineshowposFlag = true;
+								}
 							}
 						}
-						else {
-							if (s_timelineshowposFlag == false) {
-								s_timelinewheelFlag = false;
-								s_timelineshowposFlag = true;
-							}
-						}
+						});
+
+
+					if (s_parentcheck) {
+						delete s_parentcheck;
+						s_parentcheck = 0;
 					}
-					});
+					s_parentcheck = new OWP_CheckBoxA(L"ParentEuler", 1);//parentcheck ON by default
+					//s_LtimelineWnd->addParts(*s_parentcheck);
+					//s_LTSeparator->addParts2(*s_parentcheck);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!parentwindow libfbxdll error 2021/03/04 comment out tmp
+					//s_parentcheck->setButtonListener([]() { 
+					//	if (s_model) {
+					//		refreshEulerGraph();
+					//	}
+					//});
 
 
-				if (s_parentcheck) {
-					delete s_parentcheck;
-					s_parentcheck = 0;
+					if (s_owpEulerGraph) {
+						delete s_owpEulerGraph;
+						s_owpEulerGraph = 0;
+					}
+					s_owpEulerGraph = new OWP_EulerGraph(L"EulerGraph");
+					if (s_owpEulerGraph) {
+						//s_LtimelineWnd->addParts(*s_owpEulerGraph);
+						s_LTSeparator->addParts2(*s_owpEulerGraph);
+					}
+
+					//OrgWinGUI::WindowSize graphsize = OrgWinGUI::WindowSize(s_LTSeparator->getSize().x - 8, 60);
+					//s_owpEulerGraph->setSize(graphsize);
+					//OrgWinGUI::WindowPos graphpos = OrgWinGUI::WindowPos(0, 16);
+					//s_owpEulerGraph->setPos(graphpos);
+					//s_owpEulerGraph->setCursorListener([]() { 
+					//	if (s_model) {
+					//		s_LcursorFlag = true;
+					//	}
+					//});
+
+					//2022/09/20 １クリック目がおかしくなる不具合を解消
+					s_LtimelineWnd->setPos(WindowPos(s_toolwidth, s_2ndposy));
+					s_LtimelineWnd->setSizeMin(OrgWinGUI::WindowSize(100, 100));
+					s_LtimelineWnd->setSize(WindowSize(s_longtimelinewidth, s_longtimelineheight));
+					s_LtimelineWnd->refreshPosAndSize();//2022/09/20
 				}
-				s_parentcheck = new OWP_CheckBoxA(L"ParentEuler", 1);//parentcheck ON by default
-				//s_LtimelineWnd->addParts(*s_parentcheck);
-				//s_LTSeparator->addParts2(*s_parentcheck);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!parentwindow libfbxdll error 2021/03/04 comment out tmp
-				//s_parentcheck->setButtonListener([]() { 
-				//	if (s_model) {
-				//		refreshEulerGraph();
-				//	}
-				//});
-
-
-				if (s_owpEulerGraph) {
-					delete s_owpEulerGraph;
-					s_owpEulerGraph = 0;
-				}
-				s_owpEulerGraph = new OWP_EulerGraph(L"EulerGraph");
-				//s_LtimelineWnd->addParts(*s_owpEulerGraph);
-				s_LTSeparator->addParts2(*s_owpEulerGraph);
-
-				//OrgWinGUI::WindowSize graphsize = OrgWinGUI::WindowSize(s_LTSeparator->getSize().x - 8, 60);
-				//s_owpEulerGraph->setSize(graphsize);
-				//OrgWinGUI::WindowPos graphpos = OrgWinGUI::WindowPos(0, 16);
-				//s_owpEulerGraph->setPos(graphpos);
-				//s_owpEulerGraph->setCursorListener([]() { 
-				//	if (s_model) {
-				//		s_LcursorFlag = true;
-				//	}
-				//});
-
-
-
-
-				//2022/09/20 １クリック目がおかしくなる不具合を解消
-				s_LtimelineWnd->setPos(WindowPos(s_toolwidth, s_2ndposy));
-				s_LtimelineWnd->setSizeMin(OrgWinGUI::WindowSize(100, 100));
-				s_LtimelineWnd->setSize(WindowSize(s_longtimelinewidth, s_longtimelineheight));
-				s_LtimelineWnd->refreshPosAndSize();//2022/09/20
-
+				
 			}
 		}
 
@@ -13305,9 +13306,11 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 				return 1;
 			}
 			//EraseKeyList();
-			s_owpTimeline->setCurrentLine(0);
-			//s_owpTimeline->setCurrentTime( 0.0 );
-			s_owpTimeline->setCurrentTime(1.0);
+			if (s_owpTimeline) {
+				s_owpTimeline->setCurrentLine(0);
+				//s_owpTimeline->setCurrentTime( 0.0 );
+				s_owpTimeline->setCurrentTime(1.0);
+			}
 			s_curmotid = selmotid;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 			if (dorefreshflag) {
@@ -13361,7 +13364,7 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 		}
 	}
 	else {
-		if (s_model) {
+		if (s_model && s_owpLTimeline && s_owpEulerGraph) {
 			//double curframe = s_model->GetCurMotInfo()->curframe;
 			double curframe = 1.0;
 			s_owpLTimeline->setCurrentTime(curframe, true);
@@ -13369,7 +13372,9 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 		}
 	}
 
-	s_owpLTimeline->selectClear();
+	if (s_owpLTimeline) {
+		s_owpLTimeline->selectClear();
+	}
 
 
 	DispModelPanel();
@@ -13386,8 +13391,12 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 
 
 	if (s_model->GetInitAxisMatX() == 0) {//OnAnimMenuに移動
-		s_owpLTimeline->setCurrentTime(0.0, true);
-		s_owpEulerGraph->setCurrentTime(0.0, false);
+		if (s_owpLTimeline) {
+			s_owpLTimeline->setCurrentTime(0.0, true);
+		}
+		if (s_owpEulerGraph) {
+			s_owpEulerGraph->setCurrentTime(0.0, false);
+		}
 		s_model->SetMotionFrame(0.0);
 		ChaMatrix tmpwm = s_model->GetWorldMat();
 		s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
@@ -18153,8 +18162,12 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 		return 0;
 	}
 
-
-
+	if (s_model->GetNoBoneFlag()) {
+		return 0;
+	}
+	if (!s_owpTimeline || !s_owpLTimeline || !s_owpEulerGraph) {
+		return 0;
+	}
 
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//previewmodeがglobalなのでmodelごとにモードを設定するようにはなっていない。
@@ -18833,7 +18846,7 @@ int SaveProject()
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel) {
+		if (curmodel && s_owpLTimeline && s_owpEulerGraph) {
 			s_owpLTimeline->setCurrentTime(0.0, true);
 			s_owpEulerGraph->setCurrentTime(0.0, false);
 			curmodel->SetMotionFrame(0.0);
@@ -21372,12 +21385,13 @@ int SetLTimelineMark(int curboneno)
 						s_owpPlayerButton->setJointName(markname);//2023/01/08
 					}
 
-
-					double frame;
-					for (frame = 0.0; frame < s_model->GetCurMotInfo()->frameleng; frame += 1.0) {
-						KeyInfo chkki = s_owpTimeline->ExistKey(curlineno, frame);
-						if (chkki.lineIndex >= 0) {
-							s_owpLTimeline->newKey(markname, frame, 0);
+					if (s_owpTimeline && s_owpLTimeline) {
+						double frame;
+						for (frame = 0.0; frame < s_model->GetCurMotInfo()->frameleng; frame += 1.0) {
+							KeyInfo chkki = s_owpTimeline->ExistKey(curlineno, frame);
+							if (chkki.lineIndex >= 0) {
+								s_owpLTimeline->newKey(markname, frame, 0);
+							}
 						}
 					}
 				}
@@ -21386,9 +21400,12 @@ int SetLTimelineMark(int curboneno)
 		}
 	}
 
-	s_owpLTimeline->callRewrite();
-	s_owpTimeline->setRewriteOnChangeFlag(true);		//再描画要求を再開
-
+	if (s_owpLTimeline) {
+		s_owpLTimeline->callRewrite();
+	}
+	if (s_owpTimeline) {
+		s_owpTimeline->setRewriteOnChangeFlag(true);		//再描画要求を再開
+	}
 	return 0;
 }
 
@@ -22315,7 +22332,7 @@ int CopyLimitedWorldToWorld(CModel* srcmodel, bool allframeflag, bool setcursorf
 		}
 
 
-		{
+		if (s_owpLTimeline) {
 			double curframe = s_owpLTimeline->getCurrentTime();
 			srcmodel->SetMotionFrame(curframe);
 			srcmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
@@ -22348,7 +22365,7 @@ int CopyWorldToLimitedWorld(CModel* srcmodel)
 			}
 		}
 
-		{
+		if (s_owpLTimeline) {
 			double curframe = s_owpLTimeline->getCurrentTime();
 			srcmodel->SetMotionFrame(curframe);
 			srcmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
@@ -22376,7 +22393,7 @@ int ApplyNewLimitsToWM(CModel* srcmodel)
 			}
 		}
 
-		{
+		if (s_owpLTimeline) {
 			double curframe = s_owpLTimeline->getCurrentTime();
 			srcmodel->SetMotionFrame(curframe);
 			srcmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
@@ -22404,7 +22421,7 @@ int ApplyNewLimitsToWMSelected()
 			}
 		}
 
-		{
+		if (s_owpLTimeline) {
 			double curframe = s_owpLTimeline->getCurrentTime();
 			s_model->SetMotionFrame(curframe);
 			s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
@@ -23883,12 +23900,14 @@ int OnFrameAngleLimit(bool updateonlycheckeul)
 
 int OnFramePreviewStop()
 {
-	if (!s_owpLTimeline) {
-		return 0;
+	double currenttime;
+	if (s_owpTimeline) {
+		currenttime = s_owpLTimeline->getCurrentTime();
 	}
-
-	double currenttime = s_owpLTimeline->getCurrentTime();
-
+	else {
+		currenttime = 0.0;
+	}
+	
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
@@ -23909,6 +23928,7 @@ int OnFramePreviewStop()
 
 int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 {
+
 	if (g_previewFlag != 0) {
 		if (s_savepreviewFlag == 0) {
 			//preview start frame
@@ -23941,8 +23961,12 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 	}
 
 #ifndef SKIP_EULERGRAPH__
-	s_owpLTimeline->setCurrentTime(*pnextframe, false);
-	s_owpEulerGraph->setCurrentTime(*pnextframe, false, true);
+	if (s_owpTimeline) {
+		s_owpLTimeline->setCurrentTime(*pnextframe, false);
+	}
+	if (s_owpEulerGraph) {
+		s_owpEulerGraph->setCurrentTime(*pnextframe, false, true);
+	}
 #endif
 
 
@@ -24068,8 +24092,12 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 
 			if (firstmodelflag) {
 #ifndef SKIP_EULERGRAPH__
-				s_owpLTimeline->setCurrentTime(*pnextframe, false);
-				s_owpEulerGraph->setCurrentTime(*pnextframe, false, true);
+				if (s_owpTimeline) {
+					s_owpLTimeline->setCurrentTime(*pnextframe, false);
+				}
+				if (s_owpEulerGraph) {
+					s_owpEulerGraph->setCurrentTime(*pnextframe, false, true);
+				}
 #endif
 				firstmodelflag = false;
 			}
@@ -24624,7 +24652,7 @@ int OnFrameTimeLineWnd()
 	}
 
 	if (g_selecttolastFlag) {
-		if (s_model) {
+		if (s_model && s_owpLTimeline) {
 			s_buttonselectstart = s_owpLTimeline->getCurrentTime();
 			if (s_model && s_model->GetCurMotInfo()) {
 				s_buttonselectend = s_model->GetCurMotInfo()->frameleng - 1.0;
@@ -25296,7 +25324,9 @@ int OnFrameToolWnd()
 				s_model->GetCurMotInfo()->loopflag = s_tmpmotloop;
 				double oldframeleng = s_model->GetCurMotInfo()->frameleng;
 
-				s_owpTimeline->setMaxTime(s_tmpmotframeleng);
+				if (s_owpTimeline) {
+					s_owpTimeline->setMaxTime(s_tmpmotframeleng);
+				}
 				s_model->ChangeMotFrameLeng(s_model->GetCurMotInfo()->motid, s_tmpmotframeleng);//はみ出たmpも削除
 				InitCurMotion(0, oldframeleng);
 
@@ -32011,9 +32041,13 @@ int OnTimeLineCursorFunc()
 	if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
 		double curframe;
 		curframe = s_owpLTimeline->getCurrentTime();// 選択時刻
-		s_owpTimeline->setCurrentTime(curframe, false);
-		//s_owpLTimeline->setCurrentTime(curframe, false);
-		s_owpEulerGraph->setCurrentTime(curframe, false);
+		if (s_owpTimeline) {
+			s_owpTimeline->setCurrentTime(curframe, false);
+			//s_owpLTimeline->setCurrentTime(curframe, false);
+		}
+		if (s_owpEulerGraph) {
+			s_owpEulerGraph->setCurrentTime(curframe, false);
+		}
 	}
 
 	return 0;
@@ -32044,9 +32078,15 @@ int OnTimeLineCursor()
 	}
 	else {
 		double curframe = 1.0;
-		s_owpTimeline->setCurrentTime(curframe, false);
-		s_owpLTimeline->setCurrentTime(curframe, false);
-		s_owpEulerGraph->setCurrentTime(curframe, false);
+		if (s_owpTimeline) {
+			s_owpTimeline->setCurrentTime(curframe, false);
+		}
+		if (s_owpLTimeline) {
+			s_owpLTimeline->setCurrentTime(curframe, false);
+		}
+		if (s_owpEulerGraph) {
+			s_owpEulerGraph->setCurrentTime(curframe, false);
+		}
 	}
 
 
@@ -32998,8 +33038,12 @@ void RecalcAxisX_All()
 			return;
 		}
 
-		s_owpLTimeline->setCurrentTime(0.0, true);
-		s_owpEulerGraph->setCurrentTime(0.0, false);
+		if (s_owpLTimeline) {
+			s_owpLTimeline->setCurrentTime(0.0, true);
+		}
+		if (s_owpEulerGraph) {
+			s_owpEulerGraph->setCurrentTime(0.0, false);
+		}
 		s_model->SetMotionFrame(0.0);
 		ChaMatrix tmpwm = s_model->GetWorldMat();
 		s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
@@ -42435,7 +42479,7 @@ int ClearLimitedWM(CModel* srcmodel)
 
 int SetShowPosTime()
 {
-	if (s_owpTimeline && s_owpLTimeline) {
+	if (s_owpTimeline && s_owpLTimeline && s_owpEulerGraph) {
 		double startframe, endframe, applyframe;
 		int selnum;
 		s_editrange.GetRange(&selnum, &startframe, &endframe, &applyframe);
