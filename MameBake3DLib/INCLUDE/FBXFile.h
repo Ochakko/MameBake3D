@@ -9,6 +9,7 @@ class CBVHFile;
 
 class CModel;
 class CBone;
+class CNodeOnLoad;
 
 #ifdef FBXFILECPP
 
@@ -55,7 +56,7 @@ class CBone;
 	FbxAMatrix FbxGetGlobalPosition(bool usecache, CModel* srcmodel, FbxScene* pScene, FbxNode* pNode, const FbxTime& pTime, int srcframe, FbxPose* pPose, FbxAMatrix* pParentGlobalPosition = 0);
 	FbxAMatrix FbxGetPoseMatrix(FbxPose* pPose, int pNodeIndex);
 	FbxAMatrix FbxGetGeometry(FbxNode* pNode);
-	void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* ParentGlobalPosition);
+	void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* nodeonload, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* ParentGlobalPosition);
 	FbxDouble3 FbxGetMaterialProperty(const FbxSurfaceMaterial* pMaterial, const char* pPropertyName, const char* pFactorPropertyName, char** ppTextureName);
 	FbxDouble FbxGetMaterialShininessProperty(const FbxSurfaceMaterial* pMaterial);
 	int IsValidFbxCluster(FbxCluster* cluster);
@@ -72,7 +73,7 @@ class CBone;
 	extern FbxAMatrix FbxGetGlobalPosition(bool usecache, CModel* srcmodel, FbxScene* pScene, FbxNode* pNode, const FbxTime& pTime, int srcframe, FbxPose* pPose, FbxAMatrix* pParentGlobalPosition = 0);
 	extern FbxAMatrix FbxGetPoseMatrix(FbxPose* pPose, int pNodeIndex);
 	extern FbxAMatrix FbxGetGeometry(FbxNode* pNode);
-	extern void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* ParentGlobalPosition);
+	extern void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* nodeonload, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* ParentGlobalPosition);
 	extern FbxDouble3 FbxGetMaterialProperty(const FbxSurfaceMaterial* pMaterial, const char* pPropertyName, const char* pFactorPropertyName, char** ppTextureName);
 	extern FbxDouble FbxGetMaterialShininessProperty(const FbxSurfaceMaterial* pMaterial);
 	extern int IsValidFbxCluster(FbxCluster* cluster);

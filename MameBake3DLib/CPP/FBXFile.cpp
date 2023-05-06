@@ -146,8 +146,8 @@ static int CreateFbxMaterialFromMQOMaterial(FbxManager* pSdkManager, FbxScene* p
 
 
 
-static int WriteBindPose(FbxScene* pScene, int bvhflag = 0);
-static void WriteBindPoseReq(FbxNode* pNode, FbxPose* lPose);
+static int WriteBindPose(FbxScene* pScene, CModel* pmodel, int bvhflag = 0);
+static void WriteBindPoseReq(CModel* pmodel, FbxNode* pNode, FbxPose* lPose);
 
 
 static void FindHipsFbxBoneReq(CFBXBone* srcfbxbone, CFBXBone** ppfindfbxbone);
@@ -171,7 +171,7 @@ static void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene*
 
 
 static int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaMatrix* dstnodeanimmat);//pNode = pmodel->GetBoneNode(curbone)を内部で使用
-static void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lMatrix);
+static void CalcBindMatrix(CModel* pmodel, CFBXBone* fbxbone, FbxAMatrix& lMatrix);
 
 static int WriteFBXAnimTra(bool limitdegflag, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
 static int WriteFBXAnimRot(bool limitdegflag, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
@@ -673,6 +673,46 @@ void CreateAndCopyFbxNodeReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* 
 
 				s_savenode2bone[psavenode] = ploadnode->GetBone();
 
+				{
+					FbxDouble3 fbxLclPos;
+					FbxDouble3 fbxRotOff;
+					FbxDouble3 fbxRotPiv;
+					FbxDouble3 fbxPreRot;
+					FbxDouble3 fbxLclRot;
+					FbxDouble3 fbxPostRot;
+					FbxDouble3 fbxSclOff;
+					FbxDouble3 fbxSclPiv;
+					FbxDouble3 fbxLclScl;
+					bool fbxrotationActive;
+					EFbxRotationOrder rotationorder;
+
+					FbxTime fbxtime;
+					fbxtime.SetSecondDouble(0.0);
+					fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
+					fbxLclRot = srcnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+					fbxLclScl = srcnode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
+					fbxRotOff = srcnode->GetRotationOffset(FbxNode::eSourcePivot);
+					fbxRotPiv = srcnode->GetRotationPivot(FbxNode::eSourcePivot);
+					fbxPreRot = srcnode->GetPreRotation(FbxNode::eSourcePivot);
+					fbxPostRot = srcnode->GetPostRotation(FbxNode::eSourcePivot);
+					fbxSclOff = srcnode->GetScalingOffset(FbxNode::eSourcePivot);
+					fbxSclPiv = srcnode->GetScalingPivot(FbxNode::eSourcePivot);
+					fbxrotationActive = srcnode->GetRotationActive();
+					srcnode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+
+					psavenode->SetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+					psavenode->LclTranslation.Set(fbxLclPos);
+					psavenode->LclRotation.Set(fbxLclRot);
+					psavenode->LclScaling.Set(fbxLclScl);
+					psavenode->SetRotationOffset(FbxNode::eSourcePivot, fbxRotOff);
+					psavenode->SetRotationPivot(FbxNode::eSourcePivot, fbxRotPiv);
+					psavenode->SetPreRotation(FbxNode::eSourcePivot, fbxPreRot);
+					psavenode->SetPostRotation(FbxNode::eSourcePivot, fbxPostRot);
+					psavenode->SetScalingOffset(FbxNode::eSourcePivot, fbxSclOff);
+					psavenode->SetScalingPivot(FbxNode::eSourcePivot, fbxSclPiv);
+					psavenode->SetRotationActive(fbxrotationActive);
+
+				}
 			}
 			break;
 			case FbxNodeAttribute::eMesh:
@@ -788,6 +828,47 @@ void CreateAndCopyFbxNodeReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* 
 				}
 				psavenode->Copy(*srcnode);
 
+
+				{
+					FbxDouble3 fbxLclPos;
+					FbxDouble3 fbxRotOff;
+					FbxDouble3 fbxRotPiv;
+					FbxDouble3 fbxPreRot;
+					FbxDouble3 fbxLclRot;
+					FbxDouble3 fbxPostRot;
+					FbxDouble3 fbxSclOff;
+					FbxDouble3 fbxSclPiv;
+					FbxDouble3 fbxLclScl;
+					bool fbxrotationActive;
+					EFbxRotationOrder rotationorder;
+
+					FbxTime fbxtime;
+					fbxtime.SetSecondDouble(0.0);
+					fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
+					fbxLclRot = srcnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+					fbxLclScl = srcnode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
+					fbxRotOff = srcnode->GetRotationOffset(FbxNode::eSourcePivot);
+					fbxRotPiv = srcnode->GetRotationPivot(FbxNode::eSourcePivot);
+					fbxPreRot = srcnode->GetPreRotation(FbxNode::eSourcePivot);
+					fbxPostRot = srcnode->GetPostRotation(FbxNode::eSourcePivot);
+					fbxSclOff = srcnode->GetScalingOffset(FbxNode::eSourcePivot);
+					fbxSclPiv = srcnode->GetScalingPivot(FbxNode::eSourcePivot);
+					fbxrotationActive = srcnode->GetRotationActive();
+					srcnode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+
+					psavenode->SetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+					psavenode->LclTranslation.Set(fbxLclPos);
+					psavenode->LclRotation.Set(fbxLclRot);
+					psavenode->LclScaling.Set(fbxLclScl);
+					psavenode->SetRotationOffset(FbxNode::eSourcePivot, fbxRotOff);
+					psavenode->SetRotationPivot(FbxNode::eSourcePivot, fbxRotPiv);
+					psavenode->SetPreRotation(FbxNode::eSourcePivot, fbxPreRot);
+					psavenode->SetPostRotation(FbxNode::eSourcePivot, fbxPostRot);
+					psavenode->SetScalingOffset(FbxNode::eSourcePivot, fbxSclOff);
+					psavenode->SetScalingPivot(FbxNode::eSourcePivot, fbxSclPiv);
+					psavenode->SetRotationActive(fbxrotationActive);
+
+				}
 			}
 			break;
 			case FbxNodeAttribute::eNurbs:
@@ -1464,7 +1545,7 @@ bool CreateScene(bool limitdegflag, FbxManager* pSdkManager, FbxScene* pScene, C
 	AnimateMorph(pScene, pmodel);
 
 	//if (pmodel && (pmodel->GetFromNoBindPoseFlag() == false)) {
-	WriteBindPose(pScene, s_bvhflag);
+	WriteBindPose(pScene, pmodel, s_bvhflag);
 	//}
 
 
@@ -3003,7 +3084,7 @@ int WriteBindPose(FbxScene* pScene, CModel* pmodel)
 
 
 
-int WriteBindPose(FbxScene* pScene, int bvhflag)
+int WriteBindPose(FbxScene* pScene, CModel* pmodel, int bvhflag)
 {
 	/*
 	FbxObject* FindMember	(	const FbxCriteria & 	pCriteria,
@@ -3012,6 +3093,13 @@ int WriteBindPose(FbxScene* pScene, int bvhflag)
 	*/
 
 	static int s_bvhanimcnt = 0;
+
+
+	if (!pScene || !pmodel) {
+		_ASSERT(0);
+		return 1;
+	}
+
 
 	FbxPose* lPose = FbxPose::Create(pScene,"BindPose1");
 	lPose->SetIsBindPose(true);
@@ -3064,16 +3152,16 @@ int WriteBindPose(FbxScene* pScene, int bvhflag)
 	//else {
 	//	WriteBindPoseReq(s_fbxbone, lPose);
 	//}
-	WriteBindPoseReq(pScene->GetRootNode(), lPose);
+	WriteBindPoseReq(pmodel, pScene->GetRootNode(), lPose);
 
 	pScene->AddPose(lPose);
 
 	return 0;
 }
 
-void WriteBindPoseReq(FbxNode* pNode, FbxPose* lPose)
+void WriteBindPoseReq(CModel* pmodel, FbxNode* pNode, FbxPose* lPose)
 {
-	if (!pNode || !lPose) {
+	if (!pNode || !lPose || !pmodel) {
 		_ASSERT(0);
 		return;
 	}
@@ -3084,12 +3172,25 @@ void WriteBindPoseReq(FbxNode* pNode, FbxPose* lPose)
 		CFBXBone fbxbone;
 		fbxbone.SetSkelNode(pNode);
 		CBone* curbone = itrbone->second;
-		fbxbone.SetBone(curbone);
-		
-		if ((curbone != 0) && (curbone->GetType() == FBXBONE_NORMAL)) {
+		fbxbone.SetBone(curbone);//curbone == 0のときも処理する
+	
+		FbxNodeAttribute* pAttrib = pNode->GetNodeAttribute();
+		if (pAttrib) {
+			FbxNodeAttribute::EType type = (FbxNodeAttribute::EType)(pAttrib->GetAttributeType());
+
+			//eSkeleton || eNull
+			if ((type == FbxNodeAttribute::eSkeleton) || (type == FbxNodeAttribute::eNull)) {
+				FbxAMatrix lBindMatrix;
+				lBindMatrix.SetIdentity();
+				CalcBindMatrix(pmodel, &fbxbone, lBindMatrix);
+				lPose->Add(pNode, lBindMatrix);
+			}
+		}
+		else {
+			//eNullのときにも処理をする
 			FbxAMatrix lBindMatrix;
 			lBindMatrix.SetIdentity();
-			CalcBindMatrix(&fbxbone, lBindMatrix);
+			CalcBindMatrix(pmodel, &fbxbone, lBindMatrix);
 			lPose->Add(pNode, lBindMatrix);
 		}
 	}
@@ -3099,7 +3200,7 @@ void WriteBindPoseReq(FbxNode* pNode, FbxPose* lPose)
 	for (int i = 0; i < childNodeNum; i++)
 	{
 		FbxNode* pChild = pNode->GetChild(i);  // 子ノードを取得
-		WriteBindPoseReq(pChild, lPose);
+		WriteBindPoseReq(pmodel, pChild, lPose);
 	}
 
 }
@@ -3267,8 +3368,16 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 //}
 
 
-void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lBindMatrix)
+void CalcBindMatrix(CModel* pmodel, CFBXBone* fbxbone, FbxAMatrix& lBindMatrix)
 {
+	if (!pmodel || !fbxbone) {
+		_ASSERT(0);
+		lBindMatrix.SetIdentity();
+		return;
+	}
+
+
+
 	int notexistflag = 0;
 
 	ChaVector3 curpos, parentpos;
@@ -3326,51 +3435,83 @@ void CalcBindMatrix(CFBXBone* fbxbone, FbxAMatrix& lBindMatrix)
 	}
 
 	//CBone calcbone(s_model);
-	CBone calcbone = CBone(s_model);
+	//CBone calcbone = CBone(s_model);
+	//ChaMatrix tramat;
+	//ChaMatrixIdentity(&tramat);
 
-	ChaMatrix tramat;
-	ChaMatrixIdentity(&tramat);
 
-	if (notexistflag == 1){
-		lBindMatrix.SetIdentity();
-		return;//!!!!!!!!!!!!!!! curbone == NULL
+	if (s_bvhflag == 0) {
+
+		//savenodeに対応するCBoneが存在しないeNullに対しても　bindposeが必要
+		//CBoneではなく　FbxNodeとCNodeOnLoadを使って　BindMatを取得する
+
+		FbxNode* savenode = fbxbone->GetSkelNode();
+		if (savenode) {
+			//savenodeの名前から　nodeonloadを検索
+			CNodeOnLoad* nodeonload = pmodel->FindNodeOnLoadByName(savenode->GetName());
+			if (nodeonload) {
+				lBindMatrix = nodeonload->GetBindMat();//Fbx読み込み時に　FbxSetDefaultBonePosReq()にてセットされている
+			}
+			else {
+				_ASSERT(0);
+				lBindMatrix.SetIdentity();
+			}
+		}
+		else {
+			_ASSERT(0);
+			lBindMatrix.SetIdentity();
+		}
+	}
+	else {
+
+		//bvh2Fbxの場合には　BindPoseを書き出さないことにしたので　ここは通らない
+		_ASSERT(0);
+
+
+		if (notexistflag == 1) {
+			lBindMatrix.SetIdentity();
+		}
+		else {
+			lBindMatrix.SetIdentity();
+			lBindMatrix[3][0] = curpos.x;
+			lBindMatrix[3][1] = curpos.y;
+			lBindMatrix[3][2] = curpos.z;
+			lBindMatrix[3][3] = 1.0f;
+		}
 	}
 
-
-	if ((s_bvhflag == 0) && fbxbone->GetBone() && (s_model->GetOldAxisFlagAtLoading() == 0)){
-
-		tramat = fbxbone->GetBone()->GetNodeMat();
-
-	}
-	else{
-		//bvhはfbxに変換してから使う。bvhの０フレームをこのソフトで編集する予定は今は無い。
-		ChaVector3 diffvec = curpos - parentpos;
-
-		////2022/11/23 rev. 2.7以降 bvh2fbx時にはここを通らない(bindmatは書き込まない)
-		tramat.SetIdentity();
-		tramat.data[MATI_41] = curpos.x;
-		tramat.data[MATI_42] = curpos.y;
-		tramat.data[MATI_43] = curpos.z;
-	}
-
-	lBindMatrix[0][0] = tramat.data[MATI_11];
-	lBindMatrix[0][1] = tramat.data[MATI_12];
-	lBindMatrix[0][2] = tramat.data[MATI_13];
-	lBindMatrix[0][3] = tramat.data[MATI_14];
-	lBindMatrix[1][0] = tramat.data[MATI_21];
-	lBindMatrix[1][1] = tramat.data[MATI_22];
-	lBindMatrix[1][2] = tramat.data[MATI_23];
-	lBindMatrix[1][3] = tramat.data[MATI_24];
-	lBindMatrix[2][0] = tramat.data[MATI_31];
-	lBindMatrix[2][1] = tramat.data[MATI_32];
-	lBindMatrix[2][2] = tramat.data[MATI_33];
-	lBindMatrix[2][3] = tramat.data[MATI_34];
-	lBindMatrix[3][0] = tramat.data[MATI_41];
-	lBindMatrix[3][1] = tramat.data[MATI_42];
-	lBindMatrix[3][2] = tramat.data[MATI_43];
-	lBindMatrix[3][3] = tramat.data[MATI_44];
-
-	
+	//if (notexistflag == 1){
+	//	lBindMatrix.SetIdentity();
+	//	return;//!!!!!!!!!!!!!!! curbone == NULL
+	//}
+	//if ((s_bvhflag == 0) && fbxbone->GetBone() && (s_model->GetOldAxisFlagAtLoading() == 0)){
+	//	tramat = fbxbone->GetBone()->GetNodeMat();
+	//}
+	//else{
+	//	//bvhはfbxに変換してから使う。bvhの０フレームをこのソフトで編集する予定は今は無い。
+	//	ChaVector3 diffvec = curpos - parentpos;
+	//	////2022/11/23 rev. 2.7以降 bvh2fbx時にはここを通らない(bindmatは書き込まない)
+	//	tramat.SetIdentity();
+	//	tramat.data[MATI_41] = curpos.x;
+	//	tramat.data[MATI_42] = curpos.y;
+	//	tramat.data[MATI_43] = curpos.z;
+	//}
+	//lBindMatrix[0][0] = tramat.data[MATI_11];
+	//lBindMatrix[0][1] = tramat.data[MATI_12];
+	//lBindMatrix[0][2] = tramat.data[MATI_13];
+	//lBindMatrix[0][3] = tramat.data[MATI_14];
+	//lBindMatrix[1][0] = tramat.data[MATI_21];
+	//lBindMatrix[1][1] = tramat.data[MATI_22];
+	//lBindMatrix[1][2] = tramat.data[MATI_23];
+	//lBindMatrix[1][3] = tramat.data[MATI_24];
+	//lBindMatrix[2][0] = tramat.data[MATI_31];
+	//lBindMatrix[2][1] = tramat.data[MATI_32];
+	//lBindMatrix[2][2] = tramat.data[MATI_33];
+	//lBindMatrix[2][3] = tramat.data[MATI_34];
+	//lBindMatrix[3][0] = tramat.data[MATI_41];
+	//lBindMatrix[3][1] = tramat.data[MATI_42];
+	//lBindMatrix[3][2] = tramat.data[MATI_43];
+	//lBindMatrix[3][3] = tramat.data[MATI_44];
 
 	return;
 }
@@ -4806,155 +4947,108 @@ FbxAMatrix FbxGetGlobalPosition(bool usecache, CModel* srcmodel, FbxScene* pScen
 }
 
 
-void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* ParentGlobalPosition)
+void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* nodeonload, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix* ParentGlobalPosition)
 {
-	if (!pScene || !pmodel || !curbone) {
+	if (!pScene || !pmodel || !nodeonload) {
 		return;
 	}
 
-	bool excludenullflag = true;
+	//bool excludenullflag = true;
+	
+	bool excludenullflag = false;//2023/05/06 eNullも計算に入れる
 
-	//FbxNode* pNode = pmodel->m_bone2node[curbone];
-	FbxNode* pNode = pmodel->GetBoneNode(curbone);
+
+	////FbxNode* pNode = pmodel->m_bone2node[curbone];
+	//FbxNode* pNode = pmodel->GetBoneNode(curbone);
+	FbxNode* pNode = nodeonload->GetNode();
+	CBone* curbone = nodeonload->GetBone();
+
 
 	FbxAMatrix lGlobalPosition;
 	bool        lPositionFound = false;//バインドポーズを書き出さない場合やHipsなどの場合は０になる？
 
 	lGlobalPosition.SetIdentity();
-
-
 	//FbxSkeleton* pskeleton = pNode->GetSkeleton();
 
+	if (pNode && curbone && 
+		((curbone->GetType() == FBXBONE_NORMAL) || (curbone->GetType() == FBXBONE_NULL))
+		) {
 
-	//2022/11/23
-	bool oldbvh = false;
-	FbxDocumentInfo* sceneinfo = pScene->GetSceneInfo();
-	if (sceneinfo) {
-		FbxString oldauthor = "OpenRDB user";
-		if (sceneinfo->mAuthor == oldauthor) {
-			_ASSERT(0);
-			FbxString currentrev1 = "rev. 2.7";
-			FbxString currentrev2 = "rev. 2.8";
-			FbxString currentrev3 = "rev. 2.9";
-			//2.7, 2.8が内容変更後の新バージョン
-			if ((sceneinfo->mRevision != currentrev1) && 
-				(sceneinfo->mRevision != currentrev2) && 
-				(sceneinfo->mRevision != currentrev3)) {
-				oldbvh = true;//!!!!!!!!!!!!!!!!!!!!
-			}
-		}
-	}
-
-
-	if (((pmodel->GetFromBvhFlag() == false) || ((pmodel->GetFromBvhFlag() == true) && (oldbvh == false))) &&
-		pmodel->GetHasBindPose()) {//Poseがある場合でもBindPoseでない場合は除外する
-	//if (bvhflag == 0) {
-		if (pNode) {
-			if (pPose) {
-				int lNodeIndex = pPose->Find(pNode);
-				if (lNodeIndex > -1)
-				{
-					// The bind pose is always a global matrix.
-					// If we have a rest pose, we need to check if it is
-					// stored in global or local space.
-					if (pPose->IsBindPose() || !pPose->IsLocalMatrix(lNodeIndex))
-					{
-						lGlobalPosition = FbxGetPoseMatrix(pPose, lNodeIndex);
-					}
-					else
-					{
-						// We have a local matrix, we need to convert it to
-						// a global space matrix.
-						FbxAMatrix lParentGlobalPosition;
-
-						//if (pParentGlobalPosition)
-						if (curbone->GetParent(excludenullflag))
-						{
-							lParentGlobalPosition = *ParentGlobalPosition;
-						}
-						else
-						{
-							//if (pNode->GetParent())
-							//{
-							//	//time == 0.0だけのキャッシュ無し先行計算
-							//	bool usecache = false;
-							//	int dummyframe = 0;
-							//	lParentGlobalPosition = FbxGetGlobalPosition(usecache, pmodel, pNode->GetScene(), pNode->GetParent(), pTime, dummyframe, pPose);
-							//}
-
-							lParentGlobalPosition.SetIdentity();
-						}
-
-						FbxAMatrix lLocalPosition = FbxGetPoseMatrix(pPose, lNodeIndex);
-						lGlobalPosition = lParentGlobalPosition * lLocalPosition;
-					}
-
-					lPositionFound = true;
+		//2022/11/23
+		bool oldbvh = false;
+		FbxDocumentInfo* sceneinfo = pScene->GetSceneInfo();
+		if (sceneinfo) {
+			FbxString oldauthor = "OpenRDB user";
+			if (sceneinfo->mAuthor == oldauthor) {
+				_ASSERT(0);
+				FbxString currentrev1 = "rev. 2.7";
+				FbxString currentrev2 = "rev. 2.8";
+				FbxString currentrev3 = "rev. 2.9";
+				//2.7, 2.8が内容変更後の新バージョン
+				if ((sceneinfo->mRevision != currentrev1) &&
+					(sceneinfo->mRevision != currentrev2) &&
+					(sceneinfo->mRevision != currentrev3)) {
+					oldbvh = true;//!!!!!!!!!!!!!!!!!!!!
 				}
 			}
 		}
-	}
 
-	if (lPositionFound) {//BindPoseがある場合。bvhはこちらではなくelseの方
-		curbone->SetBindMat(lGlobalPosition);
 
-		ChaMatrix nodemat, nodeanimmat;
-		nodemat.SetIdentity();
-		nodeanimmat.SetIdentity();
-		ChaMatrix localnodemat, localnodeanimmat;
-		CalcLocalNodeMat(pmodel, curbone, &localnodemat, &localnodeanimmat);//2022/12/21 support prerot postrot ...etc.
-		ChaMatrix parentnodemat, parentnodeanimmat;
-		parentnodemat.SetIdentity();
-		parentnodeanimmat.SetIdentity();
-		if (curbone->GetParent(excludenullflag)) {
-			parentnodemat = curbone->GetParent(excludenullflag)->GetNodeMat();
-			parentnodeanimmat = curbone->GetParent(excludenullflag)->GetNodeAnimMat();
+		if (((pmodel->GetFromBvhFlag() == false) || ((pmodel->GetFromBvhFlag() == true) && (oldbvh == false))) &&
+			pmodel->GetHasBindPose()) {//Poseがある場合でもBindPoseでない場合は除外する
+		//if (bvhflag == 0) {
+			if (pNode) {
+				if (pPose) {
+					int lNodeIndex = pPose->Find(pNode);
+					if (lNodeIndex > -1)
+					{
+						// The bind pose is always a global matrix.
+						// If we have a rest pose, we need to check if it is
+						// stored in global or local space.
+						if (pPose->IsBindPose() || !pPose->IsLocalMatrix(lNodeIndex))
+						{
+							lGlobalPosition = FbxGetPoseMatrix(pPose, lNodeIndex);
+						}
+						else
+						{
+							// We have a local matrix, we need to convert it to
+							// a global space matrix.
+							FbxAMatrix lParentGlobalPosition;
+
+							//if (pParentGlobalPosition)
+							if (curbone->GetParent(excludenullflag))
+							{
+								lParentGlobalPosition = *ParentGlobalPosition;
+							}
+							else
+							{
+								if (pNode->GetParent())
+								{
+									//time == 0.0だけのキャッシュ無し先行計算
+									bool usecache = false;
+									int dummyframe = 0;
+									lParentGlobalPosition = FbxGetGlobalPosition(usecache, pmodel, pNode->GetScene(), pNode->GetParent(), pTime, dummyframe, pPose);
+								}
+
+								//lParentGlobalPosition.SetIdentity();
+							}
+
+							FbxAMatrix lLocalPosition = FbxGetPoseMatrix(pPose, lNodeIndex);
+							lGlobalPosition = lParentGlobalPosition * lLocalPosition;
+						}
+
+						lPositionFound = true;
+					}
+				}
+			}
 		}
-		//nodemat = localnodemat * parentnodemat;
-		nodeanimmat = localnodeanimmat * parentnodeanimmat;//!!!!!!!!! bindmatと同じ
-		//nodemat = nodeanimmat;
 
-		nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);//!!!!!! nodeanimmatと同じ
+		if (lPositionFound) {//BindPoseがある場合。bvhはこちらではなくelseの方
+			curbone->SetBindMat(lGlobalPosition);
 
-
-		//curbone->SetPositionFound(lPositionFound);//!!!
-		curbone->SetPositionFound(true);//!!! 2022/07/30 bone markを表示するためtrueに。
-
-		curbone->SetNodeMat(nodemat);//2022/12/19
-		//curbone->SetNodeMat(nodeanimmat);
-		curbone->SetNodeAnimMat(nodeanimmat);//2022/12/21
-
-		curbone->SetGlobalPosMat(lGlobalPosition);
-
-		ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
-		ChaVector3 tmppos;
-		ChaMatrix tmpnm = curbone->GetNodeMat();
-		ChaVector3TransformCoord(&tmppos, &zeropos, &tmpnm);
-		curbone->SetJointWPos(tmppos);
-		curbone->SetJointFPos(tmppos);
-	}
-	else {
-		// There is no pose entry for that node, get the current global position instead.
-
-		// Ideally this would use parent global position and local position to compute the global position.
-		// Unfortunately the equation 
-		//    lGlobalPosition = pParentGlobalPosition * lLocalPosition
-		// does not hold when inheritance type is other than "Parent" (RSrs).
-		// To compute the parent rotation and scaling is tricky in the RrSs and Rrs cases.
-
-		ChaMatrix nodemat, nodeanimmat;
-		nodemat.SetIdentity();
-		nodeanimmat.SetIdentity();
-
-		if (pNode) {
-			//time == 0.0 の１フレーム分だけのキャッシュ無し先行計算
-			//jointの向きが設定されている場合にアニメーションの基準として使うとおかしくなった
-			//BindMatが設定されていない場合(ここを実行する場合)にはうまくいく
-			//！！！！　BindMatが設定してある場合はBindMatを使う　！！！！
-			//lGlobalPosition = pNode->EvaluateGlobalTransform(pTime);
-			//nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
-
-
+			ChaMatrix nodemat, nodeanimmat;
+			nodemat.SetIdentity();
+			nodeanimmat.SetIdentity();
 			ChaMatrix localnodemat, localnodeanimmat;
 			CalcLocalNodeMat(pmodel, curbone, &localnodemat, &localnodeanimmat);//2022/12/21 support prerot postrot ...etc.
 			ChaMatrix parentnodemat, parentnodeanimmat;
@@ -4964,48 +5058,103 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CBone* curbone, c
 				parentnodemat = curbone->GetParent(excludenullflag)->GetNodeMat();
 				parentnodeanimmat = curbone->GetParent(excludenullflag)->GetNodeAnimMat();
 			}
-			nodemat = localnodemat * parentnodemat;
-			nodeanimmat = localnodeanimmat * parentnodeanimmat;
+			//nodemat = localnodemat * parentnodemat;
+			nodeanimmat = localnodeanimmat * parentnodeanimmat;//!!!!!!!!! bindmatと同じ
+			//nodemat = nodeanimmat;
+
+			nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);//!!!!!! nodeanimmatと同じ
+			nodeonload->SetBindMat(lGlobalPosition);
+
+			//curbone->SetPositionFound(lPositionFound);//!!!
+			curbone->SetPositionFound(true);//!!! 2022/07/30 bone markを表示するためtrueに。
+
+			curbone->SetNodeMat(nodemat);//2022/12/19
+			//curbone->SetNodeMat(nodeanimmat);
+			curbone->SetNodeAnimMat(nodeanimmat);//2022/12/21
+
+			curbone->SetGlobalPosMat(lGlobalPosition);
+
+			ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
+			ChaVector3 tmppos;
+			ChaMatrix tmpnm = curbone->GetNodeMat();
+			ChaVector3TransformCoord(&tmppos, &zeropos, &tmpnm);
+			curbone->SetJointWPos(tmppos);
+			curbone->SetJointFPos(tmppos);
+		}
+		else {
+			// There is no pose entry for that node, get the current global position instead.
+
+			// Ideally this would use parent global position and local position to compute the global position.
+			// Unfortunately the equation 
+			//    lGlobalPosition = pParentGlobalPosition * lLocalPosition
+			// does not hold when inheritance type is other than "Parent" (RSrs).
+			// To compute the parent rotation and scaling is tricky in the RrSs and Rrs cases.
+
+			ChaMatrix nodemat, nodeanimmat;
+			nodemat.SetIdentity();
+			nodeanimmat.SetIdentity();
+
+			if (pNode) {
+				//time == 0.0 の１フレーム分だけのキャッシュ無し先行計算
+				//jointの向きが設定されている場合にアニメーションの基準として使うとおかしくなった
+				//BindMatが設定されていない場合(ここを実行する場合)にはうまくいく
+				//！！！！　BindMatが設定してある場合はBindMatを使う　！！！！
+				//lGlobalPosition = pNode->EvaluateGlobalTransform(pTime);
+				//nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
+
+
+				ChaMatrix localnodemat, localnodeanimmat;
+				CalcLocalNodeMat(pmodel, curbone, &localnodemat, &localnodeanimmat);//2022/12/21 support prerot postrot ...etc.
+				ChaMatrix parentnodemat, parentnodeanimmat;
+				parentnodemat.SetIdentity();
+				parentnodeanimmat.SetIdentity();
+				if (curbone->GetParent(excludenullflag)) {
+					parentnodemat = curbone->GetParent(excludenullflag)->GetNodeMat();
+					parentnodeanimmat = curbone->GetParent(excludenullflag)->GetNodeAnimMat();
+				}
+				nodemat = localnodemat * parentnodemat;
+				nodeanimmat = localnodeanimmat * parentnodeanimmat;
+			}
+
+
+			//curbone->SetPositionFound(lPositionFound);//!!!
+			curbone->SetPositionFound(true);//!!! 2022/07/30 bone markを表示するためtrueに。
+
+			curbone->SetNodeMat(nodemat);
+			//curbone->SetNodeMat(nodeanimmat);
+
+			curbone->SetNodeAnimMat(nodeanimmat);
+			curbone->SetGlobalPosMat(lGlobalPosition);
+			nodeonload->SetBindMat(lGlobalPosition);
+
+
+			ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
+			ChaVector3 tmppos;
+			ChaMatrix tmpnm = curbone->GetNodeMat();
+			ChaVector3TransformCoord(&tmppos, &zeropos, &tmpnm);
+			curbone->SetJointWPos(tmppos);
+			curbone->SetJointFPos(tmppos);
+
+
+			//}
 		}
 
-
-		//curbone->SetPositionFound(lPositionFound);//!!!
-		curbone->SetPositionFound(true);//!!! 2022/07/30 bone markを表示するためtrueに。
-
-		curbone->SetNodeMat(nodemat);
-		//curbone->SetNodeMat(nodeanimmat);
-
-		curbone->SetNodeAnimMat(nodeanimmat);
-		curbone->SetGlobalPosMat(lGlobalPosition);
-
-		ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
-		ChaVector3 tmppos;
-		ChaMatrix tmpnm = curbone->GetNodeMat();
-		ChaVector3TransformCoord(&tmppos, &zeropos, &tmpnm);
-		curbone->SetJointWPos(tmppos);
-		curbone->SetJointFPos(tmppos);
-
-
-		//}
+		//WCHAR wname[256];
+		//ZeroMemory( wname, sizeof( WCHAR ) * 256 );
+		//MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, curbone->m_bonename, 256, wname, 256 );
+		//DbgOut( L"SetDefaultBonePos : %s : wpos (%f, %f, %f)\r\n", wname, curbone->m_jointfpos.x, curbone->m_jointfpos.y, curbone->m_jointfpos.z );
 	}
 
-	//WCHAR wname[256];
-	//ZeroMemory( wname, sizeof( WCHAR ) * 256 );
-	//MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, curbone->m_bonename, 256, wname, 256 );
-	//DbgOut( L"SetDefaultBonePos : %s : wpos (%f, %f, %f)\r\n", wname, curbone->m_jointfpos.x, curbone->m_jointfpos.y, curbone->m_jointfpos.z );
-
-
-	if (curbone->GetChild(excludenullflag)) {
-		//if (curbone->GetChild()->GetChild()) {
-		FbxAMatrix parentposition = curbone->GetGlobalPosMat();
-		FbxSetDefaultBonePosReq(pScene, pmodel, curbone->GetChild(excludenullflag), pTime, pPose, &parentposition);
-		//}
-		//else {
-		//	SetDefaultBonePosReq(curbone->GetBrother(), pTime, pPose, ParentGlobalPosition);
-		//}
-	}
-	if (curbone->GetBrother(excludenullflag)) {
-		FbxSetDefaultBonePosReq(pScene, pmodel, curbone->GetBrother(excludenullflag), pTime, pPose, ParentGlobalPosition);
+	if (nodeonload) {
+		int childnum = nodeonload->GetChildNum();
+		int childno;
+		for (childno = 0; childno < childnum; childno++) {
+			CNodeOnLoad* pchild = nodeonload->GetChild(childno);
+			if (pchild) {
+				FbxAMatrix parentposition = nodeonload->GetBindMat();//parent bindmat
+				FbxSetDefaultBonePosReq(pScene, pmodel, pchild, pTime, pPose, &parentposition);
+			}
+		}
 	}
 
 }

@@ -85,11 +85,21 @@ public:
 			return 0;
 		}
 	}
+	void SetBindMat(FbxAMatrix srcmat)
+	{
+		m_bindmat = srcmat;
+	}
+	FbxAMatrix GetBindMat()
+	{
+		return m_bindmat;
+	}
+
 private:
 	int m_type;
 	FbxNode* m_pnode;
 	CBone* m_bone;
 	CMQOObject* m_mqoobject;
+	FbxAMatrix m_bindmat;
 
 	std::vector<CNodeOnLoad*> m_childonload;
 };

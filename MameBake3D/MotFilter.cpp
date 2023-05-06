@@ -318,7 +318,7 @@ int CMotFilter::FilterFunc(bool edgesmp, bool limitdegflag,
 					smpframe = frame;
 				}
 			}
-			ChaVector3 cureul = curbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, (double)smpframe, BEFEUL_BEFFRAME);// axiskind = -1 --> m_anglelimit‚ÌÀ•WŒn
+			ChaVector3 cureul = curbone->CalcLocalEulXYZ(true, limitdegflag, -1, srcmotid, (double)smpframe, BEFEUL_BEFFRAME);// axiskind = -1 --> m_anglelimit‚ÌÀ•WŒn
 			ChaVector3 curtra = curbone->CalcLocalTraAnim(limitdegflag, srcmotid, (double)smpframe);
 
 			*(m_eul + bufindex) = cureul;

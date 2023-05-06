@@ -1782,15 +1782,13 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bi
 		return 0.0f;
 	}
 
-	//2023/04/28
+	////2023/04/28
 	if (GetType() != FBXBONE_NORMAL) {
 		ChaMatrix inimat;
 		ChaMatrixIdentity(&inimat);
 		*dstmat = inimat;
 		return 0.0f;
 	}
-
-
 
 	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
 
@@ -3042,7 +3040,7 @@ CMotionPoint* CBone::PasteRotReq(bool limitdegflag, int srcmotid, double srcfram
 	int paraxsiflag = 1;
 	//int isfirstbone = 0;
 	//cureul = CalcLocalEulXYZ(-1, srcmotid, srcframe, BEFEUL_ZERO);
-	cureul = CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+	cureul = CalcLocalEulXYZ(true, limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 	SetLocalEul(limitdegflag, srcmotid, roundingframe, cureul, 0);
 
 
@@ -4581,7 +4579,7 @@ int CBone::GetNotModify180Flag(int srcmotid, double srcframe)
 }
 
 
-ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind, 
+ChaVector3 CBone::CalcLocalEulXYZ(bool excludenullflag, bool limitdegflag, int axiskind,
 	int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul)
 {
 	//###################################################################################################################
@@ -4628,15 +4626,15 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 	int isfirstbone = 0;
 	int isendbone = 0;
 
-	if (GetParent()) {
+	if (GetParent(excludenullflag)) {
 		isfirstbone = 0;
 	}
 	else {
 		isfirstbone = 1;
 	}
 
-	if (GetChild()) {
-		if (GetChild()->GetChild()) {
+	if (GetChild(excludenullflag)) {
+		if (GetChild(excludenullflag)->GetChild(excludenullflag)) {
 			isendbone = 0;
 		}
 		else {
@@ -4652,22 +4650,22 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 	CMotionPoint* curmp = 0;
 	curmp = GetMotionPoint(srcmotid, roundingframe);
 	if (curmp) {
-		if (GetParent()) {
+		if (GetParent(excludenullflag)) {
 			isfirstbone = 0;
 
 			ChaMatrix curwm, parentwm, eulmat;
-			CMotionPoint* parentmp = 0;
-			parentmp = GetParent()->GetMotionPoint(srcmotid, roundingframe);
-			if (parentmp) {
+			//CMotionPoint* parentmp = 0;
+			//parentmp = GetParent(excludenullflag)->GetMotionPoint(srcmotid, roundingframe);
+			//if (parentmp) {
 				curwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
-				parentwm = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, parentmp);
+				parentwm = GetParent(excludenullflag)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 				eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
-			}
-			else {
-				//_ASSERT(0);
-				curwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
-				eulq = ChaMatrix2Q(curwm);
-			}
+			//}
+			//else {
+			//	//_ASSERT(0);
+			//	curwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
+			//	eulq = ChaMatrix2Q(curwm);
+			//}
 		}
 		else {
 			isfirstbone = 1;
@@ -4686,8 +4684,8 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 
 	CQuaternion axisq;
 	axisq.RotationMatrix(GetNodeMat());
-	//if (GetParent()) {
-	//	axisq.RotationMatrix(GetParent()->GetNodeMat());
+	//if (GetParent(excludenullflag)) {
+	//	axisq.RotationMatrix(GetParent(excludenullflag)->GetNodeMat());
 	//}
 	//else {
 	//	axisq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
@@ -5678,7 +5676,7 @@ int CBone::SetWorldMatFromQAndTra(bool limitdegflag, int setchildflag,
 		//curmp->SetBefWorldMat(curmp->GetWorldMat());
 		SetWorldMat(limitdegflag, srcmotid, roundingframe, newmat, curmp);
 		//ChaVector3 neweul = CalcLocalEulXYZ(-1, srcmotid, roundingframe, BEFEUL_ZERO);
-		ChaVector3 neweul = CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+		ChaVector3 neweul = CalcLocalEulXYZ(true, limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 		SetLocalEul(limitdegflag, srcmotid, roundingframe, neweul, curmp);
 		if (limitdegflag == true) {
 			curmp->SetCalcLimitedWM(2);
@@ -5965,7 +5963,7 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 		//calc new eul
 		SetWorldMat(limitdegflag, srcmotid, roundingframe, srcmat, curmp);//tmp time
 		ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
-		neweul = CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+		neweul = CalcLocalEulXYZ(true, limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 		
 		
 		//if (g_limitdegflag == true) {
@@ -6047,7 +6045,7 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 		if (onlycheck == 0) {
 			SetWorldMat(limitdegflag, srcmotid, roundingframe, srcmat, curmp);
 
-			ChaVector3 neweul = CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+			ChaVector3 neweul = CalcLocalEulXYZ(true, limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 			SetLocalEul(limitdegflag, srcmotid, roundingframe, neweul, curmp);
 			if (limitdegflag == true) {
 				curmp->SetCalcLimitedWM(2);
@@ -6551,7 +6549,6 @@ ChaMatrix CBone::GetWorldMat(bool limitdegflag,
 		return curmat;
 	}
 
-
 	if (srcmp) {
 		if (limitdegflag == false) {
 			curmat = srcmp->GetWorldMat();
@@ -6560,25 +6557,10 @@ ChaMatrix CBone::GetWorldMat(bool limitdegflag,
 			}
 		}
 		else {
-			//ChaVector3 limitedeul = ChaVector3(0.0f, 0.0f, 0.0f);
-			//curmat = GetLimitedWorldMat(srcmotid, roundingframe, &limitedeul);//roundingframe
-			//if (dsteul) {
-			//	*dsteul = limitedeul;
-			//}
-			 
-			//if (srcmp->GetCalcLimitedWM() == 2) {
-				curmat = srcmp->GetLimitedWM();
-				if (dsteul) {
-					*dsteul = srcmp->GetLimitedLocalEul();
-				}
-			//}
-			//else {
-			//	ChaVector3 neweul = CalcLocalEulAndSetLimitedEul(srcmotid, roundingframe);
-			//	curmat = CalcWorldMatFromEul(0, 1, neweul, srcmotid, roundingframe, 0);
-			//	if (dsteul) {
-			//		*dsteul = neweul;
-			//	}
-			//}
+			curmat = srcmp->GetLimitedWM();
+			if (dsteul) {
+				*dsteul = srcmp->GetLimitedLocalEul();
+			}
 		}
 	}
 	else {
@@ -6592,28 +6574,13 @@ ChaMatrix CBone::GetWorldMat(bool limitdegflag,
 				}
 			}
 			else {
-				//ChaVector3 limitedeul = ChaVector3(0.0f, 0.0f, 0.0f);
-				//curmat = GetLimitedWorldMat(srcmotid, roundingframe, &limitedeul);//roundingframe
-				//if (dsteul) {
-				//	*dsteul = limitedeul;
-				//}
-				//if (srcmp->GetCalcLimitedWM() == 2) {
-					curmat = curmp->GetLimitedWM();
-					if (dsteul) {
-						*dsteul = curmp->GetLimitedLocalEul();
-					}
-				//}
-				//else {
-				//	ChaVector3 neweul = CalcLocalEulAndSetLimitedEul(srcmotid, roundingframe);
-				//	curmat = CalcWorldMatFromEul(0, 1, neweul, srcmotid, roundingframe, 0);
-				//	if (dsteul) {
-				//		*dsteul = neweul;
-				//	}
-				//}
+				curmat = curmp->GetLimitedWM();
+				if (dsteul) {
+					*dsteul = curmp->GetLimitedLocalEul();
+				}
 			}
 		}
 	}
-
 	return curmat;
 }
 
@@ -6631,7 +6598,6 @@ ChaMatrix CBone::GetCurrentWorldMat(bool multmodelwm)
 		inimat.SetIdentity();
 		return inimat;
 	}
-
 
 	MOTINFO* curmi = 0;
 	if (GetParModel()) {
@@ -7024,36 +6990,37 @@ ChaVector3 CBone::CalcFbxScaleAnim(bool limitdegflag, int srcmotid, double srcfr
 
 	ChaMatrix wmanim = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 	ChaMatrix fbxwm;
-	if (GetType() != FBXBONE_NULL) {
+	if (GetType() == FBXBONE_NORMAL) {
 		//fbxwm = GetNodeMat() * wmanim;
 		fbxwm = wmanim;
 	}
 	else {
 		fbxwm = wmanim;
+		//fbxwm = GetNodeMat() * wmanim;
 	}
 	
 	ChaMatrix parentfbxwm;
 	parentfbxwm.SetIdentity();
-	if (GetParent()) {
-		ChaMatrix parentwmanim = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-		if (GetParent()->GetType() != FBXBONE_NULL) {
-			//parentfbxwm = GetParent()->GetNodeMat() * parentwmanim;
+	if (GetParent(false)) {
+		ChaMatrix parentwmanim = GetParent(false)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+		//if (GetParent(false)->GetType() == FBXBONE_NORMAL) {
+			//parentfbxwm = GetParent(false)->GetNodeMat() * parentwmanim;
 
 			//ver. 1.2.0.20
 			//Hipsよりも上の階層にスケールを設定したトランスフォームノードがある場合のテスト結果により
 			//FbxScale計算に　NodeMatは使用しない
 			parentfbxwm = parentwmanim;
-		}
-		else {
-			//parentfbxwm.SetIdentity();
-			//parentfbxwm = GetParent()->GetNodeMat();
+		//}
+		//else {
+		//	//parentfbxwm.SetIdentity();
+		//	parentfbxwm = GetParent(false)->GetNodeMat();
 
 
-			//ver. 1.2.0.20
-			//Hipsよりも上の階層にスケールを設定したトランスフォームノードがある場合のテスト結果により
-			//FbxScale計算に　NodeMatは使用しない
-			parentfbxwm = parentwmanim;
-		}
+		//	//ver. 1.2.0.20
+		//	//Hipsよりも上の階層にスケールを設定したトランスフォームノードがある場合のテスト結果により
+		//	//FbxScale計算に　NodeMatは使用しない
+		//	//parentfbxwm = parentwmanim;
+		//}
 	}
 
 	ChaMatrix localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
@@ -7190,7 +7157,8 @@ ChaVector3 CBone::CalcFBXEulXYZ(bool limitdegflag, int srcmotid, double srcframe
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
 	ChaVector3 cureul;
-	cureul = CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+	bool excludenullflag = false;//!!!!!!!!!
+	cureul = CalcLocalEulXYZ(excludenullflag, limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 
 	return cureul;
 }
@@ -7238,7 +7206,7 @@ ChaVector3 CBone::CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe)
 
 	ChaMatrix wmanim = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 	ChaMatrix fbxwm;
-	//if (GetType() != FBXBONE_NULL) {
+	//if (GetType() == FBXBONE_NORMAL) {
 	//	fbxwm = GetNodeMat() * wmanim;
 	//}
 	//else {
@@ -7249,15 +7217,15 @@ ChaVector3 CBone::CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe)
 
 	ChaMatrix parentfbxwm;
 	parentfbxwm.SetIdentity();
-	if (GetParent()) {
-		ChaMatrix parentwmanim = GetParent()->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-		if (GetParent()->GetType() != FBXBONE_NULL) {//書き出し中にparentがeNullの場合はある
-			parentfbxwm = GetParent()->GetNodeMat() * parentwmanim;
-		}
-		else {
-			//parentfbxwm.SetIdentity();
-			parentfbxwm = GetParent()->GetNodeMat();
-		}
+	if (GetParent(false)) {
+		ChaMatrix parentwmanim = GetParent(false)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+		//if (GetParent(false)->GetType() == FBXBONE_NORMAL) {//書き出し中にparentがeNullの場合はある
+			parentfbxwm = GetParent(false)->GetNodeMat() * parentwmanim;
+		//}
+		//else {
+		//	//parentfbxwm.SetIdentity();
+		//	parentfbxwm = GetParent(false)->GetNodeMat();
+		//}
 	}
 
 	ChaMatrix localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
@@ -7281,9 +7249,8 @@ ChaVector3 CBone::CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe)
 	if (svec.z != 0.0f) {
 		rettvec.z /= svec.z;
 	}
-
-
 	return rettvec;
+
 
 	//ChaVector3 fbxtra = ChaVector3(localfbxmat.data[MATI_41], localfbxmat.data[MATI_42], localfbxmat.data[MATI_43]);
 	//return fbxtra;
@@ -9851,7 +9818,7 @@ CBone* CBone::GetParent(bool excludenullflag)
 {
 	if (m_parent) {
 		if (excludenullflag == true) {
-			if (m_parent->GetType() != FBXBONE_NULL) {
+			if (m_parent->GetType() == FBXBONE_NORMAL) {
 				return m_parent;
 			}
 			else {
@@ -9871,7 +9838,7 @@ CBone* CBone::GetChild(bool excludenullflag)
 { 
 	if (m_child) {
 		if (excludenullflag == true) {
-			if (m_child->GetType() != FBXBONE_NULL) {
+			if (m_child->GetType() == FBXBONE_NORMAL) {
 				return m_child;
 			}
 			else {
@@ -9891,7 +9858,7 @@ CBone* CBone::GetBrother(bool excludenullflag)
 { 
 	if (m_brother) {
 		if (excludenullflag == true) {
-			if (m_brother->GetType() != FBXBONE_NULL) {
+			if (m_brother->GetType() == FBXBONE_NORMAL) {
 				return m_brother;
 			}
 			else {

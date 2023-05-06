@@ -161,7 +161,7 @@ int CUndoMotion::SaveUndoMotion(bool limitdegflag, CModel* pmodel, int curboneno
 	for( itrbone = pmodel->GetBoneListBegin(); itrbone != pmodel->GetBoneListEnd(); itrbone++ ){
 		CBone* curbone = itrbone->second;
 		_ASSERT( curbone );
-		if (curbone && (curbone->GetType() != FBXBONE_NULL)){
+		if (curbone && (curbone->GetType() == FBXBONE_NORMAL)){
 			
 			//####################
 			// ANGLELIMIT of bone
@@ -390,7 +390,7 @@ int CUndoMotion::RollBackMotion(bool limitdegflag, CModel* pmodel, int* curbonen
 		CBone* curbone = itrbone->second;
 		_ASSERT( curbone );
 
-		if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
+		if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
 
 			//######################
 			//2023/02/04
@@ -456,7 +456,7 @@ int CUndoMotion::RollBackMotion(bool limitdegflag, CModel* pmodel, int* curbonen
 		map<int, CBone*>::iterator itrbone2;
 		for (itrbone2 = pmodel->GetBoneListBegin(); itrbone2 != pmodel->GetBoneListEnd(); itrbone2++) {
 			CBone* curbone = itrbone2->second;
-			if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
+			if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
 				curbone->DeleteMPOutOfRange(setmotid, newleng - 1.0);
 			}
 		}

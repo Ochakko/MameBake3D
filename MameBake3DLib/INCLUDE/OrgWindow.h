@@ -5687,7 +5687,8 @@ void s_dummyfunc()
 
 				//ラベル
 				if (g_4kresolution) {
-					hdcM->setFont(20, _T("ＭＳ ゴシック"));
+					//hdcM->setFont(20, _T("ＭＳ ゴシック"));
+					hdcM->setFont(18, _T("ＭＳ ゴシック"));
 				}
 				else {
 					hdcM->setFont(12, _T("ＭＳ ゴシック"));

@@ -1029,7 +1029,7 @@ _ASSERT(m_bonelist[0]);
 		map<int, CBone*>::iterator itrbone;
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 			CBone* curbone = itrbone->second;
-			if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
+			if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
 				curbone->SetBtKinFlag(1);
 			}
 		}
@@ -1686,7 +1686,7 @@ int CModel::Motion2Bt(bool limitdegflag, int firstflag, double nextframe, ChaMat
 	map<int, CBone*>::iterator itrbone;
 	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
 		CBone* boneptr = itrbone->second;
-		if (boneptr && boneptr->GetParent() && (boneptr->GetType() != FBXBONE_NULL)){
+		if (boneptr && boneptr->GetParent() && (boneptr->GetType() == FBXBONE_NORMAL)){
 			CRigidElem* curre = boneptr->GetParent()->GetRigidElem(boneptr);
 			if (curre){
 				boneptr->GetParent()->CalcRigidElemParams(boneptr, firstflag);
@@ -1833,7 +1833,7 @@ int CModel::SwapCurrentMotionPoint()
 	map<int, CBone*>::iterator itrbone;
 	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 		CBone* curbone = itrbone->second;
-		if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
+		if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
 			curbone->SwapCurrentMotionPoint();
 		}
 	}
@@ -2052,7 +2052,7 @@ int CModel::ClearLimitedWM(int srcmotid, double srcframe)
 	map<int, CBone*>::iterator itrbone;
 	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 		CBone* curbone = itrbone->second;
-		if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
+		if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
 			curbone->ClearLimitedWorldMat(srcmotid, srcframe);
 		}
 	}
@@ -2440,7 +2440,7 @@ int CModel::FillTimeLineOne(CBone* curbone, int lineno,
 		if (curbone->IsBranchBone()) {
 			timeline.newLine(depth, 2, ikstopflag, iktargetflag, dispname);
 		}
-		else if (curbone->GetType() != FBXBONE_NULL) {
+		else if (curbone->GetType() == FBXBONE_NORMAL) {
 			timeline.newLine(depth, 0, ikstopflag, iktargetflag, dispname);
 		}
 		else {
@@ -2477,7 +2477,7 @@ int CModel::FillTimeLine(OrgWinGUI::OWP_Timeline& timeline, map<int, int>& linen
 		_ASSERT( curbone );
 
 		//if (curbone) {
-		if (curbone && (curbone->GetType() != FBXBONE_NULL) && (strstr(curbone->GetBoneName(), "Root") == 0)) {//2023/04/27
+		if (curbone && (curbone->GetType() == FBXBONE_NORMAL) && (strstr(curbone->GetBoneName(), "Root") == 0)) {//2023/04/27
 			//eNullはTreeViewに表示しない　Root, RootNodeもTreeViewに表示しない　TreeViewに表示しないものにはモーションも付けない
 
 			FillTimeLineOne(curbone, lineno,
@@ -2649,7 +2649,7 @@ int CModel::SetCurrentMotion( int srcmotid )
 		map<int, CBone*>::iterator itrbone;
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 			CBone* curbone = itrbone->second;
-			if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
+			if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
 				curbone->SetCurrentMotion(srcmotid, m_curmotinfo->frameleng);
 			}
 		}
@@ -2713,7 +2713,7 @@ int CModel::DeleteMotion( int motid )
 	map<int, CBone*>::iterator itrbone;
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 		CBone* curbone = itrbone->second;
-		if( curbone && (curbone->GetType() != FBXBONE_NULL)){
+		if( curbone && (curbone->GetType() == FBXBONE_NORMAL)){
 			CallF( curbone->DeleteMotion( motid ), return 1 );
 		}
 	}
@@ -2764,7 +2764,7 @@ void CModel::ResetMotionCache()
 	map<int, CBone*>::iterator itrbone;
 	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 		CBone* curbone = itrbone->second;
-		if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
+		if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
 			curbone->ResetMotionCache();
 		}
 	}
@@ -2951,7 +2951,7 @@ CBone* CModel::GetSymPosBone(CBone* srcbone)
 	map<int, CBone*>::iterator itrbone;
 	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
 		CBone* curbone = itrbone->second;
-		if (curbone && (curbone->GetType() != FBXBONE_NULL)){
+		if (curbone && (curbone->GetType() == FBXBONE_NORMAL)){
 			ChaVector3 curpos = curbone->GetJointFPos();
 			ChaVector3 diffpos = curpos - srcpos;
 			float curdist = (float)ChaVector3LengthDbl(&diffpos);
@@ -3004,7 +3004,7 @@ int CModel::PickBone( UIPICKINFO* pickinfo )
 		
 		//ボーンマーク表示をスキップしているボーンはPick対象から外す 2022/09/16
 		//eNullもPick対象から外す 2023/04/27
-		if (curbone && !curbone->GetSkipRenderBoneMark() && (curbone->GetType() != FBXBONE_NULL)) {
+		if (curbone && !curbone->GetSkipRenderBoneMark() && (curbone->GetType() == FBXBONE_NORMAL)) {
 			cmpsc.x = ( 1.0f + curbone->GetChildScreen().x ) * fw;
 			cmpsc.y = ( 1.0f - curbone->GetChildScreen().y ) * fh;
 			cmpsc.z = curbone->GetChildScreen().z;
@@ -3175,7 +3175,7 @@ int CModel::ChangeMotFrameLeng( int motid, double srcleng )
 			map<int, CBone*>::iterator itrbone;
 			for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 				CBone* curbone = itrbone->second;
-				if( curbone && (curbone->GetType() != FBXBONE_NULL)){
+				if( curbone && (curbone->GetType() == FBXBONE_NORMAL)){
 					curbone->DeleteMPOutOfRange( motid, srcleng - 1.0 );
 				}
 			}
@@ -4281,80 +4281,57 @@ void CModel::CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode
 //	EFbxRotationOrder lRotationOrder0 = eEulerZXY;
 //	EFbxRotationOrder lRotationOrder1 = eEulerXYZ;
 
+	if (!pScene || !pNode) {
+		return;
+	}
+
+	bool createdflag = false;
+
+
 	const char* nodename = pNode->GetName();
 	FbxNodeAttribute *pAttrib = pNode->GetNodeAttribute();
-	if ( pAttrib ) {
-		FbxNodeAttribute::EType type = pAttrib->GetAttributeType();
-		//const char* nodename = pNode->GetName();
-		WCHAR wname[256];
-		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, pNode->GetName(), -1, wname, 256 );
-		if( type == FbxNodeAttribute::eSkeleton ){
-			DbgOut( L"CreateFbxBoneReq : pNode %s : type : skeleton\r\n", wname );
-		}else if( type == FbxNodeAttribute::eNull ){
-			DbgOut( L"CreateFbxBoneReq : pNode %s : type : null\r\n", wname );
-		}else{
-			DbgOut( L"CreateFbxBoneReq : pNode %s : type : other : %d\r\n", wname, type );
-		}
 
 
-		FbxNode* parentbonenode = 0;
-		if( parnode ){
-			FbxNodeAttribute *parattr = parnode->GetNodeAttribute();
-			if ( parattr ) {
-				FbxNodeAttribute::EType partype = parattr->GetAttributeType();
-				//const char* parnodename = parnode->GetName();
-				WCHAR parwname[256];
-				MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, parnode->GetName(), -1, parwname, 256 );
-				if( partype == FbxNodeAttribute::eSkeleton ){
-					DbgOut( L"CreateFbxBoneReq : parnode %s : type : skeleton\r\n", parwname );
-				}else if( type == FbxNodeAttribute::eNull ){
-					DbgOut( L"CreateFbxBoneReq : parnode %s : type : null\r\n", parwname );
-				}else{
-					DbgOut( L"CreateFbxBoneReq : parnode %s : type : other : %d\r\n", parwname, partype );
-				}
-
-				switch ( partype )
-				{
-					case FbxNodeAttribute::eSkeleton:
-					case FbxNodeAttribute::eNull:
-						parentbonenode = parnode;
-						break;
-					default:
-						parentbonenode = 0;
-						break;
-				}
-			}else{
-				//const char* parnodename = parnode->GetName();
-				WCHAR parwname[256];
-				MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, parnode->GetName(), -1, parwname, 256 );
-				DbgOut( L"CreateFbxBoneReq : %s : parnode name %s : parattr NULL!!!!!\r\n", wname, parwname );
+	//parentbonenodeは　parentが　skeletonまたはeNullの場合だけ変更する
+	FbxNode* parentbonenode = 0;
+	if (parnode) {
+		FbxNodeAttribute* parattr = parnode->GetNodeAttribute();
+		if (parattr) {
+			FbxNodeAttribute::EType partype = parattr->GetAttributeType();
+			////const char* parnodename = parnode->GetName();
+			switch (partype)
+			{
+			case FbxNodeAttribute::eSkeleton:
+			case FbxNodeAttribute::eNull:
+				parentbonenode = parnode;
+				break;
+			default:
+				parentbonenode = 0;
+				break;
 			}
-		}else{
-			DbgOut( L"CreateFbxBoneReq : %s : parnode NULL!!!!\r\n", wname );
 		}
+		else {
+			parentbonenode = parnode;//parent eNull
+		}
+	}
+	else {
+		//DbgOut(L"CreateFbxBoneReq : %s : parnode NULL!!!!\r\n", wname);
+	}
 
 
+	if (strcmp(nodename, "RootNode") == 0) {
+		GetFBXBone(pScene, FbxNodeAttribute::eSkeleton, pAttrib, pNode, 0);
+		createdflag = true;
+	}
+	else if ( pAttrib ) {
 
+		FbxNodeAttribute::EType type = pAttrib->GetAttributeType();
 		switch ( type )
 		{
 			case FbxNodeAttribute::eSkeleton:
 			case FbxNodeAttribute::eNull:
-	
-				//EFbxRotationOrder lRotationOrder = eEULER_ZXY;
-				//pNode->SetRotationOrder(FbxNode::eSourcePivot , lRotationOrder0 );
-				//pNode->SetRotationOrder(FbxNode::eDestinationPivot , lRotationOrder1 );
-				
-				if (strcmp(pNode->GetName(), "RootNode") != 0){//currentnode != RootNode
-					if (parnode && (strcmp(parnode->GetName(), "RootNode") != 0)){//parentnode != RootNode
-						GetFBXBone(pScene, type, pAttrib, pNode, parentbonenode);
-					}
-					else{
-						GetFBXBone(pScene, type, pAttrib, pNode, 0);
-					}
-				}
-				else{
-					//_ASSERT(0);
-				}
+				GetFBXBone(pScene, type, pAttrib, pNode, parentbonenode);
+				createdflag = true;
 				break;
 			case FbxSkeleton::eRoot:
 				_ASSERT(0);
@@ -4364,13 +4341,23 @@ void CModel::CreateFBXBoneReq(FbxScene* pScene, FbxNode* pNode, FbxNode* parnode
 		}
 
 	}
+	else {
+		//attrib無しの　eNull
+		GetFBXBone(pScene, FbxNodeAttribute::eNull, pAttrib, pNode, parentbonenode);
+		createdflag = true;
+	}
 
 	int childNodeNum;
 	childNodeNum = pNode->GetChildCount();
 	for ( int i = 0; i < childNodeNum; i++ )
 	{
 		FbxNode *pChild = pNode->GetChild(i);  // 子ノードを取得
-		CreateFBXBoneReq(pScene, pChild, pNode );
+		if (createdflag == true) {
+			CreateFBXBoneReq(pScene, pChild, pNode);//カレントで作成したボーンが　次の子供にとっての親
+		}
+		else {
+			CreateFBXBoneReq(pScene, pChild, parentbonenode);//カレントでボーンを作成しなかった　親の変更なし
+		}
 	}
 
 	return;
@@ -4421,11 +4408,14 @@ CBone* CModel::CreateNewFbxBone(FbxNodeAttribute::EType type, FbxNode* curnode, 
 	//const char* strextend;
 	//strextend = strstr(newbone->GetBoneName(), "_extend_");
 	//if (!strextend) {
-	if ((strstr(newbone->GetBoneName(), "Root") != 0) ||
+	if (strcmp(newbone->GetBoneName(), "RootNode") == 0) {
+		//GetTopBone()からボーン階層をたどるときに　RootNodeの１つ下の階層に複数のジョイントがある場合に対応
+		newbone->SetType(FBXBONE_ROOTNODE);
+	}
+	else if ((strstr(newbone->GetBoneName(), "Root") != 0) ||
 		(strstr(newbone->GetBoneName(), "Reference") != 0)) {
 
 		newbone->SetType(FBXBONE_NULL);
-
 	}
 	else if (type == FbxNodeAttribute::eSkeleton) {
 		newbone->SetType(FBXBONE_NORMAL);
@@ -4443,15 +4433,14 @@ CBone* CModel::CreateNewFbxBone(FbxNodeAttribute::EType type, FbxNode* curnode, 
 	//}
 	if (!m_topbone) {
 		m_topbone = newbone;
-		m_bone2node[newbone] = curnode;
 		newbone->SetTopBoneFlag(1);
 		settopflag = 1;
 	}
 	else {
-		m_bone2node[newbone] = curnode;
 		newbone->SetTopBoneFlag(0);
 	}
 	
+	m_bone2node[newbone] = curnode;
 	m_node2bone[curnode] = newbone;
 
 
@@ -4467,8 +4456,8 @@ CBone* CModel::CreateNewFbxBone(FbxNodeAttribute::EType type, FbxNode* curnode, 
 			//_ASSERT(0);
 		}
 		else {
-			::MessageBoxA(NULL, "GetFBXBone : parentbone NULL error ", parentbonename, MB_OK);
 			_ASSERT(0);
+			::MessageBoxA(NULL, "GetFBXBone : parentbone NULL error ", parentbonename, MB_OK);
 		}
 	}
 	else {
@@ -4490,7 +4479,8 @@ CBone* CModel::CreateNewFbxBone(FbxNodeAttribute::EType type, FbxNode* curnode, 
 
 int CModel::GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAttribute *pAttrib, FbxNode* curnode, FbxNode* parnode )
 {
-	if (!pScene || !pAttrib || !curnode) {
+	//if (!pScene || !pAttrib || !curnode) {
+	if (!pScene || !curnode) {
 		_ASSERT(0);
 		return 1;
 	}
@@ -4498,12 +4488,15 @@ int CModel::GetFBXBone(FbxScene* pScene, FbxNodeAttribute::EType type, FbxNodeAt
 
 
 	CBone* newbone = 0;
-	if (!m_topbone) {
-		newbone = CreateNewFbxBone(type, curnode, 0);
-	}
-	else {
-		newbone = CreateNewFbxBone(type, curnode, parnode);
-	}
+	//if (!m_topbone) {
+	//	newbone = CreateNewFbxBone(type, curnode, 0);
+	//}
+	//else {
+	//	newbone = CreateNewFbxBone(type, curnode, parnode);
+	//}
+
+	newbone = CreateNewFbxBone(type, curnode, parnode);
+
 
 	if (!newbone) {
 		_ASSERT(0);
@@ -4689,7 +4682,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 			map<int, CBone*>::iterator itrbone;
 			for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 				CBone* curbone = itrbone->second;
-				if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
+				if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
 					curbone->SetGetAnimFlag(0);
 				}
 			}
@@ -5365,7 +5358,7 @@ void CModel::PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone)
 
 				bool limitdegflag = false;//unlimitedで計算してunlimitedにセット
 				//2023/01/31
-				ChaVector3 cureul = srcbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, curframe, BEFEUL_BEFFRAME);
+				ChaVector3 cureul = srcbone->CalcLocalEulXYZ(true, limitdegflag, -1, srcmotid, curframe, BEFEUL_BEFFRAME);
 				curmp->SetLocalEul(cureul);
 				curmp->SetLimitedLocalEul(cureul);
 				curmp->SetCalcLimitedWM(2);
@@ -5763,14 +5756,14 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 	map<int, CBone*>::iterator itrb;
 	for( itrb = m_bonelist.begin(); itrb != m_bonelist.end(); itrb++ ){
 		CBone* curbone = itrb->second;
-		if( curbone && (curbone->GetType() != FBXBONE_NULL)){
+		if( curbone && (curbone->GetType() == FBXBONE_NORMAL)){
 			curbone->SetSelectFlag( 0 );
 		}
 	}
 
 	if (selboneno > 0){
 		CBone* selbone = m_bonelist[selboneno];
-		if (selbone && (selbone->GetType() != FBXBONE_NULL)){
+		if (selbone && (selbone->GetType() == FBXBONE_NORMAL)){
 			SetSelectFlagReq(selbone, 0);
 			selbone->SetSelectFlag(2);
 
@@ -5795,7 +5788,7 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 			map<int, CBone*>::iterator itrbone;
 			for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
 				CBone* boneptr = itrbone->second;
-				if (boneptr && !boneptr->GetSkipRenderBoneMark() && (boneptr->GetType() != FBXBONE_NULL)){
+				if (boneptr && !boneptr->GetSkipRenderBoneMark() && (boneptr->GetType() == FBXBONE_NORMAL)){
 
 					CMotionPoint curmp = boneptr->GetCurMp();
 
@@ -5884,7 +5877,7 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 		map<int, CBone*>::iterator itrbone;
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
 			CBone* boneptr = itrbone->second;
-			if (boneptr && !boneptr->GetSkipRenderBoneMark() && (boneptr->GetType() != FBXBONE_NULL)){
+			if (boneptr && !boneptr->GetSkipRenderBoneMark() && (boneptr->GetType() == FBXBONE_NORMAL)){
 				CBone* childbone = boneptr->GetChild();
 				while (childbone){
 					CRigidElem* curre = boneptr->GetRigidElem(childbone);
@@ -6422,14 +6415,20 @@ int CModel::SetDefaultBonePos(FbxScene* pScene)
 	FbxTime pTime;
 	pTime.SetSecondDouble( 0.0 );
 
-	//CBone* secbone = m_topbone->GetChild();
-	CBone* secbone = m_topbone;
+	////CBone* secbone = m_topbone->GetChild();
+	//CBone* secbone = m_topbone;
+	//FbxAMatrix inimat;
+	//inimat.SetIdentity();
+	//if( secbone ){
+	//	FbxSetDefaultBonePosReq(pScene, this, secbone, pTime, bindpose, &inimat);
+	//}
 
-	FbxAMatrix inimat;
-	inimat.SetIdentity();
-	if( secbone ){
-		FbxSetDefaultBonePosReq(pScene, this, secbone, pTime, bindpose, &inimat);
+	if (GetNodeOnLoad()) {
+		FbxAMatrix inimat;
+		inimat.SetIdentity();
+		FbxSetDefaultBonePosReq(pScene, this, GetNodeOnLoad(), pTime, bindpose, &inimat);
 	}
+
 
 	return 0;
 }
@@ -7261,7 +7260,7 @@ int CModel::SetBtMotion(bool limitdegflag, CBone* srcbone, int ragdollflag,
 	map<int, CBone*>::iterator itrbone;
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 		CBone* curbone = itrbone->second;
-		if( curbone && (curbone->GetType() != FBXBONE_NULL)){
+		if( curbone && (curbone->GetType() == FBXBONE_NORMAL)){
 			//CMotionPoint curmp = curbone->GetCurMp();
 			curbone->SetBtFlag( 0 );
 			//curbone->SetCurMp( curmp );
@@ -7312,7 +7311,7 @@ int CModel::SetBtMotion(bool limitdegflag, CBone* srcbone, int ragdollflag,
 	map<int, CBone*>::iterator itrbone2;
 	for (itrbone2 = m_bonelist.begin(); itrbone2 != m_bonelist.end(); itrbone2++) {
 		CBone* curbone2 = itrbone2->second;
-		if (curbone2 && (curbone2->GetType() != FBXBONE_NULL)) {
+		if (curbone2 && (curbone2->GetType() == FBXBONE_NORMAL)) {
 			if (curbone2->GetChild() == NULL) {
 				if (curbone2->GetParent()) {
 					//CBtObject* startbto2 = curbone2->GetParent()->GetBtObject(curbone2);
@@ -7419,7 +7418,7 @@ int CModel::DampAnim( MOTINFO* rgdmorphinfo )
 	map<int,CBone*>::iterator itrbone;
 	for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
 		CBone* curbone = itrbone->second;
-		if( curbone && (curbone->GetType() != FBXBONE_NULL)){
+		if( curbone && (curbone->GetType() == FBXBONE_NORMAL)){
 			CBone* parentbone = curbone->GetParent();
 			if( parentbone ){
 				CRigidElem* curre = parentbone->GetRigidElem( curbone );
@@ -15252,7 +15251,7 @@ int CModel::RecalcBoneAxisX(CBone* srcbone)
 		map<int, CBone*>::iterator itrbone;
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 			CBone* curbone = itrbone->second;
-			if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
+			if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
 				ChaMatrix axismat;
 				//axismat = curbone->GetFirstAxisMatZ();
 				curbone->GetParent()->CalcAxisMatX_Manipulator(limitdegflag, BONEAXIS_CURRENT, 1, curbone, &axismat, 1);//nodemat用？　_Manipulatorを使う
@@ -15263,7 +15262,7 @@ int CModel::RecalcBoneAxisX(CBone* srcbone)
 			}
 		}
 	}
-	else if (srcbone->GetType() != FBXBONE_NULL){
+	else if (srcbone->GetType() == FBXBONE_NORMAL){
 
 		ChaMatrix axismat;
 		//axismat = srcbone->GetFirstAxisMatZ();
@@ -15292,7 +15291,7 @@ void CModel::CalcBoneEulReq(bool limitdegflag, CBone* curbone, int srcmotid, dou
 	int paraxiskind = -1;//2021/11/18
 	//int isfirstbone = 0;
 	//cureul = curbone->CalcLocalEulXYZ(paraxsiflag, srcmotid, srcframe, BEFEUL_ZERO);
-	cureul = curbone->CalcLocalEulXYZ(limitdegflag, paraxiskind, srcmotid, srcframe, BEFEUL_BEFFRAME);
+	cureul = curbone->CalcLocalEulXYZ(true, limitdegflag, paraxiskind, srcmotid, srcframe, BEFEUL_BEFFRAME);
 	curbone->SetLocalEul(limitdegflag, srcmotid, srcframe, cureul, 0);
 
 	if (curbone->GetChild()){
@@ -16181,14 +16180,14 @@ int CModel::ResetAngleLimit(bool excludebt, int srcval, CBone* srcbone)
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 			CBone* curbone = itrbone->second;
 			if (curbone && 
-				(curbone->GetType() != FBXBONE_NULL) &&
+				(curbone->GetType() == FBXBONE_NORMAL) &&
 				((excludebt == false) || ((excludebt == true) && (curbone->GetBtForce() == 0)))) {
 				curbone->ResetAngleLimit(srcval);
 			}
 		}
 	}
 	else {
-		if (srcbone->GetType() != FBXBONE_NULL) {
+		if (srcbone->GetType() == FBXBONE_NORMAL) {
 			if ((excludebt == false) || ((excludebt == true) && (srcbone->GetBtForce() == 0))) {
 				srcbone->ResetAngleLimit(srcval);
 			}
@@ -16203,13 +16202,13 @@ int CModel::AngleLimitReplace180to170(CBone* srcbone)
 		map<int, CBone*>::iterator itrbone;
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 			CBone* curbone = itrbone->second;
-			if (curbone && (curbone->GetType() != FBXBONE_NULL)) {
+			if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
 				curbone->AngleLimitReplace180to170();
 			}
 		}
 	}
 	else {
-		if (srcbone->GetType() != FBXBONE_NULL) {
+		if (srcbone->GetType() == FBXBONE_NORMAL) {
 			srcbone->AngleLimitReplace180to170();
 		}
 	}
@@ -16242,7 +16241,7 @@ int CModel::AdditiveCurrentToAngleLimit(CBone* srcbone)
 			//if (curbone) {
 	//物理シミュ用のボーンの制限角度は上書きしないことにした
 	//物理シミュ以外のボーンの制限角度を変えるたびに　何回も物理シミュボーンの設定をやり直すのが非常に手間だから
-			if (curbone && (curbone->GetBtForce() == 0) && (curbone->GetType() != FBXBONE_NULL)) {
+			if (curbone && (curbone->GetBtForce() == 0) && (curbone->GetType() == FBXBONE_NORMAL)) {
 				curbone->AdditiveCurrentToAngleLimit();
 			}
 		}
@@ -16250,7 +16249,7 @@ int CModel::AdditiveCurrentToAngleLimit(CBone* srcbone)
 	else {
 		//物理シミュ用のボーンの制限角度は上書きしないことにした
 		//物理シミュ以外のボーンの制限角度を変えるたびに　何回も物理シミュボーンの設定をやり直すのが非常に手間だから
-		if (srcbone && (srcbone->GetBtForce() == 0) && (srcbone->GetType() != FBXBONE_NULL)) {
+		if (srcbone && (srcbone->GetBtForce() == 0) && (srcbone->GetType() == FBXBONE_NORMAL)) {
 			srcbone->AdditiveCurrentToAngleLimit();
 		}
 	}
@@ -16265,7 +16264,7 @@ int CModel::AdditiveAllMotionsToAngleLimit()
 		//if (curbone) {
 	//物理シミュ用のボーンの制限角度は上書きしないことにした
 	//物理シミュ以外のボーンの制限角度を変えるたびに　何回も物理シミュボーンの設定をやり直すのが非常に手間だから
-		if (curbone && (curbone->GetBtForce() == 0) && (curbone->GetType() != FBXBONE_NULL)) {
+		if (curbone && (curbone->GetBtForce() == 0) && (curbone->GetType() == FBXBONE_NORMAL)) {
 			curbone->AdditiveAllMotionsToAngleLimit();
 		}
 	}
@@ -16667,7 +16666,7 @@ void CModel::GetTopBoneReq(CBone* srcbone, CBone** pptopbone, bool excludenullfl
 	if (srcbone && pptopbone && !(*pptopbone)) {
 
 		if (excludenullflag == true) {
-			if (srcbone->GetType() != FBXBONE_NULL) {
+			if ((srcbone->GetType() == FBXBONE_NORMAL) || (srcbone->GetType() == FBXBONE_ROOTNODE)) {
 				*pptopbone = srcbone;
 				return;
 			}
@@ -16701,5 +16700,52 @@ int CModel::GetBoneForMotionSize() {//eNull含まない
 	}
 	return retsize;
 };
+
+CBone* CModel::GetRootBone()
+{
+	return m_topbone;//GetTopBone()ではなく　eNullのRootNodeを想定
+}
+
+CNodeOnLoad* CModel::FindNodeOnLoadByName(const char* srcname)
+{
+	if (srcname) {
+		if (GetNodeOnLoad()) {
+			CNodeOnLoad* findnodeonload = 0;
+			FindNodeOnLoadByNameReq(GetNodeOnLoad(), srcname, &findnodeonload);
+			return findnodeonload;
+		}
+		else {
+			return 0;
+		}
+	}
+	else {
+		return 0;
+	}
+}
+void CModel::FindNodeOnLoadByNameReq(CNodeOnLoad* srcnodeonload, const char* srcname, CNodeOnLoad** ppfindnodeonload)
+{
+	if (srcnodeonload && !(*ppfindnodeonload)) {
+
+		FbxNode* pnode = srcnodeonload->GetNode();
+		if (pnode) {
+			if (strcmp(pnode->GetName(), srcname) == 0) {
+				*ppfindnodeonload = srcnodeonload;
+				return;
+			}
+		}
+
+		if (!(*ppfindnodeonload)) {
+			int childnum = srcnodeonload->GetChildNum();
+			int childno;
+			for (childno = 0; childno < childnum; childno++) {
+				CNodeOnLoad* pchild = srcnodeonload->GetChild(childno);
+				if (pchild) {
+					FindNodeOnLoadByNameReq(pchild, srcname, ppfindnodeonload);
+				}
+			}
+		}
+	}
+}
+
 
 

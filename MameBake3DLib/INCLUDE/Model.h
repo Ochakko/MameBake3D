@@ -795,6 +795,8 @@ public:
 
 	void CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double srcanimleng, int* perrorcount);
 
+	CNodeOnLoad* FindNodeOnLoadByName(const char* srcname);
+
 private:
 	int InitParams();
 	int DestroyObjs();
@@ -847,6 +849,8 @@ private:
 	int CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 	void CreateNodeOnLoadReq(CNodeOnLoad* newnodeonload);
 	void DestroyNodeOnLoadReq(CNodeOnLoad* delnodeonload);
+
+	void FindNodeOnLoadByNameReq(CNodeOnLoad* srcnodeonload, const char* srcname, CNodeOnLoad** ppfindnodeonload);
 
 
 	CMQOObject* GetFBXMesh(FbxNode* pNode, FbxNodeAttribute* pAttrib);
@@ -1135,6 +1139,7 @@ public: //accesser
 	//CBone* GetTopBone() {
 	//	return m_topbone;
 	//};
+	CBone* GetRootBone();
 	void GetHipsBoneReq(CBone* srcbone, CBone** dstppbone);
 	bool IncludeRootOrReference(FbxNode* ptopnode);
 	void GetRootOrReferenceReq(FbxNode* srcnode, FbxNode** dstppnode);
