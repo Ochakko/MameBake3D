@@ -9196,7 +9196,8 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 			//			//カーブの有無(無)とメッシュの有無(有)で検出
 			//			//その場合
 			//			//そのままでは　モーションが合わず傾いたりするので　Identityで初期化する
-			//			globalmat.SetIdentity();
+			//			
+			//			globalmat.SetIdentity();			
 			//		}
 			//		else {
 			//			//カーブを持たないモーションだけのfbxは　ここを通る
@@ -9213,6 +9214,7 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 			//eNullにアニメーションは無いので　上方でFBXBONE_NORMAL以外はリターンしている
 			//いろいろ直した結果　lCurveが0の場合にも　同じ数式でOKに
 			globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
+
 
 			curmp->SetWorldMat(globalmat);//anglelimit無し
 			curmp->SetLimitedWM(globalmat);//初期値はそのまま
@@ -9793,62 +9795,24 @@ bool CBone::GetIKTargetFlag()
 
 CBone* CBone::GetParent(bool excludenullflag)
 {
-	if (m_parent) {
-		if (excludenullflag == true) {
-			if (m_parent->GetType() == FBXBONE_NORMAL) {
-				return m_parent;
-			}
-			else {
-				return m_parent->GetParent(excludenullflag);
-			}
-		}
-		else {
-			return m_parent;
-		}
-	}
-	else {
-		return 0;
-	}
+	CBone* findbone = 0;
+	GetParentReq(excludenullflag, m_parent, &findbone);
+	return findbone;
 };
 
 CBone* CBone::GetChild(bool excludenullflag)
 { 
-	if (m_child) {
-		if (excludenullflag == true) {
-			if (m_child->GetType() == FBXBONE_NORMAL) {
-				return m_child;
-			}
-			else {
-				return m_child->GetChild(excludenullflag);
-			}
-		}
-		else {
-			return m_child;
-		}
-	}
-	else {
-		return 0;
-	}
+	CBone* findbone = 0;
+	bool firstfindbroflag = false;
+	GetChildReq(excludenullflag, firstfindbroflag, m_child, &findbone);
+	return findbone;
 };
 
 CBone* CBone::GetBrother(bool excludenullflag)
 { 
-	if (m_brother) {
-		if (excludenullflag == true) {
-			if (m_brother->GetType() == FBXBONE_NORMAL) {
-				return m_brother;
-			}
-			else {
-				return m_brother->GetBrother(excludenullflag);
-			}
-		}
-		else {
-			return m_brother;
-		}
-	}
-	else {
-		return 0;
-	}
+	CBone* findbone = 0;
+	GetBrotherReq(excludenullflag, m_brother, &findbone);
+	return findbone;
 };
 CBone* CBone::GetSister(bool excludenullflag) 
 {
@@ -9874,6 +9838,95 @@ CBone* CBone::GetSister(bool excludenullflag)
 	}
 	return 0;
 };
+
+
+
+void CBone::GetParentReq(bool excludenullflag, CBone* srcbone, CBone** ppfindbone)
+{
+	if (srcbone && !(*ppfindbone)) {
+		if (excludenullflag == true) {
+			if (srcbone->GetType() == FBXBONE_NORMAL) {
+				*ppfindbone = srcbone;
+				return;
+			}
+		}
+		else {
+			*ppfindbone = srcbone;
+			return;
+		}
+
+		//姿勢計算のためのparentなので　parentのbrotherは探さないで良い
+
+
+		if (!(*ppfindbone)) {
+			if (srcbone->m_parent) {
+				GetParentReq(excludenullflag, srcbone->m_parent, ppfindbone);
+			}
+			else {
+				return;
+			}
+		}
+	}
+}
+void CBone::GetChildReq(bool excludenullflag, bool findbroflag, CBone* srcbone, CBone** ppfindbone)
+{
+	if (srcbone && !(*ppfindbone)) {
+		if (excludenullflag == true) {
+			if (srcbone->GetType() == FBXBONE_NORMAL) {
+				*ppfindbone = srcbone;
+				return;
+			}
+		}
+		else {
+			*ppfindbone = srcbone;
+			return;
+		}
+
+		//姿勢計算のためのchildを探している
+		//childのbrotherも検索開始ボーンからみればchild
+		//GetChildReqよりも先にGetBrotherを調べる
+		if (findbroflag && !(*ppfindbone)) {
+			*ppfindbone = GetBrother(excludenullflag);
+			if (*ppfindbone) {
+				return;
+			}
+		}
+
+
+		if (!(*ppfindbone)) {
+			if (srcbone->m_child) {
+				bool findbroflag2 = true;
+				GetChildReq(excludenullflag, findbroflag2, srcbone->m_child, ppfindbone);
+			}
+		}
+	}
+}
+void CBone::GetBrotherReq(bool excludenullflag, CBone* srcbone, CBone** ppfindbone)
+{
+	if (srcbone && !(*ppfindbone)) {
+		if (excludenullflag == true) {
+			if (srcbone->GetType() == FBXBONE_NORMAL) {
+				*ppfindbone = srcbone;
+				return;
+			}
+		}
+		else {
+			*ppfindbone = srcbone;
+			return;
+		}
+
+		if (!(*ppfindbone)) {
+			if (srcbone->m_brother) {
+				GetBrotherReq(excludenullflag, srcbone->m_brother, ppfindbone);
+			}
+		}
+	}
+}
+
+
+
+
+
 
 ChaMatrix CBone::GetENullMatrix()
 {

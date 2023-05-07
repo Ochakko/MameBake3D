@@ -1877,13 +1877,19 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene,
 
 
 	FbxGeometryElementUV* lLoadUVDiffuseElement = lLoadMesh->GetElementUV(0);
-	FbxGeometryElementUV* lSaveUVDiffuseElement = lSaveMesh->CreateElementUV(lLoadUVDiffuseElement->GetName());
-	if (!lLoadUVDiffuseElement || !lSaveUVDiffuseElement) {
-		_ASSERT(0);
-		return lNode;
+	FbxGeometryElementUV* lSaveUVDiffuseElement = 0;
+	if (lLoadUVDiffuseElement) {
+		lSaveUVDiffuseElement = lSaveMesh->CreateElementUV(lLoadUVDiffuseElement->GetName());
+		if (lSaveUVDiffuseElement) {
+			lSaveUVDiffuseElement->SetMappingMode(FbxGeometryElement::eByPolygonVertex);
+			lSaveUVDiffuseElement->SetReferenceMode(FbxGeometryElement::eDirect);
+		}
 	}
-	lSaveUVDiffuseElement->SetMappingMode(FbxGeometryElement::eByPolygonVertex);
-	lSaveUVDiffuseElement->SetReferenceMode(FbxGeometryElement::eDirect);
+	//if (!lLoadUVDiffuseElement || !lSaveUVDiffuseElement) {
+	//	_ASSERT(0);
+	//	return lNode;
+	//}
+
 
 	//int uvdirectnum = lLoadUVDiffuseElement->GetDirectArray().GetCount();
 	//int uvindexnum = lLoadUVDiffuseElement->GetIndexArray().GetCount();
@@ -1913,8 +1919,10 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene,
 
 			FbxVector2 srcuv;
 			bool bunmapped = false;
-			lLoadMesh->GetPolygonVertexUV(faceno0, vno, lLoadUVDiffuseElement->GetName(), srcuv, bunmapped);
-			lSaveUVDiffuseElement->GetDirectArray().Add(srcuv);
+			if (lLoadUVDiffuseElement && lSaveUVDiffuseElement) {
+				lLoadMesh->GetPolygonVertexUV(faceno0, vno, lLoadUVDiffuseElement->GetName(), srcuv, bunmapped);
+				lSaveUVDiffuseElement->GetDirectArray().Add(srcuv);
+			}
 		}
 	}
 

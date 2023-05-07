@@ -976,6 +976,9 @@ public: //accesser
 	CBone* GetChild(bool excludenullflag = true);
 	CBone* GetBrother(bool excludenullflag = true);
 	CBone* GetSister(bool excludenullflag = true);
+	void GetParentReq(bool excludenullflag, CBone* srcbone, CBone** ppfindbone);
+	void GetChildReq(bool excludenullflag, bool findbroflag, CBone* srcbone, CBone** ppfindbone);
+	void GetBrotherReq(bool excludenullflag, CBone* srcbone, CBone** ppfindbone);
 
 
 	void SetParent( CBone* srcpar ){ m_parent = srcpar; };
