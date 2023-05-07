@@ -1,5 +1,5 @@
-2023/05/05
-	EditMot 1.2.0.20 RC2
+2023/05/07
+	EditMot 1.2.0.20 RC6
 
 	トランスフォームノード(eNull)の読み書きに対応
 		モーション以外は　出来るだけ同じように書き出すことに
@@ -25,6 +25,7 @@
 		Test/RetargetSettingFileExample/Rokoko_bvh.rtg
 		Test/RetargetSettingFileExample/Hunt2Hunt.rtg
 		Test/RetargetSettingFileExample/Hunt_Rokoko.rtg
+		Test/RetargetSettingFileExample/Hunt_bvh.rtg
 
 	ドキュメント追加
 		Documants/TroubleShooting/HipsPostureIsNotPastedOnLimitDegON.docx

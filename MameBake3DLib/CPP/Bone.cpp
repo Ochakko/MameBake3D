@@ -25,6 +25,7 @@
 
 #include <InfScope.h>
 #include <MotionPoint.h>
+#include <NodeOnLoad.h>
 
 #include <ChaVecCalc.h>
 
@@ -4626,7 +4627,11 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool excludenullflag, bool limitdegflag, int a
 	int isfirstbone = 0;
 	int isendbone = 0;
 
-	if (GetParent(excludenullflag)) {
+
+	CBone* parentbone = GetParent(excludenullflag);//!!!!!!!!!!
+
+
+	if (parentbone) {
 		isfirstbone = 0;
 	}
 	else {
@@ -4650,28 +4655,33 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool excludenullflag, bool limitdegflag, int a
 	CMotionPoint* curmp = 0;
 	curmp = GetMotionPoint(srcmotid, roundingframe);
 	if (curmp) {
-		if (GetParent(excludenullflag)) {
+		ChaMatrix curwm;
+		curwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
+
+		if (parentbone) {
 			isfirstbone = 0;
 
-			ChaMatrix curwm, parentwm, eulmat;
-			//CMotionPoint* parentmp = 0;
-			//parentmp = GetParent(excludenullflag)->GetMotionPoint(srcmotid, roundingframe);
-			//if (parentmp) {
-				curwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
-				parentwm = GetParent(excludenullflag)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+			ChaMatrix parentwm, eulmat;
+
+			//parentがeNullの場合はある
+			if (parentbone->GetType() == FBXBONE_NORMAL) {
+				parentwm = parentbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 				eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
-			//}
-			//else {
-			//	//_ASSERT(0);
-			//	curwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
-			//	eulq = ChaMatrix2Q(curwm);
-			//}
+			}
+			else if (parentbone->GetType() == FBXBONE_NULL) {
+				//ENullMatrixの逆行列を掛けると　保存の度にENullの逆回転分回転してしまう(TheHuntでテスト)
+				//回転の場合は　parenttype == ENULLのとき　parentmatはIdentityで良いようだ
+				//parentwm = ChaMatrixInv(parentbone->GetNodeMat()) * parentbone->GetENullMatrix();//ENullMatrixにはNodeMatが掛かっている
+				//eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
+
+				eulq = ChaMatrix2Q(curwm);
+			}
+			else {
+				eulq = ChaMatrix2Q(curwm);
+			}
 		}
 		else {
 			isfirstbone = 1;
-
-			ChaMatrix curwm;
-			curwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
 			eulq = ChaMatrix2Q(curwm);
 		}
 	}
@@ -6545,9 +6555,14 @@ ChaMatrix CBone::GetWorldMat(bool limitdegflag,
 	ChaMatrixIdentity(&curmat);
 
 	//2023/04/28
-	if (GetType() != FBXBONE_NORMAL) {
-		return curmat;
+	if (GetType() == FBXBONE_NULL) {
+		//2023/05/07
+		return GetENullMatrix();//!!!!!!!!!!!!
 	}
+	else if (GetType() != FBXBONE_NORMAL) {
+		return curmat;//!!!!!!!!!!!!
+	}
+
 
 	if (srcmp) {
 		if (limitdegflag == false) {
@@ -6987,43 +7002,30 @@ ChaVector3 CBone::CalcFbxScaleAnim(bool limitdegflag, int srcmotid, double srcfr
 	ChaVector3 iniscale = ChaVector3(1.0f, 1.0f, 1.0f);
 
 
+	//ChaMatrix wmanim = GetNodeMat() * GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+	//
+	//ChaMatrix parentfbxwm;
+	//parentfbxwm.SetIdentity();
+	//if (GetParent(false)) {
 
-	ChaMatrix wmanim = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-	ChaMatrix fbxwm;
-	if (GetType() == FBXBONE_NORMAL) {
-		//fbxwm = GetNodeMat() * wmanim;
-		fbxwm = wmanim;
-	}
-	else {
-		fbxwm = wmanim;
-		//fbxwm = GetNodeMat() * wmanim;
-	}
-	
-	ChaMatrix parentfbxwm;
-	parentfbxwm.SetIdentity();
-	if (GetParent(false)) {
-		ChaMatrix parentwmanim = GetParent(false)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-		//if (GetParent(false)->GetType() == FBXBONE_NORMAL) {
-			//parentfbxwm = GetParent(false)->GetNodeMat() * parentwmanim;
+	//	//parentがeNullの場合はある
+	//	if (GetParent(false)->GetType() == FBXBONE_NORMAL) {
+	//		ChaMatrix parentwmanim = GetParent(false)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+	//		parentfbxwm = GetParent(false)->GetNodeMat() * parentwmanim;
+	//	}
+	//	else {
+	//		parentfbxwm = GetParent(false)->GetNodeMat();
+	//	}
+	//}
+	//else {
+	//	parentfbxwm.SetIdentity();
+	//}
 
-			//ver. 1.2.0.20
-			//Hipsよりも上の階層にスケールを設定したトランスフォームノードがある場合のテスト結果により
-			//FbxScale計算に　NodeMatは使用しない
-			parentfbxwm = parentwmanim;
-		//}
-		//else {
-		//	//parentfbxwm.SetIdentity();
-		//	parentfbxwm = GetParent(false)->GetNodeMat();
+	//ChaMatrix localfbxmat = wmanim * ChaMatrixInv(parentfbxwm);
 
 
-		//	//ver. 1.2.0.20
-		//	//Hipsよりも上の階層にスケールを設定したトランスフォームノードがある場合のテスト結果により
-		//	//FbxScale計算に　NodeMatは使用しない
-		//	//parentfbxwm = parentwmanim;
-		//}
-	}
-
-	ChaMatrix localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
+	bool excludenullflag = false;
+	ChaMatrix localfbxmat = CalcFbxLocalMatrix(excludenullflag, limitdegflag, srcmotid, srcframe);
 
 	GetSRTMatrix(localfbxmat, &svec, &rmat, &tvec);
 
@@ -7201,55 +7203,30 @@ ChaVector3 CBone::CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe)
 	// 2022/10/31 
 	// NodeMatを掛けた姿勢を書き出す。
 	//############################################################################
-	
-	double roundingframe = (double)((int)(srcframe + 0.0001));
 
-	ChaMatrix wmanim = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-	ChaMatrix fbxwm;
-	//if (GetType() == FBXBONE_NORMAL) {
-	//	fbxwm = GetNodeMat() * wmanim;
-	//}
-	//else {
-	//	//fbxwm.SetIdentity();
-	//	fbxwm = GetNodeMat();
-	//}
-	fbxwm = GetNodeMat() * wmanim;//eNULL自体のアニメーション書き出しは　しないことに
-
-	ChaMatrix parentfbxwm;
-	parentfbxwm.SetIdentity();
-	if (GetParent(false)) {
-		ChaMatrix parentwmanim = GetParent(false)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-		//if (GetParent(false)->GetType() == FBXBONE_NORMAL) {//書き出し中にparentがeNullの場合はある
-			parentfbxwm = GetParent(false)->GetNodeMat() * parentwmanim;
-		//}
-		//else {
-		//	//parentfbxwm.SetIdentity();
-		//	parentfbxwm = GetParent(false)->GetNodeMat();
-		//}
-	}
-
-	ChaMatrix localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
+	bool excludenullflag = false;
+	ChaMatrix localfbxmat = CalcFbxLocalMatrix(excludenullflag, limitdegflag, srcmotid, srcframe);
 
 	ChaVector3 svec, tvec;
 	ChaMatrix rmat;
 	GetSRTMatrix(localfbxmat, &svec, &rmat, &tvec);
 
+	return tvec;
 
-
-	//ver. 1.2.0.20
-	//Hipsよりも上の階層にスケールを設定したトランスフォームノードがある場合のテスト結果により
-	//FbxTraはFbxScaleで割る
-	ChaVector3 rettvec = tvec;
-	if (svec.x != 0.0f) {
-		rettvec.x /= svec.x;
-	}
-	if (svec.y != 0.0f) {
-		rettvec.y /= svec.y;
-	}
-	if (svec.z != 0.0f) {
-		rettvec.z /= svec.z;
-	}
-	return rettvec;
+	////ver. 1.2.0.20
+	////Hipsよりも上の階層にスケールを設定したトランスフォームノードがある場合のテスト結果により
+	////FbxTraはFbxScaleで割る
+	//ChaVector3 rettvec = tvec;
+	//if (svec.x != 0.0f) {
+	//	rettvec.x /= svec.x;
+	//}
+	//if (svec.y != 0.0f) {
+	//	rettvec.y /= svec.y;
+	//}
+	//if (svec.z != 0.0f) {
+	//	rettvec.z /= svec.z;
+	//}
+	//return rettvec;
 
 
 	//ChaVector3 fbxtra = ChaVector3(localfbxmat.data[MATI_41], localfbxmat.data[MATI_42], localfbxmat.data[MATI_43]);
@@ -9181,62 +9158,62 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 			//calc globalmat
 			//###############
 
-			FbxAnimLayer* panimlayer = GetParModel()->GetCurrentAnimLayer();
-			if (panimlayer) {
-				const char* strChannel;
-				strChannel = FBXSDK_CURVENODE_COMPONENT_X;
-				FbxAnimCurve* lCurve;
-				bool createflag = false;
 
-				lCurve = pNode->LclTranslation.GetCurve(panimlayer, strChannel, createflag);
-
-				//if ((GetType() == FBXBONE_NULL) && (!lCurve)) {
-				if (GetType() == FBXBONE_NULL) {//Curveの有無に関係なくNullの場合
-
-					if (GetChild()) {
-						//###################################################################
-						//transform nodeのnull
-						//NodeMatに姿勢はセットされているが　アニメーションとしてはIdentity
-						//###################################################################
-						globalmat.SetIdentity();
-					}
-					else {
-						//######################
-						//endjointのnull
-						//######################
-						globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
-					}
-					
-				}
-				else if (lCurve) {
-					globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
-				}
-				else {
-					//カーブが無い場合
-					if (GetParModel()->GetMqoObjectSize() >= 1) {
-						//mesh(pointbuf * meshmat)位置そのまま
-
-						//UnityでAssetをfbx出力する際に
-						//SkinMesh + Animationを選んだのに
-						//アニメーションコントローラを対応付けないで出力した場合を
-						//カーブの有無(無)とメッシュの有無(有)で検出
-						//その場合
-						//そのままでは　モーションが合わず傾いたりするので　Identityで初期化する
-						globalmat.SetIdentity();
-
-					}
-					else {
-						//カーブを持たないモーションだけのfbxは　ここを通る
-						globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
-					}
-				}
-			}
-			else {
-				globalmat.SetIdentity();
-			}
+			//FbxAnimLayer* panimlayer = GetParModel()->GetCurrentAnimLayer();
+			//if (panimlayer) {
+			//	const char* strChannel;
+			//	strChannel = FBXSDK_CURVENODE_COMPONENT_X;
+			//	FbxAnimCurve* lCurve;
+			//	bool createflag = false;
+			//	lCurve = pNode->LclTranslation.GetCurve(panimlayer, strChannel, createflag);
+			//	//if ((GetType() == FBXBONE_NULL) && (!lCurve)) {
+			//	if (GetType() == FBXBONE_NULL) {//Curveの有無に関係なくNullの場合
+			//		if (GetChild()) {
+			//			//###################################################################
+			//			//transform nodeのnull
+			//			//NodeMatに姿勢はセットされているが　アニメーションとしてはIdentity
+			//			//###################################################################
+			//			globalmat.SetIdentity();
+			//		}
+			//		else {
+			//			//######################
+			//			//endjointのnull
+			//			//######################
+			//			globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
+			//		}
+			//		
+			//	}
+			//	else if (lCurve) {
+			//		globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
+			//	}
+			//	else {
+			//		//カーブが無い場合
+			//		if (GetParModel()->GetMqoObjectSize() >= 1) {
+			//			//mesh(pointbuf * meshmat)位置そのまま
+			//			//UnityでAssetをfbx出力する際に
+			//			//SkinMesh + Animationを選んだのに
+			//			//アニメーションコントローラを対応付けないで出力した場合を
+			//			//カーブの有無(無)とメッシュの有無(有)で検出
+			//			//その場合
+			//			//そのままでは　モーションが合わず傾いたりするので　Identityで初期化する
+			//			globalmat.SetIdentity();
+			//		}
+			//		else {
+			//			//カーブを持たないモーションだけのfbxは　ここを通る
+			//			globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
+			//		}
+			//	}
+			//}
+			//else {
+			//	globalmat.SetIdentity();
+			//}
+			//
 			
-			
-			//globalmat = (ChaMatrixInv(curbone->GetNodeMat()) * chaGlobalSRT);
+			//2023/05/07
+			//eNullにアニメーションは無いので　上方でFBXBONE_NORMAL以外はリターンしている
+			//いろいろ直した結果　lCurveが0の場合にも　同じ数式でOKに
+			globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
+
 			curmp->SetWorldMat(globalmat);//anglelimit無し
 			curmp->SetLimitedWM(globalmat);//初期値はそのまま
 
@@ -9898,4 +9875,55 @@ CBone* CBone::GetSister(bool excludenullflag)
 	return 0;
 };
 
+ChaMatrix CBone::GetENullMatrix()
+{
+	FbxNode* eNullNode = GetFbxNodeOnLoad();
+	if (eNullNode) {
+		FbxTime time0;
+		time0.SetSecondDouble(0.0);
+		FbxAMatrix lGlobalSRT = eNullNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot);
+		ChaMatrix retmat = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+		return retmat;
+	}
+	else {
+		_ASSERT(0);
+		ChaMatrix retmat;
+		retmat.SetIdentity();
+		return retmat;
+	}
+}
+
+ChaMatrix CBone::CalcFbxLocalMatrix(bool excludenullflag, bool limitdegflag, int srcmotid, double srcframe)
+{
+	double roundingframe = (double)((int)(srcframe + 0.0001));
+
+	ChaMatrix wmanim = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+	ChaMatrix fbxwm;
+	fbxwm = GetNodeMat() * wmanim;//eNULL自体のアニメーション書き出しは　しないことに
+
+	ChaMatrix parentfbxwm;
+	parentfbxwm.SetIdentity();
+
+	CBone* parentbone = GetParent(excludenullflag);
+	if (parentbone) {
+		//書き出し中に parentが eNullの場合はある
+		if (parentbone->GetType() == FBXBONE_NORMAL) {
+			ChaMatrix parentwmanim = parentbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+			parentfbxwm = parentbone->GetNodeMat() * parentwmanim;
+		}
+		else if (parentbone->GetType() == FBXBONE_NULL) {
+			parentfbxwm = parentbone->GetENullMatrix();
+		}
+		else {
+			parentfbxwm.SetIdentity();
+		}
+	}
+	else {
+		parentfbxwm.SetIdentity();
+	}
+	
+	ChaMatrix localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
+	return localfbxmat;
+
+}
 

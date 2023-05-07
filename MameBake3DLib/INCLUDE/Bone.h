@@ -1060,6 +1060,10 @@ public: //accesser
 		}
 	};
 
+
+	ChaMatrix GetENullMatrix();
+	ChaMatrix CalcFbxLocalMatrix(bool excludenullflag, bool limitdegflag, int srcmotid, double srcframe);
+
 	ANGLELIMIT GetAngleLimit(bool limitdegflag, int getchkflag);
 	void SetAngleLimit(bool limitdegflag, ANGLELIMIT srclimit);
 
@@ -1104,6 +1108,7 @@ public: //accesser
 	ChaVector3 GetBtEul() {
 		return m_bteul;
 	}
+
 
 
 	int GetBtFlag(){ return m_setbtflag; };
