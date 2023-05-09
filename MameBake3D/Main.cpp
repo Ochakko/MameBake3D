@@ -7204,13 +7204,16 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 void InsertCopyMPReq(bool limitdegflag, CBone* curbone, double curframe)
 {
 	if (curbone) {
-		InsertCopyMP(limitdegflag, curbone, curframe);
 
-		if (curbone->GetChild()) {
-			InsertCopyMPReq(limitdegflag, curbone->GetChild(), curframe);
+		if (curbone->IsSkeleton()) {
+			InsertCopyMP(limitdegflag, curbone, curframe);
 		}
-		if (curbone->GetBrother()) {
-			InsertCopyMPReq(limitdegflag, curbone->GetBrother(), curframe);
+		
+		if (curbone->GetChild(false)) {
+			InsertCopyMPReq(limitdegflag, curbone->GetChild(false), curframe);
+		}
+		if (curbone->GetBrother(false)) {
+			InsertCopyMPReq(limitdegflag, curbone->GetBrother(false), curframe);
 		}
 	}
 }
@@ -7219,67 +7222,70 @@ int InsertCopyMP(bool limitdegflag, CBone* curbone, double curframe)
 {
 	double roundingframe = (double)((int)(curframe + 0.0001));
 
-	/*
-	CMotionPoint* pcurmp = 0;
-	pcurmp = curbone->GetMotionPoint(s_model->GetCurMotInfo()->motid, curframe);
-	if(pcurmp){
-		CPELEM cpelem;
-		ZeroMemory(&cpelem, sizeof(CPELEM));
+	if (curbone && (curbone->IsSkeleton())) {
+
+		/*
+		CMotionPoint* pcurmp = 0;
+		pcurmp = curbone->GetMotionPoint(s_model->GetCurMotInfo()->motid, curframe);
+		if(pcurmp){
+			CPELEM cpelem;
+			ZeroMemory(&cpelem, sizeof(CPELEM));
+			cpelem.bone = curbone;
+			cpelem.mp.SetFrame(curframe);
+			cpelem.mp.SetWorldMat(pcurmp->GetWorldMat());
+			cpelem.mp.SetLocalMatFlag(0);//!!!!!!!!!!
+			s_copymotvec.push_back(cpelem);
+		}
+		*/
+
+		int rotcenterflag1 = 1;
+		ChaMatrix localmat = curbone->CalcLocalScaleRotMat(limitdegflag,
+			rotcenterflag1, s_model->GetCurMotInfo()->motid, curframe);
+		ChaVector3 curanimtra = curbone->CalcLocalTraAnim(limitdegflag,
+			s_model->GetCurMotInfo()->motid, curframe);
+		ChaVector3 localscale = curbone->CalcLocalScaleAnim(limitdegflag,
+			s_model->GetCurMotInfo()->motid, curframe);
+
+		localmat.data[MATI_41] += curanimtra.x;
+		localmat.data[MATI_42] += curanimtra.y;
+		localmat.data[MATI_43] += curanimtra.z;
+
+		////localmat._11 *= localscale.x;
+		////localmat._12 *= localscale.x;
+		////localmat._13 *= localscale.x;
+		////localmat._21 *= localscale.y;
+		////localmat._22 *= localscale.y;
+		////localmat._23 *= localscale.y;
+		////localmat._31 *= localscale.z;
+		////localmat._32 *= localscale.z;
+		////localmat._33 *= localscale.z;
+
+		//ChaMatrix curmat;
+		//ChaMatrix localmat;
+		//curmat = curbone->GetWorldMat(limitdegflag,
+		//	s_model->GetCurMotInfo()->motid, roundingframe, 0);
+		//ChaMatrix parmat, invparmat;
+		//ChaMatrixIdentity(&parmat);
+		//ChaMatrixIdentity(&invparmat);
+		//if (curbone->GetParent()) {
+		//	parmat = curbone->GetParent()->GetWorldMat(limitdegflag, 
+		//		s_model->GetCurMotInfo()->motid, roundingframe, 0);
+		//	invparmat = ChaMatrixInv(parmat);
+		//	localmat = curmat * invparmat;
+		//}
+		//else {
+		//	localmat = curmat;
+		//}
+
+
+		CPELEM2 cpelem;
+		ZeroMemory(&cpelem, sizeof(CPELEM2));
 		cpelem.bone = curbone;
 		cpelem.mp.SetFrame(curframe);
-		cpelem.mp.SetWorldMat(pcurmp->GetWorldMat());
-		cpelem.mp.SetLocalMatFlag(0);//!!!!!!!!!!
+		cpelem.mp.SetWorldMat(localmat);
+		cpelem.mp.SetLocalMatFlag(1);//!!!!!!!!!!
 		s_copymotvec.push_back(cpelem);
 	}
-	*/
-
-	int rotcenterflag1 = 1;
-	ChaMatrix localmat = curbone->CalcLocalScaleRotMat(limitdegflag,
-		rotcenterflag1, s_model->GetCurMotInfo()->motid, curframe);
-	ChaVector3 curanimtra = curbone->CalcLocalTraAnim(limitdegflag,
-		s_model->GetCurMotInfo()->motid, curframe);
-	ChaVector3 localscale = curbone->CalcLocalScaleAnim(limitdegflag,
-		s_model->GetCurMotInfo()->motid, curframe);
-
-	localmat.data[MATI_41] += curanimtra.x;
-	localmat.data[MATI_42] += curanimtra.y;
-	localmat.data[MATI_43] += curanimtra.z;
-
-	////localmat._11 *= localscale.x;
-	////localmat._12 *= localscale.x;
-	////localmat._13 *= localscale.x;
-	////localmat._21 *= localscale.y;
-	////localmat._22 *= localscale.y;
-	////localmat._23 *= localscale.y;
-	////localmat._31 *= localscale.z;
-	////localmat._32 *= localscale.z;
-	////localmat._33 *= localscale.z;
-
-	//ChaMatrix curmat;
-	//ChaMatrix localmat;
-	//curmat = curbone->GetWorldMat(limitdegflag,
-	//	s_model->GetCurMotInfo()->motid, roundingframe, 0);
-	//ChaMatrix parmat, invparmat;
-	//ChaMatrixIdentity(&parmat);
-	//ChaMatrixIdentity(&invparmat);
-	//if (curbone->GetParent()) {
-	//	parmat = curbone->GetParent()->GetWorldMat(limitdegflag, 
-	//		s_model->GetCurMotInfo()->motid, roundingframe, 0);
-	//	invparmat = ChaMatrixInv(parmat);
-	//	localmat = curmat * invparmat;
-	//}
-	//else {
-	//	localmat = curmat;
-	//}
-
-
-	CPELEM2 cpelem;
-	ZeroMemory(&cpelem, sizeof(CPELEM2));
-	cpelem.bone = curbone;
-	cpelem.mp.SetFrame(curframe);
-	cpelem.mp.SetWorldMat(localmat);
-	cpelem.mp.SetLocalMatFlag(1);//!!!!!!!!!!
-	s_copymotvec.push_back(cpelem);
 
 	return 0;
 }
@@ -7287,28 +7293,33 @@ int InsertCopyMP(bool limitdegflag, CBone* curbone, double curframe)
 void InsertSymMPReq(bool limitdegflag, CBone* curbone, double curframe, int symrootmode)
 {
 	if (curbone) {
-		InsertSymMP(limitdegflag, curbone, curframe, symrootmode);
-
-		if (curbone->GetChild()) {
-			InsertSymMPReq(limitdegflag, curbone->GetChild(), curframe, symrootmode);
+		if (curbone->IsSkeleton()) {
+			InsertSymMP(limitdegflag, curbone, curframe, symrootmode);
 		}
-		if (curbone->GetBrother()) {
-			InsertSymMPReq(limitdegflag, curbone->GetBrother(), curframe, symrootmode);
+
+		if (curbone->GetChild(false)) {
+			InsertSymMPReq(limitdegflag, curbone->GetChild(false), curframe, symrootmode);
+		}
+		if (curbone->GetBrother(false)) {
+			InsertSymMPReq(limitdegflag, curbone->GetBrother(false), curframe, symrootmode);
 		}
 	}
 }
 int InsertSymMP(bool limitdegflag, CBone* curbone, double curframe, int symrootmode)
 {
-	ChaMatrix symmat = curbone->CalcSymXMat2(limitdegflag,
-		s_model->GetCurMotInfo()->motid, curframe, symrootmode);
+	if (curbone && (curbone->IsSkeleton())) {
 
-	CPELEM2 cpelem;
-	ZeroMemory(&cpelem, sizeof(CPELEM2));
-	cpelem.bone = curbone;
-	cpelem.mp.SetFrame(curframe);
-	cpelem.mp.SetWorldMat(symmat);
-	cpelem.mp.SetLocalMatFlag(1);//!!!!!!!!!!
-	s_copymotvec.push_back(cpelem);
+		ChaMatrix symmat = curbone->CalcSymXMat2(limitdegflag,
+			s_model->GetCurMotInfo()->motid, curframe, symrootmode);
+
+		CPELEM2 cpelem;
+		ZeroMemory(&cpelem, sizeof(CPELEM2));
+		cpelem.bone = curbone;
+		cpelem.mp.SetFrame(curframe);
+		cpelem.mp.SetWorldMat(symmat);
+		cpelem.mp.SetLocalMatFlag(1);//!!!!!!!!!!
+		s_copymotvec.push_back(cpelem);
+	}
 
 	return 0;
 }
@@ -7776,7 +7787,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 	// Always allow dialog resource manager calls to handle global messages
 	// so GUI state is updated correctly
 	//g_DialogResourceManager.MsgProc(hWnd, uMsg, wParam, lParam);
-	* pbNoFurtherProcessing = g_DialogResourceManager.MsgProc(hWnd, uMsg, wParam, lParam);
+	*pbNoFurtherProcessing = g_DialogResourceManager.MsgProc(hWnd, uMsg, wParam, lParam);
 	if (*pbNoFurtherProcessing) {
 		//_ASSERT(0);
 		return 0;
@@ -7815,8 +7826,8 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 		//if (curbone && curbone->GetParent()) {
 		//2023/02/08 opeboneにparentをセットするのは　IKRotのときだけ
-		if (curbone && curbone->GetParent() && (s_ikkind == 0)) {
-			opebone = curbone->GetParent();
+		if (curbone && curbone->GetParent(false) && curbone->GetParent(false)->IsSkeleton() && (s_ikkind == 0)) {
+			opebone = curbone->GetParent(false);
 		}
 		else {
 			opebone = curbone;
@@ -9075,7 +9086,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				//2023/03/04
 				//rigの場合や　IKTargetの場合があるので　operatingjointnoはTopBoneの番号
 				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag,
-					s_model->GetTopBone()->GetBoneNo(), onpasteflag);
+					s_model->GetTopBone(false)->GetBoneNo(), onpasteflag);
 			}
 
 			UpdateEditedEuler();
@@ -11980,7 +11991,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 		MOTINFO* curmi = s_model->GetCurMotInfo();
 		if (curmi) {
 			//CallF(s_model->FillUpEmptyMotion(curmi->motid), return 0);
-			CBone* topbone = s_model->GetTopBone();
+			CBone* topbone = s_model->GetTopBone(false);
 			if (topbone) {
 				double motleng = curmi->frameleng;
 				//_ASSERT(0);
@@ -12010,7 +12021,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 						}
 					}
 					int errorcount = 0;
-					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(),
+					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(false),
 						curmi->motid, motleng, &errorcount);
 					if (errorcount != 0) {
 						_ASSERT(0);
@@ -12025,7 +12036,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 						}
 					}
 					int errorcount = 0;
-					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(),
+					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(false),
 						curmi->motid, motleng, &errorcount);
 					if (errorcount != 0) {
 						_ASSERT(0);
@@ -12282,10 +12293,10 @@ int UpdateEditedEuler()
 
 	CBone* opebone = s_model->GetBoneByID(s_curboneno);
 	if (opebone) {
-		CBone* parentbone = opebone->GetParent();
+		CBone* parentbone = opebone->GetParent(false);
 		if (s_ikkind == 0) {
 			//ikkind がROT(0)の場合はIK　それ以外のMV, SCALEの場合にはFK
-			if (parentbone) {
+			if (parentbone && parentbone->IsSkeleton()) {
 				opebone = parentbone;
 			}
 		}
@@ -12520,10 +12531,10 @@ int refreshEulerGraph()
 		if (s_model && (s_curboneno >= 0)) {
 			CBone* opebone = s_model->GetBoneByID(s_curboneno);
 			if (opebone) {
-				CBone* parentbone = opebone->GetParent();
+				CBone* parentbone = opebone->GetParent(false);
 				if (s_ikkind == 0) {
 					//ikkind がROT(0)の場合はIK　それ以外のMV, SCALEの場合にはFK
-					if (parentbone) {
+					if (parentbone && parentbone->IsSkeleton()) {
 						opebone = parentbone;
 					}
 				}
@@ -12702,6 +12713,9 @@ void refreshTimeline(OWP_Timeline& timeline) {
 
 	s_lineno2boneno.clear();
 	s_boneno2lineno.clear();
+
+
+	CBone* topbone = s_model->GetTopBone();
 
 	if (s_model && s_model->GetTopBone()) {
 		CallF(s_model->FillTimeLine(timeline, s_lineno2boneno, s_boneno2lineno), return);
@@ -14123,8 +14137,8 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 			//s_selm_posture = s_selm;
 			//s_selm_posture = curboneptr->CalcManipulatorPostureMatrix(calccapsuleflag, 0, multworld, 0);
 
-			if (curboneptr && curboneptr->GetParent()) {
-				curboneptr->GetParent()->CalcAxisMatX_Manipulator(g_limitdegflag, g_boneaxis, 0, curboneptr, &s_selm, 0);
+			if (curboneptr && curboneptr->GetParent(false) && curboneptr->GetParent(false)->IsSkeleton()) {
+				curboneptr->GetParent(false)->CalcAxisMatX_Manipulator(g_limitdegflag, g_boneaxis, 0, curboneptr, &s_selm, 0);
 			}
 			else {
 				s_selm.SetIdentity();
@@ -14306,7 +14320,7 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 		std::map<int, CBone*>::iterator itrbone;
 		for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
 			CBone* curbone = (CBone*)itrbone->second;
-			if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
+			if (curbone && (curbone->IsSkeleton())) {
 				int rigno;
 				for (rigno = 0; rigno < MAXRIGNUM; rigno++) {
 					CUSTOMRIG currig = curbone->GetCustomRig(rigno);
@@ -17068,7 +17082,7 @@ int CreateConvBoneWnd()
 		map<int, CBone*>::iterator itrbone;
 		for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
 			CBone* curbone = itrbone->second;
-			if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
+			if (curbone && (curbone->IsSkeleton())) {
 				const WCHAR* wbonename = curbone->GetWBoneName();
 				_ASSERT(wbonename);
 				s_modelbone[cbno] = new OWP_Label(wbonename);
@@ -17577,7 +17591,7 @@ int SetConvBone(int cbno)
 	map<int, CBone*>::iterator itrbone;
 	for (itrbone = s_convbone_bvh->GetBoneListBegin(); itrbone != s_convbone_bvh->GetBoneListEnd(); itrbone++) {
 		CBone* curbone = itrbone->second;
-		if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
+		if (curbone && (curbone->IsSkeleton())) {
 			int boneno = curbone->GetBoneNo();
 			int setmenuid = ID_RMENU_0 + boneno + 1 + MENUOFFSET_SETCONVBONE;
 			AppendMenu(submenu, MF_STRING, setmenuid, curbone->GetWBoneName());
@@ -17659,7 +17673,7 @@ int InitJointPair2ConvBoneWnd()
 	map<int, CBone*>::iterator itrbone;
 	for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
 		CBone* curbone = itrbone->second;
-		if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
+		if (curbone && (curbone->IsSkeleton())) {
 			swprintf_s(bvhbonename, MAX_PATH, L"NotSet_%03d", cbno);
 			(s_bvhbone[cbno])->setName(bvhbonename);
 			s_bvhbone_bone[cbno] = 0;
@@ -17688,7 +17702,7 @@ int SetJointPair2ConvBoneWnd()
 	map<int, CBone*>::iterator itrbone;
 	for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
 		CBone* curbone = itrbone->second;
-		if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
+		if (curbone && (curbone->IsSkeleton())) {
 			CBone* bvhbone = s_convbonemap[curbone];
 			if (bvhbone) {
 				swprintf_s(bvhbonename, MAX_PATH, bvhbone->GetWBoneName());
@@ -18557,8 +18571,8 @@ int RigidElem2WndParam()
 	if (curbone) {
 		//int kinflag = curbone->m_btforce;
 
-		CBone* parentbone = curbone->GetParent();
-		if (parentbone) {
+		CBone* parentbone = curbone->GetParent(false);
+		if (parentbone && parentbone->IsSkeleton()) {
 			int kinflag = parentbone->GetBtForce();
 			s_btforce->setValue((bool)kinflag);
 
@@ -18718,8 +18732,8 @@ int SetImpWndParams()
 
 	CBone* curbone = s_model->GetBoneByID(s_curboneno);
 	if (curbone) {
-		CBone* parentbone = curbone->GetParent();
-		if (parentbone) {
+		CBone* parentbone = curbone->GetParent(false);
+		if (parentbone && parentbone->IsSkeleton()) {
 			ChaVector3 setimp(0.0f, 0.0f, 0.0f);
 
 
@@ -18767,8 +18781,8 @@ int SetDmpWndParams()
 
 	CBone* curbone = s_model->GetBoneByID(s_curboneno);
 	if (curbone) {
-		CBone* parentbone = curbone->GetParent();
-		if (parentbone) {
+		CBone* parentbone = curbone->GetParent(false);
+		if (parentbone && parentbone->IsSkeleton()) {
 			char* filename = s_model->GetRigidElemInfo(s_rgdindexmap[s_model]).filename;
 			CRigidElem* curre = parentbone->GetRigidElemOfMap(filename, curbone);
 			if (curre) {
@@ -21330,21 +21344,25 @@ void CreateMarkReq(int curboneno, int broflag)
 	}
 	CBone* curbone = s_model->GetBoneByID(curboneno);
 	if (curbone) {
-		int curlineno = s_boneno2lineno[curboneno];
-		if (curlineno >= 0) {
-			int keynum;
-			double startframe, endframe;
-			s_editrange.GetRange(&keynum, &startframe, &endframe);
-			s_model->AddBoneMotMark(s_owpTimeline, curboneno, curlineno, startframe, endframe, 1);
+		if (curbone->IsSkeleton()) {
+			int curlineno = s_boneno2lineno[curboneno];
+			if (curlineno >= 0) {
+				int keynum;
+				double startframe, endframe;
+				s_editrange.GetRange(&keynum, &startframe, &endframe);
+				s_model->AddBoneMotMark(s_owpTimeline, curboneno, curlineno, startframe, endframe, 1);
+			}
 		}
+
+		if (curbone->GetChild(false)) {
+			CreateMarkReq(curbone->GetChild(false)->GetBoneNo(), 1);
+		}
+		if (broflag && curbone->GetBrother(false)) {
+			CreateMarkReq(curbone->GetBrother(false)->GetBoneNo(), 1);
+		}
+
 	}
 
-	if (curbone->GetChild()) {
-		CreateMarkReq(curbone->GetChild()->GetBoneNo(), 1);
-	}
-	if (broflag && curbone->GetBrother()) {
-		CreateMarkReq(curbone->GetBrother()->GetBoneNo(), 1);
-	}
 }
 
 int SetLTimelineMark(int curboneno)
@@ -21356,10 +21374,10 @@ int SetLTimelineMark(int curboneno)
 	if ((curboneno >= 0) && s_model && s_owpTimeline && s_owpLTimeline) {
 		CBone* opebone = s_model->GetBoneByID(curboneno);
 		if (opebone) {
-			CBone* parentbone = opebone->GetParent();
+			CBone* parentbone = opebone->GetParent(false);
 			if (s_ikkind == 0) {
 				//ikkind がROT(0)の場合はIK　それ以外のMV, SCALEの場合にはFK
-				if (parentbone) {
+				if (parentbone && parentbone->IsSkeleton()) {
 					opebone = parentbone;
 				}
 			}
@@ -21826,8 +21844,8 @@ int Bone2AngleLimit()
 
 	//オイラーグラフの表示と合わせるために選択ジョイントの１階層親のジョイントを扱う //2021/11/17
 	if (curbone) {
-		if (curbone->GetParent()) {
-			s_anglelimitbone = curbone->GetParent();
+		if (curbone->GetParent(false) && curbone->GetParent(false)->IsSkeleton()) {
+			s_anglelimitbone = curbone->GetParent(false);
 		}
 		else {
 			s_anglelimitbone = curbone;
@@ -21876,7 +21894,7 @@ int Bone2AngleLimit()
 
 int AngleLimit2Bone_One(CBone* srcbone)
 {
-	if (s_model && srcbone) {
+	if (s_model && srcbone && (srcbone->IsSkeleton())) {
 		MOTINFO* curmi = s_model->GetCurMotInfo();
 		if (curmi) {
 			srcbone->SetAngleLimit(g_limitdegflag, s_anglelimit);
@@ -21890,14 +21908,16 @@ int AngleLimit2Bone_One(CBone* srcbone)
 void AngleLimit2Bone_Req(CBone* srcbone, int setbroflag)
 {
 	if (srcbone) {
-		AngleLimit2Bone_One(srcbone);
-
-		if (srcbone->GetChild()) {
-			int newsetbroflag = 1;
-			AngleLimit2Bone_Req(srcbone->GetChild(), newsetbroflag);
+		if (srcbone->IsSkeleton()) {
+			AngleLimit2Bone_One(srcbone);
 		}
-		if ((setbroflag) && (srcbone->GetBrother())) {
-			AngleLimit2Bone_Req(srcbone->GetBrother(), setbroflag);
+
+		if (srcbone->GetChild(false)) {
+			int newsetbroflag = 1;
+			AngleLimit2Bone_Req(srcbone->GetChild(false), newsetbroflag);
+		}
+		if ((setbroflag) && (srcbone->GetBrother(false))) {
+			AngleLimit2Bone_Req(srcbone->GetBrother(false), setbroflag);
 		}
 	}
 }
@@ -21925,7 +21945,7 @@ int AngleLimit2Bone(int limit2boneflag)
 		}
 		else if (limit2boneflag == eLIM2BONE_LIM2BONE_ALL) {
 			int setbroflag = 0;
-			AngleLimit2Bone_Req(s_model->GetTopBone(), setbroflag);
+			AngleLimit2Bone_Req(s_model->GetTopBone(false), setbroflag);
 		}
 		else {
 			_ASSERT(0);
@@ -22361,7 +22381,7 @@ int CopyWorldToLimitedWorld(CModel* srcmodel)
 			//for (curframe = 0.0; curframe < curmi->frameleng; curframe += 1.0) {
 			for (curframe = 1.0; curframe < curmi->frameleng; curframe += 1.0) {
 				srcmodel->SetMotionFrame(curframe);
-				srcmodel->CopyWorldToLimitedWorldReq(srcmodel->GetTopBone(), curmi->motid, curframe);
+				srcmodel->CopyWorldToLimitedWorldReq(srcmodel->GetTopBone(false), curmi->motid, curframe);
 			}
 		}
 
@@ -22388,7 +22408,7 @@ int ApplyNewLimitsToWM(CModel* srcmodel)
 			//for (curframe = 0.0; curframe < curmi->frameleng; curframe += 1.0) {
 			for (curframe2 = 1.0; curframe2 < curmi->frameleng; curframe2 += 1.0) {
 				srcmodel->SetMotionFrame(curframe2);
-				srcmodel->ApplyNewLimitsToWMReq(srcmodel->GetTopBone(), curmi->motid, curframe2);
+				srcmodel->ApplyNewLimitsToWMReq(srcmodel->GetTopBone(false), curmi->motid, curframe2);
 				//srcmodel->UpdateMatrix(&tmpwm, &s_matVP);
 			}
 		}
@@ -24991,7 +25011,7 @@ int OnFrameToolWnd()
 					if (s_model->GetTopBone()) {
 						s_model->SetMotionFrame(frame);
 						bool broflag = false;
-						InitMpByEulReq(INITMP_SCALE, s_model->GetTopBone(), curmi->motid, frame, broflag);
+						InitMpByEulReq(INITMP_SCALE, s_model->GetTopBone(false), curmi->motid, frame, broflag);
 					}
 				}
 
@@ -25151,7 +25171,7 @@ int OnFrameToolWnd()
 	if (s_copyLW2WFlag) {
 		if (s_model && s_model->GetTopBone()) {
 
-			int operatingjointno = s_model->GetTopBone()->GetBoneNo();
+			int operatingjointno = s_model->GetTopBone(false)->GetBoneNo();
 
 			PrepairUndo();//全フレーム変更するので　変更前にも保存
 
@@ -25177,7 +25197,7 @@ int OnFrameToolWnd()
 			list<KeyInfo>::iterator itrcp;
 			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
 				double curframe = (double)((int)(itrcp->time + 0.0001));
-				InsertCopyMPReq(g_limitdegflag, s_model->GetTopBone(), curframe);
+				InsertCopyMPReq(g_limitdegflag, s_model->GetTopBone(false), curframe);
 			}
 
 			if (!s_copymotvec.empty()) {
@@ -25218,7 +25238,7 @@ int OnFrameToolWnd()
 			list<KeyInfo>::iterator itrcp;
 			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
 				double curframe = (double)((int)(itrcp->time + 0.0001));
-				InsertSymMPReq(g_limitdegflag, s_model->GetTopBone(), curframe, symrootmode);
+				InsertSymMPReq(g_limitdegflag, s_model->GetTopBone(false), curframe, symrootmode);
 			}
 
 			if (!s_copymotvec.empty()) {
@@ -25483,8 +25503,8 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 			if (chkbone == srcbone) {
 				docopyflag = 1;
 
-				CBone* parentbone = srcbone->GetParent();
-				if (parentbone) {
+				CBone* parentbone = srcbone->GetParent(false);
+				if (parentbone && parentbone->IsSkeleton()) {
 					int cpno2;
 					for (cpno2 = 0; cpno2 < cpnum; cpno2++) {
 						CBone* chkparentbone = s_selbonedlg.m_cpvec[cpno2];
@@ -25548,8 +25568,8 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 			if (chkbone == srcbone) {
 				docopyflag = 1;
 
-				CBone* parentbone = srcbone->GetParent();
-				if (parentbone) {
+				CBone* parentbone = srcbone->GetParent(false);
+				if (parentbone && parentbone->IsSkeleton()) {
 					int cpno2;
 					for (cpno2 = 0; cpno2 < cpnum; cpno2++) {
 						CBone* chkparentbone = s_selbonedlg.m_cpvec[cpno2];
@@ -25582,34 +25602,21 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 		newmp = srcbone->GetMotionPoint(curmotid, newframe);
 		if (newmp) {
 			if (hasNotMvParFlag == 1) {
-				CBone* parentbone = srcbone->GetParent();
-				if (parentbone) {
+				CBone* parentbone = srcbone->GetParent(false);
+				if (parentbone && parentbone->IsSkeleton()) {
 
 					operatingjointno = parentbone->GetBoneNo();//!!!! For CopyLimitedWorldToWorld()
 
-					CMotionPoint* parmp = parentbone->GetMotionPoint(curmotid, newframe);
-					if (parmp) {
-						ChaMatrix parentwm = parentbone->GetWorldMat(g_limitdegflag,
-							curmotid, newframe, parmp);
+					ChaMatrix parentwm = parentbone->GetWorldMat(g_limitdegflag,
+						curmotid, newframe, 0);
 
-						////int setmatflag1 = 1;
-						//CQuaternion dummyq;
-						//ChaVector3 dummytra = ChaVector3(0.0f, 0.0f, 0.0f);
-						////parmp->SetBefWorldMat(parmp->GetWorldMat());
-						//bool infooutflag = false;
-						//srcbone->RotBoneQReq(g_limitdegflag, infooutflag, 
-						//	parentbone, curmotid, newframe, dummyq, parentwm, parentwm);
+					//編集ジョイントの内の
+					//一番ルートに近いジョイントの親のジョイントの行列を　子供に掛けるため
+					//再帰を掛ける
+					bool setbroflag = false;
+					srcbone->UpdateParentWMReq(g_limitdegflag, setbroflag,
+						curmotid, newframe, parentwm, parentwm);
 
-
-						//編集ジョイントの内の
-						//一番ルートに近いジョイントの親のジョイントの行列を　子供に掛けるため
-						//再帰を掛ける
-						bool setbroflag = false;
-						srcbone->UpdateParentWMReq(g_limitdegflag, setbroflag,
-							curmotid, newframe, parentwm, parentwm);
-
-						//_ASSERT(0);
-					}
 				}
 			}
 		}
@@ -26106,7 +26113,7 @@ int OnSpriteUndo()
 				bool onpasteflag = false;
 				int operatingjointno = 0;
 				if (s_model && s_model->GetTopBone()) {
-					operatingjointno = s_model->GetTopBone()->GetBoneNo();
+					operatingjointno = s_model->GetTopBone(false)->GetBoneNo();
 				}
 				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
 			}
@@ -28448,8 +28455,8 @@ int CreateRigidWnd()
 			if (s_model && (s_curboneno >= 0) && s_btforce) {
 				CBone* curbone = s_model->GetBoneByID(s_curboneno);
 				if (curbone) {
-					CBone* parentbone = curbone->GetParent();
-					if (parentbone) {
+					CBone* parentbone = curbone->GetParent(false);
+					if (parentbone && parentbone->IsSkeleton()) {
 						bool kinflag = s_btforce->getValue();
 						if (kinflag == false) {
 							parentbone->SetBtForce(0);
@@ -29689,8 +29696,8 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 
 
 						//render arrow : selected bone : befpos --> aftpos arrow
-						CBone* childbone = curbone->GetChild();
-						if (childbone && curbone->GetColDisp(childbone, COL_CONE_INDEX)) {
+						CBone* childbone = curbone->GetChild(false);
+						if (childbone && childbone->IsSkeleton() && curbone->GetColDisp(childbone, COL_CONE_INDEX)) {
 							ChaVector4 arrowdiffusemult = ChaVector4(1.0f, 0.5f, 0.5f, 0.85f);
 
 							pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);//不透明の場合には手動で指定
@@ -30299,21 +30306,23 @@ void SkipJointMarkReq(int srcstate, CBone* srcbone, bool setbrotherflag)
 {
 	if (srcbone) {
 
-		if (srcstate == 1) {
-			srcbone->SetSkipRenderBoneMark(true);
-		}
-		else if (srcstate == 2) {
-			srcbone->SetSkipRenderBoneMark(false);
+		if (srcbone->IsSkeleton()) {
+			if (srcstate == 1) {
+				srcbone->SetSkipRenderBoneMark(true);
+			}
+			else if (srcstate == 2) {
+				srcbone->SetSkipRenderBoneMark(false);
+			}
 		}
 
 
 		if (setbrotherflag) {
-			if (srcbone->GetBrother()) {
-				SkipJointMarkReq(srcstate, srcbone->GetBrother(), setbrotherflag);
+			if (srcbone->GetBrother(false)) {
+				SkipJointMarkReq(srcstate, srcbone->GetBrother(false), setbrotherflag);
 			}
 		}
-		if (srcbone->GetChild()) {
-			SkipJointMarkReq(srcstate, srcbone->GetChild(), true);
+		if (srcbone->GetChild(false)) {
+			SkipJointMarkReq(srcstate, srcbone->GetChild(false), true);
 		}
 	}
 
@@ -30607,7 +30616,7 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 {
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
-	if (curbone) {
+	if (curbone && (curbone->IsSkeleton())) {
 		//if (curbone->GetChild()){//2022/11/23 CommentOut なぜこのif文があったのか？ 不具合によりエンドジョイントにモーションポイントが無かったから？
 		if (initmode == INITMP_ROTTRA) {
 			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -30632,7 +30641,7 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 			int paraxsiflag1 = 1;
 			//int isfirstbone = 0;
-			cureul = curbone->CalcLocalEulXYZ(true, g_limitdegflag,
+			cureul = curbone->CalcLocalEulXYZ(g_limitdegflag,
 				paraxsiflag1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 
 			int inittraflag1 = 1;
@@ -30645,7 +30654,7 @@ int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 			int paraxsiflag1 = 1;
 			//int isfirstbone = 0;
-			cureul = curbone->CalcLocalEulXYZ(true, g_limitdegflag,
+			cureul = curbone->CalcLocalEulXYZ(g_limitdegflag,
 				paraxsiflag1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 
 			ChaVector3 traanim = curbone->CalcLocalTraAnim(g_limitdegflag, srcmotid, roundingframe);
@@ -30668,14 +30677,16 @@ void InitMpByEulReq(int initmode, CBone* curbone, int srcmotid, double srcframe,
 		return;
 	}
 
-	InitMpByEul(initmode, curbone, srcmotid, srcframe);
-
-	if (curbone->GetChild()) {
-		bool broflag2 = true;
-		InitMpByEulReq(initmode, curbone->GetChild(), srcmotid, srcframe, broflag2);
+	if (curbone->IsSkeleton()) {
+		InitMpByEul(initmode, curbone, srcmotid, srcframe);
 	}
-	if (curbone->GetBrother() && (broflag == true)) {
-		InitMpByEulReq(initmode, curbone->GetBrother(), srcmotid, srcframe, broflag);
+
+	if (curbone->GetChild(false)) {
+		bool broflag2 = true;
+		InitMpByEulReq(initmode, curbone->GetChild(false), srcmotid, srcframe, broflag2);
+	}
+	if (curbone->GetBrother(false) && (broflag == true)) {
+		InitMpByEulReq(initmode, curbone->GetBrother(false), srcmotid, srcframe, broflag);
 	}
 }
 
@@ -31704,7 +31715,7 @@ int SetRigRigCombo(HWND hDlgWnd, int elemno)
 		map<int, CBone*>::iterator itrcurrigrigbone;
 		for (itrcurrigrigbone = s_model->GetBoneListBegin(); itrcurrigrigbone != s_model->GetBoneListEnd(); itrcurrigrigbone++) {
 			currigrigbone = itrcurrigrigbone->second;
-			if (currigrigbone && (currigrigbone->GetType() == FBXBONE_NORMAL)) {
+			if (currigrigbone && (currigrigbone->IsSkeleton())) {
 				WCHAR rigrigbonename[256];
 				ZeroMemory(rigrigbonename, sizeof(WCHAR) * 256);
 				wcscpy_s(rigrigbonename, 256, currigrigbone->GetWBoneName());
@@ -31751,11 +31762,11 @@ int SetCustomRigDlgLevel(HWND hDlgWnd, int levelnum)
 		int gpboxid[5] = { IDC_CHILD1, IDC_CHILD2, IDC_CHILD3, IDC_CHILD4, IDC_CHILD5 };
 
 		int parno = 1;
-		CBone* parentbone = s_customrigbone->GetParent();
-		while (parentbone && (parno < MAXRIGELEMNUM) && (parno < levelnum)) {
+		CBone* parentbone = s_customrigbone->GetParent(false);
+		while (parentbone && parentbone->IsSkeleton() && (parno < MAXRIGELEMNUM) && (parno < levelnum)) {
 			SetDlgItemText(s_customrigdlg, gpboxid[parno], (LPCWSTR)parentbone->GetWBoneName());
 			s_customrig.rigelem[parno].boneno = parentbone->GetBoneNo();
-			parentbone = parentbone->GetParent();
+			parentbone = parentbone->GetParent(false);
 			parno++;
 		}
 
@@ -35125,8 +35136,8 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 								}
 							}
 							else {
-								CBone* parbone = curbone->GetParent();
-								if (parbone) {
+								CBone* parbone = curbone->GetParent(false);
+								if (parbone && parbone->IsSkeleton()) {
 									int parboneno = parbone->GetBoneNo();
 									if (parboneno >= 0) {
 										s_curboneno = parboneno;
@@ -35136,7 +35147,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 							}
 						}
 						else if (sisterbutton >= 1) {
-							CBone* sisterbone = curbone->GetSister();
+							CBone* sisterbone = curbone->GetSister(true);
 							if (sisterbone) {
 								int sisterboneno = sisterbone->GetBoneNo();
 								if (sisterboneno >= 0) {
@@ -35147,9 +35158,9 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 							else {
 								//sister loop
 								//brotherがある場合　末端のbrotherに移動
-								CBone* brotherbone = curbone->GetBrother();
-								while (brotherbone && brotherbone->GetBrother()) {
-									brotherbone = brotherbone->GetBrother();
+								CBone* brotherbone = curbone->GetBrother(false);
+								while (brotherbone && brotherbone->GetBrother(false) && brotherbone->GetBrother(false)->IsSkeleton()) {
+									brotherbone = brotherbone->GetBrother(false);
 								}
 								if (brotherbone) {
 									int nextboneno = brotherbone->GetBoneNo();
@@ -35214,8 +35225,8 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 								}
 							}
 							else {
-								CBone* childbone = curbone->GetChild();
-								if (childbone) {
+								CBone* childbone = curbone->GetChild(false);
+								if (childbone && childbone->IsSkeleton()) {
 									int childboneno = childbone->GetBoneNo();
 									if (childboneno >= 0) {
 										s_curboneno = childboneno;
@@ -35225,8 +35236,8 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 							}
 						}
 						else if (brotherbutton >= 1) {
-							CBone* brotherbone = curbone->GetBrother();
-							if (brotherbone) {
+							CBone* brotherbone = curbone->GetBrother(false);
+							if (brotherbone && brotherbone->IsSkeleton()) {
 								int brotherboneno = brotherbone->GetBoneNo();
 								if (brotherboneno >= 0) {
 									s_curboneno = brotherboneno;
@@ -35236,12 +35247,12 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 							else {
 								//brother loop
 								//sisterとparentのchildがある場合　parentのchildに移動
-								CBone* sisterbone = curbone->GetSister();
+								CBone* sisterbone = curbone->GetSister(true);
 								if (sisterbone) {
-									CBone* parentbone = curbone->GetParent();
-									if (parentbone) {
-										CBone* childbone = parentbone->GetChild();
-										if (childbone) {
+									CBone* parentbone = curbone->GetParent(false);
+									if (parentbone && parentbone->IsSkeleton()) {
+										CBone* childbone = parentbone->GetChild(false);
+										if (childbone && childbone->IsSkeleton()) {
 											int nextboneno = childbone->GetBoneNo();
 											if (nextboneno >= 0) {
 												s_curboneno = nextboneno;
@@ -40349,7 +40360,7 @@ void SetKinematicToHand(CModel* srcmodel, bool srcflag)
 		return;
 	}
 
-	SetKinematicToHandReq(srcmodel, srcmodel->GetTopBone(), srcflag);
+	SetKinematicToHandReq(srcmodel, srcmodel->GetTopBone(false), srcflag);
 }
 
 
@@ -40366,16 +40377,17 @@ void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone, bool srcflag)
 	const char* phandpat1 = strstr(pbonename, "Elbow_branch");
 	const char* phandpat2 = strstr(pbonename, "Hand");
 
-	if (phandpat1 || phandpat2) {
-		srcmodel->SetKinematicTmpLower(srcbone, srcflag);
+	if (srcbone->IsSkeleton()) {
+		if ((phandpat1 || phandpat2) && (srcbone->IsSkeleton())) {
+			srcmodel->SetKinematicTmpLower(srcbone, srcflag);
+		}
 	}
 
-
-	if (srcbone->GetChild()) {
-		SetKinematicToHandReq(srcmodel, srcbone->GetChild(), srcflag);
+	if (srcbone->GetChild(false)) {
+		SetKinematicToHandReq(srcmodel, srcbone->GetChild(false), srcflag);
 	}
-	if (srcbone->GetBrother()) {
-		SetKinematicToHandReq(srcmodel, srcbone->GetBrother(), srcflag);
+	if (srcbone->GetBrother(false)) {
+		SetKinematicToHandReq(srcmodel, srcbone->GetBrother(false), srcflag);
 	}
 
 }
@@ -42174,11 +42186,11 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 	//int multworld = 1;
 	//ChaMatrix selm = curbone->CalcManipulatorMatrix(0, 0, multworld, curmotid, curframe);
 	//ChaMatrix selm = curbone->CalcManipulatorMatrix(0, multworld, curmotid, curframe);
-	if (curbone && curbone->GetParent()) {
+	if (curbone && curbone->GetParent(false) && curbone->GetParent(false)->IsSkeleton()) {
 
 		//!!!!!! 軸の種類を変えた場合にも　リグの設定が保たれるように　BONEAXIS_CURRENTで統一
 		//BONEAXIS_BINDPOSEはXフィットしないので　BONEAXIS_CURRENTを選んだ
-		curbone->GetParent()->CalcAxisMatX_Manipulator(g_limitdegflag, BONEAXIS_CURRENT, 0, curbone, &selm, 0);
+		curbone->GetParent(false)->CalcAxisMatX_Manipulator(g_limitdegflag, BONEAXIS_CURRENT, 0, curbone, &selm, 0);
 	}
 	else {
 		//selm.SetIdentity();
@@ -42290,7 +42302,7 @@ int PickRigBone(UIPICKINFO* ppickinfo, bool forrigtip, int* dstrigno)//default:f
 		std::map<int, CBone*>::iterator itrbone;
 		for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
 			CBone* curbone = (CBone*)itrbone->second;
-			if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
+			if (curbone && (curbone->IsSkeleton())) {
 				int rigno;
 				for (rigno = 0; rigno < MAXRIGNUM; rigno++) {
 					CUSTOMRIG currig = curbone->GetCustomRig(rigno);
@@ -42444,7 +42456,7 @@ int SetTimelineHasRigFlag()
 	std::map<int, CBone*>::iterator itrbone;
 	for (itrbone = s_model->GetBoneListBegin(); itrbone != s_model->GetBoneListEnd(); itrbone++) {
 		CBone* curbone = (CBone*)itrbone->second;
-		if (curbone && (curbone->GetType() == FBXBONE_NORMAL)) {
+		if (curbone && (curbone->IsSkeleton())) {
 			bool hasrigflag = s_model->ChkBoneHasRig(curbone);
 			s_owpTimeline->setHasRigFlag(curbone->GetWBoneName(), hasrigflag);
 		}
@@ -42634,7 +42646,7 @@ int FilterNoDlg(bool copylw2w)
 
 	//s_filternodlg = true;
 	s_filterState = 3;//deeper
-	motfilter.FilterNoDlg(edgesmp, g_limitdegflag, s_model, s_model->GetTopBone(),
+	motfilter.FilterNoDlg(edgesmp, g_limitdegflag, s_model, s_model->GetTopBone(false),
 		s_filterState,
 		s_model->GetCurMotInfo()->motid,
 		(int)(s_buttonselectstart + 0.0001), (int)(s_buttonselectend + 0.0001));
@@ -42645,7 +42657,7 @@ int FilterNoDlg(bool copylw2w)
 		if (g_limitdegflag == true) {
 			bool allframeflag = false;
 			bool setcursorflag = false;
-			int operatingjointno = s_model->GetTopBone()->GetBoneNo();
+			int operatingjointno = s_model->GetTopBone(false)->GetBoneNo();
 			bool onpasteflag = false;
 			CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
 		}
@@ -42687,8 +42699,8 @@ int FilterFuncDlg()
 					CBone* curbone = 0;
 					curbone = s_model->GetBoneByID(s_curboneno);
 					if (curbone) {
-						if ((s_ikkind == 0) && curbone->GetParent()) {
-							opebone = curbone->GetParent();
+						if ((s_ikkind == 0) && curbone->GetParent(false) && curbone->GetParent(false)->IsSkeleton()) {
+							opebone = curbone->GetParent(false);
 						}
 						else {
 							opebone = curbone;

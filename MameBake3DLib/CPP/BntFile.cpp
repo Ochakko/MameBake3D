@@ -115,8 +115,8 @@ int CBntFile::WriteBone( CModel* srcmodel )
 
 	int wbonenum = 0;
 
-	if( srcmodel->GetTopBone() ){
-		WriteBntBoneReq( srcmodel->GetTopBone(), &wbonenum );
+	if( srcmodel->GetTopBone(false) ){
+		WriteBntBoneReq( srcmodel->GetTopBone(false), &wbonenum );
 	}
 
 	if( wbonenum != bonenum ){
@@ -143,36 +143,40 @@ typedef struct tag_bntbone
 	char brothername[256];
 }BNTBONE;
 */
-	BNTBONE wdata;
-	ZeroMemory( &wdata, sizeof( BNTBONE ) );
-	wdata.bonecnt = srcbone->GetBoneCnt();
-	wdata.validflag = srcbone->GetValidFlag();
-	wdata.boneno = srcbone->GetBoneNo();
-	wdata.topboneflag = srcbone->GetTopBoneFlag();
-	strcpy_s( wdata.bonename, 256, srcbone->GetBoneName() );
 
-	if( srcbone->GetParent() ){
-		strcpy_s( wdata.parentname, 256, srcbone->GetParent()->GetBoneName() );
-	}
-	if( srcbone->GetChild() ){
-		strcpy_s( wdata.childname, 256, srcbone->GetChild()->GetBoneName() );
-	}
-	if( srcbone->GetBrother() ){
-		strcpy_s( wdata.brothername, 256, srcbone->GetBrother()->GetBoneName() );
-	}
-	
-	CallF( WriteVoid2File( (void*)&wdata, sizeof( BNTBONE ) ), return );
+	if (srcbone && (srcbone->IsSkeleton())) {
+
+		BNTBONE wdata;
+		ZeroMemory(&wdata, sizeof(BNTBONE));
+		wdata.bonecnt = srcbone->GetBoneCnt();
+		wdata.validflag = srcbone->GetValidFlag();
+		wdata.boneno = srcbone->GetBoneNo();
+		wdata.topboneflag = srcbone->GetTopBoneFlag();
+		strcpy_s(wdata.bonename, 256, srcbone->GetBoneName());
+
+		if (srcbone->GetParent(true)) {
+			strcpy_s(wdata.parentname, 256, srcbone->GetParent(true)->GetBoneName());
+		}
+		if (srcbone->GetChild(true)) {
+			strcpy_s(wdata.childname, 256, srcbone->GetChild(true)->GetBoneName());
+		}
+		if (srcbone->GetBrother(true)) {
+			strcpy_s(wdata.brothername, 256, srcbone->GetBrother(true)->GetBoneName());
+		}
+
+		CallF(WriteVoid2File((void*)&wdata, sizeof(BNTBONE)), return);
 
 
-	(*pbonenum)++;
+		(*pbonenum)++;
+	}
 
 /////
-	if( srcbone->GetChild() ){
-		WriteBntBoneReq( srcbone->GetChild(), pbonenum );
+	if( srcbone->GetChild(false) ){
+		WriteBntBoneReq( srcbone->GetChild(false), pbonenum );
 	}
 
-	if( srcbone->GetBrother() ){
-		WriteBntBoneReq( srcbone->GetBrother(), pbonenum );
+	if( srcbone->GetBrother(false) ){
+		WriteBntBoneReq( srcbone->GetBrother(false), pbonenum );
 	}
 
 	return;
@@ -397,7 +401,7 @@ int CBntFile::WriteOneMotion(bool limitdegflag, CModel* srcmodel )
 
 	int bonecnt = 0;
 	WriteMotionPointsReq(limitdegflag, 
-		srcmodel->GetTopBone(), srcmodel->GetCurMotInfo()->motid, motheader.frameleng, &bonecnt );
+		srcmodel->GetTopBone(false), srcmodel->GetCurMotInfo()->motid, motheader.frameleng, &bonecnt );
 	if( bonecnt != motheader.bonenum ){
 		_ASSERT( 0 );
 		return 1;
@@ -413,29 +417,32 @@ void CBntFile::WriteMotionPointsReq(bool limitdegflag, CBone* srcbone, int srcmo
 		return;
 	}
 
-	CallF( WriteVoid2File( (void*)srcbone->GetBoneName(), sizeof( char ) * 256 ), return );
+	if (srcbone->IsSkeleton()) {
+		CallF(WriteVoid2File((void*)srcbone->GetBoneName(), sizeof(char) * 256), return);
 
-	int frameno;
-	for( frameno = 0; frameno < frameleng; frameno++ ){
-		BNTMOTPOINT wmp;
-		wmp.frameno = frameno;
-		
-		CMotionPoint curmp;
-		int existflag = 0;
-		CallF( srcbone->CalcFBXMotion(limitdegflag, srcmotid, (double)frameno, &curmp, &existflag ), return );
-		wmp.matrix = srcbone->GetWorldMat(limitdegflag, srcmotid, (double)frameno, &curmp);
+		int frameno;
+		for (frameno = 0; frameno < frameleng; frameno++) {
+			BNTMOTPOINT wmp;
+			wmp.frameno = frameno;
 
-		CallF( WriteVoid2File( (void*)&wmp, sizeof( BNTMOTPOINT ) ), return );
+			CMotionPoint curmp;
+			int existflag = 0;
+			CallF(srcbone->CalcFBXMotion(limitdegflag, srcmotid, (double)frameno, &curmp, &existflag), return);
+			wmp.matrix = srcbone->GetWorldMat(limitdegflag, srcmotid, (double)frameno, &curmp);
+
+			CallF(WriteVoid2File((void*)&wmp, sizeof(BNTMOTPOINT)), return);
+		}
+
+
+		(*pcnt)++;
 	}
 
 
-	(*pcnt)++;
-
-	if( srcbone->GetChild() ){
-		WriteMotionPointsReq(limitdegflag, srcbone->GetChild(), srcmotid, frameleng, pcnt);
+	if( srcbone->GetChild(false) ){
+		WriteMotionPointsReq(limitdegflag, srcbone->GetChild(false), srcmotid, frameleng, pcnt);
 	}
-	if( srcbone->GetBrother() ){
-		WriteMotionPointsReq(limitdegflag, srcbone->GetBrother(), srcmotid, frameleng, pcnt);
+	if( srcbone->GetBrother(false) ){
+		WriteMotionPointsReq(limitdegflag, srcbone->GetBrother(false), srcmotid, frameleng, pcnt);
 	}
 
 }

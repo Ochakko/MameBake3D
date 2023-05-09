@@ -152,9 +152,9 @@ ChaMatrix CRigidElem::GetCapsulematForColiShape(bool limitdegflag, int calczerof
 	ChaMatrix retmat;
 	retmat.SetIdentity();
 
-	if (m_endbone && m_endbone->GetParent()) {
+	if (m_endbone && m_endbone->GetParent(false)) {
 		bool dir2xflag = true;
-		m_endbone->GetParent()->CalcAxisMatX_RigidBody(limitdegflag, dir2xflag, 0, m_endbone, &retmat, calczeroframe);
+		m_endbone->GetParent(false)->CalcAxisMatX_RigidBody(limitdegflag, dir2xflag, 0, m_endbone, &retmat, calczeroframe);
 	}
 	else {
 		retmat.SetIdentity();

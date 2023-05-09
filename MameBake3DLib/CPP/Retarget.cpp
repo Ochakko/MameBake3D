@@ -196,20 +196,20 @@ namespace MameBake3DLibRetarget {
 
 
 
-		if (modelbone->GetChild()) {
+		if (modelbone->GetChild(true)) {
 			if (bvhbone) {
-				RetargetReq(srcmodel, srcbvhmodel, modelbone->GetChild(), srcframe, bvhbone, hrate, sconvbonemap);
+				RetargetReq(srcmodel, srcbvhmodel, modelbone->GetChild(true), srcframe, bvhbone, hrate, sconvbonemap);
 			}
 			else {
-				RetargetReq(srcmodel, srcbvhmodel, modelbone->GetChild(), srcframe, befbvhbone, hrate, sconvbonemap);
+				RetargetReq(srcmodel, srcbvhmodel, modelbone->GetChild(true), srcframe, befbvhbone, hrate, sconvbonemap);
 			}
 		}
-		if (modelbone->GetBrother()) {
+		if (modelbone->GetBrother(true)) {
 			//if (bvhbone){
-			//	ConvBoneConvertReq(modelbone->GetBrother(), srcframe, bvhbone, hrate);
+			//	ConvBoneConvertReq(modelbone->GetBrother(true), srcframe, bvhbone, hrate);
 			//}
 			//else{
-			RetargetReq(srcmodel, srcbvhmodel, modelbone->GetBrother(), srcframe, befbvhbone, hrate, sconvbonemap);
+			RetargetReq(srcmodel, srcbvhmodel, modelbone->GetBrother(true), srcframe, befbvhbone, hrate, sconvbonemap);
 			//}
 		}
 
@@ -300,8 +300,8 @@ namespace MameBake3DLibRetarget {
 
 			CMotionPoint modelparmp;
 			CMotionPoint* pmodelparmp = 0;
-			if (srcbone->GetParent()) {
-				pmodelparmp = srcbone->GetParent()->GetMotionPoint(modelmotid, roundingframe, onaddmotion);
+			if (srcbone->GetParent(true)) {
+				pmodelparmp = srcbone->GetParent(true)->GetMotionPoint(modelmotid, roundingframe, onaddmotion);
 				if (pmodelparmp) {
 					modelparmp = *pmodelparmp;
 				}
@@ -379,15 +379,15 @@ namespace MameBake3DLibRetarget {
 				ChaMatrix bvhparentmat, modelparentmat;
 				bvhparentmat.SetIdentity();
 				modelparentmat.SetIdentity();
-				if (bvhbone->GetParent()) {
-					bvhparentmat = ChaMatrixInv(bvhbone->GetParent()->GetWorldMat(false, bvhmotid, 0.0, 0)) * bvhbone->GetParent()->GetWorldMat(false, bvhmotid, roundingframe, 0);
+				if (bvhbone->GetParent(true)) {
+					bvhparentmat = ChaMatrixInv(bvhbone->GetParent(true)->GetWorldMat(false, bvhmotid, 0.0, 0)) * bvhbone->GetParent(true)->GetWorldMat(false, bvhmotid, roundingframe, 0);
 				}
 				else {
 					//bvhparentmat.SetIdentity();
 					bvhparentmat = ChaMatrixInv(bvhbone->GetWorldMat(false, bvhmotid, 0.0, 0)) * bvhbone->GetWorldMat(false, bvhmotid, roundingframe, 0);
 				}
-				if (srcbone->GetParent()) {
-					modelparentmat = ChaMatrixInv(srcbone->GetParent()->GetWorldMat(false, modelmotid, 0.0, 0)) * srcbone->GetParent()->GetWorldMat(false, modelmotid, roundingframe, 0);
+				if (srcbone->GetParent(true)) {
+					modelparentmat = ChaMatrixInv(srcbone->GetParent(true)->GetWorldMat(false, modelmotid, 0.0, 0)) * srcbone->GetParent(true)->GetWorldMat(false, modelmotid, roundingframe, 0);
 				}
 				else {
 					//modelparentmat.SetIdentity();
@@ -535,7 +535,7 @@ namespace MameBake3DLibRetarget {
 
 
 					//traanim = bvhbone->CalcLocalTraAnim(bvhmotid, roundingframe);//ˆÚ“®‚Í‚±‚¿‚ç‚©‚çŽæ“¾
-					//if (!bvhbone->GetParent()) {
+					//if (!bvhbone->GetParent(true)) {
 					//	ChaVector3 bvhbonepos = bvhbone->GetJointFPos();
 					//	ChaVector3 firstframebonepos = bvhbone->GetFirstFrameBonePos();
 					//	ChaVector3 firstdiff = firstframebonepos - bvhbonepos;
@@ -556,13 +556,13 @@ namespace MameBake3DLibRetarget {
 					ChaMatrix bvhsmat0, bvhrmat0, bvhtmat0, bvhtanimmat0;
 
 					//GetWorldMat() : limitedflag‚ðƒ[ƒ‚É‚µ‚Ä‚¨‚­•K—v—L !!!!
-					if (bvhbone->GetParent()) {
-						ChaMatrix parentwm = bvhbone->GetParent()->GetWorldMat(limitdegflag, bvhmotid, roundingframe, 0);
+					if (bvhbone->GetParent(true)) {
+						ChaMatrix parentwm = bvhbone->GetParent(true)->GetWorldMat(limitdegflag, bvhmotid, roundingframe, 0);
 						GetSRTandTraAnim(bvhmp.GetAnimMat() * ChaMatrixInv(parentwm), bvhbone->GetNodeMat(), 
 							&bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
 
 						//calc 0 frame
-						ChaMatrix parentwm0 = bvhbone->GetParent()->GetWorldMat(limitdegflag, bvhmotid, 0.0, 0);
+						ChaMatrix parentwm0 = bvhbone->GetParent(true)->GetWorldMat(limitdegflag, bvhmotid, 0.0, 0);
 						GetSRTandTraAnim(bvhbone->GetWorldMat(limitdegflag, bvhmotid, 0.0, 0) * ChaMatrixInv(parentwm0), bvhbone->GetNodeMat(),
 							&bvhsmat0, &bvhrmat0, &bvhtmat0, &bvhtanimmat0);
 					}

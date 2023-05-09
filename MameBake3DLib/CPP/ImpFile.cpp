@@ -92,7 +92,7 @@ int CImpFile::WriteImpFile( WCHAR* strpath, CModel* srcmodel )
 	CallF( Write2File( "<?xml version=\"1.0\" encoding=\"Shift_JIS\"?>\r\n<IMPULSE>\r\n" ), return 1 );  
 	CallF( Write2File( "    <FileInfo>1001-01</FileInfo>\r\n" ), return 1 );
 
-	WriteImpReq( m_model->GetTopBone() );
+	WriteImpReq( m_model->GetTopBone(false) );
 
 	CallF( Write2File( "</IMPULSE>\r\n" ), return 1 );
 
@@ -100,13 +100,15 @@ int CImpFile::WriteImpFile( WCHAR* strpath, CModel* srcmodel )
 }
 void CImpFile::WriteImpReq( CBone* srcbone )
 {
-	WriteImp( srcbone );
-
-	if( srcbone->GetChild() ){
-		WriteImpReq( srcbone->GetChild() );
+	if (srcbone && (srcbone->IsSkeleton())) {
+		WriteImp(srcbone);
 	}
-	if( srcbone->GetBrother() ){
-		WriteImpReq( srcbone->GetBrother() );
+
+	if( srcbone->GetChild(false) ){
+		WriteImpReq( srcbone->GetChild(false) );
+	}
+	if( srcbone->GetBrother(false) ){
+		WriteImpReq( srcbone->GetBrother(false) );
 	}
 }
 
@@ -198,7 +200,7 @@ int CImpFile::LoadImpFile( WCHAR* strpath, CModel* srcmodel )
 	CallF( SetBuffer(), return 1 );
 
 
-	CBone* topbone = srcmodel->GetTopBone();
+	CBone* topbone = srcmodel->GetTopBone(false);
 	if( topbone ){
 		srcmodel->CreateRigidElemReq( topbone, 0, srcmodel->GetDefaultReName(), 1, m_strimp );
 	}

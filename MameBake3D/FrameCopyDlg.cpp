@@ -217,7 +217,7 @@ LRESULT CFrameCopyDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHan
 	for( itrbone = m_model->GetBoneListBegin(); itrbone != m_model->GetBoneListEnd(); itrbone++ ){
 		int chkboneno = itrbone->first;
 		CBone* chkbone = itrbone->second;
-		if (chkbone && (chkbone->GetType() == FBXBONE_NORMAL)){
+		if (chkbone && (chkbone->IsSkeleton())){
 			CBone* valbone = m_validelemmap[chkboneno];
 			CBone* invalbone = m_invalidelemmap[chkboneno];
 
@@ -282,36 +282,38 @@ void CFrameCopyDlg::AddBoneToTree( CBone* srcbone, int addbroflag, int addtolast
 	//( CShdElem‚ÌTree\‘¢‚Æ“¯Šú‚·‚é‚½‚ßB)
 
 	HTREEITEM parTI;
-	CBone* parentbone = srcbone->GetParent();
-	if( parentbone ){
+	CBone* parentbone = srcbone->GetParent(false);
+	if( parentbone && parentbone->IsSkeleton()){
 		parTI = m_timap[ parentbone->GetBoneNo() ];
 	}else{
 		parTI = TreeView_GetRoot( m_tree_wnd );
 	}
 
-	HTREEITEM newTI;
-	newTI = TVAdd( parTI, (WCHAR*)srcbone->GetWBoneName(), srcbone->GetBoneNo(), m_iImage, m_iSelect, addtolast );
-	if( !newTI ){
-		_ASSERT( 0 );
-		return;
+	if (srcbone->IsSkeleton()) {
+		HTREEITEM newTI;
+		newTI = TVAdd(parTI, (WCHAR*)srcbone->GetWBoneName(), srcbone->GetBoneNo(), m_iImage, m_iSelect, addtolast);
+		if (!newTI) {
+			_ASSERT(0);
+			return;
+		}
+		m_timap[srcbone->GetBoneNo()] = newTI;
+		if (m_selectedno == 0) {
+			m_selecteditem = newTI;
+			m_selectedno = srcbone->GetBoneNo();
+			TreeView_SelectItem(m_tree_wnd, m_selecteditem);
+		}
 	}
 
-	m_timap[ srcbone->GetBoneNo() ] = newTI;
-	if( m_selectedno == 0 ){
-		m_selecteditem = newTI;
-		m_selectedno = srcbone->GetBoneNo();
-		TreeView_SelectItem( m_tree_wnd, m_selecteditem );
-	}
 
 ///////////
-	if( srcbone->GetChild() ){
-		AddBoneToTree( srcbone->GetChild(), 1, 1 );
+	if( srcbone->GetChild(false) ){
+		AddBoneToTree( srcbone->GetChild(false), 1, 1 );
 	}
 
 	///////////
 	if( addbroflag ){
-		if( srcbone->GetBrother() ){
-			AddBoneToTree( srcbone->GetBrother(), 1, 1 );
+		if( srcbone->GetBrother(false) ){
+			AddBoneToTree( srcbone->GetBrother(false), 1, 1 );
 		}
 	}
 
@@ -646,7 +648,7 @@ int CFrameCopyDlg::SetTree2ListReq( int validorinvalid, int srcno, int addbrofla
 	if( (srcno >= 0) && (srcno < bonenum) ){
 	
 		curbone = m_model->GetBoneByID( srcno );
-		if( curbone ){
+		if (curbone && curbone->IsSkeleton()) {
 			if( validorinvalid == 0 ){
 				m_validelemmap[ srcno ] = curbone;//[boneno]
 			}else{
@@ -660,13 +662,13 @@ int CFrameCopyDlg::SetTree2ListReq( int validorinvalid, int srcno, int addbrofla
 
 	_ASSERT( curbone );
 
-	if( curbone->GetChild() ){
-		SetTree2ListReq( validorinvalid, curbone->GetChild()->GetBoneNo(), 1 );
+	if( curbone->GetChild(false) ){
+		SetTree2ListReq( validorinvalid, curbone->GetChild(false)->GetBoneNo(), 1 );
 	}
 
 	if( addbroflag == 1 ){
-		if( curbone->GetBrother() ){
-			SetTree2ListReq( validorinvalid, curbone->GetBrother()->GetBoneNo(), 1 );
+		if( curbone->GetBrother(false) ){
+			SetTree2ListReq( validorinvalid, curbone->GetBrother(false)->GetBoneNo(), 1 );
 		}
 	}
 

@@ -101,7 +101,7 @@ int CRigFile::WriteRigFile( WCHAR* strpath, CModel* srcmodel )
 	//rigcolorêVãKÅ@[RIGCOLOR_RED(0), RIGCOLOR_BLUE(2)]
 	CallF(Write2File("    <FileInfo>1001-04</FileInfo>\r\n"), return 1);
 
-	WriteRigReq( m_model->GetTopBone() );
+	WriteRigReq( m_model->GetTopBone(false) );
 
 	CallF( Write2File( "</RIGFILE>\r\n" ), return 1 );
 
@@ -113,22 +113,24 @@ void CRigFile::WriteRigReq( CBone* srcbone )
 		return;
 	}
 
-	int rigno;
-	for (rigno = 0; rigno < MAXRIGNUM; rigno++){
-		m_customrig = srcbone->GetCustomRig(rigno);
-		if (m_customrig.useflag == 2){
-			int isvalid = IsValidCustomRig(m_model, m_customrig, srcbone);
-			if (isvalid){
-				WriteRig(srcbone);
+	if (srcbone->IsSkeleton()) {
+		int rigno;
+		for (rigno = 0; rigno < MAXRIGNUM; rigno++) {
+			m_customrig = srcbone->GetCustomRig(rigno);
+			if (m_customrig.useflag == 2) {
+				int isvalid = IsValidCustomRig(m_model, m_customrig, srcbone);
+				if (isvalid) {
+					WriteRig(srcbone);
+				}
 			}
 		}
 	}
 
-	if( srcbone->GetChild() ){
-		WriteRigReq(srcbone->GetChild());
+	if( srcbone->GetChild(false) ){
+		WriteRigReq(srcbone->GetChild(false));
 	}
-	if( srcbone->GetBrother() ){
-		WriteRigReq(srcbone->GetBrother());
+	if( srcbone->GetBrother(false) ){
+		WriteRigReq(srcbone->GetBrother(false));
 	}
 }
 

@@ -92,7 +92,7 @@ int CRigidElemFile::WriteRigidElemFile( WCHAR* strpath, CModel* srcmodel, int re
 
 	CallF( Write2File( "    <SCBTG>%f</SCBTG>\r\n", m_btgscale ), return 1 );
 
-	WriteREReq( m_model->GetTopBone() );
+	WriteREReq( m_model->GetTopBone(false) );
 
 	CallF( Write2File( "</RIGIDELEM>\r\n" ), return 1 );
 
@@ -100,13 +100,15 @@ int CRigidElemFile::WriteRigidElemFile( WCHAR* strpath, CModel* srcmodel, int re
 }
 void CRigidElemFile::WriteREReq( CBone* srcbone )
 {
-	WriteRE( srcbone );
-
-	if( srcbone->GetChild() ){
-		WriteREReq( srcbone->GetChild() );
+	if (srcbone->IsSkeleton()) {
+		WriteRE(srcbone);
 	}
-	if( srcbone->GetBrother() ){
-		WriteREReq( srcbone->GetBrother() );
+
+	if( srcbone->GetChild(false) ){
+		WriteREReq( srcbone->GetChild(false) );
+	}
+	if( srcbone->GetBrother(false) ){
+		WriteREReq( srcbone->GetBrother(false) );
 	}
 }
 
@@ -145,48 +147,50 @@ int CRigidElemFile::WriteRE( CBone* srcbone )
 	//map<CBone*,CRigidElem*>::iterator itrre;
 	//for( itrre = srcbone->GetRigidElemMapBegin(); itrre != srcbone->GetRigidElemMapEnd(); itrre++ ){
 	//	CRigidElem* curre = itrre->second;
-	CBone* childbone = srcbone->GetChild();
+	CBone* childbone = srcbone->GetChild(false);
 	while (childbone){
-		CRigidElem* curre = srcbone->GetRigidElem(childbone);
+		if (childbone->IsSkeleton()) {
+			CRigidElem* curre = srcbone->GetRigidElem(childbone);
 
-		if( curre ){
-			CallF( Write2File( "    <RigidElem>\r\n" ), return 1);
+			if (curre) {
+				CallF(Write2File("    <RigidElem>\r\n"), return 1);
 
-			CallF(Write2File("      <ChildName>%s</ChildName>\r\n", childbone->GetBoneName()), return 1);
-			CallF(Write2File("      <ColType>%d</ColType>\r\n", curre->GetColtype()), return 1);
-			CallF(Write2File("      <SkipFlag>%d</SkipFlag>\r\n", curre->GetSkipflag()), return 1);
-			CallF(Write2File("      <ShpRate>%f</ShpRate>\r\n", curre->GetSphrate()), return 1);
-			CallF(Write2File("      <BoxzRate>%f</BoxzRate>\r\n", curre->GetBoxzrate()), return 1);
-			CallF(Write2File("      <LK>%d</LK>\r\n", curre->GetLKindex()), return 1);
-			CallF(Write2File("      <CUSLK>%f</CUSLK>\r\n", curre->GetCusLk()), return 1);
-			CallF(Write2File("      <AK>%d</AK>\r\n", curre->GetAKindex()), return 1);
-			CallF(Write2File("      <CUSAK>%f</CUSAK>\r\n", curre->GetCusAk()), return 1);
-			CallF(Write2File("      <Mass>%f</Mass>\r\n", curre->GetMass()), return 1);
-			CallF(Write2File("      <LDMP>%f</LDMP>\r\n", curre->GetLDamping()), return 1);
-			CallF(Write2File("      <ADMP>%f</ADMP>\r\n", curre->GetADamping()), return 1);
-			CallF(Write2File("      <BTG>%f</BTG>\r\n", curre->GetBtg()), return 1 );
-			CallF(Write2File("      <DMPANIML>%f</DMPANIML>\r\n", curre->GetDampanimL()), return 1 );
-			CallF(Write2File("      <DMPANIMA>%f</DMPANIMA>\r\n", curre->GetDampanimA()), return 1 );
+				CallF(Write2File("      <ChildName>%s</ChildName>\r\n", childbone->GetBoneName()), return 1);
+				CallF(Write2File("      <ColType>%d</ColType>\r\n", curre->GetColtype()), return 1);
+				CallF(Write2File("      <SkipFlag>%d</SkipFlag>\r\n", curre->GetSkipflag()), return 1);
+				CallF(Write2File("      <ShpRate>%f</ShpRate>\r\n", curre->GetSphrate()), return 1);
+				CallF(Write2File("      <BoxzRate>%f</BoxzRate>\r\n", curre->GetBoxzrate()), return 1);
+				CallF(Write2File("      <LK>%d</LK>\r\n", curre->GetLKindex()), return 1);
+				CallF(Write2File("      <CUSLK>%f</CUSLK>\r\n", curre->GetCusLk()), return 1);
+				CallF(Write2File("      <AK>%d</AK>\r\n", curre->GetAKindex()), return 1);
+				CallF(Write2File("      <CUSAK>%f</CUSAK>\r\n", curre->GetCusAk()), return 1);
+				CallF(Write2File("      <Mass>%f</Mass>\r\n", curre->GetMass()), return 1);
+				CallF(Write2File("      <LDMP>%f</LDMP>\r\n", curre->GetLDamping()), return 1);
+				CallF(Write2File("      <ADMP>%f</ADMP>\r\n", curre->GetADamping()), return 1);
+				CallF(Write2File("      <BTG>%f</BTG>\r\n", curre->GetBtg()), return 1);
+				CallF(Write2File("      <DMPANIML>%f</DMPANIML>\r\n", curre->GetDampanimL()), return 1);
+				CallF(Write2File("      <DMPANIMA>%f</DMPANIMA>\r\n", curre->GetDampanimA()), return 1);
 
 
-			CallF( Write2File( "      <GROUP>%d</GROUP>\r\n", curre->GetGroupid() ), return 1);
-			CallF( Write2File( "      <MYSELF>%d</MYSELF>\r\n", curre->GetMyselfflag() ), return 1);
+				CallF(Write2File("      <GROUP>%d</GROUP>\r\n", curre->GetGroupid()), return 1);
+				CallF(Write2File("      <MYSELF>%d</MYSELF>\r\n", curre->GetMyselfflag()), return 1);
 
-			int idnum = curre->GetColiidsSize();
-			CallF( Write2File( "      <COLIIDNUM>%d</COLIIDNUM>\r\n", idnum ), return 1);
-			int ino;
-			for( ino = 0; ino < idnum; ino++ ){
-				CallF( Write2File( "      <COLIID>%d</COLIID>\r\n", curre->GetColiids( ino ) ), return 1);
+				int idnum = curre->GetColiidsSize();
+				CallF(Write2File("      <COLIIDNUM>%d</COLIIDNUM>\r\n", idnum), return 1);
+				int ino;
+				for (ino = 0; ino < idnum; ino++) {
+					CallF(Write2File("      <COLIID>%d</COLIID>\r\n", curre->GetColiids(ino)), return 1);
+				}
+
+				CallF(Write2File("      <RESTITUTION>%f</RESTITUTION>\r\n", curre->GetRestitution()), return 1);
+				CallF(Write2File("      <FRICTION>%f</FRICTION>\r\n", curre->GetFriction()), return 1);
+
+				CallF(Write2File("      <FORBIDROT>%d</FORBIDROT>\r\n", curre->GetForbidRotFlag()), return 1);
+
+				CallF(Write2File("    </RigidElem>\r\n"), return 1);
 			}
-
-			CallF( Write2File( "      <RESTITUTION>%f</RESTITUTION>\r\n", curre->GetRestitution() ), return 1);
-			CallF( Write2File( "      <FRICTION>%f</FRICTION>\r\n", curre->GetFriction() ), return 1);
-
-			CallF(Write2File("      <FORBIDROT>%d</FORBIDROT>\r\n", curre->GetForbidRotFlag()), return 1);
-
-			CallF( Write2File( "    </RigidElem>\r\n" ), return 1);
 		}
-		childbone = childbone->GetBrother();
+		childbone = childbone->GetBrother(false);
 	}
 
 	CallF( Write2File( "  </Bone>\r\n" ), return 1);
@@ -235,9 +239,10 @@ int CRigidElemFile::LoadRigidElemFile( WCHAR* strpath, CModel* srcmodel )
 
 
 	m_rename = mfilename;
-	CBone* topbone = srcmodel->GetTopBone();
+	CBone* topbone = srcmodel->GetTopBone(false);
 	if( topbone ){
-		srcmodel->CreateRigidElemReq( topbone, 1, m_rename, 0, srcmodel->GetDefaultImpName() );
+		srcmodel->CreateRigidElemReq(topbone, 1, m_rename, 0, srcmodel->GetDefaultImpName());
+		//CreateBtObjectReq(NULL, startbone, startbone->GetChild());
 	}
 
 

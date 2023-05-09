@@ -263,6 +263,14 @@ int CBtObject::CreateObject(bool limitdegflag, int srcmotid, double srcframe, CB
 		return 0;
 	}
 
+
+	//parentNull--childHipsのオブジェクトについてはbtobjectを作る
+	if ((m_bone->IsNotSkeleton() && (!m_endbone->IsHipsBone())) || 
+		m_endbone->IsNotSkeleton()) {
+		return 0;
+	}
+
+
 	m_bone->SetFirstCalcRigid(true);
 	m_endbone->SetFirstCalcRigid(true);
 
@@ -351,7 +359,7 @@ int CBtObject::CreateObject(bool limitdegflag, int srcmotid, double srcframe, CB
 	ChaMatrix shapemat;
 	bool dir2xflag = true;
 	//m_endbone->GetParent()->CalcAxisMatX_RigidBody(dir2xflag, 0, m_endbone, &shapemat, 1);
-	m_endbone->GetParent()->CalcAxisMatX_NodeMat(m_endbone, &shapemat);//2023/01/27
+	m_endbone->GetParent(false)->CalcAxisMatX_NodeMat(m_endbone, &shapemat);//2023/01/27
 	ChaMatrix localshapemat;
 	localshapemat = shapemat * ChaMatrixInv(startrot);
 	CQuaternion localshapeq;
@@ -1154,8 +1162,8 @@ int CBtObject::SetBtMotion(bool limitdegflag, ChaMatrix curtraanim)
 	ChaMatrix localmat;
 	localmat = befpivotmat * xlocalrotmat * aftpivotmat * curtraanim;
 	ChaMatrix parentbtmat;
-	if (m_bone->GetParent()) {
-		parentbtmat = m_bone->GetParent()->GetBtMat();
+	if (m_bone->GetParent(false) && m_bone->GetParent(false)->IsSkeleton()) {
+		parentbtmat = m_bone->GetParent(false)->GetBtMat();
 	}
 	else {
 		parentbtmat.SetIdentity();
@@ -1180,7 +1188,12 @@ int CBtObject::SetBtMotion(bool limitdegflag, ChaMatrix curtraanim)
 	//2023/01/28 GetBtKinFlagチェック追加
 	//GetBtKinFlag != 0の場合は　CModel::SetBtMotionReqでlimitedwmをSetBtMat()
 	//if ((m_bone->GetBtFlag() == 0) && ((m_bone->GetBtKinFlag() == 0) || (m_bone->GetTmpKinematic() == false) || (m_bone->GetMass0() == TRUE))) {
-	if ((m_bone->GetBtFlag() == 0) && 
+
+
+	//2023/05/09
+	//Kinematic == falseの場合だけ　BtMatはセットされている
+	//Kinematic == trueの場合には　BtMatはセットされていない
+	if ((m_bone->GetBtFlag() == 0) &&
 		((m_bone->GetBtKinFlag() == 0) || (m_bone->GetTmpKinematic() == false))) {
 		////m_bone->SetBtMat(m_bone->GetStartMat2() * diffxworld);
 		m_bone->SetBtMat(setwm);

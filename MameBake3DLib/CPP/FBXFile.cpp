@@ -3022,7 +3022,7 @@ void AnimateBoneReq(bool limitdegflag, FbxNode* pNode, FbxAnimLayer* lAnimLayer,
 			fbxbone.SetSkelNode(pNode);
 			fbxbone.SetBone(curbone);
 
-			if (curbone->GetType() == FBXBONE_NORMAL) {
+			if (curbone->IsSkeleton()) {
 				WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
 				WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
 				WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
@@ -4961,11 +4961,6 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 		return;
 	}
 
-	//bool excludenullflag = true;
-	
-	bool excludenullflag = false;//2023/05/06 eNullも計算に入れる
-
-
 	////FbxNode* pNode = pmodel->m_bone2node[curbone];
 	//FbxNode* pNode = pmodel->GetBoneNode(curbone);
 	FbxNode* pNode = nodeonload->GetNode();
@@ -4978,8 +4973,13 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 	lGlobalPosition.SetIdentity();
 	//FbxSkeleton* pskeleton = pNode->GetSkeleton();
 
-	if (pNode && curbone && 
-		((curbone->GetType() == FBXBONE_NORMAL) || (curbone->GetType() == FBXBONE_NULL))
+	
+	//##########################################################################
+	//eNullも計算する
+	//Mayaで確認したところ　eNullノードのプロパティにもbindpose1と記述してあった
+	//##########################################################################
+	if (pNode && curbone &&
+		((curbone->IsSkeleton()) || (curbone->IsNull()))
 		) {
 
 		//2022/11/23
@@ -5024,7 +5024,7 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 							FbxAMatrix lParentGlobalPosition;
 
 							//if (pParentGlobalPosition)
-							if (curbone->GetParent(excludenullflag))
+							if (curbone->GetParent(false) && ParentGlobalPosition)
 							{
 								lParentGlobalPosition = *ParentGlobalPosition;
 							}
@@ -5062,9 +5062,9 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 			ChaMatrix parentnodemat, parentnodeanimmat;
 			parentnodemat.SetIdentity();
 			parentnodeanimmat.SetIdentity();
-			if (curbone->GetParent(excludenullflag)) {
-				parentnodemat = curbone->GetParent(excludenullflag)->GetNodeMat();
-				parentnodeanimmat = curbone->GetParent(excludenullflag)->GetNodeAnimMat();
+			if (curbone->GetParent(false)) {
+				parentnodemat = curbone->GetParent(false)->GetNodeMat();
+				parentnodeanimmat = curbone->GetParent(false)->GetNodeAnimMat();
 			}
 			//nodemat = localnodemat * parentnodemat;
 			nodeanimmat = localnodeanimmat * parentnodeanimmat;//!!!!!!!!! bindmatと同じ
@@ -5116,9 +5116,9 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 				ChaMatrix parentnodemat, parentnodeanimmat;
 				parentnodemat.SetIdentity();
 				parentnodeanimmat.SetIdentity();
-				if (curbone->GetParent(excludenullflag)) {
-					parentnodemat = curbone->GetParent(excludenullflag)->GetNodeMat();
-					parentnodeanimmat = curbone->GetParent(excludenullflag)->GetNodeAnimMat();
+				if (curbone->GetParent(false)) {
+					parentnodemat = curbone->GetParent(false)->GetNodeMat();
+					parentnodeanimmat = curbone->GetParent(false)->GetNodeAnimMat();
 				}
 				nodemat = localnodemat * parentnodemat;
 				nodeanimmat = localnodeanimmat * parentnodeanimmat;

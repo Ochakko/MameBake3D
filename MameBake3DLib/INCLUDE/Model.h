@@ -840,7 +840,7 @@ private:
 
 	void SetSelectFlagReq( CBone* boneptr, int broflag );
 	int CalcMouseLocalRay( UIPICKINFO* pickinfo, ChaVector3* startptr, ChaVector3* dirptr );
-	CBone* GetCalcRootBone( CBone* firstbone, int maxlevel );
+	//CBone* GetCalcRootBone( CBone* firstbone, int maxlevel );
 	//void CalcXTransformMatrixReq( CBone* srcbone, ChaMatrix parenttra, float mult );
 
 

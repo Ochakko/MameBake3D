@@ -337,7 +337,7 @@ public:
  * @param (double dstframe) IN コピー先のフレームを指定する。
  * @return dstのCMotionPointのポインタを返す。ただし再帰的にである。
  */
-	CMotionPoint* PasteRotReq(bool limitdegflag, int srcmotid, double srcframe, double dstframe );
+	void PasteRotReq(bool limitdegflag, int srcmotid, double srcframe, double dstframe );
 
 
 /**
@@ -428,7 +428,7 @@ public:
 	ChaVector3 GetBefEul(bool limitdegflag, int srcmotid, double srcframe);
 	ChaVector3 GetUnlimitedBefEul(int srcmotid, double srcframe);
 	int GetNotModify180Flag(int srcmotid, double srcframe);
-	ChaVector3 CalcLocalEulXYZ(bool excludenullflag, bool limitdegflag, int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
+	ChaVector3 CalcLocalEulXYZ(bool limitdegflag, int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 	//ChaVector3 CalcLocalUnlimitedEulXYZ(int srcmotid, double srcframe);//motion-->anglelimit用
 	//ChaVector3 CalcLocalLimitedEulXYZ(int srcmotid, double srcframe);
 	//ChaVector3 CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
@@ -508,9 +508,9 @@ public:
 	static void DestroyBones();
 	static void OnDelModel(CModel* parmodel);
 
-	ChaMatrix CalcParentGlobalMat(int srcmotid, double srcframe);
-	ChaMatrix CalcFirstParentGlobalSRT();
-	ChaMatrix CalcParentGlobalSRT(int srcmotid, double srcframe);
+	//ChaMatrix CalcParentGlobalMat(int srcmotid, double srcframe);
+	//ChaMatrix CalcFirstParentGlobalSRT();
+	//ChaMatrix CalcParentGlobalSRT(int srcmotid, double srcframe);
 
 	void InitAddLimitQAll();
 	void RotQAddLimitQAll(int srcmotid, double srcframe);
@@ -641,9 +641,9 @@ private:
 
 	ChaMatrix GetCurrentZeroFrameMatFunc(bool limitdegflag, int updateflag, int inverseflag);
 
-	void CalcParentGlobalMatReq(ChaMatrix* dstmat, CBone* srcbone, int srcmotid, double srcframe);
-	void CalcFirstParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone);
-	void CalcParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone, int srcmotid, double srcframe);
+	//void CalcParentGlobalMatReq(ChaMatrix* dstmat, CBone* srcbone, int srcmotid, double srcframe);
+	//void CalcFirstParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone);
+	//void CalcParentGlobalSRTReq(ChaMatrix* dstmat, CBone* srcbone, int srcmotid, double srcframe);
 
 
 	void InitAddLimitQReq(CBone* srcbone);
@@ -971,14 +971,27 @@ public: //accesser
 	CModel* GetParModel(){ return m_parmodel; };
 	//void SetParModel( CModel* srcpar ){ m_parmodel = srcpar; };//parmodelごとのm_bonenoに注意！！！
 
+	bool IsNull()
+	{
+		return (GetType() == FBXBONE_NULL);
+	}
+	bool IsSkeleton()
+	{
+		return (GetType() == FBXBONE_SKELETON);
+	}
+	bool IsNotSkeleton()
+	{
+		return (GetType() != FBXBONE_SKELETON);
+	}
+
 	
-	CBone* GetParent(bool excludenullflag = true);
-	CBone* GetChild(bool excludenullflag = true);
-	CBone* GetBrother(bool excludenullflag = true);
-	CBone* GetSister(bool excludenullflag = true);
-	void GetParentReq(bool excludenullflag, CBone* srcbone, CBone** ppfindbone);
-	void GetChildReq(bool excludenullflag, bool findbroflag, CBone* srcbone, CBone** ppfindbone);
-	void GetBrotherReq(bool excludenullflag, CBone* srcbone, CBone** ppfindbone);
+	CBone* GetParent(bool excludenullflag);
+	CBone* GetChild(bool excludenullflag);
+	CBone* GetBrother(bool excludenullflag);
+	CBone* GetSister(bool excludenullflag);
+	void GetParentReq(bool excludenullflag, CBone** ppfindbone);
+	void GetChildReq(bool excludenullflag, bool findbroflag, CBone** ppfindbone);
+	void GetBrotherReq(bool excludenullflag, CBone** ppfindbone);
 
 
 	void SetParent( CBone* srcpar ){ m_parent = srcpar; };
@@ -987,9 +1000,10 @@ public: //accesser
 
 	bool IsBranchBone()
 	{
-		CBone* chksister = GetSister();
-		CBone* chkbrother = GetBrother();
-		if (chksister || chkbrother) {
+		CBone* chksister = GetSister(false);
+		CBone* chkbrother = GetBrother(false);
+		if ((chksister && chksister->IsSkeleton()) || 
+			(chkbrother && chkbrother->IsSkeleton())) {
 			return true;
 		}
 		else {
@@ -997,22 +1011,22 @@ public: //accesser
 		}
 	}
 	CBone* GetUpperBranchBone() {
-		CBone* curbone = GetParent();
+		CBone* curbone = GetParent(false);
 		while (curbone) {
-			if (curbone->IsBranchBone()) {
+			if (curbone->IsSkeleton() && curbone->IsBranchBone()) {
 				return curbone;
 			}
-			curbone = curbone->GetParent();
+			curbone = curbone->GetParent(false);
 		}
 		return 0;
 	};
 	CBone* GetLowerBranchBone() {
-		CBone* curbone = GetChild();
+		CBone* curbone = GetChild(false);
 		while (curbone) {
-			if (curbone->IsBranchBone()) {
+			if (curbone->IsSkeleton() && curbone->IsBranchBone()) {
 				return curbone;
 			}
-			curbone = curbone->GetChild();
+			curbone = curbone->GetChild(false);
 		}
 		return 0;
 	}
@@ -1026,13 +1040,18 @@ public: //accesser
 	};
 
 	double GetBoneLeng(){
-		CBone* parentbone = GetParent();
-		if (parentbone){
-			ChaVector3 bonevec = GetJointFPos() - parentbone->GetJointFPos();
-			double boneleng = ChaVector3LengthDbl(&bonevec);
-			return boneleng;
+		if (IsSkeleton()) {
+			CBone* parentbone = GetParent(false);
+			if (parentbone && parentbone->IsSkeleton()) {
+				ChaVector3 bonevec = GetJointFPos() - parentbone->GetJointFPos();
+				double boneleng = ChaVector3LengthDbl(&bonevec);
+				return boneleng;
+			}
+			else {
+				return 0.0;
+			}
 		}
-		else{
+		else {
 			return 0.0;
 		}
 	};
@@ -1065,7 +1084,7 @@ public: //accesser
 
 
 	ChaMatrix GetENullMatrix();
-	ChaMatrix CalcFbxLocalMatrix(bool excludenullflag, bool limitdegflag, int srcmotid, double srcframe);
+	ChaMatrix CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcframe);
 
 	ANGLELIMIT GetAngleLimit(bool limitdegflag, int getchkflag);
 	void SetAngleLimit(bool limitdegflag, ANGLELIMIT srclimit);

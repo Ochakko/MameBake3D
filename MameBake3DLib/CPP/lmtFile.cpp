@@ -97,7 +97,7 @@ int CLmtFile::WriteLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 	CallF(Write2File("    <FileInfo>1001-03</FileInfo>\r\n"), return 1);//2022/12/18
 	CallF(Write2File("    <FileComment>%s</FileComment>\r\n", fbxcomment), return 1);//2021/06/08
 
-	WriteLmtReq(g_limitdegflag, m_model->GetTopBone());//g_limitdegflagはlimitangleのchk値用
+	WriteLmtReq(g_limitdegflag, m_model->GetTopBone(false));//g_limitdegflagはlimitangleのchk値用
 
 	CallF( Write2File( "</Lmt>\r\n" ), return 1 );
 
@@ -105,13 +105,15 @@ int CLmtFile::WriteLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 }
 void CLmtFile::WriteLmtReq(bool limitdegflag, CBone* srcbone)
 {
-	WriteLmt(limitdegflag, srcbone);
-
-	if( srcbone->GetChild() ){
-		WriteLmtReq(limitdegflag, srcbone->GetChild());
+	if (srcbone && (srcbone->IsSkeleton())) {
+		WriteLmt(limitdegflag, srcbone);
 	}
-	if( srcbone->GetBrother() ){
-		WriteLmtReq(limitdegflag, srcbone->GetBrother());
+
+	if( srcbone->GetChild(false) ){
+		WriteLmtReq(limitdegflag, srcbone->GetChild(false));
+	}
+	if( srcbone->GetBrother(false) ){
+		WriteLmtReq(limitdegflag, srcbone->GetBrother(false));
 	}
 }
 
@@ -244,7 +246,7 @@ int CLmtFile::LoadLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 	CallF( SetBuffer(), return 1 );
 
 
-	CBone* topbone = srcmodel->GetTopBone();
+	//CBone* topbone = srcmodel->GetTopBone();
 
 	int posstep = 0;
 	//XMLIOBUF fileinfobuf;
