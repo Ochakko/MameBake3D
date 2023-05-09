@@ -29,6 +29,7 @@
 
 	ドキュメント追加
 		Documants/TroubleShooting/HipsPostureIsNotPastedOnLimitDegON.docx
+		Documants/TroubleShooting/CopyAndPasteMotionOfOnlyLegs.docx
 
 
 	ver1.2.0.20の使い方についての注意
@@ -40,7 +41,9 @@
 	RC7 --> RC8 変更点
 		物理が動かなくなっていたのを修正
 		ボーンツリーにeNullが混ざる仕様になったので　階層処理をほぼ全て修正
-
+	RC8 --> RC9 変更点
+		RC8における修正で　ボーンの無いメッシュの表示が出来なくなっていたのを修正
+		
 
 　おちゃっこLAB
 	https://ochakkolab.jp/

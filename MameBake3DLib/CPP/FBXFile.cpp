@@ -1240,7 +1240,7 @@ void CreateSkinMeshReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 	}
 
 	if (pmodel->GetNoBoneFlag() == true) {
-		_ASSERT(0);
+		//_ASSERT(0);
 		return;
 	}
 

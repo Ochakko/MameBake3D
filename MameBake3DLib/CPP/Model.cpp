@@ -952,18 +952,37 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 
 	//WCHAR* findmqo = wcsstr((WCHAR*)this->GetFileName(), L".mqo");
 	//if (findmqo == 0) {//mqo以外の場合には　m_topbone必要
-		if (m_bonelist.empty()) {
+	size_t chklistsize = m_bonelist.size();
+		if ((chklistsize == 0) || (GetBoneForMotionSize() == 0)) {//eNullしかない場合にも対応
 			CBone* dummybone = CBone::GetNewBone(this);
 			//_ASSERT( dummybone );
 			if (dummybone) {
-				dummybone->SetName("RootNode_");
-				m_bonelist[0] = dummybone;
+				//dummybone->SetName("RootNode_");
+				dummybone->SetName("AddForEmptyTree");
+
+				m_bonelist[dummybone->GetBoneNo()] = dummybone;
+				m_bonename[dummybone->GetBoneName()] = dummybone;
+				dummybone->SetType(FBXBONE_SKELETON);
+				dummybone->SetTopBoneFlag(0);
+				//m_bone2node[dummybone] = 0;
+				//m_node2bone[curnode] = newbone;
+
+				if (m_topbone) {
+					m_topbone->AddChild(dummybone);
+				}
+				else {
+					m_topbone = dummybone;
+				}
+				//m_bonelist[0] = dummybone;
 
 				dummybone->LoadCapsuleShape(m_pdev, pd3dImmediateContext);//!!!!!!!!!!
-				m_topbone = dummybone;
+				//m_topbone = dummybone;
 			}
 			SetNoBoneFlag(true);
 			//_ASSERT(0);
+
+			CBone* testtopbone = GetTopBone();
+
 		}
 		else {
 			SetNoBoneFlag(false);
@@ -1018,7 +1037,7 @@ _ASSERT(m_bonelist[0]);
 		CallF(MakePolyMesh4(), return 1);
 		CallF(MakeObjectName(), return 1);
 		CallF(CreateMaterialTexture(pd3dImmediateContext), return 1);
-		if (GetTopBone()) {
+		if (GetTopBone()) {//GetNoBoneFlag() == trueのときにも　CreateFbxSkinReq()は　polymesh4表示のために必要
 			CreateFBXSkinReq(pRootNode);
 		}
 
@@ -3599,9 +3618,13 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 	m_node2mqoobj[pNode] = newobj;
 
 
+	char cname[256] = { 0 };
+	strcpy_s(cname, 256, pNode->GetName());
+
 	WCHAR wname[256] = L"none for debug";
-	//ZeroMemory( wname, sizeof( WCHAR ) * 256 );
+	ZeroMemory( wname, sizeof( WCHAR ) * 256 );
 	//MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, pNode->GetName(), 256, wname, 256 );//複数キャラ読み込み時に落ちることがある？？
+	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, cname, 256, wname, 256);//複数キャラ読み込み時に落ちることがある？？
 
 
 	FBXOBJ* fbxobj = (FBXOBJ*)malloc(sizeof(FBXOBJ));
@@ -3661,7 +3684,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 	int controlNum = pMesh->GetControlPointsCount();   // 頂点数
 	FbxVector4* src = pMesh->GetControlPoints();    // 頂点座標配列
 
-	//DbgOut(L"LDCheck : GetFBXMesh : nodename %s, controlnum %d, polygonnum %d, polygonvertexnum %d\r\n", wname, controlNum, PolygonNum, PolygonVertexNum);
+	DbgOut(L"LDCheck : GetFBXMesh : nodename %s, controlnum %d, polygonnum %d, polygonvertexnum %d\r\n", wname, controlNum, PolygonNum, PolygonVertexNum);
 
 	// コピー
 	newobj->SetVertex( controlNum );

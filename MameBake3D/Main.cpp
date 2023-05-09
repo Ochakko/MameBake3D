@@ -12971,6 +12971,8 @@ int DispObjPanel()
 		return 0;
 	}
 
+	refreshModelPanel();
+
 	if (!savedispobj) {
 		s_layerWnd->setListenMouse(false);
 		s_layerWnd->setVisible(false);
@@ -18654,7 +18656,7 @@ int RigidElem2WndParam()
 		wcscpy_s(noname, 256, L"BoneName：not selected");
 		s_namelabel->setName(noname);
 	}
-	if (s_model) {
+	if (s_model && (s_model->GetNoBoneFlag() == false)) {
 		s_btgscSlider->setValue(s_model->GetBtGScale(s_model->GetCurReIndex()));
 	}
 
