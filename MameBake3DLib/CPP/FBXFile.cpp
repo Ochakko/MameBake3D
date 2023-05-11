@@ -1268,71 +1268,74 @@ void CreateSkinMeshReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 							//const char* dummynameptr = strstr(curobj->GetName(), "_ND_dtri");
 							//if (!dummynameptr) {
 								FbxGeometry* lLoadMeshAttribute = (FbxGeometry*)srcnode->GetNodeAttribute();
-								int loadskincount = lLoadMeshAttribute->GetDeformerCount();
+								if (lLoadMeshAttribute) {
+									int loadskincount = lLoadMeshAttribute->GetDeformerCount();
+									FbxGeometry* lSaveMeshAttribute = (FbxGeometry*)psavenode->GetNodeAttribute();
+									if (lSaveMeshAttribute && (loadskincount >= 1)) {
+										int skinno;
+										for (skinno = 0; skinno < loadskincount; skinno++) {
+											FbxSkin* lLoadSkin = (FbxSkin*)lLoadMeshAttribute->GetDeformer(skinno);
+											if (lLoadSkin) {
+												FbxSkin* lSaveSkin = FbxSkin::Create(pScene, lLoadSkin->GetName());
+												if (lSaveSkin) {
+													//lSaveSkin->Copy(*lLoadSkin);
 
-								FbxGeometry* lSaveMeshAttribute = (FbxGeometry*)psavenode->GetNodeAttribute();
+													int loadclustercount = lLoadSkin->GetClusterCount();
+													int clusterno;
+													for (clusterno = 0; clusterno < loadclustercount; clusterno++) {
+														FbxCluster* lLoadCluster = lLoadSkin->GetCluster(clusterno);
+														if (lLoadCluster) {
+															FbxCluster* lSaveCluster = FbxCluster::Create(pScene, lLoadCluster->GetName());
+															if (lSaveCluster) {
+																//lSaveCluster->Copy(*lLoadCluster);
 
-								if (loadskincount >= 1) {
-									int skinno;
-									for (skinno = 0; skinno < loadskincount; skinno++) {
-										FbxSkin* lLoadSkin = (FbxSkin*)lLoadMeshAttribute->GetDeformer(skinno);
-										if (lLoadSkin) {
-											FbxSkin* lSaveSkin = FbxSkin::Create(pScene, lLoadSkin->GetName());
-											if (lSaveSkin) {
-												//lSaveSkin->Copy(*lLoadSkin);
+																FbxNode* lLoadSkel = lLoadCluster->GetLink();
+																if (lLoadSkel) {
+																	map<FbxNode*, FbxNode*>::iterator itrsaveskel;
+																	itrsaveskel = s_loadnode2savenode.find(lLoadSkel);
+																	if (itrsaveskel != s_loadnode2savenode.end()) {
+																		FbxNode* lSaveSkel = itrsaveskel->second;
+																		if (lSaveSkel) {
+																			lSaveCluster->SetLink(lSaveSkel);
 
-												int loadclustercount = lLoadSkin->GetClusterCount();
-												int clusterno;
-												for (clusterno = 0; clusterno < loadclustercount; clusterno++) {
-													FbxCluster* lLoadCluster = lLoadSkin->GetCluster(clusterno);
-													if (lLoadCluster) {
-														FbxCluster* lSaveCluster = FbxCluster::Create(pScene, lLoadCluster->GetName());
-														if (lSaveCluster) {
-															//lSaveCluster->Copy(*lLoadCluster);
+																			lSaveCluster->SetLinkMode(lLoadCluster->GetLinkMode());
 
-															FbxNode* lLoadSkel = lLoadCluster->GetLink();
-															if (lLoadSkel) {
-																map<FbxNode*, FbxNode*>::iterator itrsaveskel;
-																itrsaveskel = s_loadnode2savenode.find(lLoadSkel);
-																if (itrsaveskel != s_loadnode2savenode.end()) {
-																	FbxNode* lSaveSkel = itrsaveskel->second;
-																	if (lSaveSkel) {
-																		lSaveCluster->SetLink(lSaveSkel);
+																			FbxAMatrix clustertransformmat;
+																			lLoadCluster->GetTransformMatrix(clustertransformmat);
+																			lSaveCluster->SetTransformMatrix(clustertransformmat);
 
-																		lSaveCluster->SetLinkMode(lLoadCluster->GetLinkMode());
-
-																		FbxAMatrix clustertransformmat;
-																		lLoadCluster->GetTransformMatrix(clustertransformmat);
-																		lSaveCluster->SetTransformMatrix(clustertransformmat);
-
-																		FbxAMatrix clusterlinkmat;
-																		lLoadCluster->GetTransformLinkMatrix(clusterlinkmat);
-																		lSaveCluster->SetTransformLinkMatrix(clusterlinkmat);
+																			FbxAMatrix clusterlinkmat;
+																			lLoadCluster->GetTransformLinkMatrix(clusterlinkmat);
+																			lSaveCluster->SetTransformLinkMatrix(clusterlinkmat);
 
 
-																		int loadindicesnum = lLoadCluster->GetControlPointIndicesCount();
-																		int* ploadindices = lLoadCluster->GetControlPointIndices();
-																		double* ploadw = lLoadCluster->GetControlPointWeights();
+																			int loadindicesnum = lLoadCluster->GetControlPointIndicesCount();
+																			int* ploadindices = lLoadCluster->GetControlPointIndices();
+																			double* ploadw = lLoadCluster->GetControlPointWeights();
 
-																		//lSaveCluster->SetControlPointIWCount(loadindicesnum);
+																			//lSaveCluster->SetControlPointIWCount(loadindicesnum);
 
-																		if ((loadindicesnum > 0) && ploadindices && ploadw) {
-																			int index;
-																			for (index = 0; index < loadindicesnum; index++) {
-																				int curindex = *(ploadindices + index);
-																				double curw = *(ploadw + index);
-																				lSaveCluster->AddControlPointIndex(curindex, curw);
+																			if ((loadindicesnum > 0) && ploadindices && ploadw) {
+																				int index;
+																				for (index = 0; index < loadindicesnum; index++) {
+																					int curindex = *(ploadindices + index);
+																					double curw = *(ploadw + index);
+																					lSaveCluster->AddControlPointIndex(curindex, curw);
+																				}
+																			}
+																			else {
+																				//_ASSERT(0);
 																			}
 																		}
 																		else {
-																			//_ASSERT(0);
+																			_ASSERT(0);
 																		}
+
+																		lSaveSkin->AddCluster(lSaveCluster);
 																	}
 																	else {
 																		_ASSERT(0);
 																	}
-
-																	lSaveSkin->AddCluster(lSaveCluster);
 																}
 																else {
 																	_ASSERT(0);
@@ -1346,20 +1349,18 @@ void CreateSkinMeshReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 															_ASSERT(0);
 														}
 													}
-													else {
-														_ASSERT(0);
-													}
-												}
 
-												lSaveMeshAttribute->AddDeformer(lSaveSkin);
+													lSaveMeshAttribute->AddDeformer(lSaveSkin);
+												}
 											}
 										}
 									}
+									else {
+										//_ASSERT(0);
+										//lSaveMeshAttribute->Copy(*lLoadMeshAttribute);
+									}
 								}
-								else {
-									//_ASSERT(0);
-									//lSaveMeshAttribute->Copy(*lLoadMeshAttribute);
-								}
+								
 							//}
 						}
 
@@ -1527,7 +1528,7 @@ bool CreateScene(bool limitdegflag, FbxManager* pSdkManager, FbxScene* pScene, C
 	//	//}
 	//	////lRootNode->AddChild(rootonload->GetNode());
 	//}
-	
+
 	CreateAndCopyFbxNodeReq(pSdkManager, pScene, pmodel, lRootNode, pmodel->GetNodeOnLoad());
 
 
@@ -1536,8 +1537,8 @@ bool CreateScene(bool limitdegflag, FbxManager* pSdkManager, FbxScene* pScene, C
 
 	//書き出し用ノードのチェインが出来てから呼ぶ
 	CreateSkinMeshReq(pSdkManager, pScene, pmodel, lRootNode, pmodel->GetNodeOnLoad());
-							 
-								 
+
+
 	//StoreRestPose(pScene, lSkeletonRoot);
 
 
@@ -1545,7 +1546,9 @@ bool CreateScene(bool limitdegflag, FbxManager* pSdkManager, FbxScene* pScene, C
 	AnimateMorph(pScene, pmodel);
 
 	//if (pmodel && (pmodel->GetFromNoBindPoseFlag() == false)) {
-	WriteBindPose(pScene, pmodel, s_bvhflag);
+	if (pmodel && ((pmodel->GetHasBindPose() != 0) && (pmodel->GetFromNoBindPoseFlag() == false))) {//2023/05/11
+		WriteBindPose(pScene, pmodel, s_bvhflag);
+	}
 	//}
 
 
