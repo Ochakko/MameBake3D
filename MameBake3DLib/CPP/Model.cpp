@@ -14635,17 +14635,17 @@ int CModel::RefreshPosConstraint()
 {
 	SetIKTargetVec();
 
-	//std::vector<CBone*>::iterator itrtargetbone;
-	//for (itrtargetbone = m_iktargetbonevec.begin(); itrtargetbone != m_iktargetbonevec.end(); itrtargetbone++) {
-	//	CBone* srcbone = *itrtargetbone;
-	//	if (srcbone && srcbone->GetParent(false) && srcbone->GetIKTargetFlag()) {
-	//		srcbone->SetIKTargetFlag(true);
-	//	}
-	//	else {
-	//		_ASSERT(0);
-	//		continue;
-	//	}
-	//}
+	std::vector<CBone*>::iterator itrtargetbone;
+	for (itrtargetbone = m_iktargetbonevec.begin(); itrtargetbone != m_iktargetbonevec.end(); itrtargetbone++) {
+		CBone* srcbone = *itrtargetbone;
+		if (srcbone && srcbone->GetParent(false) && srcbone->GetIKTargetFlag()) {
+			srcbone->SetIKTargetFlag(true);//注意：CBone::SetIKTargetFlag(true)は　フラグだけではなく　コンストレイントの位置も更新する
+		}
+		else {
+			_ASSERT(0);
+			continue;
+		}
+	}
 
 	return 0;
 }
