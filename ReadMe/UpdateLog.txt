@@ -1,5 +1,5 @@
 2023/05/12
-	EditMot 1.2.0.20 RC11
+	EditMot 1.2.0.20 RC12
 
 	トランスフォームノード(eNull)の読み書きに対応
 		モーション以外は　出来るだけ同じように書き出すことに
@@ -51,6 +51,9 @@
 	RC10 --> RC11 変更点
 		ConstRefreshボタン動作修正
 			位置コンストレイントの位置更新処理を　間違ってコメントアウトしてしまっていたのを　元に戻した
+	RC11 --> RC12 変更点
+		ToolWindowの補間ボタンが　正しく機能していなかったのを修正
+			コメントアウトミス　ParentMotionPoint(pparmp)をコメントアウトするつもりが　CurrentMotionPoint(pcurmp)をコメントアウトしていた
 
 　おちゃっこLAB
 	https://ochakkolab.jp/

@@ -4134,7 +4134,7 @@ int CBone::CalcLocalInfo(bool limitdegflag, int motid, double frameno, CMotionPo
 
 	CMotionPoint* pcurmp = 0;
 	//CMotionPoint* pparmp = 0;
-	//pcurmp = GetMotionPoint(motid, roundingframe);
+	pcurmp = GetMotionPoint(motid, roundingframe);//current mp
 	if(GetParent(false)){
 		if( pcurmp ){
 			CMotionPoint setmp;
