@@ -15,6 +15,10 @@
 	https://area.autodesk.jp/product/maya-3ds-max-indie/
 
 
+開発環境(2023/05/13時点)の変更分を書きます。
+FBXSDKは2020.3.4(VC2022)
+VisualStudio2022Pro(VisualStudioSubscription)
+
 
 開発環境(2023/04/08時点)の変更分を書きます。
 FBXSDKは2020.3.2(VC2019)

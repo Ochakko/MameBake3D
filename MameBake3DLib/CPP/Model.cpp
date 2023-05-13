@@ -3624,7 +3624,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 	WCHAR wname[256] = L"none for debug";
 	ZeroMemory( wname, sizeof( WCHAR ) * 256 );
 	//MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, pNode->GetName(), 256, wname, 256 );//複数キャラ読み込み時に落ちることがある？？
-	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, cname, 256, wname, 256);//複数キャラ読み込み時に落ちることがある？？
+	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, cname, 256, wname, 256);//256長の配列にコピーしてから変換する
 
 
 	FBXOBJ* fbxobj = (FBXOBJ*)malloc(sizeof(FBXOBJ));
