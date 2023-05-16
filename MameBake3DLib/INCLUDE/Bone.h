@@ -975,6 +975,10 @@ public: //accesser
 	{
 		return (GetType() == FBXBONE_NULL);
 	}
+	bool IsNotNull()
+	{
+		return (GetType() != FBXBONE_NULL);
+	}
 	bool IsSkeleton()
 	{
 		return (GetType() == FBXBONE_SKELETON);
@@ -1408,13 +1412,25 @@ public: //accesser
 	FbxDouble3 GetFbxLclScl() {
 		return m_fbxLclScl;
 	}
+	void SetFbxRotationActive(bool srcflag) {
+		m_fbxrotationActive = srcflag;
+	}
 	bool GetFbxRotationActive() {
 		return m_fbxrotationActive;
 	}
 	EFbxRotationOrder GetFbxRotationOrder() {
 		return m_rotationorder;
 	}
+	
 
+	int GetDbgCount()
+	{
+		return m_dbgcount;
+	}
+	void SetDbgCount(int srccount)
+	{
+		m_dbgcount = srccount;
+	}
 
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
@@ -1579,6 +1595,7 @@ private:
 	std::vector<IKROTREC> m_ikrotrec_u;
 	std::vector<IKROTREC> m_ikrotrec_v;
 
+	int m_dbgcount;
 
 	CBone* m_parent;
 	CBone* m_child;

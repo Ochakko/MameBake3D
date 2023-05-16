@@ -337,6 +337,8 @@ int CBone::InitParams()
 	m_indexofpool = 0;
 	m_allocheadflag = 0;//1: head pointer at allocated
 
+	m_dbgcount = 0;
+
 	m_extendflag = false;
 
 	m_fbxnodeonload = 0;//2022/11/01
@@ -2804,7 +2806,7 @@ CMotionPoint* CBone::AddBoneTraReq(bool limitdegflag, CMotionPoint* parmp, int s
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
-		_ASSERT(0);
+		//_ASSERT(0);
 		return 0;
 	}
 
@@ -4715,7 +4717,12 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 				//parentwm = ChaMatrixInv(parentbone->GetNodeMat()) * parentbone->GetENullMatrix();//ENullMatrixにはNodeMatが掛かっている
 				//eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
 
-				eulq = ChaMatrix2Q(curwm);
+				//eulq = ChaMatrix2Q(curwm);
+
+
+				//2023/05/16 eNullにもIdentity以外のNodeMatが設定されたため修正
+				parentwm = ChaMatrixInv(parentbone->GetNodeMat()) * parentbone->GetENullMatrix();//ENullMatrixにはNodeMatが掛かっている
+				eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
 			}
 			else {
 				eulq = ChaMatrix2Q(curwm);
@@ -6597,14 +6604,18 @@ ChaMatrix CBone::GetWorldMat(bool limitdegflag,
 
 	//2023/04/28
 	if (IsNull()) {
-		//2023/05/07
-		//return GetENullMatrix();//!!!!!!!!!!!!
-
+		//2023/05/07  
+		//return GetENullMatrix();
+		
 		//2023/05/09
 		//CalcLocalEulXYZのローカル計算部分メモの理由により　eNullのWorldMatはIdentityを返すことにする
 		//ただし　fbxのscaleとtra出力時の親行列としてはGetENullMatrix()を使う(CalcFbxLocalMatrix()参照)
 		//Rotとtra,scaleの違いは　RotはNodeMat無しでローカル計算して軸としてNodeMatを指定　tra,scaleはローカル計算時にNodeMatを掛ける
-		return curmat;
+		//return curmat;
+
+
+		//2023/05/16 eNullのNodeMatがIdentityではなくなったため
+		return ChaMatrixInv(GetNodeMat()) * GetENullMatrix();//!!!!!!!!!!!!
 	}
 	else if (IsNotSkeleton()) {
 		return curmat;//!!!!!!!!!!!!  NormalでもNullでも無い場合　identityを返す
@@ -9250,7 +9261,25 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 			//2023/05/07
 			//eNullにアニメーションは無いので　上方でFBXBONE_SKELETON以外はリターンしている
 			//いろいろ直した結果　lCurveが0の場合にも　同じ数式でOKに
+			//globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
 			globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
+			
+
+
+			//for debug
+			if ((animno == 0) && (framecnt == 0.0)) {
+				char strdbg[1024] = { 0 };
+				WCHAR wstrdbg[1024] = { 0L };
+				sprintf_s(strdbg, 1024, "AnimMat firstanim firstframe : (%s)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n",
+					GetBoneName(),
+					globalmat.data[MATI_11], globalmat.data[MATI_12], globalmat.data[MATI_13], globalmat.data[MATI_14],
+					globalmat.data[MATI_21], globalmat.data[MATI_22], globalmat.data[MATI_23], globalmat.data[MATI_24],
+					globalmat.data[MATI_31], globalmat.data[MATI_32], globalmat.data[MATI_33], globalmat.data[MATI_34],
+					globalmat.data[MATI_41], globalmat.data[MATI_42], globalmat.data[MATI_43], globalmat.data[MATI_44]
+				);
+				MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
+				DbgOut(wstrdbg);
+			}
 
 
 			curmp->SetWorldMat(globalmat);//anglelimit無し
@@ -9518,14 +9547,14 @@ int CBone::InitMP(bool limitdegflag, int srcmotid, double srcframe)
 		return 0;
 	}
 
-	//firstmpが無い場合のダミーの初期化モーションポイント
-	//初期化されたworldmatがあれば良い
+	////firstmpが無い場合のダミーの初期化モーションポイント
+	////初期化されたworldmatがあれば良い
 	CMotionPoint initmp;
 	initmp.InitParams();
 
 
-	//１つ目のモーションを削除する場合もあるので　motid = 1決め打ちは出来ない　2022/09/13
-	//CMotionPoint* firstmp = GetMotionPoint(1, 0.0);//motid == 1は１つ目のモーション
+	////１つ目のモーションを削除する場合もあるので　motid = 1決め打ちは出来ない　2022/09/13
+	////CMotionPoint* firstmp = GetMotionPoint(1, 0.0);//motid == 1は１つ目のモーション
 
 	int firstmotid = 1;
 	MOTINFO* firstmi = GetParModel()->GetFirstValidMotInfo();//１つ目のモーションを削除済の場合に対応
@@ -9554,58 +9583,105 @@ int CBone::InitMP(bool limitdegflag, int srcmotid, double srcframe)
 		//2022/11/08
 		//RootまたはReferenceが含まれる名前のボーンは　読み込み時に追加することがある
 		//RootとReferenceボーンの内　モーションポイントが無い場合についても　ここで対応
+		
 		firstmp = &initmp;
 	}
 
 
-	if (firstmp) {
-		ChaMatrix firstanim = firstmp->GetWorldMat();
+	ChaMatrix matforinit;
+	matforinit.SetIdentity();
 
-		//SetFirstMat(firstanim);//リターゲット時のbvhbone->GetFirstMatで効果
 
-		CMotionPoint* curmp = GetMotionPoint(srcmotid, roundingframe);
-		if (!curmp) {
-			int existflag = 0;
-			curmp = AddMotionPoint(srcmotid, roundingframe, &existflag);
+	//###############
+	//set matforinit 2023/05/15
+	//###############
+	if ((GetParModel()->GetLoadingMotionCount() <= 1)) {
+		FbxNode* pNode = GetFbxNodeOnLoad();
+		if (pNode) {
+			FbxAMatrix lGlobalSRT;
+			FbxTime time0;
+			time0.SetSecondDouble(0.0);
+			lGlobalSRT = pNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);//current animation
+			ChaMatrix chaGlobalSRT;
+			chaGlobalSRT = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+			matforinit = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
+			//matforinit = chaGlobalSRT;
+			//matforinit = ChaMatrixInv(GetNodeMat());
 		}
-		if (curmp) {
-
-			//SetWorldMat(srcmotid, roundingframe, firstanim, curmp);
-			curmp->SetWorldMat(firstanim);
-			curmp->SetLimitedWM(firstanim);
-
-			//SetInitMat(xmat);
-			////オイラー角初期化
-			//ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-			//int paraxsiflag = 1;
-			//cureul = CalcLocalEulXYZ(paraxsiflag, 1, 0.0, BEFEUL_ZERO);
-
-
-			//１つ目のモーションを削除する場合もあるので　motid = 1決め打ちは出来ない　2022/09/13
-			//ChaVector3 cureul = GetLocalEul(firstmotid, 0.0, 0);//motid == 1は１つ目のモーション
-			//SetLocalEul(srcmotid, roundingframe, cureul, curmp);
-			ChaVector3 cureul = firstmp->GetLocalEul();
-
-			curmp->SetLocalEul(cureul);
-			curmp->SetLimitedLocalEul(cureul);
-			//if (limitdegflag == true) {
-				curmp->SetCalcLimitedWM(2);
-			//}
-
-
-			//2023/02/11
-			//GetFbxAnimのif((animno == 0) && (srcframe == 0.0))を通らなかったRootジョイント用の初期化
-			if ((srcmotid == firstmotid) && (roundingframe == 0.0)) {
-				ChaMatrix firstmat;
-				firstmat = GetNodeMat() * firstanim;
-				SetFirstMat(firstmat);
-			}
-
+		else {
+			_ASSERT(0);
+			matforinit.SetIdentity();
 		}
+
+		//matforinit = firstmp->GetWorldMat();
+		////matforinit.SetIdentity();
 	}
 	else {
-		_ASSERT(0);
-		return 1;
+		matforinit = firstmp->GetWorldMat();
+	}
+
+	//###########
+	//for debug
+	//###########
+	if ((srcmotid == 1) && (srcframe == 0.0)) {
+		char strdbg[1024] = { 0 };
+		WCHAR wstrdbg[1024] = { 0L };
+		sprintf_s(strdbg, 1024, "InitMP firstanim firstframe : (%s)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n",
+			GetBoneName(),
+			matforinit.data[MATI_11], matforinit.data[MATI_12], matforinit.data[MATI_13], matforinit.data[MATI_14],
+			matforinit.data[MATI_21], matforinit.data[MATI_22], matforinit.data[MATI_23], matforinit.data[MATI_24],
+			matforinit.data[MATI_31], matforinit.data[MATI_32], matforinit.data[MATI_33], matforinit.data[MATI_34],
+			matforinit.data[MATI_41], matforinit.data[MATI_42], matforinit.data[MATI_43], matforinit.data[MATI_44]
+		);
+		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
+		DbgOut(wstrdbg);
+	}
+
+	//SetFirstMat(firstanim);//リターゲット時のbvhbone->GetFirstMatで効果
+
+	CMotionPoint* curmp = GetMotionPoint(srcmotid, roundingframe);
+	if (!curmp) {
+		int existflag = 0;
+		curmp = AddMotionPoint(srcmotid, roundingframe, &existflag);
+	}
+	if (curmp) {
+
+		////SetWorldMat(srcmotid, roundingframe, firstanim, curmp);
+		//curmp->SetWorldMat(firstanim);
+		//curmp->SetLimitedWM(firstanim);
+
+		curmp->SetWorldMat(matforinit);
+		curmp->SetLimitedWM(matforinit);
+
+
+		//SetInitMat(xmat);
+		////オイラー角初期化
+		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+		int paraxsiflag = 1;
+		//cureul = CalcLocalEulXYZ(0, paraxsiflag, 1, 0.0, BEFEUL_ZERO);
+		cureul = CalcLocalEulXYZ(0, paraxsiflag, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+
+
+		////１つ目のモーションを削除する場合もあるので　motid = 1決め打ちは出来ない　2022/09/13
+		////ChaVector3 cureul = GetLocalEul(firstmotid, 0.0, 0);//motid == 1は１つ目のモーション
+		////SetLocalEul(srcmotid, roundingframe, cureul, curmp);
+		//ChaVector3 cureul = firstmp->GetLocalEul();
+
+		curmp->SetLocalEul(cureul);
+		curmp->SetLimitedLocalEul(cureul);
+		//if (limitdegflag == true) {
+			curmp->SetCalcLimitedWM(2);
+		//}
+
+
+		//2023/02/11
+		//GetFbxAnimのif((animno == 0) && (srcframe == 0.0))を通らなかったRootジョイント用の初期化
+		if ((srcmotid == firstmotid) && (roundingframe == 0.0)) {
+			ChaMatrix firstmat;
+			firstmat = GetNodeMat() * matforinit;
+			SetFirstMat(firstmat);
+		}
+
 	}
 
 
@@ -9969,7 +10045,7 @@ ChaMatrix CBone::GetENullMatrix()
 	if (eNullNode) {
 		FbxTime time0;
 		time0.SetSecondDouble(0.0);
-		FbxAMatrix lGlobalSRT = eNullNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot);
+		FbxAMatrix lGlobalSRT = eNullNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);
 		ChaMatrix retmat = ChaMatrixFromFbxAMatrix(lGlobalSRT);
 		return retmat;
 	}

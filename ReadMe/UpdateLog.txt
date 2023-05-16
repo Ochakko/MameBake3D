@@ -1,10 +1,19 @@
-2023/05/13
+2023/05/17
 	EditMot 1.2.0.21へ向けて
 
 	VisualStudio 2022に対応
 
 	FBXSDK 2020.3.4 For VisualStudio2022に対応
 
+	バインドポーズが無い場合が多いので　バインドポーズに依存しないで読み込むように修正
+		CalcLocalNodeMat() FbxSetDefaultBonePosReq() FbxFile.cpp の修正
+		eNullにもNodeMat設定　eNullにもGetWorldMat使用
+		モーション無しのスキンメッシュデータのために　InitMP() Bone.cpp を修正
+
+		1つのfbxに複数キャラクタが入っている場合にも　大体はうまく読めるようになってきた
+			TheHuntのStreetScene_1のElementでテスト
+			TheHuntのStreetScene_2のCreaturesでテスト
+			調査調整中
 
 
 2023/05/12

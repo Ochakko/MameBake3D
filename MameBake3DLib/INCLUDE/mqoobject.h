@@ -319,6 +319,15 @@ public:
 		m_meshmat = srcmat;
 	}
 
+	int GetDbgCount()
+	{
+		return m_dbgcount;
+	}
+	void SetDbgCount(int srccount)
+	{
+		m_dbgcount = srccount;
+	}
+
 private:
 	int m_objfrom;
 
@@ -398,7 +407,7 @@ private:
 	int m_normalmappingmode;//0:eByPolygonVertex, 1:eByControlPoint
 
 	ChaMatrix m_meshmat;
-
+	int m_dbgcount;
 };
 
 #endif

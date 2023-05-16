@@ -797,6 +797,15 @@ public:
 
 	CNodeOnLoad* FindNodeOnLoadByName(const char* srcname);
 
+	void SetRotationActiveToBone();
+	void SetRotationActiveFalse();
+	void SetRotationActiveTrue();
+	void SetRotationActiveDefault();
+	void SetRotationActiveToBoneReq(CNodeOnLoad* srcnodeonload);
+	void SetRotationActiveFalseReq(CNodeOnLoad* srcnodeonload);
+	void SetRotationActiveTrueReq(CNodeOnLoad* srcnodeonload);
+	void SetRotationActiveDefaultReq(CNodeOnLoad* srcnodeonload);
+
 private:
 	int InitParams();
 	int DestroyObjs();
@@ -957,7 +966,7 @@ private:
 		double srcstartframe, double srcendframe, bool oneflag, bool broflag);
 
 
-	int DbgDumpBoneReq(CBone* boneptr, int broflag);
+	int DbgDumpBoneReq(int level, CBone* boneptr, int broflag);
 	void DumpBtObjectReq(CBtObject* srcbto, int srcdepth);
 	void DumpBtConstraintReq(CBtObject* srcbto, int srcdepth);
 	FbxPose* GetBindPose();

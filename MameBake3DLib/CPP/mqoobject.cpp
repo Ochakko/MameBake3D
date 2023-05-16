@@ -171,7 +171,7 @@ void CMQOObject::InitParams()
 
 
 	m_normalmappingmode = 0;//0:eByPolygonVertex, 1:eByControlPoint
-
+	m_dbgcount = 0;
 
 	m_dispflag = 1;
 	m_objectno = -1;

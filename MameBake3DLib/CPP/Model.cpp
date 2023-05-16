@@ -1540,7 +1540,7 @@ int CModel::DbgDump()
 	DbgOut( L"Dump Bone And InfScope\r\n" );
 
 	if( m_topbone ){
-		DbgDumpBoneReq( m_topbone, 0 );
+		DbgDumpBoneReq(0, m_topbone, 0);
 	}
 
 	DbgOut( L"######end DbgDump\r\n" );
@@ -1549,23 +1549,44 @@ int CModel::DbgDump()
 	return 0;
 }
 
-int CModel::DbgDumpBoneReq( CBone* boneptr, int broflag )
+int CModel::DbgDumpBoneReq(int level, CBone* boneptr, int broflag)
 {
-	char mes[1024];
-	WCHAR wmes[1024];
+
+	//サイズが大きいと　複雑なファイル読み込み時に　スタックオーバーフローする
+	char mes[512] = { 0 };
+	char strtab[30] = { 0 };
+	WCHAR wmes[512] = { 0L };
+	WCHAR wstrtab[30] = { 0L };
+
+
+	ZeroMemory(mes, sizeof(char) * 512);
+	ZeroMemory(strtab, sizeof(char) * 30);
+	ZeroMemory(wmes, sizeof(WCHAR) * 512);
+	ZeroMemory(wstrtab, sizeof(WCHAR) * 30);
+	sprintf_s(strtab, 30, "\t");
+	swprintf_s(wstrtab, 30, L"\t");
+	int tabmax = min(level, (30 - 1));
+	int tabno;
+	for (tabno = 0; tabno < tabmax; tabno++) {
+		strcat_s(strtab, 30, "\t");
+		wcscat_s(wstrtab, 30, L"\t");
+	}
+
 
 	if( boneptr->GetParent(false) ){
-		sprintf_s( mes, 1024, "\tboneno %d, bonename %s - parent %s\r\n", boneptr->GetBoneNo(), boneptr->GetBoneName(), boneptr->GetParent(false)->GetBoneName() );
+		sprintf_s( mes, 512, "%sboneno %d, bonename %s - parent %s\r\n", 
+			strtab, boneptr->GetBoneNo(), boneptr->GetBoneName(), boneptr->GetParent(false)->GetBoneName() );
 	}else{
-		sprintf_s( mes, 1024, "\tboneno %d, bonename %s - parent NONE\r\n", boneptr->GetBoneNo(), boneptr->GetBoneName() );
+		sprintf_s( mes, 512, "%sboneno %d, bonename %s - parent NONE\r\n",
+			strtab, boneptr->GetBoneNo(), boneptr->GetBoneName() );
 	}
-	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, mes, 1024, wmes, 1024 );
+	MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, mes, 512, wmes, 512 );
 	DbgOut( wmes );
 
-	DbgOut( L"\t\tbonepos (%f, %f, %f), (%f, %f, %f)\r\n", 
-		boneptr->GetJointWPos().x, boneptr->GetJointWPos().y, boneptr->GetJointWPos().z,
+	DbgOut( L"%sbonepos (%.3f, %.3f, %.3f)\r\n", 
+		wstrtab,
+		//boneptr->GetJointWPos().x, boneptr->GetJointWPos().y, boneptr->GetJointWPos().z,
 		boneptr->GetJointFPos().x, boneptr->GetJointFPos().y, boneptr->GetJointFPos().z );
-
 	
 	//DbgOut( L"\t\tinfscopenum %d\r\n", boneptr->m_isnum );
 	//int isno;
@@ -1594,10 +1615,11 @@ int CModel::DbgDumpBoneReq( CBone* boneptr, int broflag )
 
 //////////
 	if( boneptr->GetChild(false) ){
-		DbgDumpBoneReq(boneptr->GetChild(false), 1);
+		int nextlevel = level + 1;
+		DbgDumpBoneReq(nextlevel, boneptr->GetChild(false), 1);
 	}
 	if( (broflag == 1) && boneptr->GetBrother(false) ){
-		DbgDumpBoneReq(boneptr->GetBrother(false), 1);
+		DbgDumpBoneReq(level, boneptr->GetBrother(false), 1);
 	}
 
 
@@ -2364,7 +2386,39 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 
 	int setclcnt = 0;
 	int clcnt;
-	for( clcnt = 0; clcnt < (int)srcobj->GetClusterSize(); clcnt++ ){
+	int clusternum = (int)srcobj->GetClusterSize();
+
+
+
+	//###########
+	//for debug
+	//###########
+	{
+		int dbgcount = srcobj->GetDbgCount();
+		if (dbgcount == 0) {
+			char strdbg[1024] = { 0 };
+			WCHAR wstrdbg[1024] = { 0L };
+			sprintf_s(strdbg, 1024, "SetShaderConst firstframe : (%s : %.3f) clusternum %d\r\n",
+				srcobj->GetName(), curmi->curframe, clusternum);
+			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
+			DbgOut(wstrdbg);
+			dbgcount++;
+			srcobj->SetDbgCount(dbgcount);
+		}
+	}
+
+
+	if (clusternum == 0) {
+		return 0;
+	}
+	if ((clusternum < 0) || (clusternum >= MAXCLUSTERNUM)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	
+	for( clcnt = 0; clcnt < clusternum; clcnt++ ){
 		CBone* curbone = srcobj->GetCluster( clcnt );
 		if( !curbone ){
 			_ASSERT( 0 );
@@ -2376,35 +2430,81 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 
 
 
+		ChaMatrix clustermat;
+		clustermat.SetIdentity();
 
 		//CMotionPoint tmpmp = curbone->GetCurMp();
 		if( btflag == 0 ){
 			//set4x4[clcnt] = tmpmp.GetWorldMat();
+			clustermat = curbone->GetWorldMat(currentlimitdegflag, curmotid, curframe, &curmp);
 			MoveMemory(&(m_setfl4x4[16 * clcnt]), 
-				&(curbone->GetWorldMat(currentlimitdegflag, curmotid, curframe, &curmp).data[MATI_11]), sizeof(float) * 16);
+				&(clustermat.data[MATI_11]), sizeof(float) * 16);
 		}else if(btflag == 1){
 			//物理シミュ
 			//set4x4[clcnt] = curbone->GetBtMat();
+			clustermat = curbone->GetBtMat();
 			MoveMemory(&(m_setfl4x4[16 * clcnt]), 
-				&(curbone->GetBtMat().data[MATI_11]), sizeof(float) * 16);
+				&(clustermat.data[MATI_11]), sizeof(float) * 16);
 		}
 		else if (btflag == 2) {
 			//物理IK
 			//set4x4[clcnt] = curbone->GetBtMat();
+			clustermat = curbone->GetBtMat();
 			MoveMemory(&(m_setfl4x4[16 * clcnt]), 
 				&(curbone->GetBtMat().data[MATI_11]), sizeof(float) * 16);
 		}
 		else {
 			//set4x4[clcnt] = tmpmp.GetWorldMat();
-			MoveMemory(&(m_setfl4x4[16 * clcnt]), 
-				&(curbone->GetWorldMat(currentlimitdegflag, curmotid, curframe, &curmp).data[MATI_11]), sizeof(float) * 16);
+			clustermat = curbone->GetWorldMat(currentlimitdegflag, curmotid, curframe, &curmp);
+			MoveMemory(&(m_setfl4x4[16 * clcnt]),
+				&(clustermat.data[MATI_11]), sizeof(float) * 16);
 		}
+
+		//###########
+		//for debug
+		//###########
+		{
+			int dbgoutflag = false;
+			int dbgcount = curbone->GetDbgCount();
+			if ((dbgcount == 0) && (strstr(curbone->GetBoneName(), "Hips_1") != 0)) {
+				dbgcount++;
+				curbone->SetDbgCount(dbgcount);
+				dbgoutflag = true;
+			}
+			if ((dbgcount == 0) && (strstr(curbone->GetBoneName(), "Hips_2") != 0)) {
+				dbgcount++;
+				curbone->SetDbgCount(dbgcount);
+				dbgoutflag = true;
+			}
+			if ((dbgcount == 0) && (strstr(curbone->GetBoneName(), "Hips_3") != 0)) {
+				dbgcount++;
+				curbone->SetDbgCount(dbgcount);
+				dbgoutflag = true;
+			}
+
+			if (dbgoutflag) {
+				char strdbg[1024] = { 0 };
+				WCHAR wstrdbg[1024] = { 0L };
+				sprintf_s(strdbg, 1024, "SetShaderConst clustermat : (%s)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n",
+					curbone->GetBoneName(),
+					clustermat.data[MATI_11], clustermat.data[MATI_12], clustermat.data[MATI_13], clustermat.data[MATI_14],
+					clustermat.data[MATI_21], clustermat.data[MATI_22], clustermat.data[MATI_23], clustermat.data[MATI_24],
+					clustermat.data[MATI_31], clustermat.data[MATI_32], clustermat.data[MATI_33], clustermat.data[MATI_34],
+					clustermat.data[MATI_41], clustermat.data[MATI_42], clustermat.data[MATI_43], clustermat.data[MATI_44]
+				);
+				MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
+				DbgOut(wstrdbg);
+			}
+
+		}
+
 		setclcnt++;
 	}
 
 
 	if(setclcnt > 0 ){
 		_ASSERT(setclcnt <= MAXCLUSTERNUM);
+
 
 		HRESULT hr = S_OK;
 		hr = g_hm4x4Mat->SetMatrixArray((float*)(&m_setfl4x4[0]), 0, setclcnt);
@@ -3598,6 +3698,21 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 		globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
 
 		//CalcMeshMatReq(pNode, &globalmeshmat);
+
+		//for debug
+		{
+			char strdbg[1024] = { 0 };
+			WCHAR wstrdbg[1024] = { 0L };
+			sprintf_s(strdbg, 1024, "MeshMat : (%s)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n",
+				pNode->GetName(),
+				globalmeshmat.data[MATI_11], globalmeshmat.data[MATI_12], globalmeshmat.data[MATI_13], globalmeshmat.data[MATI_14],
+				globalmeshmat.data[MATI_21], globalmeshmat.data[MATI_22], globalmeshmat.data[MATI_23], globalmeshmat.data[MATI_24],
+				globalmeshmat.data[MATI_31], globalmeshmat.data[MATI_32], globalmeshmat.data[MATI_33], globalmeshmat.data[MATI_34],
+				globalmeshmat.data[MATI_41], globalmeshmat.data[MATI_42], globalmeshmat.data[MATI_43], globalmeshmat.data[MATI_44]
+			);
+			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
+			DbgOut(wstrdbg);
+		}
 
 		globalnormalmat = globalmeshmat;
 		globalnormalmat.SetTranslation(ChaVector3(0.0f, 0.0f, 0.0f));
@@ -5641,6 +5756,21 @@ int CModel::GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode )
 					continue;
 				}
 				strcpy_s(bonename2, 256, clusterlink->GetName());
+
+
+				////for debug
+				//int dbgflag = -1;
+				//if (strstr(bonename2, "Hips_1") != 0) {
+				//	dbgflag = 1;
+				//}
+				//if (strstr(bonename2, "Hips_2") != 0) {
+				//	dbgflag = 2;
+				//}
+				//if (strstr(bonename2, "Hips_3") != 0) {
+				//	dbgflag = 3;
+				//}
+
+
 				TermJointRepeats(bonename2);
 				//			int namelen = (int)strlen( clustername );
 				WCHAR wname[256];
@@ -6483,6 +6613,10 @@ int CModel::SetDefaultBonePos(FbxScene* pScene)
 		return 0;
 	}
 
+
+	SetRotationActiveToBone();//SetFbxDefaultBonePosReq()よりも前で呼ぶ
+
+
 	FbxPose* bindpose = GetBindPose();
 
 
@@ -6498,11 +6632,23 @@ int CModel::SetDefaultBonePos(FbxScene* pScene)
 	//}
 
 	if (GetNodeOnLoad()) {
-		FbxAMatrix inimat;
-		inimat.SetIdentity();
-		FbxSetDefaultBonePosReq(pScene, this, GetNodeOnLoad(), pTime, bindpose, &inimat);
+		FbxSetDefaultBonePosReq(pScene, this, GetNodeOnLoad(), pTime, bindpose);
 	}
 
+	////2023/05/15
+	//CNodeOnLoad* topnodeonload = GetNodeOnLoad();
+	//if (topnodeonload) {
+	//	int childnum = topnodeonload->GetChildNum();
+	//	int childno;
+	//	for (childno = 0; childno < childnum; childno++) {
+	//		CNodeOnLoad* childnodeonload = topnodeonload->GetChild(childno);
+	//		if (childnodeonload) {
+	//			FbxAMatrix inimat;
+	//			inimat.SetIdentity();
+	//			FbxSetDefaultBonePosReq(pScene, this, childnodeonload, pTime, bindpose, &inimat);
+	//		}
+	//	}
+	//}
 
 	return 0;
 }
@@ -16851,4 +16997,115 @@ void CModel::FindNodeOnLoadByNameReq(CNodeOnLoad* srcnodeonload, const char* src
 }
 
 
+void CModel::SetRotationActiveToBone()
+{
+	SetRotationActiveToBoneReq(GetNodeOnLoad());
+}
+void CModel::SetRotationActiveFalse()
+{
+	SetRotationActiveFalseReq(GetNodeOnLoad());
+}
+void CModel::SetRotationActiveTrue()
+{
+	SetRotationActiveTrueReq(GetNodeOnLoad());
+}
+void CModel::SetRotationActiveDefault()
+{
+	SetRotationActiveDefaultReq(GetNodeOnLoad());
+}
 
+void CModel::SetRotationActiveToBoneReq(CNodeOnLoad* srcnodeonload)
+{
+	if (srcnodeonload) {
+
+		FbxNode* pNode = srcnodeonload->GetNode();
+		if (pNode) {
+			CBone* curbone = srcnodeonload->GetBone();
+			if (curbone) {
+				curbone->SetFbxRotationActive(pNode->GetRotationActive());
+			}
+		}
+
+		int childnum = srcnodeonload->GetChildNum();
+		int childno;
+		for (childno = 0; childno < childnum; childno++) {
+			CNodeOnLoad* childonload = srcnodeonload->GetChild(childno);
+			if (childonload) {
+				SetRotationActiveToBoneReq(childonload);
+			}
+		}
+	}
+}
+void CModel::SetRotationActiveFalseReq(CNodeOnLoad* srcnodeonload)
+{
+	if (srcnodeonload) {
+
+		FbxNode* pNode = srcnodeonload->GetNode();
+		if (pNode) {
+			CBone* curbone = srcnodeonload->GetBone();
+			if (curbone) {
+				if (curbone->IsSkeleton()) {
+					pNode->SetRotationActive(false);
+				}
+				else {
+					pNode->SetRotationActive(true);
+				}
+			}
+		}
+
+		int childnum = srcnodeonload->GetChildNum();
+		int childno;
+		for (childno = 0; childno < childnum; childno++) {
+			CNodeOnLoad* childonload = srcnodeonload->GetChild(childno);
+			if (childonload) {
+				SetRotationActiveFalseReq(childonload);
+			}
+		}
+	}
+}
+void CModel::SetRotationActiveTrueReq(CNodeOnLoad* srcnodeonload)
+{
+	if (srcnodeonload) {
+
+		FbxNode* pNode = srcnodeonload->GetNode();
+		if (pNode) {
+			CBone* curbone = srcnodeonload->GetBone();
+			if (curbone && curbone->IsSkeleton()) {
+				pNode->SetRotationActive(true);
+			}
+		}
+
+		int childnum = srcnodeonload->GetChildNum();
+		int childno;
+		for (childno = 0; childno < childnum; childno++) {
+			CNodeOnLoad* childonload = srcnodeonload->GetChild(childno);
+			if (childonload) {
+				SetRotationActiveTrueReq(childonload);
+			}
+		}
+	}
+
+}
+void CModel::SetRotationActiveDefaultReq(CNodeOnLoad* srcnodeonload)
+{
+	if (srcnodeonload) {
+
+		FbxNode* pNode = srcnodeonload->GetNode();
+		if (pNode) {
+			CBone* curbone = srcnodeonload->GetBone();
+			if (curbone) {
+				pNode->SetRotationActive(curbone->GetFbxRotationActive());
+			}
+		}
+
+		int childnum = srcnodeonload->GetChildNum();
+		int childno;
+		for (childno = 0; childno < childnum; childno++) {
+			CNodeOnLoad* childonload = srcnodeonload->GetChild(childno);
+			if (childonload) {
+				SetRotationActiveDefaultReq(childonload);
+			}
+		}
+	}
+
+}
