@@ -1,4 +1,4 @@
-2023/05/17
+2023/05/17 _2
 	EditMot 1.2.0.21へ向けて
 
 	VisualStudio 2022に対応
@@ -14,6 +14,10 @@
 			TheHuntのStreetScene_1のElementでテスト
 			TheHuntのStreetScene_2のCreaturesでテスト
 			調査調整中
+
+	2023/05/17 _2
+		BindPoseがある場合には　それを使うように修正
+		１つのSkeletonを　体格の異なる複数のmeshに　BindPoseで調整？して動いているようなモデルに対しては　BindPoseが必要
 
 
 2023/05/12

@@ -9802,9 +9802,12 @@ void CBone::SaveFbxNodePosture(FbxNode* pNode)
 
 		FbxTime fbxtime;
 		fbxtime.SetSecondDouble(0.0);
-		m_fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
-		m_fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
-		m_fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
+		//m_fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
+		//m_fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+		//m_fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
+		m_fbxLclPos = pNode->LclTranslation;//2023/05/17
+		m_fbxLclRot = pNode->LclRotation;//2023/05/17
+		m_fbxLclScl = pNode->LclScaling;//2023/05/17
 
 		m_fbxRotOff = pNode->GetRotationOffset(FbxNode::eSourcePivot);
 		m_fbxRotPiv = pNode->GetRotationPivot(FbxNode::eSourcePivot);
@@ -9816,6 +9819,7 @@ void CBone::SaveFbxNodePosture(FbxNode* pNode)
 
 		EFbxRotationOrder rotationorder;
 		pNode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+		//pNode->GetRotationOrder(FbxNode::eSourcePivot, m_rotationorder);
 
 	}
 }

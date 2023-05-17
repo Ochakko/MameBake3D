@@ -6632,7 +6632,9 @@ int CModel::SetDefaultBonePos(FbxScene* pScene)
 	//}
 
 	if (GetNodeOnLoad()) {
-		FbxSetDefaultBonePosReq(pScene, this, GetNodeOnLoad(), pTime, bindpose);
+		FbxAMatrix inimat;
+		inimat.SetIdentity();
+		FbxSetDefaultBonePosReq(pScene, this, GetNodeOnLoad(), pTime, bindpose, &inimat);
 	}
 
 	////2023/05/15
