@@ -1,4 +1,4 @@
-2023/05/17 _2
+2023/05/19
 	EditMot 1.2.0.21へ向けて
 
 	VisualStudio 2022に対応
@@ -18,6 +18,13 @@
 	2023/05/17 _2
 		BindPoseがある場合には　それを使うように修正
 		１つのSkeletonを　体格の異なる複数のmeshに　BindPoseで調整？して動いているようなモデルに対しては　BindPoseが必要
+
+	2023/05/19
+		BindPoseが無い場合に　まずはcluster情報を探すことに　それでも無い場合には計算で求める
+			cluseter情報を使うことにより　BindPose無しでも正常に読み込めた
+				TheHuntのStreetScene_1のElementでテストOK
+				TheHuntのStreetScene_2のCreaturesでテストOK
+					UnityのFbxExporterのWorldAbsoluteオプション使用
 
 
 2023/05/12

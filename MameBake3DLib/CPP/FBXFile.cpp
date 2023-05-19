@@ -183,6 +183,11 @@ static int WriteFBXAnimRotOfBVH(CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int
 static int SaveCurrentMotionID(CModel* curmodel);//2022/08/18
 
 
+static FbxCluster* FindClusterBySkeleton(CModel* pmodel, FbxNode* pskeleton);
+static void FindClusterBySkeletonReq(CNodeOnLoad* pnodeonload, FbxNode* pskeleton, FbxCluster** ppfindcluster);
+
+
+
 #ifdef IOS_REF
 	#undef  IOS_REF
 	#define IOS_REF (*(pSdkManager->GetIOSettings()))
@@ -5140,11 +5145,34 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 			//###############################
 			//bindposeが見つからなかった場合
 			//###############################
-			nodemat = calcnodemat;
-			nodeanimmat = calcnodeanimmat;
 
-			//lGlobalPosition = nodeanimmat.FBXAMATRIX();//2023/05/15 !!!!!!!!!!!!
-			lGlobalPosition = nodemat.FBXAMATRIX();//2023/05/16 !!!!!!!!!!!!
+			FbxCluster* pcluster = FindClusterBySkeleton(pmodel, pNode);//2023/05/19
+			if (pcluster) {
+				//#################################################################################################
+				//モデル中にeMeshが存在する場合　Meshの中で定義されているskinのclusterから情報を探す
+				//本来はbindposeが存在するはずなのに　何らかの原因でbindposeが書き出されなかった場合に有効なようだ
+				//#################################################################################################
+
+				FbxAMatrix clustermat;
+				pcluster->GetTransformMatrix(clustermat);
+				FbxAMatrix clusterlinkmat;
+				pcluster->GetTransformLinkMatrix(clusterlinkmat);
+
+				//nodemat = ChaMatrixFromFbxAMatrix(clustermat);
+				nodemat = ChaMatrixFromFbxAMatrix(clusterlinkmat);
+				nodeanimmat = calcnodeanimmat;
+				lGlobalPosition = nodemat.FBXAMATRIX();
+			}
+			else {
+				//##################################################
+				//clusterもみつからない場合　計算で求めたものを設定
+				//##################################################
+
+				nodemat = calcnodemat;
+				nodeanimmat = calcnodeanimmat;
+				//lGlobalPosition = nodeanimmat.FBXAMATRIX();//2023/05/15 !!!!!!!!!!!!
+				lGlobalPosition = nodemat.FBXAMATRIX();//2023/05/16 !!!!!!!!!!!!
+			}
 		}
 
 
@@ -5278,3 +5306,79 @@ int SaveCurrentMotionID(CModel* curmodel)
 
 	return 0;
 }
+
+
+FbxCluster* FindClusterBySkeleton(CModel* pmodel, FbxNode* pskeleton)
+{
+	if (!pmodel || !pskeleton) {
+		_ASSERT(0);
+		return 0;
+	}
+	if (!pmodel->GetNodeOnLoad()) {
+		return 0;
+	}
+
+	FbxCluster* retcluster = 0;
+	FindClusterBySkeletonReq(pmodel->GetNodeOnLoad(), pskeleton, &retcluster);
+	return retcluster;
+}
+
+void FindClusterBySkeletonReq(CNodeOnLoad* pnodeonload, FbxNode* pskeleton, FbxCluster** ppfindcluster)
+{
+	if (!pnodeonload || !pskeleton || !ppfindcluster) {
+		_ASSERT(0);
+		return;
+	}
+
+
+	FbxNode* srcnode = pnodeonload->GetNode();
+	if (srcnode && !(*ppfindcluster)) {
+		FbxNodeAttribute* srcattr = srcnode->GetNodeAttribute();
+		if (srcattr) {
+			FbxNodeAttribute::EType type = srcattr->GetAttributeType();
+			if (type == FbxNodeAttribute::eMesh) {
+				FbxGeometry* lLoadMeshAttribute = (FbxGeometry*)srcnode->GetNodeAttribute();
+				if (lLoadMeshAttribute) {
+					int loadskincount = lLoadMeshAttribute->GetDeformerCount();
+					if (loadskincount >= 1) {
+						int skinno;
+						for (skinno = 0; skinno < loadskincount; skinno++) {
+							FbxSkin* lLoadSkin = (FbxSkin*)lLoadMeshAttribute->GetDeformer(skinno);
+							if (lLoadSkin) {
+								int loadclustercount = lLoadSkin->GetClusterCount();
+								int clusterno;
+								for (clusterno = 0; clusterno < loadclustercount; clusterno++) {
+									FbxCluster* lLoadCluster = lLoadSkin->GetCluster(clusterno);
+									if (lLoadCluster) {
+										FbxNode* lLoadSkel = lLoadCluster->GetLink();
+										if (lLoadSkel == pskeleton) {
+											//FbxAMatrix clustertransformmat;
+											//lLoadCluster->GetTransformMatrix(clustertransformmat);
+											//FbxAMatrix clusterlinkmat;
+											//lLoadCluster->GetTransformLinkMatrix(clusterlinkmat);
+
+											*ppfindcluster = lLoadCluster;// !!!!!!!!!!!!!! found !!!!!!!!!!!!!!!!!!!!
+											return;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		if (!(*ppfindcluster)) {
+			int childnum = pnodeonload->GetChildNum();
+			int childno;
+			for (childno = 0; childno < childnum; childno++) {
+				CNodeOnLoad* pchild = pnodeonload->GetChild(childno);
+				if (pchild) {
+					FindClusterBySkeletonReq(pchild, pskeleton, ppfindcluster);
+				}
+			}
+		}
+	}
+}
+
