@@ -11544,15 +11544,17 @@ void CalcTotalBound()
 		fObjectRadius = 10.0f;
 	}
 
-	s_cammvstep = fObjectRadius;
+	s_cammvstep = max(0.01f, min(500.0f, fObjectRadius));//2023/05/19
 
 	DbgOut(L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 		s_totalmb.r, s_totalmb.center.x, s_totalmb.center.y, s_totalmb.center.z);
 
 
-	s_projnear = fObjectRadius * 0.01f;
-	g_initcamdist = fObjectRadius * 3.0f;
-	//g_Camera->SetProjParams( PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
+	//s_projnear = fObjectRadius * 0.01f;
+	//g_initcamdist = fObjectRadius * 3.0f;
+	s_projnear = max(0.01f, min(10.0f, fObjectRadius * 0.01f));//2023/05/19
+	g_initcamdist = max(0.1f, min(1000.0f, fObjectRadius * 3.0f));//2023/05/19
+	////g_Camera->SetProjParams( PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
 	g_Camera->SetProjParams((float)(PI / 4), s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
 
 
@@ -14077,7 +14079,7 @@ float CalcSelectScale(CBone* curboneptr)
 	s_model->GetModelBound(&mb);
 	double modelr = (double)mb.r;
 
-	s_selectscale = (float)(modelr * 0.0020);
+	s_selectscale = max(0.01f, min(2.0f, (float)(modelr * 0.0020)));//2023/05/19
 	if (s_oprigflag == 1) {
 		s_selectscale *= 0.125f;
 		//s_selectscale *= 0.50f;

@@ -1,4 +1,4 @@
-2023/05/19
+2023/05/19_2
 	EditMot 1.2.0.21へ向けて
 
 	VisualStudio 2022に対応
@@ -19,12 +19,22 @@
 		BindPoseがある場合には　それを使うように修正
 		１つのSkeletonを　体格の異なる複数のmeshに　BindPoseで調整？して動いているようなモデルに対しては　BindPoseが必要
 
-	2023/05/19
+	2023/05/19_1
 		BindPoseが無い場合に　まずはcluster情報を探すことに　それでも無い場合には計算で求める
 			cluseter情報を使うことにより　BindPose無しでも正常に読み込めた
 				TheHuntのStreetScene_1のElementでテストOK
 				TheHuntのStreetScene_2のCreaturesでテストOK
 					UnityのFbxExporterのWorldAbsoluteオプション使用
+	2023/05/19_2
+		大きいモデルを読み込んだ際に　メッシュの表示が消える不具合修正
+			プロジェクションパラメータの最大値最小値を設定
+		選択ジョイント部に表示されるマニピュレータが　大きすぎることがある不具合修正
+			マニピュレータ倍率の最大値最小値を設定
+		カメラ移動量が大きすぎる不具合修正
+			メインウインドウのカメラスプライトドラッグ時の　カメラ移動量の最大値最小値を設定
+
+		TheHuntのStreetScene_2のCityMapでテストOK
+			TheHuntのシーン読み込み後に　ToolWindowのカメラ数値ドリーボタンを押し　CameraPos(5000, 2000, 5000) TargetPos(0, 2000, 0)を入力してテスト
 
 
 2023/05/12
