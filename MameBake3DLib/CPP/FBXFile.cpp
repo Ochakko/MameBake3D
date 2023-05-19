@@ -5139,7 +5139,9 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 			//bindpose‚ªŒ©‚Â‚©‚Á‚½ê‡
 			//########################
 			nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
-			nodeanimmat = calcnodeanimmat;
+			
+			//nodeanimmat = calcnodeanimmat;
+			nodeanimmat = ChaMatrixFromFbxAMatrix(pNode->EvaluateGlobalTransform(pTime, FbxNode::eSourcePivot, true, true));
 		}
 		else {
 			//###############################
@@ -5160,7 +5162,10 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 
 				//nodemat = ChaMatrixFromFbxAMatrix(clustermat);
 				nodemat = ChaMatrixFromFbxAMatrix(clusterlinkmat);
-				nodeanimmat = calcnodeanimmat;
+				
+				//nodeanimmat = calcnodeanimmat;
+				nodeanimmat = ChaMatrixFromFbxAMatrix(pNode->EvaluateGlobalTransform(pTime, FbxNode::eSourcePivot, true, true));
+
 				lGlobalPosition = nodemat.FBXAMATRIX();
 			}
 			else {
@@ -5170,6 +5175,7 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 
 				nodemat = calcnodemat;
 				nodeanimmat = calcnodeanimmat;
+
 				//lGlobalPosition = nodeanimmat.FBXAMATRIX();//2023/05/15 !!!!!!!!!!!!
 				lGlobalPosition = nodemat.FBXAMATRIX();//2023/05/16 !!!!!!!!!!!!
 			}
