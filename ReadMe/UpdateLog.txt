@@ -1,4 +1,4 @@
-2023/05/19_3
+2023/05/20
 	EditMot 1.2.0.21へ向けて
 
 	VisualStudio 2022に対応
@@ -38,6 +38,13 @@
 	2023/05/19_3
 		FbxFile.cpp FbxSetDefaultBonePosReq()の修正
 			nodematを修正したので　nodeanimmatも修正
+	2023/05/20
+		FbxCameraに対応
+			Fbxにカメラ情報が入っているときにはその情報を使うように
+			とりあえず　カメラの０フレームの位置と向きだけに対応
+			TheHuntのStreetScene_1, 2にUnityでカメラを追加してテストOK
+		FbxCameraが無い場合
+			カメラのEyePosとTargetPosの座標値が大きくなり過ぎないように制限
 
 
 2023/05/12

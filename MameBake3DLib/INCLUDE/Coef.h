@@ -195,6 +195,7 @@ enum {
 	BONEAXIS_MAX
 };
 
+
 typedef struct tag_cpinfo
 {
 	WCHAR fbxname[MAX_PATH];

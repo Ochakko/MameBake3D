@@ -11521,10 +11521,18 @@ void CalcTotalBound()
 	//s_totalmb.min = ChaVector3(-50.0f, -50.0f, -50.0f);
 	//s_totalmb.r = (float)ChaVector3LengthDbl(&s_totalmb.max);
 
+	CModel* firstmodel = 0;
+
+
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel) {
+
+			if (!firstmodel) {
+				firstmodel = curmodel;
+			}
+
 			MODELBOUND mb;
 			curmodel->GetModelBound(&mb);
 			if (mb.r != 0.0f) {
@@ -11562,14 +11570,29 @@ void CalcTotalBound()
 		g_LightControl[i].SetRadius(fObjectRadius);
 
 
-	ChaVector3 vecEye(0.0f, 0.0f, g_initcamdist);
-	ChaVector3 vecAt(0.0f, 0.0f, -0.0f);
-	g_Camera->SetViewParams(vecEye.XMVECTOR(1.0f), vecAt.XMVECTOR(1.0f));
-	g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
+	//ChaVector3 vecEye(0.0f, 0.0f, g_initcamdist);
+	//ChaVector3 vecAt(0.0f, 0.0f, -0.0f);
+	//g_Camera->SetViewParams(vecEye.XMVECTOR(1.0f), vecAt.XMVECTOR(1.0f));
+	//g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
 
-	s_camdist = fObjectRadius * 4.0f;
-	g_camEye = ChaVector3(0.0f, fObjectRadius * 0.5f, fObjectRadius * 4.0f);
-	g_camtargetpos = ChaVector3(0.0f, fObjectRadius * 0.5f, -0.0f);
+
+	s_camdist = max(0.1f, min(1000.0f, fObjectRadius * 4.0f));//2023/05/20
+	//g_camEye = ChaVector3(0.0f, fObjectRadius * 0.5f, fObjectRadius * 4.0f);
+	//g_camtargetpos = ChaVector3(0.0f, fObjectRadius * 0.5f, -0.0f);
+	float cameraY = max(0.1f, min(1000.0f, fObjectRadius * 0.5f));//2023/05/20
+	float cameraZ = max(0.1f, min(1000.0f, fObjectRadius * 4.0f));//2023/05/20
+	g_camEye = ChaVector3(0.0f, cameraY, cameraZ);
+	g_camtargetpos = ChaVector3(0.0f, cameraY, -0.0f);
+
+	if (firstmodel && firstmodel->IsLoadedFbxCamera()) {//2023/05/20
+		//fbxにFbxCameraが入っていた場合には　それを適用
+		g_camEye = firstmodel->GetFbxCameraPosition();
+
+		//g_camtargetpos = firstmodel->GetFbxCameraLookAtPosition();
+		ChaVector3 cameradir = firstmodel->GetFbxCameraDir();
+		g_camtargetpos = g_camEye + cameradir * s_camdist;
+	}
+
 	g_befcamEye = g_camEye;
 	g_befcamtargetpos = g_camtargetpos;
 	//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);

@@ -54,6 +54,22 @@ typedef struct funcmpparams
 	FbxCluster* cluster;
 	FbxPose* pPose;
 	FbxAMatrix globalcurrentpos;
+	void Init() {
+		slotno = 0;
+		fbxmesh = 0;
+		pmodel = 0;
+		jointnode = 0;
+		linknode = 0;
+		framestart = 1;
+		frameend = 1;
+		curbone = 0;
+		animno = 0;
+		motid = 0;
+		animleng = 0.0;
+		cluster = 0;
+		pPose = 0;
+		globalcurrentpos.SetIdentity();
+	};
 }FUNCMPPARAMS;
 
 
@@ -61,12 +77,20 @@ typedef struct tag_newmpelem
 {
 	CBone* boneptr;
 	CMotionPoint* mpptr;
+	void Init() {
+		boneptr = 0;
+		mpptr = 0;
+	};
 }NEWMPELEM;
 
 typedef struct tag_fbxobj
 {
 	FbxNode* node;
 	FbxMesh* mesh;
+	void Init() {
+		node = 0;
+		mesh = 0;
+	};
 }FBXOBJ;
 
 
@@ -75,7 +99,26 @@ typedef struct tag_physikrec
 	double time;
 	CBone* pbone;
 	ChaMatrix btmat;
+	void Init() {
+		time = 0.0;
+		pbone = 0;
+		btmat.SetIdentity();
+	};
 }PHYSIKREC;
+
+typedef struct tag_cameraonload
+{
+	bool loadedflag;
+	ChaVector3 position;
+	//ChaVector3 lookatposition;
+	ChaVector3 cameradir;
+	void Init() {
+		loadedflag = false;
+		position = ChaVector3(0.0f, 0.0f, 1.0f);
+		//lookatposition = ChaVector3(0.0f, 0.0f, 0.0f);
+		cameradir = ChaVector3(0.0f, 0.0f, 1.0f);
+	};
+}CAMERAONLOAD;
 
 
 #define MAXPHYSIKRECCNT		(60 * 60)
@@ -154,7 +197,9 @@ public:
  * @param (int forcenewaxisflag) 過渡期ファイルのフラグ。
  * @return 成功したら０。
  */
-	int LoadFBX( int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, const WCHAR* wfile, const WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, int forcenewaxisflag, BOOL motioncachebatchflag);
+	int LoadFBX( int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, const WCHAR* wfile, const WCHAR* modelfolder, 
+		float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, 
+		int forcenewaxisflag, BOOL motioncachebatchflag);
 
 /**
  * @fn
@@ -854,6 +899,7 @@ private:
 
 
 	//int InitFBXManager( FbxManager** ppSdkManager, FbxImporter** ppImporter, FbxScene** ppScene, char* utfname );
+	void CreateFBXCameraReq(FbxNode* pNode);
 	int CreateFBXMeshReq(FbxNode* pNode);
 	int CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 	void CreateNodeOnLoadReq(CNodeOnLoad* newnodeonload);
@@ -1025,6 +1071,10 @@ private:
 	//static unsigned __stdcall ThreadFunc_MP4(void* pArguments);
 	//static unsigned __stdcall ThreadFunc_MP5(void* pArguments);
 	//static unsigned __stdcall ThreadFunc_MP6(void* pArguments);
+
+	void InitFbxCamera();
+
+
 
 public: //accesser
 	FbxManager* GetFBXSDK(){
@@ -1535,6 +1585,45 @@ public: //accesser
 		return m_noboneflag;
 	}
 
+	bool IsLoadedFbxCamera()
+	{
+		return m_cameraonload.loadedflag;
+	}
+	ChaVector3 GetFbxCameraPosition()
+	{
+		return m_cameraonload.position;
+	}
+	//ChaVector3 GetFbxCameraLookAtPosition()
+	//{
+	//	return m_cameraonload.lookatposition;
+	//}
+	ChaVector3 GetFbxCameraDir()
+	{
+		return m_cameraonload.cameradir;
+	}
+	void SetLoadedFbxCamera(bool srcflag)
+	{
+		m_cameraonload.loadedflag = srcflag;
+	}
+	void SetFbxCameraPosition(FbxVector4 srcpos)
+	{
+		m_cameraonload.position.x = (float)srcpos[0];
+		m_cameraonload.position.y = (float)srcpos[1];
+		m_cameraonload.position.z = (float)srcpos[2];
+	}
+	//void SetFbxCameraLookAtPosition(FbxVector4 srcpos)
+	//{
+	//	m_cameraonload.lookatposition.x = (float)srcpos[0];
+	//	m_cameraonload.lookatposition.y = (float)srcpos[1];
+	//	m_cameraonload.lookatposition.z = (float)srcpos[2];
+	//}
+	void SetFbxCameraDir(ChaVector3 srcdir)
+	{
+		m_cameraonload.cameradir.x = srcdir.x;
+		m_cameraonload.cameradir.y = srcdir.y;
+		m_cameraonload.cameradir.z = srcdir.z;
+	}
+
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];
@@ -1655,7 +1744,7 @@ private:
 	std::map<FbxNode*, CBone*> m_node2bone;
 
 	bool m_noboneflag;
-
+	CAMERAONLOAD m_cameraonload;
 
 	int m_loadbonecount;//GetFbxAnim用
 };

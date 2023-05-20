@@ -472,6 +472,7 @@ int CModel::InitParams()
 	m_node2mqoobj.clear();
 	m_node2bone.clear();
 
+	InitFbxCamera();
 
 	m_materialdisprate = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);//diffuse, specular, emissive, ambient
 	m_currentanimlayer = 0;
@@ -569,6 +570,11 @@ int CModel::InitParams()
 	InitUndoMotion( 0 );
 
 	return 0;
+}
+
+void CModel::InitFbxCamera()
+{
+	m_cameraonload.Init();
 }
 int CModel::DestroyObjs()
 {
@@ -771,8 +777,14 @@ int CModel::LoadMQO( ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateConte
 	return 0;
 }
 
-int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, const WCHAR* wfile, const WCHAR* modelfolder, float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, int forcenewaxisflag, BOOL motioncachebatchflag)
+int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, const WCHAR* wfile, const WCHAR* modelfolder, 
+	float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, 
+	int forcenewaxisflag, BOOL motioncachebatchflag)
 {
+	if (!pdev || !pd3dImmediateContext || !wfile || !modelfolder || !psdk) {
+		_ASSERT(0);
+		return 1;
+	}
 
 	//DestroyFBXSDK();
 
@@ -868,7 +880,7 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
     {
         // Set the import states. By default, the import states are always set to 
         // true. The code below shows how to change these states.
-        (*(m_psdk->GetIOSettings())).SetBoolProp(IMP_FBX_MATERIAL,        true);
+		(*(m_psdk->GetIOSettings())).SetBoolProp(IMP_FBX_MATERIAL,        true);
         (*(m_psdk->GetIOSettings())).SetBoolProp(IMP_FBX_TEXTURE,         true);
         (*(m_psdk->GetIOSettings())).SetBoolProp(IMP_FBX_LINK,            true);
         (*(m_psdk->GetIOSettings())).SetBoolProp(IMP_FBX_SHAPE,           true);
@@ -929,12 +941,14 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 
 //	CallF( InitFBXManager( &pSdkManager, &pImporter, &pScene, utf8path ), return 1 );
 
+
 	m_bone2node.clear();
 	FbxNode *pRootNode = pScene->GetRootNode();
-
 	m_topbone = 0;
 
-	
+	InitFbxCamera();
+	CreateFBXCameraReq(pRootNode);
+
 	CreateFBXBoneReq(pScene, pRootNode, 0);
 	if ((int)m_bonelist.size() <= 0){
 		//_ASSERT( 0 );
@@ -3590,6 +3604,97 @@ void CModel::DestroyNodeOnLoadReq(CNodeOnLoad* delnodeonload)
 		}
 	}
 }
+
+
+void CModel::CreateFBXCameraReq(FbxNode* pNode)
+{
+	if (!pNode) {
+		return;
+	}
+
+
+	if (IsLoadedFbxCamera()) {
+		//とりあえず　fbx中の最初のカメラ情報だけ使う
+		return;
+	}
+
+
+	ChaMatrix curmeshmat;
+	curmeshmat.SetIdentity();
+	FbxNodeAttribute* pAttrib = pNode->GetNodeAttribute();
+	FbxCamera* pcamera = 0;
+	if (pAttrib) {
+		FbxNodeAttribute::EType type = (FbxNodeAttribute::EType)(pAttrib->GetAttributeType());
+		switch (type)
+		{
+		case FbxNodeAttribute::eCamera:
+		{
+			pcamera = pNode->GetCamera();
+			if (pcamera) {
+				FbxTime time0;
+				time0.SetSecondDouble(0.0);
+				FbxVector4 fbxpos = pcamera->EvaluatePosition(time0);
+
+				//UnityのFbxExporterでは　fbxlookat=(0,0,0)[向きが入っていない], pos2(0,0,0)[入力？], lookat2(0,0,0)[入力？] up2(0,1,0)
+				//FbxVector4 fbxlookat = pcamera->EvaluateLookAtPosition(time0);
+				//FbxVector4 pos2, lookat2, up2;
+				//up2 = pcamera->EvaluateUpDirection(pos2, lookat2, time0);
+
+
+				//合わない
+				//FbxDouble3 camerarot = pNode->LclRotation;
+				//CQuaternion cameraq;
+				//cameraq.SetRotationXYZ(0, ChaVector3((float)camerarot[0], (float)camerarot[1], (float)camerarot[2]));
+				//ChaVector3 firstdir = ChaVector3(0.0f, 0.0f, 1.0f);
+				//ChaVector3 cameradir = ChaVector3(0.0f, 0.0f, 1.0f);
+				//cameraq.Rotate(&cameradir, firstdir);
+
+
+				//2023/05/20
+				FbxAMatrix fbxcameramat = pNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);
+				ChaMatrix cameramat = ChaMatrixFromFbxAMatrix(fbxcameramat);
+				CQuaternion cameraq;
+				cameraq.RotationMatrix(cameramat);
+				ChaVector3 firstdir = ChaVector3(1.0f, 0.0f, 0.0f);//basevec +X軸
+				ChaVector3 cameradir = ChaVector3(1.0f, 0.0f, 0.0f);
+				cameraq.Rotate(&cameradir, firstdir);
+
+
+				SetFbxCameraPosition(fbxpos);
+				//SetFbxCameraLookAtPosition(fbxlookat);
+				SetFbxCameraDir(cameradir);
+				SetLoadedFbxCamera(true);
+			}
+		}
+		break;
+		case FbxNodeAttribute::eCameraStereo:
+		{
+			int dummyint1 = 1;
+		}
+		break;
+		case FbxNodeAttribute::eCameraSwitcher:
+		{
+			int dummyint2 = 1;
+		}
+		break;
+		default:
+			break;
+		}
+	}
+
+	int childNodeNum;
+	childNodeNum = pNode->GetChildCount();
+	for (int i = 0; i < childNodeNum; i++)
+	{
+		FbxNode* pChild = pNode->GetChild(i);  // 子ノードを取得
+		if (pChild) {
+			CreateFBXCameraReq(pChild);
+		}
+	}
+
+}
+
+
 
 int CModel::CreateFBXMeshReq( FbxNode* pNode)
 {
@@ -6636,21 +6741,6 @@ int CModel::SetDefaultBonePos(FbxScene* pScene)
 		inimat.SetIdentity();
 		FbxSetDefaultBonePosReq(pScene, this, GetNodeOnLoad(), pTime, bindpose, &inimat);
 	}
-
-	////2023/05/15
-	//CNodeOnLoad* topnodeonload = GetNodeOnLoad();
-	//if (topnodeonload) {
-	//	int childnum = topnodeonload->GetChildNum();
-	//	int childno;
-	//	for (childno = 0; childno < childnum; childno++) {
-	//		CNodeOnLoad* childnodeonload = topnodeonload->GetChild(childno);
-	//		if (childnodeonload) {
-	//			FbxAMatrix inimat;
-	//			inimat.SetIdentity();
-	//			FbxSetDefaultBonePosReq(pScene, this, childnodeonload, pTime, bindpose, &inimat);
-	//		}
-	//	}
-	//}
 
 	return 0;
 }
