@@ -207,6 +207,9 @@
     <ClCompile Include="..\CPP\NodeOnLoad.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
+    <ClCompile Include="..\CPP\CameraFbx.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h">
@@ -1278,6 +1281,9 @@
       <Filter>DXUT_WIC_DDS</Filter>
     </ClInclude>
     <ClInclude Include="..\INCLUDE\NodeOnLoad.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\CameraFbx.h">
       <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>

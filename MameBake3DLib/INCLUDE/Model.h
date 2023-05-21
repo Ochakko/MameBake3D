@@ -20,7 +20,7 @@
 
 
 #include <UndoMotion.h>
-
+#include <CameraFbx.h>
 
 //using namespace std;
 
@@ -105,20 +105,6 @@ typedef struct tag_physikrec
 		btmat.SetIdentity();
 	};
 }PHYSIKREC;
-
-typedef struct tag_cameraonload
-{
-	bool loadedflag;
-	ChaVector3 position;
-	//ChaVector3 lookatposition;
-	ChaVector3 cameradir;
-	void Init() {
-		loadedflag = false;
-		position = ChaVector3(0.0f, 0.0f, 1.0f);
-		//lookatposition = ChaVector3(0.0f, 0.0f, 0.0f);
-		cameradir = ChaVector3(0.0f, 0.0f, 1.0f);
-	};
-}CAMERAONLOAD;
 
 
 #define MAXPHYSIKRECCNT		(60 * 60)
@@ -1072,7 +1058,7 @@ private:
 	//static unsigned __stdcall ThreadFunc_MP5(void* pArguments);
 	//static unsigned __stdcall ThreadFunc_MP6(void* pArguments);
 
-	void InitFbxCamera();
+	void InitCameraFbx();
 
 
 
@@ -1585,44 +1571,12 @@ public: //accesser
 		return m_noboneflag;
 	}
 
-	bool IsLoadedFbxCamera()
+
+	CCameraFbx GetCameraFbx()
 	{
-		return m_cameraonload.loadedflag;
+		return m_camerafbx;
 	}
-	ChaVector3 GetFbxCameraPosition()
-	{
-		return m_cameraonload.position;
-	}
-	//ChaVector3 GetFbxCameraLookAtPosition()
-	//{
-	//	return m_cameraonload.lookatposition;
-	//}
-	ChaVector3 GetFbxCameraDir()
-	{
-		return m_cameraonload.cameradir;
-	}
-	void SetLoadedFbxCamera(bool srcflag)
-	{
-		m_cameraonload.loadedflag = srcflag;
-	}
-	void SetFbxCameraPosition(FbxVector4 srcpos)
-	{
-		m_cameraonload.position.x = (float)srcpos[0];
-		m_cameraonload.position.y = (float)srcpos[1];
-		m_cameraonload.position.z = (float)srcpos[2];
-	}
-	//void SetFbxCameraLookAtPosition(FbxVector4 srcpos)
-	//{
-	//	m_cameraonload.lookatposition.x = (float)srcpos[0];
-	//	m_cameraonload.lookatposition.y = (float)srcpos[1];
-	//	m_cameraonload.lookatposition.z = (float)srcpos[2];
-	//}
-	void SetFbxCameraDir(ChaVector3 srcdir)
-	{
-		m_cameraonload.cameradir.x = srcdir.x;
-		m_cameraonload.cameradir.y = srcdir.y;
-		m_cameraonload.cameradir.z = srcdir.z;
-	}
+
 
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
@@ -1744,7 +1698,7 @@ private:
 	std::map<FbxNode*, CBone*> m_node2bone;
 
 	bool m_noboneflag;
-	CAMERAONLOAD m_cameraonload;
+	CCameraFbx m_camerafbx;
 
 	int m_loadbonecount;//GetFbxAnim—p
 };

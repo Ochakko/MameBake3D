@@ -1680,8 +1680,11 @@ static CCopyHistoryDlg s_copyhistorydlg;
 float g_initcamdist = 50.0f;
 //static float s_projnear = 0.001f;
 //static float s_projnear = 1.0f;
+static float s_camdist = g_initcamdist;
 static float s_projnear = 0.01f;
+static float s_projfar = g_initcamdist * 100.0f;
 static float s_fAspectRatio = 1.0f;
+static float s_fovy = (float)(PI / 4.0);
 static float s_cammvstep = 100.0f;
 static int s_editmotionflag = -1;
 static int s_tkeyflag = 0;
@@ -1829,7 +1832,6 @@ static ChaMatrix s_matProj;
 static ChaMatrix s_matVP;
 static ChaMatrix s_matView;
 static ChaVector3 s_camUpVec = ChaVector3(0.00001f, 1.0f, 0.0f);
-static float s_camdist = g_initcamdist;
 
 static int s_curmotid = -1;
 static int s_curboneno = -1;
@@ -3768,6 +3770,17 @@ void InitApp()
 	//g_edgesmp = false;
 
 
+	{
+		g_initcamdist = 50.0f;
+		s_camdist = g_initcamdist;
+		s_projnear = 0.01f;
+		s_projfar = g_initcamdist * 100.0f;
+		s_fAspectRatio = 1.0f;
+		s_fovy = (float)(PI / 4.0);
+		s_cammvstep = 100.0f;
+	}
+
+
 	s_layerWnd = 0;
 	s_owpLayerTable = 0;
 	
@@ -5652,7 +5665,8 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	//    g_Camera->SetProjParams( D3DX_PI / 4, fAspectRatio, g_initnear, 4.0f * g_initcamdist );
 		//g_Camera->SetProjParams( PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
 		//g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
-	g_Camera->SetProjParams((float)(PI / 4), s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
+	//g_Camera->SetProjParams((float)(PI / 4), s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
+	g_Camera->SetProjParams(s_fovy, s_fAspectRatio, s_projnear, s_projfar);
 
 	g_Camera->SetWindow(pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height);
 	g_Camera->SetButtonMasks(MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON);
@@ -11557,48 +11571,50 @@ void CalcTotalBound()
 	DbgOut(L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 		s_totalmb.r, s_totalmb.center.x, s_totalmb.center.y, s_totalmb.center.z);
 
-
-	//s_projnear = fObjectRadius * 0.01f;
-	//g_initcamdist = fObjectRadius * 3.0f;
-	s_projnear = max(0.01f, min(10.0f, fObjectRadius * 0.01f));//2023/05/19
-	g_initcamdist = max(0.1f, min(1000.0f, fObjectRadius * 3.0f));//2023/05/19
-	////g_Camera->SetProjParams( PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
-	g_Camera->SetProjParams((float)(PI / 4), s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
-
-
 	for (int i = 0; i < MAX_LIGHTS; i++)
 		g_LightControl[i].SetRadius(fObjectRadius);
 
 
-	//ChaVector3 vecEye(0.0f, 0.0f, g_initcamdist);
-	//ChaVector3 vecAt(0.0f, 0.0f, -0.0f);
-	//g_Camera->SetViewParams(vecEye.XMVECTOR(1.0f), vecAt.XMVECTOR(1.0f));
-	//g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
 
 
-	s_camdist = max(0.1f, min(1000.0f, fObjectRadius * 4.0f));//2023/05/20
-	//g_camEye = ChaVector3(0.0f, fObjectRadius * 0.5f, fObjectRadius * 4.0f);
-	//g_camtargetpos = ChaVector3(0.0f, fObjectRadius * 0.5f, -0.0f);
-	float cameraY = max(0.1f, min(1000.0f, fObjectRadius * 0.5f));//2023/05/20
-	float cameraZ = max(0.1f, min(1000.0f, fObjectRadius * 4.0f));//2023/05/20
-	g_camEye = ChaVector3(0.0f, cameraY, cameraZ);
-	g_camtargetpos = ChaVector3(0.0f, cameraY, -0.0f);
-
-	if (firstmodel && firstmodel->IsLoadedFbxCamera()) {//2023/05/20
-		//fbxにFbxCameraが入っていた場合には　それを適用
-		g_camEye = firstmodel->GetFbxCameraPosition();
-
-		//g_camtargetpos = firstmodel->GetFbxCameraLookAtPosition();
-		ChaVector3 cameradir = firstmodel->GetFbxCameraDir();
-		g_camtargetpos = g_camEye + cameradir * s_camdist;
+	if (firstmodel && firstmodel->GetCameraFbx().IsLoaded()) {
+		CCameraFbx camerafbx = firstmodel->GetCameraFbx();
+		s_projnear = (float)camerafbx.GetNearPlane();
+		s_projfar = (float)camerafbx.GetFarPlane();
+		//s_fAspectRatio = (float)camerafbx.GetAspectRatio();//ここでは更新しない
+		s_fovy = (float)camerafbx.GetFovY();
+		g_camEye = camerafbx.GetPosition();
+		ChaVector3 cameradir = camerafbx.GetDirVec();
+		g_camtargetpos = g_camEye + cameradir * s_projfar;
+	
+		//ChaVector3 diffvec = g_camtargetpos - g_camEye;
+		//g_initcamdist = (float)ChaVector3LengthDbl(&diffvec);
+		g_initcamdist = s_projfar;
 	}
+	else {
+		s_projnear = max(0.01f, min(10.0f, fObjectRadius * 0.01f));
+		g_initcamdist = max(0.1f, min(1000.0f, fObjectRadius * 3.0f));
+		s_projfar = g_initcamdist * 100.0f;
+		//s_fAspectRatio = 1.0f;//ここでは更新しない
+		s_fovy = (float)(PI / 4);
+
+		g_camtargetpos = g_vCenter;
+		ChaVector3 dirz = ChaVector3(0.0f, 0.0f, 1.0);
+		g_camEye = g_vCenter + dirz * g_initcamdist;
+
+	}
+	s_camdist = g_initcamdist;
 
 	g_befcamEye = g_camEye;
 	g_befcamtargetpos = g_camtargetpos;
+
 	//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+
+	g_Camera->SetProjParams(s_fovy, s_fAspectRatio, s_projnear, s_projfar);
 	g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 	g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
+
 	s_matView = g_Camera->GetViewMatrix();
 	s_matProj = g_Camera->GetProjMatrix();
 

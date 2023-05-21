@@ -450,7 +450,7 @@ void FbxAMatrix2ChaMatrix(ChaMatrix& retmat, FbxAMatrix srcmat)
 static int s_setrigidflag = 0;
 static DWORD s_rigidflag = 0;
 
-CModel::CModel()
+CModel::CModel() : m_camerafbx()
 {
 	InitializeCriticalSection(&m_CritSection_Node);
 
@@ -472,7 +472,7 @@ int CModel::InitParams()
 	m_node2mqoobj.clear();
 	m_node2bone.clear();
 
-	InitFbxCamera();
+	InitCameraFbx();
 
 	m_materialdisprate = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);//diffuse, specular, emissive, ambient
 	m_currentanimlayer = 0;
@@ -572,9 +572,9 @@ int CModel::InitParams()
 	return 0;
 }
 
-void CModel::InitFbxCamera()
+void CModel::InitCameraFbx()
 {
-	m_cameraonload.Init();
+	m_camerafbx.Clear();
 }
 int CModel::DestroyObjs()
 {
@@ -946,7 +946,7 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 	FbxNode *pRootNode = pScene->GetRootNode();
 	m_topbone = 0;
 
-	InitFbxCamera();
+	InitCameraFbx();
 	CreateFBXCameraReq(pRootNode);
 
 	CreateFBXBoneReq(pScene, pRootNode, 0);
@@ -3613,7 +3613,7 @@ void CModel::CreateFBXCameraReq(FbxNode* pNode)
 	}
 
 
-	if (IsLoadedFbxCamera()) {
+	if (GetCameraFbx().IsLoaded()) {
 		//とりあえず　fbx中の最初のカメラ情報だけ使う
 		return;
 	}
@@ -3629,42 +3629,7 @@ void CModel::CreateFBXCameraReq(FbxNode* pNode)
 		{
 		case FbxNodeAttribute::eCamera:
 		{
-			pcamera = pNode->GetCamera();
-			if (pcamera) {
-				FbxTime time0;
-				time0.SetSecondDouble(0.0);
-				FbxVector4 fbxpos = pcamera->EvaluatePosition(time0);
-
-				//UnityのFbxExporterでは　fbxlookat=(0,0,0)[向きが入っていない], pos2(0,0,0)[入力？], lookat2(0,0,0)[入力？] up2(0,1,0)
-				//FbxVector4 fbxlookat = pcamera->EvaluateLookAtPosition(time0);
-				//FbxVector4 pos2, lookat2, up2;
-				//up2 = pcamera->EvaluateUpDirection(pos2, lookat2, time0);
-
-
-				//合わない
-				//FbxDouble3 camerarot = pNode->LclRotation;
-				//CQuaternion cameraq;
-				//cameraq.SetRotationXYZ(0, ChaVector3((float)camerarot[0], (float)camerarot[1], (float)camerarot[2]));
-				//ChaVector3 firstdir = ChaVector3(0.0f, 0.0f, 1.0f);
-				//ChaVector3 cameradir = ChaVector3(0.0f, 0.0f, 1.0f);
-				//cameraq.Rotate(&cameradir, firstdir);
-
-
-				//2023/05/20
-				FbxAMatrix fbxcameramat = pNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);
-				ChaMatrix cameramat = ChaMatrixFromFbxAMatrix(fbxcameramat);
-				CQuaternion cameraq;
-				cameraq.RotationMatrix(cameramat);
-				ChaVector3 firstdir = ChaVector3(1.0f, 0.0f, 0.0f);//basevec +X軸
-				ChaVector3 cameradir = ChaVector3(1.0f, 0.0f, 0.0f);
-				cameraq.Rotate(&cameradir, firstdir);
-
-
-				SetFbxCameraPosition(fbxpos);
-				//SetFbxCameraLookAtPosition(fbxlookat);
-				SetFbxCameraDir(cameradir);
-				SetLoadedFbxCamera(true);
-			}
+			m_camerafbx.SetFbxCamera(pNode);
 		}
 		break;
 		case FbxNodeAttribute::eCameraStereo:

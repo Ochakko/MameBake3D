@@ -180,6 +180,7 @@
     <ClCompile Include="..\CPP\BtObject.cpp" />
     <ClCompile Include="..\CPP\BVHelem.cpp" />
     <ClCompile Include="..\CPP\BVHFile.cpp" />
+    <ClCompile Include="..\CPP\CameraFbx.cpp" />
     <ClCompile Include="..\CPP\ChaFile.cpp" />
     <ClCompile Include="..\CPP\ChaVecCalc.cpp" />
     <ClCompile Include="..\CPP\Collision.cpp" />
@@ -545,6 +546,7 @@
     <ClInclude Include="..\INCLUDE\BtObject.h" />
     <ClInclude Include="..\INCLUDE\BVHelem.h" />
     <ClInclude Include="..\INCLUDE\BVHFile.h" />
+    <ClInclude Include="..\INCLUDE\CameraFbx.h" />
     <ClInclude Include="..\INCLUDE\ChaFile.h" />
     <ClInclude Include="..\INCLUDE\ChaVecCalc.h" />
     <ClInclude Include="..\INCLUDE\Coef.h" />

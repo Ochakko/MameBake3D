@@ -45,7 +45,13 @@
 			TheHuntのStreetScene_1, 2にUnityでカメラを追加してテストOK
 		FbxCameraが無い場合
 			カメラのEyePosとTargetPosの座標値が大きくなり過ぎないように制限
-
+	2023/05/21_1
+		FbxCamera対応　続き
+			Unityで保存ツリー内にカメラ設定してから保存-->読み込み
+			NearPlane, FarPlane, Fov, Position, Directionに対応
+			まだ　０フレームのみの対応
+				Unity上のカメラと同様の設定で表示出来た
+				
 
 2023/05/12
 	EditMot 1.2.0.20 release
