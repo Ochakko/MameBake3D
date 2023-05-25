@@ -21,6 +21,9 @@ public:
 	int Clear();
 	int SetFbxCamera(FbxNode* pnode);
 
+	int ProcessCameraAnim(double nextframe);
+	//int GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos);
+
 
 	CCameraFbx operator= (CCameraFbx srcrange);
 	bool operator== (const CCameraFbx &cmp) const {
@@ -120,6 +123,14 @@ public:
 		return m_fovY_Degree;
 	}
 
+	FbxCamera* GetFbxCamera()
+	{
+		return m_pcamera;
+	}
+	FbxNode* GetFbxNode()
+	{
+		return m_pnode;
+	}
 
 private:
 	FbxNode* m_pnode;
@@ -127,6 +138,8 @@ private:
 	ChaMatrix m_worldmat;
 
 	bool m_loadedflag;
+
+	double m_time;
 
 	ChaVector3 m_position;
 	ChaVector3 m_targetpos;

@@ -3301,7 +3301,7 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 		////localnodeanimmat = fbxSoff * fbxSpinv * fbxS * fbxSp * fbxRoff * fbxRpinv * fbxRpre * fbxR * fbxRpost * fbxRp * fbxT;
 		localnodeanimmat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRpre * fbxR * fbxRpost * fbxRp * fbxRoff * fbxT;//2023/05/17
 
-		//0フレームアニメ無し : fbxRとfbxS無し
+		//0フレームアニメ無し : fbxR無し
 		////localnodemat = fbxT * fbxRoff * fbxRp * fbxRpre * fbxRpost * fbxRpinv * fbxSoff * fbxSp * fbxSpinv;
 		////localnodemat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRp * fbxRoff;
 		////localnodemat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRp * fbxRoff * fbxT;
@@ -3311,6 +3311,9 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 
 		*dstnodemat = localnodemat;
 		*dstnodeanimmat = localnodeanimmat;
+
+		curbone->SetLocalNodeMat(localnodemat);
+		curbone->SetLocalNodeAnimMat(localnodeanimmat);
 	}
 	else {
 		_ASSERT(0);
@@ -5009,7 +5012,7 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 	//Mayaで確認したところ　eNullノードのプロパティにもbindpose1と記述してあった
 	//##########################################################################
 	if (pNode && curbone &&
-		((curbone->IsSkeleton()) || (curbone->IsNull()))
+		((curbone->IsSkeleton()) || (curbone->IsNull()) || (curbone->IsCamera()))//2023/05/23
 		//curbone->IsSkeleton()
 		) {
 

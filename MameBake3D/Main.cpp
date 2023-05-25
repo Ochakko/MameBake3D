@@ -1805,6 +1805,7 @@ static int s_guibarX0 = 120;
 static ID3D11Device* s_pdev = 0;
 
 static CModel* s_model = NULL;
+static CModel* s_cameramodel = NULL;
 static CModel* s_select = NULL;
 static CModel* s_select_posture = NULL;
 static CModel* s_bmark = NULL;
@@ -2788,9 +2789,10 @@ static int CreatePlaceFolderWnd();
 static int OnFrameAngleLimit(bool updateonlycheckeul);
 static int OnFrameKeyboard();
 static int OnFrameUtCheckBox();
+static int OnFramePreviewCamera(double nextframe);
 static int OnFramePreviewStop();
-static int OnFramePreviewNormal(double* pnextframe, double* pdifftime);
-static int OnFramePreviewBt(double* pnextframe, double* pdifftime);
+static int OnFramePreviewNormal(double nextframe, double difftime, int endflag, int loopstartflag);
+static int OnFramePreviewBt(double nextframe, double difftime, int endflag, int loopstartflag);
 //int OnFramePreviewBtAftFunc(double nextframe, CModel* curmodel);
 //static int OnFramePreviewRagdoll(double* pnextframe, double* pdifftime);
 static int OnFrameCloseFlag();
@@ -3779,6 +3781,25 @@ void InitApp()
 		s_fovy = (float)(PI / 4.0);
 		s_cammvstep = 100.0f;
 	}
+
+	{
+		s_model = NULL;
+		s_cameramodel = NULL;//2023/05/23
+		s_select = NULL;
+		s_select_posture = NULL;
+		s_bmark = NULL;
+		s_ground = NULL;
+		s_gplane = NULL;
+		int modelno;
+		for (modelno = 0; modelno < (RIGMULTINDEXMAX + 1); modelno++) {
+			s_rigopemark_sphere[modelno] = NULL;
+			s_rigopemark_ringX[modelno] = NULL;
+			s_rigopemark_ringY[modelno] = NULL;
+			s_rigopemark_ringZ[modelno] = NULL;
+		}
+	}
+
+
 
 
 	s_layerWnd = 0;
@@ -7144,7 +7165,62 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		g_Camera->FrameMove(fElapsedTime);
 		double difftime = fTime - savetime;
 
+
+		//Preview前に　CameraAnimのために　時間を確定する必要がある
+		//時間が確定 --> CameraAnim --> s_matWorld, s_matProj, s_matVP確定 --> Preview時のUpdataMatrix(  s_matVP )
+		double nextframe = 0.0;
+		int endflag = 0;
+		int loopstartflag = 0;
+		if (g_previewFlag) {
+			if (s_model && s_model->GetCurMotInfo()) {
+				//##############
+				//Process Time
+				//##############
+				if (g_previewFlag != 0) {
+					if (s_savepreviewFlag == 0) {
+						//preview start frame
+						s_previewrange = s_editrange;
+						double rangestart;
+						if (s_previewrange.IsSameStartAndEnd()) {
+							rangestart = 1.0;
+						}
+						else {
+							rangestart = s_previewrange.GetStartFrame();
+						}
+						s_model->SetMotionFrame(rangestart);
+						nextframe = 0.0;
+					}
+				}
+				s_model->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, difftime, &nextframe, &endflag, &loopstartflag, -1);
+				if (endflag == 1) {
+					g_previewFlag = 0;
+				}
+			}
+		}
+
+
+		//#############
+		//Camera Anim
+		//#############
+		if (s_cameramodel) {
+			double cameraframe = 0.0;
+			if (g_previewFlag || 
+				((g_previewFlag == 0) && (s_savepreviewFlag != 0))) {
+				cameraframe = nextframe;
+			}
+			else {
+				if (s_owpLTimeline) {
+					cameraframe = s_owpLTimeline->getCurrentTime();
+				}
+				else {
+					cameraframe = 0.0;
+				}
+			}
+			OnFramePreviewCamera((double)((int)(cameraframe + 0.0001)));
+		}
+
 		s_matWorld = ChaMatrix(g_Camera->GetWorldMatrix());
+		s_matView = ChaMatrix(g_Camera->GetViewMatrix());
 		s_matProj = ChaMatrix(g_Camera->GetProjMatrix());
 		s_matWorld.data[MATI_41] = 0.0f;
 		s_matWorld.data[MATI_42] = 0.0f;
@@ -7159,22 +7235,50 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		//}
 
 
-		double nextframe = 0.0;
 		if (g_previewFlag) {
 			if (s_model && s_model->GetCurMotInfo()) {
+
+				////##############
+				////Process Time
+				////##############
+				//if (g_previewFlag != 0) {
+				//	if (s_savepreviewFlag == 0) {
+				//		//preview start frame
+				//		s_previewrange = s_editrange;
+				//		double rangestart;
+				//		if (s_previewrange.IsSameStartAndEnd()) {
+				//			rangestart = 1.0;
+				//		}
+				//		else {
+				//			rangestart = s_previewrange.GetStartFrame();
+				//		}
+				//		s_model->SetMotionFrame(rangestart);
+				//		nextframe = 0.0;
+				//	}
+				//}
+				//int endflag = 0;
+				//int loopstartflag = 0;
+				//s_model->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, difftime, &nextframe, &endflag, &loopstartflag, -1);
+				//if (endflag == 1) {
+				//	g_previewFlag = 0;
+				//}
+
+
+				//##########
+				//Preview
+				//##########
 				if (g_previewFlag <= 3) {
-					OnFramePreviewNormal(&nextframe, &difftime);
+					OnFramePreviewNormal(nextframe, difftime, endflag, loopstartflag);
 				}
 				else if (g_previewFlag == 4) {//BTの物理
-					OnFramePreviewBt(&nextframe, &difftime);
+					OnFramePreviewBt(nextframe, difftime, endflag, loopstartflag);
 				}
 				else if (g_previewFlag == 5) {//ラグドール
 					//OnFramePreviewRagdoll(&nextframe, &difftime);
 
-
 					//ラグドール休止中
 					_ASSERT(0);
-					OnFramePreviewNormal(&nextframe, &difftime);
+					OnFramePreviewNormal(nextframe, difftime, endflag, loopstartflag);
 				}
 				else {
 					OnTimeLineCursor();
@@ -7188,6 +7292,9 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		else {
 			OnFramePreviewStop();
 		}
+
+
+
 		//s_difftime = difftime;
 		savetime = fTime;
 
@@ -11535,16 +11642,15 @@ void CalcTotalBound()
 	//s_totalmb.min = ChaVector3(-50.0f, -50.0f, -50.0f);
 	//s_totalmb.r = (float)ChaVector3LengthDbl(&s_totalmb.max);
 
-	CModel* firstmodel = 0;
+	s_cameramodel = 0;
 
 
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel) {
-
-			if (!firstmodel) {
-				firstmodel = curmodel;
+			if (curmodel->GetCameraFbx().IsLoaded()) {
+				s_cameramodel = curmodel;//後から読み込んだモデルの中で　カメラがあれば　それを選ぶ
 			}
 
 			MODELBOUND mb;
@@ -11577,8 +11683,10 @@ void CalcTotalBound()
 
 
 
-	if (firstmodel && firstmodel->GetCameraFbx().IsLoaded()) {
-		CCameraFbx camerafbx = firstmodel->GetCameraFbx();
+	if (s_cameramodel) {
+		CCameraFbx camerafbx = s_cameramodel->GetCameraFbx();
+		int result = camerafbx.ProcessCameraAnim(0.0);
+
 		s_projnear = (float)camerafbx.GetNearPlane();
 		s_projfar = (float)camerafbx.GetFarPlane();
 		//s_fAspectRatio = (float)camerafbx.GetAspectRatio();//ここでは更新しない
@@ -11599,7 +11707,7 @@ void CalcTotalBound()
 		s_fovy = (float)(PI / 4);
 
 		g_camtargetpos = g_vCenter;
-		ChaVector3 dirz = ChaVector3(0.0f, 0.0f, 1.0);
+		ChaVector3 dirz = ChaVector3(0.0f, 0.0f, -1.0);
 		g_camEye = g_vCenter + dirz * g_initcamdist;
 
 	}
@@ -23961,6 +24069,103 @@ int OnFrameAngleLimit(bool updateonlycheckeul)
 	return 0;
 }
 
+int OnFramePreviewCamera(double nextframe)
+{
+	//if (s_cameramodel) {
+	//	CCameraFbx camerafbx = s_cameramodel->GetCameraFbx();
+	//	if (camerafbx.IsLoaded()) {
+	//		int result = 0;
+	//		result = camerafbx.ProcessCameraAnim(nextframe / 30.0);//指定時間における　m_time, m_position, m_dirvec, m_worldmatのセット
+	//		if (result != 0) {
+	//			_ASSERT(0);
+	//			return 1;
+	//		}
+
+	//		//s_projnear = (float)camerafbx.GetNearPlane();
+	//		//s_projfar = (float)camerafbx.GetFarPlane();
+	//		////s_fAspectRatio = (float)camerafbx.GetAspectRatio();//ここでは更新しない
+	//		//s_fovy = (float)camerafbx.GetFovY();
+
+	//		g_befcamEye = g_camEye;
+	//		g_befcamtargetpos = g_camtargetpos;
+
+
+	//		g_camEye = camerafbx.GetPosition();
+	//		ChaVector3 cameradir = camerafbx.GetDirVec();
+	//		g_camtargetpos = g_camEye + cameradir * s_projfar;
+
+	//		//g_initcamdist = s_projfar;
+	//		//s_camdist = g_initcamdist;
+
+
+	//		//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+	//		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
+
+	//		//g_Camera->SetProjParams(s_fovy, s_fAspectRatio, s_projnear, s_projfar);
+	//		g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+	//		//g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
+
+	//		//s_matView = g_Camera->GetViewMatrix();
+	//		//s_matProj = g_Camera->GetProjMatrix();
+	//	}
+	//}
+
+	//if (s_cameramodel) {
+	//	CCameraFbx camerafbx = s_cameramodel->GetCameraFbx();
+	//	if (camerafbx.IsLoaded()) {
+	//		FbxNode* cameranode = camerafbx.GetFbxNode();
+	//		if (cameranode) {
+	//			FbxAnimEvaluator* cameraanim = cameranode->GetAnimationEvaluator();
+	//			if (cameraanim) {
+	//				FbxTime fbxtime;
+	//				fbxtime.SetSecondDouble(nextframe * 30.0);
+	//				FbxAMatrix cameramat = cameraanim->GetNodeGlobalTransform(cameranode, fbxtime, FbxNode::eSourcePivot, true, true);
+	//				ChaMatrix chacameramat = ChaMatrixFromFbxAMatrix(cameramat);
+	//				g_camEye = ChaMatrixTraVec(chacameramat);
+
+
+	//				CQuaternion cameraq;
+	//				cameraq.RotationMatrix(chacameramat);
+	//				ChaVector3 firstdir = ChaVector3(1.0f, 0.0f, 0.0f);//basevec +X軸
+	//				ChaVector3 cameradir = ChaVector3(1.0f, 0.0f, 0.0f);
+	//				cameraq.Rotate(&cameradir, firstdir);
+	//				ChaVector3Normalize(&cameradir, &cameradir);
+	//				g_camtargetpos = g_camEye + cameradir * s_projfar;
+
+	//				//g_Camera->SetProjParams(s_fovy, s_fAspectRatio, s_projnear, s_projfar);
+	//				g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+	//				//g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
+	//			}
+	//		}
+	//	}
+	//}
+
+
+	//if (s_cameramodel) {
+	//	CCameraFbx camerafbx = s_cameramodel->GetCameraFbx();
+	//	if (camerafbx.IsLoaded()) {
+	//		g_befcamEye = g_camEye;
+	//		g_befcamtargetpos = g_camtargetpos;
+
+	//		camerafbx.GetCameraAnimParams(nextframe / 30.0, s_projfar, &g_camEye, &g_camtargetpos);
+	//		//camerafbx.GetCameraAnimParams(nextframe, s_projfar, &g_camEye, &g_camtargetpos);
+
+	//		g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+
+	//		//s_matView = g_Camera->GetViewMatrix();
+	//		//s_matProj = g_Camera->GetProjMatrix();
+	//	}
+	//}
+
+	if (s_cameramodel) {
+		s_cameramodel->GetCameraAnimParams(nextframe, s_projfar, &g_camEye, &g_camtargetpos);
+		g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+	}
+
+
+	return 0;
+}
+
 int OnFramePreviewStop()
 {
 	double currenttime;
@@ -23989,46 +24194,46 @@ int OnFramePreviewStop()
 	return 0;
 }
 
-int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
+int OnFramePreviewNormal(double nextframe, double difftime, int endflag, int loopstartflag)
 {
 
-	if (g_previewFlag != 0) {
-		if (s_savepreviewFlag == 0) {
-			//preview start frame
-			s_previewrange = s_editrange;
-			double rangestart;
-			if (s_previewrange.IsSameStartAndEnd()) {
-				rangestart = 1.0;
-			}
-			else {
-				rangestart = s_previewrange.GetStartFrame();
-			}
-			s_model->SetMotionFrame(rangestart);
-			*pdifftime = 0.0;
-		}
-	}
+	//if (g_previewFlag != 0) {
+	//	if (s_savepreviewFlag == 0) {
+	//		//preview start frame
+	//		s_previewrange = s_editrange;
+	//		double rangestart;
+	//		if (s_previewrange.IsSameStartAndEnd()) {
+	//			rangestart = 1.0;
+	//		}
+	//		else {
+	//			rangestart = s_previewrange.GetStartFrame();
+	//		}
+	//		s_model->SetMotionFrame(rangestart);
+	//		*pdifftime = 0.0;
+	//	}
+	//}
 
-	int endflag = 0;
-	int loopstartflag = 0;
-	s_model->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
-	if (endflag == 1) {
-		g_previewFlag = 0;
-	}
+	//int endflag = 0;
+	//int loopstartflag = 0;
+	//s_model->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
+	//if (endflag == 1) {
+	//	g_previewFlag = 0;
+	//}
 
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel && curmodel->GetCurMotInfo()) {
-			curmodel->SetMotionFrame(*pnextframe);
+			curmodel->SetMotionFrame(nextframe);
 		}
 	}
 
 #ifndef SKIP_EULERGRAPH__
 	if (s_owpTimeline) {
-		s_owpLTimeline->setCurrentTime(*pnextframe, false);
+		s_owpLTimeline->setCurrentTime(nextframe, false);
 	}
 	if (s_owpEulerGraph) {
-		s_owpEulerGraph->setCurrentTime(*pnextframe, false, true);
+		s_owpEulerGraph->setCurrentTime(nextframe, false, true);
 	}
 #endif
 
@@ -24066,7 +24271,7 @@ int OnFramePreviewNormal(double* pnextframe, double* pdifftime)
 
 
 
-int OnFramePreviewBt(double* pnextframe, double* pdifftime)
+int OnFramePreviewBt(double nextframe, double difftime, int endflag, int loopstartflag)
 {
 	if (!s_model) {
 		return 0;
@@ -24092,21 +24297,21 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 	//	}
 	//}
 
-	if (g_previewFlag != 0) {
-		if (s_savepreviewFlag == 0) {
-			//preview start frame
-			s_previewrange = s_editrange;
-			double rangestart;
-			if (s_previewrange.IsSameStartAndEnd()) {
-				rangestart = 1.0;
-			}
-			else {
-				rangestart = s_previewrange.GetStartFrame();
-			}
-			s_model->SetMotionFrame(rangestart);
-			*pdifftime = 0.0;
-		}
-	}
+	//if (g_previewFlag != 0) {
+	//	if (s_savepreviewFlag == 0) {
+	//		//preview start frame
+	//		s_previewrange = s_editrange;
+	//		double rangestart;
+	//		if (s_previewrange.IsSameStartAndEnd()) {
+	//			rangestart = 1.0;
+	//		}
+	//		else {
+	//			rangestart = s_previewrange.GetStartFrame();
+	//		}
+	//		s_model->SetMotionFrame(rangestart);
+	//		*pdifftime = 0.0;
+	//	}
+	//}
 
 
 	//CModel* curmodel = s_model;
@@ -24138,14 +24343,14 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 				s_model->PhysIKRec(g_limitdegflag, s_rectime);
 			}
 
-			int endflag = 0;
-			int loopstartflag = 0;
-			//if (isstartframe == FALSE) {
-			curmodel->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
-			//}
-			//else {
-			//	loopstartflag = 1;
-			//}
+			//int endflag = 0;
+			//int loopstartflag = 0;
+			////if (isstartframe == FALSE) {
+			//curmodel->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
+			////}
+			////else {
+			////	loopstartflag = 1;
+			////}
 
 			if ((g_btsimurecflag == true) && ((loopstartflag == 1) || (endflag == 1))) {
 				recstopflag = true;//!!!!!!!!!!!!!!!!!!!!!!!
@@ -24156,10 +24361,10 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 			if (firstmodelflag) {
 #ifndef SKIP_EULERGRAPH__
 				if (s_owpTimeline) {
-					s_owpLTimeline->setCurrentTime(*pnextframe, false);
+					s_owpLTimeline->setCurrentTime(nextframe, false);
 				}
 				if (s_owpEulerGraph) {
-					s_owpEulerGraph->setCurrentTime(*pnextframe, false, true);
+					s_owpEulerGraph->setCurrentTime(nextframe, false, true);
 				}
 #endif
 				firstmodelflag = false;
@@ -24169,7 +24374,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 			//}
 
 			int firstflag = 0;
-			curmodel->SetMotionFrame(*pnextframe);
+			curmodel->SetMotionFrame(nextframe);
 			////if ((IsTimeEqual(*pnextframe, rangestart)) || (loopstartflag == 1)){
 			//if((curmodel->GetBtCnt() != 0) && (loopstartflag == 1)) {
 			//	curmodel->ZeroBtCnt();
@@ -24192,7 +24397,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 				//UpdateBtSimu(*pnextframe, curmodel);
 				if (curmodel && curmodel->GetCurMotInfo()) {
 					ChaMatrix tmpwm = curmodel->GetWorldMat();
-					curmodel->Motion2Bt(g_limitdegflag, firstflag, *pnextframe, &tmpwm, &s_matVP, s_curboneno);
+					curmodel->Motion2Bt(g_limitdegflag, firstflag, nextframe, &tmpwm, &s_matVP, s_curboneno);
 				}
 				curmodel->PlusPlusBtCnt();
 			}
@@ -24217,7 +24422,7 @@ int OnFramePreviewBt(double* pnextframe, double* pdifftime)
 				if (curmodel && curmodel->GetCurMotInfo()) {
 					//curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
 					ChaMatrix tmpwm = curmodel->GetWorldMat();
-					curmodel->SetBtMotion(g_limitdegflag, 0, 0, *pnextframe, &tmpwm, &s_matVP);//第一引数は物理IK用
+					curmodel->SetBtMotion(g_limitdegflag, 0, 0, nextframe, &tmpwm, &s_matVP);//第一引数は物理IK用
 
 					//60 x 60 frames limit : 60 sec limit
 					if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
@@ -30307,7 +30512,8 @@ int OnRenderSetShaderConst()
 
 	ChaVector3 lightdir0, nlightdir0;
 	//lightdir0 = g_camEye;
-	lightdir0 = g_camEye - g_camtargetpos;//2022/10/31
+	//lightdir0 = g_camEye - g_camtargetpos;//2022/10/31
+	lightdir0 = g_camtargetpos - g_camEye;//2023/05/25
 	ChaVector3Normalize(&nlightdir0, &lightdir0);
 	g_LightControl[0].SetLightDirection(nlightdir0.D3DX());
 

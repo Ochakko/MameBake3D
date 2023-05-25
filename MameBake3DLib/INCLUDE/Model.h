@@ -837,6 +837,8 @@ public:
 	void SetRotationActiveTrueReq(CNodeOnLoad* srcnodeonload);
 	void SetRotationActiveDefaultReq(CNodeOnLoad* srcnodeonload);
 
+	int GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos);
+
 private:
 	int InitParams();
 	int DestroyObjs();
@@ -1576,7 +1578,14 @@ public: //accesser
 	{
 		return m_camerafbx;
 	}
-
+	void SetCameraMotionId(int srcid)
+	{
+		m_cameramotionid = srcid;
+	}
+	int GetCameraMotionId()
+	{
+		return m_cameramotionid;
+	}
 
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
@@ -1699,6 +1708,7 @@ private:
 
 	bool m_noboneflag;
 	CCameraFbx m_camerafbx;
+	int m_cameramotionid;
 
 	int m_loadbonecount;//GetFbxAnim—p
 };

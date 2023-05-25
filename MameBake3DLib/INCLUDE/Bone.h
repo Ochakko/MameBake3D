@@ -987,6 +987,14 @@ public: //accesser
 	{
 		return (GetType() != FBXBONE_SKELETON);
 	}
+	bool IsCamera()
+	{
+		return (GetType() == FBXBONE_CAMERA);
+	}
+	bool IsNotCamera()
+	{
+		return (GetType() != FBXBONE_CAMERA);
+	}
 
 	
 	CBone* GetParent(bool excludenullflag);
@@ -1432,6 +1440,24 @@ public: //accesser
 		m_dbgcount = srccount;
 	}
 
+	ChaMatrix GetLocalNodeMat()
+	{
+		return m_localnodemat;
+	}
+	void SetLocalNodeMat(ChaMatrix srcmat)
+	{
+		m_localnodemat = srcmat;
+	}
+	ChaMatrix GetLocalNodeAnimMat()
+	{
+		return m_localnodeanimmat;
+	}
+	void SetLocalNodeAnimMat(ChaMatrix srcmat)
+	{
+		m_localnodeanimmat = srcmat;
+	}
+
+
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
 	CRITICAL_SECTION m_CritSection_AddMP;
@@ -1586,6 +1612,10 @@ private:
 	FbxDouble3 m_fbxLclScl;
 	bool m_fbxrotationActive;
 	EFbxRotationOrder m_rotationorder;
+
+	ChaMatrix m_localnodemat;
+	ChaMatrix m_localnodeanimmat;
+
 
 	bool m_ikstopflag;
 	bool m_iktargetflag;

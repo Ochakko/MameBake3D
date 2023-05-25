@@ -468,6 +468,11 @@ int CBone::InitParams()
 	m_rotationorder = eEulerXYZ;
 
 
+	m_localnodemat.SetIdentity();
+	m_localnodeanimmat.SetIdentity();
+
+
+
 	m_ikstopflag = false;
 	m_iktargetflag = false;
 	m_iktargetpos = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -742,8 +747,8 @@ int CBone::CopyLimitedWorldToWorld(int srcmotid, double srcframe)//§ŒÀŠp“x—L‚è‚
 {
 	double roundingframe = (double)((int)srcframe + 0.0001);
 
-	//2023/04/28
-	if (IsNotSkeleton()) {
+	//2023/04/28 2023/05/23
+	if (IsNotSkeleton() && IsNotCamera()) {
 		return 0;
 	}
 
@@ -770,7 +775,7 @@ int CBone::CopyLimitedWorldToWorld(int srcmotid, double srcframe)//§ŒÀŠp“x—L‚è‚
 				limitedlocal = limitedwm * ChaMatrixInv(parentlimitedwm);
 				newwm = limitedlocal * parentunlimitedwm;
 			}
-			else if (GetParent(false)->IsNull()) {
+			else if (GetParent(false)->IsNull() || GetParent(false)->IsCamera()) {
 				newwm = limitedwm;
 			}
 			else {
@@ -805,8 +810,8 @@ int CBone::CopyWorldToLimitedWorld(int srcmotid, double srcframe)//§ŒÀŠp“x–³‚µ‚
 {
 	double roundingframe = (double)((int)srcframe + 0.0001);
 
-	//2023/04/28
-	if (IsNotSkeleton()) {
+	//2023/04/28 2023/05/23
+	if (IsNotSkeleton() && IsNotCamera()) {
 		return 0;
 	}
 
@@ -833,7 +838,7 @@ int CBone::CopyWorldToLimitedWorld(int srcmotid, double srcframe)//§ŒÀŠp“x–³‚µ‚
 				unlimitedlocal = currentwm * ChaMatrixInv(parentunlimited);
 				newwm = unlimitedlocal * parentlimited;
 			}
-			else if (GetParent(false)->IsNull()) {
+			else if (GetParent(false)->IsNull() || GetParent(false)->IsCamera()) {
 				newwm = currentwm;
 			}
 			else {
@@ -910,8 +915,8 @@ int CBone::ClearLimitedWorldMat(int srcmotid, double srcframe0)
 {
 	int existflag = 0;
 
-	//2023/04/28
-	if (IsNotSkeleton()) {
+	//2023/04/28 2023/05/23
+	if (IsNotSkeleton() && IsNotCamera()) {
 		return 0;
 	}
 
@@ -1105,8 +1110,8 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 		return 0;
 	}
 
-	//2023/04/28
-	if (IsNotSkeleton()) {
+	//2023/04/28 2023/05/23
+	if (IsNotSkeleton() && IsNotCamera()) {
 		if (existptr) {
 			*existptr = 0;
 		}
@@ -1212,8 +1217,8 @@ int CBone::CalcFBXMotion(bool limitdegflag,
 	}
 
 
-	//2023/04/28
-	if (IsNotSkeleton()) {
+	//2023/04/28 2023/05/23
+	if (IsNotSkeleton() && IsNotCamera()) {
 		if (dstmpptr) {
 			ChaMatrix inimat;
 			inimat.SetIdentity();
@@ -1254,8 +1259,8 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 	//EnterCriticalSection(&m_CritSection_GetBefNext);
 
 
-	//2023/04/28
-	if (IsNotSkeleton()) {
+	//2023/04/28 2023/05/23
+	if (IsNotSkeleton() && IsNotCamera()) {
 		if (ppbef) {
 			*ppbef = 0;
 		}
@@ -1500,8 +1505,8 @@ int CBone::CalcFBXFrame(bool limitdegflag, double srcframe, CMotionPoint* befptr
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
-	//2023/04/28
-	if (IsNotSkeleton()) {
+	//2023/04/28 2023/05/23
+	if (IsNotSkeleton() && IsNotCamera()) {
 		dstmpptr->InitParams();
 		dstmpptr->SetFrame(roundingframe);
 		return 0;
@@ -1610,8 +1615,8 @@ int CBone::DeleteMotion( int srcmotid )
 int CBone::DeleteMPOutOfRange( int motid, double srcleng )
 {
 
-	//2023/04/28
-	if (IsNotSkeleton()) {
+	//2023/04/28 2023/05/23
+	if (IsNotSkeleton() && IsNotCamera()) {
 		return 0;
 	}
 
@@ -3221,8 +3226,8 @@ void CBone::UpdateCurrentWM(bool limitdegflag, int srcmotid, double srcframe,
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
-	//2023/04/28
-	if (IsNotSkeleton()) {
+	//2023/04/28 2023/05/23
+	if (IsNotSkeleton() && IsNotCamera()) {
 		return;
 	}
 
@@ -3279,7 +3284,7 @@ void CBone::UpdateParentWMReq(bool limitdegflag, bool setbroflag, int srcmotid, 
 	currentbefwm.SetIdentity();
 	currentnewwm.SetIdentity();
 
-	if (IsSkeleton()) {
+	if (IsSkeleton() || IsCamera()) {//2023/05/23
 		currentbefwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 		currentnewwm = currentbefwm * ChaMatrixInv(oldparentwm) * newparentwm;
 
@@ -6617,8 +6622,8 @@ ChaMatrix CBone::GetWorldMat(bool limitdegflag,
 		//2023/05/16 eNull‚ÌNodeMat‚ªIdentity‚Å‚Í‚È‚­‚È‚Á‚½‚½‚ß
 		return ChaMatrixInv(GetNodeMat()) * GetENullMatrix();//!!!!!!!!!!!!
 	}
-	else if (IsNotSkeleton()) {
-		return curmat;//!!!!!!!!!!!!  Normal‚Å‚àNull‚Å‚à–³‚¢ê‡@identity‚ð•Ô‚·
+	else if (IsNotSkeleton() && IsNotCamera()) {//2023/05/23
+		return curmat;//!!!!!!!!!!!!  Normal‚Å‚àNull‚Å‚àCamera‚Å‚à–³‚¢ê‡@identity‚ð•Ô‚·
 	}
 
 
@@ -8727,7 +8732,7 @@ int CBone::CreateIndexedMotionPoint(int srcmotid, double animleng)
 	//###############################################
 
 	//2023/04/28
-	if (IsNotSkeleton()) {
+	if (IsNotSkeleton() && IsNotCamera()) {//2023/05/23
 		return 0;
 	}
 
@@ -9133,8 +9138,8 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 		return 1;
 	}
 
-	//2023/04/28
-	if (IsNotSkeleton()) {
+	//2023/04/28 2023/05/23
+	if (IsNotSkeleton() && IsNotCamera()) {
 		return 0;
 	}
 
@@ -9174,7 +9179,7 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 			//ƒXƒŒƒbƒh”(LOADFBXANIMTHREAD)‚ð‚PˆÈŠO‚É‚·‚éê‡‚É‚Í@CriticalSection•K{
 			//###################################################################################################################
 			//EnterCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
-			lGlobalSRT = pNode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot);
+			lGlobalSRT = pNode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot, true, true);
 			//LeaveCriticalSection(&(GetParModel()->m_CritSection_Node));//#######################
 
 			ChaMatrix chaGlobalSRT;
@@ -9262,7 +9267,71 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 			//eNull‚ÉƒAƒjƒ[ƒVƒ‡ƒ“‚Í–³‚¢‚Ì‚Å@ã•û‚ÅFBXBONE_SKELETONˆÈŠO‚ÍƒŠƒ^[ƒ“‚µ‚Ä‚¢‚é
 			//‚¢‚ë‚¢‚ë’¼‚µ‚½Œ‹‰Ê@lCurve‚ª0‚Ìê‡‚É‚à@“¯‚¶”Ž®‚ÅOK‚É
 			//globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
-			globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
+
+
+			if (IsNotCamera()) {
+
+				globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
+
+			}
+			else {//2023/05/23
+
+				globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
+
+				//globalmat = chaGlobalSRT;
+				//if (GetParent(false)) {
+				//	if (GetParent(false)->IsNull()) {
+				//		ChaMatrix parentnullmat = GetParent(false)->GetENullMatrix();
+				//		globalmat = globalmat * ChaMatrixInv(parentnullmat);
+				//		
+				//		//ChaMatrix parentnulltramat = ChaMatrixTra(GetParent(false)->GetENullMatrix());
+				//		//globalmat = globalmat * ChaMatrixInv(parentnulltramat);
+				//		//ChaMatrix parentnullmat = GetParent(false)->GetENullMatrix();
+				//		//globalmat = globalmat * ChaMatrixTra(ChaMatrixInv(parentnullmat));
+
+				//		if (GetParModel() && (GetParModel()->GetCameraMotionId() == motid)) {
+				//			int dummyflag = true;
+				//		}
+				//	}
+				//	else {
+				//		if (GetParModel() && (GetParModel()->GetCameraMotionId() == motid)) {
+				//			int dummyflag = true;
+				//		}
+				//	}
+				//}
+
+				if (GetParModel() && (GetParModel()->GetCameraMotionId() == motid)) {
+					int dummyflag = true;
+				}
+
+
+				//FbxAMatrix lLocalSRT = pNode->EvaluateLocalTransform(fbxtime, FbxNode::eSourcePivot, true, true);
+				//ChaMatrix chaLocalSRT;
+				//chaLocalSRT = ChaMatrixFromFbxAMatrix(lLocalSRT);
+				//globalmat = chaLocalSRT;
+				//ChaMatrix testmat = (ChaMatrixInv(GetNodeMat()) * chaLocalSRT);
+
+				//globalmat = chaGlobalSRT;
+				//FbxCamera* pcamera = pNode->GetCamera();
+				//if (pcamera) {
+				//	ChaVector3 campos = ChaVector3(0.0f, 0.0f, 0.0f);
+				//	FbxVector4 fbxpos = pcamera->EvaluatePosition(fbxtime,);
+					//	//if ((double)fbxpos[3] != 0.0) {
+					//	//	float tmpx, tmpy, tmpz;
+					//	//	tmpx = (float)((double)fbxpos[0] / (double)fbxpos[3]);
+					//	//	tmpy = (float)((double)fbxpos[1] / (double)fbxpos[3]);
+					//	//	tmpz = (float)((double)fbxpos[2] / (double)fbxpos[3]);
+					//	//	campos = ChaVector3(tmpx, tmpy, tmpz);
+					//	//}
+					//	//else {
+					//		campos = ChaVector3((float)fbxpos[0], (float)fbxpos[1], (float)fbxpos[2]);
+					//	//}
+					//	ChaVector3 cameratra = campos;
+					//	globalmat.SetTranslation(cameratra);
+					//	//globalmat.data[MATI_44] = 1.0f;
+				//}
+
+			}
 			
 
 

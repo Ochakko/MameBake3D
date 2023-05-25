@@ -1,4 +1,4 @@
-2023/05/20
+2023/05/25
 	EditMot 1.2.0.21へ向けて
 
 	VisualStudio 2022に対応
@@ -52,6 +52,23 @@
 			まだ　０フレームのみの対応
 				Unity上のカメラと同様の設定で表示出来た
 				
+	2023/05/25
+		Unityで設定したカメラアニメの再生に対応
+		UnityAsset TheHuntのStreet1のElementsでテストOK(メモリ使用量約13GB)
+
+		リファクタリングで動かなくなることはよくあるので
+		まずは　動く状態で試行錯誤の跡も含めてコミット　後でリファクタリング予定
+
+		テスト方法
+			Cameraノードをその親のeNullノードごとElementsツリーにドラッグアンドドロップ
+			CameraノードにCamera_1アニメをコンポーネントとして追加
+			CameraノードのRootMotionにチェック
+			使わないカメラアニメを全てdelete
+			timelineノードもdelete
+			Unity上でカメラアニメ再生チェック後　Elementsノードを　WorldAbsオプションオンでfbx出力
+			EditMotでElements.fbxを読み込んで　モーションplayボタン
+
+
 
 2023/05/12
 	EditMot 1.2.0.20 release

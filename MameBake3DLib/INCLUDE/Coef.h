@@ -498,6 +498,7 @@ typedef struct tag_motinfo
 	double curframe;
 	double speed;
 	int loopflag;
+	int fbxanimno;//fbxファイルの中で何番目のモーションとして読み込んだか　0から始まる番号
 
 	void Init() {
 		ZeroMemory(motname, sizeof(char) * 256);
@@ -508,6 +509,7 @@ typedef struct tag_motinfo
 		curframe = 0.0;
 		speed = 1.0;
 		loopflag = 0;
+		fbxanimno = -1;
 	};
 }MOTINFO;
 
@@ -713,6 +715,7 @@ enum {
 	FBXBONE_SKELETON,
 	FBXBONE_NULL,
 	FBXBONE_ROOTNODE,
+	FBXBONE_CAMERA,//2023/05/23
 	FBXBONE_OTHER,
 	FBXBONE_MAX
 };
