@@ -189,6 +189,7 @@ public:
 	ChaVector3();
 	ChaVector3(float srcx, float srcy, float srcz);
 	ChaVector3(DirectX::XMVECTOR v);
+	ChaVector3(FbxDouble3 srcdouble3);
 	~ChaVector3();
 
 	ChaVector3 operator= (ChaVector3 v);

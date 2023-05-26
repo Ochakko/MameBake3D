@@ -10,6 +10,8 @@
 #include <windows.h>
 #include <crtdbg.h>
 
+#include <Bone.h>
+
 #define DBGH
 #include <dbg.h>
 
@@ -29,8 +31,10 @@ CCameraFbx::~CCameraFbx()
 
 int CCameraFbx::InitParams()
 {
-	m_pcamera = 0;
 	m_loadedflag = false;
+	m_pnode = 0;
+	m_pbone = 0;
+	m_pcamera = 0;
 
 	m_time = 0.0;
 
@@ -68,9 +72,9 @@ int CCameraFbx::Clear()
 	return 0;
 }
 
-int CCameraFbx::SetFbxCamera(FbxNode* pNode)
+int CCameraFbx::SetFbxCamera(FbxNode* pNode, CBone* pbone)
 {
-	if (!pNode) {
+	if (!pNode || !pbone) {
 		_ASSERT(0);
 		m_loadedflag = false;
 		m_pcamera = 0;
@@ -78,16 +82,13 @@ int CCameraFbx::SetFbxCamera(FbxNode* pNode)
 	}
 
 	m_pnode = pNode;
-	m_pcamera = pNode->GetCamera();
+	m_pbone = pbone;
+	m_pcamera = pNode->GetCamera();//fbxsdk func
 
 	if (m_pcamera) {
 
-		int result = 0;
-		result = ProcessCameraAnim(0.0);//指定時間における　m_time, m_position, m_dirvec, m_worldmatのセット
-		if (result != 0) {
-			_ASSERT(0);
-			return 1;
-		}
+		//SetZeroFrameCamera();//InitMPよりも後で. Main.cppのCalcTotalBound()から呼ぶ
+
 
 		FbxVector4 upVector = m_pcamera->UpVector.Get();     // アップベクトル
 		FbxDouble aspectHeight = m_pcamera->AspectHeight.Get(); // アスペクト高
@@ -134,34 +135,29 @@ int CCameraFbx::SetFbxCamera(FbxNode* pNode)
 
 }
 
-int CCameraFbx::ProcessCameraAnim(double nextframe)
+int CCameraFbx::SetZeroFrameCamera()
 {
 
 	//初期化時(SetFbxCamera())にも呼ぶので　IsLoaded() == falseでも処理をする
 
-
-
-	//#########################################################
+	//########################################################################################
 	//2023/05/25
+	// eCameraが存在し、eCameraにアニメーションコンポーネントがアタッチされていない場合の処理
 	// カメラアニメは　CModel::GetCameraAnimParams()で対応
-	//まずは　試行錯誤の跡もコミット　後でリファクタリング予定
-	//#########################################################
+	//########################################################################################
 
 
-	if (!m_pcamera || !m_pnode) {
+	if (!m_pcamera || !m_pnode || !m_pbone) {
 		_ASSERT(0);
 		return 1;
 	}
 
-	m_time = nextframe;
+	m_time = 0.0;
+	FbxTime timezero;
+	timezero.SetSecondDouble(m_time);
 
 
-	FbxTime fbxtime;
-	fbxtime.SetSecondDouble(m_time);
-
-
-	FbxVector4 fbxpos = m_pcamera->EvaluatePosition(fbxtime);
-	//FbxVector4 fbxpos = m_pnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
+	FbxVector4 fbxpos = m_pcamera->EvaluatePosition(timezero);
 	if ((double)fbxpos[3] != 0.0) {
 		float tmpx, tmpy, tmpz;
 		tmpx = (float)((double)fbxpos[0] / (double)fbxpos[3]);
@@ -173,146 +169,112 @@ int CCameraFbx::ProcessCameraAnim(double nextframe)
 		m_position = ChaVector3((float)fbxpos[0], (float)fbxpos[1], (float)fbxpos[2]);
 	}
 
-	FbxAMatrix fbxcameramat = m_pnode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot, true, true);
+	FbxAMatrix fbxcameramat = m_pnode->EvaluateGlobalTransform(timezero, FbxNode::eSourcePivot, true, true);
 	ChaMatrix cameramat = ChaMatrixFromFbxAMatrix(fbxcameramat);
-	//m_worldmat = cameramat;//!!!!!!
+	m_worldmat = cameramat;//!!!!!!
 
 	CQuaternion cameraq;
 	cameraq.RotationMatrix(cameramat);
-	ChaVector3 firstdir = ChaVector3(1.0f, 0.0f, 0.0f);//basevec +X軸  カメラアニメがある場合CModel::GetCameraAnimParams()ではbasevec +Zだが？
+	ChaVector3 firstdir = ChaVector3(1.0f, 0.0f, 0.0f);//basevec +X軸
 	ChaVector3 cameradir = ChaVector3(1.0f, 0.0f, 0.0f);
 	cameraq.Rotate(&cameradir, firstdir);
 	ChaVector3Normalize(&cameradir, &cameradir);
 	m_dirvec = cameradir;
 
 
-	//ChaMatrix translatemat;
-	//translatemat.SetIdentity();
-	//translatemat.SetTranslation(m_position);
-	//m_worldmat = cameraq.inverse().MakeRotMatX() * translatemat;
+	return 0;
+}
 
-	m_worldmat = cameramat;
+
+int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos)
+{
+	if (!pEyePos || !pTargetPos || (cameramotid <= 0)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	double roundingframe = (double)((int)(nextframe + 0.0001));
+	m_time = roundingframe;
+	FbxTime fbxtime;
+	fbxtime.SetSecondDouble(m_time);
+	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	if (IsLoaded()) {
+		if (cameramotid >= 0) {
+			FbxNode* cameranode = GetFbxNode();
+			CBone* camerabone = GetBone();
+			if (cameranode && camerabone) {
+				ChaMatrix cammat = camerabone->GetWorldMat(false, cameramotid, roundingframe, 0);
+				ChaMatrix nodemat = camerabone->GetNodeMat();
+
+				ChaMatrix rootmat;
+				if (camerabone->GetParent(false) && camerabone->GetParent(false)->IsNull()) {
+					rootmat = camerabone->GetParent(false)->GetENullMatrix();
+				}
+				else {
+					rootmat.SetIdentity();
+				}
+
+				FbxDouble3 lcltra;
+				lcltra = cameranode->LclTranslation;
+				ChaMatrix lcltramat;
+				lcltramat.SetIdentity();
+				lcltramat.SetTranslation(ChaVector3(lcltra));
+
+				//##################################################################################################################################
+				//2023/05/25
+				//！！！　当たり　！！！
+				//fbxファイルとしては　親のeNullに移動があれば　子供のカメラにそれは伝わる
+				//しかし　Unity(2020.2.19f1)上においては　
+				//親のeNullの回転は　子供のカメラに伝わるが　eNullの移動は子供のカメラに伝わっていなかった(ビジュアル的にもマニピュレータ位置的にも)
+				//カメラによるビジュアルをUnity上での再生と合わせるために　カメラ行列にeNullの移動キャンセル処理をした(Inv(roottramat)の部分)
+				//後の処理は　比較的想定通りであった
+				//##################################################################################################################################
+			//##############
+			//カメラの位置
+			//##############
+				ChaMatrix transformmat = nodemat * cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);
+				ChaVector3TransformCoord(pEyePos, &zeropos, &transformmat);
+
+				//##############
+				//カメラの向き
+				//##############
+				////ChaMatrix rotmat = nodemat * cammat * rootmat;
+				//ChaMatrix rotmat = nodemat * cammat;
+				////ChaMatrix rotmat = cammat;
+				CQuaternion rotq;
+				//rotq.RotationMatrix(rotmat);
+				rotq.RotationMatrix(transformmat);
+				//ChaVector3 dirvec0 = ChaVector3(0.0f, 0.0f, 1.0f);
+				//ChaVector3 dirvec = ChaVector3(0.0f, 0.0f, 1.0f);
+				////dirvec0 = camerafbx.GetDirVec();
+				ChaVector3 dirvec0 = ChaVector3(1.0f, 0.0f, 0.0f);
+				ChaVector3 dirvec = ChaVector3(1.0f, 0.0f, 0.0f);
+				rotq.Rotate(&dirvec, dirvec0);
+				ChaVector3Normalize(&dirvec, &dirvec);
+				*pTargetPos = *pEyePos + dirvec * camdist;
+
+			}
+			else {
+				_ASSERT(0);
+				//ZeroFrameCamera
+				*pEyePos = m_position;
+				*pTargetPos = *pEyePos + m_dirvec * camdist;
+			}
+		}
+		else {
+			//ZeroFrameCamera
+			*pEyePos = m_position;
+			*pTargetPos = *pEyePos + m_dirvec * camdist;
+		}
+	}
+	else {
+		//何もしない
+	}
 
 
 	return 0;
 }
-
-//int CCameraFbx::GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos)
-//{
-//	if (!pEyePos || !pTargetPos) {
-//		_ASSERT(0);
-//		return 1;
-//	}
-//
-//	m_time = nextframe;
-//	FbxTime fbxtime;
-//	fbxtime.SetSecondDouble(m_time);
-//
-//	//ChaVector3 chatra = ChaVector3(0.0f, 0.0f, 0.0f);
-//	//FbxVector4 lcltra = m_pnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
-//	//if ((double)lcltra[3] != 0.0) {
-//	//	float tmpx, tmpy, tmpz;
-//	//	tmpx = (float)((double)lcltra[0] / (double)lcltra[3]);
-//	//	tmpy = (float)((double)lcltra[1] / (double)lcltra[3]);
-//	//	tmpz = (float)((double)lcltra[2] / (double)lcltra[3]);
-//	//	chatra = ChaVector3(tmpx, tmpy, tmpz);
-//	//}
-//	//else {
-//	//	chatra = ChaVector3((float)lcltra[0], (float)lcltra[1], (float)lcltra[2]);
-//	//}
-//	//*pEyePos = GetPosition() + chatra;
-//
-//	//ChaVector3 chatra = ChaVector3(0.0f, 0.0f, 0.0f);
-//	//FbxVector4 fbxpos = m_pcamera->EvaluatePosition(fbxtime);
-//	//if ((double)fbxpos[3] != 0.0) {
-//	//	float tmpx, tmpy, tmpz;
-//	//	tmpx = (float)((double)fbxpos[0] / (double)fbxpos[3]);
-//	//	tmpy = (float)((double)fbxpos[1] / (double)fbxpos[3]);
-//	//	tmpz = (float)((double)fbxpos[2] / (double)fbxpos[3]);
-//	//	chatra = ChaVector3(tmpx, tmpy, tmpz);
-//	//}
-//	//else {
-//	//	chatra = ChaVector3((float)fbxpos[0], (float)fbxpos[1], (float)fbxpos[2]);
-//	//}
-//	//*pEyePos = chatra;
-//
-//
-//	//FbxVector4 lclrot = m_pnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
-//	//CQuaternion lclq;
-//	//lclq.SetRotationXYZ(0, ChaVector3((float)lclrot[0], (float)lclrot[1], (float)lclrot[2]));
-//	//CQuaternion firstq;
-//	//firstq.RotationMatrix(GetWorldMat());
-//	//CQuaternion animq = firstq * lclq;
-//	//ChaVector3 firstdir = ChaVector3(1.0f, 0.0f, 0.0f);//basevec +X軸
-//	//ChaVector3 cameradir = ChaVector3(1.0f, 0.0f, 0.0f);
-//	//animq.Rotate(&cameradir, firstdir);
-//	//ChaVector3Normalize(&cameradir, &cameradir);
-//
-//
-//	FbxAMatrix fbxcameramat = m_pnode->EvaluateGlobalTransform(fbxtime, FbxNode::eSourcePivot, true, true);
-//	ChaMatrix cameramat = ChaMatrixFromFbxAMatrix(fbxcameramat);
-//	ChaMatrix chaanimmat = ChaMatrixInv(GetWorldMat()) * cameramat;
-//	ChaVector3 firsttargetpos;
-//	firsttargetpos = GetPosition() + (GetDirVec() * camdist);
-//	ChaVector3TransformCoord(pTargetPos, &firsttargetpos, &chaanimmat);
-//
-//
-//	//CQuaternion cameraq;
-//	//cameraq.RotationMatrix(chaanimmat);
-//	//ChaVector3 firstdir = ChaVector3(1.0f, 0.0f, 0.0f);//basevec +X軸
-//	//ChaVector3 cameradir = ChaVector3(1.0f, 0.0f, 0.0f);
-//	//cameraq.Rotate(&cameradir, firstdir);
-//	//ChaVector3Normalize(&cameradir, &cameradir);
-//	//*pTargetPos = *pEyePos + cameradir * camdist;
-//
-//	return 0;
-//}
-
-
-//int CCameraFbx::GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos)
-//{
-//	if (!pEyePos || !pTargetPos) {
-//		_ASSERT(0);
-//		return 1;
-//	}
-//
-//	m_time = nextframe;
-//	FbxTime fbxtime;
-//	fbxtime.SetSecondDouble(m_time);
-//
-//	ChaVector3 chatra = ChaVector3(0.0f, 0.0f, 0.0f);
-//	FbxVector4 lcltra = m_pnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
-//	if ((double)lcltra[3] != 0.0) {
-//		float tmpx, tmpy, tmpz;
-//		tmpx = (float)((double)lcltra[0] / (double)lcltra[3]);
-//		tmpy = (float)((double)lcltra[1] / (double)lcltra[3]);
-//		tmpz = (float)((double)lcltra[2] / (double)lcltra[3]);
-//		chatra = ChaVector3(tmpx, tmpy, tmpz);
-//	}
-//	else {
-//		chatra = ChaVector3((float)lcltra[0], (float)lcltra[1], (float)lcltra[2]);
-//	}
-//	*pEyePos = GetPosition() + chatra;
-//
-//
-//	FbxVector4 lclrot = m_pnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
-//	CQuaternion lclq;
-//	lclq.SetRotationXYZ(0, ChaVector3((float)lclrot[0], (float)lclrot[1], (float)lclrot[2]));
-//
-//	CQuaternion firstq;
-//	firstq.RotationMatrix(GetWorldMat());
-//
-//	CQuaternion animq = lclq * firstq;
-//
-//	ChaVector3 firstdir = ChaVector3(1.0f, 0.0f, 0.0f);//basevec +X軸
-//	ChaVector3 cameradir = ChaVector3(1.0f, 0.0f, 0.0f);
-//	animq.Rotate(&cameradir, firstdir);
-//	ChaVector3Normalize(&cameradir, &cameradir);
-//
-//	*pTargetPos = *pEyePos + cameradir * camdist;
-//
-//	return 0;
-//}
 
 
 

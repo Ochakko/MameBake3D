@@ -9266,73 +9266,7 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 			//2023/05/07
 			//eNullにアニメーションは無いので　上方でFBXBONE_SKELETON以外はリターンしている
 			//いろいろ直した結果　lCurveが0の場合にも　同じ数式でOKに
-			//globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
-
-
-			if (IsNotCamera()) {
-
-				globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
-
-			}
-			else {//2023/05/23
-
-				globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
-
-				//globalmat = chaGlobalSRT;
-				//if (GetParent(false)) {
-				//	if (GetParent(false)->IsNull()) {
-				//		ChaMatrix parentnullmat = GetParent(false)->GetENullMatrix();
-				//		globalmat = globalmat * ChaMatrixInv(parentnullmat);
-				//		
-				//		//ChaMatrix parentnulltramat = ChaMatrixTra(GetParent(false)->GetENullMatrix());
-				//		//globalmat = globalmat * ChaMatrixInv(parentnulltramat);
-				//		//ChaMatrix parentnullmat = GetParent(false)->GetENullMatrix();
-				//		//globalmat = globalmat * ChaMatrixTra(ChaMatrixInv(parentnullmat));
-
-				//		if (GetParModel() && (GetParModel()->GetCameraMotionId() == motid)) {
-				//			int dummyflag = true;
-				//		}
-				//	}
-				//	else {
-				//		if (GetParModel() && (GetParModel()->GetCameraMotionId() == motid)) {
-				//			int dummyflag = true;
-				//		}
-				//	}
-				//}
-
-				if (GetParModel() && (GetParModel()->GetCameraMotionId() == motid)) {
-					int dummyflag = true;
-				}
-
-
-				//FbxAMatrix lLocalSRT = pNode->EvaluateLocalTransform(fbxtime, FbxNode::eSourcePivot, true, true);
-				//ChaMatrix chaLocalSRT;
-				//chaLocalSRT = ChaMatrixFromFbxAMatrix(lLocalSRT);
-				//globalmat = chaLocalSRT;
-				//ChaMatrix testmat = (ChaMatrixInv(GetNodeMat()) * chaLocalSRT);
-
-				//globalmat = chaGlobalSRT;
-				//FbxCamera* pcamera = pNode->GetCamera();
-				//if (pcamera) {
-				//	ChaVector3 campos = ChaVector3(0.0f, 0.0f, 0.0f);
-				//	FbxVector4 fbxpos = pcamera->EvaluatePosition(fbxtime,);
-					//	//if ((double)fbxpos[3] != 0.0) {
-					//	//	float tmpx, tmpy, tmpz;
-					//	//	tmpx = (float)((double)fbxpos[0] / (double)fbxpos[3]);
-					//	//	tmpy = (float)((double)fbxpos[1] / (double)fbxpos[3]);
-					//	//	tmpz = (float)((double)fbxpos[2] / (double)fbxpos[3]);
-					//	//	campos = ChaVector3(tmpx, tmpy, tmpz);
-					//	//}
-					//	//else {
-					//		campos = ChaVector3((float)fbxpos[0], (float)fbxpos[1], (float)fbxpos[2]);
-					//	//}
-					//	ChaVector3 cameratra = campos;
-					//	globalmat.SetTranslation(cameratra);
-					//	//globalmat.data[MATI_44] = 1.0f;
-				//}
-
-			}
-			
+			globalmat = (ChaMatrixInv(GetNodeMat()) * chaGlobalSRT);
 
 
 			//for debug

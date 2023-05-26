@@ -827,6 +827,8 @@ public:
 	void CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double srcanimleng, int* perrorcount);
 
 	CNodeOnLoad* FindNodeOnLoadByName(const char* srcname);
+	FbxNode* FindNodeByBone(CBone* srcbone);
+	CBone* FindBoneByNode(FbxNode* srcnode);
 
 	void SetRotationActiveToBone();
 	void SetRotationActiveFalse();

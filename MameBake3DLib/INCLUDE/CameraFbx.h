@@ -11,7 +11,7 @@
 
 #include <fbxsdk.h>
 
-
+class CBone;
 
 class CCameraFbx
 {
@@ -19,10 +19,10 @@ public:
 	CCameraFbx();
 	~CCameraFbx();
 	int Clear();
-	int SetFbxCamera(FbxNode* pnode);
+	int SetFbxCamera(FbxNode* pnode, CBone* pbone);
 
-	int ProcessCameraAnim(double nextframe);
-	//int GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos);
+	int SetZeroFrameCamera();
+	int GetCameraAnimParams(int cameramotid, double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos);
 
 
 	CCameraFbx operator= (CCameraFbx srcrange);
@@ -131,9 +131,14 @@ public:
 	{
 		return m_pnode;
 	}
+	CBone* GetBone()
+	{
+		return m_pbone;
+	}
 
 private:
 	FbxNode* m_pnode;
+	CBone* m_pbone;
 	FbxCamera* m_pcamera;
 	ChaMatrix m_worldmat;
 

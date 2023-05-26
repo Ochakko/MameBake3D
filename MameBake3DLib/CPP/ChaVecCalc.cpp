@@ -1142,6 +1142,14 @@ ChaVector3::ChaVector3(DirectX::XMVECTOR v)
 	y = v.m128_f32[1];
 	z = v.m128_f32[2];
 }
+ChaVector3::ChaVector3(FbxDouble3 src)
+{
+	x = (float)src[0];
+	y = (float)src[1];
+	z = (float)src[2];
+}
+
+
 
 ChaVector3::~ChaVector3()
 {
