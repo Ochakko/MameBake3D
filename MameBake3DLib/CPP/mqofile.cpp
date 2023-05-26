@@ -143,13 +143,9 @@ int CMQOFile::LoadMQOFile_aft( float multiple, ChaVector3 offsetpos, ChaVector3 
 	ChaMatrixIdentity( &rotzmat );
 	ChaMatrixIdentity( &shiftmat );
 
-	scalemat.data[MATI_11] = m_multiple;
-	scalemat.data[MATI_22] = m_multiple;
-	scalemat.data[MATI_33] = m_multiple;
+	scalemat.SetScale(ChaVector3(m_multiple, m_multiple, m_multiple));
 
-	shiftmat.data[MATI_41] = offsetpos.x;
-	shiftmat.data[MATI_42] = offsetpos.y;
-	shiftmat.data[MATI_43] = offsetpos.z;
+	shiftmat.SetTranslation(offsetpos);
 
 	//ChaMatrixRotationX( &rotxmat, rot.x * (float)DEG2PAI );
 	//ChaMatrixRotationY( &rotymat, rot.y * (float)DEG2PAI );

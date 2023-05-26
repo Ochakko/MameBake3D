@@ -1032,9 +1032,7 @@ _ASSERT(m_bonelist[0]);
 
 	ChaMatrix offsetmat;
 	ChaMatrixIdentity( &offsetmat );
-	offsetmat.data[MATI_11] = srcmult;
-	offsetmat.data[MATI_22] = srcmult;
-	offsetmat.data[MATI_33] = srcmult;
+	offsetmat.SetScale(ChaVector3(srcmult, srcmult, srcmult));
 	map<int,CMQOObject*>::iterator itr;
 	for( itr = m_object.begin(); itr != m_object.end(); itr++ ){
 		CMQOObject* curobj = itr->second;
@@ -2386,7 +2384,7 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 	curframe = (double)((int)(curmi->curframe + 0.0001));
 
 
-	g_hmWorld->SetMatrix((float*)&(m_worldmat.data[MATI_11]));
+	g_hmWorld->SetMatrix(m_worldmat.GetDataPtr());
 	//g_pEffect->SetMatrix(g_hmWorld, &(m_worldmat.D3DX()));
 
 
@@ -2456,26 +2454,26 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 			//set4x4[clcnt] = tmpmp.GetWorldMat();
 			clustermat = curbone->GetWorldMat(currentlimitdegflag, curmotid, curframe, &curmp);
 			MoveMemory(&(m_setfl4x4[16 * clcnt]), 
-				&(clustermat.data[MATI_11]), sizeof(float) * 16);
+				clustermat.GetDataPtr(), sizeof(float) * 16);
 		}else if(btflag == 1){
 			//物理シミュ
 			//set4x4[clcnt] = curbone->GetBtMat();
 			clustermat = curbone->GetBtMat();
 			MoveMemory(&(m_setfl4x4[16 * clcnt]), 
-				&(clustermat.data[MATI_11]), sizeof(float) * 16);
+				clustermat.GetDataPtr(), sizeof(float) * 16);
 		}
 		else if (btflag == 2) {
 			//物理IK
 			//set4x4[clcnt] = curbone->GetBtMat();
 			clustermat = curbone->GetBtMat();
 			MoveMemory(&(m_setfl4x4[16 * clcnt]), 
-				&(curbone->GetBtMat().data[MATI_11]), sizeof(float) * 16);
+				curbone->GetBtMat().GetDataPtr(), sizeof(float) * 16);
 		}
 		else {
 			//set4x4[clcnt] = tmpmp.GetWorldMat();
 			clustermat = curbone->GetWorldMat(currentlimitdegflag, curmotid, curframe, &curmp);
 			MoveMemory(&(m_setfl4x4[16 * clcnt]),
-				&(clustermat.data[MATI_11]), sizeof(float) * 16);
+				clustermat.GetDataPtr(), sizeof(float) * 16);
 		}
 
 		//###########
@@ -4091,7 +4089,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 				pMesh->GetPolygonVertexNormal(faceno0, vno, srcnormal);
 				
 				ChaVector3* curn = newobj->GetNormal() + faceno0 * 3 + vno;
-				ChaVector3 tmpn = ChaVector3((float)srcnormal[0], (float)srcnormal[1], (float)srcnormal[2]);
+				ChaVector3 tmpn = ChaVector3(srcnormal);
 				ChaVector3TransformCoord(curn, &tmpn, &globalnormalmat);
 				ChaVector3Normalize(curn, curn);
 			}
@@ -6085,15 +6083,11 @@ int CModel::RenderRefArrow(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 		double fscale = diffleng / 200.0f;
 		ChaMatrix scalemat;
 		ChaMatrixIdentity(&scalemat);
-		scalemat.data[MATI_11] = (float)(fscale);
-		scalemat.data[MATI_22] = (float)(fscale * (double)refmult);
-		scalemat.data[MATI_33] = (float)(fscale * (double)refmult);
+		scalemat.SetScale(ChaVector3((float)(fscale), (float)(fscale * (double)refmult), (float)(fscale * (double)refmult)));
 		bmmat = scalemat * bmmat;
-		bmmat.data[MATI_41] = vecbonepos[vecno].x;
-		bmmat.data[MATI_42] = vecbonepos[vecno].y;
-		bmmat.data[MATI_43] = vecbonepos[vecno].z;
+		bmmat.SetTranslation(vecbonepos[vecno]);
 
-		g_hmWorld->SetMatrix((float*)&(bmmat.data[MATI_11]));
+		g_hmWorld->SetMatrix(bmmat.GetDataPtr());
 		//g_pEffect->SetMatrix(g_hmWorld, &(bmmat.D3DX()));
 		this->UpdateMatrix(limitdegflag, &bmmat, &m_matVP);
 
@@ -6216,17 +6210,12 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 							ChaMatrix scalemat;
 							ChaMatrixIdentity(&scalemat);
 							fscale = diffleng / 50.0f;
-							scalemat.data[MATI_11] = fscale;
-							scalemat.data[MATI_22] = fscale;
-							scalemat.data[MATI_33] = fscale;
+							scalemat.SetScale(ChaVector3(fscale, fscale, fscale));
 
 							bmmat = scalemat * bmmat;
+							bmmat.SetTranslation(aftbonepos);
 
-							bmmat.data[MATI_41] = aftbonepos.x;
-							bmmat.data[MATI_42] = aftbonepos.y;
-							bmmat.data[MATI_43] = aftbonepos.z;
-
-							g_hmWorld->SetMatrix((float*)&(bmmat.data[MATI_11]));
+							g_hmWorld->SetMatrix(bmmat.GetDataPtr());
 							//g_pEffect->SetMatrix(g_hmWorld, &(bmmat.D3DX()));
 							bmarkptr->UpdateMatrix(limitdegflag, &bmmat, &m_matVP);
 							ChaVector4 difmult;
@@ -6267,7 +6256,7 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 						//ChaMatrix worldcapsulemat = curre->GetCapsulematForColiShape(limitdegflag, 0) * GetWorldMat();//2023/01/18
 						ChaMatrix worldcapsulemat = curre->GetCapsulematForColiShape(limitdegflag, 0);//2023/03/24 modelのwmはすでに掛かっている
 
-						g_hmWorld->SetMatrix((float*)&(worldcapsulemat.data[MATI_11]));
+						g_hmWorld->SetMatrix(worldcapsulemat.GetDataPtr());
 						boneptr->GetCurColDisp(childbone)->UpdateMatrix(limitdegflag, &worldcapsulemat, &m_matVP);
 						//g_hmWorld->SetMatrix((float*)&(curre->GetCapsulemat(0)));
 						//boneptr->GetCurColDisp(childbone)->UpdateMatrix(&(curre->GetCapsulemat(0)), &m_matVP);
@@ -6486,7 +6475,7 @@ void CModel::RenderCapsuleReq(bool limitdegflag, ID3D11DeviceContext* pd3dImmedi
 			//ChaMatrix tmpcapmat = curre->GetCapsulemat(0);
 			ChaMatrix tmpcapmat = curre->GetCapsulematForColiShape(limitdegflag, 0);//2023/01/18
 
-			g_hmWorld->SetMatrix((float*)&(tmpcapmat.data[MATI_11]));
+			g_hmWorld->SetMatrix(tmpcapmat.GetDataPtr());
 			srcbone->GetCurColDisp(childbone)->UpdateMatrix(limitdegflag, &tmpcapmat, &m_matVP);
 			ChaVector4 difmult;
 			//if( boneptr->GetSelectFlag() & 4 ){
@@ -10911,19 +10900,13 @@ int CModel::IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr,
 				parentnoderot = ChaMatrixRot(parentnodemat);
 				ChaVector3 ikaxis;
 				if ((calccnt % 3) == 0) {
-					ikaxis.x = parentnoderot.data[MATI_11];
-					ikaxis.y = parentnoderot.data[MATI_12];
-					ikaxis.z = parentnoderot.data[MATI_13];
+					ikaxis = parentnoderot.GetRow(0);
 				}
 				else if ((calccnt % 2) == 0) {
-					ikaxis.x = parentnoderot.data[MATI_21];
-					ikaxis.y = parentnoderot.data[MATI_22];
-					ikaxis.z = parentnoderot.data[MATI_23];
+					ikaxis = parentnoderot.GetRow(1);
 				}
 				else {
-					ikaxis.x = parentnoderot.data[MATI_31];
-					ikaxis.y = parentnoderot.data[MATI_32];
-					ikaxis.z = parentnoderot.data[MATI_33];
+					ikaxis = parentnoderot.GetRow(2);
 				}
 				bool nearflag = CalcAxisAndRotForIKRotateAxis(limitdegflag,
 					parentbone, firstbone,
@@ -12376,13 +12359,13 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 							}
 							ChaMatrixInverse(&invselectmat, NULL, &selectmat);
 							if (axiskind == AXIS_X) {
-								axis0 = ChaVector3(selectmat.data[MATI_11], selectmat.data[MATI_12], selectmat.data[MATI_13]);
+								axis0 = selectmat.GetRow(0);
 							}
 							else if (axiskind == AXIS_Y) {
-								axis0 = ChaVector3(selectmat.data[MATI_21], selectmat.data[MATI_22], selectmat.data[MATI_23]);
+								axis0 = selectmat.GetRow(1);
 							}
 							else if (axiskind == AXIS_Z) {
-								axis0 = ChaVector3(selectmat.data[MATI_31], selectmat.data[MATI_32], selectmat.data[MATI_33]);
+								axis0 = selectmat.GetRow(2);
 							}
 							else {
 								_ASSERT(0);
@@ -12673,13 +12656,13 @@ int CModel::RigControlUnderRig(bool limitdegflag, int depthcnt,
 					}
 					ChaMatrixInverse(&invselectmat, NULL, &selectmat);
 					if (axiskind == AXIS_X) {
-						axis0 = ChaVector3(selectmat.data[MATI_11], selectmat.data[MATI_12], selectmat.data[MATI_13]);
+						axis0 = selectmat.GetRow(0);
 					}
 					else if (axiskind == AXIS_Y) {
-						axis0 = ChaVector3(selectmat.data[MATI_21], selectmat.data[MATI_22], selectmat.data[MATI_23]);
+						axis0 = selectmat.GetRow(1);
 					}
 					else if (axiskind == AXIS_Z) {
-						axis0 = ChaVector3(selectmat.data[MATI_31], selectmat.data[MATI_32], selectmat.data[MATI_33]);
+						axis0 = selectmat.GetRow(2);
 					}
 					else {
 						_ASSERT(0);
@@ -13436,25 +13419,17 @@ int CModel::CalcQForRot(bool limitdegflag, bool calcaplyflag,
 
 	//ChaMatrix curparrotmat = curparmp->GetWorldMat();
 	ChaMatrix curparrotmat = srcrotbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-	curparrotmat.data[MATI_41] = 0.0f;
-	curparrotmat.data[MATI_42] = 0.0f;
-	curparrotmat.data[MATI_43] = 0.0f;
+	curparrotmat.SetTranslationZero();
 	//ChaMatrix invcurparrotmat = curparmp->GetInvWorldMat();
 	ChaMatrix invcurparrotmat = ChaMatrixInv(curparrotmat);
-	invcurparrotmat.data[MATI_41] = 0.0f;
-	invcurparrotmat.data[MATI_42] = 0.0f;
-	invcurparrotmat.data[MATI_43] = 0.0f;
+	invcurparrotmat.SetTranslationZero();
 
 	//ChaMatrix aplyparrotmat = aplyparmp->GetWorldMat();
 	ChaMatrix aplyparrotmat = srcaplybone->GetWorldMat(limitdegflag, srcmotid, roundingapplyframe, 0);
-	aplyparrotmat.data[MATI_41] = 0.0f;
-	aplyparrotmat.data[MATI_42] = 0.0f;
-	aplyparrotmat.data[MATI_43] = 0.0f;
+	aplyparrotmat.SetTranslationZero();
 	//ChaMatrix invaplyparrotmat = aplyparmp->GetInvWorldMat();
 	ChaMatrix invaplyparrotmat = ChaMatrixInv(aplyparrotmat);
-	invaplyparrotmat.data[MATI_41] = 0.0f;
-	invaplyparrotmat.data[MATI_42] = 0.0f;
-	invaplyparrotmat.data[MATI_43] = 0.0f;
+	invaplyparrotmat.SetTranslationZero();
 
 	CQuaternion invcurparrotq, aplyparrotq, invaplyparrotq, curparrotq;
 	invcurparrotq.RotationMatrix(invcurparrotmat);
@@ -13693,13 +13668,13 @@ int CModel::IKRotateAxisDeltaUnderIK(
 			CQuaternion localq;
 			//2022/11/03 回転軸はselectmatがあれば自明！！
 			if ((axiskind == PICK_X) || (axiskind == PICK_SPA_X)) {
-				axis0 = ChaVector3(selectmat.data[MATI_11], selectmat.data[MATI_12], selectmat.data[MATI_13]);
+				axis0 = selectmat.GetRow(0);
 			}
 			else if ((axiskind == PICK_Y) || (axiskind == PICK_SPA_Y)) {
-				axis0 = ChaVector3(selectmat.data[MATI_21], selectmat.data[MATI_22], selectmat.data[MATI_23]);
+				axis0 = selectmat.GetRow(1);
 			}
 			else if ((axiskind == PICK_Z) || (axiskind == PICK_SPA_Z)) {
-				axis0 = ChaVector3(selectmat.data[MATI_31], selectmat.data[MATI_32], selectmat.data[MATI_33]);
+				axis0 = selectmat.GetRow(2);
 			}
 			else {
 				_ASSERT(0);
@@ -14191,13 +14166,13 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 			CQuaternion localq;
 			//2022/11/03 回転軸はselectmatがあれば自明！！
 			if ((axiskind == PICK_X) || (axiskind == PICK_SPA_X)) {
-				axis0 = ChaVector3(selectmat.data[MATI_11], selectmat.data[MATI_12], selectmat.data[MATI_13]);
+				axis0 = selectmat.GetRow(0);
 			}
 			else if ((axiskind == PICK_Y) || (axiskind == PICK_SPA_Y)) {
-				axis0 = ChaVector3(selectmat.data[MATI_21], selectmat.data[MATI_22], selectmat.data[MATI_23]);
+				axis0 = selectmat.GetRow(1);
 			}
 			else if ((axiskind == PICK_Z) || (axiskind == PICK_SPA_Z)) {
-				axis0 = ChaVector3(selectmat.data[MATI_31], selectmat.data[MATI_32], selectmat.data[MATI_33]);
+				axis0 = selectmat.GetRow(2);
 			}
 			else {
 				_ASSERT(0);
@@ -14518,17 +14493,17 @@ int CModel::FKBoneTraAxisUnderFK(
 	ChaVector3 vecz(0.0f, 0.0f, 1.0f);
 
 	if (axiskind == 0) {
-		basevec = ChaVector3(selectmat.data[MATI_11], selectmat.data[MATI_12], selectmat.data[MATI_13]);
+		basevec = selectmat.GetRow(0);
 	}
 	else if (axiskind == 1) {
-		basevec = ChaVector3(selectmat.data[MATI_21], selectmat.data[MATI_22], selectmat.data[MATI_23]);
+		basevec = selectmat.GetRow(1);
 	}
 	else if (axiskind == 2) {
-		basevec = ChaVector3(selectmat.data[MATI_31], selectmat.data[MATI_32], selectmat.data[MATI_33]);
+		basevec = selectmat.GetRow(2);
 	}
 	else {
 		_ASSERT(0);
-		basevec = ChaVector3(selectmat.data[MATI_11], selectmat.data[MATI_12], selectmat.data[MATI_13]);
+		basevec = selectmat.GetRow(0);
 	}
 	ChaVector3Normalize(&basevec, &basevec);
 
@@ -14577,17 +14552,17 @@ int CModel::FKBoneTraAxis(bool limitdegflag, int onlyoneflag, CEditRange* erptr,
 	ChaVector3 vecz(0.0f, 0.0f, 1.0f);
 
 	if (axiskind == 0){
-		basevec = ChaVector3(selectmat.data[MATI_11], selectmat.data[MATI_12], selectmat.data[MATI_13]);
+		basevec = selectmat.GetRow(0);
 	}
 	else if (axiskind == 1){
-		basevec = ChaVector3(selectmat.data[MATI_21], selectmat.data[MATI_22], selectmat.data[MATI_23]);
+		basevec = selectmat.GetRow(1);
 	}
 	else if (axiskind == 2){
-		basevec = ChaVector3(selectmat.data[MATI_31], selectmat.data[MATI_32], selectmat.data[MATI_33]);
+		basevec = selectmat.GetRow(2);
 	}
 	else{
 		_ASSERT(0);
-		basevec = ChaVector3(selectmat.data[MATI_11], selectmat.data[MATI_12], selectmat.data[MATI_13]);
+		basevec = selectmat.GetRow(0);
 	}
 	ChaVector3Normalize(&basevec, &basevec);
 
@@ -15638,9 +15613,7 @@ int CModel::RecalcBoneAxisX(CBone* srcbone)
 				else {
 					axismat.SetIdentity();
 				}
-				axismat.data[MATI_41] = curbone->GetJointFPos().x;
-				axismat.data[MATI_42] = curbone->GetJointFPos().y;
-				axismat.data[MATI_43] = curbone->GetJointFPos().z;
+				axismat.SetTranslation(curbone->GetJointFPos());
 				curbone->SetNodeMat(axismat);
 			}
 		}
@@ -15655,9 +15628,7 @@ int CModel::RecalcBoneAxisX(CBone* srcbone)
 		else {
 			ChaMatrixIdentity(&axismat);
 		}
-		axismat.data[MATI_41] = srcbone->GetJointFPos().x;
-		axismat.data[MATI_42] = srcbone->GetJointFPos().y;
-		axismat.data[MATI_43] = srcbone->GetJointFPos().z;
+		axismat.SetTranslation(srcbone->GetJointFPos());
 		srcbone->SetNodeMat(axismat);
 	}
 

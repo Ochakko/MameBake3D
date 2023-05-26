@@ -245,9 +245,9 @@ public: //accesser
 		return m_firstTransform;
 	};
 
-	ChaMatrix GetXWorld(){ return m_xworld; };
-	ChaMatrix GetInvXWorld() { ChaMatrix invxworld; ChaMatrixInverse(&invxworld, NULL, &m_xworld); return invxworld; };
-	void SetXWorld( ChaMatrix srcworld ){ m_xworld = srcworld; };
+	//ChaMatrix GetXWorld(){ return m_xworld; };
+	//ChaMatrix GetInvXWorld() { ChaMatrix invxworld; ChaMatrixInverse(&invxworld, NULL, &m_xworld); return invxworld; };
+	//void SetXWorld( ChaMatrix srcworld ){ m_xworld = srcworld; };
 
 	int GetConstraintSize(){
 		return (int)m_constraint.size();
@@ -308,7 +308,7 @@ private:
 	ChaMatrix m_transmat;//Y軸平行な剛体をボーンに合わせるための変換行列。
 	ChaMatrix m_par2cen;//parent to centerのベクトル。
 	ChaMatrix m_cen2parY;//center to parentのベクトル。剛体の初期状態がY軸に平行と仮定。
-	ChaMatrix m_xworld;//bulletの剛体に設定された変換行列。
+	//ChaMatrix m_xworld;//bulletの剛体に設定された変換行列。
 
 	CBone* m_bone;//剛体の親側のボーン
 	CBone* m_parentbone;//m_boneの親のボーン

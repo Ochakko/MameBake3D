@@ -61,7 +61,7 @@ int CBtObject::InitParams()
 	m_connectflag = 0;
 	m_constzrad = 0.0f;
 	ChaMatrixIdentity( &m_transmat );
-	ChaMatrixIdentity( &m_xworld );
+	//ChaMatrixIdentity( &m_xworld );
 	m_btWorld = 0;
 
 	m_topflag = 0;
@@ -339,6 +339,7 @@ int CBtObject::CreateObject(bool limitdegflag, int srcmotid, double srcframe, CB
 	//バージョンアップによりfbxmotionはNodeMatのinvを掛けたものに変更した
 	//fbxmotionにNodeMatのinvを掛けた結果がidentityの時に　向きはグローバル基準軸となる
 	//bulletとfbxmotionは　グローバル基準軸で軸が一致し　そのまま流し込むことが可能となる
+	//##### 2023/05/26　注　ただしfbxmotionのrowはbulletのcolに相当する ########
 	transform.setOrigin(btv);
 	m_btq.SetParams(btq.getW(), btq.getX(), btq.getY(), btq.getZ());//2023/01/17
 
@@ -416,10 +417,8 @@ int CBtObject::CreateObject(bool limitdegflag, int srcmotid, double srcframe, CB
 
 	//-0.374995, 0.249996, 0.000000
 	ChaMatrixIdentity( &m_cen2parY );
-	m_cen2parY.data[MATI_41] = 0.0f;
-	//m_cen2parY._42 = -m_boneleng * 0.5f;
-	m_cen2parY.data[MATI_42] = 0.0f;
-	m_cen2parY.data[MATI_43] = 0.0f;
+	m_cen2parY.SetTranslationZero();
+//  m_cen2parY._42 = -m_boneleng * 0.5f;
 //	m_cen2parY._41 = 0.0f - -0.374995f;
 //	m_cen2parY._42 = -m_boneleng * 0.5f - 0.249996f;
 //	m_cen2parY._43 = 0.0f;
@@ -427,14 +426,10 @@ int CBtObject::CreateObject(bool limitdegflag, int srcmotid, double srcframe, CB
 
 	ChaVector3 partocen = centerA - aftparentposA;
 	ChaMatrixIdentity( &m_par2cen );
-	m_par2cen.data[MATI_41] = partocen.x;
-	m_par2cen.data[MATI_42] = partocen.y;
-	m_par2cen.data[MATI_43] = partocen.z;
+	m_par2cen.SetTranslation(partocen);
 
 	m_transmat = startrot;
-	m_transmat.data[MATI_41] = centerA.x;
-	m_transmat.data[MATI_42] = centerA.y;
-	m_transmat.data[MATI_43] = centerA.z;
+	m_transmat.SetTranslation(centerA);
 
 //m_transmat = curre->m_capsulemat;
 
@@ -457,30 +452,32 @@ int CBtObject::CreateObject(bool limitdegflag, int srcmotid, double srcframe, CB
 	m_firstTransformMat = worldmat;//bto->GetRigidBody()のCreateBtObject時のWorldTransform->getBasis
 	SetFirstTransformMatX(ChaMatrixFromBtTransform(&worldtra.getBasis(), &worldtra.getOrigin()));
 
-	btVector3 tmpcol[3];
-	int colno;
-	for( colno = 0; colno < 3; colno++ ){
-		tmpcol[colno] = worldmat.getColumn( colno );
-//		tmpcol[colno] = worldmat.getRow( colno );
-	}
 
-	ChaMatrixIdentity( &m_xworld );
-
-	m_xworld.data[MATI_11] = tmpcol[0].x();
-	m_xworld.data[MATI_12] = tmpcol[0].y();
-	m_xworld.data[MATI_13] = tmpcol[0].z();
-
-	m_xworld.data[MATI_21] = tmpcol[1].x();
-	m_xworld.data[MATI_22] = tmpcol[1].y();
-	m_xworld.data[MATI_23] = tmpcol[1].z();
-
-	m_xworld.data[MATI_31] = tmpcol[2].x();
-	m_xworld.data[MATI_32] = tmpcol[2].y();
-	m_xworld.data[MATI_33] = tmpcol[2].z();
-
-	m_xworld.data[MATI_41] = worldpos.x();
-	m_xworld.data[MATI_42] = worldpos.y();
-	m_xworld.data[MATI_43] = worldpos.z();
+//###################################################
+//使っていないのでコメントアウト
+//###################################################
+//	btVector3 tmpcol[3];
+//	int colno;
+//	for( colno = 0; colno < 3; colno++ ){
+//		tmpcol[colno] = worldmat.getColumn( colno );
+////		tmpcol[colno] = worldmat.getRow( colno );
+//	}
+//	ChaMatrixIdentity( &m_xworld );
+//	m_xworld.data[MATI_11] = tmpcol[0].x();
+//	m_xworld.data[MATI_12] = tmpcol[0].y();
+//	m_xworld.data[MATI_13] = tmpcol[0].z();
+//
+//	m_xworld.data[MATI_21] = tmpcol[1].x();
+//	m_xworld.data[MATI_22] = tmpcol[1].y();
+//	m_xworld.data[MATI_23] = tmpcol[1].z();
+//
+//	m_xworld.data[MATI_31] = tmpcol[2].x();
+//	m_xworld.data[MATI_32] = tmpcol[2].y();
+//	m_xworld.data[MATI_33] = tmpcol[2].z();
+//
+//	m_xworld.data[MATI_41] = worldpos.x();
+//	m_xworld.data[MATI_42] = worldpos.y();
+//	m_xworld.data[MATI_43] = worldpos.z();
 
 
 	return 0;
@@ -1240,48 +1237,45 @@ int CBtObject::SetCapsuleBtMotion(CRigidElem* srcre)
 	m_rigidbody->getMotionState()->getWorldTransform(worldtra);
 	btMatrix3x3 worldmat = worldtra.getBasis();
 	btVector3 worldpos = worldtra.getOrigin();
-	btVector3 tmpcol[3];//行列のカラム表現。
-	int colno;
-	for (colno = 0; colno < 3; colno++){
-		tmpcol[colno] = worldmat.getColumn(colno);
-		//		tmpcol[colno] = worldmat.getRow( colno );
-	}
 
-	ChaMatrix newxworld;
-	ChaMatrixIdentity(&newxworld);
-	newxworld.data[MATI_11] = tmpcol[0].x();
-	newxworld.data[MATI_12] = tmpcol[0].y();
-	newxworld.data[MATI_13] = tmpcol[0].z();
 
-	newxworld.data[MATI_21] = tmpcol[1].x();
-	newxworld.data[MATI_22] = tmpcol[1].y();
-	newxworld.data[MATI_23] = tmpcol[1].z();
-
-	newxworld.data[MATI_31] = tmpcol[2].x();
-	newxworld.data[MATI_32] = tmpcol[2].y();
-	newxworld.data[MATI_33] = tmpcol[2].z();
-
-	newxworld.data[MATI_41] = worldpos.x();
-	newxworld.data[MATI_42] = worldpos.y();
-	newxworld.data[MATI_43] = worldpos.z();
-
-	ChaMatrix invxworld;
-	ChaMatrixInverse(&invxworld, NULL, &m_xworld);
-	//invxworld = m_bone->GetCurrentZeroFrameInvMat(0);
-
-	ChaMatrix diffxworld;
-	diffxworld = invxworld * newxworld;
-
-	//CMotionPoint curmp;
-	//curmp = m_bone->GetCurMp();
-	//curmp.SetBtMat(m_bone->GetStartMat2() * diffxworld);
-	//curmp.SetBtFlag(1);
-	//m_bone->SetCurMp(curmp);
-
-	//ChaMatrix newcapsulemat;
-	//newcapsulemat = srcre->GetBindcapsulemat() * diffxworld;
-	//newcapsulemat = m_bone->CalcManipulatorPostureMatrix(0, 1, 1);
-	//srcre->SetCapsulemat(newcapsulemat);
+	//#################################################
+	//使っていないのでコメントアウト
+	//#################################################
+	//btVector3 tmpcol[3];//行列のカラム表現。
+	//int colno;
+	//for (colno = 0; colno < 3; colno++){
+	//	tmpcol[colno] = worldmat.getColumn(colno);
+	//	//		tmpcol[colno] = worldmat.getRow( colno );
+	//}
+	//ChaMatrix newxworld;
+	//ChaMatrixIdentity(&newxworld);
+	//newxworld.data[MATI_11] = tmpcol[0].x();
+	//newxworld.data[MATI_12] = tmpcol[0].y();
+	//newxworld.data[MATI_13] = tmpcol[0].z();
+	//newxworld.data[MATI_21] = tmpcol[1].x();
+	//newxworld.data[MATI_22] = tmpcol[1].y();
+	//newxworld.data[MATI_23] = tmpcol[1].z();
+	//newxworld.data[MATI_31] = tmpcol[2].x();
+	//newxworld.data[MATI_32] = tmpcol[2].y();
+	//newxworld.data[MATI_33] = tmpcol[2].z();
+	//newxworld.data[MATI_41] = worldpos.x();
+	//newxworld.data[MATI_42] = worldpos.y();
+	//newxworld.data[MATI_43] = worldpos.z();
+	//ChaMatrix invxworld;
+	//ChaMatrixInverse(&invxworld, NULL, &m_xworld);
+	////invxworld = m_bone->GetCurrentZeroFrameInvMat(0);
+	//ChaMatrix diffxworld;
+	//diffxworld = invxworld * newxworld;
+	////CMotionPoint curmp;
+	////curmp = m_bone->GetCurMp();
+	////curmp.SetBtMat(m_bone->GetStartMat2() * diffxworld);
+	////curmp.SetBtFlag(1);
+	////m_bone->SetCurMp(curmp);
+	////ChaMatrix newcapsulemat;
+	////newcapsulemat = srcre->GetBindcapsulemat() * diffxworld;
+	////newcapsulemat = m_bone->CalcManipulatorPostureMatrix(0, 1, 1);
+	////srcre->SetCapsulemat(newcapsulemat);
 
 
 	return 0;

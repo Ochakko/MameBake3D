@@ -129,6 +129,18 @@ public:
 	void SetBasis(ChaMatrix srcmat);//‰Šú‰»‚µ‚È‚¢@copy3x3
 	void SetRotation(EFbxRotationOrder rotorder, CQuaternion* srcaxisq, ChaVector3 srceul);//‰Šú‰»‚µ‚È‚¢
 
+	void SetTranslationZero();//‰Šú‰»‚µ‚È‚¢
+	void SetForVectorTransform();//‰Šú‰»‚µ‚È‚¢
+	void AddTranslation(ChaVector3 srctra);//‰Šú‰»‚µ‚È‚¢
+
+	ChaVector3 GetRow(int rowindex);//s
+	ChaVector3 GetCol(int colindex);//—ñ
+	ChaVector3 GetTranslation();//GetRow(3)
+	void SetRow(int rowindex, ChaVector3 srcrow);//s
+	void SetCol(int colindex, ChaVector3 srccol);//—ñ
+
+
+	float* GetDataPtr();
 
 public:
 	union
@@ -190,7 +202,10 @@ public:
 	ChaVector3(float srcx, float srcy, float srcz);
 	ChaVector3(DirectX::XMVECTOR v);
 	ChaVector3(FbxDouble3 srcdouble3);
+	ChaVector3(FbxVector4 srcdouble3);
 	~ChaVector3();
+
+	void SetZeroVec3();
 
 	ChaVector3 operator= (ChaVector3 v);
 	ChaVector3 operator* (float srcw) const;
@@ -218,7 +233,7 @@ public:
 	ChaMatrix MakeInvTraMat();
 	ChaMatrix MakeXYZRotMat(CQuaternion* srcaxisq);
 	ChaMatrix MakeScaleMat();
-
+	
 	FbxDouble3 ConvRotOrder2XYZ(EFbxRotationOrder rotorder);//src:*this, dst:return value
 
 

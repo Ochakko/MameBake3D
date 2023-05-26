@@ -520,26 +520,14 @@ void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, Cha
 
 	ChaMatrix tmpmat1 = srcmat;
 
-	tvecptr->x = tmpmat1.data[MATI_41];
-	tvecptr->y = tmpmat1.data[MATI_42];
-	tvecptr->z = tmpmat1.data[MATI_43];
+	*tvecptr = tmpmat1.GetTranslation();
 
-	tmpmat1.data[MATI_41] = 0.0f;
-	tmpmat1.data[MATI_42] = 0.0f;
-	tmpmat1.data[MATI_43] = 0.0f;
+	tmpmat1.SetTranslationZero();
 
 	ChaVector3 vec1, vec2, vec3;
-	vec1.x = tmpmat1.data[MATI_11];
-	vec1.y = tmpmat1.data[MATI_12];
-	vec1.z = tmpmat1.data[MATI_13];
-
-	vec2.x = tmpmat1.data[MATI_21];
-	vec2.y = tmpmat1.data[MATI_22];
-	vec2.z = tmpmat1.data[MATI_23];
-
-	vec3.x = tmpmat1.data[MATI_31];
-	vec3.y = tmpmat1.data[MATI_32];
-	vec3.z = tmpmat1.data[MATI_33];
+	vec1 = tmpmat1.GetRow(0);
+	vec2 = tmpmat1.GetRow(1);
+	vec3 = tmpmat1.GetRow(2);
 
 	double len1, len2, len3;
 	len1 = VecLength(vec1);
@@ -785,15 +773,9 @@ ChaMatrix ChaMatrixKeepScale(ChaMatrix srcmat, ChaVector3 srcsvec)
 	ChaVector3 vecx0, vecy0, vecz0;
 	ChaVector3 keepvecx, keepvecy, keepvecz;
 
-	vecx.x = srcmat.data[MATI_11];
-	vecx.y = srcmat.data[MATI_12];
-	vecx.z = srcmat.data[MATI_13];
-	vecy.x = srcmat.data[MATI_21];
-	vecy.y = srcmat.data[MATI_22];
-	vecy.z = srcmat.data[MATI_23];
-	vecz.x = srcmat.data[MATI_31];
-	vecz.y = srcmat.data[MATI_32];
-	vecz.z = srcmat.data[MATI_33];
+	vecx = srcmat.GetRow(0);
+	vecy = srcmat.GetRow(1);
+	vecz = srcmat.GetRow(2);
 
 	lenx = ChaVector3LengthDbl(&vecx);
 	leny = ChaVector3LengthDbl(&vecy);
@@ -843,15 +825,9 @@ ChaMatrix ChaMatrixKeepScale(ChaMatrix srcmat, ChaVector3 srcsvec)
 
 	ChaMatrix retmat;
 	retmat = srcmat;
-	retmat.data[MATI_11] = keepvecx.x;
-	retmat.data[MATI_12] = keepvecx.y;
-	retmat.data[MATI_13] = keepvecx.z;
-	retmat.data[MATI_21] = keepvecy.x;
-	retmat.data[MATI_22] = keepvecy.y;
-	retmat.data[MATI_23] = keepvecy.z;
-	retmat.data[MATI_31] = keepvecz.x;
-	retmat.data[MATI_32] = keepvecz.y;
-	retmat.data[MATI_33] = keepvecz.z;
+	retmat.SetRow(0, keepvecx);
+	retmat.SetRow(1, keepvecy);
+	retmat.SetRow(2, keepvecz);
 
 	return retmat;
 }
@@ -1026,17 +1002,17 @@ ChaMatrix ChaMatrixFromBtMat3x3(btMatrix3x3* srcmat3x3)
 	int colno;
 	for (colno = 0; colno < 3; colno++) {
 		tmpcol[colno] = srcmat3x3->getColumn(colno);
-		//tmpcol[colno] = worldmat.getRow( colno );
+		//tmprow[rowno] = srcmat3x3->getRow(rowno);
 	}
-
+	//##############################
+	//ChaMatrixのrowはbtMatrixのcol
+	//##############################
 	retmat.data[MATI_11] = tmpcol[0].x();
 	retmat.data[MATI_12] = tmpcol[0].y();
 	retmat.data[MATI_13] = tmpcol[0].z();
-
 	retmat.data[MATI_21] = tmpcol[1].x();
 	retmat.data[MATI_22] = tmpcol[1].y();
 	retmat.data[MATI_23] = tmpcol[1].z();
-
 	retmat.data[MATI_31] = tmpcol[2].x();
 	retmat.data[MATI_32] = tmpcol[2].y();
 	retmat.data[MATI_33] = tmpcol[2].z();
@@ -1053,20 +1029,21 @@ ChaMatrix ChaMatrixFromBtTransform(btMatrix3x3* srcmat3x3, btVector3* srcpivot)
 	int colno;
 	for (colno = 0; colno < 3; colno++) {
 		tmpcol[colno] = srcmat3x3->getColumn(colno);
-		//tmpcol[colno] = worldmat.getRow( colno );
+		//tmprow[rowno] = srcmat3x3->getRow(rowno);
 	}
-
+	//##############################
+	//ChaMatrixのrowはbtMatrixのcol
+	//##############################
 	retmat.data[MATI_11] = tmpcol[0].x();
 	retmat.data[MATI_12] = tmpcol[0].y();
 	retmat.data[MATI_13] = tmpcol[0].z();
-
 	retmat.data[MATI_21] = tmpcol[1].x();
 	retmat.data[MATI_22] = tmpcol[1].y();
 	retmat.data[MATI_23] = tmpcol[1].z();
-
 	retmat.data[MATI_31] = tmpcol[2].x();
 	retmat.data[MATI_32] = tmpcol[2].y();
 	retmat.data[MATI_33] = tmpcol[2].z();
+
 
 	retmat.data[MATI_41] = srcpivot->x();
 	retmat.data[MATI_42] = srcpivot->y();
@@ -1148,7 +1125,26 @@ ChaVector3::ChaVector3(FbxDouble3 src)
 	y = (float)src[1];
 	z = (float)src[2];
 }
+ChaVector3::ChaVector3(FbxVector4 src)
+{
+	if ((src[3] != 0.0) && (src[3] != 1.0)) {
+		x = (float)(src[0] / src[3]);
+		y = (float)(src[1] / src[3]);
+		z = (float)(src[2] / src[3]);
+	}
+	else {
+		x = (float)src[0];
+		y = (float)src[1];
+		z = (float)src[2];
+	}
+}
 
+void ChaVector3::SetZeroVec3()
+{
+	x = 0.0f;
+	y = 0.0f;
+	z = 0.0f;
+}
 
 
 ChaVector3::~ChaVector3()
@@ -1367,6 +1363,13 @@ void ChaMatrix::SetIdentity()
 	ChaMatrixIdentity(this);
 }
 
+float* ChaMatrix::GetDataPtr()
+{
+	return (float*)(&data[MATI_11]);
+}
+
+
+
 FbxAMatrix ChaMatrix::FBXAMATRIX()
 {
 	FbxAMatrix retmat;
@@ -1378,6 +1381,122 @@ FbxAMatrix ChaMatrix::FBXAMATRIX()
 	return retmat;
 }
 
+void ChaMatrix::SetRow(int rowindex, ChaVector3 srcrow)
+{
+	//行
+	switch (rowindex) {
+	case 0:
+		data[MATI_11] = srcrow.x;
+		data[MATI_12] = srcrow.y;
+		data[MATI_13] = srcrow.z;
+		break;
+	case 1:
+		data[MATI_21] = srcrow.x;
+		data[MATI_22] = srcrow.y;
+		data[MATI_23] = srcrow.z;
+		break;
+	case 2:
+		data[MATI_31] = srcrow.x;
+		data[MATI_32] = srcrow.y;
+		data[MATI_33] = srcrow.z;
+		break;
+	case 3:
+		data[MATI_41] = srcrow.x;
+		data[MATI_42] = srcrow.y;
+		data[MATI_43] = srcrow.z;
+		break;
+	default:
+		_ASSERT(0);
+		break;
+	}
+}
+void ChaMatrix::SetCol(int colindex, ChaVector3 srccol)
+{
+	//列
+	switch (colindex) {
+	case 0:
+		data[MATI_11] = srccol.x;
+		data[MATI_21] = srccol.y;
+		data[MATI_31] = srccol.z;
+		break;
+	case 1:
+		data[MATI_12] = srccol.x;
+		data[MATI_22] = srccol.y;
+		data[MATI_32] = srccol.z;
+		break;
+	case 2:
+		data[MATI_13] = srccol.x;
+		data[MATI_23] = srccol.y;
+		data[MATI_33] = srccol.z;
+		break;
+	case 3:
+		data[MATI_14] = srccol.x;
+		data[MATI_24] = srccol.y;
+		data[MATI_34] = srccol.z;
+		break;
+	default:
+		_ASSERT(0);
+		break;
+	}
+
+}
+
+ChaVector3 ChaMatrix::GetRow(int rowindex)
+{
+	//行
+	ChaVector3 retrow;
+	switch (rowindex) {
+	case 0:
+		retrow = ChaVector3(data[MATI_11], data[MATI_12], data[MATI_13]);
+		break;
+	case 1:
+		retrow = ChaVector3(data[MATI_21], data[MATI_22], data[MATI_23]);
+		break;
+	case 2:
+		retrow = ChaVector3(data[MATI_31], data[MATI_32], data[MATI_33]);
+		break;
+	case 3:
+		retrow = ChaVector3(data[MATI_41], data[MATI_42], data[MATI_43]);
+		break;
+	default:
+		_ASSERT(0);
+		retrow = ChaVector3(data[MATI_11], data[MATI_12], data[MATI_13]);
+		break;
+	}
+
+	return retrow;
+}
+ChaVector3 ChaMatrix::GetCol(int colindex)
+{
+	//列
+	ChaVector3 retcol;
+	switch (colindex) {
+	case 0:
+		retcol = ChaVector3(data[MATI_11], data[MATI_21], data[MATI_31]);
+		break;
+	case 1:
+		retcol = ChaVector3(data[MATI_12], data[MATI_22], data[MATI_32]);
+		break;
+	case 2:
+		retcol = ChaVector3(data[MATI_13], data[MATI_23], data[MATI_33]);
+		break;
+	case 3:
+		retcol = ChaVector3(data[MATI_14], data[MATI_24], data[MATI_34]);
+		break;
+	default:
+		_ASSERT(0);
+		retcol = ChaVector3(data[MATI_11], data[MATI_12], data[MATI_13]);
+		break;
+	}
+
+	return retcol;
+}
+ChaVector3 ChaMatrix::GetTranslation()
+{
+	//GetRow(3)
+	return GetRow(3);
+}
+
 void ChaMatrix::SetTranslation(ChaVector3 srctra)
 {
 	//初期化しない
@@ -1385,6 +1504,27 @@ void ChaMatrix::SetTranslation(ChaVector3 srctra)
 	data[MATI_41] = srctra.x;
 	data[MATI_42] = srctra.y;
 	data[MATI_43] = srctra.z;
+}
+void ChaMatrix::SetTranslationZero()
+{
+	//初期化しない
+
+	SetTranslation(ChaVector3(0.0f, 0.0f, 0.0f));
+}
+void ChaMatrix::SetForVectorTransform()
+{
+	//初期化しない
+
+	SetTranslationZero();
+	data[MATI_44] = 0.0f;
+}
+void ChaMatrix::AddTranslation(ChaVector3 srctra)
+{
+	//初期化しない
+
+	data[MATI_41] += srctra.x;
+	data[MATI_42] += srctra.y;
+	data[MATI_43] += srctra.z;
 }
 
 void ChaMatrix::SetRotation(EFbxRotationOrder rotorder, CQuaternion* axisq, ChaVector3 srceul)

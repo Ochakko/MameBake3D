@@ -7196,9 +7196,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		s_matWorld = ChaMatrix(g_Camera->GetWorldMatrix());
 		s_matView = ChaMatrix(g_Camera->GetViewMatrix());
 		s_matProj = ChaMatrix(g_Camera->GetProjMatrix());
-		s_matWorld.data[MATI_41] = 0.0f;
-		s_matWorld.data[MATI_42] = 0.0f;
-		s_matWorld.data[MATI_43] = 0.0f;
+		s_matWorld.SetTranslationZero();
 		////s_matW = s_matWorld;
 		s_matVP = s_matView * s_matProj;
 		//int modelno;
@@ -7312,9 +7310,7 @@ int InsertCopyMP(bool limitdegflag, CBone* curbone, double curframe)
 		ChaVector3 localscale = curbone->CalcLocalScaleAnim(limitdegflag,
 			s_model->GetCurMotInfo()->motid, curframe);
 
-		localmat.data[MATI_41] += curanimtra.x;
-		localmat.data[MATI_42] += curanimtra.y;
-		localmat.data[MATI_43] += curanimtra.z;
+		localmat.AddTranslation(curanimtra);
 
 		////localmat._11 *= localscale.x;
 		////localmat._12 *= localscale.x;
@@ -8943,9 +8939,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 					//else {
 					//	s_ikselectmat = s_selm;
 					//}
-					s_ikselectmat.data[MATI_41] = 0.0f;
-					s_ikselectmat.data[MATI_42] = 0.0f;
-					s_ikselectmat.data[MATI_43] = 0.0f;
+					s_ikselectmat.SetTranslationZero();
 				}
 			}
 		}
@@ -14274,27 +14268,23 @@ int RenderSelectMark(ID3D11DeviceContext* pd3dImmediateContext, int renderflag)
 		ChaMatrixNormalizeRot(&s_selectmat);
 		s_selectmat = scalemat * s_selectmat;
 
-		s_selectmat.data[MATI_41] = bonepos.x;
-		s_selectmat.data[MATI_42] = bonepos.y;
-		s_selectmat.data[MATI_43] = bonepos.z;
+		s_selectmat.SetTranslation(bonepos);
 
 		//s_selectmat_posture = scalemat * s_selm_posture;
 		s_selectmat_posture = s_selm_posture;
 		ChaMatrixNormalizeRot(&s_selectmat_posture);
 		s_selectmat_posture = scalemat * s_selectmat_posture;
 
-		s_selectmat_posture.data[MATI_41] = bonepos.x;
-		s_selectmat_posture.data[MATI_42] = bonepos.y;
-		s_selectmat_posture.data[MATI_43] = bonepos.z;
+		s_selectmat_posture.SetTranslation(bonepos);
 
 		if (renderflag) {
-			g_hmVP->SetMatrix((float*)&(s_matVP.data[MATI_11]));
+			g_hmVP->SetMatrix(s_matVP.GetDataPtr());
 
-			g_hmWorld->SetMatrix((float*)&(s_selectmat.data[MATI_11]));
+			g_hmWorld->SetMatrix(s_selectmat.GetDataPtr());
 			RenderSelectFunc(pd3dImmediateContext);
 
 
-			g_hmWorld->SetMatrix((float*)&(s_selectmat_posture.data[MATI_11]));
+			g_hmWorld->SetMatrix(s_selectmat_posture.GetDataPtr());
 			if (s_oprigflag == 0) {
 				RenderSelectPostureFunc(pd3dImmediateContext);
 			}
@@ -14422,7 +14412,7 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 		return 0;
 	}
 
-	g_hmVP->SetMatrix((float*)&(s_matVP.data[MATI_11]));
+	g_hmVP->SetMatrix(s_matVP.GetDataPtr());
 
 
 	MOTINFO* curmi = s_model->GetCurMotInfo();
@@ -14448,7 +14438,7 @@ int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext)
 							ChaMatrix rigmat;
 							ChaMatrixIdentity(&rigmat);
 							rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder, currig.posinverse);
-							g_hmWorld->SetMatrix((float*)&(rigmat.data[MATI_11]));
+							g_hmWorld->SetMatrix(rigmat.GetDataPtr());
 
 							//####################################
 							//zcmpalways, zcmpは alphaで自動切換え
@@ -23490,9 +23480,7 @@ int RotAxis(HWND hDlgWnd)
 			newnodemat = nodemat * invnoderot.MakeRotMatX() * rotq.MakeRotMatX() * noderot.MakeRotMatX();
 
 			ChaVector3 bonepos = curbone->GetJointFPos();
-			newnodemat.data[MATI_41] = bonepos.x;
-			newnodemat.data[MATI_42] = bonepos.y;
-			newnodemat.data[MATI_43] = bonepos.z;
+			newnodemat.SetTranslation(bonepos);
 
 			curbone->SetNodeMat(newnodemat);
 
@@ -30045,7 +30033,7 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 int OnRenderGround(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	if (s_ground && s_dispground) {
-		g_hmWorld->SetMatrix((float*)&(s_matWorld.data[MATI_11]));
+		g_hmWorld->SetMatrix(s_matWorld.GetDataPtr());
 		//g_pEffect->SetMatrix(g_hmWorld, &(s_matWorld.D3DX()));
 
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -30055,7 +30043,7 @@ int OnRenderGround(ID3D11DeviceContext* pd3dImmediateContext)
 	if (s_gplane && s_bpWorld && s_bpWorld->m_gplanedisp) {
 		ChaMatrix gpmat = s_inimat;
 		gpmat.data[MATI_42] = s_bpWorld->m_gplaneh;
-		g_hmWorld->SetMatrix((float*)&(gpmat.data[MATI_11]));
+		g_hmWorld->SetMatrix(gpmat.GetDataPtr());
 		//g_pEffect->SetMatrix(g_hmWorld, &(gpmat.D3DX()));
 
 		ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -30522,7 +30510,7 @@ int OnRenderSetShaderConst()
 	ChaVector4 vLightDiffuse[MAX_LIGHTS];
 
 	// Get the projection & view matrix from the camera class
-	g_hmVP->SetMatrix((float*)&(s_matVP.data[MATI_11]));
+	g_hmVP->SetMatrix(s_matVP.GetDataPtr());
 	//g_pEffect->SetMatrix(g_hmVP, &(s_matVP.D3DX()));
 	////g_pEffect->SetMatrix(g_hmWorld, &s_matW);//CModelへ
 
@@ -34720,9 +34708,7 @@ void DSR1ButtonSelectCurrentBone()
 				CBone* boneptr = s_model->GetBoneByID(s_curboneno);
 				if (boneptr) {
 					ChaVector3 jointpos;
-					jointpos.x = s_selectmat.data[MATI_41];
-					jointpos.y = s_selectmat.data[MATI_42];
-					jointpos.z = s_selectmat.data[MATI_43];
+					jointpos = s_selectmat.GetTranslation();
 
 					ChaMatrix bcmat;
 					bcmat = boneptr->GetCurMp().GetWorldMat();
@@ -42506,19 +42492,13 @@ ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis
 	ChaVector3 offsetvec;
 
 	if (dispaxis == 0) {
-		offsetvec.x = curbonerotmat.data[MATI_11];
-		offsetvec.y = curbonerotmat.data[MATI_12];
-		offsetvec.z = curbonerotmat.data[MATI_13];
+		offsetvec = curbonerotmat.GetRow(0);
 	}
 	else if (dispaxis == 1) {
-		offsetvec.x = curbonerotmat.data[MATI_21];
-		offsetvec.y = curbonerotmat.data[MATI_22];
-		offsetvec.z = curbonerotmat.data[MATI_23];
+		offsetvec = curbonerotmat.GetRow(1);
 	}
 	else if (dispaxis == 2) {
-		offsetvec.x = curbonerotmat.data[MATI_31];
-		offsetvec.y = curbonerotmat.data[MATI_32];
-		offsetvec.z = curbonerotmat.data[MATI_33];
+		offsetvec = curbonerotmat.GetRow(2);
 	}
 	else {
 		_ASSERT(0);
@@ -42577,7 +42557,7 @@ int PickRigBone(UIPICKINFO* ppickinfo, bool forrigtip, int* dstrigno)//default:f
 							ChaMatrixIdentity(&rigmat);
 							rigmat = CalcRigMat(curbone, curmotid, curframe, currig.dispaxis, currig.disporder, currig.posinverse);
 
-							g_hmWorld->SetMatrix((float*)&(rigmat.data[MATI_11]));
+							g_hmWorld->SetMatrix(rigmat.GetDataPtr());
 							currigmodel->UpdateMatrix(g_limitdegflag, &rigmat, &s_matVP);
 
 

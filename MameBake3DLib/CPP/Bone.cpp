@@ -1731,17 +1731,9 @@ int CBone::CalcAxisMatZ( ChaVector3* curpos, ChaVector3* childpos )
 
 
 	ChaMatrixIdentity( &m_laxismat );
-	m_laxismat.data[MATI_11] = vecx1.x;
-	m_laxismat.data[MATI_12] = vecx1.y;
-	m_laxismat.data[MATI_13] = vecx1.z;
-
-	m_laxismat.data[MATI_21] = vecy1.x;
-	m_laxismat.data[MATI_22] = vecy1.y;
-	m_laxismat.data[MATI_23] = vecy1.z;
-
-	m_laxismat.data[MATI_31] = vecz1.x;
-	m_laxismat.data[MATI_32] = vecz1.y;
-	m_laxismat.data[MATI_33] = vecz1.z;
+	m_laxismat.SetRow(0, vecx1);
+	m_laxismat.SetRow(1, vecy1);
+	m_laxismat.SetRow(2, vecz1);
 
 	m_axisq.RotationMatrix(m_laxismat);
 
@@ -1903,9 +1895,7 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bi
 		//#########################################################
 		//位置は　ボーンの親の位置　つまりカレントジョイントの位置
 		//#########################################################
-		dstmat->data[MATI_41] = aftbonepos.x;
-		dstmat->data[MATI_42] = aftbonepos.y;
-		dstmat->data[MATI_41] = aftbonepos.z;
+		dstmat->SetTranslation(aftbonepos);
 
 		return retleng;
 	}
@@ -1930,9 +1920,7 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bi
 		//#########################################################
 		//位置は　ボーンの親の位置　つまりカレントジョイントの位置
 		//#########################################################
-		dstmat->data[MATI_41] = aftbonepos.x;
-		dstmat->data[MATI_42] = aftbonepos.y;
-		dstmat->data[MATI_41] = aftbonepos.z;
+		dstmat->SetTranslation(aftbonepos);
 		return retleng;
 	}
 	else {
@@ -1941,9 +1929,7 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bi
 		//#########################################################
 		//位置は　ボーンの親の位置　つまりカレントジョイントの位置
 		//#########################################################
-		dstmat->data[MATI_41] = aftbonepos.x;
-		dstmat->data[MATI_42] = aftbonepos.y;
-		dstmat->data[MATI_41] = aftbonepos.z;
+		dstmat->SetTranslation(aftbonepos);
 		return retleng;
 	}
 
@@ -1972,9 +1958,7 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bi
 		//#####################################################################################################
 		//位置は　ボーンの(呼び出すときの)親の位置　つまり(呼び出されたインスタンスの)カレントジョイントの位置
 		//#####################################################################################################
-		dstmat->data[MATI_41] = aftbonepos.x;
-		dstmat->data[MATI_42] = aftbonepos.y;
-		dstmat->data[MATI_43] = aftbonepos.z;
+		dstmat->SetTranslation(aftbonepos);
 	}
 	
 
@@ -2028,9 +2012,7 @@ float CBone::CalcAxisMatX_NodeMat(CBone* childbone, ChaMatrix* dstmat)
 	if (IsNotSkeleton() || (aftbonepos == aftchildpos)) {
 		//長さ０ボーン対策
 		*dstmat = retmat;
-		dstmat->data[MATI_41] = aftbonepos.x;
-		dstmat->data[MATI_42] = aftbonepos.y;
-		dstmat->data[MATI_43] = aftbonepos.z;
+		dstmat->SetTranslation(aftbonepos);
 		//_ASSERT(0);
 		return 0.0f;
 	}
@@ -2159,9 +2141,7 @@ float CBone::CalcAxisMatX_RigidBody(bool limitdegflag, bool dir2xflag, int bindf
 
 		//長さ０ボーン対策
 		*dstmat = retmat;
-		dstmat->data[MATI_41] = aftbonepos.x;
-		dstmat->data[MATI_42] = aftbonepos.y;
-		dstmat->data[MATI_43] = aftbonepos.z;
+		dstmat->SetTranslation(aftbonepos);
 		//_ASSERT(0);
 		return 0.0f;
 	}
@@ -2358,18 +2338,9 @@ int CBone::CalcAxisMatZ_aft(ChaVector3 curpos, ChaVector3 childpos, ChaMatrix* d
 	ChaVector3Cross(&vecy1, (const ChaVector3*)&vecz1, (const ChaVector3*)&vecx1);
 	ChaVector3Normalize(&vecy1, &vecy1);
 
-
-	retmat.data[MATI_11] = vecx1.x;
-	retmat.data[MATI_12] = vecx1.y;
-	retmat.data[MATI_13] = vecx1.z;
-
-	retmat.data[MATI_21] = vecy1.x;
-	retmat.data[MATI_22] = vecy1.y;
-	retmat.data[MATI_23] = vecy1.z;
-
-	retmat.data[MATI_31] = vecz1.x;
-	retmat.data[MATI_32] = vecz1.y;
-	retmat.data[MATI_33] = vecz1.z;
+	retmat.SetRow(0, vecx1);
+	retmat.SetRow(1, vecy1);
+	retmat.SetRow(2, vecz1);
 
 	*dstmat = retmat;
 
@@ -6566,21 +6537,18 @@ ChaMatrix CBone::CalcSymXMat2(bool limitdegflag, int srcmotid, double srcframe, 
 	ChaVector3 curanimtra = CalcLocalSymTraAnim(limitdegflag, srcmotid, roundingframe);//traanimもsym対応
 
 	if (GetParent(false) && GetParent(false)->IsSkeleton()) {
-		directsetmat.data[MATI_41] += -curanimtra.x;//inv signe
-		directsetmat.data[MATI_42] += curanimtra.y;
-		directsetmat.data[MATI_43] += curanimtra.z;
+		//inv x signe
+		directsetmat.AddTranslation(ChaVector3(-curanimtra.x, curanimtra.y, curanimtra.z));
 	}
 	else{
 		//root bone
 		if (symrootmode & SYMROOTBONE_SYMPOS){
-			directsetmat.data[MATI_41] += -curanimtra.x;//inv signe
-			directsetmat.data[MATI_42] += curanimtra.y;
-			directsetmat.data[MATI_43] += curanimtra.z;
+			//inv x signe
+			directsetmat.AddTranslation(ChaVector3(-curanimtra.x, curanimtra.y, curanimtra.z));
 		}
 		else{
-			directsetmat.data[MATI_41] += curanimtra.x;//same signe
-			directsetmat.data[MATI_42] += curanimtra.y;
-			directsetmat.data[MATI_43] += curanimtra.z;
+			//same signe
+			directsetmat.AddTranslation(curanimtra);
 		}
 	}
 
@@ -6841,9 +6809,7 @@ ChaMatrix CBone::CalcLocalSymScaleRotMat(bool limitdegflag, int rotcenterflag, i
 			ChaMatrixIdentity(&symscalemat);
 			ChaMatrixScaling(&symscalemat, symscale.x, symscale.y, symscale.z);
 
-			retmat.data[MATI_41] = 0.0f;
-			retmat.data[MATI_42] = 0.0f;
-			retmat.data[MATI_43] = 0.0f;
+			retmat.SetTranslationZero();
 
 			if (rotcenterflag == 1){
 				ChaMatrix befrotmat, aftrotmat;
