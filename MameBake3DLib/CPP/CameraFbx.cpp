@@ -157,25 +157,26 @@ int CCameraFbx::SetZeroFrameCamera()
 	timezero.SetSecondDouble(m_time);
 
 
+	//###########
+	//カメラ位置
+	//###########
 	FbxVector4 fbxpos = m_pcamera->EvaluatePosition(timezero);
-	if ((double)fbxpos[3] != 0.0) {
-		float tmpx, tmpy, tmpz;
-		tmpx = (float)((double)fbxpos[0] / (double)fbxpos[3]);
-		tmpy = (float)((double)fbxpos[1] / (double)fbxpos[3]);
-		tmpz = (float)((double)fbxpos[2] / (double)fbxpos[3]);
-		m_position = ChaVector3(tmpx, tmpy, tmpz);
-	}
-	else {
-		m_position = ChaVector3((float)fbxpos[0], (float)fbxpos[1], (float)fbxpos[2]);
-	}
+	m_position = ChaVector3(fbxpos);
+
 
 	FbxAMatrix fbxcameramat = m_pnode->EvaluateGlobalTransform(timezero, FbxNode::eSourcePivot, true, true);
 	ChaMatrix cameramat = ChaMatrixFromFbxAMatrix(fbxcameramat);
 	m_worldmat = cameramat;//!!!!!!
 
+
+	//###########
+	//カメラ向き
+	//###########
+	//cameramat : EvaluateGlobalTransform にはnodematは掛かっている
+	ChaMatrix rotmat = cameramat;
 	CQuaternion cameraq;
-	cameraq.RotationMatrix(cameramat);
-	ChaVector3 firstdir = ChaVector3(1.0f, 0.0f, 0.0f);//basevec +X軸
+	cameraq.RotationMatrix(rotmat);
+	ChaVector3 firstdir = ChaVector3(1.0f, 0.0f, 0.0f);
 	ChaVector3 cameradir = ChaVector3(1.0f, 0.0f, 0.0f);
 	cameraq.Rotate(&cameradir, firstdir);
 	ChaVector3Normalize(&cameradir, &cameradir);
@@ -207,12 +208,25 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				ChaMatrix cammat = camerabone->GetWorldMat(false, cameramotid, roundingframe, 0);
 				ChaMatrix nodemat = camerabone->GetNodeMat();
 
+
+				bool bCancelLclTra = false;//親のtransformが初期状態ではないときに　LclTraをキャンセルするためにtrueを立てる
+
 				ChaMatrix rootmat;
 				if (camerabone->GetParent(false) && camerabone->GetParent(false)->IsNull()) {
 					rootmat = camerabone->GetParent(false)->GetENullMatrix();
+
+					ChaMatrix inimat;
+					inimat.SetIdentity();
+					if (IsSameMat(rootmat, inimat)) {//条件テスト中　それとも　translationだけチェックした方が良い？
+						bCancelLclTra = false;
+					}
+					else {
+						bCancelLclTra = true;
+					}
 				}
 				else {
 					rootmat.SetIdentity();
+					bCancelLclTra = false;
 				}
 
 				FbxDouble3 lcltra;
@@ -220,6 +234,8 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				ChaMatrix lcltramat;
 				lcltramat.SetIdentity();
 				lcltramat.SetTranslation(ChaVector3(lcltra));
+
+				ChaVector3 nodepos = nodemat.GetTranslation();
 
 				//##################################################################################################################################
 				//2023/05/25
@@ -233,21 +249,30 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 			//##############
 			//カメラの位置
 			//##############
-				ChaMatrix transformmat = nodemat * cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);
-				ChaVector3TransformCoord(pEyePos, &zeropos, &transformmat);
+				//ChaMatrix transformmat = nodemat * cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);
+				//ChaVector3TransformCoord(pEyePos, &zeropos, &transformmat);
+				 
+				ChaMatrix transformmat;
+				if (bCancelLclTra == true) {
+					transformmat = cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);
+				}
+				else {
+					transformmat = cammat * ChaMatrixInv(rootmat);
+				}				
+				ChaVector3TransformCoord(pEyePos, &nodepos, &transformmat);
 
-				//##############
-				//カメラの向き
-				//##############
-				////ChaMatrix rotmat = nodemat * cammat * rootmat;
-				//ChaMatrix rotmat = nodemat * cammat;
-				////ChaMatrix rotmat = cammat;
+			//##############
+			//カメラの向き
+			//##############
+				ChaMatrix rotmat;
+				if (bCancelLclTra == true) {
+					rotmat = nodemat * cammat * ChaMatrixInv(lcltramat)* ChaMatrixInv(rootmat);
+				}
+				else {
+					rotmat = nodemat * cammat * ChaMatrixInv(rootmat);
+				}
 				CQuaternion rotq;
-				//rotq.RotationMatrix(rotmat);
-				rotq.RotationMatrix(transformmat);
-				//ChaVector3 dirvec0 = ChaVector3(0.0f, 0.0f, 1.0f);
-				//ChaVector3 dirvec = ChaVector3(0.0f, 0.0f, 1.0f);
-				////dirvec0 = camerafbx.GetDirVec();
+				rotq.RotationMatrix(rotmat);
 				ChaVector3 dirvec0 = ChaVector3(1.0f, 0.0f, 0.0f);
 				ChaVector3 dirvec = ChaVector3(1.0f, 0.0f, 0.0f);
 				rotq.Rotate(&dirvec, dirvec0);

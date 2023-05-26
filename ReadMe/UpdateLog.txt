@@ -1,4 +1,4 @@
-2023/05/26_2
+2023/05/26_3
 	EditMot 1.2.0.21へ向けて
 
 	VisualStudio 2022に対応
@@ -79,7 +79,17 @@
 	2023/05/26_2
 		ChaMatrix操作部分のリファクタリング
 			ChaVecCalc.cpp以外では　なるべくdata[MATI_*]表記を使わなくても済むように
+	2023/05/26_3
+		CameraFbx.cpp GetCameraAnimParams() bCancelLclTraフラグ追加
+			もっと単純なカメラアニメテストサンプルを作成してテストした結果　lcltraのキャンセルは必要なかった
+			Cameraの親にTransformが設定されていない場合には　lcltraのキャンセルをしないことに
 
+		カメラのeyeposとtargetposの距離はs_camdist (s_projfarではなく)
+
+		TheHunt StreetScene1のCamera_1のfbxを読み込むと　大きなエフェクト用？の黒い板に視界が阻まれる
+			表示(disp)メニューのオブジェクトパネルを開いて　オブジェクトを下から探して
+			Background_Dots_001, Background_Dots_001_1, Background_001_2などを非表示にすると視界が開ける
+			オブジェクトを非表示にするには　オブジェクトパネルの項目の左の目のマークをクリック
 
 2023/05/12
 	EditMot 1.2.0.20 release

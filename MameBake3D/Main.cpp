@@ -11642,15 +11642,17 @@ void CalcTotalBound()
 
 		s_projnear = (float)camerafbx.GetNearPlane();
 		s_projfar = (float)camerafbx.GetFarPlane();
+		g_initcamdist = max(0.1f, min(1000.0f, s_projfar));
 		//s_fAspectRatio = (float)camerafbx.GetAspectRatio();//ここでは更新しない
 		s_fovy = (float)camerafbx.GetFovY();
 		g_camEye = camerafbx.GetPosition();
 		ChaVector3 cameradir = camerafbx.GetDirVec();
-		g_camtargetpos = g_camEye + cameradir * s_projfar;
+		//g_camtargetpos = g_camEye + cameradir * s_projfar;
+		g_camtargetpos = g_camEye + cameradir * g_initcamdist;
 	
-		//ChaVector3 diffvec = g_camtargetpos - g_camEye;
-		//g_initcamdist = (float)ChaVector3LengthDbl(&diffvec);
-		g_initcamdist = s_projfar;
+		////ChaVector3 diffvec = g_camtargetpos - g_camEye;
+		////g_initcamdist = (float)ChaVector3LengthDbl(&diffvec);
+		//g_initcamdist = s_projfar;
 	}
 	else {
 		s_projnear = max(0.01f, min(10.0f, fObjectRadius * 0.01f));
@@ -24083,7 +24085,8 @@ int OnFramePreviewCamera(double srcnextframe)
 				//#############
 				//プレビュー中
 				//#############
-				s_cameramodel->GetCameraAnimParams(roundingframe, s_projfar, &g_camEye, &g_camtargetpos);
+				//s_cameramodel->GetCameraAnimParams(roundingframe, s_projfar, &g_camEye, &g_camtargetpos);
+				s_cameramodel->GetCameraAnimParams(roundingframe, s_camdist, &g_camEye, &g_camtargetpos);//s_camdist
 				g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 			}
 			else if ((g_previewFlag == 0) && (s_savepreviewFlag != 0)) {
@@ -24094,12 +24097,14 @@ int OnFramePreviewCamera(double srcnextframe)
 					CCameraFbx camerafbx = s_cameramodel->GetCameraFbx();
 					g_camEye = camerafbx.GetPosition();
 					ChaVector3 cameradir = camerafbx.GetDirVec();
-					g_camtargetpos = g_camEye + cameradir * s_projfar;
+					//g_camtargetpos = g_camEye + cameradir * s_projfar;
+					g_camtargetpos = g_camEye + cameradir * s_camdist;
 
 					g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 				}
 				else {
-					s_cameramodel->GetCameraAnimParams(roundingframe, s_projfar, &g_camEye, &g_camtargetpos);
+					//s_cameramodel->GetCameraAnimParams(roundingframe, s_projfar, &g_camEye, &g_camtargetpos);
+					s_cameramodel->GetCameraAnimParams(roundingframe, s_camdist, &g_camEye, &g_camtargetpos);//s_camdist
 					g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 				}
 			}
@@ -24115,12 +24120,14 @@ int OnFramePreviewCamera(double srcnextframe)
 						CCameraFbx camerafbx = s_cameramodel->GetCameraFbx();
 						g_camEye = camerafbx.GetPosition();
 						ChaVector3 cameradir = camerafbx.GetDirVec();
-						g_camtargetpos = g_camEye + cameradir * s_projfar;
+						//g_camtargetpos = g_camEye + cameradir * s_projfar;
+						g_camtargetpos = g_camEye + cameradir * s_camdist;
 
 						g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 					}
 					else {
-						s_cameramodel->GetCameraAnimParams(roundingframe, s_projfar, &g_camEye, &g_camtargetpos);
+						//s_cameramodel->GetCameraAnimParams(roundingframe, s_projfar, &g_camEye, &g_camtargetpos);
+						s_cameramodel->GetCameraAnimParams(roundingframe, s_camdist, &g_camEye, &g_camtargetpos);//s_camdist
 						g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 					}
 				}
@@ -24149,6 +24156,10 @@ int OnFramePreviewCamera(double srcnextframe)
 		//######################################
 		g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 	}
+
+	ChaVector3 cameradiff = g_camtargetpos - g_camEye;
+	s_camdist = (float)ChaVector3LengthDbl(&cameradiff);
+
 
 	//###################################
 	//ライトの向きは　カメラの向きに依存
