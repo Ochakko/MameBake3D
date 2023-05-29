@@ -3646,7 +3646,7 @@ void CModel::CreateFBXCameraReq(FbxNode* pNode)
 	}
 
 
-	if (GetCameraFbx().IsLoaded()) {
+	if (GetCameraFbx() && GetCameraFbx()->IsLoaded()) {
 		//とりあえず　fbx中の最初のカメラ情報だけ使う
 		return;
 	}
@@ -17302,9 +17302,11 @@ int CModel::GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pE
 	//###########################################################################################
 
 
-	CCameraFbx camerafbx = GetCameraFbx();
-	int cameramotionid = GetCameraMotionId();
-	camerafbx.GetCameraAnimParams(cameramotionid, nextframe, camdist, pEyePos, pTargetPos);
+	CCameraFbx* camerafbx = GetCameraFbx();
+	if (camerafbx) {
+		int cameramotionid = GetCameraMotionId();
+		camerafbx->GetCameraAnimParams(cameramotionid, nextframe, camdist, pEyePos, pTargetPos);
+	}
 
 	return 0;
 }

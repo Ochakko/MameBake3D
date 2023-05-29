@@ -148,6 +148,7 @@ float g_l_dmp = 0.50f;
 float g_a_dmp = 0.50f;
 
 int g_previewFlag = 0;			// プレビューフラグ
+int g_cameraanimmode = 0;
 
 int g_applyendflag = 0;
 int g_slerpoffflag = 0;
@@ -327,6 +328,8 @@ extern float g_l_dmp;
 extern float g_a_dmp;
 
 extern int g_previewFlag;			// プレビューフラグ
+extern int g_cameraanimmode;
+
 
 extern int g_applyendflag;
 extern int g_slerpoffflag;

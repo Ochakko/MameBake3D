@@ -1576,9 +1576,9 @@ public: //accesser
 	}
 
 
-	CCameraFbx GetCameraFbx()
+	CCameraFbx* GetCameraFbx()
 	{
-		return m_camerafbx;
+		return &m_camerafbx;
 	}
 	void SetCameraMotionId(int srcid)
 	{

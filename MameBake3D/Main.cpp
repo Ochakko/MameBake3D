@@ -1725,6 +1725,8 @@ double g_erp = 0.8;
 
 
 static int s_savepreviewFlag = 0;
+static int s_savecameraanimmode = 0;
+
 double s_btstartframe = 0.0;
 bool g_btsimurecflag = false;
 
@@ -2267,7 +2269,7 @@ static SPGUISW s_sprefpos;
 static SPGUISW s_splimiteul;
 static SPGUISW s_spscraping;
 static SPELEM s_mousecenteron;
-
+static SPGUISW s_spcameramode;
 
 typedef struct tag_modelpanel
 {
@@ -2831,6 +2833,7 @@ static int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime
 static int ChangeCurrentBone();
 static int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag);
 static int ChangeWallScrapingIKFlag(bool srcflag);
+static int ChangeCameraMode(int forcemode);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
 
 static int InitCurMotion(int selectflag, double expandmotion);
 
@@ -3024,6 +3027,8 @@ static int SetSpConstExeParams();
 static int PickSpConstExe(POINT srcpos);
 static int SetSpConstRefreshParams();
 static int PickSpConstRefresh(POINT srcpos);
+static int SetSpCameraModeSWParams();
+static int PickSpCameraModeSW(POINT srcpos);
 
 
 static int PickRigBone(UIPICKINFO* ppickinfo, bool forrigtip = false, int* dstrigno = 0);
@@ -3775,6 +3780,12 @@ void InitApp()
 	//g_edgesmp = false;
 
 
+	g_previewFlag = 0;
+	s_savepreviewFlag = 0;
+	g_cameraanimmode = 0;
+	s_savecameraanimmode = 0;
+
+
 	{
 		s_cameraframe = 0.0;
 
@@ -4401,6 +4412,11 @@ void InitApp()
 		ZeroMemory(&s_splimiteul, sizeof(SPGUISW));
 		//s_splimiteul.state = true;
 		s_splimiteul.state = false;
+	}
+	{
+		ZeroMemory(&s_spcameramode, sizeof(SPGUISW));
+		//s_splimiteul.state = true;
+		s_spcameramode.state = false;
 	}
 	{
 		ZeroMemory(&s_spscraping, sizeof(SPGUISW));
@@ -5090,6 +5106,24 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	}
 	CallF(s_splimiteul.spriteOFF->Create(pd3dImmediateContext, mpath, L"LimitEul_OFF.png", 0, 0), return S_FALSE);
 
+	//SpriteSwitch CameraMode
+	s_spcameramode.spriteON = new CMySprite(s_pdev);
+	if (!s_spcameramode.spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
+	CallF(s_spcameramode.spriteON->Create(pd3dImmediateContext, mpath, L"CamAnimON.png", 0, 0), return S_FALSE);
+	s_spcameramode.spriteOFF = new CMySprite(s_pdev);
+	if (!s_spcameramode.spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
+	CallF(s_spcameramode.spriteOFF->Create(pd3dImmediateContext, mpath, L"CamAnimOFF.png", 0, 0), return S_FALSE);
+
+
+
 	//SpriteSwitch Scraping
 	s_spscraping.spriteON = new CMySprite(s_pdev);
 	if (!s_spscraping.spriteON) {
@@ -5732,6 +5766,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	//SetSpBtParams();
 	SetSpMouseHereParams();
 	SetSpMouseCenterParams();//SetSpCamParamsよりも後で呼ぶ　位置を参照しているから
+	SetSpCameraModeSWParams();
 
 
 	//g_HUD.SetLocation(pBackBufferSurfaceDesc->Width - 170, 0);
@@ -6924,6 +6959,19 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 			delete curspgOFF;
 		}
 		s_splimiteul.spriteOFF = 0;
+	}
+	{
+		CMySprite* curspgON = s_spcameramode.spriteON;
+		if (curspgON) {
+			delete curspgON;
+		}
+		s_spcameramode.spriteON = 0;
+
+		CMySprite* curspgOFF = s_spcameramode.spriteOFF;
+		if (curspgOFF) {
+			delete curspgOFF;
+		}
+		s_spcameramode.spriteOFF = 0;
 	}
 	{
 		CMySprite* curspgON = s_spscraping.spriteON;
@@ -8679,6 +8727,14 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				//2023/02/15
 				bool newstate = !s_splimiteul.state;
 				ChangeLimitDegFlag(newstate, true, true);
+			}
+		}
+		{
+			//cameramode switch
+			int pickcameramodeflag = 0;
+			pickcameramodeflag = PickSpCameraModeSW(ptCursor);
+			if (pickcameramodeflag == 1) {
+				ChangeCameraMode(0);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
 			}
 		}
 		{
@@ -11581,11 +11637,18 @@ int SetCameraModel()
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel) {
-			if (curmodel->GetCameraFbx().IsLoaded()) {
+			if (curmodel->GetCameraFbx() && curmodel->GetCameraFbx()->IsLoaded()) {
 				s_cameramodel = curmodel;//後から読み込んだモデルの中で　カメラがあれば　それを選ぶ
 			}
 		}
 	}
+
+
+	//カメラモデルが無い場合には　スプライトスイッチもオフにしておく
+	if (!s_cameramodel) {
+		ChangeCameraMode(1);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
+	}
+
 
 	return 0;
 }
@@ -11637,24 +11700,38 @@ void CalcTotalBound()
 
 
 	if (s_cameramodel) {
-		CCameraFbx camerafbx = s_cameramodel->GetCameraFbx();
-		int result = camerafbx.SetZeroFrameCamera();
+		CCameraFbx* camerafbx = s_cameramodel->GetCameraFbx();
+		if (camerafbx) {
+			//fbxにカメラが在る場合
+			int result = camerafbx->SetZeroFrameCamera();//!!!!!!!fbxcameraメンバを設定している
+			s_projnear = (float)camerafbx->GetNearPlane();
+			s_projfar = (float)camerafbx->GetFarPlane();
+			g_initcamdist = max(0.1f, min(1000.0f, s_projfar));
+			//s_fAspectRatio = (float)camerafbx.GetAspectRatio();//ここでは更新しない
+			s_fovy = (float)camerafbx->GetFovY();
+			g_camEye = camerafbx->GetPosition();
+			ChaVector3 cameradir = camerafbx->GetDirVec();
+			g_camtargetpos = g_camEye + cameradir * g_initcamdist;
 
-		s_projnear = (float)camerafbx.GetNearPlane();
-		s_projfar = (float)camerafbx.GetFarPlane();
-		g_initcamdist = max(0.1f, min(1000.0f, s_projfar));
-		//s_fAspectRatio = (float)camerafbx.GetAspectRatio();//ここでは更新しない
-		s_fovy = (float)camerafbx.GetFovY();
-		g_camEye = camerafbx.GetPosition();
-		ChaVector3 cameradir = camerafbx.GetDirVec();
-		//g_camtargetpos = g_camEye + cameradir * s_projfar;
-		g_camtargetpos = g_camEye + cameradir * g_initcamdist;
-	
-		////ChaVector3 diffvec = g_camtargetpos - g_camEye;
-		////g_initcamdist = (float)ChaVector3LengthDbl(&diffvec);
-		//g_initcamdist = s_projfar;
+			ChangeCameraMode(2);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
+		}
+		else {
+			//fbxにカメラが無い場合
+			s_projnear = max(0.01f, min(10.0f, fObjectRadius * 0.01f));
+			g_initcamdist = max(0.1f, min(1000.0f, fObjectRadius * 3.0f));
+			s_projfar = g_initcamdist * 100.0f;
+			//s_fAspectRatio = 1.0f;//ここでは更新しない
+			s_fovy = (float)(PI / 4);
+
+			g_camtargetpos = g_vCenter;
+			ChaVector3 dirz = ChaVector3(0.0f, 0.0f, 1.0);
+			g_camEye = g_vCenter + dirz * g_initcamdist;
+
+			ChangeCameraMode(1);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
+		}
 	}
 	else {
+		//fbxにカメラが無い場合
 		s_projnear = max(0.01f, min(10.0f, fObjectRadius * 0.01f));
 		g_initcamdist = max(0.1f, min(1000.0f, fObjectRadius * 3.0f));
 		s_projfar = g_initcamdist * 100.0f;
@@ -11664,6 +11741,8 @@ void CalcTotalBound()
 		g_camtargetpos = g_vCenter;
 		ChaVector3 dirz = ChaVector3(0.0f, 0.0f, 1.0);
 		g_camEye = g_vCenter + dirz * g_initcamdist;
+
+		ChangeCameraMode(1);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
 
 	}
 	s_camdist = g_initcamdist;
@@ -20108,6 +20187,47 @@ int SetSpCamParams()
 
 }
 
+int SetSpCameraModeSWParams()
+{
+	if (!(s_spcameramode.spriteON) || !(s_spcameramode.spriteOFF)) {
+		_ASSERT(0);
+		return 0;
+	}
+
+
+	int spgshift = 6;
+	s_spcameramode.dispcenter.x = s_mainwidth - (int)s_spsize - 10 - (int)s_spsize - 6 - ((int)s_spsize + 6) * 5;
+	s_spcameramode.dispcenter.y = (int)s_spsize / 2 + 10;
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_spcameramode.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_spcameramode.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
+
+
+	dispsize *= 0.70f;//大きくみえるデザインなので　少し小さくして表示　当たり判定は元の大きさ
+
+
+	if (s_spcameramode.spriteON) {
+		CallF(s_spcameramode.spriteON->SetPos(disppos), return 1);
+		CallF(s_spcameramode.spriteON->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+	if (s_spcameramode.spriteOFF) {
+		CallF(s_spcameramode.spriteOFF->SetPos(disppos), return 1);
+		CallF(s_spcameramode.spriteOFF->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+}
+
+
 int SetSpRigParams()
 {
 	if (!(s_sprig[SPRIG_INACTIVE].sprite) || !(s_sprig[SPRIG_ACTIVE].sprite)) {
@@ -20792,6 +20912,33 @@ int PickSpCam(POINT srcpos)
 	return kind;
 }
 
+int PickSpCameraModeSW(POINT srcpos)
+{
+	int ispick = 0;
+
+	if (g_previewFlag != 0) {
+		return 0;
+	}
+
+	//if (g_previewFlag == 5){
+	//	return 0;
+	//}
+
+	//sprefpos
+	int startx = s_spcameramode.dispcenter.x - (int)s_spsize / 2;
+	int endx = startx + (int)s_spsize;
+
+	if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+		int starty = s_spcameramode.dispcenter.y - (int)s_spsize / 2;
+		int endy = starty + (int)s_spsize + 6;
+
+		if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+			ispick = 1;
+		}
+	}
+
+	return ispick;
+}
 
 int PickSpRig(POINT srcpos)
 {
@@ -23721,7 +23868,48 @@ int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 	return 0;
 }
 
+int ChangeCameraMode(int forcemode)
+{
+	s_savecameraanimmode = g_cameraanimmode;
 
+	if (forcemode == 0) {
+
+		//強制オフでは無い場合
+
+		if (s_spcameramode.state == false) {
+			//現在のスイッチがオフの場合
+			if (s_cameramodel) {
+				//カメラモデルが存在する場合　オンにする
+				g_cameraanimmode = 1;
+				s_spcameramode.state = true;
+			}
+			else {
+				//カメラモデルが存在しない場合
+				//何もしない　オンにしない
+			}
+		}
+		else {
+			//現在のスイッチがオンの場合　オフにする
+			g_cameraanimmode = 0;
+			s_spcameramode.state = false;
+		}
+	}
+	else if (forcemode == 1) {
+		//強制　オフ
+		g_cameraanimmode = 0;
+		s_spcameramode.state = false;
+	}
+	else if (forcemode == 2) {
+		//強制　オン
+		g_cameraanimmode = 1;
+		s_spcameramode.state = true;
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+}
 
 
 int OnFrameKeyboard()
@@ -24059,47 +24247,52 @@ int OnFrameProcessTime(double difftime, double* pnextframe, int* pendflag, int* 
 int OnFramePreviewCamera(double srcnextframe)
 {
 	double nextcameraframe = 0.0;
-	if (s_cameramodel) {
-		if (g_previewFlag ||
-			((g_previewFlag == 0) && (s_savepreviewFlag != 0))) {
-			nextcameraframe = srcnextframe;
-		}
-		else {
-			if (s_owpLTimeline) {
-				nextcameraframe = s_owpLTimeline->getCurrentTime();
+
+
+	if (g_cameraanimmode == 1) {//2023/05/29
+		
+		//########################
+		//カメラアニメモード　オン
+		//########################
+
+		if (s_cameramodel) {
+			if (g_previewFlag ||
+				((g_previewFlag == 0) && (s_savepreviewFlag != 0))) {
+				nextcameraframe = srcnextframe;
 			}
 			else {
-				nextcameraframe = 0.0;
+				if (s_owpLTimeline) {
+					nextcameraframe = s_owpLTimeline->getCurrentTime();
+				}
+				else {
+					nextcameraframe = 0.0;
+				}
 			}
-		}
 
-		double roundingframe = (double)((int)(nextcameraframe + 0.0001));
-
-
-		if (s_cameramodel->GetCameraMotionId() > 0) {
-			//###########################
-			//カメラモーションがある場合
-			//###########################
+			double roundingframe = (double)((int)(nextcameraframe + 0.0001));
 
 			if (g_previewFlag != 0) {
-				//#############
-				//プレビュー中
-				//#############
+				//########################################
+				//プレビュー中 && カメラアニメモード　オン
+				//########################################
 				//s_cameramodel->GetCameraAnimParams(roundingframe, s_projfar, &g_camEye, &g_camtargetpos);
 				s_cameramodel->GetCameraAnimParams(roundingframe, s_camdist, &g_camEye, &g_camtargetpos);//s_camdist
 				g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 			}
-			else if ((g_previewFlag == 0) && (s_savepreviewFlag != 0)) {
-				//###################
-				//プレビュー停止直後
-				//###################
+			else {
+				//#############################################
+				//プレビュー停止中 && カメラアニメモード　オン
+				//#############################################
 				if (nextcameraframe == 0.0) {
-					CCameraFbx camerafbx = s_cameramodel->GetCameraFbx();
-					g_camEye = camerafbx.GetPosition();
-					ChaVector3 cameradir = camerafbx.GetDirVec();
-					//g_camtargetpos = g_camEye + cameradir * s_projfar;
-					g_camtargetpos = g_camEye + cameradir * s_camdist;
-
+					CCameraFbx* camerafbx = s_cameramodel->GetCameraFbx();
+					if (camerafbx) {
+						g_camEye = camerafbx->GetPosition();
+						ChaVector3 cameradir = camerafbx->GetDirVec();
+						g_camtargetpos = g_camEye + cameradir * s_camdist;
+					}
+					else {
+						_ASSERT(0);
+					}
 					g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 				}
 				else {
@@ -24108,55 +24301,27 @@ int OnFramePreviewCamera(double srcnextframe)
 					g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 				}
 			}
-			else {
-				//#################
-				//プレビュー停止中
-				//#################
-				if (s_cameraframe != nextcameraframe) {
-					//#########################
-					//フレームが変更された直後
-					//#########################
-					if (nextcameraframe == 0.0) {
-						CCameraFbx camerafbx = s_cameramodel->GetCameraFbx();
-						g_camEye = camerafbx.GetPosition();
-						ChaVector3 cameradir = camerafbx.GetDirVec();
-						//g_camtargetpos = g_camEye + cameradir * s_projfar;
-						g_camtargetpos = g_camEye + cameradir * s_camdist;
-
-						g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
-					}
-					else {
-						//s_cameramodel->GetCameraAnimParams(roundingframe, s_projfar, &g_camEye, &g_camtargetpos);
-						s_cameramodel->GetCameraAnimParams(roundingframe, s_camdist, &g_camEye, &g_camtargetpos);//s_camdist
-						g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
-					}
-				}
-				else {
-					//######################################
-					//フレームが変化していない場合
-					//GUIによるカメラ操作可能に
-					//######################################
-					g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
-				}
-			}
+			s_cameraframe = roundingframe;
 		}
 		else {
 			//######################################
-			//カメラアニメが無い場合
+			//カメラモデルが無い場合
 			//GUIによるカメラ操作可能に
 			//######################################
 			g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 		}
-		s_cameraframe = roundingframe;
 	}
 	else {
+
+		//########################
+		//カメラアニメモード　オフ
+		//########################
+
 		//######################################
-		//カメラモデルが無い場合
 		//GUIによるカメラ操作可能に
 		//######################################
 		g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 	}
-
 	ChaVector3 cameradiff = g_camtargetpos - g_camEye;
 	s_camdist = (float)ChaVector3LengthDbl(&cameradiff);
 
@@ -30394,6 +30559,25 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 					_ASSERT(0);
 				}
 			}
+
+			//cameramode
+			if (s_spcameramode.state) {
+				if (s_spcameramode.spriteON) {
+					s_spcameramode.spriteON->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+			else {
+				if (s_spcameramode.spriteOFF) {
+					s_spcameramode.spriteOFF->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+
 
 			//scrapingsw
 			if (s_spscraping.state) {

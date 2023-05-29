@@ -189,7 +189,8 @@ int CCameraFbx::SetZeroFrameCamera()
 
 int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos)
 {
-	if (!pEyePos || !pTargetPos || (cameramotid <= 0)) {
+	//if (!pEyePos || !pTargetPos || (cameramotid <= 0)) {
+	if (!pEyePos || !pTargetPos) {//2023/05/29 cameramotid <= 0のときには　zeroframeカメラ位置をセット
 		_ASSERT(0);
 		return 1;
 	}
@@ -201,7 +202,7 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
 
 	if (IsLoaded()) {
-		if (cameramotid >= 0) {
+		if (cameramotid > 0) {
 			FbxNode* cameranode = GetFbxNode();
 			CBone* camerabone = GetBone();
 			if (cameranode && camerabone) {
@@ -313,6 +314,7 @@ CCameraFbx CCameraFbx::operator= (CCameraFbx srccamera)
 
 	m_position = srccamera.m_position;
 	m_dirvec = srccamera.m_dirvec;
+	m_worldmat = srccamera.m_worldmat;
 
 	m_upVector = srccamera.m_upVector;
 	m_aspectHeight = srccamera.m_aspectHeight;
