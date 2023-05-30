@@ -3874,6 +3874,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 			//sprintf_s(strinfo, MAX_PATH, "mesh %s, materialNum_ %d", pNode->GetName(), materialNum_);
 			//::MessageBoxA(NULL, strinfo, "check!!!", MB_OK);
 		//}
+		DbgOut(L"mesh %s, materialNum_ %d\r\n", wname, materialNum_);
 
 
 		// マテリアル情報を取得
@@ -4386,88 +4387,130 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 	FbxDouble Shininess = FbxGetMaterialShininessProperty(pMaterial);
 	newmqomat->SetPower(static_cast<float>(Shininess));
 
+
 //texture
-
-	FbxProperty pProperty;
-	pProperty = pMaterial->FindProperty( FbxSurfaceMaterial::sDiffuse );
-    int lLayeredTextureCount = pProperty.GetSrcObjectCount<FbxLayeredTexture>();
-    if(lLayeredTextureCount > 0)
-    {
-        for(int j=0; j<lLayeredTextureCount; ++j)
-        {
-            FbxLayeredTexture *lLayeredTexture = pProperty.GetSrcObject<FbxLayeredTexture>(j);
-            int lNbTextures = lLayeredTexture->GetSrcObjectCount<FbxTexture>();
-            for(int k =0; k<lNbTextures; ++k)
-            {
-                //char* nameptr = (char*)lLayeredTexture->GetName();
-				if(lLayeredTexture->GetName()){
-					char tempname[256];
-					strcpy_s( tempname, 256, lLayeredTexture->GetName());
-					char* lastslash = strrchr( tempname, '/' );
-					if( !lastslash ){
-						lastslash = strrchr( tempname, '\\' );
-					}
-					if( lastslash ){
-						newmqomat->SetTex( lastslash + 1 );
-					}else{
-						newmqomat->SetTex( tempname );
-					}
-					char* lastp = strrchr( (char*)newmqomat->GetTex(), '.' );
-					if( !lastp ){
-						newmqomat->Add2Tex( ".tga" );
-					}
-					WCHAR wname[256];
-					::ZeroMemory( wname, sizeof( WCHAR ) * 256 );
-					MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, newmqomat->GetTex(), 256, wname, 256 );
-
-DbgOut( L"SetMQOMaterial : layered texture %s\r\n", wname );
-
-					break;
-				}
-            }
-        }
-    }
-    else
-    {
-        //no layered texture simply get on the property
-        int lNbTextures = pProperty.GetSrcObjectCount<FbxTexture>();
-        if(lNbTextures > 0)
-        {
-            for(int j =0; j<lNbTextures; ++j)
-            {
-                FbxFileTexture* lTexture = pProperty.GetSrcObject<FbxFileTexture>(j);
-                if(lTexture)
-                {
-                    char* nameptr = (char*)lTexture->GetFileName();
-					if( nameptr ){
+	bool settexture = false;
+	{
+		FbxProperty pProperty;
+		pProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sDiffuse);
+		int lLayeredTextureCount = pProperty.GetSrcObjectCount<FbxLayeredTexture>();
+		if (lLayeredTextureCount > 0)
+		{
+			for (int j = 0; j < lLayeredTextureCount; ++j)
+			{
+				FbxLayeredTexture* lLayeredTexture = pProperty.GetSrcObject<FbxLayeredTexture>(j);
+				int lNbTextures = lLayeredTexture->GetSrcObjectCount<FbxTexture>();
+				for (int k = 0; k < lNbTextures; ++k)
+				{
+					//char* nameptr = (char*)lLayeredTexture->GetName();
+					if (lLayeredTexture->GetName()) {
 						char tempname[256];
-						strcpy_s( tempname, 256, nameptr );
-						char* lastslash = strrchr( tempname, '/' );
-						if( !lastslash ){
-							lastslash = strrchr( tempname, '\\' );
+						strcpy_s(tempname, 256, lLayeredTexture->GetName());
+						char* lastslash = strrchr(tempname, '/');
+						if (!lastslash) {
+							lastslash = strrchr(tempname, '\\');
 						}
-						if( lastslash ){
-							newmqomat->SetTex( lastslash + 1 );
-						}else{
-							newmqomat->SetTex( tempname );
+						if (lastslash) {
+							newmqomat->SetTex(lastslash + 1);
 						}
-						char* lastp = strrchr( (char*)newmqomat->GetTex(), '.' );
-						if( !lastp ){
-							newmqomat->Add2Tex( ".tga" );
+						else {
+							newmqomat->SetTex(tempname);
 						}
-
+						char* lastp = strrchr((char*)newmqomat->GetTex(), '.');
+						if (!lastp) {
+							newmqomat->Add2Tex(".tga");
+						}
+						else {
+							////jpegのテクスチャは現状ありえない？　pngに置き換えると読めるデータがある　TheHunt Character
+							//if (((unsigned long)(lastp - tempname) > (256 - 4)) &&
+							//	((strstr(lastp, "jpg") != 0) || (strstr(lastp, "jpeg") != 0))) {
+							//	*(lastp + 1) = 'p';
+							//	*(lastp + 2) = 'n';
+							//	*(lastp + 3) = 'g';
+							//	*(lastp + 4) = 0;
+							//}
+						}
 						WCHAR wname[256];
-						::ZeroMemory( wname, sizeof( WCHAR ) * 256 );
-						MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, newmqomat->GetTex(), 256, wname, 256 );
+						::ZeroMemory(wname, sizeof(WCHAR) * 256);
+						MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, newmqomat->GetTex(), 256, wname, 256);
 
-DbgOut( L"SetMQOMaterial : texture %s\r\n", wname );
+						DbgOut(L"SetMQOMaterial : layered texture(%d)(%d) %s\r\n", j, k, wname);
 
-						break;
+						settexture = true;
+
+						//break;
+						if ((strstr(tempname, "albedo") != 0) || (strstr(tempname, "Albedo") != 0)) {
+							//複数テクスチャがある場合　albedoがみつかったところでbreakする
+							break;
+						}
+
+
 					}
-                }
-            }
-        }
-    }
+				}
+			}
+		}
+		else
+		{
+			//no layered texture simply get on the property
+			int lNbTextures = pProperty.GetSrcObjectCount<FbxTexture>();
+			if (lNbTextures > 0)
+			{
+				for (int j = 0; j < lNbTextures; ++j)
+				{
+					FbxFileTexture* lTexture = pProperty.GetSrcObject<FbxFileTexture>(j);
+					if (lTexture)
+					{
+						char* nameptr = (char*)lTexture->GetFileName();
+						if (nameptr) {
+							char tempname[256];
+							strcpy_s(tempname, 256, nameptr);
+							char* lastslash = strrchr(tempname, '/');
+							if (!lastslash) {
+								lastslash = strrchr(tempname, '\\');
+							}
+							if (lastslash) {
+								newmqomat->SetTex(lastslash + 1);
+							}
+							else {
+								newmqomat->SetTex(tempname);
+							}
+							char* lastp = strrchr((char*)newmqomat->GetTex(), '.');
+							if (!lastp) {
+								newmqomat->Add2Tex(".tga");
+							}
+							else {
+								////jpegのテクスチャは現状ありえない？　pngに置き換えると読めるデータがある　TheHunt Character
+								//if (((unsigned long)(lastp - tempname) > (256 - 4)) &&
+								//	((strstr(lastp, "jpg") != 0) || (strstr(lastp, "jpeg") != 0))) {
+								//	*(lastp + 1) = 'p';
+								//	*(lastp + 2) = 'n';
+								//	*(lastp + 3) = 'g';
+								//	*(lastp + 4) = 0;
+								//}
+							}
+
+							WCHAR wname[256];
+							::ZeroMemory(wname, sizeof(WCHAR) * 256);
+							MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, newmqomat->GetTex(), 256, wname, 256);
+
+							DbgOut(L"SetMQOMaterial : texture(0)(%d) %s\r\n", j, wname);
+							
+
+							settexture = true;
+
+							//break;
+							if ((strstr(tempname, "albedo") != 0) || (strstr(tempname, "Albedo") != 0)) {
+								//複数テクスチャがある場合　albedoがみつかったところでbreakする
+								break;
+							}
+
+						}
+					}
+				}
+			}
+		}
+	}
+
 
 
    return 0;
