@@ -1612,9 +1612,11 @@ private:
 	FbxDouble3 m_fbxLclScl;
 	bool m_fbxrotationActive;
 	EFbxRotationOrder m_rotationorder;
+	FbxTransform::EInheritType m_InheritType;
 
 	ChaMatrix m_localnodemat;
 	ChaMatrix m_localnodeanimmat;
+
 
 
 	bool m_ikstopflag;

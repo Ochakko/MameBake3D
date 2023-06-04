@@ -16,8 +16,14 @@
 #include <dbg.h>
 
 #include <CameraFbx.h>
+#include <GlobalVar.h>
+
 
 using namespace std;
+
+
+
+
 
 
 CCameraFbx::CCameraFbx()
@@ -57,6 +63,13 @@ int CCameraFbx::InitParams()
 	m_fovY = atan2(m_filmHeight_mm, 2.0 * m_focalLength);
 	m_fovY_Degree = m_fovY * 180 / 3.14159265358979;
 
+	m_cameralcltra = ChaVector3(0.0f, 0.0f, 0.0f);
+	m_cameraparentlcltra = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	m_pscene = 0;
+	ZeroMemory(m_animname, sizeof(char) * 256);
+	m_parentenullmat.SetIdentity();
+
 	return 0;
 }
 int CCameraFbx::DestroyObjs()
@@ -84,6 +97,10 @@ int CCameraFbx::SetFbxCamera(FbxNode* pNode, CBone* pbone)
 	m_pnode = pNode;
 	m_pbone = pbone;
 	m_pcamera = pNode->GetCamera();//fbxsdk func
+
+
+	SetCameraLclTra(pNode->LclTranslation);//2023/06/02
+
 
 	if (m_pcamera) {
 
@@ -125,8 +142,6 @@ int CCameraFbx::SetFbxCamera(FbxNode* pNode, CBone* pbone)
 		m_fovY_Degree = fovY_Degree;
 
 		m_loadedflag = true;
-
-
 
 	}
 
@@ -186,14 +201,21 @@ int CCameraFbx::SetZeroFrameCamera()
 	return 0;
 }
 
-
-int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos)
+//#################################################################
+//inheritmode  0: writemode, 1:inherit all, 2:inherit cancel and Lclcancel
+//#################################################################
+int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double camdist, 
+	ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaMatrix* protmat, int inheritmode)
 {
 	//if (!pEyePos || !pTargetPos || (cameramotid <= 0)) {
 	if (!pEyePos || !pTargetPos) {//2023/05/29 cameramotid <= 0のときには　zeroframeカメラ位置をセット
+		//###################################################
+		//protmatがNULLの場合も許可　rotmatをセットしないだけ
+		//###################################################
 		_ASSERT(0);
 		return 1;
 	}
+
 
 	double roundingframe = (double)((int)(nextframe + 0.0001));
 	m_time = roundingframe;
@@ -209,44 +231,23 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				ChaMatrix cammat = camerabone->GetWorldMat(false, cameramotid, roundingframe, 0);
 				ChaMatrix nodemat = camerabone->GetNodeMat();
 
-
-				bool bCancelLclTra = false;//親のtransformが初期状態ではないときに　LclTraをキャンセルするためにtrueを立てる
-
 				ChaMatrix rootmat;
 				if (camerabone->GetParent(false) && camerabone->GetParent(false)->IsNull()) {
-					rootmat = camerabone->GetParent(false)->GetENullMatrix();
-
-					ChaMatrix inimat;
-					inimat.SetIdentity();
-					if (IsSameMat(rootmat, inimat)) {//条件テスト中　それとも　translationだけチェックした方が良い？
-						bCancelLclTra = false;
-					}
-					else {
-						bCancelLclTra = true;
-					}
+					rootmat = GetCameraParentENullMat();
 				}
 				else {
 					rootmat.SetIdentity();
-					bCancelLclTra = false;
 				}
 
-				FbxDouble3 lcltra;
-				lcltra = cameranode->LclTranslation;
 				ChaMatrix lcltramat;
 				lcltramat.SetIdentity();
-				lcltramat.SetTranslation(ChaVector3(lcltra));
+				lcltramat.SetTranslation(GetCameraLclTra());
+				ChaMatrix parentlcltramat;
+				parentlcltramat.SetIdentity();
+				parentlcltramat.SetTranslation(GetCameraParentLclTra());
 
 				ChaVector3 nodepos = nodemat.GetTranslation();
 
-				//##################################################################################################################################
-				//2023/05/25
-				//！！！　当たり　！！！
-				//fbxファイルとしては　親のeNullに移動があれば　子供のカメラにそれは伝わる
-				//しかし　Unity(2020.2.19f1)上においては　
-				//親のeNullの回転は　子供のカメラに伝わるが　eNullの移動は子供のカメラに伝わっていなかった(ビジュアル的にもマニピュレータ位置的にも)
-				//カメラによるビジュアルをUnity上での再生と合わせるために　カメラ行列にeNullの移動キャンセル処理をした(Inv(roottramat)の部分)
-				//後の処理は　比較的想定通りであった
-				//##################################################################################################################################
 			//##############
 			//カメラの位置
 			//##############
@@ -254,24 +255,49 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				//ChaVector3TransformCoord(pEyePos, &zeropos, &transformmat);
 				 
 				ChaMatrix transformmat;
-				if (bCancelLclTra == true) {
-					transformmat = cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);
-				}
-				else {
+				switch (inheritmode) {
+				case CAMERA_INHERIT_ALL:
+					transformmat = cammat;
+					break;
+				case CAMERA_INHERIT_CANCEL_NULL1:
 					transformmat = cammat * ChaMatrixInv(rootmat);
-				}				
+					break;
+				case CAMERA_INHERIT_CANCEL_NULL2:
+					//################################################################################################
+					//UnityにおいてはRootMotionチェックオン. Mayaにおいてはトランスフォームの継承チェックオフ　に相当
+					//################################################################################################
+					transformmat = cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);
+					break;
+				default:
+					_ASSERT(0);
+					transformmat = cammat;
+					break;
+				}
 				ChaVector3TransformCoord(pEyePos, &nodepos, &transformmat);
 
 			//##############
 			//カメラの向き
 			//##############
 				ChaMatrix rotmat;
-				if (bCancelLclTra == true) {
-					rotmat = nodemat * cammat * ChaMatrixInv(lcltramat)* ChaMatrixInv(rootmat);
-				}
-				else {
+				switch (inheritmode) {
+				case CAMERA_INHERIT_ALL:
+					rotmat = nodemat * cammat;
+					break;
+				case CAMERA_INHERIT_CANCEL_NULL1:
 					rotmat = nodemat * cammat * ChaMatrixInv(rootmat);
+					break;
+				case CAMERA_INHERIT_CANCEL_NULL2:
+					//################################################################################################
+					//UnityにおいてはRootMotionチェックオン. Mayaにおいてはトランスフォームの継承チェックオフ　に相当
+					//################################################################################################
+					rotmat = nodemat * cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);
+					break;
+				default:
+					_ASSERT(0);
+					rotmat = nodemat * cammat;
+					break;
 				}
+
 				CQuaternion rotq;
 				rotq.RotationMatrix(rotmat);
 				ChaVector3 dirvec0 = ChaVector3(1.0f, 0.0f, 0.0f);
@@ -280,18 +306,31 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				ChaVector3Normalize(&dirvec, &dirvec);
 				*pTargetPos = *pEyePos + dirvec * camdist;
 
+				if (protmat) {
+					*protmat = ChaMatrixRot(rotmat);
+				}
+
 			}
 			else {
 				_ASSERT(0);
 				//ZeroFrameCamera
 				*pEyePos = m_position;
 				*pTargetPos = *pEyePos + m_dirvec * camdist;
+
+				if (protmat) {
+					*protmat = ChaMatrixRot(GetWorldMat());
+				}
+
 			}
 		}
 		else {
 			//ZeroFrameCamera
 			*pEyePos = m_position;
 			*pTargetPos = *pEyePos + m_dirvec * camdist;
+
+			if (protmat) {
+				*protmat = ChaMatrixRot(GetWorldMat());
+			}
 		}
 	}
 	else {
@@ -331,4 +370,17 @@ CCameraFbx CCameraFbx::operator= (CCameraFbx srccamera)
 
 
 	return *this;
+}
+
+
+bool CCameraFbx::IsLoaded()
+{
+	//CModel::m_camerafbxがpointerでは無いため　終了フラグをチェックする
+
+	if (g_endappflag == 0) {
+		return m_loadedflag;
+	}
+	else {
+		return false;
+	}
 }

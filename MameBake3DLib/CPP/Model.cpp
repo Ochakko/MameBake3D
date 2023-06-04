@@ -1064,7 +1064,7 @@ _ASSERT(m_bonelist[0]);
 		map<int, CBone*>::iterator itrbone;
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 			CBone* curbone = itrbone->second;
-			if (curbone && (curbone->IsSkeleton())) {
+			if (curbone && (curbone->IsSkeleton() || curbone->IsCamera())) {
 				curbone->SetBtKinFlag(1);
 			}
 		}
@@ -3799,7 +3799,8 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 
 		FbxTime fbxtime0;
 		fbxtime0.SetSecondDouble(0.0);
-		FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
+		//FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
+		FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot);
 		globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
 
 		//CalcMeshMatReq(pNode, &globalmeshmat);
@@ -4389,7 +4390,7 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 
 
 //texture
-	bool settexture = false;
+	bool findalbedometal = false;
 	{
 		FbxProperty pProperty;
 		pProperty = pMaterial->FindProperty(FbxSurfaceMaterial::sDiffuse);
@@ -4398,6 +4399,10 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 		{
 			for (int j = 0; j < lLayeredTextureCount; ++j)
 			{
+				if (findalbedometal == true) {
+					break;
+				}
+
 				FbxLayeredTexture* lLayeredTexture = pProperty.GetSrcObject<FbxLayeredTexture>(j);
 				int lNbTextures = lLayeredTexture->GetSrcObjectCount<FbxTexture>();
 				for (int k = 0; k < lNbTextures; ++k)
@@ -4436,15 +4441,13 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 
 						DbgOut(L"SetMQOMaterial : layered texture(%d)(%d) %s\r\n", j, k, wname);
 
-						settexture = true;
-
 						//break;
-						if ((strstr(tempname, "albedo") != 0) || (strstr(tempname, "Albedo") != 0)) {
-							//複数テクスチャがある場合　albedoがみつかったところでbreakする
+						if ((strstr(tempname, "albedo") != 0) || (strstr(tempname, "Albedo") != 0) ||
+							(strstr(tempname, "metallic") != 0) || (strstr(tempname, "Metallic") != 0)) {
+							//複数テクスチャがある場合　albedoまたはmetallicがみつかったところでbreakする
+							findalbedometal = true;
 							break;
 						}
-
-
 					}
 				}
 			}
@@ -4495,12 +4498,11 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 
 							DbgOut(L"SetMQOMaterial : texture(0)(%d) %s\r\n", j, wname);
 							
-
-							settexture = true;
-
 							//break;
-							if ((strstr(tempname, "albedo") != 0) || (strstr(tempname, "Albedo") != 0)) {
-								//複数テクスチャがある場合　albedoがみつかったところでbreakする
+							if ((strstr(tempname, "albedo") != 0) || (strstr(tempname, "Albedo") != 0) ||
+								(strstr(tempname, "metallic") != 0) || (strstr(tempname, "Metallic") != 0)) {
+									//複数テクスチャがある場合　albedoまたはmetallicがみつかったところでbreakする
+								findalbedometal = true;
 								break;
 							}
 
@@ -5011,6 +5013,9 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 			//2023/05/23
 			if ((strstr(chkanimname, "camera") != 0) || (strstr(chkanimname, "Camera") != 0)) {
 				SetCameraMotionId(curmotid);
+				if (GetCameraFbx()) {
+					GetCameraFbx()->SetAnimLayer(m_pscene, chkanimname);
+				}
 			}
 
 
@@ -5019,7 +5024,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 			map<int, CBone*>::iterator itrbone;
 			for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 				CBone* curbone = itrbone->second;
-				if (curbone && (curbone->IsSkeleton())) {
+				if (curbone && (curbone->IsSkeleton() || curbone->IsCamera())) {
 					curbone->SetGetAnimFlag(0);
 				}
 			}
@@ -5730,6 +5735,8 @@ void CModel::PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone)
 					//set localmat
 					//#############
 					ChaMatrix parentglobalmat;
+					parentglobalmat.SetIdentity();
+					ChaVector3 parentlcltra = ChaVector3(0.0f, 0.0f, 0.0f);
 					//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
 					//if (srcbone->GetParent()) {
 					//	CMotionPoint* parentmp = srcbone->GetParent()->GetMotionPoint(srcmotid, curframe);
@@ -5748,10 +5755,34 @@ void CModel::PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone)
 					//eNull(parentbone)には　motionpointが無いが　変換行列はある
 					CBone* parentbone = srcbone->GetParent(false);
 					if (parentbone) {
-						parentglobalmat = parentbone->GetWorldMat(false, srcmotid, curframe, 0);
+						if (parentbone->IsSkeleton()) {
+							parentglobalmat = parentbone->GetWorldMat(false, srcmotid, curframe, 0);
+						}
+						else if (parentbone->IsNull()) {
+							FbxNode* eNullNode = parentbone->GetFbxNodeOnLoad();
+							if (eNullNode) {
+								FbxTime time0;
+								time0.SetSecondDouble(0.0);
+								FbxAMatrix lGlobalSRT = eNullNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);
+								parentglobalmat = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+							}
+							else {
+								_ASSERT(0);
+								parentglobalmat.SetIdentity();
+							}
+						}
+						
+						if (FindNodeByBone(parentbone)) {
+							FbxDouble3 fbxparentlcltra = FindNodeByBone(parentbone)->LclTranslation;
+							parentlcltra = ChaVector3((float)fbxparentlcltra[0], (float)fbxparentlcltra[1], (float)fbxparentlcltra[2]);
+						}
+						else {
+							parentlcltra = ChaVector3(0.0f, 0.0f, 0.0f);
+						}
+						
 					}
 					else {
-						ChaMatrixIdentity(&parentglobalmat);
+						parentglobalmat.SetIdentity();
 					}
 					ChaMatrix localmat = globalmat * ChaMatrixInv(parentglobalmat);
 					curmp->SetLocalMat(localmat);//anglelimit無し
@@ -5767,6 +5798,16 @@ void CModel::PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone)
 					curmp->SetLocalEul(cureul);
 					curmp->SetLimitedLocalEul(cureul);
 					curmp->SetCalcLimitedWM(2);
+
+					if ((curframe == 0.0) && (srcmotid == GetCameraMotionId())) {
+						if (srcbone->IsCamera() && FindNodeByBone(srcbone)) {
+							FbxDouble3 lcltra = FindNodeByBone(srcbone)->LclTranslation;
+							SetCameraLclTra(lcltra);
+							SetCameraParentLclTra(parentlcltra);
+							SetCameraParentENullMat(parentglobalmat);
+						}
+					}
+
 				}
 			}
 		}
@@ -17325,9 +17366,13 @@ void CModel::SetRotationActiveDefaultReq(CNodeOnLoad* srcnodeonload)
 }
 
 
-int CModel::GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos)
+
+int CModel::GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaMatrix* protmat, int inheritmode)
 {
 	if (!pEyePos || !pTargetPos) {
+		//###################################################
+		//protmatがNULLの場合も許可　rotmatをセットしないだけ
+		//###################################################
 		_ASSERT(0);
 		return 1;
 	}
@@ -17348,8 +17393,135 @@ int CModel::GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pE
 	CCameraFbx* camerafbx = GetCameraFbx();
 	if (camerafbx) {
 		int cameramotionid = GetCameraMotionId();
-		camerafbx->GetCameraAnimParams(cameramotionid, nextframe, camdist, pEyePos, pTargetPos);
+		camerafbx->GetCameraAnimParams(cameramotionid, nextframe, camdist, pEyePos, pTargetPos, protmat, inheritmode);
 	}
 
 	return 0;
+}
+
+CCameraFbx* CModel::GetCameraFbx()
+{
+	//m_camerafbxがpointerでは無いため　終了フラグをチェックする
+
+	if (g_endappflag == 0) {
+		return &m_camerafbx;
+	}
+	else {
+		return 0;
+	}
+}
+void CModel::SetCameraMotionId(int srcid)
+{
+	//m_camerafbxがpointerでは無いため　終了フラグをチェックする
+
+	if (g_endappflag == 0) {
+		m_cameramotionid = srcid;
+	}
+	else {
+		m_cameramotionid = -1;
+	}
+	
+}
+int CModel::GetCameraMotionId()
+{
+	//m_camerafbxがpointerでは無いため　終了フラグをチェックする
+
+	if (g_endappflag == 0) {
+		return m_cameramotionid;
+	}
+	else {
+		return -1;
+	}
+}
+
+ChaVector3 CModel::GetCameraLclTra()
+{
+	if (g_endappflag == 0) {
+		if (GetCameraFbx() && GetCameraFbx()->IsLoaded()) {
+			return GetCameraFbx()->GetCameraLclTra();
+		}
+		else {
+			return ChaVector3(0.0f, 0.0f, 0.0f);
+		}
+	}
+	else {
+		return ChaVector3(0.0f, 0.0f, 0.0f);
+	}
+}
+void CModel::SetCameraLclTra(FbxDouble3 srcval)
+{
+	if (g_endappflag == 0) {
+		if (GetCameraFbx() && GetCameraFbx()->IsLoaded()) {
+			GetCameraFbx()->SetCameraLclTra(srcval);
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
+	else {
+		//何もしない
+	}
+}
+ChaVector3 CModel::GetCameraParentLclTra()
+{
+	if (g_endappflag == 0) {
+		if (GetCameraFbx() && GetCameraFbx()->IsLoaded()) {
+			return GetCameraFbx()->GetCameraParentLclTra();
+		}
+		else {
+			return ChaVector3(0.0f, 0.0f, 0.0f);
+		}
+	}
+	else {
+		return ChaVector3(0.0f, 0.0f, 0.0f);
+	}
+}
+void CModel::SetCameraParentLclTra(ChaVector3 srcval)
+{
+	if (g_endappflag == 0) {
+		if (GetCameraFbx() && GetCameraFbx()->IsLoaded()) {
+			GetCameraFbx()->SetCameraParentLclTra(srcval);
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
+	else {
+		//何もしない
+	}
+}
+
+
+ChaMatrix CModel::GetCameraParentENullMat()
+{
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+
+	if (g_endappflag == 0) {
+		if (GetCameraFbx() && GetCameraFbx()->IsLoaded()) {
+			retmat = GetCameraFbx()->GetCameraParentENullMat();
+			return retmat;
+		}
+		else {
+			return retmat;
+		}
+	}
+	else {
+		return retmat;
+	}
+
+}
+void CModel::SetCameraParentENullMat(ChaMatrix enullmat)
+{
+	if (g_endappflag == 0) {
+		if (GetCameraFbx() && GetCameraFbx()->IsLoaded()) {
+			GetCameraFbx()->SetCameraParentENullMat(enullmat);
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
+	else {
+		//何もしない
+	}
 }

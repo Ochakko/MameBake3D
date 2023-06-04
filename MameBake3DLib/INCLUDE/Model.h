@@ -839,7 +839,7 @@ public:
 	void SetRotationActiveTrueReq(CNodeOnLoad* srcnodeonload);
 	void SetRotationActiveDefaultReq(CNodeOnLoad* srcnodeonload);
 
-	int GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos);
+	int GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaMatrix* protmat, int inheritmode);
 
 private:
 	int InitParams();
@@ -1576,19 +1576,15 @@ public: //accesser
 	}
 
 
-	CCameraFbx* GetCameraFbx()
-	{
-		return &m_camerafbx;
-	}
-	void SetCameraMotionId(int srcid)
-	{
-		m_cameramotionid = srcid;
-	}
-	int GetCameraMotionId()
-	{
-		return m_cameramotionid;
-	}
-
+	CCameraFbx* GetCameraFbx();
+	void SetCameraMotionId(int srcid);
+	int GetCameraMotionId();
+	ChaVector3 GetCameraLclTra();
+	void SetCameraLclTra(FbxDouble3 srcval);
+	ChaVector3 GetCameraParentLclTra();
+	void SetCameraParentLclTra(ChaVector3 srcval);
+	ChaMatrix GetCameraParentENullMat();
+	void SetCameraParentENullMat(ChaMatrix enullmat);
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];

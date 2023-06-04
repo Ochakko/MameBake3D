@@ -1183,17 +1183,17 @@ FbxDouble3 ChaVector3::ConvRotOrder2XYZ(EFbxRotationOrder rotorder)
 
 ChaVector3 ChaVector3::operator= (ChaVector3 v) { this->x = v.x; this->y = v.y; this->z = v.z; return *this; };
 ChaVector3 ChaVector3::operator* (float srcw) const { return ChaVector3((float)((double)this->x * (double)srcw), (float)((double)this->y * (double)srcw), (float)((double)this->z * (double)srcw)); }
-ChaVector3 &ChaVector3::operator*= (float srcw) { *this = *this * srcw; return *this; }
+ChaVector3& ChaVector3::operator*= (float srcw) { *this = *this * srcw; return *this; }
 ChaVector3 ChaVector3::operator/ (float srcw) const { if (srcw != 0.0f) { return ChaVector3((float)((double)this->x / (double)srcw), (float)((double)this->y / (double)srcw), (float)((double)this->z / (double)srcw)); } else { return ChaVector3(0.0f, 0.0f, 0.0f); } }
-ChaVector3 &ChaVector3::operator/= (float srcw) { *this = *this / srcw; return *this; }
+ChaVector3& ChaVector3::operator/= (float srcw) { *this = *this / srcw; return *this; }
 ChaVector3 ChaVector3::operator* (double srcw) const { return ChaVector3((float)((double)this->x * srcw), (float)((double)this->y * srcw), (float)((double)this->z * srcw)); }
 ChaVector3& ChaVector3::operator*= (double srcw) { *this = *this * srcw; return *this; }
 ChaVector3 ChaVector3::operator/ (double srcw) const { if (srcw != 0.0) { return ChaVector3((float)((double)this->x / srcw), (float)((double)this->y / srcw), (float)((double)this->z / srcw)); } else { return ChaVector3(0.0f, 0.0f, 0.0f); } }
 ChaVector3& ChaVector3::operator/= (double srcw) { *this = *this / srcw; return *this; }
-ChaVector3 ChaVector3::operator+ (const ChaVector3 &v) const { return ChaVector3(x + v.x, y + v.y, z + v.z); }
-ChaVector3 &ChaVector3::operator+= (const ChaVector3 &v) { *this = *this + v; return *this; }
-ChaVector3 ChaVector3::operator- (const ChaVector3 &v) const { return ChaVector3(x - v.x, y - v.y, z - v.z); }
-ChaVector3 &ChaVector3::operator-= (const ChaVector3 &v) { *this = *this - v; return *this; }
+ChaVector3 ChaVector3::operator+ (const ChaVector3& v) const { return ChaVector3(x + v.x, y + v.y, z + v.z); }
+ChaVector3& ChaVector3::operator+= (const ChaVector3& v) { *this = *this + v; return *this; }
+ChaVector3 ChaVector3::operator- (const ChaVector3& v) const { return ChaVector3(x - v.x, y - v.y, z - v.z); }
+ChaVector3& ChaVector3::operator-= (const ChaVector3& v) { *this = *this - v; return *this; }
 
 ChaVector3 ChaVector3::operator- () const { return *this * -1.0; }
 
@@ -1223,7 +1223,7 @@ ChaMatrix ChaVector3::MakeXYZRotMat(CQuaternion* srcaxisq)
 
 	CQuaternion rotq;
 	rotq.SetRotationXYZ(srcaxisq, *this);
-	
+
 	retmat = rotq.MakeRotMatX();
 	return retmat;
 }
@@ -1238,6 +1238,41 @@ ChaMatrix ChaVector3::MakeScaleMat()
 	return retmat;
 }
 
+int ChaVector3::GetRowNo(int srcrowno)
+{
+	//テスト実装
+	//カメラ行列の列が row(0)==-z, row(1)==y, row(2)==x の場合があったので　テスト対応
+
+
+	float thval = 0.0001f;
+	if ((fabs(x) <= thval) && (fabs(y) <= thval) && (fabs(z) > thval)){
+		if (z >= 0.0f) {
+			return 3;//z axis
+		}
+		else {
+			return -3;//-z axis
+		}
+	}
+	else if ((fabs(x) > thval) && (fabs(y) <= thval) && (fabs(z) <= thval)) {
+		if (x >= 0.0f) {
+			return 1;//x axis
+		}
+		else {
+			return -1;//x axis
+		}
+	}
+	else if ((fabs(x) <= thval) && (fabs(y) > thval) && (fabs(z) <= thval)) {
+		if (y >= 0.0f) {
+			return 2;//y axis
+		}
+		else {
+			return -2;//y axis
+		}
+	}
+	else {
+		return (srcrowno + 1);
+	}
+}
 
 
 
@@ -2123,6 +2158,49 @@ int CQuaternion::SetRotation(EFbxRotationOrder rotorder, CQuaternion* srcaxisq, 
 	phaix = QuaternionLimitPhai((double)srceul.x * DEG2PAI);
 	phaiy = QuaternionLimitPhai((double)srceul.y * DEG2PAI);
 	phaiz = QuaternionLimitPhai((double)srceul.z * DEG2PAI);
+	//switch (rotorder) {
+	//case eEulerXYZ:
+	//	phaix = QuaternionLimitPhai((double)srceul.x * DEG2PAI);
+	//	phaiy = QuaternionLimitPhai((double)srceul.y * DEG2PAI);
+	//	phaiz = QuaternionLimitPhai((double)srceul.z * DEG2PAI);
+	//	break;
+	//case eEulerXZY:
+	//	phaix = QuaternionLimitPhai((double)srceul.x * DEG2PAI);
+	//	phaiy = QuaternionLimitPhai((double)srceul.z * DEG2PAI);
+	//	phaiz = QuaternionLimitPhai((double)srceul.y * DEG2PAI);
+	//	break;
+	//case eEulerYZX:
+	//	phaix = QuaternionLimitPhai((double)srceul.y * DEG2PAI);
+	//	phaiy = QuaternionLimitPhai((double)srceul.z * DEG2PAI);
+	//	phaiz = QuaternionLimitPhai((double)srceul.x * DEG2PAI);
+	//	break;
+	//case eEulerYXZ:
+	//	phaix = QuaternionLimitPhai((double)srceul.y * DEG2PAI);
+	//	phaiy = QuaternionLimitPhai((double)srceul.x * DEG2PAI);
+	//	phaiz = QuaternionLimitPhai((double)srceul.z * DEG2PAI);
+	//	break;
+	//case eEulerZXY:
+	//	phaix = QuaternionLimitPhai((double)srceul.z * DEG2PAI);
+	//	phaiy = QuaternionLimitPhai((double)srceul.x * DEG2PAI);
+	//	phaiz = QuaternionLimitPhai((double)srceul.y * DEG2PAI);
+	//	break;
+	//case eEulerZYX:
+	//	phaix = QuaternionLimitPhai((double)srceul.z * DEG2PAI);
+	//	phaiy = QuaternionLimitPhai((double)srceul.y * DEG2PAI);
+	//	phaiz = QuaternionLimitPhai((double)srceul.x * DEG2PAI);
+	//	break;
+	//case eSphericXYZ:
+	//	phaix = QuaternionLimitPhai((double)srceul.x * DEG2PAI);
+	//	phaiy = QuaternionLimitPhai((double)srceul.y * DEG2PAI);
+	//	phaiz = QuaternionLimitPhai((double)srceul.z * DEG2PAI);
+	//	break;
+	//default:
+	//	phaix = QuaternionLimitPhai((double)srceul.x * DEG2PAI);
+	//	phaiy = QuaternionLimitPhai((double)srceul.y * DEG2PAI);
+	//	phaiz = QuaternionLimitPhai((double)srceul.z * DEG2PAI);
+	//	break;
+	//}
+
 
 	cosx = (float)cos(phaix * 0.5);
 	sinx = (float)sin(phaix * 0.5);
@@ -5752,7 +5830,6 @@ void N3SM::InitParams()
 	smfacenum = 0;
 	ppsmface = 0;
 }
-
 
 
 

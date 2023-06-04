@@ -239,6 +239,10 @@ public:
 
 	void Clamp(float srcmin, float srcmax);
 
+	int GetRowNo(int srcrowno);
+
+
+
 #ifdef CONVD3DX11
 	DirectX::XMFLOAT3 D3DX();
 	DirectX::XMVECTOR XMVECTOR(float w);

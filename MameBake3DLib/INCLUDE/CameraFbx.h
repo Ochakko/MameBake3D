@@ -22,7 +22,9 @@ public:
 	int SetFbxCamera(FbxNode* pnode, CBone* pbone);
 
 	int SetZeroFrameCamera();
-	int GetCameraAnimParams(int cameramotid, double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos);
+
+	int GetCameraAnimParams(int cameramotid, double nextframe, double camdist, 
+		ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaMatrix* protmat, int inheritmode);
 
 
 	CCameraFbx operator= (CCameraFbx srcrange);
@@ -54,10 +56,7 @@ private:
 	int DestroyObjs();
 
 public:
-	bool IsLoaded()
-	{
-		return m_loadedflag;
-	}
+	bool IsLoaded();
 	ChaMatrix GetWorldMat()
 	{
 		return m_worldmat;
@@ -136,6 +135,49 @@ public:
 		return m_pbone;
 	}
 
+	ChaVector3 GetCameraLclTra()
+	{
+		return m_cameralcltra;
+	}
+	void SetCameraLclTra(FbxDouble3 srcval)
+	{
+		m_cameralcltra = ChaVector3((float)srcval[0], (float)srcval[1], (float)srcval[2]);
+	}
+	ChaVector3 GetCameraParentLclTra()
+	{
+		return m_cameraparentlcltra;
+	}
+	void SetCameraParentLclTra(ChaVector3 srcval)
+	{
+		m_cameraparentlcltra = srcval;
+	}
+
+	char* GetAnimName()
+	{
+		return &(m_animname[0]);
+	}
+	FbxScene* GetScene()
+	{
+		return m_pscene;
+	}
+	void SetAnimLayer(FbxScene* pscene, char* animname)
+	{
+		if (pscene) {
+			m_pscene = pscene;
+		}
+		if (animname) {
+			strcpy_s(m_animname, 256, animname);
+		}
+	}
+	ChaMatrix GetCameraParentENullMat()
+	{
+		return m_parentenullmat;
+	}
+	void SetCameraParentENullMat(ChaMatrix enullmat)
+	{
+		m_parentenullmat = enullmat;
+	}
+
 private:
 	FbxNode* m_pnode;
 	CBone* m_pbone;
@@ -162,6 +204,15 @@ private:
 	double m_filmHeight_mm;
 	double m_fovY;
 	double m_fovY_Degree;
+
+
+	ChaVector3 m_cameralcltra;
+	ChaVector3 m_cameraparentlcltra;
+
+	FbxScene* m_pscene;
+	char m_animname[256];
+
+	ChaMatrix m_parentenullmat;
 
 };
 

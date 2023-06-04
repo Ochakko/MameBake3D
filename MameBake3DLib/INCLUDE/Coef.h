@@ -65,6 +65,16 @@ class CMQOMaterial;
 
 enum
 {
+	//g_cameraInheritMode
+
+	CAMERA_INHERIT_ALL,
+	CAMERA_INHERIT_CANCEL_NULL1,
+	CAMERA_INHERIT_CANCEL_NULL2,
+	CAMERA_INHERIT_MAX
+};
+
+enum
+{
 	//CQuaternion::Q2EulXYZusingMat()
 
 	ROTORDER_XYZ,

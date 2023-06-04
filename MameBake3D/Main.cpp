@@ -1141,6 +1141,10 @@ typedef struct tag_spaxis
 {
 	CMySprite* sprite;
 	POINT dispcenter;
+	void Init() {
+		sprite = 0;
+		::ZeroMemory(&dispcenter, sizeof(POINT));
+	}
 }SPAXIS, SPCAM, SPELEM;
 
 typedef struct tag_spsw
@@ -1149,7 +1153,30 @@ typedef struct tag_spsw
 	CMySprite* spriteON;
 	CMySprite* spriteOFF;
 	POINT dispcenter;
+	void Init() {
+		state = 0;
+		spriteON = 0;
+		spriteOFF = 0;
+		::ZeroMemory(&dispcenter, sizeof(POINT));
+	}
 }SPGUISW;
+
+
+typedef struct tag_spsw3 //2023/06/04
+{
+	int mode;
+	CMySprite* sprite1;
+	CMySprite* sprite2;
+	CMySprite* sprite3;
+	POINT dispcenter;
+	void Init() {
+		mode = 0;
+		sprite1 = 0;
+		sprite2 = 0;
+		sprite3 = 0;
+		::ZeroMemory(&dispcenter, sizeof(POINT));
+	}
+}SPGUISW3;
 
 
 //typedef struct tag_physikrec
@@ -1726,6 +1753,7 @@ double g_erp = 0.8;
 
 static int s_savepreviewFlag = 0;
 static int s_savecameraanimmode = 0;
+static int s_saveCameraInheritMode = 0;
 
 double s_btstartframe = 0.0;
 bool g_btsimurecflag = false;
@@ -2270,6 +2298,7 @@ static SPGUISW s_splimiteul;
 static SPGUISW s_spscraping;
 static SPELEM s_mousecenteron;
 static SPGUISW s_spcameramode;
+static SPGUISW3 s_spcamerainherit;
 
 typedef struct tag_modelpanel
 {
@@ -2834,6 +2863,7 @@ static int ChangeCurrentBone();
 static int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag);
 static int ChangeWallScrapingIKFlag(bool srcflag);
 static int ChangeCameraMode(int forcemode);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
+static int ChangeCameraInherit();
 
 static int InitCurMotion(int selectflag, double expandmotion);
 
@@ -3029,6 +3059,8 @@ static int SetSpConstRefreshParams();
 static int PickSpConstRefresh(POINT srcpos);
 static int SetSpCameraModeSWParams();
 static int PickSpCameraModeSW(POINT srcpos);
+static int SetSpCameraInheritSWParams();
+static int PickSpCameraInheritSW(POINT srcpos);
 
 
 static int PickRigBone(UIPICKINFO* ppickinfo, bool forrigtip = false, int* dstrigno = 0);
@@ -3763,14 +3795,14 @@ void InitApp()
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
 	//::MessageBox(NULL, strchk, L"check", MB_OK);
 
-	ZeroMemory(s_rigopemark_sphere, sizeof(CModel*) * (RIGMULTINDEXMAX + 1));
-	ZeroMemory(s_rigopemark_ringX, sizeof(CModel*) * (RIGMULTINDEXMAX + 1));
-	ZeroMemory(s_rigopemark_ringY, sizeof(CModel*) * (RIGMULTINDEXMAX + 1));
-	ZeroMemory(s_rigopemark_ringZ, sizeof(CModel*) * (RIGMULTINDEXMAX + 1));
-	ZeroMemory(s_rigmaterial_sphere, sizeof(CMQOMaterial*) * (RIGMULTINDEXMAX + 1));
-	ZeroMemory(s_rigmaterial_ringX, sizeof(CMQOMaterial*) * (RIGMULTINDEXMAX + 1));
-	ZeroMemory(s_rigmaterial_ringY, sizeof(CMQOMaterial*) * (RIGMULTINDEXMAX + 1));
-	ZeroMemory(s_rigmaterial_ringZ, sizeof(CMQOMaterial*) * (RIGMULTINDEXMAX + 1));
+	::ZeroMemory(s_rigopemark_sphere, sizeof(CModel*) * (RIGMULTINDEXMAX + 1));
+	::ZeroMemory(s_rigopemark_ringX, sizeof(CModel*) * (RIGMULTINDEXMAX + 1));
+	::ZeroMemory(s_rigopemark_ringY, sizeof(CModel*) * (RIGMULTINDEXMAX + 1));
+	::ZeroMemory(s_rigopemark_ringZ, sizeof(CModel*) * (RIGMULTINDEXMAX + 1));
+	::ZeroMemory(s_rigmaterial_sphere, sizeof(CMQOMaterial*) * (RIGMULTINDEXMAX + 1));
+	::ZeroMemory(s_rigmaterial_ringX, sizeof(CMQOMaterial*) * (RIGMULTINDEXMAX + 1));
+	::ZeroMemory(s_rigmaterial_ringY, sizeof(CMQOMaterial*) * (RIGMULTINDEXMAX + 1));
+	::ZeroMemory(s_rigmaterial_ringZ, sizeof(CMQOMaterial*) * (RIGMULTINDEXMAX + 1));
 	s_matrigmat = ChaVector4(255.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f, 1.0f);
 
 	s_tiprigboneno = -1;
@@ -3782,9 +3814,10 @@ void InitApp()
 
 	g_previewFlag = 0;
 	s_savepreviewFlag = 0;
-	g_cameraanimmode = 0;
+	g_cameraanimmode = 0;//0: OFF, 1:ON, 2:ON and RootMotionOption ON
 	s_savecameraanimmode = 0;
-
+	g_cameraInheritMode = CAMERA_INHERIT_ALL;
+	s_saveCameraInheritMode = g_cameraInheritMode;
 
 	{
 		s_cameraframe = 0.0;
@@ -4260,8 +4293,8 @@ void InitApp()
 	CRigidElem::InitRigidElems();
 	CBone::InitBones();
 	CMotionPoint::InitMotionPoints();
-	InitEulKeys();
-	InitKeys();
+	OrgWinGUI::InitEulKeys();
+	OrgWinGUI::InitKeys();
 
 	s_motmenuindexmap.clear();
 	s_reindexmap.clear();
@@ -4364,28 +4397,28 @@ void InitApp()
 	s_bvhbone_cbno = 0;
 
 
-	ZeroMemory(s_spundo, sizeof(SPELEM) * 2);
-	ZeroMemory(s_spaxis, sizeof(SPAXIS) * SPAXISNUM);
-	ZeroMemory(s_spcam, sizeof(SPCAM) * SPR_CAM_MAX);
-	ZeroMemory(s_sprig, sizeof(SPELEM) * SPRIGMAX);
-	//ZeroMemory(&s_spbt, sizeof(SPELEM));
-	ZeroMemory(&s_spmousehere, sizeof(SPELEM));
-	ZeroMemory(&s_spret2prev, sizeof(SPELEM));
-	ZeroMemory(&s_spcplw2w, sizeof(SPELEM));
-	ZeroMemory(&s_spsmooth, sizeof(SPELEM));
-	ZeroMemory(&s_spconstexe, sizeof(SPELEM));
-	ZeroMemory(&s_spconstrefresh, sizeof(SPELEM));
-	ZeroMemory(&s_mousecenteron, sizeof(SPELEM));
+	::ZeroMemory(s_spundo, sizeof(SPELEM) * 2);
+	::ZeroMemory(s_spaxis, sizeof(SPAXIS) * SPAXISNUM);
+	::ZeroMemory(s_spcam, sizeof(SPCAM) * SPR_CAM_MAX);
+	::ZeroMemory(s_sprig, sizeof(SPELEM) * SPRIGMAX);
+	//::ZeroMemory(&s_spbt, sizeof(SPELEM));
+	::ZeroMemory(&s_spmousehere, sizeof(SPELEM));
+	::ZeroMemory(&s_spret2prev, sizeof(SPELEM));
+	::ZeroMemory(&s_spcplw2w, sizeof(SPELEM));
+	::ZeroMemory(&s_spsmooth, sizeof(SPELEM));
+	::ZeroMemory(&s_spconstexe, sizeof(SPELEM));
+	::ZeroMemory(&s_spconstrefresh, sizeof(SPELEM));
+	::ZeroMemory(&s_mousecenteron, sizeof(SPELEM));
 
 	{
-		ZeroMemory(&s_spaimbar, sizeof(SPGUISW) * SPAIMBARNUM);
+		::ZeroMemory(&s_spaimbar, sizeof(SPGUISW) * SPAIMBARNUM);
 		int spgno;
 		for (spgno = 0; spgno < SPAIMBARNUM; spgno++) {
 			s_spaimbar[spgno].state = false;
 		}
 	}
 	{
-		ZeroMemory(&s_spmenuaimbar, sizeof(SPGUISW) * SPMENU_MAX);
+		::ZeroMemory(&s_spmenuaimbar, sizeof(SPGUISW) * SPMENU_MAX);
 		int spgno;
 		for (spgno = 0; spgno < SPMENU_MAX; spgno++) {
 			s_spmenuaimbar[spgno].state = false;
@@ -4393,45 +4426,50 @@ void InitApp()
 	}
 
 	{
-		ZeroMemory(&s_spsel3d, sizeof(SPGUISW));
+		::ZeroMemory(&s_spsel3d, sizeof(SPGUISW));
 		s_spsel3d.state = false;
 	}
 
 	{
-		ZeroMemory(&s_spikmodesw, sizeof(SPGUISW) * 3);
+		::ZeroMemory(&s_spikmodesw, sizeof(SPGUISW) * 3);
 		s_spikmodesw[0].state = true;
 		s_spikmodesw[1].state = false;
 		s_spikmodesw[2].state = false;
 	}
 	{
-		ZeroMemory(&s_sprefpos, sizeof(SPGUISW));
+		::ZeroMemory(&s_sprefpos, sizeof(SPGUISW));
 		//s_sprefpos.state = true;
 		s_sprefpos.state = false;//2021/11/22 ReferencePose Off by default
 	}
 	{
-		ZeroMemory(&s_splimiteul, sizeof(SPGUISW));
+		::ZeroMemory(&s_splimiteul, sizeof(SPGUISW));
 		//s_splimiteul.state = true;
 		s_splimiteul.state = false;
 	}
 	{
-		ZeroMemory(&s_spcameramode, sizeof(SPGUISW));
+		::ZeroMemory(&s_spcameramode, sizeof(SPGUISW));
 		//s_splimiteul.state = true;
 		s_spcameramode.state = false;
 	}
 	{
-		ZeroMemory(&s_spscraping, sizeof(SPGUISW));
+		::ZeroMemory(&s_spcamerainherit, sizeof(SPGUISW3));
+		//s_splimiteul.state = true;
+		s_spcamerainherit.mode = CAMERA_INHERIT_ALL;
+	}
+	{
+		::ZeroMemory(&s_spscraping, sizeof(SPGUISW));
 		//s_spscraping.state = true;
 		s_spscraping.state = false;
 	}
 	{
-		ZeroMemory(&s_spguisw, sizeof(SPGUISW) * SPGUISWNUM);
+		::ZeroMemory(&s_spguisw, sizeof(SPGUISW) * SPGUISWNUM);
 		int spgno;
 		for (spgno = 0; spgno < SPGUISWNUM; spgno++) {
 			s_spguisw[spgno].state = true;//初回のGUISetVisibleで反転してfalseになる
 		}
 	}
 	{
-		ZeroMemory(&s_sprigidsw, sizeof(SPGUISW) * SPRIGIDSWNUM);
+		::ZeroMemory(&s_sprigidsw, sizeof(SPGUISW) * SPRIGIDSWNUM);
 		int spgno;
 		for (spgno = 0; spgno < SPRIGIDSWNUM; spgno++) {
 			s_sprigidsw[spgno].state = false;
@@ -4439,7 +4477,7 @@ void InitApp()
 		s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].state = true;
 	}
 
-	ZeroMemory(&s_spretargetsw, sizeof(SPGUISW) * SPRETARGETSWNUM);
+	::ZeroMemory(&s_spretargetsw, sizeof(SPGUISW) * SPRETARGETSWNUM);
 	s_spretargetsw[SPRETARGETSW_RETARGET].state = false;
 	s_spretargetsw[SPRETARGETSW_LIMITEULER].state = false;
 
@@ -5123,6 +5161,30 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	CallF(s_spcameramode.spriteOFF->Create(pd3dImmediateContext, mpath, L"CamAnimOFF.png", 0, 0), return S_FALSE);
 
 
+	//SpriteSwitch CameraInheritMode
+	s_spcamerainherit.sprite1 = new CMySprite(s_pdev);
+	if (!s_spcamerainherit.sprite1) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
+	CallF(s_spcamerainherit.sprite1->Create(pd3dImmediateContext, mpath, L"CameraInherit_All.png", 0, 0), return S_FALSE);
+	s_spcamerainherit.sprite2 = new CMySprite(s_pdev);
+	if (!s_spcamerainherit.sprite2) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
+	CallF(s_spcamerainherit.sprite2->Create(pd3dImmediateContext, mpath, L"CameraInherit_CancelNull1.png", 0, 0), return S_FALSE);
+	s_spcamerainherit.sprite3 = new CMySprite(s_pdev);
+	if (!s_spcamerainherit.sprite3) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
+	CallF(s_spcamerainherit.sprite3->Create(pd3dImmediateContext, mpath, L"CameraInherit_CancelNull2.png", 0, 0), return S_FALSE);
+
+
 
 	//SpriteSwitch Scraping
 	s_spscraping.spriteON = new CMySprite(s_pdev);
@@ -5767,6 +5829,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpMouseHereParams();
 	SetSpMouseCenterParams();//SetSpCamParamsよりも後で呼ぶ　位置を参照しているから
 	SetSpCameraModeSWParams();
+	SetSpCameraInheritSWParams();
 
 
 	//g_HUD.SetLocation(pBackBufferSurfaceDesc->Width - 170, 0);
@@ -6972,6 +7035,25 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 			delete curspgOFF;
 		}
 		s_spcameramode.spriteOFF = 0;
+	}
+	{
+		CMySprite* curspg1 = s_spcamerainherit.sprite1;
+		if (curspg1) {
+			delete curspg1;
+		}
+		s_spcamerainherit.sprite1 = 0;
+
+		CMySprite* curspg2 = s_spcamerainherit.sprite2;
+		if (curspg2) {
+			delete curspg2;
+		}
+		s_spcamerainherit.sprite2 = 0;
+
+		CMySprite* curspg3 = s_spcamerainherit.sprite3;
+		if (curspg3) {
+			delete curspg3;
+		}
+		s_spcamerainherit.sprite3 = 0;
 	}
 	{
 		CMySprite* curspgON = s_spscraping.spriteON;
@@ -8735,6 +8817,14 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			pickcameramodeflag = PickSpCameraModeSW(ptCursor);
 			if (pickcameramodeflag == 1) {
 				ChangeCameraMode(0);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
+			}
+		}
+		{
+			//camerainherit switch
+			int pickcamerainheritflag = 0;
+			pickcamerainheritflag = PickSpCameraInheritSW(ptCursor);
+			if (pickcamerainheritflag == 1) {
+				ChangeCameraInherit();
 			}
 		}
 		{
@@ -11637,7 +11727,7 @@ int SetCameraModel()
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel) {
-			if (curmodel->GetCameraFbx() && curmodel->GetCameraFbx()->IsLoaded()) {
+			if ((g_endappflag == 0) && curmodel->GetCameraFbx() && curmodel->GetCameraFbx()->IsLoaded()) {
 				s_cameramodel = curmodel;//後から読み込んだモデルの中で　カメラがあれば　それを選ぶ
 			}
 		}
@@ -14141,11 +14231,13 @@ int OnDelAllModel()
 		itrmodel->lineno2boneno.clear();
 	}
 
-	SetCameraModel();
-
 	OrgWindowListenMouse(false);
 
 	s_modelindex.clear();
+
+	//SetCameraModel();
+	s_cameramodel = 0;//2023/06/02
+
 
 	s_curboneno = -1;
 	s_model = 0;
@@ -20227,6 +20319,52 @@ int SetSpCameraModeSWParams()
 	return 0;
 }
 
+int SetSpCameraInheritSWParams()
+{
+	if (!(s_spcamerainherit.sprite1) || !(s_spcamerainherit.sprite2) || !(s_spcamerainherit.sprite3)) {
+		_ASSERT(0);
+		return 0;
+	}
+
+
+	int spgshift = 6;
+	s_spcamerainherit.dispcenter.x = s_mainwidth - (int)s_spsize - 10 - (int)s_spsize - 6 - ((int)s_spsize + 6) * 5;
+	s_spcamerainherit.dispcenter.y = (int)(s_spsize / 2) + 6 + (int)s_spsize / 2 + 10;
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_spcamerainherit.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_spcamerainherit.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(s_spsize / (float)s_mainwidth * 2.0f, s_spsize / (float)s_mainheight * 2.0f);
+
+
+	dispsize *= 0.80f;//大きくみえるデザインなので　少し小さくして表示　当たり判定は元の大きさ
+
+
+	if (s_spcamerainherit.sprite1) {
+		CallF(s_spcamerainherit.sprite1->SetPos(disppos), return 1);
+		CallF(s_spcamerainherit.sprite1->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+	if (s_spcamerainherit.sprite2) {
+		CallF(s_spcamerainherit.sprite2->SetPos(disppos), return 1);
+		CallF(s_spcamerainherit.sprite2->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+	if (s_spcamerainherit.sprite3) {
+		CallF(s_spcamerainherit.sprite3->SetPos(disppos), return 1);
+		CallF(s_spcamerainherit.sprite3->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+}
 
 int SetSpRigParams()
 {
@@ -20939,6 +21077,42 @@ int PickSpCameraModeSW(POINT srcpos)
 
 	return ispick;
 }
+
+int PickSpCameraInheritSW(POINT srcpos)
+{
+	int ispick = 0;
+
+	//if (g_previewFlag != 0) {
+	//	return 0;
+	//}
+
+	//if (g_previewFlag == 5){
+	//	return 0;
+	//}
+
+	//sprefpos
+	int startx = s_spcamerainherit.dispcenter.x - (int)s_spsize / 2;
+	int endx = startx + (int)s_spsize;
+
+	if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+		//int starty = s_spcamerainherit.dispcenter.y - (int)s_spsize / 2;
+		//int endy = starty + (int)s_spsize + 6;
+
+
+		//上のカメラオンオフスプライトに半分重ねているので　下半分が当り
+		int starty = s_spcamerainherit.dispcenter.y;// -(int)s_spsize / 2;
+		int endy = starty + (int)(s_spsize / 2) + 6;
+
+
+		if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+			ispick = 1;
+		}
+	}
+
+	return ispick;
+}
+
+
 
 int PickSpRig(POINT srcpos)
 {
@@ -23889,7 +24063,7 @@ int ChangeCameraMode(int forcemode)
 			}
 		}
 		else {
-			//現在のスイッチがオンの場合　オフにする
+			//現在のスイッチがオンかつオプションもオンの場合　オフにする
 			g_cameraanimmode = 0;
 			s_spcameramode.state = false;
 		}
@@ -23910,6 +24084,52 @@ int ChangeCameraMode(int forcemode)
 
 	return 0;
 }
+
+int ChangeCameraInherit()
+{
+	s_saveCameraInheritMode = g_cameraInheritMode;
+
+	switch (s_spcamerainherit.mode) {
+	case CAMERA_INHERIT_ALL:
+		if (s_cameramodel) {
+			//カメラモデルが存在する場合　次モード
+			g_cameraInheritMode = CAMERA_INHERIT_CANCEL_NULL1;
+			s_spcamerainherit.mode = 1;
+		}
+		else {
+			//カメラモデルが存在しない場合
+			//何もしない
+		}
+		break;
+	case CAMERA_INHERIT_CANCEL_NULL1:
+		if (s_cameramodel) {
+			//カメラモデルが存在する場合　次モード
+			g_cameraInheritMode = CAMERA_INHERIT_CANCEL_NULL2;
+			s_spcamerainherit.mode = 2;
+		}
+		else {
+			//カメラモデルが存在しない場合
+			//何もしない
+		}
+		break;
+	case CAMERA_INHERIT_CANCEL_NULL2:
+		if (s_cameramodel) {
+			//最初のモードへ
+			g_cameraInheritMode = CAMERA_INHERIT_ALL;
+			s_spcamerainherit.mode = 0;
+		}
+		else {
+			//カメラモデルが存在しない場合
+			//何もしない
+		}
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+
 
 
 int OnFrameKeyboard()
@@ -24249,8 +24469,8 @@ int OnFramePreviewCamera(double srcnextframe)
 	double nextcameraframe = 0.0;
 
 
-	if (g_cameraanimmode == 1) {//2023/05/29
-		
+	if (g_cameraanimmode != 0) {//2023/05/29 2023/06/04
+	 
 		//########################
 		//カメラアニメモード　オン
 		//########################
@@ -24275,8 +24495,7 @@ int OnFramePreviewCamera(double srcnextframe)
 				//########################################
 				//プレビュー中 && カメラアニメモード　オン
 				//########################################
-				//s_cameramodel->GetCameraAnimParams(roundingframe, s_projfar, &g_camEye, &g_camtargetpos);
-				s_cameramodel->GetCameraAnimParams(roundingframe, s_camdist, &g_camEye, &g_camtargetpos);//s_camdist
+				s_cameramodel->GetCameraAnimParams(roundingframe, s_camdist, &g_camEye, &g_camtargetpos, 0, g_cameraInheritMode);//s_camdist
 				g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 			}
 			else {
@@ -24296,8 +24515,7 @@ int OnFramePreviewCamera(double srcnextframe)
 					g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 				}
 				else {
-					//s_cameramodel->GetCameraAnimParams(roundingframe, s_projfar, &g_camEye, &g_camtargetpos);
-					s_cameramodel->GetCameraAnimParams(roundingframe, s_camdist, &g_camEye, &g_camtargetpos);//s_camdist
+					s_cameramodel->GetCameraAnimParams(roundingframe, s_camdist, &g_camEye, &g_camtargetpos, 0, g_cameraInheritMode);//s_camdist
 					g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 				}
 			}
@@ -30560,25 +30778,6 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 				}
 			}
 
-			//cameramode
-			if (s_spcameramode.state) {
-				if (s_spcameramode.spriteON) {
-					s_spcameramode.spriteON->OnRender(pd3dImmediateContext);
-				}
-				else {
-					_ASSERT(0);
-				}
-			}
-			else {
-				if (s_spcameramode.spriteOFF) {
-					s_spcameramode.spriteOFF->OnRender(pd3dImmediateContext);
-				}
-				else {
-					_ASSERT(0);
-				}
-			}
-
-
 			//scrapingsw
 			if (s_spscraping.state) {
 				if (s_spscraping.spriteON) {
@@ -30666,7 +30865,50 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 				_ASSERT(0);
 			}
 		}
-
+		//cameramode
+		if (s_spcameramode.state == true) {
+			if (s_spcameramode.spriteON) {
+				s_spcameramode.spriteON->OnRender(pd3dImmediateContext);
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+		else {
+			if (s_spcameramode.spriteOFF) {
+				s_spcameramode.spriteOFF->OnRender(pd3dImmediateContext);
+			}
+			else {
+				_ASSERT(0);
+			}
+		}
+		//camerainherit
+		if (g_cameraanimmode != 0) {
+			if (s_spcamerainherit.mode == 0) {
+				if (s_spcamerainherit.sprite1) {
+					s_spcamerainherit.sprite1->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+			else if (s_spcamerainherit.mode == 1) {
+				if (s_spcamerainherit.sprite2) {
+					s_spcamerainherit.sprite2->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+			else if (s_spcamerainherit.mode == 2) {
+				if (s_spcamerainherit.sprite3) {
+					s_spcamerainherit.sprite3->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+		}
 	}
 
 
@@ -34140,8 +34382,10 @@ void ShowRetargetWnd(bool srcflag)
 				//if (!s_convboneWnd) {
 				CreateConvBoneWnd();
 				//}
-				s_convboneWnd->setListenMouse(true);
-				s_convboneWnd->setVisible(true);
+				if (s_convboneWnd) {
+					s_convboneWnd->setListenMouse(true);
+					s_convboneWnd->setVisible(true);
+				}
 				s_spretargetsw[SPRETARGETSW_RETARGET].state = true;
 				s_dispconvbone = true;
 			}
