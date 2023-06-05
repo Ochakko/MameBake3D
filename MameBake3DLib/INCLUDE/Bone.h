@@ -1315,7 +1315,7 @@ public: //accesser
 	//2023/02/16
 	//fbxの初期姿勢のジョイントの向きを書き出すために追加
 	void SaveFbxNodePosture(FbxNode* pNode);
-	void RestoreFbxNodePosture(FbxNode* pNode);
+	//void RestoreFbxNodePosture(FbxNode* pNode);
 
 
 	void ClearIKRotRec()

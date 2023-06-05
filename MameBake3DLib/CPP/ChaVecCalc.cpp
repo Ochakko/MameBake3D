@@ -1175,6 +1175,7 @@ FbxDouble3 ChaVector3::ConvRotOrder2XYZ(EFbxRotationOrder rotorder)
 	int isendbone = 0;
 	int notmodify180flag = 1;
 	rotq.Q2EulXYZusingQ(0, befeul, &eulxyz, isfirstbone, isendbone, notmodify180flag);
+	//rotq.Q2EulXYZusingMat(0, 0, befeul, &eulxyz, isfirstbone, isendbone, notmodify180flag);
 
 	return FbxDouble3(eulxyz.x, eulxyz.y, eulxyz.z);
 }

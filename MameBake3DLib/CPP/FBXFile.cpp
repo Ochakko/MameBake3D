@@ -111,7 +111,7 @@ static int s_firstoutmot;
 
 //static void CreateSaveNode2BoneReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* ploadnode, FbxNode* parentskelnode);
 static void CreateAndCopyFbxNodeReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel, FbxNode* psavenode, CNodeOnLoad* ploadnode);
-static int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode, bool useorgflag);
+static int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode);
 static void CreateSkinMeshReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel, FbxNode* psavenode, CNodeOnLoad* ploadnode);
 
 
@@ -610,7 +610,7 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene, char* fbxdate )
 //	}
 //}
 
-int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode, bool useorgflag)
+int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode)
 {
 	if (!srcnode || !psavenode) {
 		_ASSERT(0);
@@ -631,15 +631,15 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode, bool useorgflag)
 
 	FbxTime fbxtime;
 	fbxtime.SetSecondDouble(0.0);
-	//fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
-	//fbxLclRot = srcnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
-	//fbxLclScl = srcnode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
+	fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
+	fbxLclRot = srcnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+	fbxLclScl = srcnode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
 	//fbxLclPos = srcnode->LclTranslation;
 	//fbxLclRot = srcnode->LclRotation;
 	//fbxLclScl = srcnode->LclScaling;
-	fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);//target false
-	fbxLclRot = srcnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);//target false
-	fbxLclScl = srcnode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);//target false
+	//fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);//target false
+	//fbxLclRot = srcnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);//target false
+	//fbxLclScl = srcnode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);//target false
 
 	fbxRotOff = srcnode->GetRotationOffset(FbxNode::eSourcePivot);
 	fbxRotPiv = srcnode->GetRotationPivot(FbxNode::eSourcePivot);
@@ -649,34 +649,84 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode, bool useorgflag)
 	fbxSclPiv = srcnode->GetScalingPivot(FbxNode::eSourcePivot);
 	fbxrotationActive = srcnode->GetRotationActive();
 	srcnode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
-	//FbxTransform::EInheritType lInheritType = srcnode->InheritType.Get();//2023/06/03
+	FbxTransform::EInheritType lInheritType = srcnode->InheritType.Get();//2023/06/03
+
+	
+	char nodename[256] = { 0 };
+	sprintf_s(nodename, 256, srcnode->GetName());
+	if (strstr(nodename, "Pipes_Module__24_") != 0) {
+		int dbgflag = 1;
+	}
 
 
-	psavenode->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);//2023/06/03
-	//ChaVector3 roteul, preroteul, postroteul;
-	//FbxDouble3 roteulxyz, preroteulxyz, postroteulxyz;
-	//roteul = ChaVector3(fbxLclRot);
-	//preroteul = ChaVector3(fbxPreRot);
-	//postroteul = ChaVector3(fbxPostRot);
-	//roteulxyz = roteul.ConvRotOrder2XYZ(eEulerXYZ);
-	//preroteulxyz = preroteul.ConvRotOrder2XYZ(eEulerXYZ);
-	//postroteulxyz = postroteul.ConvRotOrder2XYZ(eEulerXYZ);
+	bool useorgorder = false;
+	FbxNodeAttribute* pAttrib = srcnode->GetNodeAttribute();
+	if (pAttrib) {
+		FbxNodeAttribute::EType type = (FbxNodeAttribute::EType)(pAttrib->GetAttributeType());
+		switch (type)
+		{
+		case FbxNodeAttribute::eMesh:
+		case FbxNodeAttribute::eNull:
+			useorgorder = true;
+			break;
+		default:
+			useorgorder = false;
+			break;
+		}
+	}
+	else {
+		useorgorder = true;
+	}
 
+	if (useorgorder == true) {
+		//############################################
+		//eMesh, eNullはそのままのRotationOrderで保存
+		//############################################
+		int orgrotationorder = (int)rotationorder;
+		psavenode->SetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+		psavenode->SetRotationOrder(FbxNode::eDestinationPivot, rotationorder);
 
-	psavenode->LclTranslation.Set(fbxLclPos);
-	psavenode->LclRotation.Set(fbxLclRot);
-	//psavenode->LclRotation.Set(roteulxyz);
-	psavenode->LclScaling.Set(fbxLclScl);
-	psavenode->SetRotationOffset(FbxNode::eSourcePivot, fbxRotOff);
-	psavenode->SetRotationPivot(FbxNode::eSourcePivot, fbxRotPiv);
-	psavenode->SetPreRotation(FbxNode::eSourcePivot, fbxPreRot);
-	psavenode->SetPostRotation(FbxNode::eSourcePivot, fbxPostRot);
-	//psavenode->SetPreRotation(FbxNode::eSourcePivot, preroteulxyz);
-	//psavenode->SetPostRotation(FbxNode::eSourcePivot, postroteulxyz);
-	psavenode->SetScalingOffset(FbxNode::eSourcePivot, fbxSclOff);
-	psavenode->SetScalingPivot(FbxNode::eSourcePivot, fbxSclPiv);
-	psavenode->SetRotationActive(fbxrotationActive);
-	//psavenode->InheritType.Set(lInheritType);//2023/06/03
+		psavenode->LclTranslation.Set(fbxLclPos);
+		psavenode->LclRotation.Set(fbxLclRot);
+		psavenode->LclScaling.Set(fbxLclScl);
+		psavenode->SetRotationOffset(FbxNode::eSourcePivot, fbxRotOff);
+		psavenode->SetRotationPivot(FbxNode::eSourcePivot, fbxRotPiv);
+		psavenode->SetPreRotation(FbxNode::eSourcePivot, fbxPreRot);
+		psavenode->SetPostRotation(FbxNode::eSourcePivot, fbxPostRot);
+		psavenode->SetScalingOffset(FbxNode::eSourcePivot, fbxSclOff);
+		psavenode->SetScalingPivot(FbxNode::eSourcePivot, fbxSclPiv);
+		psavenode->SetRotationActive(fbxrotationActive);
+		psavenode->InheritType.Set(lInheritType);//2023/06/03
+	}
+	else {
+		psavenode->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);//2023/06/03
+		psavenode->SetRotationOrder(FbxNode::eDestinationPivot, eEulerXYZ);//2023/06/03
+
+		//ChaVector3 roteul, preroteul, postroteul;
+		//FbxDouble3 roteulxyz, preroteulxyz, postroteulxyz;
+		//roteul = ChaVector3(fbxLclRot);
+		//preroteul = ChaVector3(fbxPreRot);
+		//postroteul = ChaVector3(fbxPostRot);
+		//roteulxyz = roteul.ConvRotOrder2XYZ(rotationorder);
+		//preroteulxyz = preroteul.ConvRotOrder2XYZ(rotationorder);
+		//postroteulxyz = postroteul.ConvRotOrder2XYZ(rotationorder);
+
+		psavenode->LclTranslation.Set(fbxLclPos);
+		psavenode->LclRotation.Set(fbxLclRot);
+		//psavenode->LclRotation.Set(roteulxyz);
+		psavenode->LclScaling.Set(fbxLclScl);
+		psavenode->SetRotationOffset(FbxNode::eSourcePivot, fbxRotOff);
+		psavenode->SetRotationPivot(FbxNode::eSourcePivot, fbxRotPiv);
+		psavenode->SetPreRotation(FbxNode::eSourcePivot, fbxPreRot);
+		psavenode->SetPostRotation(FbxNode::eSourcePivot, fbxPostRot);
+		//psavenode->SetPreRotation(FbxNode::eSourcePivot, preroteulxyz);
+		//psavenode->SetPostRotation(FbxNode::eSourcePivot, postroteulxyz);
+		psavenode->SetScalingOffset(FbxNode::eSourcePivot, fbxSclOff);
+		psavenode->SetScalingPivot(FbxNode::eSourcePivot, fbxSclPiv);
+		psavenode->SetRotationActive(fbxrotationActive);
+		psavenode->InheritType.Set(lInheritType);//2023/06/03
+
+	}
 
 	return 0;
 
@@ -751,7 +801,7 @@ void CreateAndCopyFbxNodeReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* 
 
 
 				s_savenode2bone[psavenode] = ploadnode->GetBone();
-				CopyNodePosture(srcnode, psavenode, false);//2023/06/02
+				CopyNodePosture(srcnode, psavenode);//2023/06/02
 
 			}
 			break;
@@ -830,7 +880,7 @@ void CreateAndCopyFbxNodeReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* 
 
 
 				s_savenode2bone[psavenode] = ploadnode->GetBone();//2023/06/02
-				CopyNodePosture(srcnode, psavenode, false);//2023/06/02
+				CopyNodePosture(srcnode, psavenode);//2023/06/02
 
 
 			}
@@ -876,7 +926,7 @@ void CreateAndCopyFbxNodeReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* 
 
 
 				s_savenode2bone[psavenode] = ploadnode->GetBone();//2023/06/02
-				CopyNodePosture(srcnode, psavenode, false);//2023/06/02
+				CopyNodePosture(srcnode, psavenode);//2023/06/02
 
 			}
 			break;
@@ -1197,19 +1247,34 @@ void CreateAndCopyFbxNodeReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* 
 
 		}
 		else {
+
+			//######################
 			//attrib無しは　eNull
+			//######################
 
 			const char* dbgname = srcnode->GetName();
 			if (strstr(dbgname, "RootNode") == 0) {
-				psavenode = FbxNode::Create(pScene, srcnode->GetName());
-				if (!psavenode) {
-					_ASSERT(0);
-					return;
+				{
+					psavenode = FbxNode::Create(pScene, srcnode->GetName());
+					if (!psavenode) {
+						_ASSERT(0);
+						return;
+					}
+					psaveparentnode->AddChild(psavenode);
+
+					//FbxNull* lNull = FbxNull::Create(pScene, srcnode->GetName());
+					//psavenode->SetNodeAttribute(lNull);
+					//FbxNodeAttribute* saveattr = psavenode->GetNodeAttribute();
+					//if (saveattr) {
+					//	saveattr->Copy(*srcattr);
+					//}
+					psavenode->Copy(*srcnode);
+
+
+					s_savenode2bone[psavenode] = ploadnode->GetBone();//2023/06/02
+					CopyNodePosture(srcnode, psavenode);//2023/06/05
 				}
 
-				psaveparentnode->AddChild(psavenode);
-
-				psavenode->Copy(*srcnode);
 			}
 			else {
 				//2023/04/28
@@ -1963,7 +2028,7 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene,
 	
 	//lNode->LclRotation.Set(srcnode->LclRotation);
 
-	CopyNodePosture(srcnode, lNode, false);//2023/06/02
+	CopyNodePosture(srcnode, lNode);//2023/06/02
 
 
 	// Set material mapping.
@@ -2993,17 +3058,12 @@ void AnimateBoneReq(bool limitdegflag, FbxNode* pNode, FbxAnimLayer* lAnimLayer,
 		CBone* curbone = itrbone->second;
 		if (curbone) {
 
-			//if (curbone->IsCamera() && curbone->GetParModel()) {
-			//	FbxNode* nodeloaded = curbone->GetParModel()->FindNodeByBone(curbone);
-			//	EFbxRotationOrder orderloaded;
-			//	nodeloaded->GetRotationOrder(FbxNode::eSourcePivot, orderloaded);
-			//	lSkel->SetRotationOrder(FbxNode::eSourcePivot, orderloaded);
-			//	lSkel->SetRotationOrder(FbxNode::eDestinationPivot, orderloaded);
-			//}
-			//else {
-				lSkel->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);
-				lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerXYZ);
-			//}
+			//注意　ここは　CBone::IsNull()==trueのときにも通る
+
+
+			//コメントアウト　RotationOrderは　CreateAndCopyFbxNodeReq()にて　CopyNodePosture()を使って設定済　eNull, eMeshは元データと同じRotationOrder
+			//lSkel->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);
+			//lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerXYZ);
 			
 
 			s_convPivot = FbxNode::eDestinationPivot;
@@ -3012,7 +3072,9 @@ void AnimateBoneReq(bool limitdegflag, FbxNode* pNode, FbxAnimLayer* lAnimLayer,
 			fbxbone.SetSkelNode(pNode);
 			fbxbone.SetBone(curbone);
 
-			if (curbone->IsSkeleton() || curbone->IsCamera()) {
+			if (curbone->IsSkeleton() || 
+				(curbone->IsCamera() && curbone->GetParModel() && (curmotid == curbone->GetParModel()->GetCameraMotionId()))) {//2023/06/05
+
 				WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
 				WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
 				WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
@@ -3250,23 +3312,23 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 		fbxS.SetIdentity();
 		fbxSpinv.SetIdentity();
 
-		fbxT.SetTranslation(ChaVector3((float)fbxLclPos[0], (float)fbxLclPos[1], (float)fbxLclPos[2]));
-		fbxRoff.SetTranslation(ChaVector3((float)fbxRotOff[0], (float)fbxRotOff[1], (float)fbxRotOff[2]));
-		fbxRp.SetTranslation(ChaVector3((float)fbxRotPiv[0], (float)fbxRotPiv[1], (float)fbxRotPiv[2]));
+		fbxT.SetTranslation(ChaVector3(fbxLclPos));
+		fbxRoff.SetTranslation(ChaVector3(fbxRotOff));
+		fbxRp.SetTranslation(ChaVector3(fbxRotPiv));
 
 		//fbxRpre.SetXYZRotation(0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
 		//fbxR.SetXYZRotation(0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
 		//fbxRpost.SetXYZRotation(0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
 
 		////2023/03/27 : rotationorder対応
-		fbxRpre.SetRotation(rotationorder, 0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
-		fbxR.SetRotation(rotationorder, 0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
-		fbxRpost.SetRotation(rotationorder, 0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
+		fbxRpre.SetRotation(rotationorder, 0, ChaVector3(fbxPreRot));
+		fbxR.SetRotation(rotationorder, 0, ChaVector3(fbxLclRot));
+		fbxRpost.SetRotation(rotationorder, 0, ChaVector3(fbxPostRot));
 
 		fbxRpinv = ChaMatrixInv(fbxRp);
-		fbxSoff.SetTranslation(ChaVector3((float)fbxSclOff[0], (float)fbxSclOff[1], (float)fbxSclOff[2]));
-		fbxSp.SetTranslation(ChaVector3((float)fbxSclPiv[0], (float)fbxSclPiv[1], (float)fbxSclPiv[2]));
-		fbxS.SetScale(ChaVector3((float)fbxLclScl[0], (float)fbxLclScl[1], (float)fbxLclScl[2]));
+		fbxSoff.SetTranslation(ChaVector3(fbxSclOff));
+		fbxSp.SetTranslation(ChaVector3(fbxSclPiv));
+		fbxS.SetScale(ChaVector3(fbxLclScl));
 		fbxSpinv = ChaMatrixInv(fbxSp);
 
 		//##################################################################################################################

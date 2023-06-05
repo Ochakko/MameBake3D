@@ -3799,8 +3799,8 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 
 		FbxTime fbxtime0;
 		fbxtime0.SetSecondDouble(0.0);
-		//FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
-		FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot);
+		FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
+		//FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot);
 		globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
 
 		//CalcMeshMatReq(pNode, &globalmeshmat);

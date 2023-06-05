@@ -5990,7 +5990,7 @@ ChaVector3 CBone::GetLocalEul(bool limitdegflag, int srcmotid, double srcframe, 
 	ChaVector3 reteul = ChaVector3(0.0f, 0.0f, 0.0f);
 
 	//2023/04/28
-	if (IsNotSkeleton()) {
+	if (IsNotSkeleton() && IsNotCamera()) {//2023/06/05 eCamera対応
 		return reteul;
 	}
 
@@ -9959,50 +9959,50 @@ void CBone::SaveFbxNodePosture(FbxNode* pNode)
 	}
 }
 
-//2023/02/16
-//fbxの初期姿勢のジョイントの向きを書き出すために追加
-void CBone::RestoreFbxNodePosture(FbxNode* pNode)
-{
-
-	if (pNode) {
-		ChaVector3 roteul, preroteul, postroteul;
-		FbxDouble3 roteulxyz, preroteulxyz, postroteulxyz;
-
-		roteul = ChaVector3((float)m_fbxLclRot[0], (float)m_fbxLclRot[1], (float)m_fbxLclRot[2]);
-		preroteul = ChaVector3((float)m_fbxPreRot[0], (float)m_fbxPreRot[1], (float)m_fbxPreRot[2]);
-		postroteul = ChaVector3((float)m_fbxPostRot[0], (float)m_fbxPostRot[1], (float)m_fbxPostRot[2]);
-		roteulxyz = roteul.ConvRotOrder2XYZ(m_rotationorder);
-		preroteulxyz = preroteul.ConvRotOrder2XYZ(m_rotationorder);
-		postroteulxyz = postroteul.ConvRotOrder2XYZ(m_rotationorder);
-
-
-		pNode->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);//書き出しはXYZ
-
-
-		pNode->LclTranslation.Set(m_fbxLclPos);
-		//pNode->LclRotation.Set(m_fbxLclRot);
-		pNode->LclRotation.Set(roteulxyz);//書き出しはXYZ
-		pNode->LclScaling.Set(m_fbxLclScl);
-
-		pNode->SetRotationOffset(FbxNode::eSourcePivot, m_fbxRotOff);
-
-		pNode->SetRotationPivot(FbxNode::eSourcePivot, m_fbxRotPiv);
-
-		//pNode->SetPreRotation(FbxNode::eSourcePivot, m_fbxPreRot);
-		pNode->SetPreRotation(FbxNode::eSourcePivot, preroteulxyz);//書き出しはXYZ
-
-		//pNode->SetPostRotation(FbxNode::eSourcePivot, m_fbxPostRot);
-		pNode->SetPostRotation(FbxNode::eSourcePivot, postroteulxyz);//書き出しはXYZ
-
-		pNode->SetScalingOffset(FbxNode::eSourcePivot, m_fbxSclOff);
-
-		pNode->SetScalingPivot(FbxNode::eSourcePivot, m_fbxSclPiv);
-
-		pNode->SetRotationActive(m_fbxrotationActive);
-
-		pNode->InheritType.Set(m_InheritType);//2023/06/03
-	}
-}
+////2023/02/16
+////fbxの初期姿勢のジョイントの向きを書き出すために追加
+//void CBone::RestoreFbxNodePosture(FbxNode* pNode)
+//{
+//
+//	if (pNode) {
+//		ChaVector3 roteul, preroteul, postroteul;
+//		FbxDouble3 roteulxyz, preroteulxyz, postroteulxyz;
+//
+//		roteul = ChaVector3((float)m_fbxLclRot[0], (float)m_fbxLclRot[1], (float)m_fbxLclRot[2]);
+//		preroteul = ChaVector3((float)m_fbxPreRot[0], (float)m_fbxPreRot[1], (float)m_fbxPreRot[2]);
+//		postroteul = ChaVector3((float)m_fbxPostRot[0], (float)m_fbxPostRot[1], (float)m_fbxPostRot[2]);
+//		roteulxyz = roteul.ConvRotOrder2XYZ(m_rotationorder);
+//		preroteulxyz = preroteul.ConvRotOrder2XYZ(m_rotationorder);
+//		postroteulxyz = postroteul.ConvRotOrder2XYZ(m_rotationorder);
+//
+//
+//		pNode->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);//書き出しはXYZ
+//
+//
+//		pNode->LclTranslation.Set(m_fbxLclPos);
+//		//pNode->LclRotation.Set(m_fbxLclRot);
+//		pNode->LclRotation.Set(roteulxyz);//書き出しはXYZ
+//		pNode->LclScaling.Set(m_fbxLclScl);
+//
+//		pNode->SetRotationOffset(FbxNode::eSourcePivot, m_fbxRotOff);
+//
+//		pNode->SetRotationPivot(FbxNode::eSourcePivot, m_fbxRotPiv);
+//
+//		//pNode->SetPreRotation(FbxNode::eSourcePivot, m_fbxPreRot);
+//		pNode->SetPreRotation(FbxNode::eSourcePivot, preroteulxyz);//書き出しはXYZ
+//
+//		//pNode->SetPostRotation(FbxNode::eSourcePivot, m_fbxPostRot);
+//		pNode->SetPostRotation(FbxNode::eSourcePivot, postroteulxyz);//書き出しはXYZ
+//
+//		pNode->SetScalingOffset(FbxNode::eSourcePivot, m_fbxSclOff);
+//
+//		pNode->SetScalingPivot(FbxNode::eSourcePivot, m_fbxSclPiv);
+//
+//		pNode->SetRotationActive(m_fbxrotationActive);
+//
+//		pNode->InheritType.Set(m_InheritType);//2023/06/03
+//	}
+//}
 
 
 void CBone::SetIKTargetFlag(bool srcflag)
