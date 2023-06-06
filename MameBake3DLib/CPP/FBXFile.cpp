@@ -1323,6 +1323,12 @@ void CreateSkinMeshReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 	FbxNode* psavenode = 0;
 
 	if (srcnode) {
+
+
+		char dbgname[256] = { 0 };
+		strcpy_s(dbgname, 256, srcnode->GetName());
+
+
 		map<FbxNode*, FbxNode*>::iterator itrsavenode;
 		itrsavenode = s_loadnode2savenode.find(srcnode);
 		if (itrsavenode != s_loadnode2savenode.end()) {
@@ -1355,76 +1361,104 @@ void CreateSkinMeshReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 													//lSaveSkin->Copy(*lLoadSkin);
 
 													int loadclustercount = lLoadSkin->GetClusterCount();
-													int clusterno;
-													for (clusterno = 0; clusterno < loadclustercount; clusterno++) {
-														FbxCluster* lLoadCluster = lLoadSkin->GetCluster(clusterno);
-														if (lLoadCluster) {
-															FbxCluster* lSaveCluster = FbxCluster::Create(pScene, lLoadCluster->GetName());
-															if (lSaveCluster) {
-																//lSaveCluster->Copy(*lLoadCluster);
+													if (loadclustercount > 0) {
+														int clusterno;
+														for (clusterno = 0; clusterno < loadclustercount; clusterno++) {
+															FbxCluster* lLoadCluster = lLoadSkin->GetCluster(clusterno);
+															if (lLoadCluster) {
 
-																FbxNode* lLoadSkel = lLoadCluster->GetLink();
-																if (lLoadSkel) {
-																	map<FbxNode*, FbxNode*>::iterator itrsaveskel;
-																	itrsaveskel = s_loadnode2savenode.find(lLoadSkel);
-																	if (itrsaveskel != s_loadnode2savenode.end()) {
-																		FbxNode* lSaveSkel = itrsaveskel->second;
-																		if (lSaveSkel) {
-																			lSaveCluster->SetLink(lSaveSkel);
+																int loadindicesnum = lLoadCluster->GetControlPointIndicesCount();
+																if (loadindicesnum > 0) {//2023/06/06
 
-																			lSaveCluster->SetLinkMode(lLoadCluster->GetLinkMode());
+																	FbxCluster* lSaveCluster = FbxCluster::Create(pScene, lLoadCluster->GetName());
+																	if (lSaveCluster) {
+																		//lSaveCluster->Copy(*lLoadCluster);
 
-																			FbxAMatrix clustertransformmat;
-																			lLoadCluster->GetTransformMatrix(clustertransformmat);
-																			lSaveCluster->SetTransformMatrix(clustertransformmat);
+																		FbxNode* lLoadSkel = lLoadCluster->GetLink();
+																		if (lLoadSkel) {
 
-																			FbxAMatrix clusterlinkmat;
-																			lLoadCluster->GetTransformLinkMatrix(clusterlinkmat);
-																			lSaveCluster->SetTransformLinkMatrix(clusterlinkmat);
+																			char dbgname2[256] = { 0 };
+																			strcpy_s(dbgname2, 256, lLoadSkel->GetName());
+
+																			if (strstr(dbgname, "Face") != 0) {//meshの方の名前
+																				int dbgflag = 1;
+																			}
+
+																			map<FbxNode*, FbxNode*>::iterator itrsaveskel;
+																			itrsaveskel = s_loadnode2savenode.find(lLoadSkel);
+																			if (itrsaveskel != s_loadnode2savenode.end()) {
+																				FbxNode* lSaveSkel = itrsaveskel->second;
+																				if (lSaveSkel) {
+
+																					lSaveCluster->SetLink(lSaveSkel);
+
+																					const FbxCluster::ELinkMode linkmode = lLoadCluster->GetLinkMode();
+																					lSaveCluster->SetLinkMode(linkmode);
+
+																					FbxAMatrix clustertransformmat;
+																					lLoadCluster->GetTransformMatrix(clustertransformmat);
+																					lSaveCluster->SetTransformMatrix(clustertransformmat);
+
+																					FbxAMatrix clusterlinkmat;
+																					lLoadCluster->GetTransformLinkMatrix(clusterlinkmat);
+																					lSaveCluster->SetTransformLinkMatrix(clusterlinkmat);
 
 
-																			int loadindicesnum = lLoadCluster->GetControlPointIndicesCount();
-																			int* ploadindices = lLoadCluster->GetControlPointIndices();
-																			double* ploadw = lLoadCluster->GetControlPointWeights();
+																					//int loadindicesnum = lLoadCluster->GetControlPointIndicesCount();//savecluster作成判断のため上に移動
+																					int* ploadindices = lLoadCluster->GetControlPointIndices();
+																					double* ploadw = lLoadCluster->GetControlPointWeights();
 
-																			//lSaveCluster->SetControlPointIWCount(loadindicesnum);
+																					//lSaveCluster->SetControlPointIWCount(loadindicesnum);
 
-																			if ((loadindicesnum > 0) && ploadindices && ploadw) {
-																				int index;
-																				for (index = 0; index < loadindicesnum; index++) {
-																					int curindex = *(ploadindices + index);
-																					double curw = *(ploadw + index);
-																					lSaveCluster->AddControlPointIndex(curindex, curw);
+																					//if ((loadindicesnum > 0) && ploadindices && ploadw) {
+																					if (ploadindices && ploadw) {
+																						int index;
+																						for (index = 0; index < loadindicesnum; index++) {
+																							int curindex = *(ploadindices + index);
+																							double curw = *(ploadw + index);
+																							lSaveCluster->AddControlPointIndex(curindex, curw);
+																						}
+																					}
+																					else {
+																						_ASSERT(0);
+																					}
+
+																					lSaveSkin->AddCluster(lSaveCluster);
+
 																				}
+																				else {
+																					_ASSERT(0);
+																					lSaveCluster->Destroy();
+																				}
+																				//lSaveSkin->AddCluster(lSaveCluster);
 																			}
 																			else {
-																				//_ASSERT(0);
+																				_ASSERT(0);
+																				lSaveCluster->Destroy();
 																			}
 																		}
 																		else {
 																			_ASSERT(0);
+																			lSaveCluster->Destroy();
 																		}
-
-																		lSaveSkin->AddCluster(lSaveCluster);
 																	}
 																	else {
 																		_ASSERT(0);
 																	}
 																}
 																else {
-																	_ASSERT(0);
+																	//loadindicesnum == 0 : 影響度0.0　saveclusterは作成しない　書き出さない
 																}
 															}
 															else {
 																_ASSERT(0);
 															}
 														}
-														else {
-															_ASSERT(0);
-														}
+														lSaveMeshAttribute->AddDeformer(lSaveSkin);
 													}
-
-													lSaveMeshAttribute->AddDeformer(lSaveSkin);
+													else {
+														lSaveSkin->Destroy();
+													}
 												}
 											}
 										}
@@ -1618,7 +1652,7 @@ bool CreateScene(bool limitdegflag, FbxManager* pSdkManager, FbxScene* pScene, C
 
 
 	AnimateSkeleton(limitdegflag, pScene, pmodel);
-	AnimateMorph(pScene, pmodel);
+	//AnimateMorph(pScene, pmodel);
 
 	//if (pmodel && (pmodel->GetFromNoBindPoseFlag() == false)) {
 	if (pmodel && ((pmodel->GetHasBindPose() != 0) && (pmodel->GetFromNoBindPoseFlag() == false))) {//2023/05/11

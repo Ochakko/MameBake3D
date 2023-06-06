@@ -3790,6 +3790,42 @@ void InitApp()
 	InitCommonControls();
 
 
+	{
+		g_hRenderBoneL0 = 0;
+		g_hRenderBoneL1 = 0;
+		g_hRenderBoneL2 = 0;
+		g_hRenderBoneL3 = 0;
+		g_hRenderNoBoneL0 = 0;
+		g_hRenderNoBoneL1 = 0;
+		g_hRenderNoBoneL2 = 0;
+		g_hRenderNoBoneL3 = 0;
+		g_hRenderLine = 0;
+		g_hRenderSprite = 0;
+
+		g_hm4x4Mat = 0;
+		g_hmWorld = 0;
+		g_hmVP = 0;
+
+		g_hEyePos = 0;
+		g_hnNumLight = 0;
+		g_hLightDir = 0;
+		g_hLightDiffuse = 0;
+		g_hLightAmbient = 0;
+		g_hSpriteOffset = 0;
+		g_hSpriteScale = 0;
+		g_hPm3Scale = 0;
+		g_hPm3Offset = 0;
+
+
+		g_hdiffuse = 0;
+		g_hambient = 0;
+		g_hspecular = 0;
+		g_hpower = 0;
+		g_hemissive = 0;
+		g_hMeshTexture = 0;
+	}
+
+
 	//////check
 	//WCHAR strchk[256] = { 0L };
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
