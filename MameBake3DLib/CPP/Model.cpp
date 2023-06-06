@@ -2700,6 +2700,7 @@ int CModel::AddMotion(const char* srcname, const WCHAR* wfilename, double srclen
 
 
 
+	//int samenamecount = 0;
 
 	int maxid = 0;
 	map<int, MOTINFO*>::iterator itrmi;
@@ -2709,6 +2710,10 @@ int CModel::AddMotion(const char* srcname, const WCHAR* wfilename, double srclen
 			if (maxid < chkmi->motid){
 				maxid = chkmi->motid;
 			}
+
+			//if (strcmp(chkmi->motname, srcname) == 0) {
+			//	samenamecount++;
+			//}
 		}
 	}
 	int newid = maxid + 1;
@@ -2721,7 +2726,13 @@ int CModel::AddMotion(const char* srcname, const WCHAR* wfilename, double srclen
 	}
 	::ZeroMemory(newmi, sizeof(MOTINFO));
 
-	strcpy_s(newmi->motname, 256, srcname);
+	//if (samenamecount == 0) {
+		strcpy_s(newmi->motname, 256, srcname);
+	//}
+	//else {
+	//	sprintf_s(newmi->motname, 256, "%s_%d", srcname, samenamecount);
+	//}
+	
 	if (wfilename){
 		wcscpy_s(newmi->wfilename, MAX_PATH, wfilename);
 	}

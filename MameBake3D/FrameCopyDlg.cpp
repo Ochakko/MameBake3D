@@ -94,6 +94,8 @@ int CFrameCopyDlg::InitParams()
 
 	m_samemodelflag = 0;
 
+	ZeroMemory(&m_hrootti, sizeof(HTREEITEM));
+
 	return 0;
 }
 
@@ -260,7 +262,8 @@ int CFrameCopyDlg::FillTree()
 
 	m_selectedno = 0;
 	m_selecteditem = 0;
-	AddBoneToTree( m_model->GetTopBone(), 1, 1 );
+	m_hrootti = TreeView_GetRoot(m_tree_wnd);
+	AddBoneToTree( m_model->GetTopBone(false), 1, 1 );
 
 
 	map<int, HTREEITEM>::iterator itrtree;
@@ -286,7 +289,8 @@ void CFrameCopyDlg::AddBoneToTree( CBone* srcbone, int addbroflag, int addtolast
 	if( parentbone && parentbone->IsSkeleton()){
 		parTI = m_timap[ parentbone->GetBoneNo() ];
 	}else{
-		parTI = TreeView_GetRoot( m_tree_wnd );
+		//parTI = TreeView_GetRoot( m_tree_wnd );//‚P‚ÂTI‚ðì‚é‚Æ@ˆÈ~@‚»‚ê‚ªRoot‚Æ‚µ‚ÄŽæ“¾‚³‚ê‚Ä‚µ‚Ü‚¤
+		parTI = m_hrootti;
 	}
 
 	if (srcbone->IsSkeleton()) {

@@ -143,6 +143,8 @@ private:
 	
 	CModel* m_model;
 
+	HTREEITEM m_hrootti;
+
 public:
 // ユーザーが指定した、treeの先頭番号を格納する。
 	int m_slotno;

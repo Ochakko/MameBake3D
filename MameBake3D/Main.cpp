@@ -8228,7 +8228,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 						list<KeyInfo>::iterator itrcp;
 						for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
 							double curframe = itrcp->time;
-							CBone* topbone = s_model->GetTopBone();
+							CBone* topbone = s_model->GetTopBone(false);
 							if (topbone) {
 								bool broflag = false;
 								InitMpByEulReq(initmode, topbone, mi->motid, curframe, broflag);//topbone req

@@ -1,5 +1,5 @@
-2023/06/06_2
-	EditMot 1.2.0.21 RC2
+2023/06/07
+	EditMot 1.2.0.21 RC3
 
 	VisualStudio 2022に対応
 
@@ -19,10 +19,13 @@
 	空(empty)の影響度を書き出さないように
 		モーションを付けても顔だけ動かないなどの不具合が直りました
 
+	操作対象ボーンダイアログ修正
+		ToolWindowの操作対象ボーン設定実行時のダイアログのツリービューをHips_*が複数ある場合に対応
+
 	ドキュメント追加
 		Documants/TroubleShooting/AboutCameraAnim.docx
 
-	
+
 　おちゃっこLAB
 	https://ochakkolab.jp/
 
