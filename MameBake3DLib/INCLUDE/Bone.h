@@ -1457,6 +1457,19 @@ public: //accesser
 		m_localnodeanimmat = srcmat;
 	}
 
+	int GetDefBonePosKind()
+	{
+		return m_defboneposkind;
+	}
+	void SetDefBonePosKind(int srckind)
+	{
+		if ((srckind >= 0) && (srckind < DEFBONEPOS_MAX)) {
+			m_defboneposkind = srckind;
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
 
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
@@ -1540,6 +1553,9 @@ private:
 	ChaMatrix m_tmpmat;//一時使用目的
 	CQuaternion m_tmpq;
 	ChaMatrix m_tmpsymmat;
+
+	int m_defboneposkind;//FbxFile.cpp FbxSetDefaultBonePosReq()でセット　BPの有無など
+
 
 	CQuaternion m_addlimitq;
 

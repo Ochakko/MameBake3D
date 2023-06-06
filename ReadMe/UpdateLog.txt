@@ -1,3 +1,47 @@
+2023/06/06
+	EditMot 1.2.0.21 RC1
+
+	VisualStudio 2022に対応
+
+	FBXSDK 2020.3.4 For VisualStudio2022に対応
+
+	バインドポーズが無い場合のfbx読み込み改善
+
+	大きいモデルを読み込んだ場合に　表示が消える不具合修正
+
+	大きいモデルを読み込んだ場合に　マニピュレータが巨大化するのを修正
+
+	カメラアニメ１つの読み込みと再生と保存に対応
+
+	ドキュメント追加
+		Documants/TroubleShooting/AboutCameraAnim.docx
+
+	
+　おちゃっこLAB
+	https://ochakkolab.jp/
+
+　YouTubeチャンネル
+	https://www.youtube.com/@ochakkolab
+
+	動画　【小人】小人制御の物理【ドリブン】
+		https://youtu.be/SRoi8Ds9NYI
+
+	動画　いろいろ直った物理でボクシングの動画	
+		https://youtu.be/Zr7fT1gsCl4
+
+	動画　作り直した位置コンストレイント
+		https://youtu.be/8p13H6MGQZ8
+
+	動画　変な風には曲がらない位置コンストレイント
+		https://youtu.be/9Xt8cxjByeA
+
+	動画　制限角度をキャプチャーする
+		https://youtu.be/mkkpo5cmLBs
+
+	動画　モーキャプの動きを盛れ！
+		https://youtu.be/DV9gYsgDzz0
+
+
 2023/06/05_2
 	EditMot 1.2.0.21へ向けて
 
@@ -178,26 +222,6 @@
 	RC11 --> RC12 変更点
 		ToolWindowの補間ボタンが　正しく機能していなかったのを修正
 			コメントアウトミス　ParentMotionPoint(pparmp)をコメントアウトするつもりが　CurrentMotionPoint(pcurmp)をコメントアウトしていた
-
-　おちゃっこLAB
-	https://ochakkolab.jp/
-
-　YouTubeチャンネル
-	https://www.youtube.com/@ochakkolab
-
-	動画
-		いろいろ直った物理でボクシングの動画	
-		https://youtu.be/Zr7fT1gsCl4
-
-	動画　作り直した位置コンストレイント
-		https://youtu.be/8p13H6MGQZ8
-
-	動画　変な風には曲がらない位置コンストレイント
-		https://youtu.be/9Xt8cxjByeA
-
-	動画　制限角度をキャプチャーする
-		https://youtu.be/mkkpo5cmLBs
-
 
 
 2023/03/27

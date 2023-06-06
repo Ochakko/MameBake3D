@@ -239,7 +239,7 @@ public:
 
 	void Clamp(float srcmin, float srcmax);
 
-	int GetRowNo(int srcrowno);
+	//int GetRowNo(int srcrowno);
 
 
 

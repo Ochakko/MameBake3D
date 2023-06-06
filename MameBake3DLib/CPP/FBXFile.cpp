@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -171,7 +171,7 @@ static FbxNode* CreateDummyFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CB
 static void LinkDummyMeshToSkeleton(CFBXBone* fbxbone, FbxSkin* lSkin, FbxScene* pScene, FbxNode* pMesh, int* bonecnt);
 
 
-static int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaMatrix* dstnodeanimmat);//pNode = pmodel->GetBoneNode(curbone)‚ğ“à•”‚Åg—p
+static int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaMatrix* dstnodeanimmat);//pNode = pmodel->GetBoneNode(curbone)ã‚’å†…éƒ¨ã§ä½¿ç”¨
 static void CalcBindMatrix(CModel* pmodel, CFBXBone* fbxbone, FbxAMatrix& lMatrix);
 
 static int WriteFBXAnimTra(bool limitdegflag, CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer, int curmotid, int maxframe, int axiskind);
@@ -310,10 +310,10 @@ bool SaveScene(FbxManager* pSdkManager, FbxDocument* pScene, const char* pFilena
     }
 
 
-	//FBX File‚ª³‚µ‚¢‚©‚Ç‚¤‚©‚ÍMaya‚Å“Ç‚İ‚Ü‚È‚¢‚Æ•ª‚©‚ç‚È‚¢
-	//‚Á‚Ä‚¢‚é‚Ì‚ÍMaya2013‚È‚Ì‚ÅMaya2013‚ÅŠm‚©‚ß‚é
-	//FBX201300‚Åo—Í
-	//Maya2013‚ÌFBX plugin 2013.3‚ÌAPI version‚Í201300
+	//FBX FileãŒæ­£ã—ã„ã‹ã©ã†ã‹ã¯Mayaã§èª­ã¿è¾¼ã¾ãªã„ã¨åˆ†ã‹ã‚‰ãªã„
+	//æŒã£ã¦ã„ã‚‹ã®ã¯Maya2013ãªã®ã§Maya2013ã§ç¢ºã‹ã‚ã‚‹
+	//FBX201300ã§å‡ºåŠ›
+	//Maya2013ã®FBX plugin 2013.3ã®API versionã¯201300
 	//lExporter->SetFileExportVersion(FbxString("FBX201300"),
 	//	FbxSceneRenamer::eNone
 	//);
@@ -393,7 +393,7 @@ int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename, char* fbx
 int WriteFBXFile(bool limitdegflag, FbxManager* psdk, CModel* pmodel, char* pfilename, char* fbxdate)
 {
 
-	s_bvhflag = 0;//‚±‚±‚Í‰Šú‰»‚ÌˆÓ–¡BCreateScene()‚ÅƒZƒbƒgB
+	s_bvhflag = 0;//ã“ã“ã¯åˆæœŸåŒ–ã®æ„å‘³ã€‚CreateScene()ã§ã‚»ãƒƒãƒˆã€‚
 	s_pSdkManager = psdk;
 	s_model = pmodel;
 	if( s_fbxbone ){
@@ -464,7 +464,7 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene, char* fbxdate )
 		//sceneInfo->mRevision = "rev. 2.7";//since 2022/11/23 about PM07:00
 		sceneInfo->mRevision = "rev. 2.8";//since 2022/12/30 about PM05:00 for version1.1.0.10
 		//######################################################################
-		//rev•ÏX‚Í@FbxSetDefaultBonePosReq ‚Ìoldbvhˆ—•”•ª‚àXV‚·‚é•K—v—L
+		//revå¤‰æ›´æ™‚ã¯ã€€FbxSetDefaultBonePosReq ã®oldbvhå‡¦ç†éƒ¨åˆ†ã‚‚æ›´æ–°ã™ã‚‹å¿…è¦æœ‰
 		//######################################################################
 
 		sceneInfo->mKeywords = "BVH animation";
@@ -540,7 +540,7 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene, char* fbxdate )
 
 	s_firstoutmot = 1;
 
-	//2022/11/23 bvh2fbx‚Ìê‡‚É‚Íbindmat‚ğ‘‚«‚Ü‚È‚¢ ¶¬‚µ‚½fbx“Ç‚İ‚İ‚ÉNodeMat‚ªì¬‚³‚ê‚é
+	//2022/11/23 bvh2fbxã®å ´åˆã«ã¯bindmatã‚’æ›¸ãè¾¼ã¾ãªã„ ç”Ÿæˆã—ãŸfbxèª­ã¿è¾¼ã¿æ™‚ã«NodeMatãŒä½œæˆã•ã‚Œã‚‹
 	//WriteBindPose(pScene, 1);
 
 	if( s_ai ){
@@ -560,7 +560,7 @@ bool CreateBVHScene( FbxManager *pSdkManager, FbxScene* pScene, char* fbxdate )
 //	}
 //
 //
-//	//•ÊŠÖ”CreateAndCopyFbxNodeReq‚Å@Mesh‚ğì¬‚·‚é‚Æ‚«‚É ‚·‚Å‚Éjoint‚Ìnode‚ªì¬‚³‚ê‚Ä‚¢‚é•K—v‚ª‚ ‚é
+//	//åˆ¥é–¢æ•°CreateAndCopyFbxNodeReqã§ã€€Meshã‚’ä½œæˆã™ã‚‹ã¨ãã« ã™ã§ã«jointã®nodeãŒä½œæˆã•ã‚Œã¦ã„ã‚‹å¿…è¦ãŒã‚ã‚‹
 //
 //
 //	FbxNode* srcnode = ploadnode->GetNode();
@@ -631,7 +631,7 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode)
 
 	FbxTime fbxtime;
 	fbxtime.SetSecondDouble(0.0);
-	fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
+	fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);//Bone.cpp SaveFbxNodePosture()ã¨åˆã‚ã›ã‚‹
 	fbxLclRot = srcnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
 	fbxLclScl = srcnode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
 	//fbxLclPos = srcnode->LclTranslation;
@@ -652,11 +652,11 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode)
 	FbxTransform::EInheritType lInheritType = srcnode->InheritType.Get();//2023/06/03
 
 	
-	char nodename[256] = { 0 };
-	sprintf_s(nodename, 256, srcnode->GetName());
-	if (strstr(nodename, "Pipes_Module__24_") != 0) {
-		int dbgflag = 1;
-	}
+	//char nodename[256] = { 0 };
+	//sprintf_s(nodename, 256, srcnode->GetName());
+	//if (strstr(nodename, "Pipes_Module__24_") != 0) {
+	//	int dbgflag = 1;
+	//}
 
 
 	bool useorgorder = false;
@@ -680,7 +680,7 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode)
 
 	if (useorgorder == true) {
 		//############################################
-		//eMesh, eNull‚Í‚»‚Ì‚Ü‚Ü‚ÌRotationOrder‚Å•Û‘¶
+		//eMesh, eNullã¯ãã®ã¾ã¾ã®RotationOrderã§ä¿å­˜
 		//############################################
 		int orgrotationorder = (int)rotationorder;
 		psavenode->SetRotationOrder(FbxNode::eSourcePivot, rotationorder);
@@ -1249,7 +1249,7 @@ void CreateAndCopyFbxNodeReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* 
 		else {
 
 			//######################
-			//attrib–³‚µ‚Í@eNull
+			//attribç„¡ã—ã¯ã€€eNull
 			//######################
 
 			const char* dbgname = srcnode->GetName();
@@ -1278,9 +1278,9 @@ void CreateAndCopyFbxNodeReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* 
 			}
 			else {
 				//2023/04/28
-				//Sceneì¬‚ÉŠù‚Éì¬‚³‚ê‚Ä‚¢‚élRootNode‚Ìê‡
-				//RootNode‚ğ‘‚â‚³‚È‚¢(CreateNode‚µ‚È‚¢)
-				//ˆø”‚Ìpsaveparentnode(lRootNode)‚ğ‚»‚Ì‚Ü‚Üpsavenode‚Æ‚·‚é
+				//Sceneä½œæˆæ™‚ã«æ—¢ã«ä½œæˆã•ã‚Œã¦ã„ã‚‹lRootNodeã®å ´åˆ
+				//RootNodeã‚’å¢—ã‚„ã•ãªã„(CreateNodeã—ãªã„)
+				//å¼•æ•°ã®psaveparentnode(lRootNode)ã‚’ãã®ã¾ã¾psavenodeã¨ã™ã‚‹
 				psavenode = psaveparentnode;
 			}
 		}
@@ -1527,12 +1527,12 @@ bool CreateScene(bool limitdegflag, FbxManager* pSdkManager, FbxScene* pScene, C
 
 	s_model = pmodel;
 
-	//source scene‚ªbvh‚©‚çì‚ç‚ê‚½FBX‚©‚Ç‚¤‚©‚ğ”»’è
+	//source sceneãŒbvhã‹ã‚‰ä½œã‚‰ã‚ŒãŸFBXã‹ã©ã†ã‹ã‚’åˆ¤å®š
 	//FbxDocumentInfo* sceneinfo = pScene->GetSceneInfo();
 	//if (sceneinfo) {
 	//	FbxString mKeywords = "BVH animation";
 	//	if (sceneinfo->mKeywords == mKeywords) {
-	//		s_bvhflag = 1;//!!!!!! bvh‚ğFBX‚É•ÏŠ·‚µ‚Ä•Û‘¶‚µA‚»‚ê‚ğ“Ç‚İ‚ñ‚Å‚©‚ç•Û‘¶‚·‚éê‡
+	//		s_bvhflag = 1;//!!!!!! bvhã‚’FBXã«å¤‰æ›ã—ã¦ä¿å­˜ã—ã€ãã‚Œã‚’èª­ã¿è¾¼ã‚“ã§ã‹ã‚‰ä¿å­˜ã™ã‚‹å ´åˆ
 	//	}
 	//}
 	if (pmodel->GetFromBvhFlag()) {
@@ -1557,9 +1557,10 @@ bool CreateScene(bool limitdegflag, FbxManager* pSdkManager, FbxScene* pScene, C
 		//sceneInfo->mRevision = "rev. 2.6";//since 2022/10/31 about PM09:00
 		//sceneInfo->mRevision = "rev. 2.7";//since 2022/11/23 about PM07:00
 		//sceneInfo->mRevision = "rev. 2.8";//since 2022/12/30 about PM05:00 for version1.1.0.10
-		sceneInfo->mRevision = "rev. 2.9";//since 2023/04/19 about PM07:00 for version1.2.0.20
+		//sceneInfo->mRevision = "rev. 2.9";//since 2023/04/19 about PM07:00 for version1.2.0.20
+		sceneInfo->mRevision = "rev. 3.0";//since 2023/06/06 about PM10:00 for version1.2.0.21
 		//######################################################################
-		//rev•ÏX‚Í@FbxSetDefaultBonePosReq ‚Ìoldbvhˆ—•”•ª‚àXV‚·‚é•K—v—L
+		//revå¤‰æ›´æ™‚ã¯ã€€FbxSetDefaultBonePosReq ã®oldbvhå‡¦ç†éƒ¨åˆ†ã‚‚æ›´æ–°ã™ã‚‹å¿…è¦æœ‰
 		//######################################################################
 
 
@@ -1606,10 +1607,10 @@ bool CreateScene(bool limitdegflag, FbxManager* pSdkManager, FbxScene* pScene, C
 	CreateAndCopyFbxNodeReq(pSdkManager, pScene, pmodel, lRootNode, pmodel->GetNodeOnLoad());
 
 
-	//s_firsttopbone = lRootNode->GetChild(0);//root‚ÌÅ‰‚Ìq‹Ÿ
+	//s_firsttopbone = lRootNode->GetChild(0);//rootã®æœ€åˆã®å­ä¾›
 
 
-	//‘‚«o‚µ—pƒm[ƒh‚Ìƒ`ƒFƒCƒ“‚ªo—ˆ‚Ä‚©‚çŒÄ‚Ô
+	//æ›¸ãå‡ºã—ç”¨ãƒãƒ¼ãƒ‰ã®ãƒã‚§ã‚¤ãƒ³ãŒå‡ºæ¥ã¦ã‹ã‚‰å‘¼ã¶
 	CreateSkinMeshReq(pSdkManager, pScene, pmodel, lRootNode, pmodel->GetNodeOnLoad());
 
 
@@ -1644,12 +1645,12 @@ bool CreateScene(bool limitdegflag, FbxManager* pSdkManager, FbxScene* pScene, C
 //
 //	s_model = pmodel;
 //
-//	//source scene‚ªbvh‚©‚çì‚ç‚ê‚½FBX‚©‚Ç‚¤‚©‚ğ”»’è
+//	//source sceneãŒbvhã‹ã‚‰ä½œã‚‰ã‚ŒãŸFBXã‹ã©ã†ã‹ã‚’åˆ¤å®š
 //	//FbxDocumentInfo* sceneinfo = pScene->GetSceneInfo();
 //	//if (sceneinfo) {
 //	//	FbxString mKeywords = "BVH animation";
 //	//	if (sceneinfo->mKeywords == mKeywords) {
-//	//		s_bvhflag = 1;//!!!!!! bvh‚ğFBX‚É•ÏŠ·‚µ‚Ä•Û‘¶‚µA‚»‚ê‚ğ“Ç‚İ‚ñ‚Å‚©‚ç•Û‘¶‚·‚éê‡
+//	//		s_bvhflag = 1;//!!!!!! bvhã‚’FBXã«å¤‰æ›ã—ã¦ä¿å­˜ã—ã€ãã‚Œã‚’èª­ã¿è¾¼ã‚“ã§ã‹ã‚‰ä¿å­˜ã™ã‚‹å ´åˆ
 //	//	}
 //	//}
 //	if (pmodel->GetFromBvhFlag()) {
@@ -1675,7 +1676,7 @@ bool CreateScene(bool limitdegflag, FbxManager* pSdkManager, FbxScene* pScene, C
 //		//sceneInfo->mRevision = "rev. 2.7";//since 2022/11/23 about PM07:00
 //		sceneInfo->mRevision = "rev. 2.8";//since 2022/12/30 about PM05:00 for version1.1.0.10
 //		//######################################################################
-//		//rev•ÏX‚Í@FbxSetDefaultBonePosReq ‚Ìoldbvhˆ—•”•ª‚àXV‚·‚é•K—v—L
+//		//revå¤‰æ›´æ™‚ã¯ã€€FbxSetDefaultBonePosReq ã®oldbvhå‡¦ç†éƒ¨åˆ†ã‚‚æ›´æ–°ã™ã‚‹å¿…è¦æœ‰
 //		//######################################################################
 //
 //
@@ -1842,7 +1843,7 @@ int MapTargetShape( FbxBlendShapeChannel* lBlendShapeChannel, FbxScene* pScene, 
 int MapShapesOnMesh( FbxScene* pScene, FbxNode* pNode, CModel* pmodel, CMQOObject* curobj, BLSINDEX* blsindex )
 {
 	char blsname[256] = {0};
-	int mbno = 0;//mqo‚Å‚Â‚©‚¤
+	int mbno = 0;//mqoã§ã¤ã‹ã†
 
 	char tmpname[256] = { 0 };
 	strcpy_s(tmpname, 256, curobj->GetEngName());
@@ -2130,13 +2131,13 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene,
 //		//	int vno = *(pm4->GetDispIndex() + srcno[vcnt]);
 //		//	PM3DISPV* pm3dispv = pm4->GetPm3Disp() + vno;
 //
-//		//	//0 2 1‚ÌƒCƒ“ƒfƒbƒNƒX‡‚Å‘‚«o‚µ‚Ä@“Ç‚İ‚İ‚Ì@‚O@‚P@‚Q‚Ì‡‚É’¼‚·
+//		//	//0 2 1ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹é †ã§æ›¸ãå‡ºã—ã¦ã€€èª­ã¿è¾¼ã¿æ™‚ã®ã€€ï¼ã€€ï¼‘ã€€ï¼’ã®é †ã«ç›´ã™
 //		//	*(lcp + vno) = FbxVector4(pm3dispv->pos.x, pm3dispv->pos.y, pm3dispv->pos.z, 1.0);
 //		//	FbxVector2 fbxuv = FbxVector2(pm3dispv->uv.x, 1.0f - pm3dispv->uv.y);
 //		//	lUVDiffuseElement->GetDirectArray().Add(fbxuv);
 //
 //
-//		//	//0 1 2 ‚Ì‡”Ô‚Ì‚Ü‚Ü
+//		//	//0 1 2 ã®é †ç•ªã®ã¾ã¾
 //		//	int nvno = *(pm4->GetDispIndex() + nno[vcnt]);
 //		//	PM3DISPV* npm3dispv = pm4->GetPm3Disp() + nvno;
 //		//	FbxVector4 fbxn = FbxVector4(npm3dispv->normal.x, npm3dispv->normal.y, npm3dispv->normal.z, 0.0);
@@ -2148,7 +2149,7 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene,
 //			PM3DISPV* pm3dispv = pm4->GetPm3Disp() + vno;
 //			PM3INF* pm3inf = pm4->GetPm3Inf() + vno;
 //
-//			////‚OƒtƒŒ[ƒ€•ÒW‚ğl—¶‚µ‚Ä•ÏŠ· 2022/08/18
+//			////ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ç·¨é›†ã‚’è€ƒæ…®ã—ã¦å¤‰æ› 2022/08/18
 //			//ChaMatrix zeroframemat;
 //			//ZeroMemory(&zeroframemat, sizeof(ChaMatrix));
 //			//int infno;
@@ -2172,7 +2173,7 @@ FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene,
 //			//ChaVector3TransformCoord(&zeroframepos, &orgpos, &zeroframemat);
 //			//*(lcp + vno) = FbxVector4(zeroframepos.x, zeroframepos.y, zeroframepos.z, 1.0);//2022/08/18
 //
-//			//0 2 1‚ÌƒCƒ“ƒfƒbƒNƒX‡‚Å‘‚«o‚µ‚Ä@“Ç‚İ‚İ‚Ì@‚O@‚P@‚Q‚Ì‡‚É’¼‚·
+//			//0 2 1ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹é †ã§æ›¸ãå‡ºã—ã¦ã€€èª­ã¿è¾¼ã¿æ™‚ã®ã€€ï¼ã€€ï¼‘ã€€ï¼’ã®é †ã«ç›´ã™
 //			//*(lcp + vno) = FbxVector4(pm3dispv->pos.x, pm3dispv->pos.y, pm3dispv->pos.z, 1.0);
 //
 //
@@ -2466,7 +2467,7 @@ FbxTexture*  CreateTexture(FbxManager* pSdkManager, CMQOMaterial* mqomat)
 //										}
 //									}
 //									else {
-//										//lCluster‚ª‚O‚Ì‚Æ‚«‚É‚Í•Ô‚è’l‚Ådirty‚ğ‹³‚¦‚é‚¾‚¯
+//										//lClusterãŒï¼ã®ã¨ãã«ã¯è¿”ã‚Šå€¤ã§dirtyã‚’æ•™ãˆã‚‹ã ã‘
 //										return TRUE;
 //									}
 //								}
@@ -2632,7 +2633,7 @@ FbxTexture*  CreateTexture(FbxManager* pSdkManager, CMQOMaterial* mqomat)
 //											}
 //										}
 //										else {
-//											//lCluster‚ª‚O‚Ì‚Æ‚«‚É‚Í•Ô‚è’l‚Ådirty‚ğ‹³‚¦‚é‚¾‚¯
+//											//lClusterãŒï¼ã®ã¨ãã«ã¯è¿”ã‚Šå€¤ã§dirtyã‚’æ•™ãˆã‚‹ã ã‘
 //											return TRUE;
 //										}
 //									}
@@ -2979,13 +2980,13 @@ void AnimateSkeleton(bool limitdegflag, FbxScene* pScene, CModel* pmodel)
 	}
 
 	if (motionnum != aino) {
-		//NULL‚ÌMOTPARAM*‚ª‚ ‚Á‚½ê‡A‘”‚ğ‡‚í‚¹‚é
+		//NULLã®MOTPARAM*ãŒã‚ã£ãŸå ´åˆã€ç·æ•°ã‚’åˆã‚ã›ã‚‹
 		_ASSERT(0);
 		motionnum = aino;
 	}
 
 
-	qsort_s( s_ai, motionnum, sizeof( ANIMINFO ), sortfunc_leng, NULL );//ƒ‚[ƒVƒ‡ƒ“’·‚ª’Z‚¢‡‚Éo—Í‚µ‚È‚¢‚Æ³‚µ‚­“Ç‚İ‚ß‚È‚¢BFBX‚Ìd—lH
+	qsort_s( s_ai, motionnum, sizeof( ANIMINFO ), sortfunc_leng, NULL );//ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³é•·ãŒçŸ­ã„é †ã«å‡ºåŠ›ã—ãªã„ã¨æ­£ã—ãèª­ã¿è¾¼ã‚ãªã„ã€‚FBXã®ä»•æ§˜ï¼Ÿ
 
 	s_firstoutmot = s_ai->motid;
 
@@ -3033,7 +3034,7 @@ void AnimateSkeleton(bool limitdegflag, FbxScene* pScene, CModel* pmodel)
 		pScene->AddMember(lAnimStack);//!!!!!!!!
 
 		////pScene->GetRootNode()->ConvertPivotAnimationRecursive( lAnimStackName, s_convPivot, 30.0, true );
-		//pScene->GetRootNode()->ConvertPivotAnimationRecursive(lAnimStack, s_convPivot, 30.0, true);//2022/07/28ƒRƒƒ“ƒgƒAƒEƒg
+		//pScene->GetRootNode()->ConvertPivotAnimationRecursive(lAnimStack, s_convPivot, 30.0, true);//2022/07/28ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
 
 	}
 
@@ -3058,10 +3059,10 @@ void AnimateBoneReq(bool limitdegflag, FbxNode* pNode, FbxAnimLayer* lAnimLayer,
 		CBone* curbone = itrbone->second;
 		if (curbone) {
 
-			//’ˆÓ@‚±‚±‚Í@CBone::IsNull()==true‚Ì‚Æ‚«‚É‚à’Ê‚é
+			//æ³¨æ„ã€€ã“ã“ã¯ã€€CBone::IsNull()==trueã®ã¨ãã«ã‚‚é€šã‚‹
 
 
-			//ƒRƒƒ“ƒgƒAƒEƒg@RotationOrder‚Í@CreateAndCopyFbxNodeReq()‚É‚Ä@CopyNodePosture()‚ğg‚Á‚Äİ’èÏ@eNull, eMesh‚ÍŒ³ƒf[ƒ^‚Æ“¯‚¶RotationOrder
+			//ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆã€€RotationOrderã¯ã€€CreateAndCopyFbxNodeReq()ã«ã¦ã€€CopyNodePosture()ã‚’ä½¿ã£ã¦è¨­å®šæ¸ˆã€€eNull, eMeshã¯å…ƒãƒ‡ãƒ¼ã‚¿ã¨åŒã˜RotationOrder
 			//lSkel->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);
 			//lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerXYZ);
 			
@@ -3074,6 +3075,7 @@ void AnimateBoneReq(bool limitdegflag, FbxNode* pNode, FbxAnimLayer* lAnimLayer,
 
 			if (curbone->IsSkeleton() || 
 				(curbone->IsCamera() && curbone->GetParModel() && (curmotid == curbone->GetParModel()->GetCameraMotionId()))) {//2023/06/05
+				//ã‚«ãƒ¡ãƒ©ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ä»¥å¤–ã§ã‚«ãƒ¡ãƒ©ã®å§¿å‹¢ã‚’æ›¸ãå‡ºã™ã¨ã€€ã‚«ãƒ¡ãƒ©è¨­å®šã‚ã‚Šã‹ã¤ã‚«ãƒ¡ãƒ©ã‚¢ãƒ‹ãƒ¡ç„¡ã—ã®fbxã«ãŠã„ã¦å¤‰ã«ãªã‚‹ã€€
 
 				WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
 				WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
@@ -3095,7 +3097,7 @@ void AnimateBoneReq(bool limitdegflag, FbxNode* pNode, FbxAnimLayer* lAnimLayer,
 	childNodeNum = pNode->GetChildCount();
 	for (int i = 0; i < childNodeNum; i++)
 	{
-		FbxNode* pChild = pNode->GetChild(i);  // qƒm[ƒh‚ğæ“¾
+		FbxNode* pChild = pNode->GetChild(i);  // å­ãƒãƒ¼ãƒ‰ã‚’å–å¾—
 		AnimateBoneReq(limitdegflag, pChild, lAnimLayer, curmotid, maxframe);
 	}
 }
@@ -3232,44 +3234,47 @@ void WriteBindPoseReq(CModel* pmodel, FbxNode* pNode, FbxPose* lPose)
 		CFBXBone fbxbone;
 		fbxbone.SetSkelNode(pNode);
 		CBone* curbone = itrbone->second;
-		fbxbone.SetBone(curbone);//curbone == 0‚Ì‚Æ‚«‚àˆ—‚·‚é
+		fbxbone.SetBone(curbone);//curbone == 0ã®ã¨ãã‚‚å‡¦ç†ã™ã‚‹
 	
-		FbxNodeAttribute* pAttrib = pNode->GetNodeAttribute();
-		if (pAttrib) {
-			FbxNodeAttribute::EType type = (FbxNodeAttribute::EType)(pAttrib->GetAttributeType());
+		if (curbone && (curbone->GetDefBonePosKind() == DEFBONEPOS_FROMBP)) {//2023/06/06 èª­ã¿è¾¼ã¿æ™‚ã«bindposeãŒåœ¨ã£ãŸãƒœãƒ¼ãƒ³ã«å¯¾ã—ã¦ã ã‘bindposeã‚’æ›¸ãè¾¼ã‚€
+			FbxNodeAttribute* pAttrib = pNode->GetNodeAttribute();
+			if (pAttrib) {
+				FbxNodeAttribute::EType type = (FbxNodeAttribute::EType)(pAttrib->GetAttributeType());
 
-			//eSkeleton || eNull || eCamera   //2023/06/02
-			if ((type == FbxNodeAttribute::eSkeleton) || (type == FbxNodeAttribute::eNull) || (type == FbxNodeAttribute::eCamera)) {
+				//eSkeleton || eNull || eCamera   //2023/06/02
+				if ((type == FbxNodeAttribute::eSkeleton) || (type == FbxNodeAttribute::eNull) || (type == FbxNodeAttribute::eCamera)) {
+					FbxAMatrix lBindMatrix;
+					lBindMatrix.SetIdentity();
+					CalcBindMatrix(pmodel, &fbxbone, lBindMatrix);
+					lPose->Add(pNode, lBindMatrix);
+				}
+			}
+			else {
+				//eNullã®ã¨ãã«ã‚‚å‡¦ç†ã‚’ã™ã‚‹
 				FbxAMatrix lBindMatrix;
 				lBindMatrix.SetIdentity();
 				CalcBindMatrix(pmodel, &fbxbone, lBindMatrix);
 				lPose->Add(pNode, lBindMatrix);
 			}
 		}
-		else {
-			//eNull‚Ì‚Æ‚«‚É‚àˆ—‚ğ‚·‚é
-			FbxAMatrix lBindMatrix;
-			lBindMatrix.SetIdentity();
-			CalcBindMatrix(pmodel, &fbxbone, lBindMatrix);
-			lPose->Add(pNode, lBindMatrix);
-		}
+
 	}
 
 	int childNodeNum;
 	childNodeNum = pNode->GetChildCount();
 	for (int i = 0; i < childNodeNum; i++)
 	{
-		FbxNode* pChild = pNode->GetChild(i);  // qƒm[ƒh‚ğæ“¾
+		FbxNode* pChild = pNode->GetChild(i);  // å­ãƒãƒ¼ãƒ‰ã‚’å–å¾—
 		WriteBindPoseReq(pmodel, pChild, lPose);
 	}
 
 }
 
 
-int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaMatrix* dstnodeanimmat)//pNode = pmodel->GetBoneNode(curbone)‚ğ“à•”‚Åg—p
+int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaMatrix* dstnodeanimmat)//pNode = pmodel->GetBoneNode(curbone)ã‚’å†…éƒ¨ã§ä½¿ç”¨
 {
-	//parent‚ÉSetNodeMat()‚³‚ê‚Ä‚¢‚é‚±‚Æ‚ª‘O’ñ
-	//Req‚ÅŒÄ‚Ño‚·
+	//parentã«SetNodeMat()ã•ã‚Œã¦ã„ã‚‹ã“ã¨ãŒå‰æ
+	//Reqã§å‘¼ã³å‡ºã™
 
 	if (!dstnodemat || !dstnodeanimmat || !curbone) {
 		_ASSERT(0);
@@ -3320,7 +3325,7 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 		//fbxR.SetXYZRotation(0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
 		//fbxRpost.SetXYZRotation(0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
 
-		////2023/03/27 : rotationorder‘Î‰
+		////2023/03/27 : rotationorderå¯¾å¿œ
 		fbxRpre.SetRotation(rotationorder, 0, ChaVector3(fbxPreRot));
 		fbxR.SetRotation(rotationorder, 0, ChaVector3(fbxLclRot));
 		fbxRpost.SetRotation(rotationorder, 0, ChaVector3(fbxPostRot));
@@ -3335,7 +3340,7 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 		// FbxAMatrix Transform = T * Roff * Rp * Rpre * R * Rpost * Rp-1 * Soff * Sp * S * Sp-1
 		// 
 		// //2023/05/16
-		// ‚½‚¾‚µ@FbxAMatrix‚Ì–‰‰Zq(¶‚ÉŠ|‚¯‚Ä‚¢‚­)‚Í@ChaMatrix‚Ì*‰‰Zq(‰E‚ÉŠ|‚¯‚Ä‚¢‚­)‚Æ‹t‡Š|‚¯Z@(s—ñ¬•ª‚Í“¯‚¶)
+		// ãŸã ã—ã€€FbxAMatrixã®ï¼Šæ¼”ç®—å­(å·¦ã«æ›ã‘ã¦ã„ã)ã¯ã€€ChaMatrixã®*æ¼”ç®—å­(å³ã«æ›ã‘ã¦ã„ã)ã¨é€†é †æ›ã‘ç®—ã€€(è¡Œåˆ—æˆåˆ†ã¯åŒã˜)
 		//##################################################################################################################
 
 		ChaMatrix localnodemat, localnodeanimmat;
@@ -3345,7 +3350,7 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 		////localnodeanimmat = fbxSoff * fbxSpinv * fbxS * fbxSp * fbxRoff * fbxRpinv * fbxRpre * fbxR * fbxRpost * fbxRp * fbxT;
 		localnodeanimmat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRpre * fbxR * fbxRpost * fbxRp * fbxRoff * fbxT;//2023/05/17
 
-		//0ƒtƒŒ[ƒ€ƒAƒjƒ–³‚µ : fbxR–³‚µ
+		//0ãƒ•ãƒ¬ãƒ¼ãƒ ã‚¢ãƒ‹ãƒ¡ç„¡ã— : fbxRç„¡ã—
 		////localnodemat = fbxT * fbxRoff * fbxRp * fbxRpre * fbxRpost * fbxRpinv * fbxSoff * fbxSp * fbxSpinv;
 		////localnodemat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRp * fbxRoff;
 		////localnodemat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRp * fbxRoff * fbxT;
@@ -3427,7 +3432,7 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 //		ChaMatrix localnodemat, localnodeanimmat;
 //		localnodeanimmat = fbxT * fbxRoff * fbxRp * fbxRpre * fbxR * fbxRpost * fbxRpinv * fbxSoff * fbxSp * fbxS * fbxSpinv;
 //
-//		//0ƒtƒŒ[ƒ€ƒAƒjƒ–³‚µ : fbxR‚ÆfbxS–³‚µ
+//		//0ãƒ•ãƒ¬ãƒ¼ãƒ ã‚¢ãƒ‹ãƒ¡ç„¡ã— : fbxRã¨fbxSç„¡ã—
 //		localnodemat = fbxT * fbxRoff * fbxRp * fbxRpre * fbxRpost * fbxRpinv * fbxSoff * fbxSp * fbxSpinv;
 //	
 //		//*dstmeshmat = localnodeanimmat;
@@ -3517,15 +3522,15 @@ void CalcBindMatrix(CModel* pmodel, CFBXBone* fbxbone, FbxAMatrix& lBindMatrix)
 
 	if (s_bvhflag == 0) {
 
-		//savenode‚É‘Î‰‚·‚éCBone‚ª‘¶İ‚µ‚È‚¢eNull‚É‘Î‚µ‚Ä‚à@bindpose‚ª•K—v
-		//CBone‚Å‚Í‚È‚­@FbxNode‚ÆCNodeOnLoad‚ğg‚Á‚Ä@BindMat‚ğæ“¾‚·‚é
+		//savenodeã«å¯¾å¿œã™ã‚‹CBoneãŒå­˜åœ¨ã—ãªã„eNullã«å¯¾ã—ã¦ã‚‚ã€€bindposeãŒå¿…è¦
+		//CBoneã§ã¯ãªãã€€FbxNodeã¨CNodeOnLoadã‚’ä½¿ã£ã¦ã€€BindMatã‚’å–å¾—ã™ã‚‹
 
 		FbxNode* savenode = fbxbone->GetSkelNode();
 		if (savenode) {
-			//savenode‚Ì–¼‘O‚©‚ç@nodeonload‚ğŒŸõ
+			//savenodeã®åå‰ã‹ã‚‰ã€€nodeonloadã‚’æ¤œç´¢
 			CNodeOnLoad* nodeonload = pmodel->FindNodeOnLoadByName(savenode->GetName());
 			if (nodeonload) {
-				lBindMatrix = nodeonload->GetBindMat();//Fbx“Ç‚İ‚İ‚É@FbxSetDefaultBonePosReq()‚É‚ÄƒZƒbƒg‚³‚ê‚Ä‚¢‚é
+				lBindMatrix = nodeonload->GetBindMat();//Fbxèª­ã¿è¾¼ã¿æ™‚ã«ã€€FbxSetDefaultBonePosReq()ã«ã¦ã‚»ãƒƒãƒˆã•ã‚Œã¦ã„ã‚‹
 			}
 			else {
 				_ASSERT(0);
@@ -3539,7 +3544,7 @@ void CalcBindMatrix(CModel* pmodel, CFBXBone* fbxbone, FbxAMatrix& lBindMatrix)
 	}
 	else {
 
-		//bvh2Fbx‚Ìê‡‚É‚Í@BindPose‚ğ‘‚«o‚³‚È‚¢‚±‚Æ‚É‚µ‚½‚Ì‚Å@‚±‚±‚Í’Ê‚ç‚È‚¢
+		//bvh2Fbxã®å ´åˆã«ã¯ã€€BindPoseã‚’æ›¸ãå‡ºã•ãªã„ã“ã¨ã«ã—ãŸã®ã§ã€€ã“ã“ã¯é€šã‚‰ãªã„
 		_ASSERT(0);
 
 
@@ -3563,9 +3568,9 @@ void CalcBindMatrix(CModel* pmodel, CFBXBone* fbxbone, FbxAMatrix& lBindMatrix)
 	//	tramat = fbxbone->GetBone()->GetNodeMat();
 	//}
 	//else{
-	//	//bvh‚Ífbx‚É•ÏŠ·‚µ‚Ä‚©‚çg‚¤Bbvh‚Ì‚OƒtƒŒ[ƒ€‚ğ‚±‚Ìƒ\ƒtƒg‚Å•ÒW‚·‚é—\’è‚Í¡‚Í–³‚¢B
+	//	//bvhã¯fbxã«å¤‰æ›ã—ã¦ã‹ã‚‰ä½¿ã†ã€‚bvhã®ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ã“ã®ã‚½ãƒ•ãƒˆã§ç·¨é›†ã™ã‚‹äºˆå®šã¯ä»Šã¯ç„¡ã„ã€‚
 	//	ChaVector3 diffvec = curpos - parentpos;
-	//	////2022/11/23 rev. 2.7ˆÈ~ bvh2fbx‚É‚Í‚±‚±‚ğ’Ê‚ç‚È‚¢(bindmat‚Í‘‚«‚Ü‚È‚¢)
+	//	////2022/11/23 rev. 2.7ä»¥é™ bvh2fbxæ™‚ã«ã¯ã“ã“ã‚’é€šã‚‰ãªã„(bindmatã¯æ›¸ãè¾¼ã¾ãªã„)
 	//	tramat.SetIdentity();
 	//	tramat.data[MATI_41] = curpos.x;
 	//	tramat.data[MATI_42] = curpos.y;
@@ -3912,7 +3917,7 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 	}
 
 
-	if (parpbe && (parpbe->GetBoneNum() >= 2)){//bvhelem‚Ébonenum’Ç‰Á
+	if (parpbe && (parpbe->GetBoneNum() >= 2)){//bvhelemã«bonenumè¿½åŠ 
 		CFBXBone* fbxbone2 = new CFBXBone();
 		if (!fbxbone2){
 			_ASSERT(0);
@@ -4032,7 +4037,7 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 			fbxbone->SetType(FB_NORMAL);
 		}
 		else{
-			//endjointo—Í
+			//endjointå‡ºåŠ›
 			fbxbone->SetType(FB_ENDJOINT);
 		}
 		s_fbxbonenum++;
@@ -4106,7 +4111,7 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 //	//	ChaMatrixIdentity(&zeroanim);
 //	//	CMotionPoint* firstmp = topj->GetMotionPoint(s_zeroframemotid, 0.0);
 //	//	if (firstmp) {
-//	//		//0ƒtƒŒ[ƒ€‚ğ•ÒW‚µ‚½ê‡‚É‚Ízeroanim‚ÍIdentityˆÈŠO‚Ìp¨‚É‚È‚Á‚Ä‚¢‚é
+//	//		//0ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ç·¨é›†ã—ãŸå ´åˆã«ã¯zeroanimã¯Identityä»¥å¤–ã®å§¿å‹¢ã«ãªã£ã¦ã„ã‚‹
 //	//		zeroanim = firstmp->GetWorldMat();
 //	//		tramat = topj->GetNodeMat() * zeroanim;
 //	//	}
@@ -4134,7 +4139,7 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 //	fbxbone2->AddChild(fbxbone);
 //	s_fbxbonenum++;
 //
-//	s_firsttopbone = fbxbone;//root‚ÌÅ‰‚Ìq‹Ÿ
+//	s_firsttopbone = fbxbone;//rootã®æœ€åˆã®å­ä¾›
 //
 //	if( topj->GetChild() ){
 //		CreateFBXBoneReq( pScene, topj->GetChild(), fbxbone );
@@ -4186,7 +4191,7 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 //	//	ChaMatrixIdentity(&zeroanim);
 //	//	CMotionPoint* firstmp = pbone->GetMotionPoint(s_zeroframemotid, 0.0);
 //	//	if (firstmp) {
-//	//		//0ƒtƒŒ[ƒ€‚ğ•ÒW‚µ‚½ê‡‚É‚Ízeroanim‚ÍIdentityˆÈŠO‚Ìp¨‚É‚È‚Á‚Ä‚¢‚é
+//	//		//0ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ç·¨é›†ã—ãŸå ´åˆã«ã¯zeroanimã¯Identityä»¥å¤–ã®å§¿å‹¢ã«ãªã£ã¦ã„ã‚‹
 //	//		zeroanim = firstmp->GetWorldMat();
 //	//		tramat = pbone->GetNodeMat() * zeroanim;
 //	//	}
@@ -4203,7 +4208,7 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 //	//	ChaMatrixIdentity(&zeroanim);
 //	//	CMotionPoint* firstmp = pbone->GetParent()->GetMotionPoint(s_zeroframemotid, 0.0);
 //	//	if (firstmp) {
-//	//		//0ƒtƒŒ[ƒ€‚ğ•ÒW‚µ‚½ê‡‚É‚Ízeroanim‚ÍIdentityˆÈŠO‚Ìp¨‚É‚È‚Á‚Ä‚¢‚é
+//	//		//0ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’ç·¨é›†ã—ãŸå ´åˆã«ã¯zeroanimã¯Identityä»¥å¤–ã®å§¿å‹¢ã«ãªã£ã¦ã„ã‚‹
 //	//		zeroanim = firstmp->GetWorldMat();
 //	//		tramat = pbone->GetParent()->GetNodeMat() * zeroanim;
 //	//	}
@@ -4225,7 +4230,7 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 //	if( pbone->GetChild() ){
 //		fbxbone->SetType( FB_NORMAL );
 //	}else{
-//		//endjointo—Í
+//		//endjointå‡ºåŠ›
 //		fbxbone->SetType( FB_ENDJOINT );
 //	}
 //	s_fbxbonenum++;
@@ -4263,9 +4268,9 @@ void CreateDummyInfDataReq(CFBXBone* fbxbone, FbxManager*& pSdkManager, FbxScene
 	//FbxSkin* lSkin = FbxSkin::Create(pScene, "");
 
 	CBone* curbone = fbxbone->GetBone();
-	if (curbone || !ppsetbone) {//bvh‚Ìê‡‚É‚Ífbxbone->GetBone() == NULL ‚©‚Â!ppsetbone
+	if (curbone || !ppsetbone) {//bvhã®å ´åˆã«ã¯fbxbone->GetBone() == NULL ã‹ã¤!ppsetbone
 		if (!ppsetbone ||(ppsetbone && *(ppsetbone + curbone->GetBoneNo()) == 0)) {
-			LinkDummyMeshToSkeleton(fbxbone, lSkin, pScene, lMesh, bonecnt);//“à•”‚Åfbxbone->GetBone()‚Íg‚í‚È‚¢
+			LinkDummyMeshToSkeleton(fbxbone, lSkin, pScene, lMesh, bonecnt);//å†…éƒ¨ã§fbxbone->GetBone()ã¯ä½¿ã‚ãªã„
 			//lMeshAttribute->AddDeformer(lSkin);
 			(*bonecnt)++;
 		}
@@ -5069,23 +5074,23 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 	FbxAMatrix lGlobalPosition;
 	lGlobalPosition.SetIdentity();
 
-	bool lPositionFound = false;//ƒoƒCƒ“ƒhƒ|[ƒY‚ªŒ©‚Â‚©‚Á‚½ê‡‚Étrue
+	bool lPositionFound = false;//ãƒã‚¤ãƒ³ãƒ‰ãƒãƒ¼ã‚ºãŒè¦‹ã¤ã‹ã£ãŸå ´åˆã«true
 
 
 	//####################################################################################################################################################
 	//2023/05/17
-	//BindPose‚ª‚ ‚éê‡‚É‚Í@‚»‚ê‚ğg‚¤‚æ‚¤‚É
-	//TheHunt‚Ìƒ‚ƒfƒ‹‚S‘Ì‚É‚¨‚¢‚Ä@
-	//“¯‚¶skeleton‚ğŒ`ó‚ªˆÙ‚È‚éƒ‚ƒfƒ‹‚É“K—p‚µ‚Ä‚¢‚½
-	//‚»‚Ì‚æ‚¤‚Èƒ‚ƒfƒ‹‚ğˆµ‚¤Û‚É@BindPose–³‚µ‚Å‚Í@skeleton‚ÆƒƒbƒVƒ…‚ÌƒXƒP[ƒ‹‚È‚Ç‚ª‡‚í‚¸‚É@‚¤‚Ü‚­‚¢‚©‚È‚©‚Á‚½
-	//‚æ‚Á‚Ä@BindPose‚ª‚ ‚éê‡‚É‚Í@‚»‚ê‚ğg‚¤
-	// Œ¾‚¢•û‚ğ•Ï‚¦‚é‚Æ@skeleton‚Æmesh‚ÌƒTƒCƒY‚ª‡‚Á‚Ä‚¢‚È‚¢‚æ‚¤‚È@BindPose‚Å’²®‚³‚ê‚Ä‚¢‚é?ƒ‚ƒfƒ‹‚É‘Î‚µ‚Ä‚Í@CalcLocalNodeMat‚É‚æ‚éŒvZ‚Í‚¤‚Ü‚­‚¢‚©‚È‚¢
+	//BindPoseãŒã‚ã‚‹å ´åˆã«ã¯ã€€ãã‚Œã‚’ä½¿ã†ã‚ˆã†ã«
+	//TheHuntã®ãƒ¢ãƒ‡ãƒ«ï¼”ä½“ã«ãŠã„ã¦ã€€
+	//åŒã˜skeletonã‚’å½¢çŠ¶ãŒç•°ãªã‚‹ãƒ¢ãƒ‡ãƒ«ã«é©ç”¨ã—ã¦ã„ãŸ
+	//ãã®ã‚ˆã†ãªãƒ¢ãƒ‡ãƒ«ã‚’æ‰±ã†éš›ã«ã€€BindPoseç„¡ã—ã§ã¯ã€€skeletonã¨ãƒ¡ãƒƒã‚·ãƒ¥ã®ã‚¹ã‚±ãƒ¼ãƒ«ãªã©ãŒåˆã‚ãšã«ã€€ã†ã¾ãã„ã‹ãªã‹ã£ãŸ
+	//ã‚ˆã£ã¦ã€€BindPoseãŒã‚ã‚‹å ´åˆã«ã¯ã€€ãã‚Œã‚’ä½¿ã†
+	// è¨€ã„æ–¹ã‚’å¤‰ãˆã‚‹ã¨ã€€skeletonã¨meshã®ã‚µã‚¤ã‚ºãŒåˆã£ã¦ã„ãªã„ã‚ˆã†ãªã€€BindPoseã§èª¿æ•´ã•ã‚Œã¦ã„ã‚‹?ãƒ¢ãƒ‡ãƒ«ã«å¯¾ã—ã¦ã¯ã€€CalcLocalNodeMatã«ã‚ˆã‚‹è¨ˆç®—ã¯ã†ã¾ãã„ã‹ãªã„
 	//####################################################################################################################################################
 
 	
 	//##########################################################################
-	//eNull‚àŒvZ‚·‚é
-	//Maya‚ÅŠm”F‚µ‚½‚Æ‚±‚ë@eNullƒm[ƒh‚ÌƒvƒƒpƒeƒB‚É‚àbindpose1‚Æ‹Lq‚µ‚Ä‚ ‚Á‚½
+	//eNullã‚‚è¨ˆç®—ã™ã‚‹
+	//Mayaã§ç¢ºèªã—ãŸã¨ã“ã‚ã€€eNullãƒãƒ¼ãƒ‰ã®ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ã«ã‚‚bindpose1ã¨è¨˜è¿°ã—ã¦ã‚ã£ãŸ
 	//##########################################################################
 	if (pNode && curbone &&
 		((curbone->IsSkeleton()) || (curbone->IsNull()) || (curbone->IsCamera()))//2023/05/23
@@ -5102,20 +5107,23 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 				FbxString currentrev1 = "rev. 2.7";
 				FbxString currentrev2 = "rev. 2.8";
 				FbxString currentrev3 = "rev. 2.9";
-				//2.7, 2.8‚ª“à—e•ÏXŒã‚ÌVƒo[ƒWƒ‡ƒ“
+				FbxString currentrev4 = "rev. 3.0";
+				//2.7, 2.8, 2.9, 3.0ãŒå†…å®¹å¤‰æ›´å¾Œã®æ–°ãƒãƒ¼ã‚¸ãƒ§ãƒ³
 				if ((sceneinfo->mRevision != currentrev1) &&
 					(sceneinfo->mRevision != currentrev2) &&
-					(sceneinfo->mRevision != currentrev3)) {
+					(sceneinfo->mRevision != currentrev3) &&
+					(sceneinfo->mRevision != currentrev4)
+					) {
 					oldbvh = true;//!!!!!!!!!!!!!!!!!!!!
 				}
 			}
 		}
 
 		//####################
-		//bindpose‚ğ’T‚µ‚Äæ“¾
+		//bindposeã‚’æ¢ã—ã¦å–å¾—
 		//####################
 		if (((pmodel->GetFromBvhFlag() == false) || ((pmodel->GetFromBvhFlag() == true) && (oldbvh == false))) &&
-			pmodel->GetHasBindPose()) {//Pose‚ª‚ ‚éê‡‚Å‚àBindPose‚Å‚È‚¢ê‡‚ÍœŠO‚·‚é
+			pmodel->GetHasBindPose()) {//PoseãŒã‚ã‚‹å ´åˆã§ã‚‚BindPoseã§ãªã„å ´åˆã¯é™¤å¤–ã™ã‚‹
 			//if (bvhflag == 0) {
 			if (pNode) {
 				if (pPose) {
@@ -5144,7 +5152,7 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 							//{
 							//	if (pNode->GetParent())
 							//	{
-							//		//time == 0.0‚¾‚¯‚ÌƒLƒƒƒbƒVƒ…–³‚µæsŒvZ
+							//		//time == 0.0ã ã‘ã®ã‚­ãƒ£ãƒƒã‚·ãƒ¥ç„¡ã—å…ˆè¡Œè¨ˆç®—
 							//		bool usecache = false;
 							//		int dummyframe = 0;
 							//		lParentGlobalPosition = FbxGetGlobalPosition(usecache, pmodel, pNode->GetScene(), pNode->GetParent(), pTime, dummyframe, pPose);
@@ -5177,7 +5185,7 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 		}
 
 		//########################
-		//bindpose‚ğŒvZ‚©‚ç‹‚ß‚é
+		//bindposeã‚’è¨ˆç®—ã‹ã‚‰æ±‚ã‚ã‚‹
 		//########################
 		ChaMatrix nodemat, nodeanimmat;
 		nodemat.SetIdentity();
@@ -5204,7 +5212,7 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 				calcnodeanimmat = localnodeanimmat * parentnodeanimmat;
 			}
 			else {
-				//eNull RotationŠÜ‚Ş
+				//eNull Rotationå«ã‚€
 				calcnodeanimmat = localnodeanimmat * parentnodemat;
 				calcnodemat = calcnodeanimmat;
 			}
@@ -5215,8 +5223,10 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 		
 		if (lPositionFound) {
 			//########################
-			//bindpose‚ªŒ©‚Â‚©‚Á‚½ê‡
+			//bindposeãŒè¦‹ã¤ã‹ã£ãŸå ´åˆ
 			//########################
+			curbone->SetDefBonePosKind(DEFBONEPOS_FROMBP);//2023/06/06
+
 			nodemat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
 			
 			//nodeanimmat = calcnodeanimmat;
@@ -5224,15 +5234,16 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 		}
 		else {
 			//###############################
-			//bindpose‚ªŒ©‚Â‚©‚ç‚È‚©‚Á‚½ê‡
+			//bindposeãŒè¦‹ã¤ã‹ã‚‰ãªã‹ã£ãŸå ´åˆ
 			//###############################
 
 			FbxCluster* pcluster = FindClusterBySkeleton(pmodel, pNode);//2023/05/19
 			if (pcluster) {
 				//#################################################################################################
-				//ƒ‚ƒfƒ‹’†‚ÉeMesh‚ª‘¶İ‚·‚éê‡@Mesh‚Ì’†‚Å’è‹`‚³‚ê‚Ä‚¢‚éskin‚Ìcluster‚©‚çî•ñ‚ğ’T‚·
-				//–{—ˆ‚Íbindpose‚ª‘¶İ‚·‚é‚Í‚¸‚È‚Ì‚É@‰½‚ç‚©‚ÌŒ´ˆö‚Åbindpose‚ª‘‚«o‚³‚ê‚È‚©‚Á‚½ê‡‚É—LŒø‚È‚æ‚¤‚¾
+				//ãƒ¢ãƒ‡ãƒ«ä¸­ã«eMeshãŒå­˜åœ¨ã™ã‚‹å ´åˆã€€Meshã®ä¸­ã§å®šç¾©ã•ã‚Œã¦ã„ã‚‹skinã®clusterã‹ã‚‰æƒ…å ±ã‚’æ¢ã™
+				//æœ¬æ¥ã¯bindposeãŒå­˜åœ¨ã™ã‚‹ã¯ãšãªã®ã«ã€€ä½•ã‚‰ã‹ã®åŸå› ã§bindposeãŒæ›¸ãå‡ºã•ã‚Œãªã‹ã£ãŸå ´åˆã«æœ‰åŠ¹ãªã‚ˆã†ã 
 				//#################################################################################################
+				curbone->SetDefBonePosKind(DEFBONEPOS_FROMCLUSTER);//2023/06/06
 
 				FbxAMatrix clustermat;
 				pcluster->GetTransformMatrix(clustermat);
@@ -5249,8 +5260,9 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 			}
 			else {
 				//##################################################
-				//cluster‚à‚İ‚Â‚©‚ç‚È‚¢ê‡@ŒvZ‚Å‹‚ß‚½‚à‚Ì‚ğİ’è
+				//clusterã‚‚ã¿ã¤ã‹ã‚‰ãªã„å ´åˆã€€è¨ˆç®—ã§æ±‚ã‚ãŸã‚‚ã®ã‚’è¨­å®š
 				//##################################################
+				curbone->SetDefBonePosKind(DEFBONEPOS_FROMCALC);//2023/06/06
 
 				nodemat = calcnodemat;
 				nodeanimmat = calcnodeanimmat;
@@ -5264,7 +5276,7 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 
 
 		//curbone->SetPositionFound(lPositionFound);//!!!
-		curbone->SetPositionFound(true);//!!! 2022/07/30 bone mark‚ğ•\¦‚·‚é‚½‚ßtrue‚ÉB
+		curbone->SetPositionFound(true);//!!! 2022/07/30 bone markã‚’è¡¨ç¤ºã™ã‚‹ãŸã‚trueã«ã€‚
 
 
 		curbone->SetNodeMat(nodemat);//2023/05/16
@@ -5272,7 +5284,7 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 		curbone->SetNodeAnimMat(nodeanimmat);
 
 		curbone->SetGlobalPosMat(lGlobalPosition);
-		nodeonload->SetBindMat(lGlobalPosition);//Ä‹Aˆ—‚É‚¨‚¯‚éparentmat‚Æ‚µ‚Äg—p
+		nodeonload->SetBindMat(lGlobalPosition);//å†å¸°å‡¦ç†ã«ãŠã‘ã‚‹parentmatã¨ã—ã¦ä½¿ç”¨
 
 		ChaVector3 zeropos(0.0f, 0.0f, 0.0f);
 		ChaVector3 tmppos;
@@ -5356,7 +5368,7 @@ int IsValidFbxCluster(FbxCluster* cluster)
 	int index;
 	double weight;
 	for (int i2 = 0; i2 < pointNum; i2++) {
-		// ’¸“_ƒCƒ“ƒfƒbƒNƒX‚ÆƒEƒFƒCƒg‚ğæ“¾
+		// é ‚ç‚¹ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã¨ã‚¦ã‚§ã‚¤ãƒˆã‚’å–å¾—
 		index = pointAry[i2];
 		weight = weightAry[i2];
 

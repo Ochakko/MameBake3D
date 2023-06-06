@@ -65,6 +65,17 @@ class CMQOMaterial;
 
 enum
 {
+	//CBone::m_defboneposkind
+
+	DEFBONEPOS_NONE,
+	DEFBONEPOS_FROMBP,
+	DEFBONEPOS_FROMCLUSTER,
+	DEFBONEPOS_FROMCALC,
+	DEFBONEPOS_MAX
+};
+
+enum
+{
 	//g_cameraInheritMode
 
 	CAMERA_INHERIT_ALL,

@@ -1239,41 +1239,42 @@ ChaMatrix ChaVector3::MakeScaleMat()
 	return retmat;
 }
 
-int ChaVector3::GetRowNo(int srcrowno)
-{
-	//テスト実装
-	//カメラ行列の列が row(0)==-z, row(1)==y, row(2)==x の場合があったので　テスト対応
 
-
-	float thval = 0.0001f;
-	if ((fabs(x) <= thval) && (fabs(y) <= thval) && (fabs(z) > thval)){
-		if (z >= 0.0f) {
-			return 3;//z axis
-		}
-		else {
-			return -3;//-z axis
-		}
-	}
-	else if ((fabs(x) > thval) && (fabs(y) <= thval) && (fabs(z) <= thval)) {
-		if (x >= 0.0f) {
-			return 1;//x axis
-		}
-		else {
-			return -1;//x axis
-		}
-	}
-	else if ((fabs(x) <= thval) && (fabs(y) > thval) && (fabs(z) <= thval)) {
-		if (y >= 0.0f) {
-			return 2;//y axis
-		}
-		else {
-			return -2;//y axis
-		}
-	}
-	else {
-		return (srcrowno + 1);
-	}
-}
+//int ChaVector3::GetRowNo(int srcrowno)
+//{
+//	//テスト実装
+//	//カメラ行列の列が row(0)==-z, row(1)==y, row(2)==x の場合があったので　テスト対応
+//
+//
+//	float thval = 0.0001f;
+//	if ((fabs(x) <= thval) && (fabs(y) <= thval) && (fabs(z) > thval)){
+//		if (z >= 0.0f) {
+//			return 3;//z axis
+//		}
+//		else {
+//			return -3;//-z axis
+//		}
+//	}
+//	else if ((fabs(x) > thval) && (fabs(y) <= thval) && (fabs(z) <= thval)) {
+//		if (x >= 0.0f) {
+//			return 1;//x axis
+//		}
+//		else {
+//			return -1;//x axis
+//		}
+//	}
+//	else if ((fabs(x) <= thval) && (fabs(y) > thval) && (fabs(z) <= thval)) {
+//		if (y >= 0.0f) {
+//			return 2;//y axis
+//		}
+//		else {
+//			return -2;//y axis
+//		}
+//	}
+//	else {
+//		return (srcrowno + 1);
+//	}
+//}
 
 
 
