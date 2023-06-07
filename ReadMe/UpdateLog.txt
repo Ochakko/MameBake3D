@@ -1,5 +1,5 @@
 2023/06/07
-	EditMot 1.2.0.21 RC3
+	EditMot 1.2.0.21 RC4
 
 	VisualStudio 2022に対応
 
@@ -23,8 +23,8 @@
 		ToolWindowの操作対象ボーン設定実行時のダイアログのツリービューをHips_*が複数ある場合に対応
 
 	ドキュメント追加
-		Documants/TroubleShooting/AboutCameraAnim.docx
-
+		Documants/TroubleShooting/AboutCameraAnim.docx (UnityとMayaとの連携の仕方についても追記)
+			
 
 　おちゃっこLAB
 	https://ochakkolab.jp/
