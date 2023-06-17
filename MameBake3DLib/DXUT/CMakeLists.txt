@@ -3,7 +3,7 @@
 
 cmake_minimum_required (VERSION 3.20)
 
-set(DXUT_VERSION 11.30)
+set(DXUT_VERSION 11.31)
 
 project (DXUT
   VERSION ${DXUT_VERSION}
@@ -13,6 +13,8 @@ project (DXUT
 
 # https://devblogs.microsoft.com/cppblog/spectre-mitigations-in-msvc/
 option(ENABLE_SPECTRE_MITIGATION "Build using /Qspectre for MSVC" OFF)
+
+option(DISABLE_MSVC_ITERATOR_DEBUGGING "Disable iterator debugging in Debug configurations with the MSVC CRT" OFF)
 
 option(ENABLE_CODE_ANALYSIS "Use Static Code Analysis on build" OFF)
 
@@ -135,11 +137,16 @@ endif()
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
 target_compile_features(${PROJECT_NAME}Opt PUBLIC cxx_std_11)
 
-if(MINGW OR VCPKG_TOOLCHAIN)
-    message(STATUS "Using VCPKG for DirectXMath.")
+if(MINGW)
     find_package(directxmath CONFIG REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::DirectXMath)
-    target_link_libraries(${PROJECT_NAME}Opt PRIVATE Microsoft::DirectXMath)
+else()
+    find_package(directxmath CONFIG QUIET)
+endif()
+
+if(directxmath_FOUND)
+    message(STATUS "Using DirectXMath package")
+    target_link_libraries(${PROJECT_NAME} PUBLIC Microsoft::DirectXMath)
+    target_link_libraries(${PROJECT_NAME}Opt PUBLIC Microsoft::DirectXMath)
 endif()
 
 #--- Package
@@ -198,6 +205,12 @@ if(MSVC)
       target_compile_options(${PROJECT_NAME}Opt PRIVATE "/Qspectre")
     endif()
 
+    if((MSVC_VERSION GREATER_EQUAL 1924)
+       AND ((NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) OR (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 16.0)))
+      target_compile_options(${PROJECT_NAME} PRIVATE /ZH:SHA_256)
+      target_compile_options(${PROJECT_NAME}Opt PRIVATE /ZH:SHA_256)
+    endif()
+
     if((MSVC_VERSION GREATER_EQUAL 1928)
        AND (CMAKE_SIZEOF_VOID_P EQUAL 8)
        AND ((NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) OR (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0)))
@@ -210,7 +223,7 @@ else()
 endif()
 
 if(NOT ${DIRECTX_ARCH} MATCHES "^arm")
-    if(${CMAKE_SIZEOF_VOID_P} EQUAL "4")
+    if(CMAKE_SIZEOF_VOID_P EQUAL 4)
         set(ARCH_SSE2 $<$<CXX_COMPILER_ID:MSVC>:/arch:SSE2> $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-msse2>)
     else()
         set(ARCH_SSE2 $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-msse2>)
@@ -225,17 +238,18 @@ if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
     target_compile_options(${PROJECT_NAME} PRIVATE ${WarningsLib})
     target_compile_options(${PROJECT_NAME}Opt PRIVATE ${WarningsLib})
 elseif( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
-    target_compile_options(${PROJECT_NAME} PRIVATE /sdl /permissive- /JMC- /Zc:__cplusplus)
-    target_compile_options(${PROJECT_NAME}Opt PRIVATE /sdl /permissive- /JMC- /Zc:__cplusplus)
+    target_compile_options(${PROJECT_NAME} PRIVATE /sdl /permissive- /JMC- /Zc:__cplusplus /Zc:inline)
+    target_compile_options(${PROJECT_NAME}Opt PRIVATE /sdl /permissive- /JMC- /Zc:__cplusplus /Zc:inline)
 
     if(ENABLE_CODE_ANALYSIS)
       target_compile_options(${PROJECT_NAME} PRIVATE /analyze)
       target_compile_options(${PROJECT_NAME}Opt PRIVATE /analyze)
     endif()
 
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.24)
-        target_compile_options(${PROJECT_NAME} PRIVATE /ZH:SHA_256)
-        target_compile_options(${PROJECT_NAME}Opt PRIVATE /ZH:SHA_256)
+    if(CMAKE_INTERPROCEDURAL_OPTIMIZATION)
+      message(STATUS "Building using Whole Program Optimization")
+      target_compile_options(${PROJECT_NAME} PRIVATE /Gy /Gw)
+      target_compile_options(${PROJECT_NAME}Opt PRIVATE /Gy /Gw)
     endif()
 
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.26)
@@ -243,13 +257,41 @@ elseif( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
         target_compile_options(${PROJECT_NAME}Opt PRIVATE /Zc:preprocessor /wd5104 /wd5105)
     endif()
 
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.28)
+        target_compile_options(${PROJECT_NAME} PRIVATE /Zc:lambda)
+        target_compile_options(${PROJECT_NAME}Opt PRIVATE /Zc:lambda)
+    endif()
+
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.34)
         target_compile_options(${PROJECT_NAME} PRIVATE /wd5262)
         target_compile_options(${PROJECT_NAME}Opt PRIVATE /wd5262)
     endif()
+
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.35)
+        target_compile_options(${PROJECT_NAME} PRIVATE /Zc:checkGwOdr $<$<VERSION_GREATER_EQUAL:${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION},10.0.22000>:/Zc:templateScope>)
+        target_compile_options(${PROJECT_NAME}Opt PRIVATE /Zc:checkGwOdr $<$<VERSION_GREATER_EQUAL:${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION},10.0.22000>:/Zc:templateScope>)
+    endif()
 endif()
 
 if(WIN32)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE _UNICODE UNICODE _WIN32_WINNT=0x0601 _WIN7_PLATFORM_UPDATE)
-    target_compile_definitions(${PROJECT_NAME}Opt PRIVATE _UNICODE UNICODE _WIN32_WINNT=0x0601 _WIN7_PLATFORM_UPDATE)
+    if(${DIRECTX_ARCH} MATCHES "^arm64")
+        message(STATUS "Building for Windows 10/Windows 11.")
+        set(WINVER 0x0A00)
+    elseif(${DIRECTX_ARCH} MATCHES "^arm")
+        message(STATUS "Building for Windows 8.")
+        set(WINVER 0x0602)
+    else()
+        message(STATUS "Building for Windows 7.")
+        set(WINVER 0x0601)
+        target_compile_definitions(${PROJECT_NAME} PRIVATE _WIN7_PLATFORM_UPDATE)
+        target_compile_definitions(${PROJECT_NAME}Opt PRIVATE _WIN7_PLATFORM_UPDATE)
+    endif()
+
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _UNICODE UNICODE _WIN32_WINNT=${WINVER})
+    target_compile_definitions(${PROJECT_NAME}Opt PRIVATE _UNICODE UNICODE _WIN32_WINNT=${WINVER})
+
+    if(DISABLE_MSVC_ITERATOR_DEBUGGING)
+      target_compile_definitions(${PROJECT_NAME} PRIVATE _ITERATOR_DEBUG_LEVEL=0)
+      target_compile_definitions(${PROJECT_NAME}Opt PRIVATE _ITERATOR_DEBUG_LEVEL=0)
+    endif()
 endif()

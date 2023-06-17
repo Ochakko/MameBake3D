@@ -1141,10 +1141,10 @@ typedef struct tag_spaxis
 {
 	CMySprite* sprite;
 	POINT dispcenter;
-	void Init() {
+	tag_spaxis() {
 		sprite = 0;
 		::ZeroMemory(&dispcenter, sizeof(POINT));
-	}
+	};
 }SPAXIS, SPCAM, SPELEM;
 
 typedef struct tag_spsw
@@ -1153,12 +1153,12 @@ typedef struct tag_spsw
 	CMySprite* spriteON;
 	CMySprite* spriteOFF;
 	POINT dispcenter;
-	void Init() {
+	tag_spsw() {
 		state = 0;
 		spriteON = 0;
 		spriteOFF = 0;
 		::ZeroMemory(&dispcenter, sizeof(POINT));
-	}
+	};
 }SPGUISW;
 
 
@@ -1169,13 +1169,13 @@ typedef struct tag_spsw3 //2023/06/04
 	CMySprite* sprite2;
 	CMySprite* sprite3;
 	POINT dispcenter;
-	void Init() {
+	tag_spsw3() {
 		mode = 0;
 		sprite1 = 0;
 		sprite2 = 0;
 		sprite3 = 0;
 		::ZeroMemory(&dispcenter, sizeof(POINT));
-	}
+	};
 }SPGUISW3;
 
 
@@ -1473,6 +1473,7 @@ static RECT s_rcinfownd;
 static RECT s_rcmainmenuaimbarwnd;
 static RECT s_rcmodelpanel;
 static RECT s_rcmotionpanel;
+static RECT s_rccamerapanel;
 
 static void ChangeMouseSetCapture();
 static void ChangeMouseReleaseCapture();
@@ -1697,7 +1698,7 @@ static int s_buttonselecttothelast = 0;
 static float s_selectscale = 1.0f;
 //static int s_sethipstra = 0;
 static CFrameCopyDlg s_selbonedlg;
-static int s_allmodelbone = 0;
+static bool s_allmodelbone = false;
 
 static std::vector<HISTORYELEM> s_cptfilename;
 static CCopyHistoryDlg s_copyhistorydlg;
@@ -2152,6 +2153,7 @@ static bool s_disptool = true;
 static bool s_dispobj = false;
 static bool s_dispmodel = false;//!!!!!!!!!!!!!!!!!
 static bool s_dispmotion = false;//!!!!!!!!!!!!!!!!!
+static bool s_dispcamera = false;//!!!!!!!!!!!!!!!!!
 static bool s_dispground = true;
 static bool s_dispselect = true;
 //static bool s_displightarrow = true;
@@ -2168,6 +2170,10 @@ typedef struct tag_cpelem
 	CBone* bone;
 	CMotionPoint mp;
 	//ChaVector3 localscale;//mpのmatに掛け算しておく
+	tag_cpelem() {
+		bone = 0;
+		mp.InitParams();
+	};
 }CPELEM2;
 static vector<CPELEM2> s_copymotvec;
 static vector<CPELEM2> s_pastemotvec;
@@ -2310,6 +2316,16 @@ typedef struct tag_modelpanel
 	vector<OWP_CheckBoxA*> checkvec;
 	vector<OWP_Button*> delbutton;
 	int modelindex;
+	tag_modelpanel() {
+		panel = 0;
+		scroll = 0;
+		radiobutton = 0;
+		separator = 0;
+		separator2 = 0;
+		checkvec.clear();
+		delbutton.clear();
+		modelindex = 0;
+	};
 }MODELPANEL;
 static MODELPANEL s_modelpanel;
 static bool s_firstmodelpanelpos = true;
@@ -2328,6 +2344,29 @@ static MOTIONPANEL s_motionpanel;
 static bool s_firstmotionpanelpos = true;
 static WindowPos s_motionpanelpos;
 
+typedef struct tag_camerapanel
+{
+	OrgWindow* panel;
+	OWP_ScrollWnd* scroll;
+	OWP_RadioButton* radiobutton;
+	OWP_Separator* separator;
+	vector<OWP_Button*> delbutton;
+	int modelindex;
+
+	tag_camerapanel() {
+		panel = 0;
+		scroll = 0;
+		radiobutton = 0;
+		separator = 0;
+		delbutton.clear();
+		modelindex = 0;
+	};
+}CAMERAPANEL;
+static CAMERAPANEL s_camerapanel;
+static bool s_firstcamerapanelpos = true;
+static WindowPos s_camerapanelpos;
+
+
 
 static map<int, int> s_lineno2boneno;
 static map<int, int> s_boneno2lineno;
@@ -2337,6 +2376,7 @@ static MODELBOUND	s_totalmb;
 static int s_curmodelmenuindex = -1;
 static int s_savemodelpanelshowposline = -1;
 static int s_savemotionpanelshowposline = -1;
+static int s_savecamerapanelshowposline = -1;
 
 static WCHAR s_tmpmotname[256] = { 0L };
 static double s_tmpmotframeleng = 100.0f;
@@ -2919,6 +2959,7 @@ static int DispToolWindow();
 static int DispObjPanel();
 static int DispModelPanel();
 static int DispMotionPanel();
+static int DispCameraPanel();
 //static int DispConvBoneWindow();
 static int DispAngleLimitDlg();
 static int DispRotAxisDlg();
@@ -2994,6 +3035,8 @@ static int CreateModelPanel();
 static int DestroyModelPanel();
 static int CreateMotionPanel();
 static int DestroyMotionPanel();
+static int CreateCameraPanel();
+static int DestroyCameraPanel();
 static int CreateConvBoneWnd();
 static int DestroyConvBoneWnd();
 static int SetConvBoneModel();
@@ -3366,10 +3409,12 @@ INT WINAPI wWinMain(
 	if (g_4kresolution) {
 		s_dispmodel = true;//!!!!!!!!!!!!!!!!! modelpanelのdispflag
 		s_dispmotion = true;//!!!!!!!!!!!!!!!! motionpanelのdispflag
+		s_dispcamera = true;//!!!!!!!!!!!!!!!! camerapanelのdispflag
 	}
 	else {
 		s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanelのdispflag
 		s_dispmotion = false;//!!!!!!!!!!!!!!!! motionpanelのdispflag
+		s_dispcamera = false;//!!!!!!!!!!!!!!!! camerapanelのdispflag
 	}
 
 	s_copyKeyInfoList.clear();	// コピーされたキー情報リスト
@@ -3619,6 +3664,8 @@ INT WINAPI wWinMain(
 		DispModelPanel();
 		s_dispmotion = true;
 		DispMotionPanel();
+		s_dispcamera = true;
+		DispCameraPanel();
 	}
 	
 	// Pass control to DXUT for handling the message pump and 
@@ -4005,6 +4052,8 @@ void InitApp()
 	s_modelpanelpos = WindowPos(0, 0);;
 	s_firstmotionpanelpos = true;
 	s_motionpanelpos = WindowPos(0, 0);;
+	s_firstcamerapanelpos = true;
+	s_camerapanelpos = WindowPos(0, 0);;
 
 
 
@@ -4026,6 +4075,7 @@ void InitApp()
 	s_dispobj = false;
 	s_dispmodel = false;//!!!!!!!!!!!!!!!!! modelpanelのdispflag
 	s_dispmotion = false;//!!!!!!!!!!!!!!!! motionpanelのdispflag
+	s_dispcamera = false;//!!!!!!!!!!!!!!!! camerapanelのdispflag
 	s_dispground = true;
 	s_dispselect = true;
 	//s_displightarrow = true;
@@ -4213,6 +4263,10 @@ void InitApp()
 	s_rcmotionpanel.left = 0;
 	s_rcmotionpanel.bottom = 0;
 	s_rcmotionpanel.right = 0;
+	s_rccamerapanel.top = 0;
+	s_rccamerapanel.left = 0;
+	s_rccamerapanel.bottom = 0;
+	s_rccamerapanel.right = 0;
 
 
 	s_CamTargetCheckBox = 0;
@@ -4565,6 +4619,14 @@ void InitApp()
 	s_motionpanel.separator = 0;
 	s_motionpanel.delbutton.clear();
 	s_motionpanel.modelindex = -1;
+
+	s_camerapanel.panel = 0;
+	s_camerapanel.scroll = 0;
+	s_camerapanel.radiobutton = 0;
+	s_camerapanel.separator = 0;
+	s_camerapanel.delbutton.clear();
+	s_camerapanel.modelindex = -1;
+
 
 	s_cameradollydlgwnd = 0;
 	s_materialratedlgwnd = 0;
@@ -7231,6 +7293,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 
 	DestroyModelPanel();
 	DestroyMotionPanel();
+	DestroyCameraPanel();
 	DestroyConvBoneWnd();
 
 	//DestroySdkObjects();
@@ -8626,6 +8689,14 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				bool savedispflag = s_dispmotion;
 				s_dispmotion = !savedispflag;
 				DispMotionPanel();
+				//return 0;
+			}
+			break;
+			case ID_CAMERAPANEL:
+			{
+				bool savedispflag = s_dispcamera;
+				s_dispcamera = !savedispflag;
+				DispCameraPanel();
 				//return 0;
 			}
 			break;
@@ -11409,8 +11480,14 @@ int BVH2FBX()
 	}
 
 
-	WCHAR savepath[MULTIPATH];
-	MoveMemory(savepath, g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
+	//WCHAR savepath[MULTIPATH];//stack size warning
+	WCHAR* tmpsavepath = new WCHAR[MULTIPATH];
+	if (!tmpsavepath) {
+		_ASSERT(0);
+		return 1;
+	}
+	ZeroMemory(tmpsavepath, sizeof(WCHAR) * MULTIPATH);
+	MoveMemory(tmpsavepath, g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
 
 
 	//bvhファイルを読み込む
@@ -11419,10 +11496,15 @@ int BVH2FBX()
 	ret = bvhfile.LoadBVHFile(s_3dwnd, g_tmpmqopath, g_tmpmqomult);
 	if (ret) {
 		_ASSERT(0);
+		if(tmpsavepath)
+			delete[] tmpsavepath;
 		return 1;
 	}
 
-	Savebvh2FBXHistory(savepath);
+	Savebvh2FBXHistory(tmpsavepath);
+	if (tmpsavepath)
+		delete[] tmpsavepath;
+
 
 	//FBXファイルに書き出す
 	char fbxpath[MAX_PATH] = { 0 };
@@ -11472,26 +11554,35 @@ int OpenFile()
 		return 0;
 	}
 
-	WCHAR savepath[MULTIPATH];
-	ZeroMemory(savepath, sizeof(WCHAR) * MULTIPATH);
-	MoveMemory(savepath, g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
+	//WCHAR savepath[MULTIPATH];//stack size warning
+	WCHAR* tmpsavepath = new WCHAR[MULTIPATH];
+	if (!tmpsavepath) {
+		_ASSERT(0);
+		return 1;
+	}
+	ZeroMemory(tmpsavepath, sizeof(WCHAR) * MULTIPATH);
+	MoveMemory(tmpsavepath, g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
 
 	size_t leng;
 	int namecnt = 0;
-	savepath[MULTIPATH - 1] = 0L;
-	leng = wcslen(savepath);
+	tmpsavepath[MULTIPATH - 1] = 0L;
+	leng = wcslen(tmpsavepath);
 	if ((leng <= 0) && (leng >= MULTIPATH)) {
 		_ASSERT(0);
 		s_nowloading = false;
+		if (tmpsavepath)
+			delete[] tmpsavepath;
 		return 0;
 	}
 
-	WCHAR* topchar = savepath + leng;
+	WCHAR* topchar = tmpsavepath + leng;
 	if (*topchar == TEXT('\0')) {
 		WCHAR* extptr = 0;
 		extptr = wcsrchr(g_tmpmqopath, TEXT('.'));
 		if (!extptr) {
 			s_nowloading = false;
+			if (tmpsavepath)
+				delete[] tmpsavepath;
 			return 0;
 		}
 		int result = 0;
@@ -11556,6 +11647,10 @@ int OpenFile()
 			swprintf_s(strerror, MAX_PATH * 2, L"%s の\n読み込みに失敗しました。", g_tmpmqopath);
 			MessageBox(s_mainhwnd, strerror, L"エラー", MB_OK);
 			s_nowloading = false;
+
+			if (tmpsavepath)
+				delete[] tmpsavepath;
+
 			return 1;
 		}
 
@@ -11563,14 +11658,17 @@ int OpenFile()
 	else {
 		size_t leng2;
 		while (*topchar != TEXT('\0')) {
-			savepath[MULTIPATH - 1] = 0L;
+			tmpsavepath[MULTIPATH - 1] = 0L;
 			//leng2 = wcslen(topchar);
-			swprintf_s(g_tmpmqopath, MULTIPATH, L"%s\\%s", savepath, topchar);
+			swprintf_s(g_tmpmqopath, MULTIPATH, L"%s\\%s", tmpsavepath, topchar);
 
 			WCHAR* extptr = 0;
 			extptr = wcsrchr(g_tmpmqopath, TEXT('.'));
 			if (!extptr) {
 				s_nowloading = false;
+				if (tmpsavepath)
+					delete[] tmpsavepath;
+
 				return 0;
 			}
 			int result = 0;
@@ -11617,10 +11715,13 @@ int OpenFile()
 				swprintf_s(strerror, MAX_PATH * 2, L"%s の\n読み込みに失敗しました。", g_tmpmqopath);
 				MessageBox(s_mainhwnd, strerror, L"エラー", MB_OK);
 				s_nowloading = false;
+				if (tmpsavepath)
+					delete[] tmpsavepath;
+
 				return 1;
 			}
 
-			savepath[MULTIPATH - 1] = 0L;
+			tmpsavepath[MULTIPATH - 1] = 0L;
 			leng2 = wcslen(topchar);
 			if ((leng2 > 0) && (leng2 < MULTIPATH)) {
 				topchar = topchar + leng2 + 1;
@@ -11631,6 +11732,9 @@ int OpenFile()
 				swprintf_s(strerror, MAX_PATH * 2, L"%s の\n読み込みに失敗しました。", g_tmpmqopath);
 				MessageBox(s_mainhwnd, strerror, L"エラー", MB_OK);
 				s_nowloading = false;
+				if (tmpsavepath)
+					delete[] tmpsavepath;
+
 				return 1;
 			}
 		}
@@ -11639,6 +11743,10 @@ int OpenFile()
 	s_nowloading = false;
 
 	//ChangeCurrentBone();
+
+	if (tmpsavepath)
+		delete[] tmpsavepath;
+
 
 	return 0;
 }
@@ -13342,6 +13450,11 @@ int DispModelPanel()
 	//DispObjPanel();//!!!!!!!!!!!!!!!!
 
 
+	return 0;
+}
+
+int DispCameraPanel()
+{
 	return 0;
 }
 
@@ -16928,6 +17041,43 @@ int CreateModelPanel()
 	return 0;
 }
 
+int DestroyCameraPanel()
+{
+	if (s_camerapanel.panel) {
+		s_camerapanel.panel->setVisible(false);
+		delete s_camerapanel.panel;
+		s_camerapanel.panel = 0;
+	}
+	if (s_camerapanel.scroll) {
+		delete s_camerapanel.scroll;
+		s_camerapanel.scroll = 0;
+	}
+	if (s_camerapanel.radiobutton) {
+		delete s_camerapanel.radiobutton;
+		s_camerapanel.radiobutton = 0;
+	}
+	if (s_camerapanel.separator) {
+		delete s_camerapanel.separator;
+		s_camerapanel.separator = 0;
+	}
+	if (!(s_camerapanel.delbutton.empty())) {
+		int buttonnum = (int)s_camerapanel.delbutton.size();
+		int buttonno;
+		for (buttonno = 0; buttonno < buttonnum; buttonno++) {
+			delete s_camerapanel.delbutton[buttonno];
+		}
+	}
+	s_camerapanel.delbutton.clear();
+
+	s_camerapanel.modelindex = -1;
+
+	return 0;
+}
+
+int CreateCameraPanel()
+{
+	return 0;
+}
 
 
 int DestroyMotionPanel()
@@ -18042,29 +18192,36 @@ int SaveMotionNameListFile()
 
 	ChangeCurDirFromMameMediaToTest();
 
-	OPENFILENAME ofn;
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	//ofn.hwndOwner = hDlgWnd;
-	ofn.hwndOwner = s_3dwnd;
-	ofn.hInstance = 0;
-	ofn.lpstrFilter = L"Retarget(*.mnl)\0*.mnl\0";
-	ofn.lpstrCustomFilter = NULL;
-	ofn.nMaxCustFilter = 0;
-	ofn.nFilterIndex = 0;
-	ofn.lpstrFile = g_tmpmqopath;
-	ofn.nMaxFile = MULTIPATH;
-	ofn.lpstrFileTitle = NULL;
-	ofn.nMaxFileTitle = 0;
-	ofn.lpstrInitialDir = NULL;
-	ofn.lpstrTitle = L"GetFileNameDlg";
-	//ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
-	ofn.Flags = OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
-	ofn.nFileOffset = 0;
-	ofn.nFileExtension = 0;
-	ofn.lpstrDefExt = NULL;
-	ofn.lCustData = NULL;
-	ofn.lpfnHook = NULL;
-	ofn.lpTemplateName = NULL;
+	//OPENFILENAME ofn;//stack size warning (MULTIPATH)
+	OPENFILENAME* ofn = (OPENFILENAME*)malloc(sizeof(OPENFILENAME));
+	if (!ofn) {
+		_ASSERT(0);
+		return 1;
+	}
+	ZeroMemory(ofn, sizeof(OPENFILENAME));
+
+	ofn->lStructSize = sizeof(OPENFILENAME);
+	//ofn->hwndOwner = hDlgWnd;
+	ofn->hwndOwner = s_3dwnd;
+	ofn->hInstance = 0;
+	ofn->lpstrFilter = L"Retarget(*.mnl)\0*.mnl\0";
+	ofn->lpstrCustomFilter = NULL;
+	ofn->nMaxCustFilter = 0;
+	ofn->nFilterIndex = 0;
+	ofn->lpstrFile = g_tmpmqopath;
+	ofn->nMaxFile = MULTIPATH;
+	ofn->lpstrFileTitle = NULL;
+	ofn->nMaxFileTitle = 0;
+	ofn->lpstrInitialDir = NULL;
+	ofn->lpstrTitle = L"GetFileNameDlg";
+	//ofn->Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_ALLOWMULTISELECT;
+	ofn->Flags = OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+	ofn->nFileOffset = 0;
+	ofn->nFileExtension = 0;
+	ofn->lpstrDefExt = NULL;
+	ofn->lCustData = NULL;
+	ofn->lpfnHook = NULL;
+	ofn->lpTemplateName = NULL;
 
 	s_getfilenamehwnd = 0;
 	s_getfilenametreeview = 0;
@@ -18079,7 +18236,7 @@ int SaveMotionNameListFile()
 		ZeroMemory(g_tmpmqopath, sizeof(WCHAR) * MAX_PATH);//異なる拡張子のファイル名が残っている場合があるから
 	}
 
-	if (GetOpenFileNameW(&ofn) == IDOK) {
+	if (GetOpenFileNameW(ofn) == IDOK) {
 		CMNLFile mnlfile;
 		int result;
 		result = mnlfile.WriteMNLFile(g_tmpmqopath, s_model);
@@ -18089,6 +18246,12 @@ int SaveMotionNameListFile()
 	//UnhookWinEvent(hhook);
 	s_getfilenamehwnd = 0;
 	s_getfilenametreeview = 0;
+
+
+	if (ofn) {
+		free(ofn);
+		ofn = 0;
+	}
 
 	return 0;
 }
@@ -18224,8 +18387,14 @@ int LoadRetargetFile(WCHAR* srcfilename)
 		}
 
 
-		WCHAR savepath[MULTIPATH];
-		MoveMemory(savepath, g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
+		//WCHAR savepath[MULTIPATH];//stack size warning
+		WCHAR* tmpsavepath = new WCHAR[MULTIPATH];
+		if (!tmpsavepath) {
+			_ASSERT(0);
+			return 1;
+		}
+		ZeroMemory(tmpsavepath, sizeof(WCHAR) * MULTIPATH);
+		MoveMemory(tmpsavepath, g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
 
 
 		//rtgファイルを読み込む
@@ -18238,7 +18407,9 @@ int LoadRetargetFile(WCHAR* srcfilename)
 			}
 		}
 
-		SaveRtgHistory(savepath);
+		SaveRtgHistory(tmpsavepath);
+		if (tmpsavepath)
+			delete[] tmpsavepath;
 
 
 		//if (GetOpenFileNameW(&ofn) == IDOK) {
@@ -30488,7 +30659,7 @@ int OnRenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext)
 {
 	if (g_bonemarkflag || g_rigidmarkflag) {
 
-		if (s_allmodelbone == 0) {
+		if (s_allmodelbone == false) {
 			//if ((g_previewFlag != 1) && (g_previewFlag != -1) && (g_previewFlag != 4)){
 			if (s_model && s_model->GetModelDisp()) {
 				//if (s_ikkind >= 3){
@@ -33301,6 +33472,14 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				bool savedispflag = s_dispmotion;
 				s_dispmotion = !savedispflag;
 				DispMotionPanel();
+				//return 0;
+			}
+			break;
+			case ID_CAMERAPANEL:
+			{
+				bool savedispflag = s_dispcamera;
+				s_dispcamera = !savedispflag;
+				DispCameraPanel();
 				//return 0;
 			}
 			break;

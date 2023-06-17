@@ -481,19 +481,19 @@ public:
 
     virtual HRESULT OnInit() { return S_OK; }
     virtual void Refresh();
-    virtual void Render( _In_ float fElapsedTime ) { UNREFERENCED_PARAMETER(fElapsedTime); }
+    virtual void Render( _In_ float /*fElapsedTime*/) { }
 
     // Windows message handler
-    virtual bool MsgProc( _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam )
+    virtual bool MsgProc( _In_ UINT /*uMsg*/, _In_ WPARAM /*wParam*/, _In_ LPARAM /*lParam*/)
     {
         return false;
     }
 
-    virtual bool HandleKeyboard( _In_ UINT uMsg, _In_ WPARAM wParam, _In_ LPARAM lParam )
+    virtual bool HandleKeyboard( _In_ UINT /*uMsg*/, _In_ WPARAM /*wParam*/, _In_ LPARAM /*lParam*/)
     {
         return false;
     }
-    virtual bool HandleMouse( _In_ UINT uMsg, _In_ const POINT& pt, _In_ WPARAM wParam, _In_ LPARAM lParam )
+    virtual bool HandleMouse( _In_ UINT /*uMsg*/, _In_ const POINT& /*pt*/, _In_ WPARAM /*wParam*/, _In_ LPARAM /*lParam*/)
     {
         return false;
     }

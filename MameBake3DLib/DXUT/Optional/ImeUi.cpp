@@ -2017,7 +2017,7 @@ static void GetReadingString( _In_ HWND hWnd )
                 if( !p ) break;
                 dwlen = *( DWORD* )( p + 7 * 4 + 16 * 2 * 4 );
                 dwerr = *( DWORD* )( p + 8 * 4 + 16 * 2 * 4 );
-                dwerr = std::min( dwerr, dwlen );
+                dwerr = min( dwerr, dwlen );
                 wstr = ( WCHAR* )( p + 6 * 4 + 16 * 2 * 1 );
                 unicode = TRUE;
                 break;
@@ -2966,7 +2966,7 @@ void CTsfUiLessMode::MakeCandidateStrings( ITfCandidateListUIElement* pcandidate
             pcandidate->GetPageIndex( IndexList, uPageCnt, &uPageCnt );
             dwPageStart = IndexList[uCurrentPage];
             dwPageSize = ( uCurrentPage < uPageCnt - 1 ) ?
-                std::min( uCount, IndexList[uCurrentPage + 1] ) - dwPageStart:
+                min( uCount, IndexList[uCurrentPage + 1] ) - dwPageStart:
                 uCount - dwPageStart;
         }
     }

@@ -709,7 +709,7 @@ HRESULT WINAPI DXUTCreateShaderResourceViewFromFile( ID3D11Device* d3dDevice, co
     }
     else
     {
-        hr = DirectX::CreateWICTextureFromFile( d3dDevice, nullptr, str, nullptr, textureView );
+        hr = DirectX::CreateWICTextureFromFile_old( d3dDevice, nullptr, str, nullptr, textureView );
     }
 
     return hr;
@@ -735,7 +735,7 @@ HRESULT WINAPI DXUTCreateTextureFromFile( ID3D11Device* d3dDevice, const wchar_t
     }
     else
     {
-        hr = DirectX::CreateWICTextureFromFile( d3dDevice, nullptr, str, texture, nullptr );
+        hr = DirectX::CreateWICTextureFromFile_old( d3dDevice, nullptr, str, texture, nullptr );
     }
 
     return hr;
@@ -842,7 +842,7 @@ HRESULT CDXUTResourceCache::CreateTextureFromFile( ID3D11Device* pDevice, ID3D11
     }
     else
     {
-        hr = DirectX::CreateWICTextureFromFileEx( pDevice, pContext, pSrcFile, 0,
+        hr = DirectX::CreateWICTextureFromFileEx_old( pDevice, pContext, pSrcFile, 0,
                                                   D3D11_USAGE_DEFAULT, D3D11_BIND_SHADER_RESOURCE, 0, 0,
                                                   bSRGB ? DirectX::WIC_LOADER_FORCE_SRGB : DirectX::WIC_LOADER_DEFAULT,
                                                   nullptr, ppOutputRV );

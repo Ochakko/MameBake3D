@@ -54,7 +54,8 @@ typedef struct funcmpparams
 	FbxCluster* cluster;
 	FbxPose* pPose;
 	FbxAMatrix globalcurrentpos;
-	void Init() {
+
+	funcmpparams() {
 		slotno = 0;
 		fbxmesh = 0;
 		pmodel = 0;
@@ -77,7 +78,8 @@ typedef struct tag_newmpelem
 {
 	CBone* boneptr;
 	CMotionPoint* mpptr;
-	void Init() {
+
+	tag_newmpelem() {
 		boneptr = 0;
 		mpptr = 0;
 	};
@@ -87,7 +89,8 @@ typedef struct tag_fbxobj
 {
 	FbxNode* node;
 	FbxMesh* mesh;
-	void Init() {
+
+	tag_fbxobj() {
 		node = 0;
 		mesh = 0;
 	};
@@ -99,7 +102,8 @@ typedef struct tag_physikrec
 	double time;
 	CBone* pbone;
 	ChaMatrix btmat;
-	void Init() {
+
+	tag_physikrec() {
 		time = 0.0;
 		pbone = 0;
 		btmat.SetIdentity();

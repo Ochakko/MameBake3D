@@ -226,6 +226,7 @@ typedef struct tag_cpinfo
 	int bvhtype;//0:undef, 1-144:bvh1 - bvh144, -1:bvh_other
 	int importance;//0:undef, 1:tiny, 2:alittle, 3:normal, 4:noticed, 5:imortant, 6:very important
 	WCHAR comment[32];//WCHAR * 31文字まで。３２文字目は終端記号
+
 	void Init() {
 		ZeroMemory(fbxname, sizeof(WCHAR) * MAX_PATH);
 		ZeroMemory(motionname, sizeof(WCHAR) * MAX_PATH);
@@ -234,6 +235,10 @@ typedef struct tag_cpinfo
 		bvhtype = 0;
 		importance = 0;
 		ZeroMemory(comment, sizeof(WCHAR) * 32);
+	};
+
+	tag_cpinfo() {
+		Init();
 	};
 }CPMOTINFO;
 
@@ -244,6 +249,7 @@ typedef struct tag_historyelem
 	WCHAR wfilename[MAX_PATH];
 	int hascpinfo;//cpinfoにセットした場合1, セットしていない場合0
 	CPMOTINFO cpinfo;
+
 	bool operator< (const tag_historyelem& right) const {
 		LONG lRet = CompareFileTime(&filetime, &(right.filetime));
 		if (lRet < 0) {
@@ -256,11 +262,16 @@ typedef struct tag_historyelem
 			return (std::wstring(wfilename) < std::wstring(right.wfilename));
 		}
 	};
+
 	void Init() {
 		ZeroMemory(&filetime, sizeof(FILETIME));
 		ZeroMemory(wfilename, sizeof(WCHAR) * MAX_PATH);
 		hascpinfo = 0;
 		cpinfo.Init();
+	};
+
+	tag_historyelem() {
+		Init();
 	};
 }HISTORYELEM;
 
@@ -278,7 +289,7 @@ typedef struct tag_anglelimmit
 	bool applyeul[AXIS_MAX];
 	float chkeul[AXIS_MAX];
 
-	void Init() {
+	tag_anglelimmit() {
 		ZeroMemory(limitoff, sizeof(int) * AXIS_MAX);
 		ZeroMemory(via180flag, sizeof(int) * AXIS_MAX);
 		boneaxiskind = BONEAXIS_CURRENT;
@@ -289,7 +300,7 @@ typedef struct tag_anglelimmit
 			applyeul[axisno] = false;
 			chkeul[axisno] = 0.0f;
 		}
-	}
+	};
 }ANGLELIMIT;
 
 typedef struct tag_rigtrans
@@ -302,6 +313,9 @@ typedef struct tag_rigtrans
 		axiskind = 0;
 		applyrate = 0.0f;
 		enable = 0;
+	};
+	tag_rigtrans() {
+		Init();
 	};
 }RIGTRANS;
 
@@ -318,6 +332,10 @@ typedef struct tag_rigelem
 		boneno = -1;
 		transuv[0].Init();
 		transuv[1].Init();
+	};
+
+	tag_rigelem() {
+		Init();
 	};
 }RIGELEM;
 
@@ -368,6 +386,10 @@ typedef struct tag_customrig
 		shapekind = RIGSHAPE_SPHERE;
 		rigcolor = RIGCOLOR_RED;
 	};
+
+	tag_customrig() {
+		Init();
+	};
 }CUSTOMRIG;
 
 typedef struct tag_hinfo
@@ -376,7 +398,7 @@ typedef struct tag_hinfo
 	float maxh;
 	float height;
 
-	void Init() {
+	tag_hinfo() {
 		minh = FLT_MAX;//有効値で置き換わるようにMAX
 		maxh = -FLT_MAX;//有効値で置き換わるようにMIN(-MAX)
 		height = 0.0f;
@@ -388,7 +410,7 @@ typedef struct tag_reinfo
 	char filename[MAX_PATH];
 	float btgscale;
 
-	void Init() {
+	tag_reinfo() {
 		ZeroMemory(filename, sizeof(char) * MAX_PATH);
 		btgscale = 1.0f;
 	};
@@ -401,7 +423,7 @@ typedef struct tag_boneinfluence
     DWORD *vertices;
     FLOAT *weights;
 
-	void Init() {
+	tag_boneinfluence() {
 		Bone = 0;
 		numInfluences = 0;
 		vertices = 0;
@@ -415,7 +437,7 @@ typedef struct tag_tlelem
 	int menuindex;
 	int motionid;
 
-	void Init() {
+	tag_tlelem() {
 		menuindex = 0;
 		motionid = 0;
 	};
@@ -429,7 +451,7 @@ typedef struct tag_modelelem
 	std::map<int, int> lineno2boneno;
 	std::map<int, int> boneno2lineno;
 
-	void Init() {
+	tag_modelelem() {
 		modelptr = 0;
 		tlarray.clear();
 		motmenuindex = 0;
@@ -446,7 +468,7 @@ typedef struct tag_xmliobuf
 	int pos;
 	int isend;
 
-	void Init() {
+	tag_xmliobuf() {
 		buf = 0;
 		bufleng = 0;
 		pos = 0;
@@ -521,7 +543,7 @@ typedef struct tag_motinfo
 	int loopflag;
 	int fbxanimno;//fbxファイルの中で何番目のモーションとして読み込んだか　0から始まる番号
 
-	void Init() {
+	tag_motinfo() {
 		ZeroMemory(motname, sizeof(char) * 256);
 		ZeroMemory(wfilename, sizeof(WCHAR) * MAX_PATH);
 		ZeroMemory(engmotname, sizeof(char) * 256);
@@ -555,6 +577,10 @@ typedef struct tag_infelem
 		dispinf = 0.0f;
 		isadditive = 0;
 	};
+
+	tag_infelem() {
+		Init();
+	};
 }INFELEM;
 
 
@@ -564,7 +590,7 @@ typedef struct rgbdat
 	unsigned char g;
 	unsigned char r;
 
-	void Init() {
+	rgbdat() {
 		b = 0;
 		g = 0;
 		r = 0;
@@ -577,7 +603,7 @@ typedef struct rgb3f
 	float g;
 	float b;
 
-	void Init() {
+	rgb3f() {
 		r = 0.0f;
 		g = 0.0f;
 		b = 0.0f;
@@ -591,7 +617,7 @@ typedef struct tag_argbfdat
 	float g;
 	float b;
 
-	void Init() {
+	tag_argbfdat() {
 		a = 1.0f;
 		r = 0.0f;
 		g = 0.0f;
@@ -611,7 +637,7 @@ typedef struct tag_infdata
 	int m_infnum;
 	INFELEM m_infelem[INFNUMMAX];
 
-	void Init() {
+	tag_infdata() {
 		m_infnum = 0;
 		int infno;
 		for (infno = 0; infno < INFNUMMAX; infno++) {
@@ -625,7 +651,7 @@ typedef struct tag_chkalpha
 	int alphanum;
 	int notalphanum;
 
-	void Init() {
+	tag_chkalpha() {
 		alphanum = 0;
 		notalphanum = 0;
 	};
@@ -640,7 +666,7 @@ typedef struct tag_mqobuf
 	DWORD pos;
 	int isend;
 
-	void Init() {
+	tag_mqobuf() {
 		hfile = INVALID_HANDLE_VALUE;
 		buf = 0;
 		bufleng = 0;
@@ -668,7 +694,7 @@ typedef struct tag_materialblock
 	int endface;
 	CMQOMaterial* mqomat;
 
-	void Init() {
+	tag_materialblock() {
 		materialno = 0;
 		startface = 0;
 		endface = 0;
@@ -681,7 +707,7 @@ typedef struct tag_dirtymat
 	int materialno;
 	int* dirtyflag;
 
-	void Init() {
+	tag_dirtymat() {
 		materialno = 0;
 		dirtyflag = 0;
 	}
@@ -692,7 +718,7 @@ typedef struct tag_vcoldata
 	int vertno;
 	__int64 vcol;
 
-	void Init() {
+	tag_vcoldata() {
 		vertno = 0;
 		vcol = (__int64)0;
 	}
@@ -714,7 +740,7 @@ typedef struct tag_infelemheader
 	int symaxis;
 	float symdist;
 
-	void Init() {
+	tag_infelemheader() {
 		infnum = 0;
 		normalizeflag = 0;
 		symaxis = 0;
@@ -765,7 +791,7 @@ typedef struct tag_tvertex {
 	float pos[4]; 
 	float tex[2];
 
-	void Init() {
+	tag_tvertex() {
 		ZeroMemory(pos, sizeof(float) * 4);
 		ZeroMemory(tex, sizeof(float) * 2);
 	};
@@ -776,7 +802,7 @@ typedef struct tag_tlvertex {
 	float diffuse[4];
 	float tex[2];
 
-	void Init() {
+	tag_tlvertex() {
 		ZeroMemory(pos, sizeof(float) * 4);
 		ZeroMemory(diffuse, sizeof(float) * 4);
 		ZeroMemory(tex, sizeof(float) * 2);
@@ -790,7 +816,7 @@ typedef struct tag_pm3inf
 	float weight[4];
 	int boneindex[4];
 
-	void Init() {
+	tag_pm3inf() {
 		ZeroMemory(weight, sizeof(float) * 4);
 		ZeroMemory(boneindex, sizeof(int) * 4);
 	};
@@ -806,8 +832,7 @@ typedef struct tag_brushstate
 	int ifmirrorVDiv2flag;
 	int brushrepeats;
 
-	void Init()
-	{
+	void Init() {
 		motionbrush_method = 0;
 		wallscrapingikflag = 0;
 		limitdegflag = false;
@@ -815,6 +840,11 @@ typedef struct tag_brushstate
 		brushmirrorVflag = 0;
 		ifmirrorVDiv2flag = 0;
 		brushrepeats = 1;
+	};
+
+	tag_brushstate()
+	{
+		Init();
 	};
 }BRUSHSTATE;
 
@@ -845,11 +875,11 @@ typedef struct tag_errormes {
 	DWORD type;
 	char* mesptr;
 
-	void Init() {
+	tag_errormes() {
 		errorcode = 0;
 		type = 0;
 		mesptr = 0;
-	}
+	};
 } ERRORMES;
 
 //interpolation

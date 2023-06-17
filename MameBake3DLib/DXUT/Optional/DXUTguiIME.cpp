@@ -760,7 +760,7 @@ void CDXUTIMEEditBox::RenderComposition()
         int nLastInLine;
         int bTrail;
         s_CompString.XtoCP( m_rcText.right - rc.left, &nLastInLine, &bTrail );
-        int nNumCharToDraw = std::min( nCharLeft, nLastInLine );
+        int nNumCharToDraw = min( nCharLeft, nLastInLine );
         m_pDialog->CalcTextRect( pwszComp, pElement, &rc, nNumCharToDraw );
 
         // Draw the background

@@ -6,7 +6,7 @@ http://go.microsoft.com/fwlink/?LinkId=271568
 
 Copyright (c) Microsoft Corporation. All rights reserved.
 
-**December 10, 2022**
+**June 13, 2023**
 
 Effects for Direct3D 11 (FX11) is a management runtime for authoring HLSL shaders, render state, and runtime variables together.
 
@@ -46,7 +46,7 @@ All content and source code for this package are subject to the terms of the [MI
 
 For questions, consider using [Stack Overflow](https://stackoverflow.com/questions/tagged/d3dx) with the *d3dx* tag.
 
-## Contributing
+## Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
 

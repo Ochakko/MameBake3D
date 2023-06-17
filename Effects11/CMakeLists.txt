@@ -14,6 +14,8 @@ project (Effects11
 # https://devblogs.microsoft.com/cppblog/spectre-mitigations-in-msvc/
 option(ENABLE_SPECTRE_MITIGATION "Build using /Qspectre for MSVC" OFF)
 
+option(DISABLE_MSVC_ITERATOR_DEBUGGING "Disable iterator debugging in Debug configurations with the MSVC CRT" OFF)
+
 option(ENABLE_CODE_ANALYSIS "Use Static Code Analysis on build" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -115,7 +117,12 @@ if(MSVC)
       target_compile_options(${PROJECT_NAME} PRIVATE "/Qspectre")
     endif()
 
-      if((MSVC_VERSION GREATER_EQUAL 1928)
+    if((MSVC_VERSION GREATER_EQUAL 1924)
+       AND ((NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) OR (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 16.0)))
+      target_compile_options(${PROJECT_NAME} PRIVATE /ZH:SHA_256)
+    endif()
+
+    if((MSVC_VERSION GREATER_EQUAL 1928)
        AND (CMAKE_SIZEOF_VOID_P EQUAL 8)
        AND ((NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) OR (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0)))
       target_compile_options(${PROJECT_NAME} PRIVATE "$<$<NOT:$<CONFIG:DEBUG>>:/guard:ehcont>")
@@ -125,7 +132,7 @@ else()
 endif()
 
 if(NOT ${DIRECTX_ARCH} MATCHES "^arm")
-    if(${CMAKE_SIZEOF_VOID_P} EQUAL "4")
+    if(CMAKE_SIZEOF_VOID_P EQUAL 4)
         set(ARCH_SSE2 $<$<CXX_COMPILER_ID:MSVC>:/arch:SSE2> $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-msse2>)
     else()
         set(ARCH_SSE2 $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-msse2>)
@@ -140,22 +147,32 @@ if( CMAKE_CXX_COMPILER_ID MATCHES "Clang" )
         "-Wno-tautological-constant-out-of-range-compare" "-Wno-invalid-offsetof")
     target_compile_options(${PROJECT_NAME} PRIVATE ${WarningsLib})
 elseif( CMAKE_CXX_COMPILER_ID MATCHES "MSVC" )
-    target_compile_options(${PROJECT_NAME} PRIVATE /wd5205 /JMC- /Zc:__cplusplus)
+    # /permissive- doesn't work on this legacy codebase.
+    target_compile_options(${PROJECT_NAME} PRIVATE /wd5205 /sdl /JMC- /Zc:__cplusplus /Zc:inline)
 
     if(ENABLE_CODE_ANALYSIS)
       target_compile_options(${PROJECT_NAME} PRIVATE /analyze)
     endif()
 
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.24)
-        target_compile_options(${PROJECT_NAME} PRIVATE /ZH:SHA_256)
+    if(CMAKE_INTERPROCEDURAL_OPTIMIZATION)
+      message(STATUS "Building using Whole Program Optimization")
+      target_compile_options(${PROJECT_NAME} PRIVATE /Gy /Gw)
     endif()
 
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.26)
         target_compile_options(${PROJECT_NAME} PRIVATE /Zc:preprocessor /wd5104 /wd5105)
     endif()
 
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.28)
+        target_compile_options(${PROJECT_NAME} PRIVATE /Zc:lambda)
+    endif()
+
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.34)
         target_compile_options(${PROJECT_NAME} PRIVATE /wd5262)
+    endif()
+
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.35)
+        target_compile_options(${PROJECT_NAME} PRIVATE /Zc:checkGwOdr)
     endif()
 endif()
 
@@ -173,4 +190,8 @@ if(WIN32)
     endif()
 
     target_compile_definitions(${PROJECT_NAME} PRIVATE _UNICODE UNICODE _WIN32_WINNT=${WINVER})
+
+    if(DISABLE_MSVC_ITERATOR_DEBUGGING)
+      target_compile_definitions(${PROJECT_NAME} PRIVATE _ITERATOR_DEBUG_LEVEL=0)
+    endif()
 endif()

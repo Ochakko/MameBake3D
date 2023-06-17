@@ -58,6 +58,12 @@ typedef struct tag_blsindex
 	int serialno;
 	int blendshapeno;
 	int channelno;
+
+	tag_blsindex() {
+		serialno = 0;
+		blendshapeno = 0;
+		channelno = 0;
+	};
 }BLSINDEX;
 typedef struct tag_blsinfo
 {
@@ -65,6 +71,12 @@ typedef struct tag_blsinfo
 	FbxNode* basenode;
 	CMQOObject* base;
 	string targetname;
+	tag_blsinfo() : blsindex() {
+		//blsindex.Init();
+		basenode = 0;
+		base = 0;
+		targetname.clear();
+	};
 }BLSINFO;
 static map<int, BLSINFO> s_blsinfo;
 
@@ -75,6 +87,13 @@ typedef struct tag_animinfo
 	int maxframe;
 	char* engmotname;
 	FbxAnimLayer* animlayer;
+	tag_animinfo() {
+		motid = 0;
+		orgindex = 0;
+		maxframe = 0;
+		engmotname = 0;
+		animlayer = 0;
+	};
 }ANIMINFO;
 
 

@@ -28,32 +28,26 @@
 #include <cstddef>
 #include <cstdint>
 
+
+#include "..\\..\\DirectXTex\\WICTextureLoader\\WICTextureLoader11.h"
+
 namespace DirectX
 {
-#ifndef WIC_LOADER_FLAGS_DEFINED
-#define WIC_LOADER_FLAGS_DEFINED
-    enum WIC_LOADER_FLAGS : uint32_t
-    {
-        WIC_LOADER_DEFAULT = 0,
-        WIC_LOADER_FORCE_SRGB = 0x1,
-        WIC_LOADER_IGNORE_SRGB = 0x2,
-        WIC_LOADER_SRGB_DEFAULT = 0x4,
-        WIC_LOADER_FIT_POW2 = 0x20,
-        WIC_LOADER_MAKE_SQUARE = 0x40,
-        WIC_LOADER_FORCE_RGBA32 = 0x80,
-    };
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-dynamic-exception-spec"
-#endif
-
-    DEFINE_ENUM_FLAG_OPERATORS(WIC_LOADER_FLAGS);
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-#endif
+    //#### #include "..\\..\\DirectXTex\\WICTextureLoader\\WICTextureLoader11.h" ####
+    //inline namespace DX11
+    //{
+    //    enum WIC_LOADER_FLAGS : uint32_t
+    //    {
+    //        WIC_LOADER_DEFAULT = 0,
+    //        WIC_LOADER_FORCE_SRGB = 0x1,
+    //        WIC_LOADER_IGNORE_SRGB = 0x2,
+    //        WIC_LOADER_SRGB_DEFAULT = 0x4,
+    //        WIC_LOADER_FIT_POW2 = 0x20,
+    //        WIC_LOADER_MAKE_SQUARE = 0x40,
+    //        WIC_LOADER_FORCE_RGBA32 = 0x80,
+    //    };
+    //}
 
     // Standard version
     HRESULT CreateWICTextureFromMemory_old(
@@ -142,4 +136,21 @@ namespace DirectX
         _In_ WIC_LOADER_FLAGS loadFlags,
         _Outptr_opt_ ID3D11Resource** texture,
         _Outptr_opt_ ID3D11ShaderResourceView** textureView) noexcept;
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-dynamic-exception-spec"
+#endif
+
+
+    //#### #include "..\\..\\DirectXTex\\WICTextureLoader\\WICTextureLoader11.h" ####
+    //inline namespace DX11
+    //{
+    //    DEFINE_ENUM_FLAG_OPERATORS(WIC_LOADER_FLAGS);
+    //}
+
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 }

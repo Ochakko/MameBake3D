@@ -542,12 +542,22 @@ namespace
 
         case DXGI_FORMAT_NV12:
         case DXGI_FORMAT_420_OPAQUE:
+            if ((height % 2) != 0)
+            {
+                // Requires a height alignment of 2.
+                return E_INVALIDARG;
+            }
             planar = true;
             bpe = 2;
             break;
 
         case DXGI_FORMAT_P010:
         case DXGI_FORMAT_P016:
+            if ((height % 2) != 0)
+            {
+                // Requires a height alignment of 2.
+                return E_INVALIDARG;
+            }
             planar = true;
             bpe = 4;
             break;
@@ -1343,6 +1353,34 @@ namespace
 
             switch (d3d10ext->dxgiFormat)
             {
+            case DXGI_FORMAT_NV12:
+            case DXGI_FORMAT_P010:
+            case DXGI_FORMAT_P016:
+            case DXGI_FORMAT_420_OPAQUE:
+                if ((d3d10ext->resourceDimension != D3D11_RESOURCE_DIMENSION_TEXTURE2D)
+                    || (width % 2) != 0 || (height % 2) != 0)
+                {
+                    return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+                }
+                break;
+
+            case DXGI_FORMAT_YUY2:
+            case DXGI_FORMAT_Y210:
+            case DXGI_FORMAT_Y216:
+            case DXGI_FORMAT_P208:
+                if ((width % 2) != 0)
+                {
+                    return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+                }
+                break;
+
+            case DXGI_FORMAT_NV11:
+                if ((width % 4) != 0)
+                {
+                    return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+                }
+                break;
+
             case DXGI_FORMAT_AI44:
             case DXGI_FORMAT_IA44:
             case DXGI_FORMAT_P8:
@@ -1708,70 +1746,53 @@ namespace
         _In_opt_ ID3D11Resource** texture,
         _In_opt_ ID3D11ShaderResourceView** textureView) noexcept
     {
-    //#if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
-    //    if (texture || textureView)
-    //    {
-    //        CHAR strFileA[MAX_PATH];
-    //        ZeroMemory(strFileA, sizeof(CHAR) * MAX_PATH);
+    #if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
+        if (texture || textureView)
+        {
+            CHAR strFileA[MAX_PATH];
+            const int result = WideCharToMultiByte(CP_UTF8,
+                WC_NO_BEST_FIT_CHARS,
+                fileName,
+                -1,
+                strFileA,
+                MAX_PATH,
+                nullptr,
+                nullptr
+            );
+            if (result > 0)
+            {
+                const char* pstrName = strrchr(strFileA, '\\');
+                if (!pstrName)
+                {
+                    pstrName = strFileA;
+                }
+                else
+                {
+                    pstrName++;
+                }
 
-    //        const int result = WideCharToMultiByte(CP_UTF8,
-    //            WC_NO_BEST_FIT_CHARS,
-    //            fileName,
-    //            -1,
-    //            strFileA,
-    //            MAX_PATH,
-    //            nullptr,
-    //            nullptr
-    //        );
-    //        if (result > 0)
-    //        {
-    //            const char* pstrName = strrchr(strFileA, '\\');
-    //            if (!pstrName)
-    //            {
-    //                pstrName = strFileA;
-    //            }
-    //            else
-    //            {
-    //                size_t namelen = strlen(strFileA);
-    //                if (namelen < (MAX_PATH - 1))
-    //                {
-    //                    pstrName++;
-    //                }
-    //                else
-    //                {
-    //                    _ASSERT(0);
-    //                }
-    //            }
+                if (texture && *texture)
+                {
+                    (*texture)->SetPrivateData(WKPDID_D3DDebugObjectName,
+                        static_cast<UINT>(strnlen_s(pstrName, MAX_PATH)),
+                        pstrName
+                    );
+                }
 
-    //            strFileA[MAX_PATH - 1] = 0;
-
-    //            if (texture && *texture)
-    //            {
-    //                (*texture)->SetPrivateData(WKPDID_D3DDebugObjectName,
-    //                    static_cast<UINT>(strnlen_s(pstrName, MAX_PATH)),
-    //                    pstrName
-    //                );
-    //            }
-
-    //            if (textureView && *textureView)
-    //            {
-    //                (*textureView)->SetPrivateData(WKPDID_D3DDebugObjectName,
-    //                    static_cast<UINT>(strnlen_s(pstrName, MAX_PATH)),
-    //                    pstrName
-    //                );
-    //            }
-    //        }
-    //    }
-    //#else
-    //    UNREFERENCED_PARAMETER(fileName);
-    //    UNREFERENCED_PARAMETER(texture);
-    //    UNREFERENCED_PARAMETER(textureView);
-    //#endif
-
-    UNREFERENCED_PARAMETER(fileName);
-    UNREFERENCED_PARAMETER(texture);
-    UNREFERENCED_PARAMETER(textureView);
-
+                if (textureView && *textureView)
+                {
+                    (*textureView)->SetPrivateData(WKPDID_D3DDebugObjectName,
+                        static_cast<UINT>(strnlen_s(pstrName, MAX_PATH)),
+                        pstrName
+                    );
+                }
+            }
+        }
+    #else
+        UNREFERENCED_PARAMETER(fileName);
+        UNREFERENCED_PARAMETER(texture);
+        UNREFERENCED_PARAMETER(textureView);
+    #endif
     }
 } // anonymous namespace
 

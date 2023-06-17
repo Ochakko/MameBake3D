@@ -50,7 +50,7 @@ typedef struct tag_vec3f
 	float y;
 	float z;
 
-	void Init() {
+	tag_vec3f() {
 		x = 0.0f;
 		y = 0.0f;
 		z = 0.0f;
@@ -64,7 +64,7 @@ typedef struct tag_dvec3
 	double y;
 	double z;
 
-	void Init() {
+	tag_dvec3() {
 		x = 0.0;
 		y = 0.0;
 		z = 0.0;
@@ -138,7 +138,7 @@ typedef struct tag_tpos
 	float fbottom;
 	float fright;
 
-	void Init() {
+	tag_tpos() {
 		ftop = 0.0f;
 		fleft = 0.0f;
 		fbottom = 0.0f;
@@ -167,7 +167,7 @@ typedef struct tag_tselem
 	int jointno;
 	int twistflag;
 
-	void Init() {
+	tag_tselem() {
 		skelno = 0;
 		ZeroMemory(jointname, sizeof(char) * 256);
 		jointno = 0;
@@ -190,7 +190,7 @@ typedef struct tag_color4uc
 	unsigned char g;
 	unsigned char b;
 
-	void Init() {
+	tag_color4uc() {
 		a = 255;
 		r = 0;
 		g = 0;
@@ -204,7 +204,7 @@ typedef struct tag_color3uc
 	unsigned char g;
 	unsigned char b;
 
-	void Init() {
+	tag_color3uc() {
 		r = 0;
 		g = 0;
 		b = 0;
@@ -219,7 +219,7 @@ typedef struct tag_color4f
 	float b;
 	float a;
 
-	void Init() {
+	tag_color4f() {
 		r = 0.0f;
 		g = 0.0f;
 		b = 0.0f;
@@ -234,7 +234,7 @@ public:
 	float g;
 	float b;
 
-	void Init() {
+	RDBColor3f() {
 		r = 0.0f;
 		g = 0.0f;
 		b = 0.0f;

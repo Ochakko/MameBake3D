@@ -20,6 +20,10 @@
 #define NOHELP
 #pragma warning(pop)
 
+#if __cplusplus < 201703L
+#error Requires C++17 (and /Zc:__cplusplus with MSVC)
+#endif
+
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -28,6 +32,7 @@
 #include <cstring>
 #include <cwchar>
 #include <cwctype>
+#include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <list>
@@ -121,7 +126,7 @@ namespace
 
     struct SConversion
     {
-        wchar_t szSrc[MAX_PATH];
+        std::wstring szSrc;
     };
 
     struct SValue
@@ -259,6 +264,9 @@ namespace
         DEFFMT(Y216),
         // No support for legacy paletted video formats (AI44, IA44, P8, A8P8)
         DEFFMT(B4G4R4A4_UNORM),
+
+        // D3D11on12 format
+        { L"A4B4G4R4_UNORM", DXGI_FORMAT(191) },
 
         { nullptr, DXGI_FORMAT_UNKNOWN }
     };
@@ -424,11 +432,11 @@ namespace
         return 0;
     }
 
-    void SearchForFiles(const wchar_t* path, std::list<SConversion>& files, bool recursive)
+    void SearchForFiles(const std::filesystem::path& path, std::list<SConversion>& files, bool recursive)
     {
         // Process files
         WIN32_FIND_DATAW findData = {};
-        ScopedFindHandle hFile(safe_handle(FindFirstFileExW(path,
+        ScopedFindHandle hFile(safe_handle(FindFirstFileExW(path.c_str(),
             FindExInfoBasic, &findData,
             FindExSearchNameMatch, nullptr,
             FIND_FIRST_EX_LARGE_FETCH)));
@@ -438,12 +446,8 @@ namespace
             {
                 if (!(findData.dwFileAttributes & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM | FILE_ATTRIBUTE_DIRECTORY)))
                 {
-                    wchar_t drive[_MAX_DRIVE] = {};
-                    wchar_t dir[_MAX_DIR] = {};
-                    _wsplitpath_s(path, drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
-
                     SConversion conv = {};
-                    _wmakepath_s(conv.szSrc, drive, dir, findData.cFileName, nullptr);
+                    conv.szSrc = path.parent_path().append(findData.cFileName).native();
                     files.push_back(conv);
                 }
 
@@ -455,15 +459,9 @@ namespace
         // Process directories
         if (recursive)
         {
-            wchar_t searchDir[MAX_PATH] = {};
-            {
-                wchar_t drive[_MAX_DRIVE] = {};
-                wchar_t dir[_MAX_DIR] = {};
-                _wsplitpath_s(path, drive, _MAX_DRIVE, dir, _MAX_DIR, nullptr, 0, nullptr, 0);
-                _wmakepath_s(searchDir, drive, dir, L"*", nullptr);
-            }
+            auto searchDir = path.parent_path().append(L"*");
 
-            hFile.reset(safe_handle(FindFirstFileExW(searchDir,
+            hFile.reset(safe_handle(FindFirstFileExW(searchDir.c_str(),
                 FindExInfoBasic, &findData,
                 FindExSearchLimitToDirectories, nullptr,
                 FIND_FIRST_EX_LARGE_FETCH)));
@@ -476,17 +474,7 @@ namespace
                 {
                     if (findData.cFileName[0] != L'.')
                     {
-                        wchar_t subdir[MAX_PATH] = {};
-
-                        {
-                            wchar_t drive[_MAX_DRIVE] = {};
-                            wchar_t dir[_MAX_DIR] = {};
-                            wchar_t fname[_MAX_FNAME] = {};
-                            wchar_t ext[_MAX_FNAME] = {};
-                            _wsplitpath_s(path, drive, dir, fname, ext);
-                            wcscat_s(dir, findData.cFileName);
-                            _wmakepath_s(subdir, drive, dir, fname, ext);
-                        }
+                        auto subdir = path.parent_path().append(findData.cFileName).append(path.filename().c_str());
 
                         SearchForFiles(subdir, files, recursive);
                     }
@@ -502,52 +490,58 @@ namespace
     {
         std::list<SConversion> flist;
         std::set<std::wstring> excludes;
-        wchar_t fname[1024] = {};
+
+        auto fname = std::make_unique<wchar_t[]>(32768);
         for (;;)
         {
-            inFile >> fname;
+            inFile >> fname.get();
             if (!inFile)
                 break;
 
-            if (*fname == L'#')
+            if (fname[0] == L'#')
             {
                 // Comment
             }
-            else if (*fname == L'-')
+            else if (fname[0] == L'-')
             {
                 if (flist.empty())
                 {
-                    wprintf(L"WARNING: Ignoring the line '%ls' in -flist\n", fname);
+                    wprintf(L"WARNING: Ignoring the line '%ls' in -flist\n", fname.get());
                 }
                 else
                 {
-                    if (wcspbrk(fname, L"?*") != nullptr)
+                    std::filesystem::path path(fname.get() + 1);
+                    auto& npath = path.make_preferred();
+                    if (wcspbrk(fname.get(), L"?*") != nullptr)
                     {
                         std::list<SConversion> removeFiles;
-                        SearchForFiles(&fname[1], removeFiles, false);
+                        SearchForFiles(npath, removeFiles, false);
 
-                        for (auto it : removeFiles)
+                        for (auto& it : removeFiles)
                         {
-                            _wcslwr_s(it.szSrc);
-                            excludes.insert(it.szSrc);
+                            std::wstring name = it.szSrc;
+                            std::transform(name.begin(), name.end(), name.begin(), towlower);
+                            excludes.insert(name);
                         }
                     }
                     else
                     {
-                        std::wstring name = (fname + 1);
+                        std::wstring name = npath.c_str();
                         std::transform(name.begin(), name.end(), name.begin(), towlower);
                         excludes.insert(name);
                     }
                 }
             }
-            else if (wcspbrk(fname, L"?*") != nullptr)
+            else if (wcspbrk(fname.get(), L"?*") != nullptr)
             {
-                SearchForFiles(fname, flist, false);
+                std::filesystem::path path(fname.get());
+                SearchForFiles(path.make_preferred(), flist, false);
             }
             else
             {
                 SConversion conv = {};
-                wcscpy_s(conv.szSrc, MAX_PATH, fname);
+                std::filesystem::path path(fname.get());
+                conv.szSrc = path.make_preferred().native();
                 flist.push_back(conv);
             }
 
@@ -673,12 +667,12 @@ namespace
         wprintf(L"\n");
     }
 
-    void PrintLogo()
+    void PrintLogo(bool versionOnly)
     {
         wchar_t version[32] = {};
 
         wchar_t appName[_MAX_PATH] = {};
-        if (GetModuleFileNameW(nullptr, appName, static_cast<DWORD>(std::size(appName))))
+        if (GetModuleFileNameW(nullptr, appName, _MAX_PATH))
         {
             const DWORD size = GetFileVersionInfoSizeW(appName, nullptr);
             if (size > 0)
@@ -701,12 +695,19 @@ namespace
             swprintf_s(version, L"%03d (library)", DIRECTX_TEX_VERSION);
         }
 
-        wprintf(L"Microsoft (R) DirectX Texture Assembler [DirectXTex] Version %ls\n", version);
-        wprintf(L"Copyright (C) Microsoft Corp.\n");
-    #ifdef _DEBUG
-        wprintf(L"*** Debug build ***\n");
-    #endif
-        wprintf(L"\n");
+        if (versionOnly)
+        {
+            wprintf(L"texassemble version %ls\n", version);
+        }
+        else
+        {
+            wprintf(L"Microsoft (R) DirectX Texture Assembler [DirectXTex] Version %ls\n", version);
+            wprintf(L"Copyright (C) Microsoft Corp.\n");
+        #ifdef _DEBUG
+            wprintf(L"*** Debug build ***\n");
+        #endif
+            wprintf(L"\n");
+        }
     }
 
     const wchar_t* GetErrorDesc(HRESULT hr)
@@ -733,6 +734,14 @@ namespace
 
             if (errorText)
                 LocalFree(errorText);
+
+            for (wchar_t* ptr = desc; *ptr != 0; ++ptr)
+            {
+                if (*ptr == L'\r' || *ptr == L'\n')
+                {
+                    *ptr = L' ';
+                }
+            }
         }
 
         return desc;
@@ -740,10 +749,10 @@ namespace
 
     void PrintUsage()
     {
-        PrintLogo();
+        PrintLogo(false);
 
         static const wchar_t* const s_usage =
-            L"Usage: texassemble <command> <options> <files>\n"
+            L"Usage: texassemble <command> <options> [--] <files>\n"
             L"\n"
             L"   cube                create cubemap\n"
             L"   volume              create volume map\n"
@@ -789,7 +798,9 @@ namespace
             L"   -swizzle <rgba>     Select channels for merge (defaults to rgbB)\n"
             L"\n"
             L"                       (cube, volume, array, cubearray, merge only)\n"
-            L"   -stripmips          Use only base image from input dds files\n";
+            L"   -stripmips          Use only base image from input dds files\n"
+            L"\n"
+            L"   '-- ' is needed if any input filepath starts with the '-' or '/' character\n";
 
         wprintf(L"%ls", s_usage);
 
@@ -989,7 +1000,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     uint32_t zeroElements[4] = {};
     uint32_t oneElements[4] = {};
 
-    wchar_t szOutputFile[MAX_PATH] = {};
+    std::wstring outputFile;
 
     // Set locale for output since GetErrorDesc can get localized strings.
     std::locale::global(std::locale(""));
@@ -1007,6 +1018,20 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     {
         PrintUsage();
         return 0;
+    }
+
+    if (('-' == argv[1][0]) && ('-' == argv[1][1]))
+    {
+        if (!_wcsicmp(argv[1], L"--version"))
+        {
+            PrintLogo(true);
+            return 0;
+        }
+        else if (!_wcsicmp(argv[1], L"--help"))
+        {
+            PrintUsage();
+            return 0;
+        }
     }
 
     const uint32_t dwCommand = LookupByName(argv[1], g_pCommands);
@@ -1041,12 +1066,38 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
     uint32_t dwOptions = 0;
     std::list<SConversion> conversion;
+    bool allowOpts = true;
 
     for (int iArg = 2; iArg < argc; iArg++)
     {
         PWSTR pArg = argv[iArg];
 
-        if (('-' == pArg[0]) || ('/' == pArg[0]))
+        if (allowOpts
+            && ('-' == pArg[0]) && ('-' == pArg[1]))
+        {
+            if (pArg[2] == 0)
+            {
+                // "-- " is the POSIX standard for "end of options" marking to escape the '-' and '/' characters at the start of filepaths.
+                allowOpts = false;
+            }
+            else if (!_wcsicmp(pArg, L"--version"))
+            {
+                PrintLogo(true);
+                return 0;
+            }
+            else if (!_wcsicmp(pArg, L"--help"))
+            {
+                PrintUsage();
+                return 0;
+            }
+            else
+            {
+                wprintf(L"Unknown option: %ls\n", pArg);
+                return 1;
+            }
+        }
+        else if (allowOpts
+            && (('-' == pArg[0]) || ('/' == pArg[0])))
         {
             pArg++;
             PWSTR pValue;
@@ -1156,12 +1207,10 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
             case OPT_OUTPUTFILE:
                 {
-                    wcscpy_s(szOutputFile, MAX_PATH, pValue);
+                    std::filesystem::path path(pValue);
+                    outputFile = path.make_preferred().native();
 
-                    wchar_t ext[_MAX_EXT] = {};
-                    _wsplitpath_s(szOutputFile, nullptr, 0, nullptr, 0, nullptr, 0, ext, _MAX_EXT);
-
-                    fileType = LookupByName(ext, g_pExtFileTypes);
+                    fileType = LookupByName(path.extension().c_str(), g_pExtFileTypes);
 
                     switch (dwCommand)
                     {
@@ -1207,7 +1256,8 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
             case OPT_FILELIST:
                 {
-                    std::wifstream inFile(pValue);
+                    std::filesystem::path path(pValue);
+                    std::wifstream inFile(path.make_preferred().c_str());
                     if (!inFile)
                     {
                         wprintf(L"Error opening -flist file %ls\n", pValue);
@@ -1284,7 +1334,8 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
         else if (wcspbrk(pArg, L"?*") != nullptr)
         {
             const size_t count = conversion.size();
-            SearchForFiles(pArg, conversion, (dwOptions & (1 << OPT_RECURSIVE)) != 0);
+            std::filesystem::path path(pArg);
+            SearchForFiles(path.make_preferred(), conversion, (dwOptions & (1 << OPT_RECURSIVE)) != 0);
             if (conversion.size() <= count)
             {
                 wprintf(L"No matching files found for %ls\n", pArg);
@@ -1294,8 +1345,8 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
         else
         {
             SConversion conv = {};
-            wcscpy_s(conv.szSrc, MAX_PATH, pArg);
-
+            std::filesystem::path path(pArg);
+            conv.szSrc = path.make_preferred().native();
             conversion.push_back(conv);
         }
     }
@@ -1307,7 +1358,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     }
 
     if (~dwOptions & (1 << OPT_NOLOGO))
-        PrintLogo();
+        PrintLogo(false);
 
     switch (dwCommand)
     {
@@ -1351,19 +1402,17 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
     if (dwCommand == CMD_GIF)
     {
-        wchar_t ext[_MAX_EXT] = {};
-        wchar_t fname[_MAX_FNAME] = {};
-        _wsplitpath_s(conversion.front().szSrc, nullptr, 0, nullptr, 0, fname, _MAX_FNAME, ext, _MAX_EXT);
+        std::filesystem::path curpath(conversion.front().szSrc);
 
-        wprintf(L"reading %ls", conversion.front().szSrc);
+        wprintf(L"reading %ls", curpath.c_str());
         fflush(stdout);
 
-        if (!*szOutputFile)
+        if (outputFile.empty())
         {
-            _wmakepath_s(szOutputFile, nullptr, nullptr, fname, L".dds");
+            outputFile = curpath.stem().concat(L".dds").native();
         }
 
-        hr = LoadAnimatedGif(conversion.front().szSrc, loadedImages, (dwOptions & (1 << OPT_GIF_BGCOLOR)) != 0);
+        hr = LoadAnimatedGif(curpath.c_str(), loadedImages, (dwOptions & (1 << OPT_GIF_BGCOLOR)) != 0);
         if (FAILED(hr))
         {
             wprintf(L" FAILED (%08X%ls)\n", static_cast<unsigned int>(hr), GetErrorDesc(hr));
@@ -1374,14 +1423,13 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
     {
         for (auto pConv = conversion.begin(); pConv != conversion.end(); ++pConv)
         {
-            wchar_t ext[_MAX_EXT] = {};
-            wchar_t fname[_MAX_FNAME] = {};
-            _wsplitpath_s(pConv->szSrc, nullptr, 0, nullptr, 0, fname, _MAX_FNAME, ext, _MAX_EXT);
+            std::filesystem::path curpath(pConv->szSrc);
+            auto const ext = curpath.extension();
 
             // Load source image
             if (pConv != conversion.begin())
                 wprintf(L"\n");
-            else if (!*szOutputFile)
+            else if (outputFile.empty())
             {
                 switch (dwCommand)
                 {
@@ -1392,22 +1440,22 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                 case CMD_H_STRIP:
                 case CMD_V_STRIP:
                 case CMD_ARRAY_STRIP:
-                    _wmakepath_s(szOutputFile, nullptr, nullptr, fname, L".bmp");
+                    outputFile = curpath.stem().concat(L".bmp").native();
                     break;
 
                 default:
-                    if (_wcsicmp(ext, L".dds") == 0)
+                    if (_wcsicmp(curpath.extension().c_str(), L".dds") == 0)
                     {
                         wprintf(L"ERROR: Need to specify output file via -o\n");
                         return 1;
                     }
 
-                    _wmakepath_s(szOutputFile, nullptr, nullptr, fname, L".dds");
+                    outputFile = curpath.stem().concat(L".dds").native();
                     break;
                 }
             }
 
-            wprintf(L"reading %ls", pConv->szSrc);
+            wprintf(L"reading %ls", curpath.c_str());
             fflush(stdout);
 
             TexMetadata info;
@@ -1426,9 +1474,9 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
             case CMD_H_TEE:
             case CMD_H_STRIP:
             case CMD_V_STRIP:
-                if (_wcsicmp(ext, L".dds") == 0)
+                if (_wcsicmp(ext.c_str(), L".dds") == 0)
                 {
-                    hr = LoadFromDDSFile(pConv->szSrc, DDS_FLAGS_ALLOW_LARGE_FILES, &info, *image);
+                    hr = LoadFromDDSFile(curpath.c_str(), DDS_FLAGS_ALLOW_LARGE_FILES, &info, *image);
                     if (FAILED(hr))
                     {
                         wprintf(L" FAILED (%08X%ls)\n", static_cast<unsigned int>(hr), GetErrorDesc(hr));
@@ -1453,9 +1501,9 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                 break;
 
             case CMD_ARRAY_STRIP:
-                if (_wcsicmp(ext, L".dds") == 0)
+                if (_wcsicmp(ext.c_str(), L".dds") == 0)
                 {
-                    hr = LoadFromDDSFile(pConv->szSrc, DDS_FLAGS_ALLOW_LARGE_FILES, &info, *image);
+                    hr = LoadFromDDSFile(curpath.c_str(), DDS_FLAGS_ALLOW_LARGE_FILES, &info, *image);
                     if (FAILED(hr))
                     {
                         wprintf(L" FAILED (%08X%ls)\n", static_cast<unsigned int>(hr), GetErrorDesc(hr));
@@ -1476,9 +1524,9 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                 break;
 
             default:
-                if (_wcsicmp(ext, L".dds") == 0)
+                if (_wcsicmp(ext.c_str(), L".dds") == 0)
                 {
-                    hr = LoadFromDDSFile(pConv->szSrc, DDS_FLAGS_ALLOW_LARGE_FILES, &info, *image);
+                    hr = LoadFromDDSFile(curpath.c_str(), DDS_FLAGS_ALLOW_LARGE_FILES, &info, *image);
                     if (FAILED(hr))
                     {
                         wprintf(L" FAILED (%08X%ls)\n", static_cast<unsigned int>(hr), GetErrorDesc(hr));
@@ -1507,20 +1555,20 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                        }
                     }
                 }
-                else if (_wcsicmp(ext, L".tga") == 0)
+                else if (_wcsicmp(ext.c_str(), L".tga") == 0)
                 {
                     TGA_FLAGS tgaFlags = (IsBGR(format)) ? TGA_FLAGS_BGR : TGA_FLAGS_NONE;
 
-                    hr = LoadFromTGAFile(pConv->szSrc, tgaFlags, &info, *image);
+                    hr = LoadFromTGAFile(curpath.c_str(), tgaFlags, &info, *image);
                     if (FAILED(hr))
                     {
                         wprintf(L" FAILED (%08X%ls)\n", static_cast<unsigned int>(hr), GetErrorDesc(hr));
                         return 1;
                     }
                 }
-                else if (_wcsicmp(ext, L".hdr") == 0)
+                else if (_wcsicmp(ext.c_str(), L".hdr") == 0)
                 {
-                    hr = LoadFromHDRFile(pConv->szSrc, &info, *image);
+                    hr = LoadFromHDRFile(curpath.c_str(), &info, *image);
                     if (FAILED(hr))
                     {
                         wprintf(L" FAILED (%08X%ls)\n", static_cast<unsigned int>(hr), GetErrorDesc(hr));
@@ -1528,9 +1576,9 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                     }
                 }
             #ifdef USE_OPENEXR
-                else if (_wcsicmp(ext, L".exr") == 0)
+                else if (_wcsicmp(ext.c_str(), L".exr") == 0)
                 {
-                    hr = LoadFromEXRFile(pConv->szSrc, &info, *image);
+                    hr = LoadFromEXRFile(curpath.c_str(), &info, *image);
                     if (FAILED(hr))
                     {
                         wprintf(L" FAILED (%08X%ls)\n", static_cast<unsigned int>(hr), GetErrorDesc(hr));
@@ -1548,17 +1596,17 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
                     static_assert(static_cast<int>(WIC_FLAGS_FILTER_CUBIC) == static_cast<int>(TEX_FILTER_CUBIC), "WIC_FLAGS_* & TEX_FILTER_* should match");
                     static_assert(static_cast<int>(WIC_FLAGS_FILTER_FANT) == static_cast<int>(TEX_FILTER_FANT), "WIC_FLAGS_* & TEX_FILTER_* should match");
 
-                    hr = LoadFromWICFile(pConv->szSrc, WIC_FLAGS_ALL_FRAMES | dwFilter, &info, *image);
+                    hr = LoadFromWICFile(curpath.c_str(), WIC_FLAGS_ALL_FRAMES | dwFilter, &info, *image);
                     if (FAILED(hr))
                     {
                         wprintf(L" FAILED (%08X%ls)\n", static_cast<unsigned int>(hr), GetErrorDesc(hr));
                         if (hr == static_cast<HRESULT>(0xc00d5212) /* MF_E_TOPO_CODEC_NOT_FOUND */)
                         {
-                            if (_wcsicmp(ext, L".heic") == 0 || _wcsicmp(ext, L".heif") == 0)
+                            if (_wcsicmp(ext.c_str(), L".heic") == 0 || _wcsicmp(ext.c_str(), L".heif") == 0)
                             {
                                 wprintf(L"INFO: This format requires installing the HEIF Image Extensions - https://aka.ms/heif\n");
                             }
-                            else if (_wcsicmp(ext, L".webp") == 0)
+                            else if (_wcsicmp(ext.c_str(), L".webp") == 0)
                             {
                                 wprintf(L"INFO: This format requires installing the WEBP Image Extensions - https://www.microsoft.com/p/webp-image-extensions/9pg2dk419drg\n");
                             }
@@ -2120,26 +2168,26 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
             }
 
             // Write cross/strip
-            wprintf(L"\nWriting %ls ", szOutputFile);
+            wprintf(L"\nWriting %ls ", outputFile.c_str());
             PrintInfo(result.GetMetadata());
             wprintf(L"\n");
             fflush(stdout);
 
             if (dwOptions & (1 << OPT_TOLOWER))
             {
-                std::ignore = _wcslwr_s(szOutputFile);
+                std::transform(outputFile.begin(), outputFile.end(), outputFile.begin(), towlower);
             }
 
             if (~dwOptions & (1 << OPT_OVERWRITE))
             {
-                if (GetFileAttributesW(szOutputFile) != INVALID_FILE_ATTRIBUTES)
+                if (GetFileAttributesW(outputFile.c_str()) != INVALID_FILE_ATTRIBUTES)
                 {
                     wprintf(L"\nERROR: Output file already exists, use -y to overwrite\n");
                     return 1;
                 }
             }
 
-            hr = SaveImageFile(*dest, fileType, szOutputFile);
+            hr = SaveImageFile(*dest, fileType, outputFile.c_str());
             if (FAILED(hr))
             {
                 wprintf(L" FAILED (%08X%ls)\n", static_cast<unsigned int>(hr), GetErrorDesc(hr));
@@ -2188,26 +2236,26 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
             }
 
             // Write merged texture
-            wprintf(L"\nWriting %ls ", szOutputFile);
+            wprintf(L"\nWriting %ls ", outputFile.c_str());
             PrintInfo(result.GetMetadata());
             wprintf(L"\n");
             fflush(stdout);
 
             if (dwOptions & (1 << OPT_TOLOWER))
             {
-                std::ignore = _wcslwr_s(szOutputFile);
+                std::transform(outputFile.begin(), outputFile.end(), outputFile.begin(), towlower);
             }
 
             if (~dwOptions & (1 << OPT_OVERWRITE))
             {
-                if (GetFileAttributesW(szOutputFile) != INVALID_FILE_ATTRIBUTES)
+                if (GetFileAttributesW(outputFile.c_str()) != INVALID_FILE_ATTRIBUTES)
                 {
                     wprintf(L"\nERROR: Output file already exists, use -y to overwrite\n");
                     return 1;
                 }
             }
 
-            hr = SaveImageFile(*result.GetImage(0, 0, 0), fileType, szOutputFile);
+            hr = SaveImageFile(*result.GetImage(0, 0, 0), fileType, outputFile.c_str());
             if (FAILED(hr))
             {
                 wprintf(L" FAILED (%08X%ls)\n", static_cast<unsigned int>(hr), GetErrorDesc(hr));
@@ -2257,26 +2305,26 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
             }
 
             // Write array strip
-            wprintf(L"\nWriting %ls ", szOutputFile);
+            wprintf(L"\nWriting %ls ", outputFile.c_str());
             PrintInfo(result.GetMetadata());
             wprintf(L"\n");
             fflush(stdout);
 
             if (dwOptions & (1 << OPT_TOLOWER))
             {
-                std::ignore = _wcslwr_s(szOutputFile);
+                std::transform(outputFile.begin(), outputFile.end(), outputFile.begin(), towlower);
             }
 
             if (~dwOptions & (1 << OPT_OVERWRITE))
             {
-                if (GetFileAttributesW(szOutputFile) != INVALID_FILE_ATTRIBUTES)
+                if (GetFileAttributesW(outputFile.c_str()) != INVALID_FILE_ATTRIBUTES)
                 {
                     wprintf(L"\nERROR: Output file already exists, use -y to overwrite\n");
                     return 1;
                 }
             }
 
-            hr = SaveImageFile(*dest, fileType, szOutputFile);
+            hr = SaveImageFile(*dest, fileType, outputFile.c_str());
             if (FAILED(hr))
             {
                 wprintf(L" FAILED (%08X%ls)\n", static_cast<unsigned int>(hr), GetErrorDesc(hr));
@@ -2456,19 +2504,19 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
             }
 
             // Write texture
-            wprintf(L"\nWriting %ls ", szOutputFile);
+            wprintf(L"\nWriting %ls ", outputFile.c_str());
             PrintInfo(result.GetMetadata());
             wprintf(L"\n");
             fflush(stdout);
 
             if (dwOptions & (1 << OPT_TOLOWER))
             {
-                std::ignore = _wcslwr_s(szOutputFile);
+                std::transform(outputFile.begin(), outputFile.end(), outputFile.begin(), towlower);
             }
 
             if (~dwOptions & (1 << OPT_OVERWRITE))
             {
-                if (GetFileAttributesW(szOutputFile) != INVALID_FILE_ATTRIBUTES)
+                if (GetFileAttributesW(outputFile.c_str()) != INVALID_FILE_ATTRIBUTES)
                 {
                     wprintf(L"\nERROR: Output file already exists, use -y to overwrite\n");
                     return 1;
@@ -2477,7 +2525,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
             hr = SaveToDDSFile(result.GetImages(), result.GetImageCount(), result.GetMetadata(),
                 (dwOptions & (1 << OPT_USE_DX10)) ? (DDS_FLAGS_FORCE_DX10_EXT | DDS_FLAGS_FORCE_DX10_EXT_MISC2) : DDS_FLAGS_NONE,
-                szOutputFile);
+                outputFile.c_str());
             if (FAILED(hr))
             {
                 wprintf(L"\nFAILED (%08X%ls)\n", static_cast<unsigned int>(hr), GetErrorDesc(hr));
@@ -2569,19 +2617,19 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
             }
 
             // Write texture
-            wprintf(L"\nWriting %ls ", szOutputFile);
+            wprintf(L"\nWriting %ls ", outputFile.c_str());
             PrintInfo(result.GetMetadata());
             wprintf(L"\n");
             fflush(stdout);
 
             if (dwOptions & (1 << OPT_TOLOWER))
             {
-                std::ignore = _wcslwr_s(szOutputFile);
+                std::transform(outputFile.begin(), outputFile.end(), outputFile.begin(), towlower);
             }
 
             if (~dwOptions & (1 << OPT_OVERWRITE))
             {
-                if (GetFileAttributesW(szOutputFile) != INVALID_FILE_ATTRIBUTES)
+                if (GetFileAttributesW(outputFile.c_str()) != INVALID_FILE_ATTRIBUTES)
                 {
                     wprintf(L"\nERROR: Output file already exists, use -y to overwrite\n");
                     return 1;
@@ -2590,7 +2638,7 @@ int __cdecl wmain(_In_ int argc, _In_z_count_(argc) wchar_t* argv[])
 
             hr = SaveToDDSFile(result.GetImages(), result.GetImageCount(), result.GetMetadata(),
                 (dwOptions & (1 << OPT_USE_DX10)) ? (DDS_FLAGS_FORCE_DX10_EXT | DDS_FLAGS_FORCE_DX10_EXT_MISC2) : DDS_FLAGS_NONE,
-                szOutputFile);
+                outputFile.c_str());
             if (FAILED(hr))
             {
                 wprintf(L"\nFAILED (%08X%ls)\n", static_cast<unsigned int>(hr), GetErrorDesc(hr));

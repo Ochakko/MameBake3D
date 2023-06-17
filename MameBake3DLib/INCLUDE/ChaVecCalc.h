@@ -613,6 +613,13 @@ typedef  struct tag_rpselem
 	float confidence;
 	ChaVector3 pos;
 	int twistflag;
+	tag_rpselem() {
+		framecnt = 0;
+		skelno = 0;
+		confidence = 0.0f;
+		pos.SetZeroVec3();
+		twistflag = 0;
+	};
 }RPSELEM;
 
 
@@ -633,6 +640,22 @@ typedef  struct tag_ui_pickinfo
 	int pickobjno;
 	ChaVector3 objscreen;
 	ChaVector3 objworld;
+
+	tag_ui_pickinfo() {
+		buttonflag = 0;
+		mousepos.x = 0;
+		mousepos.y = 0;
+		mousebefpos = mousepos;
+		clickpos = mousepos;
+		firstdiff.x = 0;
+		firstdiff.y = 0;
+		winx = 0;
+		winy = 0;
+		pickrange = 0;
+		pickobjno = 0;
+		objscreen.SetZeroVec3();
+		objworld.SetZeroVec3();
+	};
 }UIPICKINFO;
 
 
@@ -642,6 +665,12 @@ typedef  struct tag_cpmot
 	double frame;
 	ChaVector3 eul;
 	ChaVector3 tra;
+	tag_cpmot() {
+		boneno = 0;
+		frame = 0.0;
+		eul.SetZeroVec3();
+		tra.SetZeroVec3();
+	};
 }CPMOT;
 
 
@@ -649,11 +678,24 @@ typedef  struct tag_texv
 {
 	ChaVector3 pos;
 	ChaVector2 uv;
+	tag_texv() {
+		pos.SetZeroVec3();
+		uv.x = 0.0f;
+		uv.y = 0.0f;
+	};
 }TEXV;
 
 typedef struct  tag_spritev {
 	ChaVector4 pos;
 	ChaVector2 uv;
+	tag_spritev() {
+		pos.x = 0.0f;
+		pos.y = 0.0f;
+		pos.z = 0.0f;
+		pos.w = 0.0f;
+		uv.x = 0.0f;
+		uv.y = 0.0f;
+	};
 } SPRITEV;
 
 
@@ -663,6 +705,13 @@ typedef struct tag_verface
 	int			orgfaceno;
 	int			materialno;
 	ChaVector3	facenormal;
+
+	tag_verface() {
+		faceno = 0;
+		orgfaceno = 0;
+		materialno = 0;
+		facenormal.SetZeroVec3();
+	};
 }PERFACE;
 
 typedef  struct tag_pervert
@@ -680,6 +729,20 @@ typedef  struct tag_pervert
 	//UV, VCOL, MaterialnoÇÃà·Ç¢Ç…ÇÊÇËçÏê¨Ç∑ÇÈèÍçáÇÕÇPÇë´Ç∑
 	//normalÇ…ÇÊÇËçÏê¨Ç∑ÇÈèÍçáÇÕÇQÇë´Ç∑
 
+	tag_pervert() {
+		indexno = 0;
+		vno = 0;
+		uvnum = 0;
+		uv[0].x = 0.0f;
+		uv[0].y = 0.0f;
+		uv[1].x = 0.0f;
+		uv[1].y = 0.0f;
+		vcolflag = 0;
+		vcol = 0;
+		smnormal.SetZeroVec3();
+		createflag = 0;
+	};
+
 }PERVERT;
 
 typedef  struct tag_pm3optv
@@ -693,6 +756,22 @@ typedef  struct tag_pm3optv
 	ChaVector2		uv[2];
 	int				vcolflag;
 	DWORD			vcol;
+
+	tag_pm3optv() {
+		orgvno = 0;
+		orgfaceno = 0;
+		pos.SetZeroVec3();
+		materialno = 0;
+		normal.SetZeroVec3();
+		uvnum = 0;
+		uv[0].x = 0.0f;
+		uv[0].y = 0.0f;
+		uv[1].x = 0.0f;
+		uv[1].y = 0.0f;
+		vcolflag = 0;
+		vcol = 0;
+	};
+
 }PM3OPTV;
 
 typedef  struct tag_pm3dispv
@@ -700,11 +779,27 @@ typedef  struct tag_pm3dispv
 	ChaVector4		pos;
 	ChaVector3		normal;
 	ChaVector2		uv;
+
+	tag_pm3dispv() {
+		pos.x = 0.0f;
+		pos.y = 0.0f;
+		pos.z = 0.0f;
+		pos.w = 0.0f;
+		normal.SetZeroVec3();
+		uv.x = 0.0f;
+		uv.y = 0.0f;
+	};
 }PM3DISPV;
 
 typedef  struct tag_extlinev
 {
 	ChaVector4 pos;
+	tag_extlinev() {
+		pos.x = 0.0f;
+		pos.y = 0.0f;
+		pos.z = 0.0f;
+		pos.w = 0.0f;
+	};
 }EXTLINEV;
 
 
@@ -714,6 +809,13 @@ typedef  struct tag_modelbound
 	ChaVector3 max;
 	ChaVector3 center;
 	float		r;
+
+	tag_modelbound() {
+		min.SetZeroVec3();
+		max.SetZeroVec3();
+		center.SetZeroVec3();
+		r = 0.0f;
+	};
 }MODELBOUND;
 
 

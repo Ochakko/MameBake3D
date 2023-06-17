@@ -3,7 +3,11 @@
 
 cmake_minimum_required (VERSION 3.20)
 
-set(DIRECTXTEX_VERSION 1.9.8)
+set(DIRECTXTEX_VERSION 1.9.9)
+
+if(DEFINED XBOX_CONSOLE_TARGET)
+  set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
+endif()
 
 project (DirectXTex
   VERSION ${DIRECTXTEX_VERSION}
@@ -54,6 +58,16 @@ elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Aa][Rr][Mm]$")
     set(DIRECTX_ARCH arm)
 elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^[Aa][Rr][Mm]64$")
     set(DIRECTX_ARCH arm64)
+endif()
+
+if(WINDOWS_STORE OR (DEFINED XBOX_CONSOLE_TARGET))
+   set(BUILD_DX12 ON)
+   set(BUILD_TOOLS OFF)
+   set(BUILD_SAMPLE OFF)
+endif()
+
+if(DEFINED XBOX_CONSOLE_TARGET)
+  set(BUILD_DX11 OFF)
 endif()
 
 include(GNUInstallDirs)
@@ -157,21 +171,78 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
 
+if(BC_USE_OPENMP)
+  find_package(OpenMP)
+  if(OpenMP_CXX_FOUND)
+    target_link_libraries(${PROJECT_NAME} PUBLIC OpenMP::OpenMP_CXX)
+  else()
+    set(BC_USE_OPENMP OFF)
+  endif()
+endif()
+
 if(ENABLE_OPENEXR_SUPPORT)
   find_package(OpenEXR REQUIRED)
-  target_link_libraries(${PROJECT_NAME} PRIVATE OpenEXR::OpenEXR)
+  target_link_libraries(${PROJECT_NAME} PUBLIC OpenEXR::OpenEXR)
 endif()
 
 if(NOT MINGW)
     target_precompile_headers(${PROJECT_NAME} PRIVATE DirectXTex/DirectXTexP.h)
 endif()
 
-if(MINGW OR (NOT WIN32) OR VCPKG_TOOLCHAIN)
-    message(STATUS "Using VCPKG for DirectX-Headers and DirectXMath")
-    find_package(directx-headers CONFIG REQUIRED)
+if(MINGW OR (NOT WIN32))
     find_package(directxmath CONFIG REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PRIVATE Microsoft::DirectX-Headers Microsoft::DirectXMath)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE USING_DIRECTX_HEADERS)
+    find_package(directx-headers CONFIG REQUIRED)
+else()
+    find_package(directxmath CONFIG QUIET)
+    find_package(directx-headers CONFIG QUIET)
+endif()
+
+if(directxmath_FOUND)
+    message(STATUS "Using DirectXMath package")
+    target_link_libraries(${PROJECT_NAME} PUBLIC Microsoft::DirectXMath)
+endif()
+
+if(directx-headers_FOUND)
+    message(STATUS "Using DirectX-Headers package")
+    target_link_libraries(${PROJECT_NAME} PUBLIC Microsoft::DirectX-Headers)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC USING_DIRECTX_HEADERS)
+endif()
+
+include(CheckIncludeFileCXX)
+
+if(DEFINED XBOX_CONSOLE_TARGET)
+    message(STATUS "Building for Xbox Console Target: ${XBOX_CONSOLE_TARGET}")
+    set(CMAKE_REQUIRED_QUIET ON)
+    if(XBOX_CONSOLE_TARGET STREQUAL "durango")
+        CHECK_INCLUDE_FILE_CXX(xdk.h XDKLegacy_HEADER)
+        if(NOT XDKLegacy_HEADER)
+            message(FATAL_ERROR "Legacy Xbox One XDK required to build for Durango.")
+        endif()
+        target_compile_definitions(${PROJECT_NAME} PUBLIC WINAPI_FAMILY=WINAPI_FAMILY_TV_TITLE _XBOX_ONE _TITLE MONOLITHIC=1)
+    else()
+        CHECK_INCLUDE_FILE_CXX(gxdk.h GXDK_HEADER)
+        if(NOT GXDK_HEADER)
+            message(FATAL_ERROR "Microsoft GDK with Xbox Extensions required to build for Xbox. See https://aka.ms/gdkx")
+        endif()
+        target_compile_definitions(${PROJECT_NAME} PUBLIC WINAPI_FAMILY=WINAPI_FAMILY_GAMES)
+        if(XBOX_CONSOLE_TARGET STREQUAL "scarlett")
+            CHECK_INCLUDE_FILE_CXX(d3d12_xs.h D3D12XS_HEADER)
+            if(NOT D3D12XS_HEADER)
+                message(FATAL_ERROR "Microsoft GDK with Xbox Extensions environment needs to be set for Xbox Series X|S.")
+            endif()
+            target_compile_definitions(${PROJECT_NAME} PUBLIC _GAMING_XBOX _GAMING_XBOX_SCARLETT)
+        elseif(XBOX_CONSOLE_TARGET STREQUAL "xboxone")
+            CHECK_INCLUDE_FILE_CXX(d3d12_x.h D3D12X_HEADER)
+            if(NOT D3D12X_HEADER)
+                message(FATAL_ERROR "Microsoft GDK with Xbox Extensions environment needs to be set for Xbox One.")
+            endif()
+            target_compile_definitions(${PROJECT_NAME} PUBLIC _GAMING_XBOX _GAMING_XBOX_XBOXONE)
+        else()
+            message(FATAL_ERROR "Unknown XBOX_CONSOLE_TARGET")
+        endif()
+    endif()
+elseif(WINDOWS_STORE)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC WINAPI_FAMILY=WINAPI_FAMILY_APP)
 endif()
 
 #--- Package
@@ -208,41 +279,48 @@ install(FILES
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PACKAGE_NAME})
 
 #--- Command-line tools
-if(BUILD_TOOLS AND WIN32 AND (NOT WINDOWS_STORE))
+if(BUILD_TOOLS AND BUILD_DX11 AND WIN32)
   set(TOOL_EXES texassemble texconv texdiag)
 
   add_executable(texassemble
     Texassemble/texassemble.cpp
     Texassemble/texassemble.rc
+    Texassemble/settings.manifest
     Texassemble/AnimatedGif.cpp)
-  target_link_libraries(texassemble ${PROJECT_NAME} ole32.lib version.lib)
+  target_link_libraries(texassemble PRIVATE ${PROJECT_NAME} ole32.lib version.lib)
   source_group(texassemble REGULAR_EXPRESSION Texassemble/*.*)
 
   add_executable(texconv
     Texconv/texconv.cpp
     Texconv/texconv.rc
+    Texconv/settings.manifest
     Texconv/ExtendedBMP.cpp
     Texconv/PortablePixMap.cpp)
-  target_link_libraries(texconv ${PROJECT_NAME} ole32.lib shell32.lib version.lib)
+  target_link_libraries(texconv PRIVATE ${PROJECT_NAME} ole32.lib shell32.lib version.lib)
   source_group(texconv REGULAR_EXPRESSION Texconv/*.*)
 
   add_executable(texdiag
     Texdiag/texdiag.cpp
-    Texdiag/texdiag.rc)
-  target_link_libraries(texdiag ${PROJECT_NAME} ole32.lib version.lib)
+    Texdiag/texdiag.rc
+    Texdiag/settings.manifest)
+  target_link_libraries(texdiag PRIVATE ${PROJECT_NAME} ole32.lib version.lib)
   source_group(texdiag REGULAR_EXPRESSION Texdiag/*.*)
+
+  if(BC_USE_OPENMP)
+    target_link_libraries(texconv PRIVATE OpenMP::OpenMP_CXX)
+  endif()
 
   if(ENABLE_OPENEXR_SUPPORT)
     foreach(t IN LISTS TOOL_EXES)
       target_include_directories(${t} PRIVATE Auxiliary)
-      target_link_libraries(${t} ${OPENEXR_ILMIMF_LIBRARY})
+      target_link_libraries(${t} PRIVATE ${OPENEXR_ILMIMF_LIBRARY})
       target_compile_options(${t} PRIVATE -DUSE_OPENEXR)
     endforeach()
   endif()
 endif()
 
 #--- DDSView sample
-if(BUILD_SAMPLE AND BUILD_DX11 AND WIN32 AND (NOT WINDOWS_STORE))
+if(BUILD_SAMPLE AND BUILD_DX11 AND WIN32)
   list(APPEND TOOL_EXES ddsview)
 
   if(NOT COMPILED_DDSVIEW_SHADERS)
@@ -259,7 +337,7 @@ if(BUILD_SAMPLE AND BUILD_DX11 AND WIN32 AND (NOT WINDOWS_STORE))
     DDSView/ddsview.cpp
     DDSView/ddsview.rc
     ${COMPILED_DDSVIEW_SHADERS}/ddsview_ps1D.inc)
-  target_link_libraries(ddsview ${PROJECT_NAME} d3d11.lib ole32.lib)
+  target_link_libraries(ddsview PRIVATE ${PROJECT_NAME} d3d11.lib ole32.lib)
   source_group(ddsview REGULAR_EXPRESSION DDSView/*.*)
 
   target_include_directories(ddsview PRIVATE ${COMPILED_DDSVIEW_SHADERS})
@@ -276,9 +354,9 @@ if(BUILD_SAMPLE AND BUILD_DX11 AND WIN32 AND (NOT WINDOWS_STORE))
   endif()
 endif()
 
-if(MINGW OR (NOT WIN32) OR VCPKG_TOOLCHAIN)
+if(directxmath_FOUND)
   foreach(t IN LISTS TOOL_EXES)
-    target_link_libraries(${t} Microsoft::DirectXMath)
+    target_link_libraries(${t} PRIVATE Microsoft::DirectXMath)
   endforeach()
 endif()
 
@@ -288,7 +366,7 @@ if(MSVC)
       target_link_options(${t} PRIVATE /DYNAMICBASE /NXCOMPAT)
     endforeach()
 
-    if((${CMAKE_SIZEOF_VOID_P} EQUAL 4) AND (NOT (${DIRECTX_ARCH} MATCHES "^arm")))
+    if((CMAKE_SIZEOF_VOID_P EQUAL 4) AND (NOT (${DIRECTX_ARCH} MATCHES "^arm")))
       foreach(t IN LISTS TOOL_EXES ITEMS ${PROJECT_NAME})
         target_link_options(${t} PRIVATE /SAFESEH)
       endforeach()
@@ -302,6 +380,13 @@ if(MSVC)
       message(STATUS "Building Spectre-mitigated libraries")
       foreach(t IN LISTS TOOL_EXES ITEMS ${PROJECT_NAME})
         target_compile_options(${t} PRIVATE "/Qspectre")
+      endforeach()
+    endif()
+
+    if((MSVC_VERSION GREATER_EQUAL 1924)
+       AND ((NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang")) OR (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 16.0)))
+      foreach(t IN LISTS TOOL_EXES ITEMS ${PROJECT_NAME})
+        target_compile_options(${t} PRIVATE /ZH:SHA_256)
       endforeach()
     endif()
 
@@ -320,8 +405,12 @@ else()
     endforeach()
 endif()
 
-if(NOT (${DIRECTX_ARCH} MATCHES "^arm"))
-    if(${CMAKE_SIZEOF_VOID_P} EQUAL "4")
+if(XBOX_CONSOLE_TARGET STREQUAL "scarlett")
+    target_compile_options(${PROJECT_NAME} PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/favor:AMD64 /arch:AVX2,-march=znver2>)
+elseif(XBOX_CONSOLE_TARGET MATCHES "(xboxone|durango)")
+    target_compile_options(${PROJECT_NAME} PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/favor:AMD64 /arch:AVX,-march=btver2>)
+elseif(NOT (${DIRECTX_ARCH} MATCHES "^arm"))
+    if(CMAKE_SIZEOF_VOID_P EQUAL 4)
         set(ARCH_SSE2 $<$<CXX_COMPILER_ID:MSVC>:/arch:SSE2> $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-msse2>)
     else()
         set(ARCH_SSE2 $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-msse2>)
@@ -334,9 +423,10 @@ endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(WarningsLib -Wall -Wpedantic -Wextra)
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 16.0)
+        list(APPEND WarningsLib "-Wno-unsafe-buffer-usage")
+    endif()
     target_compile_options(${PROJECT_NAME} PRIVATE ${WarningsLib})
-
-    # OpenMP is not supported for clang for Windows by default
 
     set(WarningsEXE ${WarningsLib} "-Wno-c++98-compat" "-Wno-c++98-compat-pedantic" "-Wno-switch" "-Wno-switch-enum" "-Wno-covered-switch-default" "-Wno-language-extension-token" "-Wno-missing-prototypes" "-Wno-global-constructors" "-Wno-double-promotion")
     foreach(t IN LISTS TOOL_EXES)
@@ -358,10 +448,11 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
       endforeach()
     endif()
 
-    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.24)
-        foreach(t IN LISTS TOOL_EXES ITEMS ${PROJECT_NAME})
-          target_compile_options(${t} PRIVATE /ZH:SHA_256)
-        endforeach()
+    if(CMAKE_INTERPROCEDURAL_OPTIMIZATION)
+      message(STATUS "Building using Whole Program Optimization")
+      foreach(t IN LISTS TOOL_EXES ITEMS ${PROJECT_NAME})
+        target_compile_options(${t} PRIVATE /Gy /Gw)
+      endforeach()
     endif()
 
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.26)
@@ -382,10 +473,17 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
         endforeach()
     endif()
 
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 19.35)
+        foreach(t IN LISTS TOOL_EXES ITEMS ${PROJECT_NAME})
+          target_compile_options(${t} PRIVATE /Zc:checkGwOdr $<$<VERSION_GREATER_EQUAL:${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION},10.0.22000>:/Zc:templateScope>)
+        endforeach()
+    endif()
+
     if(BC_USE_OPENMP)
-        target_compile_options(${PROJECT_NAME} PRIVATE /openmp /Zc:twoPhase-)
-        if(BUILD_TOOLS AND WIN32 AND (NOT WINDOWS_STORE))
-          target_compile_options(texconv PRIVATE /openmp /Zc:twoPhase-)
+        # OpenMP in MSVC is not compatible with /permissive unless you disable two-phase lookup
+        target_compile_options(${PROJECT_NAME} PRIVATE /Zc:twoPhase-)
+        if(BUILD_TOOLS AND BUILD_DX11 AND WIN32)
+          target_compile_options(texconv PRIVATE /Zc:twoPhase-)
         endif()
     endif()
 
@@ -399,11 +497,9 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 endif()
 
 if(WIN32)
-    if(WINDOWS_STORE)
-      target_compile_definitions(${PROJECT_NAME} PRIVATE WINAPI_FAMILY=WINAPI_FAMILY_APP)
-    endif()
-
-    if(BUILD_DX12 OR WINDOWS_STORE OR (${DIRECTX_ARCH} MATCHES "^arm64"))
+    if (XBOX_CONSOLE_TARGET STREQUAL "durango")
+        set(WINVER 0x0602)
+    elseif(BUILD_DX12 OR (${DIRECTX_ARCH} MATCHES "^arm64"))
         message(STATUS "Building with DirectX 12 Runtime support")
         set(WINVER 0x0A00)
     elseif(${DIRECTX_ARCH} MATCHES "^arm")
@@ -425,13 +521,14 @@ if(WIN32)
     endif()
 endif()
 
-if(BUILD_TOOLS AND WIN32 AND (NOT WINDOWS_STORE))
+if(BUILD_TOOLS AND BUILD_DX11 AND WIN32)
   set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT texconv)
 endif()
 
 #--- Test suite
 include(CTest)
-if(BUILD_TESTING AND WIN32 AND (NOT WINDOWS_STORE) AND (EXISTS "${CMAKE_CURRENT_LIST_DIR}/Tests/CMakeLists.txt"))
+if(BUILD_TESTING AND WIN32 AND (NOT WINDOWS_STORE) AND (NOT (DEFINED XBOX_CONSOLE_TARGET))
+   AND (EXISTS "${CMAKE_CURRENT_LIST_DIR}/Tests/CMakeLists.txt"))
   enable_testing()
   add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/Tests)
 endif()

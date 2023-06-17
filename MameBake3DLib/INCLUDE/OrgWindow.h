@@ -33,6 +33,15 @@ struct KeyInfo{
 	//ChaVector3 eul, tra;
 	ChaMatrix wmat;
 	void *object;
+
+	KeyInfo() {
+		label = 0;
+		time = 0.0;
+		timeIndex = 0;
+		lineIndex = 0;
+		wmat.SetIdentity();
+		object = 0;
+	};
 };
 
 extern int g_endappflag;

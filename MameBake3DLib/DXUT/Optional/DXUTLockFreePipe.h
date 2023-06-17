@@ -21,9 +21,10 @@
 #include <windows.h>
 #pragma pack (pop)
 
-extern "C"
-    void _ReadWriteBarrier();
+#ifdef _MSC_VER
+extern "C" void _ReadWriteBarrier();
 #pragma intrinsic(_ReadWriteBarrier)
+#endif
 
 // Prevent the compiler from rearranging loads
 // and stores, sufficiently for read-acquire
@@ -113,7 +114,7 @@ public:
         // then the previous comparison would have failed since that would imply
         // that there were less than cbDest bytes available to read.
         //
-        unsigned long cbTailBytes = std::min( bytesLeft, c_cbBufferSize - actualReadOffset );
+        unsigned long cbTailBytes = min( bytesLeft, c_cbBufferSize - actualReadOffset );
         memcpy( pbDest, m_pbBuffer + actualReadOffset, cbTailBytes );
         bytesLeft -= cbTailBytes;
 
@@ -174,7 +175,7 @@ public:
 
         // See the explanation in the Read() function as to why we don't 
         // explicitly check against the read offset here.
-        unsigned long cbTailBytes = std::min( bytesLeft, c_cbBufferSize - actualWriteOffset );
+        unsigned long cbTailBytes = min( bytesLeft, c_cbBufferSize - actualWriteOffset );
         memcpy( m_pbBuffer + actualWriteOffset, pbSrc, cbTailBytes );
         bytesLeft -= cbTailBytes;
 
