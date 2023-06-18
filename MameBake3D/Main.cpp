@@ -1594,8 +1594,10 @@ static int s_opedelmotioncnt = -1;
 static bool s_underdelmodel = false;
 static bool s_underdelmotion = false;
 static bool s_underselectmodel = false;
+static bool s_underselectcamera = false;
 static bool s_underselectmotion = false;
 static int s_opeselectmodelcnt = -1;
+static int s_opeselectcameracnt = -1;
 static int s_opeselectmotioncnt = -1;
 
 static int s_underanglelimithscroll = 0;
@@ -1781,6 +1783,7 @@ static vector<TLELEM> s_tlarray;
 //static int s_rgdindex = -1;
 	//each character each param //2021/03/18 
 static map<CModel*, int> s_motmenuindexmap;
+static map<CModel*, int> s_cameramenuindexmap;
 static map<CModel*, int> s_reindexmap;
 static map<CModel*, int> s_rgdindexmap;
 
@@ -1821,7 +1824,10 @@ static int s_toolheight = 290;
 static int s_modelwindowwidth = 400;
 static int s_modelwindowheight = 460;
 static int s_motionwindowwidth = 400;
-static int s_motionwindowheight = 700;
+//static int s_motionwindowheight = 700;
+static int s_motionwindowheight = 400;
+static int s_camerawindowwidth = 400;
+static int s_camerawindowheight = 300;
 
 static int s_infowinwidth = s_mainwidth;
 static int s_infowinheight = s_2ndposy - s_mainheight - MAINMENUAIMBARH;
@@ -2069,6 +2075,7 @@ static bool s_closeFlag = false;			// 終了フラグ
 static bool s_closetoolFlag = false;
 static bool s_closeobjFlag = false;
 static bool s_closemodelFlag = false;
+static bool s_closecameraFlag = false;
 static bool s_closemotionFlag = false;
 static bool s_closeconvboneFlag = false;
 static bool s_DcloseFlag = false;
@@ -2339,6 +2346,15 @@ typedef struct tag_motionpanel
 	OWP_Separator* separator;
 	vector<OWP_Button*> delbutton;
 	int modelindex;
+
+	tag_motionpanel() {
+		panel = 0;
+		scroll = 0;
+		radiobutton = 0;
+		separator = 0;
+		delbutton.clear();
+		modelindex = 0;
+	};
 }MOTIONPANEL;
 static MOTIONPANEL s_motionpanel;
 static bool s_firstmotionpanelpos = true;
@@ -2862,6 +2878,7 @@ static int OnFrameAngleLimit(bool updateonlycheckeul);
 static int OnFrameKeyboard();
 static int OnFrameUtCheckBox();
 static int OnFrameProcessTime(double difftime, double* pnextframe, int* pendflag, int* ploopstartflag);
+static int OnFrameProcessCameraTime(double difftime, double* pnextframe, int* pendflag, int* ploopstartflag);
 static int OnFramePreviewCamera(double nextframe);
 static int OnFramePreviewStop();
 static int OnFramePreviewNormal(double nextframe, double difftime, int endflag, int loopstartflag);
@@ -3009,6 +3026,7 @@ static int EraseKeyList();
 static int DestroyTimeLine(int dellist);
 static int AddTimeLine(int newmotid, bool dorefreshtl);
 static int AddMotion(const WCHAR* wfilename, double srcleng = 0.0);
+static int OnCameraMenu(bool dorefreshflag, int selindex, int saveundoflag = 1);
 static int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag = 1);
 static int OnRgdMorphMenu(int selindex);
 static int AddModelBound(MODELBOUND* mb, MODELBOUND* addmb);
@@ -3712,7 +3730,7 @@ int CheckResolution()
 
 					s_modelwindowwidth = 400;
 					s_motionwindowwidth = s_modelwindowwidth;
-
+					s_camerawindowwidth = s_modelwindowwidth;
 
 					s_spsize = 80.0f;
 					s_sptopmargin = 60.0f;
@@ -3757,7 +3775,8 @@ int CheckResolution()
 
 
 					s_modelwindowheight = 460;
-					s_motionwindowheight = s_mainheight - s_modelwindowheight + s_infowinheight;
+					s_camerawindowheight = 300;
+					s_motionwindowheight = s_mainheight - s_modelwindowheight - s_camerawindowheight + s_infowinheight;
 
 
 					//s_guibarX0 = s_mainwidth / 2 - 180 - 2 * 180 - 30;
@@ -3787,9 +3806,12 @@ int CheckResolution()
 
 		s_modelwindowwidth = 400;
 		s_motionwindowwidth = s_modelwindowwidth;
-		
+		s_camerawindowwidth = s_modelwindowwidth;
+
 		s_modelwindowheight = 460;
-		s_motionwindowheight = 700;
+		//s_motionwindowheight = 700;
+		s_motionwindowheight = 400;
+		s_camerawindowheight = 300;
 
 
 		s_toolwidth = 230;
@@ -4062,8 +4084,10 @@ void InitApp()
 	s_underdelmodel = false;
 	s_underdelmotion = false;
 	s_opeselectmodelcnt = -1;
+	s_opeselectcameracnt = -1;
 	s_opeselectmotioncnt = -1;
 	s_underselectmodel = false;
+	s_underselectcamera = false;
 	s_underselectmotion = false;
 
 	s_underanglelimithscroll = 0;
@@ -4089,6 +4113,7 @@ void InitApp()
 	s_closeobjFlag = false;
 	s_closemodelFlag = false;
 	s_closemotionFlag = false;
+	s_closecameraFlag = false;
 	s_closeconvboneFlag = false;
 	s_DcloseFlag = false;
 	s_RcloseFlag = false;
@@ -4387,6 +4412,7 @@ void InitApp()
 	OrgWinGUI::InitKeys();
 
 	s_motmenuindexmap.clear();
+	s_cameramenuindexmap.clear();
 	s_reindexmap.clear();
 	s_rgdindexmap.clear();
 
@@ -6055,6 +6081,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 
 
 	s_motmenuindexmap.clear();
+	s_cameramenuindexmap.clear();
 	s_reindexmap.clear();
 	s_rgdindexmap.clear();
 
@@ -7354,7 +7381,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 
 	SetCameraModel();
 
-	if (s_underdelmotion || s_underdelmodel || s_underselectmotion || s_underselectmodel) {
+	if (s_underdelmotion || s_underdelmodel || s_underselectmotion || s_underselectcamera || s_underselectmodel) {
 		OnFrameCloseFlag();
 		OnFrameToolWnd();
 	}
@@ -7415,7 +7442,11 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		//#############
 		//Camera Anim
 		//#############
-		OnFramePreviewCamera(nextframe);
+		double cameranextframe = 0.0;
+		int cameraendflag = 0;
+		int cameraloopstartflag = 0;
+		OnFrameProcessCameraTime(difftime, &cameranextframe, &cameraendflag, &cameraloopstartflag);
+		OnFramePreviewCamera(cameranextframe);
 	
 
 
@@ -7835,7 +7866,8 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 
 	//if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0) &&
 	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_calclimitedwmflag, 0) == 0) &&
-		!s_underdelmodel && !s_underdelmotion && !s_underselectmodel && !s_underselectmotion) {
+		!s_underdelmodel && !s_underdelmotion && 
+		!s_underselectmodel && !s_underselectmotion && !s_underselectcamera) {
 		OnRenderModel(pd3dImmediateContext);
 		OnRenderGround(pd3dImmediateContext);
 		OnRenderBoneMark(pd3dImmediateContext);
@@ -13455,6 +13487,39 @@ int DispModelPanel()
 
 int DispCameraPanel()
 {
+	bool savedispcamera = s_dispcamera;
+
+	if (s_camerapanel.scroll) {
+		s_savecamerapanelshowposline = s_camerapanel.scroll->getShowPosLine();
+	}
+	else {
+		s_savecamerapanelshowposline = 0;
+	}
+
+	CreateCameraPanel();
+	if (!s_camerapanel.panel || !(s_camerapanel.panel->getHWnd())) {
+		return 0;
+	}
+
+	if (!savedispcamera) {
+		//s_camerapanel.panel->setListenMouse(false);
+		s_camerapanel.panel->setVisible(false);
+		s_dispcamera = false;
+		s_camerapanel.panel->setListenMouse(false);
+	}
+	else {
+		//s_camerapanel.panel->setListenMouse(true);
+		s_camerapanel.panel->setVisible(true);
+		s_dispcamera = true;
+		s_camerapanel.panel->callRewrite();
+		s_camerapanel.panel->setListenMouse(true);
+
+		//RECT dlgrect;
+		//GetWindowRect(s_camerapanel.panel->getHWnd(), &dlgrect);
+		//SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+	}
+
+
 	return 0;
 }
 
@@ -13646,6 +13711,110 @@ int OnRgdMorphMenu(int selindex)
 	return 0;
 }
 
+int OnCameraMenu(bool dorefreshflag, int selindex, int saveundoflag)
+{
+
+	s_underselectcamera = true;
+
+
+	HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+	//大きいフレーム位置のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
+	//InitTimelineSelection();
+
+	if (!s_model) {
+		_ASSERT(0);
+		SetMainWindowTitle();
+		s_underselectcamera = false;
+		if (oldcursor) {
+			SetCursor(oldcursor);
+		}
+		return 0;
+	}
+
+	s_cameramenuindexmap[s_model] = selindex;
+
+	if (selindex < 0) {
+		SetMainWindowTitle();
+		s_underselectcamera = false;
+		if (oldcursor) {
+			SetCursor(oldcursor);
+		}
+		return 0;//!!!!!!!!!
+	}
+
+
+	if (!s_model || !s_owpTimeline) {
+		s_curmotid = -1;
+		SetMainWindowTitle();
+		s_underselectcamera = false;
+		if (oldcursor) {
+			SetCursor(oldcursor);
+		}
+		return 0;//!!!!!!!!!!!!!!!!!!
+	}
+
+
+	MOTINFO* camerami = s_model->GetCameraMotInfoByCameraIndex(selindex);
+	if (!camerami) {
+		//s_curmotid = -1;
+		SetMainWindowTitle();
+		s_underselectcamera = false;
+		if (oldcursor) {
+			SetCursor(oldcursor);
+		}
+		return 0;//!!!!!!!!!!!!!!!!!!
+	}
+
+
+	int cameramotid = camerami->motid;
+	s_model->SetCameraMotionId(cameramotid);
+
+
+	//if (saveundoflag == 1) {
+	//	//if( s_model ){
+	//	//	s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
+	//	//}
+	//	if (s_model) {
+	//		PrepairUndo();
+	//	}
+	//}
+	//else {
+	//	if (s_model && s_owpLTimeline && s_owpEulerGraph) {
+	//		//double curframe = s_model->GetCurMotInfo()->curframe;
+	//		double curframe = 1.0;
+	//		s_owpLTimeline->setCurrentTime(curframe, true);
+	//		s_owpEulerGraph->setCurrentTime(curframe, false);
+	//	}
+	//}
+
+	//if (s_owpLTimeline) {
+	//	s_owpLTimeline->selectClear();
+	//}
+
+
+	//DispModelPanel();
+	//refreshModelPanel();
+	//DispMotionPanel();
+	DispCameraPanel();
+
+	SetMainWindowTitle();
+
+
+	//InitTimelineSelection();
+
+
+	if (oldcursor) {
+		SetCursor(oldcursor);
+	}
+
+
+	s_underselectcamera = false;
+
+	return 0;
+}
+
+
 
 int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 {
@@ -13654,7 +13823,7 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 
 	HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-	//大きいフレーム一のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
+	//大きいフレーム位置のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
 	InitTimelineSelection();
 
 	if (!s_model) {
@@ -13818,6 +13987,7 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 	DispModelPanel();
 	refreshModelPanel();
 	DispMotionPanel();
+	DispCameraPanel();
 
 	SetMainWindowTitle();
 
@@ -13901,6 +14071,7 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 		//refreshModelPanel();
 		DispModelPanel();
 		DispMotionPanel();
+		DispCameraPanel();
 
 		SetMainWindowTitle();
 
@@ -13919,6 +14090,7 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 		//refreshModelPanel();
 		DispModelPanel();
 		DispMotionPanel();
+		DispCameraPanel();
 
 		SetMainWindowTitle();
 
@@ -14246,6 +14418,7 @@ int OnDelMotion(int delmenuindex, bool ondelbutton)//default : ondelbutton = fal
 	OnAnimMenu(true, 0);
 
 	DispMotionPanel();
+	DispCameraPanel();
 
 	//s_underdelmotion = false;
 
@@ -14324,6 +14497,7 @@ int OnDelModel(int delmenuindex, bool ondelbutton)//default : ondelbutton == fal
 		s_curmodelmenuindex = -1;
 		s_tlarray.clear();
 		s_motmenuindexmap.clear();
+		s_cameramenuindexmap.clear();
 		s_lineno2boneno.clear();
 		s_boneno2lineno.clear();
 	}
@@ -14393,6 +14567,7 @@ int OnDelAllModel()
 	s_curmodelmenuindex = -1;
 	s_tlarray.clear();
 	s_motmenuindexmap.clear();
+	s_cameramenuindexmap.clear();
 	s_lineno2boneno.clear();
 	s_boneno2lineno.clear();
 
@@ -16642,7 +16817,7 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 void ActivatePanel(int state)
 {
-	if (!s_timelineWnd || !s_toolWnd || !s_layerWnd || !s_modelpanel.panel || !s_motionpanel.panel)
+	if (!s_timelineWnd || !s_toolWnd || !s_layerWnd || !s_modelpanel.panel || !s_motionpanel.panel || !s_camerapanel.panel)
 		return;
 
 
@@ -17076,6 +17251,280 @@ int DestroyCameraPanel()
 
 int CreateCameraPanel()
 {
+	//if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) || (InterlockedAdd(&g_motioncachebatchflag, 0) != 0) || (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
+	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) || (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
+		return 0;
+	}
+
+
+	DestroyCameraPanel();
+
+	int modelnum = (int)s_modelindex.size();
+	//if (modelnum <= 0) {
+	//	return 0;
+	//}
+	//if (!s_model) {
+	//	return 0;
+	//}
+	int cameranum;
+	if (s_model) {
+		cameranum = s_model->GetCameraMotInfoSize();
+	}
+	else {
+		cameranum = 0;
+	}
+
+	//if (motionnum <= 0) {
+	//	return 0;
+	//}
+
+	int classcnt = 0;
+	WCHAR clsname[256];
+	swprintf_s(clsname, 256, L"CameraPanel%d", classcnt);
+
+	HWND parentwnd;
+	int istopmost;
+	if (g_4kresolution) {
+		parentwnd = s_mainhwnd;
+		istopmost = 0;
+		//istopmost = 1;
+	}
+	else {
+		parentwnd = NULL;
+		istopmost = 1;
+	}
+
+	if (s_firstcamerapanelpos) {
+		RECT wnd3drect;
+		if (g_4kresolution) {
+			s_camerapanelpos = WindowPos(s_timelinewidth, MAINMENUAIMBARH + s_modelwindowheight + s_motionwindowheight);
+		}
+		else {
+			if (s_mainhwnd) {
+				GetWindowRect(s_mainhwnd, &wnd3drect);
+				s_camerapanelpos = WindowPos(wnd3drect.left + 500 + 500, wnd3drect.top + 500);
+			}
+			else {
+				s_motionpanelpos = WindowPos(700, s_2ndposy);
+			}
+		}
+		s_firstcamerapanelpos = false;
+	}
+
+
+	s_camerapanel.panel = new OrgWindow(
+		istopmost,
+		clsname,		//ウィンドウクラス名
+		GetModuleHandle(NULL),	//インスタンスハンドル
+		s_camerapanelpos,		//位置
+		WindowSize(s_camerawindowwidth, s_camerawindowheight),	//サイズ
+		L"CameraPanel",	//タイトル
+		//s_mainhwnd,					//親ウィンドウハンドル
+		//false,
+		parentwnd,
+		true,					//表示・非表示状態
+		//70, 50, 70,				//カラー
+		0, 0, 0,				//カラー
+		true,					//閉じられるか否か
+		true);					//サイズ変更の可否
+	if (s_camerapanel.panel) {
+		s_camerapanel.panel->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
+
+
+
+		if (s_model) {
+			int cameracnt = 0;
+			std::map<int, MOTINFO*>::iterator itrmi;
+			for (itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++) {
+				MOTINFO* curmi = (MOTINFO*)(itrmi->second);
+				if (curmi && curmi->cameramotion) {
+					WCHAR wmotname[MAX_PATH] = { 0L };
+					MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, curmi->motname, 256, wmotname, MAX_PATH);
+					if (cameracnt == 0) {
+						bool limitnamelen = true;
+						s_camerapanel.radiobutton = new OWP_RadioButton(wmotname, limitnamelen);
+						if (!s_camerapanel.radiobutton) {
+							_ASSERT(0);
+							return 1;
+						}
+					}
+					else {
+						if (s_camerapanel.radiobutton) {
+							if (wmotname[0] != 0L) {
+								s_camerapanel.radiobutton->addLine(wmotname);
+							}
+							else {
+								s_camerapanel.radiobutton->addLine(L"NoName");
+							}
+						}
+					}
+
+					cameracnt++;
+				}
+			}
+
+			//スクロールウインドウ
+			s_camerapanel.scroll = new OWP_ScrollWnd(L"CameraPanelScroll");
+			if (!s_camerapanel.scroll) {
+				_ASSERT(0);
+				return 1;
+			}
+			//要素数が変わったときには指定し忘れないように！！！
+			s_camerapanel.scroll->setLineDataSize(cameranum + 3);
+			s_camerapanel.scroll->setSize(WindowSize(s_camerawindowwidth, s_camerawindowheight - 30));
+			s_camerapanel.panel->addParts(*(s_camerapanel.scroll));
+			s_camerapanel.panel->setPos(s_camerapanelpos);
+			s_camerapanel.scroll->setPos(WindowPos(0, 30));
+
+			s_camerapanel.separator = new OWP_Separator(s_camerapanel.panel, false);									// セパレータ1（境界線による横方向2分割）
+			if (!s_camerapanel.separator) {
+				_ASSERT(0);
+				return 1;
+			}
+			//s_camerapanel.separator->setSize(WindowSize(s_camerawindowwidth, s_camerawindowheight));
+			//s_camerapanel.scroll->addParts(*(s_camerapanel.separator));
+			if (s_camerapanel.separator) {
+				s_camerapanel.scroll->addParts(*(s_camerapanel.separator));
+				if (s_camerapanel.radiobutton) {
+					s_camerapanel.separator->addParts1(*(s_camerapanel.radiobutton));//add once
+				}
+			}
+
+			if (s_model) {
+				std::map<int, MOTINFO*>::iterator itrmi2;
+				for (itrmi2 = s_model->GetMotInfoBegin(); itrmi2 != s_model->GetMotInfoEnd(); itrmi2++) {
+					MOTINFO* curmi = (MOTINFO*)(itrmi2->second);
+					if (curmi && curmi->cameramotion) {
+						OWP_Button* owpButton = new OWP_Button(L"delete");
+						if (owpButton) {
+							s_camerapanel.delbutton.push_back(owpButton);
+							s_camerapanel.separator->addParts2(*owpButton);
+						}
+						else {
+							_ASSERT(0);
+							return 1;
+						}
+					}
+				}
+			}
+
+
+			s_camerapanel.modelindex = s_curmodelmenuindex;
+			//s_camerapanel.radiobutton->setSelectIndex(0);
+			if (s_model) {
+				if (s_camerapanel.radiobutton) {
+					int cameramotid = s_model->GetCameraMotionId();
+					if (cameramotid > 0) {
+						int cameramotindex = s_model->MotionID2CameraIndex(cameramotid);
+						if (cameramotindex >= 0) {
+							s_cameramenuindexmap[s_model] = cameramotindex;
+							s_camerapanel.radiobutton->setSelectIndex(cameramotindex);//!!!!
+						}
+					}
+				}
+				//s_camerapanel.scroll->inView(s_motmenuindexmap[s_model]);
+				if (s_camerapanel.scroll) {
+					s_camerapanel.scroll->setShowPosLine(s_savecamerapanelshowposline);
+				}
+			}
+			else {
+				_ASSERT(0);
+				return 1;
+			}
+
+		}
+		else {
+			//_ASSERT(0);
+			return 0;//s_model == NULL : 0 return
+		}
+
+
+		if (s_camerapanel.panel) {
+			s_camerapanel.panel->setVisible(false);//作成中非表示
+
+			s_camerapanel.panel->setCloseListener([]() {
+				if (s_model) {
+					s_closecameraFlag = true;
+				}
+				});
+
+		}
+
+		if (s_model) {
+			int delmenuindex = 0;
+			for (delmenuindex = 0; delmenuindex < s_model->GetCameraMotInfoSize(); delmenuindex++) {
+				if (s_camerapanel.delbutton[delmenuindex]) {
+					s_camerapanel.delbutton[delmenuindex]->setButtonListener([delmenuindex]() {
+						if ((s_underdelmodel == false) && (s_opedelmodelcnt < 0) && //Model削除と同時は禁止
+							!s_underdelmotion && s_model && (s_model->GetCameraMotInfoSize() >= 2)) {//全部消すときはメインメニューから
+
+							MOTINFO* camerami = s_model->GetCameraMotInfoByCameraIndex(delmenuindex);
+							if (camerami) {
+								int delmotid = camerami->motid;
+								int deleteindex = s_model->MotionID2Index(delmotid);
+								if (deleteindex >= 0) {
+									s_opedelmotioncnt = deleteindex;
+									s_underdelmotion = true;
+									Sleep(100);//ボタン連打でメニューのモーション数が実際より減ることがあったので
+								}
+							}
+
+							//ここでOnDelMotionを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+
+						}
+						});
+				}
+				else {
+					_ASSERT(0);
+					return 1;
+				}
+			}
+		}
+
+		if (s_camerapanel.radiobutton) {
+			s_camerapanel.radiobutton->setSelectListener([]() {
+				if (s_model) {
+					int curindex = s_camerapanel.radiobutton->getSelectIndex();
+					if ((s_opeselectcameracnt < 0) && !s_underselectcamera && (curindex >= 0) && (curindex < s_model->GetCameraMotInfoSize())) {
+						s_opeselectcameracnt = curindex;
+						s_underselectcamera = true;
+						//int cameraindex = curindex;
+						//OnAnimMenu(true, cameraindex, 1);
+						//s_camerapanel.panel->callRewrite();
+
+						//ここでOnAnimMenuを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+					}
+				}
+				});
+		}
+
+		//s_motionpanel.panel->setPos(s_motionpanelpos);
+		//s_motionpanel.panel->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight));
+
+		s_rccamerapanel.top = s_camerapanelpos.y;
+		s_rccamerapanel.bottom = s_camerapanelpos.y + s_camerawindowheight;
+		s_rccamerapanel.left = s_camerapanelpos.x;
+		s_rccamerapanel.right = s_camerapanelpos.x + s_camerawindowwidth;
+
+		if (g_4kresolution) {
+			//4K時は　フレーム組み込み表示
+			if (s_camerapanel.panel) {
+				s_camerapanel.panel->setVisible(true);
+			}
+			s_dispcamera = true;//!!!!!!!!!!!!!!!!! camerapanelのdispflag
+		}
+		else {
+			if (s_camerapanel.panel) {
+				s_camerapanel.panel->setVisible(false);
+			}
+			s_dispcamera = false;//!!!!!!!!!!!!!!!!! camerapanelのdispflag
+		}
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
+
 	return 0;
 }
 
@@ -17313,7 +17762,8 @@ int CreateMotionPanel()
 				if (s_motionpanel.delbutton[delmenuindex]) {
 					s_motionpanel.delbutton[delmenuindex]->setButtonListener([delmenuindex]() {
 						if ((s_underdelmodel == false) && (s_opedelmodelcnt < 0) && //Model削除と同時は禁止
-							(s_opedelmotioncnt < 0) && !s_underdelmotion && s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
+							(s_opedelmotioncnt < 0) && !s_underdelmotion && 
+							s_model && (s_model->GetMotInfoSize() >= 2)) {//全部消すときはメインメニューから
 							s_opedelmotioncnt = delmenuindex;
 							s_underdelmotion = true;
 							//bool ondelbutton = true;
@@ -24643,22 +25093,20 @@ int OnFrameProcessTime(double difftime, double* pnextframe, int* pendflag, int* 
 		return 1;
 	}
 
-	if (g_previewFlag) {
+	if (g_previewFlag != 0) {
 		if (s_model && s_model->GetCurMotInfo()) {
-			if (g_previewFlag != 0) {
-				if (s_savepreviewFlag == 0) {
-					//preview start frame
-					s_previewrange = s_editrange;
-					double rangestart;
-					if (s_previewrange.IsSameStartAndEnd()) {
-						rangestart = 1.0;
-					}
-					else {
-						rangestart = s_previewrange.GetStartFrame();
-					}
-					s_model->SetMotionFrame(rangestart);
-					*pnextframe = 0.0;
+			if (s_savepreviewFlag == 0) {
+				//preview start frame
+				s_previewrange = s_editrange;
+				double rangestart;
+				if (s_previewrange.IsSameStartAndEnd()) {
+					rangestart = 1.0;
 				}
+				else {
+					rangestart = s_previewrange.GetStartFrame();
+				}
+				s_model->SetMotionFrame(rangestart);
+				*pnextframe = 0.0;
 			}
 			s_model->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, difftime, pnextframe, pendflag, ploopstartflag, -1);
 			if (*pendflag == 1) {
@@ -24669,6 +25117,51 @@ int OnFrameProcessTime(double difftime, double* pnextframe, int* pendflag, int* 
 
 	return 0;
 }
+
+int OnFrameProcessCameraTime(double difftime, double* pnextframe, int* pendflag, int* ploopstartflag)
+{
+	if (!pnextframe || !pendflag || !ploopstartflag) {
+		_ASSERT(0);
+		return 1;
+	}
+	if (!s_model) {
+		return 0;
+	}
+
+
+	int cameramotid = s_model->GetCameraMotionId();
+	if (cameramotid <= 0) {
+		return 0;
+	}
+
+	if (g_previewFlag != 0) {
+		if (s_savepreviewFlag == 0) {
+			//preview start frame
+			s_previewrange = s_editrange;
+			double rangestart;
+			if (s_previewrange.IsSameStartAndEnd()) {
+				rangestart = 1.0;
+			}
+			else {
+				rangestart = s_previewrange.GetStartFrame();
+			}
+			s_model->SetMotionFrame(cameramotid, rangestart);
+			*pnextframe = 0.0;
+		}
+	}
+	s_model->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, difftime, pnextframe, pendflag, ploopstartflag, cameramotid);//!!! cameramotid !!!
+	//if (*pendflag == 1) {
+	//	g_previewFlag = 0;
+	//}
+
+
+	s_model->SetMotionSpeed(cameramotid, g_dspeed);
+	s_model->SetMotionFrame(cameramotid, *pnextframe);
+
+
+	return 0;
+}
+
 
 
 int OnFramePreviewCamera(double srcnextframe)
@@ -25327,6 +25820,13 @@ int OnFrameCloseFlag()
 			s_modelpanel.panel->setVisible(0);
 		}
 	}
+	if (s_closecameraFlag) {
+		s_closecameraFlag = false;
+		s_dispcamera = false;
+		if (s_camerapanel.panel) {
+			s_camerapanel.panel->setVisible(0);
+		}
+	}
 	if (s_closemotionFlag) {
 		s_closemotionFlag = false;
 		s_dispmotion = false;
@@ -25962,6 +26462,13 @@ int OnFrameToolWnd()
 
 		s_opedelmotioncnt = -1;
 		s_underdelmotion = false;
+	}
+	if ((s_opeselectcameracnt >= 0) && s_camerapanel.panel) {
+		int cameraindex = s_opeselectcameracnt;
+		OnCameraMenu(true, cameraindex, 1);
+		s_camerapanel.panel->callRewrite();
+
+		s_opeselectcameracnt = -1;
 	}
 	if ((s_opeselectmotioncnt >= 0) && s_motionpanel.panel) {
 		int motionindex = s_opeselectmotioncnt;
@@ -32962,8 +33469,9 @@ int OnTimeLineCursor()
 	//s_tum.UpdateTimeline(OnTimeLineCursorFunc, mbuttonflag, newframe);//非ブロック
 
 	if ((s_delmodelFlag == false) && (s_delallmodelFlag == false) && (s_delcurmotFlag == false) &&
-		(s_opedelmodelcnt < 0) && (s_opedelmotioncnt < 0) && (s_opeselectmodelcnt < 0) && (s_opeselectmotioncnt < 0) &&
-		(s_underdelmotion == false) && (s_underdelmodel == false))// &&
+		(s_opedelmodelcnt < 0) && (s_opedelmotioncnt < 0) && (s_opeselectmodelcnt < 0) && (s_opeselectmotioncnt < 0) && (s_opeselectcameracnt < 0) &&
+		(s_underdelmotion == false) && (s_underdelmodel == false) 
+		)// &&
 		//s_model && (s_model->GetLoadedFlag() == true) && 
 		//(g_underRetargetFlag == false))
 	{
@@ -40966,6 +41474,19 @@ void ChangeMouseSetCapture()
 			}
 		}
 	}
+	if (s_dispcamera) {
+		//check camerapanel
+		{
+			int wndtop = s_rccamerapanel.top;
+			int wndleft = s_rccamerapanel.left;
+			int wndbottom = s_rccamerapanel.bottom;
+			int wndright = s_rccamerapanel.right;
+
+			if ((chkx >= wndleft) && (chkx <= wndright) && (chky >= wndtop) && (chky <= wndbottom)) {
+				nextcapwndid = 10;
+			}
+		}
+	}
 
 
 	///////////////
@@ -41075,6 +41596,11 @@ void ChangeMouseSetCapture()
 		case 9:
 			if (s_motionpanel.panel) {
 				SetCapture(s_motionpanel.panel->getHWnd());
+			}
+			break;
+		case 10:
+			if (s_camerapanel.panel) {
+				SetCapture(s_camerapanel.panel->getHWnd());
 			}
 			break;
 

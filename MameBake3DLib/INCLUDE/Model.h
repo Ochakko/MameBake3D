@@ -1,4 +1,4 @@
-#ifndef MODELH
+ï»¿#ifndef MODELH
 #define MODELH
 
 
@@ -114,8 +114,8 @@ typedef struct tag_physikrec
 #define MAXPHYSIKRECCNT		(60 * 60)
 
 //########################################
-//UpdateMatrix—p‚ÌƒXƒŒƒbƒh‚Ì”
-//Å‘å’l‚Å‚ ‚Á‚ÄƒJƒŒƒ“ƒg‚Ìİ’è’l‚Å‚Í‚È‚¢
+//UpdateMatrixç”¨ã®ã‚¹ãƒ¬ãƒƒãƒ‰ã®æ•°
+//æœ€å¤§å€¤ã§ã‚ã£ã¦ã‚«ãƒ¬ãƒ³ãƒˆã®è¨­å®šå€¤ã§ã¯ãªã„
 //########################################
 //#define MAXUPDATEMATRIXTHREAD 4
 //#define MAXUPDATEMATRIXTHREAD 12
@@ -124,9 +124,9 @@ typedef struct tag_physikrec
 
 
 //############ 2022/11/01 #########################################################
-//LoadFbx‚Í@“¯Šú‚Ì•K—v‰ñ”‚ª‘½‚·‚¬‚é‚Ì‚Å@•ÊƒXƒŒƒbƒh‚P‚Â‚Ì•û‚ª‘¬‚¢
-//LOADFBXANIMTHREAD‚ğ1ˆÈŠO‚É‚·‚éê‡‚É‚Í
-//CBone::GetFbxAnim“à‚ÌpNode->EvaluateGlobalTransform‚ğCriticalSection‚ÅˆÍ‚Ş•K—v—L
+//LoadFbxã¯ã€€åŒæœŸã®å¿…è¦å›æ•°ãŒå¤šã™ãã‚‹ã®ã§ã€€åˆ¥ã‚¹ãƒ¬ãƒƒãƒ‰ï¼‘ã¤ã®æ–¹ãŒé€Ÿã„
+//LOADFBXANIMTHREADã‚’1ä»¥å¤–ã«ã™ã‚‹å ´åˆã«ã¯
+//CBone::GetFbxAnimå†…ã®pNode->EvaluateGlobalTransformã‚’CriticalSectionã§å›²ã‚€å¿…è¦æœ‰
 //#################################################################################
 #define LOADFBXANIMTHREAD 1
 
@@ -144,48 +144,48 @@ public:
 /**
  * @fn
  * CModel
- * @breaf ƒRƒ“ƒXƒgƒ‰ƒNƒ^
- * @return ‚È‚µB
+ * @breaf ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿
+ * @return ãªã—ã€‚
  */
 	CModel();
 
 /**
  * @fn
  * ~CModel
- * @breaf ƒfƒXƒgƒ‰ƒNƒ^B
- * @return ƒfƒXƒgƒ‰ƒNƒ^B
+ * @breaf ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã€‚
+ * @return ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã€‚
  */
 	~CModel();
 
 /**
  * @fn
  * LoadMQO
- * @breaf ƒƒ^ƒZƒRƒCƒA‚Åì¬‚µ‚½‚RDƒf[ƒ^ƒtƒ@ƒCƒ‹*.mqo‚ğ“Ç‚İ‚ŞB
- * @param (ID3D11Device* pdev) IN Direct3D‚ÌƒfƒoƒCƒXB
- * @param (WCHAR* wfile) IN mqoƒtƒ@ƒCƒ‹‚Ìƒtƒ‹ƒpƒXB
- * @param (WCHAR* modelfolder) IN FBX‘‚«o‚µ‚ÌÛ‚Ég—p‚·‚éƒ‚ƒfƒ‹ƒtƒHƒ‹ƒ_[–¼Bƒtƒ@ƒCƒ‹–¼‚©‚çŠg’£q‚ğæ‚Á‚½‚à‚Ì‚É’Ê‚µ”Ô†‚ğ•t‚¯‚½‚à‚Ì‚ªƒfƒtƒHƒ‹ƒgB
- * @param (float srcmult) IN “Ç‚İ‚İ”{—¦B
- * @param (int ismedia) IN SDKmisc.cpp‚ÌDXUTFindDXSDKMediaFileCch‚Å’T‚·ƒfƒBƒŒƒNƒgƒŠ“à‚Ìƒtƒ@ƒCƒ‹‚©‚Ç‚¤‚©‚Æ‚¢‚¤ƒtƒ‰ƒOB
- * @param (int texpool = 0) IN ƒeƒNƒXƒ`ƒƒ‚ğì¬‚·‚éêŠB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail texpoolˆø”‚É‚ÍƒfƒtƒHƒ‹ƒg’l‚ª‚ ‚é‚Ì‚ÅÈ—ª‰Â”\B
+ * @breaf ãƒ¡ã‚¿ã‚»ã‚³ã‚¤ã‚¢ã§ä½œæˆã—ãŸï¼“Dãƒ‡ãƒ¼ã‚¿ãƒ•ã‚¡ã‚¤ãƒ«*.mqoã‚’èª­ã¿è¾¼ã‚€ã€‚
+ * @param (ID3D11Device* pdev) IN Direct3Dã®ãƒ‡ãƒã‚¤ã‚¹ã€‚
+ * @param (WCHAR* wfile) IN mqoãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ•ãƒ«ãƒ‘ã‚¹ã€‚
+ * @param (WCHAR* modelfolder) IN FBXæ›¸ãå‡ºã—ã®éš›ã«ä½¿ç”¨ã™ã‚‹ãƒ¢ãƒ‡ãƒ«ãƒ•ã‚©ãƒ«ãƒ€ãƒ¼åã€‚ãƒ•ã‚¡ã‚¤ãƒ«åã‹ã‚‰æ‹¡å¼µå­ã‚’å–ã£ãŸã‚‚ã®ã«é€šã—ç•ªå·ã‚’ä»˜ã‘ãŸã‚‚ã®ãŒãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã€‚
+ * @param (float srcmult) IN èª­ã¿è¾¼ã¿å€ç‡ã€‚
+ * @param (int ismedia) IN SDKmisc.cppã®DXUTFindDXSDKMediaFileCchã§æ¢ã™ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªå†…ã®ãƒ•ã‚¡ã‚¤ãƒ«ã‹ã©ã†ã‹ã¨ã„ã†ãƒ•ãƒ©ã‚°ã€‚
+ * @param (int texpool = 0) IN ãƒ†ã‚¯ã‚¹ãƒãƒ£ã‚’ä½œæˆã™ã‚‹å ´æ‰€ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail texpoolå¼•æ•°ã«ã¯ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆå€¤ãŒã‚ã‚‹ã®ã§çœç•¥å¯èƒ½ã€‚
  */
 	int LoadMQO( ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, const WCHAR* wfile, const WCHAR* modelfolder, float srcmult, int ismedia, int texpool = 0 );
 	
 /**
  * @fn
  * LoadFBX
- * @breaf FBXƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚ŞB
- * @param (int skipdefref) IN ƒfƒtƒHƒ‹ƒg„‘Ìİ’è‚ğ—˜—p‚ğƒXƒLƒbƒv‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒOBchaƒtƒ@ƒCƒ‹‚©‚çŒÄ‚Ño‚·‚Æ‚«‚Írefƒtƒ@ƒCƒ‹‚ª‚ ‚é‚Ì‚Å‚PBFBX’P‘Ì‚Å“Ç‚İ‚Ş‚Æ‚«‚Í‚OB
- * @param (ID3D11Device* pdev) IN Direct3D‚ÌDeviceB
- * @param (WCHAR* wfile) IN FBXƒtƒ@ƒCƒ‹‚Ìƒtƒ‹ƒpƒXB
- * @param (WCHAR* modelfolder) IN FBX‘‚«o‚µ‚Ég—p‚·‚éFBXƒtƒ@ƒCƒ‹‚ª‚ ‚éƒtƒHƒ‹ƒ_‚Ì–¼‘OBchaƒtƒ@ƒCƒ‹‚ª‚ ‚éƒtƒHƒ‹ƒ_‚Ì’†‚ÌFBX‚ª‚ ‚éƒtƒHƒ‹ƒ_‚Ì–¼‘O‚Æ‚È‚éB
- * @param (float srcmult) IN “Ç‚İ‚İ”{—¦B
- * @param (FbxManager* psdk) IN FBXSDK‚Ìƒ}ƒl[ƒWƒƒB
- * @param (FbxImporter** ppimporter) IN FBXSDK‚ÌƒCƒ“ƒ|[ƒ^[B
- * @param (FbxScene** ppscene) IN FBXSDK‚ÌƒV[ƒ“B
- * @param (int forcenewaxisflag) ‰ß“nŠúƒtƒ@ƒCƒ‹‚Ìƒtƒ‰ƒOB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf FBXãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿è¾¼ã‚€ã€‚
+ * @param (int skipdefref) IN ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆå‰›ä½“è¨­å®šã‚’åˆ©ç”¨ã‚’ã‚¹ã‚­ãƒƒãƒ—ã™ã‚‹ã‹ã©ã†ã‹ã®ãƒ•ãƒ©ã‚°ã€‚chaãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰å‘¼ã³å‡ºã™ã¨ãã¯refãƒ•ã‚¡ã‚¤ãƒ«ãŒã‚ã‚‹ã®ã§ï¼‘ã€‚FBXå˜ä½“ã§èª­ã¿è¾¼ã‚€ã¨ãã¯ï¼ã€‚
+ * @param (ID3D11Device* pdev) IN Direct3Dã®Deviceã€‚
+ * @param (WCHAR* wfile) IN FBXãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ•ãƒ«ãƒ‘ã‚¹ã€‚
+ * @param (WCHAR* modelfolder) IN FBXæ›¸ãå‡ºã—æ™‚ã«ä½¿ç”¨ã™ã‚‹FBXãƒ•ã‚¡ã‚¤ãƒ«ãŒã‚ã‚‹ãƒ•ã‚©ãƒ«ãƒ€ã®åå‰ã€‚chaãƒ•ã‚¡ã‚¤ãƒ«ãŒã‚ã‚‹ãƒ•ã‚©ãƒ«ãƒ€ã®ä¸­ã®FBXãŒã‚ã‚‹ãƒ•ã‚©ãƒ«ãƒ€ã®åå‰ã¨ãªã‚‹ã€‚
+ * @param (float srcmult) IN èª­ã¿è¾¼ã¿å€ç‡ã€‚
+ * @param (FbxManager* psdk) IN FBXSDKã®ãƒãƒãƒ¼ã‚¸ãƒ£ã€‚
+ * @param (FbxImporter** ppimporter) IN FBXSDKã®ã‚¤ãƒ³ãƒãƒ¼ã‚¿ãƒ¼ã€‚
+ * @param (FbxScene** ppscene) IN FBXSDKã®ã‚·ãƒ¼ãƒ³ã€‚
+ * @param (int forcenewaxisflag) éæ¸¡æœŸãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ•ãƒ©ã‚°ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int LoadFBX( int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateContext, const WCHAR* wfile, const WCHAR* modelfolder, 
 		float srcmult, FbxManager* psdk, FbxImporter** ppimporter, FbxScene** ppscene, 
@@ -194,13 +194,13 @@ public:
 /**
  * @fn
  * LoadFBXAnim
- * @breaf FBX‚ÌƒAƒjƒ[ƒVƒ‡ƒ“‚ğ“Ç‚İ‚ŞB
- * @param (FbxManager* psdk) IN FBXSDK‚Ìƒ}ƒl[ƒWƒƒB
- * @param (FbxImporter* pimporter) IN FBXSDK‚ÌƒCƒ“ƒ|[ƒ^[B
- * @param (FbxScene* pscene) IN FBXSDK‚ÌƒV[ƒ“B
- * @param (int (*tlfunc)( int srcmotid )) IN ƒ^ƒCƒ€ƒ‰ƒCƒ“‰Šú‰»—p‚ÌŠÖ”‚Ö‚Ìƒ|ƒCƒ“ƒ^B
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail LoadFBXŒÄ‚Ño‚µ‚ª¬Œ÷‚µ‚½Œã‚Å‚±‚ÌŠÖ”‚ğŒÄ‚Ño‚·B
+ * @breaf FBXã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’èª­ã¿è¾¼ã‚€ã€‚
+ * @param (FbxManager* psdk) IN FBXSDKã®ãƒãƒãƒ¼ã‚¸ãƒ£ã€‚
+ * @param (FbxImporter* pimporter) IN FBXSDKã®ã‚¤ãƒ³ãƒãƒ¼ã‚¿ãƒ¼ã€‚
+ * @param (FbxScene* pscene) IN FBXSDKã®ã‚·ãƒ¼ãƒ³ã€‚
+ * @param (int (*tlfunc)( int srcmotid )) IN ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³åˆæœŸåŒ–ç”¨ã®é–¢æ•°ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail LoadFBXå‘¼ã³å‡ºã—ãŒæˆåŠŸã—ãŸå¾Œã§ã“ã®é–¢æ•°ã‚’å‘¼ã³å‡ºã™ã€‚
  */
 	int LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* pscene, int (*tlfunc)( int srcmotid ), BOOL motioncachebatchflag);
 
@@ -208,12 +208,12 @@ public:
 /**
  * @fn
  * OnRender
- * @breaf ƒ‚ƒfƒ‹ƒf[ƒ^‚ğ•`‰æ‚·‚éB
- * @param (ID3D11Device* pdev) IN Direct3D‚ÌDeviceB
- * @param (int lightflag) IN ÆŒõˆ—‚ğ‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒOB
- * @param (ChaVector4 diffusemult) IN ƒfƒBƒtƒ…[ƒY(ŠgUŒõ)‚ÉæZ‚·‚éRGBA‚Ì’lBƒ‰ƒCƒg‚ğ•Ï‚¦‚È‚­‚Ä‚à–¾‚é‚³‚ğ•Ï‚¦‚é‚±‚Æ‚ªo—ˆ‚éB
- * @param (int btflag = 0) IN bullet‚ÌƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“’†‚Å‚ ‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒOB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ãƒ¢ãƒ‡ãƒ«ãƒ‡ãƒ¼ã‚¿ã‚’æç”»ã™ã‚‹ã€‚
+ * @param (ID3D11Device* pdev) IN Direct3Dã®Deviceã€‚
+ * @param (int lightflag) IN ç…§å…‰å‡¦ç†ã‚’ã™ã‚‹ã‹ã©ã†ã‹ã®ãƒ•ãƒ©ã‚°ã€‚
+ * @param (ChaVector4 diffusemult) IN ãƒ‡ã‚£ãƒ•ãƒ¥ãƒ¼ã‚º(æ‹¡æ•£å…‰)ã«ä¹—ç®—ã™ã‚‹RGBAã®å€¤ã€‚ãƒ©ã‚¤ãƒˆã‚’å¤‰ãˆãªãã¦ã‚‚æ˜ã‚‹ã•ã‚’å¤‰ãˆã‚‹ã“ã¨ãŒå‡ºæ¥ã‚‹ã€‚
+ * @param (int btflag = 0) IN bulletã®ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ä¸­ã§ã‚ã‚‹ã‹ã©ã†ã‹ã®ãƒ•ãƒ©ã‚°ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int OnRender(bool withalpha, ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int btflag = 0 );
 
@@ -222,13 +222,13 @@ public:
 /**
  * @fn
  * RenderBoneMark
- * @breaf ƒ{[ƒ“ƒ}[ƒN‚ÆƒWƒ‡ƒCƒ“ƒgƒ}[ƒN‚Æ„‘ÌŒ`ó‚ğ•\¦‚·‚éB
- * @param (ID3D11Device* pdev) IN Direct3D‚ÌDeviceB
- * @param (CModel* bmarkptr) IN ƒ{[ƒ“ƒ}[ƒN‚Ìƒ‚ƒfƒ‹ƒf[ƒ^B
- * @param (CMySprite* bcircleptr) IN ƒWƒ‡ƒCƒ“ƒg•”•ª‚Ì•\¦‚ÌSpriteB
- * @param (int selboneno) IN ‘I‘ğ’†‚Ìƒ{[ƒ“‚ÌIDB
- * @param (int skiptopbonemark) IN ˆê”Ôe‚©‚ç‚Ìƒ{[ƒ“‚ğ•\¦‚µ‚È‚¢ƒtƒ‰ƒOB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ãƒœãƒ¼ãƒ³ãƒãƒ¼ã‚¯ã¨ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆãƒãƒ¼ã‚¯ã¨å‰›ä½“å½¢çŠ¶ã‚’è¡¨ç¤ºã™ã‚‹ã€‚
+ * @param (ID3D11Device* pdev) IN Direct3Dã®Deviceã€‚
+ * @param (CModel* bmarkptr) IN ãƒœãƒ¼ãƒ³ãƒãƒ¼ã‚¯ã®ãƒ¢ãƒ‡ãƒ«ãƒ‡ãƒ¼ã‚¿ã€‚
+ * @param (CMySprite* bcircleptr) IN ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆéƒ¨åˆ†ã®è¡¨ç¤ºã®Spriteã€‚
+ * @param (int selboneno) IN é¸æŠä¸­ã®ãƒœãƒ¼ãƒ³ã®IDã€‚
+ * @param (int skiptopbonemark) IN ä¸€ç•ªè¦ªã‹ã‚‰ã®ãƒœãƒ¼ãƒ³ã‚’è¡¨ç¤ºã—ãªã„ãƒ•ãƒ©ã‚°ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediateContext, CModel* bmarkptr, CMySprite* bcircleptr, int selboneno, int skiptopbonemark = 0 );
 	int RenderBoneCircleOne(bool limitdegflag, ID3D11DeviceContext* pd3dImmediateContext, CMySprite* bcircleptr, int selboneno);
@@ -241,59 +241,59 @@ public:
 /**
  * @fn
  * GetModelBound
- * @breaf ƒoƒEƒ“ƒ_ƒŠ[ƒf[ƒ^‚ğæ“¾‚·‚éB
- * @param (MODELBOUND* dstb) OUT ƒoƒEƒ“ƒ_ƒŠ[ƒf[ƒ^iƒ‚ƒfƒ‹‚ğˆÍ‚¢‚ŞÅ¬”ÍˆÍƒf[ƒ^j‚ªƒZƒbƒg‚³‚ê‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ãƒã‚¦ãƒ³ãƒ€ãƒªãƒ¼ãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—ã™ã‚‹ã€‚
+ * @param (MODELBOUND* dstb) OUT ãƒã‚¦ãƒ³ãƒ€ãƒªãƒ¼ãƒ‡ãƒ¼ã‚¿ï¼ˆãƒ¢ãƒ‡ãƒ«ã‚’å›²ã„è¾¼ã‚€æœ€å°ç¯„å›²ãƒ‡ãƒ¼ã‚¿ï¼‰ãŒã‚»ãƒƒãƒˆã•ã‚Œã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int GetModelBound( MODELBOUND* dstb );
 
 /**
  * @fn
  * MakeObjectName
- * @breaf ƒIƒuƒWƒFƒNƒg‚Ì–¼‘O‚©‚çCMQOObject‚ğŒŸõ‚·‚é‚½‚ß‚Ìƒf[ƒ^‚ğƒZƒbƒg‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åå‰ã‹ã‚‰CMQOObjectã‚’æ¤œç´¢ã™ã‚‹ãŸã‚ã®ãƒ‡ãƒ¼ã‚¿ã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int MakeObjectName();
 
 /**
  * @fn
  * MakePolyMesh3
- * @breaf ƒƒ^ƒZƒRƒCƒA‚©‚ç“Ç‚İ‚ñ‚¾ƒf[ƒ^‚Ì•\¦—pƒf[ƒ^‚ğì¬‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ãƒ¡ã‚¿ã‚»ã‚³ã‚¤ã‚¢ã‹ã‚‰èª­ã¿è¾¼ã‚“ã ãƒ‡ãƒ¼ã‚¿ã®è¡¨ç¤ºç”¨ãƒ‡ãƒ¼ã‚¿ã‚’ä½œæˆã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int MakePolyMesh3();
 
 /**
  * @fn
  * MakePolyMesh4
- * @breaf FBX‚©‚ç“Ç‚İ‚ñ‚¾ƒf[ƒ^‚Ì•\¦—pƒf[ƒ^‚ğì¬‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf FBXã‹ã‚‰èª­ã¿è¾¼ã‚“ã ãƒ‡ãƒ¼ã‚¿ã®è¡¨ç¤ºç”¨ãƒ‡ãƒ¼ã‚¿ã‚’ä½œæˆã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int MakePolyMesh4();
 
 /**
  * @fn
  * MakeExtLine
- * @breaf ƒƒ^ƒZƒRƒCƒA‚âFBX‚©‚ç“Ç‚İ‚ñ‚¾ƒf[ƒ^‚Ìü•ª•\¦—p‚Ìƒf[ƒ^‚ğì¬‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ãƒ¡ã‚¿ã‚»ã‚³ã‚¤ã‚¢ã‚„FBXã‹ã‚‰èª­ã¿è¾¼ã‚“ã ãƒ‡ãƒ¼ã‚¿ã®ç·šåˆ†è¡¨ç¤ºç”¨ã®ãƒ‡ãƒ¼ã‚¿ã‚’ä½œæˆã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int MakeExtLine();
 	
 /**
  * @fn
  * MakeDispObj
- * @breaf DirectX‚Ì•`‰æ—pƒoƒbƒtƒ@‚Ìƒ‰ƒbƒpƒf[ƒ^‚ğì¬‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf DirectXã®æç”»ç”¨ãƒãƒƒãƒ•ã‚¡ã®ãƒ©ãƒƒãƒ‘ãƒ‡ãƒ¼ã‚¿ã‚’ä½œæˆã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */	
 	int MakeDispObj();
 
 /**
  * @fn
  * UpdateMatrix
- * @breaf ƒAƒjƒ[ƒVƒ‡ƒ“ƒf[ƒ^‚ğ“K—p‚·‚éBŒ»İ‚ÌŠÔ‚Ìp¨‚ğƒZƒbƒg‚·‚éBƒ‚[ƒtƒAƒjƒ‚ª‚ ‚ê‚Îƒ‚[ƒtƒAƒjƒ‚à“K—p‚·‚éB
- * @param (ChaMatrix* wmat) IN ƒ[ƒ‹ƒh•ÏŠ·s—ñB
- * @param (ChaMatrix* vpmat) IN View * Projection•ÏŠ·s—ñB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‡ãƒ¼ã‚¿ã‚’é©ç”¨ã™ã‚‹ã€‚ç¾åœ¨ã®æ™‚é–“ã®å§¿å‹¢ã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚ãƒ¢ãƒ¼ãƒ•ã‚¢ãƒ‹ãƒ¡ãŒã‚ã‚Œã°ãƒ¢ãƒ¼ãƒ•ã‚¢ãƒ‹ãƒ¡ã‚‚é©ç”¨ã™ã‚‹ã€‚
+ * @param (ChaMatrix* wmat) IN ãƒ¯ãƒ¼ãƒ«ãƒ‰å¤‰æ›è¡Œåˆ—ã€‚
+ * @param (ChaMatrix* vpmat) IN View * Projectionå¤‰æ›è¡Œåˆ—ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int UpdateMatrix(bool limitdegflag, ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinished = false );
 	void UpdateMatrixReq(bool limitdegflag, CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
@@ -313,21 +313,21 @@ public:
 /**
  * @fn
  * SetShaderConst
- * @breaf ƒVƒF[ƒ_[‚Ì’è”‚ğƒZƒbƒg‚·‚éBƒAƒjƒ[ƒVƒ‡ƒ“Aƒ‰ƒCƒgAƒeƒNƒXƒ`ƒƒ‚È‚Ç‚ÌƒVƒF[ƒ_[’è”‚ğDirect3D‚Ì•`‰æ–½—ß‚ğŒÄ‚Ño‚·‘O‚ÉƒZƒbƒg‚µ‚Ä‚¨‚­B
- * @param (CMQOObject* srcobj) IN •`‰æ‘ÎÛ‚ÌCMQOObjectB
- * @param (int btflag = 0) IN bullet‚ÌƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“’†‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒOB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼ã®å®šæ•°ã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã€ãƒ©ã‚¤ãƒˆã€ãƒ†ã‚¯ã‚¹ãƒãƒ£ãªã©ã®ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼å®šæ•°ã‚’Direct3Dã®æç”»å‘½ä»¤ã‚’å‘¼ã³å‡ºã™å‰ã«ã‚»ãƒƒãƒˆã—ã¦ãŠãã€‚
+ * @param (CMQOObject* srcobj) IN æç”»å¯¾è±¡ã®CMQOObjectã€‚
+ * @param (int btflag = 0) IN bulletã®ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ä¸­ã‹ã©ã†ã‹ã®ãƒ•ãƒ©ã‚°ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int SetShaderConst( CMQOObject* srcobj, int btflag = 0 );
 
 /**
  * @fn
  * FillTimeLine
- * @breaf ƒ^ƒCƒ€ƒ‰ƒCƒ“‚Éƒ{[ƒ“‚Ì•ªAs‚ğ’Ç‰Á‚·‚éB
- * @param (OrgWinGUI::OWP_Timeline& timeline) OUT ƒ^ƒCƒ€ƒ‰ƒCƒ“B
- * @param (map<int, int>& lineno2boneno) OUT ƒ^ƒCƒ€ƒ‰ƒCƒ“‚Ìs”Ô†‚©‚çƒ{[ƒ“ID‚ğŒŸõ‚·‚é‚½‚ß‚ÌmapB
- * @param (map<int, int>& boneno2lineno) OUT ƒ{[ƒ“ID‚©‚çƒ^ƒCƒ€ƒ‰ƒCƒ“‚Ìs”Ô†‚ğŒŸõ‚·‚é‚½‚ß‚ÌmapB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã«ãƒœãƒ¼ãƒ³ã®åˆ†ã€è¡Œã‚’è¿½åŠ ã™ã‚‹ã€‚
+ * @param (OrgWinGUI::OWP_Timeline& timeline) OUT ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã€‚
+ * @param (map<int, int>& lineno2boneno) OUT ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®è¡Œç•ªå·ã‹ã‚‰ãƒœãƒ¼ãƒ³IDã‚’æ¤œç´¢ã™ã‚‹ãŸã‚ã®mapã€‚
+ * @param (map<int, int>& boneno2lineno) OUT ãƒœãƒ¼ãƒ³IDã‹ã‚‰ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®è¡Œç•ªå·ã‚’æ¤œç´¢ã™ã‚‹ãŸã‚ã®mapã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int FillTimeLine( OrgWinGUI::OWP_Timeline& timeline, std::map<int, int>& lineno2boneno, std::map<int, int>& boneno2lineno );
 	int FillTimeLineOne(CBone* curbone, int lineno,
@@ -337,68 +337,70 @@ public:
 /**
  * @fn
  * AddMotion
- * @breaf ƒAƒjƒ[ƒVƒ‡ƒ“•Û—p‚ÌƒGƒ“ƒgƒŠ[‚ğì¬‚·‚éB
- * @param (char* srcname) IN ƒAƒjƒ[ƒVƒ‡ƒ“‚Ì–¼‘OB
- * @param (WCHAR* wfilename) IN ƒAƒjƒ[ƒVƒ‡ƒ“ƒtƒ@ƒCƒ‹‘‚«o‚µ‚Ì‚½‚ß‚Ì–¼‘OB
- * @param (double srcleng) IN ƒAƒjƒ[ƒVƒ‡ƒ“‚Ì’·‚³B
- * @param (int* dstid) OUT ƒAƒjƒ[ƒVƒ‡ƒ“‚Ì‘I‘ğ‚Ég—p‚·‚éID‚ªƒZƒbƒg‚³‚ê‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ä¿æŒç”¨ã®ã‚¨ãƒ³ãƒˆãƒªãƒ¼ã‚’ä½œæˆã™ã‚‹ã€‚
+ * @param (char* srcname) IN ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®åå‰ã€‚
+ * @param (WCHAR* wfilename) IN ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãƒ•ã‚¡ã‚¤ãƒ«æ›¸ãå‡ºã—æ™‚ã®ãŸã‚ã®åå‰ã€‚
+ * @param (double srcleng) IN ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®é•·ã•ã€‚
+ * @param (int* dstid) OUT ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®é¸æŠã«ä½¿ç”¨ã™ã‚‹IDãŒã‚»ãƒƒãƒˆã•ã‚Œã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int AddMotion( const char* srcname, const WCHAR* wfilename, double srcleng, int* dstid );
 
 /**
  * @fn
  * SetCurrentMotion
- * @breaf Œ»İ‚Ìƒ‚[ƒVƒ‡ƒ“ID‚ğw’è‚·‚éB
- * @param (int srcmotid) IN ƒ‚[ƒVƒ‡ƒ“IDB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ç¾åœ¨ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int srcmotid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³IDã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int SetCurrentMotion( int srcmotid );
 
 /**
  * @fn
  * SetMotionFrame
- * @breaf Ä¶‚·‚éƒ‚[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€‚ğw’è‚·‚éB
- * @param (double srcframe) IN ƒtƒŒ[ƒ€iŠÔj‚ğw’è‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf å†ç”Ÿã™ã‚‹ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double srcframe) IN ãƒ•ãƒ¬ãƒ¼ãƒ ï¼ˆæ™‚é–“ï¼‰ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
-	int SetMotionFrame( double srcframe );
+	int SetMotionFrame(double srcframe);
+	int SetMotionFrame(int srcmotid, double srcframe);
 
 
 /**
  * @fn
  * GetMotionFrame
- * @breaf Œ»İ‚Ìƒ‚[ƒVƒ‡ƒ“‚ÌÄ¶ƒtƒŒ[ƒ€‚ğæ“¾‚·‚éB
- * @param (double* dstframe) OUT Ä¶ƒtƒŒ[ƒ€‚ªƒZƒbƒg‚³‚ê‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ç¾åœ¨ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®å†ç”Ÿãƒ•ãƒ¬ãƒ¼ãƒ ã‚’å–å¾—ã™ã‚‹ã€‚
+ * @param (double* dstframe) OUT å†ç”Ÿãƒ•ãƒ¬ãƒ¼ãƒ ãŒã‚»ãƒƒãƒˆã•ã‚Œã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int GetMotionFrame( double* dstframe );
 
 /**
  * @fn
  * SetMotionSpeed
- * @breaf ƒ‚[ƒVƒ‡ƒ“‚ÌÄ¶ƒXƒs[ƒh(60fps‚É‘Î‚µ‚Ä‚Ì”{—¦)‚ğw’è‚·‚éB
- * @param (double srcspeed) IN Ä¶ƒXƒs[ƒhB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®å†ç”Ÿã‚¹ãƒ”ãƒ¼ãƒ‰(60fpsã«å¯¾ã—ã¦ã®å€ç‡)ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double srcspeed) IN å†ç”Ÿã‚¹ãƒ”ãƒ¼ãƒ‰ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
-	int SetMotionSpeed( double srcspeed );
+	int SetMotionSpeed(double srcspeed);
+	int SetMotionSpeed(int srcmotid, double srcspeed);
 
 /**
  * @fn
  * GetMotionSpeed
- * @breaf ƒ‚[ƒVƒ‡ƒ“‚ÌÄ¶ƒXƒs[ƒh‚ğæ“¾‚·‚éB
- * @param (double* dstspeed) OUT Ä¶ƒXƒs[ƒh‚ªƒZƒbƒg‚³‚ê‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®å†ç”Ÿã‚¹ãƒ”ãƒ¼ãƒ‰ã‚’å–å¾—ã™ã‚‹ã€‚
+ * @param (double* dstspeed) OUT å†ç”Ÿã‚¹ãƒ”ãƒ¼ãƒ‰ãŒã‚»ãƒƒãƒˆã•ã‚Œã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int GetMotionSpeed( double* dstspeed );
 
 /**
  * @fn
  * DeleteMotion
- * @breaf ƒ‚[ƒVƒ‡ƒ“‚ğíœ‚·‚éB
- * @param (int motid) IN íœ‚·‚éƒ‚[ƒVƒ‡ƒ“‚ÌIDB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail p¨‚ÌƒL[‚¾‚¯‚Å‚È‚­Aƒ‚[ƒVƒ‡ƒ“‚ÌƒGƒ“ƒgƒŠ[‚àíœ‚·‚éB
+ * @breaf ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å‰Šé™¤ã™ã‚‹ã€‚
+ * @param (int motid) IN å‰Šé™¤ã™ã‚‹ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail å§¿å‹¢ã®ã‚­ãƒ¼ã ã‘ã§ãªãã€ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ã‚¨ãƒ³ãƒˆãƒªãƒ¼ã‚‚å‰Šé™¤ã™ã‚‹ã€‚
  */
 	int DeleteMotion( int motid );
 
@@ -406,11 +408,11 @@ public:
 /**
  * @fn
  * GetSymBoneNo
- * @breaf ¶‰E‘ÎÌİ’è‚Ì–¼‘O‚Ìƒ{[ƒ“‚ÌID‚ğæ“¾‚·‚éB
- * @param (int srcboneno) IN Œ³‚Ìƒ{[ƒ“‚ÌIDB
- * @param (int* dstboneno) OUT ¶‰E‘ÎÌİ’è‚Ìƒ{[ƒ“‚ÌID‚ªƒZƒbƒg‚³‚ê‚éB 
- * @param (int* existptr) OUT ¶‰E‘ÎÌİ’è‚Ìƒ{[ƒ“‚ªŒ©‚Â‚©‚ê‚Î‚PA–³‚¯‚ê‚Î‚O‚ªƒZƒbƒg‚³‚ê‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf å·¦å³å¯¾ç§°è¨­å®šã®åå‰ã®ãƒœãƒ¼ãƒ³ã®IDã‚’å–å¾—ã™ã‚‹ã€‚
+ * @param (int srcboneno) IN å…ƒã®ãƒœãƒ¼ãƒ³ã®IDã€‚
+ * @param (int* dstboneno) OUT å·¦å³å¯¾ç§°è¨­å®šã®ãƒœãƒ¼ãƒ³ã®IDãŒã‚»ãƒƒãƒˆã•ã‚Œã‚‹ã€‚ 
+ * @param (int* existptr) OUT å·¦å³å¯¾ç§°è¨­å®šã®ãƒœãƒ¼ãƒ³ãŒè¦‹ã¤ã‹ã‚Œã°ï¼‘ã€ç„¡ã‘ã‚Œã°ï¼ãŒã‚»ãƒƒãƒˆã•ã‚Œã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int GetSymBoneNo( int srcboneno, int* dstboneno, int* existptr );
 
@@ -418,23 +420,23 @@ public:
 /**
  * @fn
  * PickBone
- * @breaf w’è‚µ‚½‰æ–Ê‚Ì‚QDÀ•W‚É‹ß‚¢ƒ{[ƒ“‚ğæ“¾‚·‚éB
- * @param (UIPICKINFO* pickinfo) INOUT æ“¾î•ñ‚Ö‚Ìƒ|ƒCƒ“ƒ^B
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail pickinfo‚ÉƒEƒCƒ“ƒhƒE‚ÌƒTƒCƒY‚ÆƒNƒŠƒbƒN‚µ‚½‚QDÀ•W‚Æƒ{[ƒ“‚Æ‚ÌÅ‘å‹——£‚ğw’è‚µ‚ÄŒÄ‚Ño‚·B
+ * @breaf æŒ‡å®šã—ãŸç”»é¢ã®ï¼’Dåº§æ¨™ã«è¿‘ã„ãƒœãƒ¼ãƒ³ã‚’å–å¾—ã™ã‚‹ã€‚
+ * @param (UIPICKINFO* pickinfo) INOUT å–å¾—æƒ…å ±ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail pickinfoã«ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã®ã‚µã‚¤ã‚ºã¨ã‚¯ãƒªãƒƒã‚¯ã—ãŸï¼’Dåº§æ¨™ã¨ãƒœãƒ¼ãƒ³ã¨ã®æœ€å¤§è·é›¢ã‚’æŒ‡å®šã—ã¦å‘¼ã³å‡ºã™ã€‚
  */
 	int PickBone( UIPICKINFO* pickinfo );
 
 /**
  * @fn
  * IKRotate
- * @breaf ‘I‘ğƒ{[ƒ“‚Ì‘I‘ğƒtƒŒ[ƒ€‚É‘Î‚µ‚ÄIK‚Åp¨‚ğ‰ñ“]‚·‚éB
- * @param (CEditRange* erptr) IN ‘I‘ğƒtƒŒ[ƒ€î•ñ‚ğw’è‚·‚éB
- * @param (int srcboneno) IN ‘I‘ğƒ{[ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (ChaVector3 targetpos) IN ‘I‘ğƒ{[ƒ“‚Ì–Ú•WÀ•W‚ğw’è‚·‚éB
- * @param (int maxlevel) IN IKŒvZ‚Å‰½ŠK‘we‚Ü‚Å‚³‚©‚Ì‚Ú‚é‚©‚ğw’è‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail MameBake3D‚É‚¨‚¢‚Ä‚ÍAƒ}ƒjƒsƒ…ƒŒ[ƒ^‚Ì’†‰›‚Ì‰©F‚ğƒhƒ‰ƒbƒO‚µ‚½‚ÉŒÄ‚Î‚ê‚éB
+ * @breaf é¸æŠãƒœãƒ¼ãƒ³ã®é¸æŠãƒ•ãƒ¬ãƒ¼ãƒ ã«å¯¾ã—ã¦IKã§å§¿å‹¢ã‚’å›è»¢ã™ã‚‹ã€‚
+ * @param (CEditRange* erptr) IN é¸æŠãƒ•ãƒ¬ãƒ¼ãƒ æƒ…å ±ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int srcboneno) IN é¸æŠãƒœãƒ¼ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (ChaVector3 targetpos) IN é¸æŠãƒœãƒ¼ãƒ³ã®ç›®æ¨™åº§æ¨™ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int maxlevel) IN IKè¨ˆç®—ã§ä½•éšå±¤è¦ªã¾ã§ã•ã‹ã®ã¼ã‚‹ã‹ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail MameBake3Dã«ãŠã„ã¦ã¯ã€ãƒãƒ‹ãƒ”ãƒ¥ãƒ¬ãƒ¼ã‚¿ã®ä¸­å¤®ã®é»„è‰²ã‚’ãƒ‰ãƒ©ãƒƒã‚°ã—ãŸæ™‚ã«å‘¼ã°ã‚Œã‚‹ã€‚
  */
 
 	int IKRotateUnderIK(bool limitdegflag, CEditRange* erptr,
@@ -483,15 +485,15 @@ public:
 /**
  * @fn
  * IKRotateAxisDelta
- * @breaf ‘I‘ğƒ{[ƒ“‚Ì‘I‘ğƒtƒŒ[ƒ€‚É‘Î‚µ‚Ä²w’è‚ÅIK‰ñ“]‚ğ‚·‚éB
- * @param (CEditRange* erptr) IN ‘I‘ğƒtƒŒ[ƒ€î•ñ‚ğw’è‚·‚éB
- * @param (int axiskind) IN ‰ñ“]²‚ğw’è‚·‚éBPICK_X, PICK_Y, PICK_Z‚Ì‚¢‚¸‚ê‚©B
- * @param (int srcboneno) IN ‘I‘ğƒ{[ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (float delta) IN ‰ñ“]Šp“x‚ğw’è‚·‚éB
- * @param (int maxlevel) IN IKŒvZ‚Å‰½ŠK‘we‚Ü‚Å‚³‚©‚Ì‚Ú‚é‚©‚ğw’è‚·‚éB
- * @param (int ikcnt) IN ƒ}ƒEƒX‚Åƒhƒ‰ƒbƒO‚ğŠJn‚µ‚Ä‚©‚ç‰½‰ñ‚±‚ÌŠÖ”‚ğÀs‚µ‚½‚©B
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail MameBake3D‚É‚¨‚¢‚Ä‚ÍAƒ}ƒjƒsƒ…ƒŒ[ƒ^‚ÌƒŠƒ“ƒO‚Ü‚½‚Í‹…‚ğƒhƒ‰ƒbƒO‚µ‚½‚ÉŒÄ‚Î‚ê‚éB
+ * @breaf é¸æŠãƒœãƒ¼ãƒ³ã®é¸æŠãƒ•ãƒ¬ãƒ¼ãƒ ã«å¯¾ã—ã¦è»¸æŒ‡å®šã§IKå›è»¢ã‚’ã™ã‚‹ã€‚
+ * @param (CEditRange* erptr) IN é¸æŠãƒ•ãƒ¬ãƒ¼ãƒ æƒ…å ±ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int axiskind) IN å›è»¢è»¸ã‚’æŒ‡å®šã™ã‚‹ã€‚PICK_X, PICK_Y, PICK_Zã®ã„ãšã‚Œã‹ã€‚
+ * @param (int srcboneno) IN é¸æŠãƒœãƒ¼ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (float delta) IN å›è»¢è§’åº¦ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int maxlevel) IN IKè¨ˆç®—ã§ä½•éšå±¤è¦ªã¾ã§ã•ã‹ã®ã¼ã‚‹ã‹ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int ikcnt) IN ãƒã‚¦ã‚¹ã§ãƒ‰ãƒ©ãƒƒã‚°ã‚’é–‹å§‹ã—ã¦ã‹ã‚‰ä½•å›ã“ã®é–¢æ•°ã‚’å®Ÿè¡Œã—ãŸã‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail MameBake3Dã«ãŠã„ã¦ã¯ã€ãƒãƒ‹ãƒ”ãƒ¥ãƒ¬ãƒ¼ã‚¿ã®ãƒªãƒ³ã‚°ã¾ãŸã¯çƒã‚’ãƒ‰ãƒ©ãƒƒã‚°ã—ãŸæ™‚ã«å‘¼ã°ã‚Œã‚‹ã€‚
  */
 	int IKRotateAxisDeltaUnderIK(
 		bool limitdegflag, CEditRange* erptr, 
@@ -513,23 +515,23 @@ public:
 /**
  * @fn
  * RotateXDelta
- * @breaf ƒ{[ƒ“²‚ÉŠÖ‚µ‚Äp¨‚ğ‚Ë‚¶‚éB
- * @param (CEditRange* erptr) IN ‘I‘ğƒtƒŒ[ƒ€î•ñ‚ğw’è‚·‚éB
- * @param (int srcboneno) IN ‘I‘ğƒ{[ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (float delta) IN ‰ñ“]Šp“x‚ğw’è‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail MameBake3D‚É‚¨‚¢‚Ä‚ÍAƒ}ƒjƒsƒ…ƒŒ[ƒ^‚ÌƒŠƒ“ƒO‚Ü‚½‚Í‹…‚Åƒ{[ƒ“²‚ÉŠÖ‚µ‚Ä‰ñ“]‚·‚é‚Æ‚«‚ÉŒÄ‚Î‚ê‚éB
+ * @breaf ãƒœãƒ¼ãƒ³è»¸ã«é–¢ã—ã¦å§¿å‹¢ã‚’ã­ã˜ã‚‹ã€‚
+ * @param (CEditRange* erptr) IN é¸æŠãƒ•ãƒ¬ãƒ¼ãƒ æƒ…å ±ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int srcboneno) IN é¸æŠãƒœãƒ¼ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (float delta) IN å›è»¢è§’åº¦ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail MameBake3Dã«ãŠã„ã¦ã¯ã€ãƒãƒ‹ãƒ”ãƒ¥ãƒ¬ãƒ¼ã‚¿ã®ãƒªãƒ³ã‚°ã¾ãŸã¯çƒã§ãƒœãƒ¼ãƒ³è»¸ã«é–¢ã—ã¦å›è»¢ã™ã‚‹ã¨ãã«å‘¼ã°ã‚Œã‚‹ã€‚
  */
 	//int RotateXDelta( CEditRange* erptr, int srcboneno, float delta );
 
 /**
  * @fn
  * FKRotate
- * @breaf ‘I‘ğƒ{[ƒ“‚Ì‘I‘ğƒtƒŒ[ƒ€‚É‘Î‚µ‚ÄFK‚Åw’è‚µ‚½•ª‚¾‚¯‰ñ“]‚·‚éB
- * @param (double srcframe) IN ‘I‘ğƒtƒŒ[ƒ€î•ñ‚ğw’è‚·‚éB
- * @param (int srcboneno) IN ‘I‘ğƒ{[ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (CQuaternion rotq) IN ‰ñ“]‚ğ•\‚·ƒNƒH[ƒ^ƒjƒIƒ“B
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf é¸æŠãƒœãƒ¼ãƒ³ã®é¸æŠãƒ•ãƒ¬ãƒ¼ãƒ ã«å¯¾ã—ã¦FKã§æŒ‡å®šã—ãŸåˆ†ã ã‘å›è»¢ã™ã‚‹ã€‚
+ * @param (double srcframe) IN é¸æŠãƒ•ãƒ¬ãƒ¼ãƒ æƒ…å ±ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int srcboneno) IN é¸æŠãƒœãƒ¼ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (CQuaternion rotq) IN å›è»¢ã‚’è¡¨ã™ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int FKRotate(bool limitdegflag, bool onretarget, int reqflag,
 		CBone* bvhbone, int traflag, ChaVector3 traanim, double srcframe, int srcboneno,
@@ -539,11 +541,11 @@ public:
 /**
  * @fn
  * FKBoneTra
- * @breaf ‘I‘ğƒ{[ƒ“‚Ì‘I‘ğƒtƒŒ[ƒ€‚É‘Î‚µ‚ÄFK‚Åw’è‚µ‚½•ª‚¾‚¯ˆÚ“®‚·‚éB
- * @param (CEditRange* erptr) IN ‘I‘ğƒtƒŒ[ƒ€î•ñ‚ğw’è‚·‚éB
- * @param (int srcboneno) IN ‘I‘ğƒ{[ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (ChaVector3 addtra) IN ˆÚ“®•ª‚ÌƒxƒNƒgƒ‹B
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf é¸æŠãƒœãƒ¼ãƒ³ã®é¸æŠãƒ•ãƒ¬ãƒ¼ãƒ ã«å¯¾ã—ã¦FKã§æŒ‡å®šã—ãŸåˆ†ã ã‘ç§»å‹•ã™ã‚‹ã€‚
+ * @param (CEditRange* erptr) IN é¸æŠãƒ•ãƒ¬ãƒ¼ãƒ æƒ…å ±ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int srcboneno) IN é¸æŠãƒœãƒ¼ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (ChaVector3 addtra) IN ç§»å‹•åˆ†ã®ãƒ™ã‚¯ãƒˆãƒ«ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int FKBoneTraUnderFK(
 		bool limitdegflag, CEditRange* erptr,
@@ -579,92 +581,92 @@ public:
 /**
  * @fn
  * CollisionNoBoneObj_Mouse
- * @breaf ‰æ–Ê‚Ì‚QD‚ÌˆÊ’u‚ÉƒIƒuƒWƒFƒNƒg‚ª‚ ‚é‚©‚Ç‚¤‚©’²‚×‚éB
- * @param (UIPICKINFO* pickinfo) INOUT ‰æ–Ê‚Ì‚QDÀ•W‚ÆÅ‘å‹——£‚ğw’è‚·‚éB
- * @param (char* objnameptr) IN ’²‚×‚½‚¢ƒIƒuƒWƒFƒNƒg‚Ì–¼‘O‚ğw’è‚·‚éB
- * @return ‚QDˆÊ’u‚ÉƒIƒuƒWƒFƒNƒg‚ª‚ ‚ê‚Î‚PA–³‚¯‚ê‚Î‚O‚ğ•Ô‚·B
+ * @breaf ç”»é¢ã®ï¼’Dã®ä½ç½®ã«ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãŒã‚ã‚‹ã‹ã©ã†ã‹èª¿ã¹ã‚‹ã€‚
+ * @param (UIPICKINFO* pickinfo) INOUT ç”»é¢ã®ï¼’Dåº§æ¨™ã¨æœ€å¤§è·é›¢ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (char* objnameptr) IN èª¿ã¹ãŸã„ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åå‰ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return ï¼’Dä½ç½®ã«ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆãŒã‚ã‚Œã°ï¼‘ã€ç„¡ã‘ã‚Œã°ï¼ã‚’è¿”ã™ã€‚
  */
 	int CollisionNoBoneObj_Mouse(UIPICKINFO* pickinfo, const char* objnameptr, bool excludeinvface);
 
 /**
  * @fn
  * TransformBone
- * @breaf ƒ{[ƒ“‚ÌÀ•W‚ğ•ÏŠ·ŒvZ‚·‚éB
- * @param (int winx) IN ‚RD•\¦ƒEƒCƒ“ƒhƒE‚Ì•
- * @param (int winy) IN ‚RD•\¦ƒEƒCƒ“ƒhƒE‚Ì‚‚³
- * @param (int srcboneno) IN ƒ{[ƒ“‚ÌIDB
- * @param (ChaVector3* worldptr) OUT ƒ[ƒ‹ƒhÀ•WŒn‚Ì•ÏŠ·Œ‹‰ÊB
- * @param (ChaVector3* screenptr) OUT *worldptr‚ÉX‚ÉView Projection‚ğ“K—p‚µ‚½À•WB
- * @param (ChaVector3* dispptr) OUT *screenptr‚ğ-WindowSize/2‚©‚ç+WindowSize/2‚Ü‚Å‚Ì‚QDÀ•W‚É‚µ‚½‚à‚ÌB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail CBone‚ÌUpdateMatrix‚ªŒÄ‚Î‚ê‚½Œã‚ÅŒÄ‚Ño‚³‚ê‚é‚±‚Æ‚ğ‘z’è‚µ‚Ä‚¢‚éB(CBone::m_childworld‚ğg—p‚µ‚Ä‚¢‚éB)
+ * @breaf ãƒœãƒ¼ãƒ³ã®åº§æ¨™ã‚’å¤‰æ›è¨ˆç®—ã™ã‚‹ã€‚
+ * @param (int winx) IN ï¼“Dè¡¨ç¤ºã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã®å¹…
+ * @param (int winy) IN ï¼“Dè¡¨ç¤ºã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ã®é«˜ã•
+ * @param (int srcboneno) IN ãƒœãƒ¼ãƒ³ã®IDã€‚
+ * @param (ChaVector3* worldptr) OUT ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ç³»ã®å¤‰æ›çµæœã€‚
+ * @param (ChaVector3* screenptr) OUT *worldptrã«æ›´ã«View Projectionã‚’é©ç”¨ã—ãŸåº§æ¨™ã€‚
+ * @param (ChaVector3* dispptr) OUT *screenptrã‚’-WindowSize/2ã‹ã‚‰+WindowSize/2ã¾ã§ã®ï¼’Dåº§æ¨™ã«ã—ãŸã‚‚ã®ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail CBoneã®UpdateMatrixãŒå‘¼ã°ã‚ŒãŸå¾Œã§å‘¼ã³å‡ºã•ã‚Œã‚‹ã“ã¨ã‚’æƒ³å®šã—ã¦ã„ã‚‹ã€‚(CBone::m_childworldã‚’ä½¿ç”¨ã—ã¦ã„ã‚‹ã€‚)
  */
 	int TransformBone( int winx, int winy, int srcboneno, ChaVector3* worldptr, ChaVector3* screenptr, ChaVector3* dispptr );
 
 /**
  * @fn
  * ChangeMotFrameLeng
- * @breaf ƒ‚[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€’·‚ğ•ÏX‚·‚éB
- * @param (int motid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌIDB
- * @param (double srcleng) IN •ÏXŒã‚ÌƒtƒŒ[ƒ€’·B
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail ”ÍˆÍŠO‚ÌƒL[‚Ííœ‚³‚ê‚éB
+ * @breaf ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ¬ãƒ¼ãƒ é•·ã‚’å¤‰æ›´ã™ã‚‹ã€‚
+ * @param (int motid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã€‚
+ * @param (double srcleng) IN å¤‰æ›´å¾Œã®ãƒ•ãƒ¬ãƒ¼ãƒ é•·ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail ç¯„å›²å¤–ã®ã‚­ãƒ¼ã¯å‰Šé™¤ã•ã‚Œã‚‹ã€‚
  */
 	int ChangeMotFrameLeng( int motid, double srcleng );
 
 /**
  * @fn
  * AdvanceTime
- * @breaf Œo‰ßŠÔ‚ğŒ³‚ÉAƒ‚[ƒVƒ‡ƒ“‚ÌŸ‚ÉÄ¶‚·‚éƒtƒŒ[ƒ€‚ğŒvZ‚·‚éB
- * @param (int previewflag) IN ƒvƒŒƒrƒ…[ó‘Ô‚ğw’èB
- * @param (double difftime) IN ‘O‰ñ•`‰æ‚µ‚Ä‚©‚ç‚ÌŠÔ‚ğw’èB
- * @param (double* nextframeptr) OUT Ÿ‚É•`‰æ‚·‚éƒtƒŒ[ƒ€B
- * @param (int* endflagptr) OUT ŒJ‚è•Ô‚µÄ¶‚Å‚Í‚È‚¢ƒ‚[ƒVƒ‡ƒ“‚ÌÅIƒtƒŒ[ƒ€‚É’B‚µ‚½‚©‚Ç‚¤‚©B
- * @param (int* loopstartflag) ŒJ‚è•Ô‚µ‚É‚æ‚èÅ‰‚ÌƒtƒŒ[ƒ€‚É–ß‚Á‚½‚©‚Ç‚¤‚©B
- * @param (int srcmotid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌIDB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail previewflag‚Í’â~’†‚OA’ÊíÄ¶‚PAbullet•¨—ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚SAbulletƒ‰ƒOƒh[ƒ‹ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚TB
+ * @breaf çµŒéæ™‚é–“ã‚’å…ƒã«ã€ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®æ¬¡ã«å†ç”Ÿã™ã‚‹ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’è¨ˆç®—ã™ã‚‹ã€‚
+ * @param (int previewflag) IN ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼çŠ¶æ…‹ã‚’æŒ‡å®šã€‚
+ * @param (double difftime) IN å‰å›æç”»ã—ã¦ã‹ã‚‰ã®æ™‚é–“ã‚’æŒ‡å®šã€‚
+ * @param (double* nextframeptr) OUT æ¬¡ã«æç”»ã™ã‚‹ãƒ•ãƒ¬ãƒ¼ãƒ ã€‚
+ * @param (int* endflagptr) OUT ç¹°ã‚Šè¿”ã—å†ç”Ÿã§ã¯ãªã„ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®æœ€çµ‚ãƒ•ãƒ¬ãƒ¼ãƒ ã«é”ã—ãŸã‹ã©ã†ã‹ã€‚
+ * @param (int* loopstartflag) ç¹°ã‚Šè¿”ã—ã«ã‚ˆã‚Šæœ€åˆã®ãƒ•ãƒ¬ãƒ¼ãƒ ã«æˆ»ã£ãŸã‹ã©ã†ã‹ã€‚
+ * @param (int srcmotid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail previewflagã¯åœæ­¢ä¸­ï¼ã€é€šå¸¸å†ç”Ÿï¼‘ã€bulletç‰©ç†ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ï¼”ã€bulletãƒ©ã‚°ãƒ‰ãƒ¼ãƒ«ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ï¼•ã€‚
  */
 	int AdvanceTime(int onefps, CEditRange srcrange, int previewflag, double difftime, double* nextframeptr, int* endflagptr, int* loopstartflag, int srcmotid);
 
 /**
  * @fn
  * MakeEnglishName
- * @breaf ƒtƒ@ƒCƒ‹‘‚«o‚µ(å‚ÉFBXƒtƒ@ƒCƒ‹)‚Ì‚½‚ß‚ÉŠeí–¼‘O‚ğ‰pŒê•\‹L‚É‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ãƒ•ã‚¡ã‚¤ãƒ«æ›¸ãå‡ºã—(ä¸»ã«FBXãƒ•ã‚¡ã‚¤ãƒ«)ã®ãŸã‚ã«å„ç¨®åå‰ã‚’è‹±èªè¡¨è¨˜ã«ã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int MakeEnglishName();
 
 /**
  * @fn
  * AddDefMaterial
- * @breaf ƒfƒtƒHƒ‹ƒg‚ÌŞ¿‚ğì¬‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail ƒƒ^ƒZƒRƒCƒAƒtƒ@ƒCƒ‹‚É‚ÍŞ¿‚ªŠÜ‚Ü‚ê‚Ä‚¢‚È‚¢ê‡‚ª‚ ‚éBŞ¿‚ª‚P‚Â‚à‚È‚¢‚Æ•`‰æ‚ÉƒGƒ‰[‚É‚È‚é‚Ì‚ÅƒfƒtƒHƒ‹ƒg‚ÌŞ¿‚ğì¬‚·‚éB
+ * @breaf ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã®æè³ªã‚’ä½œæˆã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail ãƒ¡ã‚¿ã‚»ã‚³ã‚¤ã‚¢ãƒ•ã‚¡ã‚¤ãƒ«ã«ã¯æè³ªãŒå«ã¾ã‚Œã¦ã„ãªã„å ´åˆãŒã‚ã‚‹ã€‚æè³ªãŒï¼‘ã¤ã‚‚ãªã„ã¨æç”»æ™‚ã«ã‚¨ãƒ©ãƒ¼ã«ãªã‚‹ã®ã§ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã®æè³ªã‚’ä½œæˆã™ã‚‹ã€‚
  */
 	int AddDefMaterial();
 
 /**
  * @fn
  * CreateBtObject
- * @breaf bulletƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“—p‚ÌƒIƒuƒWƒFƒNƒg‚ğì¬‚·‚éB
- * @param (int onfirstcreate) IN ˆê”ÔÅ‰‚ÌŒÄ‚Ño‚µ‚É‚¾‚¯‚P‚ğw’è‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“ŠJn‚Ì‚½‚Ñ‚ÉŒÄ‚ÔBˆê”ÔÅ‰‚ÌŒÄ‚Ño‚µ‚¾‚¯onfirstcreate‚ğ‚P‚É‚·‚éB
+ * @breaf bulletã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ç”¨ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ä½œæˆã™ã‚‹ã€‚
+ * @param (int onfirstcreate) IN ä¸€ç•ªæœ€åˆã®å‘¼ã³å‡ºã—æ™‚ã«ã ã‘ï¼‘ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³é–‹å§‹ã®ãŸã³ã«å‘¼ã¶ã€‚ä¸€ç•ªæœ€åˆã®å‘¼ã³å‡ºã—ã ã‘onfirstcreateã‚’ï¼‘ã«ã™ã‚‹ã€‚
  */
 	int CreateBtObject(bool limitdegflag, int onfirstcreate);
 
 /**
  * @fn
  * SetBtMotion
- * @breaf bulletƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“Œ‹‰Ê‚ğ“K—p‚·‚éB
- * @param (int rgdollflag) IN ƒ‰ƒOƒh[ƒ‹‚É‚PB
- * @param (double srcframe) IN ƒ‚[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€B
- * @param (ChaMatrix* wmat) IN ƒ[ƒ‹ƒh•ÏŠ·s—ñB
- * @param (ChaMatrix* vpmat) IN ViewProj•ÏŠ·s—ñB
- * @param (double difftime) IN ‘O‰ñ‚Ì•`‰æ‚©‚ç‚ÌŠÔB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail bulletƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚É‚ÍACModel::Motion2Bt-->BPWorld::clientMoveAndDisplay-->CModel::SetBtMotion‚Æ‚¢‚¤—¬‚ê‚ÅŒÄ‚Ño‚·B
+ * @breaf bulletã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³çµæœã‚’é©ç”¨ã™ã‚‹ã€‚
+ * @param (int rgdollflag) IN ãƒ©ã‚°ãƒ‰ãƒ¼ãƒ«æ™‚ã«ï¼‘ã€‚
+ * @param (double srcframe) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã€‚
+ * @param (ChaMatrix* wmat) IN ãƒ¯ãƒ¼ãƒ«ãƒ‰å¤‰æ›è¡Œåˆ—ã€‚
+ * @param (ChaMatrix* vpmat) IN ViewProjå¤‰æ›è¡Œåˆ—ã€‚
+ * @param (double difftime) IN å‰å›ã®æç”»ã‹ã‚‰ã®æ™‚é–“ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail bulletã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³æ™‚ã«ã¯ã€CModel::Motion2Bt-->BPWorld::clientMoveAndDisplay-->CModel::SetBtMotionã¨ã„ã†æµã‚Œã§å‘¼ã³å‡ºã™ã€‚
  */
 	int SetBtMotion(bool limitdegflag, CBone* srcbone, int rgdollflag, 
 		double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat );
@@ -672,39 +674,39 @@ public:
 /**
  * @fn
  * SetBtImpulse
- * @breaf İ’è‚³‚ê‚Ä‚¢‚½ƒCƒ“ƒpƒ‹ƒX‚ğ“K—p‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf è¨­å®šã•ã‚Œã¦ã„ãŸã‚¤ãƒ³ãƒ‘ãƒ«ã‚¹ã‚’é©ç”¨ã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int SetBtImpulse();
 
 /**
  * @fn
  * SetImp
- * @breaf ƒ{[ƒ“‚É—^‚¦‚éƒCƒ“ƒpƒ‹ƒX‚ğİ’è‚·‚éB
- * @param (int srcboneno) IN ƒ{[ƒ“‚ÌIDB
- * @param (int kind) IN X¬•ªw’è‚OAYw’è‚PAZw’è‚QB
- * @param (float srcval) IN ƒCƒ“ƒpƒ‹ƒX‚Ì‘å‚«‚³B
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ãƒœãƒ¼ãƒ³ã«ä¸ãˆã‚‹ã‚¤ãƒ³ãƒ‘ãƒ«ã‚¹ã‚’è¨­å®šã™ã‚‹ã€‚
+ * @param (int srcboneno) IN ãƒœãƒ¼ãƒ³ã®IDã€‚
+ * @param (int kind) IN Xæˆåˆ†æŒ‡å®šæ™‚ï¼ã€YæŒ‡å®šæ™‚ï¼‘ã€ZæŒ‡å®šæ™‚ï¼’ã€‚
+ * @param (float srcval) IN ã‚¤ãƒ³ãƒ‘ãƒ«ã‚¹ã®å¤§ãã•ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int SetImp( int srcboneno, int kind, float srcval );
 
 /**
  * @fn
  * SetDispFlag
- * @breaf •\¦‚·‚é‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO‚ğİ’è‚·‚éB
- * @param (char* objname) IN ƒIƒuƒWƒFƒNƒg‚Ì–¼‘O‚ğw’è‚·‚éB
- * @param (int flag) IN •\¦‚·‚é‚Æ‚«‚PA‚µ‚È‚¢‚Æ‚«‚OB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail •\¦‚·‚é‚Æ‚«‚PA‚µ‚È‚¢‚Æ‚«‚OB
+ * @breaf è¡¨ç¤ºã™ã‚‹ã‹ã©ã†ã‹ã®ãƒ•ãƒ©ã‚°ã‚’è¨­å®šã™ã‚‹ã€‚
+ * @param (char* objname) IN ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åå‰ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int flag) IN è¡¨ç¤ºã™ã‚‹ã¨ãï¼‘ã€ã—ãªã„ã¨ãï¼ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail è¡¨ç¤ºã™ã‚‹ã¨ãï¼‘ã€ã—ãªã„ã¨ãï¼ã€‚
  */
 	int SetDispFlag( const char* objname, int flag );
 
 /**
  * @fn
  * FindBtObject
- * @breaf q‹ŸƒWƒ‡ƒCƒ“ƒg‚Ì–¼‘O‚É‘Î‰‚·‚éCBtObject‚ğŒŸõ‚·‚éB
- * @param (int srcboneno) IN q‹ŸƒWƒ‡ƒCƒ“ƒg‚Ì–¼‘OB
- * @return CBtObject* ŒŸõŒ‹‰ÊB
+ * @breaf å­ä¾›ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®åå‰ã«å¯¾å¿œã™ã‚‹CBtObjectã‚’æ¤œç´¢ã™ã‚‹ã€‚
+ * @param (int srcboneno) IN å­ä¾›ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®åå‰ã€‚
+ * @return CBtObject* æ¤œç´¢çµæœã€‚
  */
 	CBtObject* FindBtObject( int srcboneno );
 
@@ -761,6 +763,7 @@ public:
 	int AddBoneMotMark( OrgWinGUI::OWP_Timeline* owpTimeline, int curboneno, int curlineno, double startframe, double endframe, int flag );
 
 	int MotionID2Index( int motid );
+	int MotionID2CameraIndex(int motid);
 	FbxAnimLayer* GetAnimLayer( int motid );
 	float GetTargetWeight( int motid, double dframe, double timescale, CMQOObject* baseobj, std::string targetname );
 
@@ -818,8 +821,8 @@ public:
 
 	bool ChkBoneHasRig(CBone* srcbone);
 
-	int CreateBoneUpdateMatrix();//g_UpdateMatrixThreads•ÏX‚É‚àŒÄ‚Ô
-	//int GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread = false);//CThreadingLoadFbx‚©‚ç‚àŒÄ‚Ô CBone‚ÉˆÚ“®
+	int CreateBoneUpdateMatrix();//g_UpdateMatrixThreadså¤‰æ›´æ™‚ã«ã‚‚å‘¼ã¶
+	//int GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread = false);//CThreadingLoadFbxã‹ã‚‰ã‚‚å‘¼ã¶ CBoneã«ç§»å‹•
 
 	void InitMPReq(bool limitdegflag, CBone* curbone, int srcmotid, double curframe);
 	int InitMP(bool limitdegflag, CBone* curbone, int srcmotid, double curframe);
@@ -860,7 +863,7 @@ private:
 	int DestroyAncObj();
 	int DestroyAllMotionInfo();
 	
-	//int CreateBoneUpdateMatrix();//public‚ÖˆÚ“®
+	//int CreateBoneUpdateMatrix();//publicã¸ç§»å‹•
 	int DestroyBoneUpdateMatrix();
 
 	int CreateLoadFbxAnim(FbxScene* pscene);
@@ -878,7 +881,7 @@ private:
 	void CreateBtConstraintReq(bool limitdegflag, CBtObject* curbto);
 	//void CreateBtConstraintReq(CBone* curbone);
 
-	//void CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double srcanimleng);//public‚Ö
+	//void CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double srcanimleng);//publicã¸
 
 	//void UpdateMatrixReq( int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, 
 	//	ChaMatrix* parmat, CQuaternion* parq, CBone* srcbone, int broflag );
@@ -916,7 +919,7 @@ private:
 
 	int CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncachebatchflag );
 	//void CreateFBXAnimReq( int animno, FbxScene* pScene, FbxPose* pPose, FbxNode* pNode, int motid, double animleng );
-	//int GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread = false);//public‚ÖˆÚ“®
+	//int GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread = false);//publicã¸ç§»å‹•
 	void CreateFBXSkinReq( FbxNode* pNode );
 	int GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode );
 
@@ -931,12 +934,12 @@ private:
 	int SetDefaultBonePos(FbxScene* pScene);
 
 
-	//SetDefaultBonePosReq‚ÍŠÖ”–¼‚ÉFbx‚ğ•t‚¯‚Ä FbxFile.h, FbxFile.cpp‚ÉˆÚ“®‚É‚È‚è‚Ü‚µ‚½BƒŠƒ“ƒNƒGƒ‰[‚ÌŠÖŒW‚ÅB
+	//SetDefaultBonePosReqã¯é–¢æ•°åã«Fbxã‚’ä»˜ã‘ã¦ FbxFile.h, FbxFile.cppã«ç§»å‹•ã«ãªã‚Šã¾ã—ãŸã€‚ãƒªãƒ³ã‚¯ã‚¨ãƒ©ãƒ¼ã®é–¢ä¿‚ã§ã€‚
 	//void SetDefaultBonePosReq( CBone* curbone, const FbxTime& pTime, FbxPose* pPose, FbxAMatrix pParentGlobalPosition );
 
 
 
-	//void FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parentbone );//public‚Ö
+	//void FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parentbone );//publicã¸
 
 	int SetMaterialName();
 
@@ -950,7 +953,7 @@ private:
 	//void SetBtMotionPostLowerReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat, int kinematicadjustflag);
 	//void SetBtMotionPostUpperReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
 	//void SetBtMotionMass0BottomUpReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);
-	//void FindAndSetKinematicReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);//Kinematic‚Æ‚»‚¤‚Å‚È‚¢‚Æ‚±‚ë‚Ì‹«–Ú‚ğ’T‚µ‚Ä‚İ‚Â‚©‚Á‚½‚çLowerReq‚Åes—ñ‚ğƒZƒbƒg‚·‚éB
+	//void FindAndSetKinematicReq(CBtObject* curbto, ChaMatrix* wmat, ChaMatrix* vpmat);//Kinematicã¨ãã†ã§ãªã„ã¨ã“ã‚ã®å¢ƒç›®ã‚’æ¢ã—ã¦ã¿ã¤ã‹ã£ãŸã‚‰LowerReqã§è¦ªè¡Œåˆ—ã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
 	//void SetBtMotionKinematicLowerReq(CBtObject* curbto, ChaMatrix oldparentmat, ChaMatrix newparentmat);
 	//void AdjustBtMatToParent(CBone* curbone, CBone* childbone, int adjustrot = 0);
 	//void AdjustBtMatToCurrent(CBone* curbone);
@@ -992,9 +995,9 @@ private:
 
 	void ResetBtReq( CBtObject* curbto );
 
-	int GetNewUndoID();//Save—p‚Ìundoid
-	int GetValidUndoID();//undo—p‚Ìid
-	int GetValidRedoID();//redo—p‚Ìid
+	int GetNewUndoID();//Saveç”¨ã®undoid
+	int GetValidUndoID();//undoç”¨ã®id
+	int GetValidRedoID();//redoç”¨ã®id
 
 	int SetBefEditMat(bool limitdegflag, CEditRange* erptr, CBone* curbone, int maxlevel);
 	int SetBefEditMatFK(bool limitdegflag, CEditRange* erptr, CBone* curbone);
@@ -1140,10 +1143,10 @@ public: //accesser
 		}
 	};
 
-	int GetBoneListSize(){//eNullŠÜ‚Ş
+	int GetBoneListSize(){//eNullå«ã‚€
 		return (int)m_bonelist.size();
 	};
-	int GetBoneForMotionSize();//eNullŠÜ‚Ü‚È‚¢
+	int GetBoneForMotionSize();//eNullå«ã¾ãªã„
 
 	std::map<int,CBone*>::iterator GetBoneListBegin(){
 		return m_bonelist.begin();
@@ -1223,10 +1226,10 @@ public: //accesser
 	int GetMotInfoSize(){
 		return (int)m_motinfo.size();
 	};
-	MOTINFO* GetMotInfo( int srcid ){//motid‚Í1‚©‚ç
+	MOTINFO* GetMotInfo( int srcid ){//motidã¯1ã‹ã‚‰
 		//return m_motinfo[srcid - 1];
 
-		//DeleteMotion‚É—v‘f‚ğerase‚·‚é‚Ì‚Åid - 1‚ª”z—ñ‚ÌƒCƒ“ƒfƒbƒNƒX‚É‚È‚é‚Æ‚ÍŒÀ‚ç‚È‚¢//2021/08/26
+		//DeleteMotionæ™‚ã«è¦ç´ ã‚’eraseã™ã‚‹ã®ã§id - 1ãŒé…åˆ—ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã«ãªã‚‹ã¨ã¯é™ã‚‰ãªã„//2021/08/26
 		int miindex;
 		miindex = MotionID2Index(srcid);
 		if (miindex >= 0) {
@@ -1257,12 +1260,70 @@ public: //accesser
 		std::map<int, MOTINFO*>::iterator itrmi;
 		for (itrmi = m_motinfo.begin(); itrmi != m_motinfo.end(); itrmi++) {
 			MOTINFO* curmi = itrmi->second;
-			if (curmi) {//NULL‚Å‚Í‚È‚¢‚Æ‚«
+			if (curmi) {//NULLã§ã¯ãªã„ã¨ã
 				retmi = curmi;
 				break;
 			}
 		}
 		return retmi;
+	};
+
+
+	void SetCameraMotion(int srcmotid) {
+		MOTINFO* curmi = GetMotInfo(srcmotid);
+		if (curmi) {
+			curmi->cameramotion = true;
+		}
+		else {
+			_ASSERT(0);
+		}
+	};
+	int GetCameraMotInfoSize() {
+		int retsize = 0;
+		std::map<int, MOTINFO*>::iterator itrmi;
+		for (itrmi = m_motinfo.begin(); itrmi != m_motinfo.end(); itrmi++) {
+			MOTINFO* chkmi = itrmi->second;
+			if (chkmi && chkmi->cameramotion) {
+				retsize++;
+			}
+		}
+		return retsize;
+	};
+	MOTINFO* GetCameraMotInfoByCameraIndex(int srcindex) {//ç•ªç›®ã®ã‚«ãƒ¡ãƒ©ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³
+		MOTINFO* retmi = 0;
+		int count = 0;
+		std::map<int, MOTINFO*>::iterator itrmi;
+		for (itrmi = m_motinfo.begin(); itrmi != m_motinfo.end(); itrmi++) {
+			MOTINFO* chkmi = itrmi->second;
+			if (chkmi && chkmi->cameramotion) {
+				if (count == srcindex) {
+					retmi = chkmi;
+					break;
+				}
+				count++;//cameraã®ã¨ãã ã‘ã‚«ã‚¦ãƒ³ãƒˆã‚’å¢—ã‚„ã™
+			}
+		}
+		return retmi;
+	};
+	MOTINFO* GetCameraMotInfoByMotId(int srcmotid) {//ã‚«ãƒ¡ãƒ©ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³
+		//DeleteMotionæ™‚ã«è¦ç´ ã‚’eraseã™ã‚‹ã®ã§id - 1ãŒé…åˆ—ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã«ãªã‚‹ã¨ã¯é™ã‚‰ãªã„//2021/08/26
+		int miindex;
+		miindex = MotionID2Index(srcmotid);
+		if (miindex >= 0) {
+			MOTINFO* chkmi = m_motinfo[miindex];
+			if (chkmi && chkmi->cameramotion) {
+				return chkmi;
+			}
+			else {
+				//not camera
+				_ASSERT(0);
+				return 0;
+			}
+		}
+		else {
+			//invalid id
+			return 0;
+		}
 	};
 
 
@@ -1426,10 +1487,10 @@ public: //accesser
 	};
 
 	void SetModelPosition(ChaVector3 srcpos) {
-		m_modelposition = srcpos;//“Ç‚İ‚İˆÊ’u
+		m_modelposition = srcpos;//èª­ã¿è¾¼ã¿æ™‚ä½ç½®
 	};
 	ChaVector3 GetModelPosition() {
-		return m_modelposition;//“Ç‚İ‚İˆÊ’u
+		return m_modelposition;//èª­ã¿è¾¼ã¿æ™‚ä½ç½®
 	};
 	void SetModelRotation(ChaVector3 srcdir) {
 		m_modelrotation = srcdir;
@@ -1594,109 +1655,109 @@ public:
 	//FUNCMPPARAMS* m_armpparams[6];
 	//HANDLE m_arhthread[6];
 
-	bool m_loadedflag;//‰Šú‚Ì“Ç‚İ‚İˆ—‚ªI—¹‚µ‚½‚çtrue;
-	bool m_modeldisp;//•\¦‚·‚é‚©‚Ç‚¤‚©
-	bool m_createbtflag;//CreateBtObject‚ğ“Ç‚ñ‚¾‚±‚Æ‚ª‚ ‚ê‚ÎtrueB
+	bool m_loadedflag;//åˆæœŸã®èª­ã¿è¾¼ã¿å‡¦ç†ãŒçµ‚äº†ã—ãŸã‚‰true;
+	bool m_modeldisp;//è¡¨ç¤ºã™ã‚‹ã‹ã©ã†ã‹
+	bool m_createbtflag;//CreateBtObjectã‚’èª­ã‚“ã ã“ã¨ãŒã‚ã‚Œã°trueã€‚
 	CRITICAL_SECTION m_CritSection_Node;
 
 private:
 	
 	int m_physicsikcnt;
 	int m_initaxismatx;
-	int m_modelno;//ƒ‚ƒfƒ‹‚ÌID
-	float m_loadmult;//•\¦”{—¦
-	int m_oldaxis_atloading;//FBX“Ç‚İ‚İ‚É‹Œƒf[ƒ^ŒİŠ·ƒ`ƒFƒbƒNƒ{ƒbƒNƒX‚Éƒ`ƒFƒbƒN‚ğ‚µ‚Ä‚¢‚½‚©‚Ç‚¤‚©B
+	int m_modelno;//ãƒ¢ãƒ‡ãƒ«ã®ID
+	float m_loadmult;//è¡¨ç¤ºå€ç‡
+	int m_oldaxis_atloading;//FBXèª­ã¿è¾¼ã¿æ™‚ã«æ—§ãƒ‡ãƒ¼ã‚¿äº’æ›ãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹ã«ãƒã‚§ãƒƒã‚¯ã‚’ã—ã¦ã„ãŸã‹ã©ã†ã‹ã€‚
 	int m_hasbindpose;
 
 	bool m_fromBvh;
 	bool m_fromNoBindPose;
 
-	WCHAR m_filename[MAX_PATH];//ƒ‚ƒfƒ‹ƒtƒ@ƒCƒ‹–¼Aƒtƒ‹ƒpƒXB
-	WCHAR m_dirname[MAX_PATH];//ƒ‚ƒfƒ‹ƒtƒ@ƒCƒ‹‚ÌƒfƒBƒŒƒNƒgƒŠ‚ÌƒpƒXBƒtƒ@ƒCƒ‹–¼‚Ìè‘O‚Ü‚ÅB––”ö‚É\\–³‚µB
-	WCHAR m_modelfolder[MAX_PATH];//ƒ‚ƒfƒ‹ƒtƒ@ƒCƒ‹‚ª“ü‚Á‚Ä‚¢‚éƒfƒBƒŒƒNƒgƒŠ‚Ì–¼‘O(ƒpƒX‚Å‚Í‚È‚¢)B*.chaƒtƒ@ƒCƒ‹‚ª‚ ‚éƒfƒBƒŒƒNƒgƒŠ‚Ì’†‚ÌFBX‚ª“ü‚Á‚Ä‚¢‚éƒfƒBƒŒƒNƒgƒŠ‚Ì–¼‘OB
-	char m_defaultrename[MAX_PATH];//RigidEelemƒtƒ@ƒCƒ‹*.ref‚ÌƒfƒtƒHƒ‹ƒg‚Ìƒtƒ@ƒCƒ‹–¼B
-	char m_defaultimpname[MAX_PATH];//ƒCƒ“ƒpƒ‹ƒXƒtƒ@ƒCƒ‹*.imp‚ÌƒfƒtƒHƒ‹ƒg‚Ìƒtƒ@ƒCƒ‹–¼B
+	WCHAR m_filename[MAX_PATH];//ãƒ¢ãƒ‡ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«åã€ãƒ•ãƒ«ãƒ‘ã‚¹ã€‚
+	WCHAR m_dirname[MAX_PATH];//ãƒ¢ãƒ‡ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ãƒ‘ã‚¹ã€‚ãƒ•ã‚¡ã‚¤ãƒ«åã®æ‰‹å‰ã¾ã§ã€‚æœ«å°¾ã«\\ç„¡ã—ã€‚
+	WCHAR m_modelfolder[MAX_PATH];//ãƒ¢ãƒ‡ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ãŒå…¥ã£ã¦ã„ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®åå‰(ãƒ‘ã‚¹ã§ã¯ãªã„)ã€‚*.chaãƒ•ã‚¡ã‚¤ãƒ«ãŒã‚ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ä¸­ã®FBXãŒå…¥ã£ã¦ã„ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®åå‰ã€‚
+	char m_defaultrename[MAX_PATH];//RigidEelemãƒ•ã‚¡ã‚¤ãƒ«*.refã®ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã®ãƒ•ã‚¡ã‚¤ãƒ«åã€‚
+	char m_defaultimpname[MAX_PATH];//ã‚¤ãƒ³ãƒ‘ãƒ«ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«*.impã®ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã®ãƒ•ã‚¡ã‚¤ãƒ«åã€‚
 
-	std::map<int, CMQOObject*> m_object;//ƒIƒuƒWƒFƒNƒgB•Ê‚ÌŒ¾—t‚Å‚¢‚¤‚Æ‚RDƒ‚ƒfƒ‹‚É‚¨‚¯‚é–¼‘O‚ª•t‚¯‚ç‚ê‚Ä‚¢‚éƒp[ƒc‚â•”•iB
-	std::map<int, CBone*> m_bonelist;//ƒ{[ƒ“‚ğƒ{[ƒ“ID‚©‚çŒŸõ‚Å‚«‚é‚æ‚¤‚É‚µ‚½mapB
-	std::map<std::string, CBone*> m_bonename;//ƒ{[ƒ“‚ğ–¼‘O‚©‚çŒŸõ‚Å‚«‚é‚æ‚¤‚É‚µ‚½mapB
+	std::map<int, CMQOObject*> m_object;//ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã€‚åˆ¥ã®è¨€è‘‰ã§ã„ã†ã¨ï¼“Dãƒ¢ãƒ‡ãƒ«ã«ãŠã‘ã‚‹åå‰ãŒä»˜ã‘ã‚‰ã‚Œã¦ã„ã‚‹ãƒ‘ãƒ¼ãƒ„ã‚„éƒ¨å“ã€‚
+	std::map<int, CBone*> m_bonelist;//ãƒœãƒ¼ãƒ³ã‚’ãƒœãƒ¼ãƒ³IDã‹ã‚‰æ¤œç´¢ã§ãã‚‹ã‚ˆã†ã«ã—ãŸmapã€‚
+	std::map<std::string, CBone*> m_bonename;//ãƒœãƒ¼ãƒ³ã‚’åå‰ã‹ã‚‰æ¤œç´¢ã§ãã‚‹ã‚ˆã†ã«ã—ãŸmapã€‚
 
-	CBone* m_topbone;//ˆê”Ôe‚Ìƒ{[ƒ“B
-	CBtObject* m_topbt;//ˆê”Ôe‚Ìbullet„‘ÌƒIƒuƒWƒFƒNƒgB
-	//float m_btgscale;//bullet‚Ìd—Í‚ÉŠ|‚¯Z‚·‚éƒXƒP[ƒ‹B--> m_rigideleminfo‚Ìbtgscale‚ÉˆÚ“®B
+	CBone* m_topbone;//ä¸€ç•ªè¦ªã®ãƒœãƒ¼ãƒ³ã€‚
+	CBtObject* m_topbt;//ä¸€ç•ªè¦ªã®bulletå‰›ä½“ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã€‚
+	//float m_btgscale;//bulletã®é‡åŠ›ã«æ›ã‘ç®—ã™ã‚‹ã‚¹ã‚±ãƒ¼ãƒ«ã€‚--> m_rigideleminfoã®btgscaleã«ç§»å‹•ã€‚
 
 
 	CThreadingUpdateMatrix* m_boneupdatematrix;
 	CThreadingLoadFbx* m_LoadFbxAnim;
-	int m_creatednum_boneupdatematrix;//ƒXƒŒƒbƒh”‚Ì•Ï‰»‚É‘Î‰Bì¬Ï‚Ì”Bˆ——pB
-	int m_creatednum_loadfbxanim;//ƒXƒŒƒbƒh”‚Ì•Ï‰»‚É‘Î‰Bì¬Ï‚Ì”Bˆ——pB
+	int m_creatednum_boneupdatematrix;//ã‚¹ãƒ¬ãƒƒãƒ‰æ•°ã®å¤‰åŒ–ã«å¯¾å¿œã€‚ä½œæˆæ¸ˆã®æ•°ã€‚å‡¦ç†ç”¨ã€‚
+	int m_creatednum_loadfbxanim;//ã‚¹ãƒ¬ãƒƒãƒ‰æ•°ã®å¤‰åŒ–ã«å¯¾å¿œã€‚ä½œæˆæ¸ˆã®æ•°ã€‚å‡¦ç†ç”¨ã€‚
 
-	std::map<int, MOTINFO*> m_motinfo;//ƒ‚[ƒVƒ‡ƒ“‚ÌƒvƒƒpƒeƒB‚ğƒ‚[ƒVƒ‡ƒ“ID‚©‚çŒŸõ‚Å‚«‚é‚æ‚¤‚É‚µ‚½mapB
-	MOTINFO* m_curmotinfo;//m_motinfo‚Ì’†‚ÌŒ»İÄ¶’†‚ÌMOTINFO‚Ö‚Ìƒ|ƒCƒ“ƒ^B
+	std::map<int, MOTINFO*> m_motinfo;//ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ã‚’ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³IDã‹ã‚‰æ¤œç´¢ã§ãã‚‹ã‚ˆã†ã«ã—ãŸmapã€‚
+	MOTINFO* m_curmotinfo;//m_motinfoã®ä¸­ã®ç¾åœ¨å†ç”Ÿä¸­ã®MOTINFOã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚
 
-	std::vector<REINFO> m_rigideleminfo;//„‘Ìİ’èƒtƒ@ƒCƒ‹*.ref‚Ìƒtƒ@ƒCƒ‹î•ñ‚ÌvectorB
-	std::vector<std::string> m_impinfo;//ƒCƒ“ƒpƒ‹ƒXƒtƒ@ƒCƒ‹*.imp‚Ìƒtƒ@ƒCƒ‹–¼‚ÌvectorB
+	std::vector<REINFO> m_rigideleminfo;//å‰›ä½“è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«*.refã®ãƒ•ã‚¡ã‚¤ãƒ«æƒ…å ±ã®vectorã€‚
+	std::vector<std::string> m_impinfo;//ã‚¤ãƒ³ãƒ‘ãƒ«ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«*.impã®ãƒ•ã‚¡ã‚¤ãƒ«åã®vectorã€‚
 
-	int m_curreindex;//Œ»İ—LŒø‚É‚È‚Á‚Ä‚¢‚é„‘Ìƒtƒ@ƒCƒ‹‚ÌƒCƒ“ƒfƒbƒNƒXB„‘Ìƒtƒ@ƒCƒ‹‚Í•¡”“Ç‚İ‚Ş‚±‚Æ‚ªo—ˆ‚ÄAƒJƒŒƒ“ƒg‚ğİ’è‚Å‚«‚éB
-	int m_curimpindex;//Œ»İ—LŒø‚É‚È‚Á‚Ä‚¢‚éƒCƒ“ƒpƒ‹ƒXƒtƒ@ƒCƒ‹‚ÌƒCƒ“ƒfƒbƒNƒXBƒCƒ“ƒpƒ‹ƒXƒtƒ@ƒCƒ‹‚Í•¡”“Ç‚İ‚Ş‚±‚Æ‚ªo—ˆAƒJƒŒƒ“ƒg‚ğİ’è‚Å‚«‚éB
-	int m_rgdindex;//ƒ‰ƒOƒh[ƒ‹ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“—p‚Ì„‘Ìİ’èƒtƒ@ƒCƒ‹‚ÌƒCƒ“ƒfƒbƒNƒXB
-	int m_rgdmorphid;//ƒ‰ƒOƒh[ƒ‹‚Ég—p‚·‚éƒAƒjƒ[ƒVƒ‡ƒ“‚Ö‚ÌƒCƒ“ƒfƒbƒNƒXBƒ‰ƒOƒh[ƒ‹‚É‚Íƒ‚[ƒtƒAƒjƒ‚ğ’ÊíƒAƒjƒ‚Æ•Ï‚¦‚é‚±‚Æ‚ª‘½‚¢‚½‚ß‚±‚Ìİ’è‚ª‘¶İ‚·‚éB—á‚¦‚Î‚â‚ç‚êŠç‚Ìƒ‚[ƒtƒAƒjƒ‚ğÄ¶‚µ‚½‚è‚·‚éB
+	int m_curreindex;//ç¾åœ¨æœ‰åŠ¹ã«ãªã£ã¦ã„ã‚‹å‰›ä½“ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã€‚å‰›ä½“ãƒ•ã‚¡ã‚¤ãƒ«ã¯è¤‡æ•°èª­ã¿è¾¼ã‚€ã“ã¨ãŒå‡ºæ¥ã¦ã€ã‚«ãƒ¬ãƒ³ãƒˆã‚’è¨­å®šã§ãã‚‹ã€‚
+	int m_curimpindex;//ç¾åœ¨æœ‰åŠ¹ã«ãªã£ã¦ã„ã‚‹ã‚¤ãƒ³ãƒ‘ãƒ«ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã€‚ã‚¤ãƒ³ãƒ‘ãƒ«ã‚¹ãƒ•ã‚¡ã‚¤ãƒ«ã¯è¤‡æ•°èª­ã¿è¾¼ã‚€ã“ã¨ãŒå‡ºæ¥ã€ã‚«ãƒ¬ãƒ³ãƒˆã‚’è¨­å®šã§ãã‚‹ã€‚
+	int m_rgdindex;//ãƒ©ã‚°ãƒ‰ãƒ¼ãƒ«ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ç”¨ã®å‰›ä½“è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã€‚
+	int m_rgdmorphid;//ãƒ©ã‚°ãƒ‰ãƒ¼ãƒ«æ™‚ã«ä½¿ç”¨ã™ã‚‹ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã¸ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã€‚ãƒ©ã‚°ãƒ‰ãƒ¼ãƒ«æ™‚ã«ã¯ãƒ¢ãƒ¼ãƒ•ã‚¢ãƒ‹ãƒ¡ã‚’é€šå¸¸ã‚¢ãƒ‹ãƒ¡æ™‚ã¨å¤‰ãˆã‚‹ã“ã¨ãŒå¤šã„ãŸã‚ã“ã®è¨­å®šãŒå­˜åœ¨ã™ã‚‹ã€‚ä¾‹ãˆã°ã‚„ã‚‰ã‚Œé¡”ã®ãƒ¢ãƒ¼ãƒ•ã‚¢ãƒ‹ãƒ¡ã‚’å†ç”Ÿã—ãŸã‚Šã™ã‚‹ã€‚
 
-	float m_tmpmotspeed;//ƒ‚[ƒVƒ‡ƒ“Ä¶”{—¦‚Ìˆê•Û‘¶—pB
+	float m_tmpmotspeed;//ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿå€ç‡ã®ä¸€æ™‚ä¿å­˜ç”¨ã€‚
 
-	//polymesh3—p‚Ìƒ}ƒeƒŠƒAƒ‹Bpolymesh4‚Ímqoobject‚Ìmqomaterial‚ğg—p‚·‚éB
+	//polymesh3ç”¨ã®ãƒãƒ†ãƒªã‚¢ãƒ«ã€‚polymesh4ã¯mqoobjectã®mqomaterialã‚’ä½¿ç”¨ã™ã‚‹ã€‚
 	std::map<int, CMQOMaterial*> m_material;
 	std::map<std::string, CMQOMaterial*> m_materialname;
 
-	FbxScene* m_pscene;//FBX SDK‚ÌƒV[ƒ“‚Ö‚Ìƒ|ƒCƒ“ƒ^BCModel“à‚ÅƒAƒƒP[ƒgB
-	FbxArray<FbxString*> mAnimStackNameArray;//ƒAƒjƒ[ƒVƒ‡ƒ“–¼‚ğ•Û‘¶‚·‚éFBXŒ`®‚Ìƒf[ƒ^B
+	FbxScene* m_pscene;//FBX SDKã®ã‚·ãƒ¼ãƒ³ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚CModelå†…ã§ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆã€‚
+	FbxArray<FbxString*> mAnimStackNameArray;//ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³åã‚’ä¿å­˜ã™ã‚‹FBXå½¢å¼ã®ãƒ‡ãƒ¼ã‚¿ã€‚
 
-	btDynamicsWorld* m_btWorld;//bullet‚ÌƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“—pƒIƒuƒWƒFƒNƒg‚Ö‚Ìƒ|ƒCƒ“ƒ^B
-	int m_btcnt;//bullet‚ÌƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚ğ‚µ‚½ƒtƒŒ[ƒ€”‚ğ‹L˜^‚·‚éB‰‰ñ‚ÌƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚ÉˆÙ‚È‚éˆ—‚ğ‚·‚é‚½‚ß‚É•K—v‚Å‚ ‚éB
+	btDynamicsWorld* m_btWorld;//bulletã®ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ç”¨ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚
+	int m_btcnt;//bulletã®ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ã‚’ã—ãŸãƒ•ãƒ¬ãƒ¼ãƒ æ•°ã‚’è¨˜éŒ²ã™ã‚‹ã€‚åˆå›ã®ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³æ™‚ã«ç•°ãªã‚‹å‡¦ç†ã‚’ã™ã‚‹ãŸã‚ã«å¿…è¦ã§ã‚ã‚‹ã€‚
 
 
-//ˆÈ‰ºAprivate‚©‚Âƒ[ƒJƒ‹‚©‚ç‚µ‚©QÆ‚µ‚È‚¢ƒf[ƒ^‚¾‚©‚çƒAƒNƒZƒbƒT[‚à–³‚µB
-	ID3D11Device* m_pdev;//ŠO•”ƒƒ‚ƒŠBDirect3D‚ÌDeviceB
-	FbxManager* m_psdk;//ŠO•”ƒƒ‚ƒŠBFBX SDK‚Ìƒ}ƒl[ƒWƒƒB
-	FbxImporter* m_pimporter;//FBX SDK‚ÌƒCƒ“ƒ|[ƒ^[BCModel“à‚ÅƒAƒƒP[ƒgB
+//ä»¥ä¸‹ã€privateã‹ã¤ãƒ­ãƒ¼ã‚«ãƒ«ã‹ã‚‰ã—ã‹å‚ç…§ã—ãªã„ãƒ‡ãƒ¼ã‚¿ã ã‹ã‚‰ã‚¢ã‚¯ã‚»ãƒƒã‚µãƒ¼ã‚‚ç„¡ã—ã€‚
+	ID3D11Device* m_pdev;//å¤–éƒ¨ãƒ¡ãƒ¢ãƒªã€‚Direct3Dã®Deviceã€‚
+	FbxManager* m_psdk;//å¤–éƒ¨ãƒ¡ãƒ¢ãƒªã€‚FBX SDKã®ãƒãƒãƒ¼ã‚¸ãƒ£ã€‚
+	FbxImporter* m_pimporter;//FBX SDKã®ã‚¤ãƒ³ãƒãƒ¼ã‚¿ãƒ¼ã€‚CModelå†…ã§ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆã€‚
 	FbxString m_fbxcomment;
 	WCHAR m_fbxfullname[MAX_PATH];
 	bool m_useegpfile;
 
-	ChaMatrix m_matWorld;//ƒ[ƒ‹ƒh•ÏŠ·s—ñB
-	ChaMatrix m_matVP;//View * Projection •ÏŠ·s—ñB
+	ChaMatrix m_matWorld;//ãƒ¯ãƒ¼ãƒ«ãƒ‰å¤‰æ›è¡Œåˆ—ã€‚
+	ChaMatrix m_matVP;//View * Projection å¤‰æ›è¡Œåˆ—ã€‚
 
-	std::map<CMQOObject*, FBXOBJ*> m_fbxobj;//FbxNode‚Ìƒ‰ƒbƒp[ƒNƒ‰ƒX‚ÆCMQOObject‚Æ‚ÌmapB
-	std::map<std::string, CMQOObject*> m_objectname;//CMQOObject‚ğ–¼‘O‚ÅŒŸõ‚·‚é‚½‚ß‚ÌmapB
+	std::map<CMQOObject*, FBXOBJ*> m_fbxobj;//FbxNodeã®ãƒ©ãƒƒãƒ‘ãƒ¼ã‚¯ãƒ©ã‚¹ã¨CMQOObjectã¨ã®mapã€‚
+	std::map<std::string, CMQOObject*> m_objectname;//CMQOObjectã‚’åå‰ã§æ¤œç´¢ã™ã‚‹ãŸã‚ã®mapã€‚
 
 
-	int (*m_tlFunc)( int srcmotid );//Main.cpp‚ÉÀ‘Ô‚ª‚ ‚éƒ^ƒCƒ€ƒ‰ƒCƒ“‰Šú‰»—p‚ÌŠÖ”‚Ö‚Ìƒ|ƒCƒ“ƒ^Bƒf[ƒ^“Ç‚İ‚İ‚ÉCModel‚©‚ç‰Šú‰»ŠÖ”‚ğŒÄ‚ÔB
+	int (*m_tlFunc)( int srcmotid );//Main.cppã«å®Ÿæ…‹ãŒã‚ã‚‹ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³åˆæœŸåŒ–ç”¨ã®é–¢æ•°ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚ãƒ‡ãƒ¼ã‚¿èª­ã¿è¾¼ã¿æ™‚ã«CModelã‹ã‚‰åˆæœŸåŒ–é–¢æ•°ã‚’å‘¼ã¶ã€‚
 
-	mutable FbxTime mStart, mStop, mFrameTime, mFrameTime2;//Fbx‚Å‚ÌŠÔ•\Œ»BƒAƒjƒ[ƒVƒ‡ƒ“‚ÌŠÔ(ƒtƒŒ[ƒ€)w’è‚È‚Ç‚Ég—pB
+	mutable FbxTime mStart, mStop, mFrameTime, mFrameTime2;//Fbxã§ã®æ™‚é–“è¡¨ç¾ã€‚ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®æ™‚é–“(ãƒ•ãƒ¬ãƒ¼ãƒ )æŒ‡å®šãªã©ã«ä½¿ç”¨ã€‚
 
-	std::map<CBone*, FbxNode*> m_bone2node;//ƒ{[ƒ“‚ÆFbxNode‚Ì‘Î‰•\BFbxNode‚ÍFBXƒtƒ@ƒCƒ‹“à‚ÌƒIƒuƒWƒFƒNƒg‚ÌŠK‘w‚ğ‚½‚Ç‚éÛ‚È‚Ç‚É—˜—p‚·‚éB
-	std::map<CBone*,CBone*> m_rigidbone;//„‘Ì‚P‚Â‚Íƒ{[ƒ“‚P‚Â‚É‘Î‰‚µ‚Ä‚¢‚éBƒ{[ƒ“‚Íe‚ÌƒWƒ‡ƒCƒ“ƒg‚Æq‹Ÿ‚ÌƒWƒ‡ƒCƒ“ƒg‚©‚ç‚È‚éBƒWƒ‡ƒCƒ“ƒg‚Æƒ{[ƒ“‚Í“¯‚¶‚æ‚¤‚ÉŒÄ‚Ô‚±‚Æ‚ª‚ ‚éB„‘Ì‚Ìeƒ{[ƒ“‚ğq‹Ÿƒ{[ƒ“‚©‚ç‚¯‚ñ‚³‚­‚·‚é‚±‚Æ‚Ég—p‚·‚éB
+	std::map<CBone*, FbxNode*> m_bone2node;//ãƒœãƒ¼ãƒ³ã¨FbxNodeã®å¯¾å¿œè¡¨ã€‚FbxNodeã¯FBXãƒ•ã‚¡ã‚¤ãƒ«å†…ã®ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®éšå±¤ã‚’ãŸã©ã‚‹éš›ãªã©ã«åˆ©ç”¨ã™ã‚‹ã€‚
+	std::map<CBone*,CBone*> m_rigidbone;//å‰›ä½“ï¼‘ã¤ã¯ãƒœãƒ¼ãƒ³ï¼‘ã¤ã«å¯¾å¿œã—ã¦ã„ã‚‹ã€‚ãƒœãƒ¼ãƒ³ã¯è¦ªã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã¨å­ä¾›ã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã‹ã‚‰ãªã‚‹ã€‚ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã¨ãƒœãƒ¼ãƒ³ã¯åŒã˜ã‚ˆã†ã«å‘¼ã¶ã“ã¨ãŒã‚ã‚‹ã€‚å‰›ä½“ã®è¦ªãƒœãƒ¼ãƒ³ã‚’å­ä¾›ãƒœãƒ¼ãƒ³ã‹ã‚‰ã‘ã‚“ã•ãã™ã‚‹ã“ã¨ã«ä½¿ç”¨ã™ã‚‹ã€‚
 
-	int m_texpool;//Direct3D‚ÌƒeƒNƒXƒ`ƒƒì¬ƒv[ƒ‹iêŠjBƒVƒXƒeƒ€ƒƒ‚ƒŠ‚©ƒrƒfƒIƒƒ‚ƒŠ‚©ƒ}ƒl[ƒWƒh‚©‘I‚ÔB’Êí‚Í0‚ÅƒrƒfƒIƒƒ‚ƒŠ‚ğw’è‚·‚éB
-	ChaVector3 m_ikrotaxis;//IK, FK‚Åƒ{[ƒ“‰ñ“]‚·‚é‚½‚ß‚Ì‰ñ“]²‚ğˆê“I‚É•Û‘¶‚·‚éB
-	CUndoMotion m_undomotion[ UNDOMAX ];//ƒAƒ“ƒhƒD[‹@”\‚Ì‚½‚ß‚ÌCUndoMotion‚Ì”z—ñBCUndoMotion‚Ì‚P‚Â‚ÌƒCƒ“ƒXƒ^ƒ“ƒX‚Í‚PƒtƒŒ[ƒ€•ª‚Ìƒ‚[ƒVƒ‡ƒ“‚ğ•Û‘¶‚·‚éB
-	//int m_undoid;//ƒAƒ“ƒhƒD[—pƒf[ƒ^‚ğƒŠƒ“ƒOƒoƒbƒtƒ@‚Åg—p‚·‚é‚½‚ß‚ÌŒ»İˆÊ’u‚Ö‚ÌƒCƒ“ƒfƒbƒNƒXB
-	//int m_undoSavedNum;//•Û‘¶’†‚ÌƒAƒ“ƒhƒD[‚Ì”
+	int m_texpool;//Direct3Dã®ãƒ†ã‚¯ã‚¹ãƒãƒ£ä½œæˆãƒ—ãƒ¼ãƒ«ï¼ˆå ´æ‰€ï¼‰ã€‚ã‚·ã‚¹ãƒ†ãƒ ãƒ¡ãƒ¢ãƒªã‹ãƒ“ãƒ‡ã‚ªãƒ¡ãƒ¢ãƒªã‹ãƒãƒãƒ¼ã‚¸ãƒ‰ã‹é¸ã¶ã€‚é€šå¸¸ã¯0ã§ãƒ“ãƒ‡ã‚ªãƒ¡ãƒ¢ãƒªã‚’æŒ‡å®šã™ã‚‹ã€‚
+	ChaVector3 m_ikrotaxis;//IK, FKã§ãƒœãƒ¼ãƒ³å›è»¢ã™ã‚‹ãŸã‚ã®å›è»¢è»¸ã‚’ä¸€æ™‚çš„ã«ä¿å­˜ã™ã‚‹ã€‚
+	CUndoMotion m_undomotion[ UNDOMAX ];//ã‚¢ãƒ³ãƒ‰ã‚¥ãƒ¼æ©Ÿèƒ½ã®ãŸã‚ã®CUndoMotionã®é…åˆ—ã€‚CUndoMotionã®ï¼‘ã¤ã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã¯ï¼‘ãƒ•ãƒ¬ãƒ¼ãƒ åˆ†ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’ä¿å­˜ã™ã‚‹ã€‚
+	//int m_undoid;//ã‚¢ãƒ³ãƒ‰ã‚¥ãƒ¼ç”¨ãƒ‡ãƒ¼ã‚¿ã‚’ãƒªãƒ³ã‚°ãƒãƒƒãƒ•ã‚¡ã§ä½¿ç”¨ã™ã‚‹ãŸã‚ã®ç¾åœ¨ä½ç½®ã¸ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã€‚
+	//int m_undoSavedNum;//ä¿å­˜ä¸­ã®ã‚¢ãƒ³ãƒ‰ã‚¥ãƒ¼ã®æ•°
 	int m_undo_readpoint;
 	int m_undo_writepoint;
 	int m_undo_firstflag;
 
 	ChaMatrix m_worldmat;
-	ChaVector3 m_modelposition;//“Ç‚İ‚İˆÊ’u
-	ChaVector3 m_modelrotation;//“Ç‚İ‚İŒü‚«
+	ChaVector3 m_modelposition;//èª­ã¿è¾¼ã¿æ™‚ä½ç½®
+	ChaVector3 m_modelrotation;//èª­ã¿è¾¼ã¿æ™‚å‘ã
 
 	std::vector<PHYSIKREC> m_physikrec0;
 	std::vector<PHYSIKREC> m_physikrec;
 	double m_phyikrectime;
 
-	int m_loadingmotionnum;//ƒ[ƒfƒBƒ“ƒO’†‚Ìfbx‚ÉŠÜ‚Ü‚ê‚éƒ‚[ƒVƒ‡ƒ“‚Ì”
+	int m_loadingmotionnum;//ãƒ­ãƒ¼ãƒ‡ã‚£ãƒ³ã‚°ä¸­ã®fbxã«å«ã¾ã‚Œã‚‹ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®æ•°
 
-	float m_setfl4x4[16 * MAXCLUSTERNUM];//SetShaderConst—p
+	float m_setfl4x4[16 * MAXCLUSTERNUM];//SetShaderConstç”¨
 
 	std::vector<CBone*> m_iktargetbonevec;
 
@@ -1712,7 +1773,7 @@ private:
 	CCameraFbx m_camerafbx;
 	int m_cameramotionid;
 
-	int m_loadbonecount;//GetFbxAnim—p
+	int m_loadbonecount;//GetFbxAnimç”¨
 };
 
 #endif

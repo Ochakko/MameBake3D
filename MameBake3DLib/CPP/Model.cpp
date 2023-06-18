@@ -2854,6 +2854,17 @@ int CModel::SetMotionFrame( double srcframe )
 
 	return 0;
 }
+int CModel::SetMotionFrame(int srcmotid, double srcframe)
+{
+	MOTINFO* curmi = GetMotInfo(srcmotid);
+	if (curmi) {
+		curmi->curframe = max(0.0, min((curmi->frameleng - 1), srcframe));
+	}
+
+	return 0;
+}
+
+
 int CModel::GetMotionFrame( double* dstframe )
 {
 	if( !m_curmotinfo ){
@@ -2873,6 +2884,15 @@ int CModel::SetMotionSpeed( double srcspeed )
 	}
 
 	m_curmotinfo->speed = srcspeed;
+
+	return 0;
+}
+int CModel::SetMotionSpeed(int srcmotid, double srcspeed)
+{
+	MOTINFO* curmi = GetMotInfo(srcmotid);
+	if (curmi) {
+		curmi->speed = srcspeed;
+	}
 
 	return 0;
 }
@@ -4861,6 +4881,24 @@ int CModel::MotionID2Index( int motid )
 	return retindex;
 }
 
+int CModel::MotionID2CameraIndex(int motid)
+{
+	int retindex = -1;
+
+	int chkcnt = 0;
+	map<int, MOTINFO*>::iterator itrmotinfo;
+	for (itrmotinfo = m_motinfo.begin(); itrmotinfo != m_motinfo.end(); itrmotinfo++) {
+		MOTINFO* curmi = itrmotinfo->second;
+		if (curmi && curmi->cameramotion) {
+			if (curmi->motid == motid) {
+				retindex = chkcnt;
+				break;
+			}
+			chkcnt++;//cameraのときだけカウントを増やす
+		}
+	}
+	return retindex;
+}
 
 FbxAnimLayer* CModel::GetAnimLayer( int motid )
 {
@@ -5023,12 +5061,16 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 
 			//2023/05/23
 			if ((strstr(chkanimname, "camera") != 0) || (strstr(chkanimname, "Camera") != 0)) {
-				SetCameraMotionId(curmotid);
+				SetCameraMotion(curmotid);//2023/06/18 cameraのmotionであるという印をする
 				if (GetCameraFbx()) {
 					GetCameraFbx()->SetAnimLayer(m_pscene, chkanimname);
 				}
-			}
 
+				if (GetCameraMotionId() <= 0) {
+					//最初に見つけたカメラモーションを　再生候補のカメラモーションにする
+					SetCameraMotionId(curmotid);
+				}
+			}
 
 
 

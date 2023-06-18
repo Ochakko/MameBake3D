@@ -542,6 +542,7 @@ typedef struct tag_motinfo
 	double speed;
 	int loopflag;
 	int fbxanimno;//fbxファイルの中で何番目のモーションとして読み込んだか　0から始まる番号
+	bool cameramotion;
 
 	tag_motinfo() {
 		ZeroMemory(motname, sizeof(char) * 256);
@@ -553,6 +554,7 @@ typedef struct tag_motinfo
 		speed = 1.0;
 		loopflag = 0;
 		fbxanimno = -1;
+		cameramotion = false;
 	};
 }MOTINFO;
 
