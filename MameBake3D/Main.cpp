@@ -11903,7 +11903,7 @@ int SetCameraModel()
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel) {
-			if ((g_endappflag == 0) && curmodel->GetCameraFbx() && curmodel->GetCameraFbx()->IsLoaded()) {
+			if ((g_endappflag == 0) && curmodel->IsCameraLoaded()) {
 				s_cameramodel = curmodel;//後から読み込んだモデルの中で　カメラがあれば　それを選ぶ
 			}
 		}
@@ -11963,54 +11963,17 @@ void CalcTotalBound()
 		g_LightControl[i].SetRadius(fObjectRadius);
 
 
+	s_projnear = max(0.01f, min(10.0f, fObjectRadius * 0.01f));
+	g_initcamdist = max(0.1f, min(1000.0f, fObjectRadius * 3.0f));
+	s_projfar = g_initcamdist * 100.0f;
+	//s_fAspectRatio = 1.0f;//ここでは更新しない
+	s_fovy = (float)(PI / 4);
+	g_camtargetpos = g_vCenter;
+	ChaVector3 dirz = ChaVector3(0.0f, 0.0f, 1.0);
+	g_camEye = g_vCenter + dirz * g_initcamdist;
+	ChangeCameraMode(1);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
 
 
-	if (s_cameramodel) {
-		CCameraFbx* camerafbx = s_cameramodel->GetCameraFbx();
-		if (camerafbx) {
-			//fbxにカメラが在る場合
-			int result = camerafbx->SetZeroFrameCamera();//!!!!!!!fbxcameraメンバを設定している
-			s_projnear = (float)camerafbx->GetNearPlane();
-			s_projfar = (float)camerafbx->GetFarPlane();
-			g_initcamdist = max(0.1f, min(1000.0f, s_projfar));
-			//s_fAspectRatio = (float)camerafbx.GetAspectRatio();//ここでは更新しない
-			s_fovy = (float)camerafbx->GetFovY();
-			g_camEye = camerafbx->GetPosition();
-			ChaVector3 cameradir = camerafbx->GetDirVec();
-			g_camtargetpos = g_camEye + cameradir * g_initcamdist;
-
-			ChangeCameraMode(2);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
-		}
-		else {
-			//fbxにカメラが無い場合
-			s_projnear = max(0.01f, min(10.0f, fObjectRadius * 0.01f));
-			g_initcamdist = max(0.1f, min(1000.0f, fObjectRadius * 3.0f));
-			s_projfar = g_initcamdist * 100.0f;
-			//s_fAspectRatio = 1.0f;//ここでは更新しない
-			s_fovy = (float)(PI / 4);
-
-			g_camtargetpos = g_vCenter;
-			ChaVector3 dirz = ChaVector3(0.0f, 0.0f, 1.0);
-			g_camEye = g_vCenter + dirz * g_initcamdist;
-
-			ChangeCameraMode(1);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
-		}
-	}
-	else {
-		//fbxにカメラが無い場合
-		s_projnear = max(0.01f, min(10.0f, fObjectRadius * 0.01f));
-		g_initcamdist = max(0.1f, min(1000.0f, fObjectRadius * 3.0f));
-		s_projfar = g_initcamdist * 100.0f;
-		//s_fAspectRatio = 1.0f;//ここでは更新しない
-		s_fovy = (float)(PI / 4);
-
-		g_camtargetpos = g_vCenter;
-		ChaVector3 dirz = ChaVector3(0.0f, 0.0f, 1.0);
-		g_camEye = g_vCenter + dirz * g_initcamdist;
-
-		ChangeCameraMode(1);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
-
-	}
 	s_camdist = g_initcamdist;
 
 	g_befcamEye = g_camEye;
@@ -12208,6 +12171,9 @@ CModel* OpenFBXFile(bool dorefreshtl, int skipdefref, int inittimelineflag)
 
 	CalcTotalBound();
 
+
+	int cameraindex = 0;
+	OnCameraMenu(true, cameraindex, 1);
 
 
 	if (s_nowloading && s_3dwnd) {
@@ -13713,6 +13679,10 @@ int OnRgdMorphMenu(int selindex)
 
 int OnCameraMenu(bool dorefreshflag, int selindex, int saveundoflag)
 {
+	if (!s_cameramodel) {
+		return 0;
+	}
+
 
 	s_underselectcamera = true;
 
@@ -13744,18 +13714,18 @@ int OnCameraMenu(bool dorefreshflag, int selindex, int saveundoflag)
 	}
 
 
-	if (!s_model || !s_owpTimeline) {
-		s_curmotid = -1;
-		SetMainWindowTitle();
-		s_underselectcamera = false;
-		if (oldcursor) {
-			SetCursor(oldcursor);
-		}
-		return 0;//!!!!!!!!!!!!!!!!!!
-	}
+	//if (!s_model || !s_owpTimeline) {//LoadFbxAnimの後に呼び出した場合　まだtimelineはNULL
+	//	s_curmotid = -1;
+	//	SetMainWindowTitle();
+	//	s_underselectcamera = false;
+	//	if (oldcursor) {
+	//		SetCursor(oldcursor);
+	//	}
+	//	return 0;//!!!!!!!!!!!!!!!!!!
+	//}
 
 
-	MOTINFO* camerami = s_model->GetCameraMotInfoByCameraIndex(selindex);
+	MOTINFO* camerami = s_cameramodel->GetCameraMotInfoByCameraIndex(selindex);
 	if (!camerami) {
 		//s_curmotid = -1;
 		SetMainWindowTitle();
@@ -13768,7 +13738,31 @@ int OnCameraMenu(bool dorefreshflag, int selindex, int saveundoflag)
 
 
 	int cameramotid = camerami->motid;
-	s_model->SetCameraMotionId(cameramotid);
+	s_cameramodel->SetCameraMotionId(cameramotid);
+
+
+	if (s_cameramodel->IsCameraLoaded()) {
+		//fbxにカメラが在る場合
+		ChaVector3 camdir = ChaVector3(0.0f, 0.0f, 1.0f);
+		s_cameramodel->GetCameraProjParams(cameramotid, &s_projnear, &s_projfar, &s_fovy, &g_camEye, &camdir);
+
+		g_initcamdist = max(0.1f, min(1000.0f, s_projfar));
+		g_camtargetpos = g_camEye + camdir * g_initcamdist;
+
+		ChangeCameraMode(2);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
+
+		s_camdist = g_initcamdist;
+
+		g_befcamEye = g_camEye;
+		g_befcamtargetpos = g_camtargetpos;
+
+		g_Camera->SetProjParams(s_fovy, s_fAspectRatio, s_projnear, s_projfar);
+		g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		//g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
+
+		s_matView = g_Camera->GetViewMatrix();
+		s_matProj = g_Camera->GetProjMatrix();
+	}
 
 
 	//if (saveundoflag == 1) {
@@ -25191,35 +25185,10 @@ int OnFramePreviewCamera(double srcnextframe)
 
 			double roundingframe = (double)((int)(nextcameraframe + 0.0001));
 
-			if (g_previewFlag != 0) {
-				//########################################
-				//プレビュー中 && カメラアニメモード　オン
-				//########################################
-				s_cameramodel->GetCameraAnimParams(roundingframe, s_camdist, &g_camEye, &g_camtargetpos, 0, g_cameraInheritMode);//s_camdist
-				g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
-			}
-			else {
-				//#############################################
-				//プレビュー停止中 && カメラアニメモード　オン
-				//#############################################
-				if (nextcameraframe == 0.0) {
-					CCameraFbx* camerafbx = s_cameramodel->GetCameraFbx();
-					if (camerafbx) {
-						g_camEye = camerafbx->GetPosition();
-						ChaVector3 cameradir = camerafbx->GetDirVec();
-						g_camtargetpos = g_camEye + cameradir * s_camdist;
-					}
-					else {
-						_ASSERT(0);
-					}
-					g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
-				}
-				else {
-					s_cameramodel->GetCameraAnimParams(roundingframe, s_camdist, &g_camEye, &g_camtargetpos, 0, g_cameraInheritMode);//s_camdist
-					g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
-				}
-			}
+			s_cameramodel->GetCameraAnimParams(roundingframe, s_camdist, &g_camEye, &g_camtargetpos, 0, g_cameraInheritMode);//s_camdist
+			g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
 			s_cameraframe = roundingframe;
+
 		}
 		else {
 			//######################################

@@ -3056,11 +3056,21 @@ int CQuaternion::RotationArc(ChaVector3 srcvec0, ChaVector3 srcvec1)
 
 int CQuaternion::Rotate(ChaVector3* dstvec, ChaVector3 srcvec)
 {
+	if (dstvec) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	ChaVector3 tmpsrcvec = srcvec;
+
+
 	ChaMatrix mat;
-
+	mat.SetIdentity();
 	mat = MakeRotMatX();
+	mat.SetTranslation(ChaVector3(0.0f, 0.0f, 0.0f));//2023/06/20
+	mat.data[MATI_44] = 0.0f;//2023/06/20
 
-	ChaVector3TransformCoord(dstvec, &srcvec, &mat);
+	ChaVector3TransformCoord(dstvec, &tmpsrcvec, &mat);
 
 	return 0;
 }
@@ -5177,7 +5187,13 @@ void ChaVector3TransformCoord(ChaVector3* dstvec, ChaVector3* srcvec, ChaMatrix*
 		//dstvec->x = 0.0f;
 		//dstvec->y = 0.0f;
 		//dstvec->z = 0.0f;
-		*dstvec = *srcvec;
+		
+		//*dstvec = *srcvec;
+
+		dstvec->x = (float)tmpx;
+		dstvec->y = (float)tmpy;
+		dstvec->z = (float)tmpz;
+
 	}
 }
 

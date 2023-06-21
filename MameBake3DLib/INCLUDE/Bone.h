@@ -1316,6 +1316,7 @@ public: //accesser
 	//fbxの初期姿勢のジョイントの向きを書き出すために追加
 	void SaveFbxNodePosture(FbxNode* pNode);
 	//void RestoreFbxNodePosture(FbxNode* pNode);
+	int CalcLocalNodePosture(FbxNode* pNode, double srcframe, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat);
 
 
 	void ClearIKRotRec()

@@ -4728,30 +4728,62 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 		//カメラの場合
 		//#############
 
-		if (GetParModel()) {
-			CCameraFbx* camerafbx = GetParModel()->GetCameraFbx();
-			if (camerafbx && camerafbx->IsLoaded() && camerafbx->GetFbxNode()) {
+		if (GetParModel() && GetParModel()->IsCameraLoaded() && GetFbxNodeOnLoad()) {
 
-				double tmpcamdist = 100.0f;
-				ChaVector3 tmpEyePos;
-				ChaVector3 tmpTargetPos;
-				int saveinheritmode;
-				saveinheritmode = CAMERA_INHERIT_CANCEL_NULL1;
-				ChaMatrix camerarotmat;
-				camerarotmat.SetIdentity();
-				camerafbx->GetCameraAnimParams(srcmotid, roundingframe, tmpcamdist, &tmpEyePos, &tmpTargetPos, &camerarotmat, saveinheritmode);
-				CQuaternion cameraq;
-				cameraq.RotationMatrix(camerarotmat);
-				CQuaternion rotz2x;
-				rotz2x.SetRotationXYZ(0, ChaVector3(0.0f, 90.0f, 0.0f));
-				eulq = cameraq * rotz2x;//90度回転して　初期方向を合わせる
-				eulq.Q2EulXYZusingQ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
+			//double tmpcamdist = 100.0f;
+			//ChaVector3 tmpEyePos;
+			//ChaVector3 tmpTargetPos;
+			//int saveinheritmode;
+			//saveinheritmode = CAMERA_INHERIT_CANCEL_NULL1;
+			//ChaMatrix camerarotmat;
+			//camerarotmat.SetIdentity();
+			//GetParModel()->GetCameraAnimParams(srcmotid, roundingframe, tmpcamdist, &tmpEyePos, &tmpTargetPos, &camerarotmat, saveinheritmode);
+			//CQuaternion cameraq;
+			//cameraq.RotationMatrix(camerarotmat);
+			//CQuaternion rotz2x;
+			//rotz2x.SetRotationXYZ(0, ChaVector3(0.0f, 90.0f, 0.0f));
+			//eulq = cameraq * rotz2x;//90度回転して　初期方向を合わせる
+			//eulq.Q2EulXYZusingQ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 
+
+			//#######################################################################################################
+			//2023/06/21
+			//テスト結果からの　推測
+			//　FBXSDKの関数を用いて　取得　したオイラー角は　XYZ順　になっている(GetRotationOrderの値とは関係なく)
+			//　しかし　書き出す　際には　GetRotationOrderの順で書き出すとうまくいく
+			//  特にeMesh, eNull, eCameraは　GetRotationOrderの通りに書き出すことでうまくいくようだ
+			//#######################################################################################################
+
+			EFbxRotationOrder rotationorder;
+			GetFbxNodeOnLoad()->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+
+			FbxTime fbxtime;
+			fbxtime.SetSecondDouble(roundingframe / 30.0);
+			FbxVector4 orgfbxeul = GetFbxNodeOnLoad()->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+			ChaVector3 orgeul = ChaVector3(orgfbxeul);
+
+			CQuaternion rotq;
+			rotq.SetRotationXYZ(0, orgeul);
+			CQuaternion rotz2x;
+			rotz2x.SetRotationXYZ(0, ChaVector3(0.0f, 90.0f, 0.0f));
+			eulq = rotq * rotz2x;//90度回転して　初期方向を合わせる
+
+			ChaVector3 befeul;
+			if (directbefeul) {
+				befeul = *directbefeul;
 			}
 			else {
-				_ASSERT(0);
-				cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+				befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 			}
+			int notmodify180flag2;
+			if (roundingframe <= 1.0) {
+				notmodify180flag2 = 1;
+			}
+			else {
+				notmodify180flag2 = 0;
+			}
+			eulq.Q2EulXYZusingMat((int)rotationorder, 0, befeul, &cureul, 0, 0, notmodify180flag2);//rotationOrder
+
 		}
 		else {
 			_ASSERT(0);
@@ -7084,12 +7116,21 @@ ChaVector3 CBone::CalcFbxScaleAnim(bool limitdegflag, int srcmotid, double srcfr
 
 	//ChaMatrix localfbxmat = wmanim * ChaMatrixInv(parentfbxwm);
 
-
-	ChaMatrix localfbxmat = CalcFbxLocalMatrix(limitdegflag, srcmotid, srcframe);
-
-	GetSRTMatrix(localfbxmat, &svec, &rmat, &tvec);
-
-	
+	if (IsNotCamera()) {
+		ChaMatrix localfbxmat = CalcFbxLocalMatrix(limitdegflag, srcmotid, srcframe);
+		GetSRTMatrix(localfbxmat, &svec, &rmat, &tvec);
+	}
+	else {
+		if (GetFbxNodeOnLoad()) {
+			FbxTime fbxtime;
+			fbxtime.SetSecondDouble(roundingframe / 30.0);
+			FbxVector4 fbxcamerascl = GetFbxNodeOnLoad()->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
+			svec = ChaVector3(fbxcamerascl);
+		}
+		else {
+			svec = ChaVector3(1.0f, 1.0f, 1.0f);
+		}
+	}
 
 	return svec;
 }
@@ -7277,39 +7318,38 @@ ChaVector3 CBone::CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe)
 		//カメラの場合
 		//#################
 
-		if (GetParModel()) {
-			CCameraFbx* camerafbx = GetParModel()->GetCameraFbx();
-			if (camerafbx && camerafbx->IsLoaded()) {
-				double tmpcamdist = 100.0f;
-				ChaVector3 tmpEyePos;
-				ChaVector3 tmpTargetPos;
+		if (GetParModel() && GetParModel()->IsCameraLoaded() && GetFbxNodeOnLoad()) {
+			//double tmpcamdist = 100.0f;
+			//ChaVector3 tmpEyePos;
+			//ChaVector3 tmpTargetPos;
 
-				//書き出す際の　カメラの親のeNullの姿勢をどのように受け継くかを決めるモード
-				//モードセレクト用GUIスイッチで　カメラアニメをうまく再生できるモードを選択した状態で　保存を実行することを想定
-				//CAMERA_INHERIT_CANCEL_NULL2の状態をそのまま保存することは出来ない
-				//CAMERA_INHERIT_CANCEL_NULL2で保存した後に読み込むとCAMERA_INHERIT_CANCEL_NULL1で再生可能
-				//CAMERA_INHERIT_CANCEL_NULL1で保存した後は　何回保存してもCAMERA_INHERIT_CANCEL_NULL1で再生可能
-				int saveinheritmode;
-				switch (g_cameraInheritMode) {
-				case CAMERA_INHERIT_CANCEL_NULL1:
-					saveinheritmode = CAMERA_INHERIT_CANCEL_NULL1;
-					break;
-				case CAMERA_INHERIT_CANCEL_NULL2:
-					saveinheritmode = CAMERA_INHERIT_CANCEL_NULL2;
-					break;
-				case CAMERA_INHERIT_ALL:
-				default:
-					saveinheritmode = CAMERA_INHERIT_CANCEL_NULL1;//localにする必要がある？から
-					break;
-				}
+			////書き出す際の　カメラの親のeNullの姿勢をどのように受け継くかを決めるモード
+			////モードセレクト用GUIスイッチで　カメラアニメをうまく再生できるモードを選択した状態で　保存を実行することを想定
+			////CAMERA_INHERIT_CANCEL_NULL2の状態をそのまま保存することは出来ない
+			////CAMERA_INHERIT_CANCEL_NULL2で保存した後に読み込むとCAMERA_INHERIT_CANCEL_NULL1で再生可能
+			////CAMERA_INHERIT_CANCEL_NULL1で保存した後は　何回保存してもCAMERA_INHERIT_CANCEL_NULL1で再生可能
+			//int saveinheritmode;
+			//switch (g_cameraInheritMode) {
+			//case CAMERA_INHERIT_CANCEL_NULL1:
+			//	saveinheritmode = CAMERA_INHERIT_CANCEL_NULL1;
+			//	break;
+			//case CAMERA_INHERIT_CANCEL_NULL2:
+			//	saveinheritmode = CAMERA_INHERIT_CANCEL_NULL2;
+			//	break;
+			//case CAMERA_INHERIT_ALL:
+			//default:
+			//	saveinheritmode = CAMERA_INHERIT_CANCEL_NULL1;//localにする必要がある？から
+			//	break;
+			//}
+			//GetParModel()->GetCameraAnimParams(srcmotid, roundingframe, tmpcamdist, &tmpEyePos, &tmpTargetPos, 0, saveinheritmode);
+			//return tmpEyePos;
 
-				camerafbx->GetCameraAnimParams(srcmotid, roundingframe, tmpcamdist, &tmpEyePos, &tmpTargetPos, 0, saveinheritmode);
-				return tmpEyePos;
-			}
-			else {
-				_ASSERT(0);
-				return ChaVector3(0.0f, 0.0f, 0.0f);
-			}
+			FbxTime fbxtime;
+			fbxtime.SetSecondDouble(roundingframe / 30.0);
+			FbxVector4 fbxcameratra = GetFbxNodeOnLoad()->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
+			ChaVector3 cameratra = ChaVector3(fbxcameratra);
+			return cameratra;
+
 		}
 		else {
 			_ASSERT(0);
@@ -9183,6 +9223,20 @@ int CBone::AdditiveAllMotionsToAngleLimit()
 
 int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bool callingbythread)
 {
+	if (!pNode) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	//char nodename[256] = { 0 };
+	//strcpy_s(nodename, 256, pNode->GetName());
+	//if ((strstr(nodename, "camera") != 0) || (strstr(nodename, "Camera") != 0)) {
+	//	if (GetParModel() && GetParModel()->IsCameraMotion(motid)) {
+	//		int dbgflag = 1;
+	//	}
+	//}
+
+
 	if (GetGetAnimFlag() == 0) {
 		SetGetAnimFlag(1);
 	}
@@ -9858,12 +9912,12 @@ void CBone::SaveFbxNodePosture(FbxNode* pNode)
 
 		FbxTime fbxtime;
 		fbxtime.SetSecondDouble(0.0);
-		m_fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);//FbxFile.cpp CopyNodePosture()と合わせる
-		m_fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
-		m_fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
-		//m_fbxLclPos = pNode->LclTranslation;//2023/05/17
-		//m_fbxLclRot = pNode->LclRotation;//2023/05/17
-		//m_fbxLclScl = pNode->LclScaling;//2023/05/17
+		//m_fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);//FbxFile.cpp CopyNodePosture()と合わせる
+		//m_fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+		//m_fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
+		m_fbxLclPos = pNode->LclTranslation.Get();//2023/05/17
+		m_fbxLclRot = pNode->LclRotation.Get();//2023/05/17
+		m_fbxLclScl = pNode->LclScaling.Get();//2023/05/17
 		//m_fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);//target false
 		//m_fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);//target false
 		//m_fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);//target false
@@ -9878,12 +9932,104 @@ void CBone::SaveFbxNodePosture(FbxNode* pNode)
 
 		EFbxRotationOrder rotationorder;
 		pNode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);//なぞのおまじない
-		//pNode->GetRotationOrder(FbxNode::eSourcePivot, m_rotationorder);//<---こうすると　まだうまくいかない
+
+		//2023/06/21 preとpostはxyzで計算　lclrotは記録されていたorderで計算
+		//pNode->GetRotationOrder(FbxNode::eSourcePivot, m_rotationorder);//<--- これを反映させるとなぜかうまくいかない　SDKを通した時点で　内容的にeEulerXYZになっている？
 
 		m_InheritType = pNode->InheritType.Get();//2023/06/03
 
 	}
 }
+
+int CBone::CalcLocalNodePosture(FbxNode* pNode, double srcframe, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat)
+{
+	if (!plocalnodemat || !plocalnodeanimmat) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	if (!pNode) {
+		pNode = m_fbxnodeonload;
+	}
+	if (!pNode) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	FbxTime fbxtime;
+	fbxtime.SetSecondDouble((double)((int)(srcframe + 0.0001)) / 30.0);
+
+	FbxDouble3 fbxLclPos;
+	FbxDouble3 fbxLclRot;
+	FbxDouble3 fbxLclScl;
+	//if (srcframe == 0.0) {
+	//	fbxLclPos = pNode->LclTranslation.Get();
+	//	fbxLclRot = pNode->LclRotation.Get();
+	//	fbxLclScl = pNode->LclScaling.Get();
+	//}
+	//else {
+		fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
+		fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+		fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
+	//}
+
+	EFbxRotationOrder rotationorder;
+	pNode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+
+
+	ChaMatrix fbxT, fbxRoff, fbxRp, fbxRpre, fbxR, fbxRpost, fbxRpinv, fbxSoff, fbxSp, fbxS, fbxSpinv;
+	fbxT.SetIdentity();
+	fbxRoff.SetIdentity();
+	fbxRp.SetIdentity();
+	fbxRpre.SetIdentity();
+	fbxR.SetIdentity();
+	fbxRpost.SetIdentity();
+	fbxRpinv.SetIdentity();
+	fbxSoff.SetIdentity();
+	fbxSp.SetIdentity();
+	fbxS.SetIdentity();
+	fbxSpinv.SetIdentity();
+
+	fbxT.SetTranslation(ChaVector3(fbxLclPos));//##### at fbxtime
+	fbxRoff.SetTranslation(ChaVector3(m_fbxRotOff));
+	fbxRp.SetTranslation(ChaVector3(m_fbxRotPiv));
+
+	//fbxRpre.SetXYZRotation(0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
+	//fbxR.SetXYZRotation(0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
+	//fbxRpost.SetXYZRotation(0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
+
+	fbxRpre.SetRotation(eEulerXYZ, 0, ChaVector3(m_fbxPreRot));//XYZ
+	//fbxR.SetRotation(rotationorder, 0, ChaVector3(fbxLclRot));//##### at fbxtime. RotationOrder !!!!
+	fbxR.SetRotation(eEulerXYZ, 0, ChaVector3(fbxLclRot));//##### at fbxtime : この方が　カメラのあおりがうまくいく(TheHunt City1 Camera_1)
+	fbxRpost.SetRotation(eEulerXYZ, 0, ChaVector3(m_fbxPostRot));//XYZ
+
+	fbxRpinv = ChaMatrixInv(fbxRp);
+	fbxSoff.SetTranslation(ChaVector3(m_fbxSclOff));
+	fbxSp.SetTranslation(ChaVector3(m_fbxSclPiv));
+	fbxS.SetScale(ChaVector3(fbxLclScl));//##### at fbxtime
+	fbxSpinv = ChaMatrixInv(fbxSp);
+
+	//##################################################################################################################
+	// FbxAMatrix Transform = T * Roff * Rp * Rpre * R * Rpost * Rp-1 * Soff * Sp * S * Sp-1
+	// 
+	// //2023/05/16
+	// ただし　FbxAMatrixの＊演算子(左に掛けていく)は　ChaMatrixの*演算子(右に掛けていく)と逆順掛け算　(行列成分は同じ)
+	//##################################################################################################################
+
+	ChaMatrix localnodemat, localnodeanimmat;
+	localnodeanimmat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRpre * fbxR * fbxRpost * fbxRp * fbxRoff * fbxT;//2023/05/17
+
+	//0フレームアニメ無し : fbxR無し
+	localnodemat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRpre * fbxRpost * fbxRp * fbxRoff * fbxT;//2023/05/17
+
+	*plocalnodemat = localnodemat;
+	*plocalnodeanimmat = localnodeanimmat;
+
+	return 0;
+}
+
+
+
 
 ////2023/02/16
 ////fbxの初期姿勢のジョイントの向きを書き出すために追加
@@ -10170,32 +10316,32 @@ ChaMatrix CBone::CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcf
 		//カメラの場合
 		//#################
 
-		switch (g_cameraInheritMode)
-		{
-		case CAMERA_INHERIT_ALL:
-			localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);//localにする必要がある？から
-			break;
-		case CAMERA_INHERIT_CANCEL_NULL1:
-			localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
-			break;
-		case CAMERA_INHERIT_CANCEL_NULL2:
-		{
+		if (GetParModel() && GetParModel()->IsCameraLoaded()) {
 			ChaMatrix lcltramat;
 			lcltramat.SetIdentity();
-			if (GetParModel()) {
-				lcltramat.SetTranslation(GetParModel()->GetCameraLclTra());
-				//lcltramat.SetTranslation(GetParModel()->GetCameraParentLclTra());
+			lcltramat.SetTranslation(GetParModel()->GetCameraLclTra(srcmotid));
+
+			switch (g_cameraInheritMode)
+			{
+			case CAMERA_INHERIT_ALL:
+				localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);//localにする必要がある？から
+				break;
+			case CAMERA_INHERIT_CANCEL_NULL1:
+				localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
+				break;
+			case CAMERA_INHERIT_CANCEL_NULL2:
+			{
+				localfbxmat = fbxwm * ChaMatrixInv(lcltramat) * ChaMatrixInv(parentfbxwm);
 			}
-			else {
+			break;
+			default:
 				_ASSERT(0);
+				localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
+				break;
 			}
-			localfbxmat = fbxwm * ChaMatrixInv(lcltramat) * ChaMatrixInv(parentfbxwm);
 		}
-			break;
-		default:
-			_ASSERT(0);
+		else {
 			localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
-			break;
 		}
 	}
 	return localfbxmat;

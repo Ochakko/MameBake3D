@@ -650,12 +650,12 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode)
 
 	FbxTime fbxtime;
 	fbxtime.SetSecondDouble(0.0);
-	fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);//Bone.cpp SaveFbxNodePosture()と合わせる
-	fbxLclRot = srcnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
-	fbxLclScl = srcnode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
-	//fbxLclPos = srcnode->LclTranslation;
-	//fbxLclRot = srcnode->LclRotation;
-	//fbxLclScl = srcnode->LclScaling;
+	//fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);//Bone.cpp SaveFbxNodePosture()と合わせる
+	//fbxLclRot = srcnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+	//fbxLclScl = srcnode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
+	fbxLclPos = srcnode->LclTranslation.Get();
+	fbxLclRot = srcnode->LclRotation.Get();
+	fbxLclScl = srcnode->LclScaling.Get();
 	//fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);//target false
 	//fbxLclRot = srcnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);//target false
 	//fbxLclScl = srcnode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);//target false
@@ -686,6 +686,7 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode)
 		{
 		case FbxNodeAttribute::eMesh:
 		case FbxNodeAttribute::eNull:
+		case FbxNodeAttribute::eCamera:
 			useorgorder = true;
 			break;
 		default:
@@ -3068,6 +3069,9 @@ void AnimateSkeleton(bool limitdegflag, FbxScene* pScene, CModel* pmodel)
 
 
 		pmodel->SetCurrentMotion( curmotid );
+		if (pmodel->IsCameraMotion(curmotid)) {//2023/06/21
+			pmodel->SetCameraMotionId(curmotid);
+		}
 
 		s_firstanimout = 1;
 		//AnimateBoneReq( pmodel->GetFromNoBindPoseFlag(), s_fbxbone, lAnimLayer, curmotid, maxframe );
@@ -3115,7 +3119,7 @@ void AnimateBoneReq(bool limitdegflag, FbxNode* pNode, FbxAnimLayer* lAnimLayer,
 			//注意　ここは　CBone::IsNull()==trueのときにも通る
 
 
-			//コメントアウト　RotationOrderは　CreateAndCopyFbxNodeReq()にて　CopyNodePosture()を使って設定済　eNull, eMeshは元データと同じRotationOrder
+			//コメントアウト　RotationOrderは　CreateAndCopyFbxNodeReq()にて　CopyNodePosture()を使って設定済　eNull, eMesh, eCameraは元データと同じRotationOrder
 			//lSkel->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);
 			//lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerXYZ);
 			
@@ -3378,7 +3382,7 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 		//fbxR.SetXYZRotation(0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
 		//fbxRpost.SetXYZRotation(0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
 
-		////2023/03/27 : rotationorder対応
+		////2023/03/27 : rotationorder対応 
 		fbxRpre.SetRotation(rotationorder, 0, ChaVector3(fbxPreRot));
 		fbxR.SetRotation(rotationorder, 0, ChaVector3(fbxLclRot));
 		fbxRpost.SetRotation(rotationorder, 0, ChaVector3(fbxPostRot));
@@ -4619,34 +4623,34 @@ int WriteFBXAnimTra(bool limitdegflag, CFBXBone* fbxbone, FbxAnimLayer* lAnimLay
 		}
 
 
-		CModel* parmodel = curbone->GetParModel();
-		if (!parmodel) {
-			_ASSERT(0);
-			return 1;
-		}
-		FbxCamera* fbxcamera = 0;
-		//FbxAnimLayer* animLayerLoaded = 0;
-		{
-			CCameraFbx* camerafbx = parmodel->GetCameraFbx();
-			if (camerafbx) {
-				fbxcamera = camerafbx->GetFbxCamera();
-				//if (camerafbx->GetScene() && camerafbx->GetAnimName()) {
-				//	FbxAnimStack* lCurrentAnimationStack = camerafbx->GetScene()->FindMember<FbxAnimStack>(camerafbx->GetAnimName());
-				//	if (lCurrentAnimationStack == NULL) {
-				//		_ASSERT(0);
-				//		return 1;
-				//	}
-				//	animLayerLoaded = lCurrentAnimationStack->GetMember<FbxAnimLayer>();
-				//	//SetCurrentAnimLayer(mCurrentAnimLayer);
-				//	//pScene->SetCurrentAnimationStack(lCurrentAnimationStack);
-				//}
-			}
-		}
-		//if ((curbone->IsCamera()) && (!fbxcamera || !animLayerLoaded)) {
-		if ((curbone->IsCamera()) && !fbxcamera) {
-			_ASSERT(0);
-			return 1;
-		}
+		//CModel* parmodel = curbone->GetParModel();
+		//if (!parmodel) {
+		//	_ASSERT(0);
+		//	return 1;
+		//}
+		//FbxCamera* fbxcamera = 0;
+		////FbxAnimLayer* animLayerLoaded = 0;
+		//{
+		//	CCameraFbx* camerafbx = parmodel->GetCameraFbx();
+		//	if (camerafbx) {
+		//		fbxcamera = camerafbx->GetFbxCamera();
+		//		//if (camerafbx->GetScene() && camerafbx->GetAnimName()) {
+		//		//	FbxAnimStack* lCurrentAnimationStack = camerafbx->GetScene()->FindMember<FbxAnimStack>(camerafbx->GetAnimName());
+		//		//	if (lCurrentAnimationStack == NULL) {
+		//		//		_ASSERT(0);
+		//		//		return 1;
+		//		//	}
+		//		//	animLayerLoaded = lCurrentAnimationStack->GetMember<FbxAnimLayer>();
+		//		//	//SetCurrentAnimLayer(mCurrentAnimLayer);
+		//		//	//pScene->SetCurrentAnimationStack(lCurrentAnimationStack);
+		//		//}
+		//	}
+		//}
+		////if ((curbone->IsCamera()) && (!fbxcamera || !animLayerLoaded)) {
+		//if ((curbone->IsCamera()) && !fbxcamera) {
+		//	_ASSERT(0);
+		//	return 1;
+		//}
 
 
 		ChaVector3 fbxtra;

@@ -846,7 +846,10 @@ public:
 	void SetRotationActiveTrueReq(CNodeOnLoad* srcnodeonload);
 	void SetRotationActiveDefaultReq(CNodeOnLoad* srcnodeonload);
 
+	int GetCameraAnimParams(int cameramotid, double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaMatrix* protmat, int inheritmode);
 	int GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaMatrix* protmat, int inheritmode);
+	int GetCameraProjParams(int cameramotid, float* pprojnear, float* pprojfar, float* pfovy, ChaVector3* pcampos, ChaVector3* pcamdir);
+	ChaVector3 GetCameraLclTra(int cameramotid);
 
 private:
 	int InitParams();
@@ -1278,6 +1281,19 @@ public: //accesser
 			_ASSERT(0);
 		}
 	};
+	bool IsCameraMotion(int srcmotid) {
+		MOTINFO* curmi = GetMotInfo(srcmotid);
+		if (curmi && curmi->cameramotion) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	};
+	bool IsCameraLoaded()
+	{
+		return m_camerafbx.IsLoaded();
+	};
 	int GetCameraMotInfoSize() {
 		int retsize = 0;
 		std::map<int, MOTINFO*>::iterator itrmi;
@@ -1641,15 +1657,9 @@ public: //accesser
 	}
 
 
-	CCameraFbx* GetCameraFbx();
+	//CCameraFbx GetCameraFbx();
 	void SetCameraMotionId(int srcid);
 	int GetCameraMotionId();
-	ChaVector3 GetCameraLclTra();
-	void SetCameraLclTra(FbxDouble3 srcval);
-	ChaVector3 GetCameraParentLclTra();
-	void SetCameraParentLclTra(ChaVector3 srcval);
-	ChaMatrix GetCameraParentENullMat();
-	void SetCameraParentENullMat(ChaMatrix enullmat);
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];
