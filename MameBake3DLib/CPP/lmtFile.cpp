@@ -97,7 +97,16 @@ int CLmtFile::WriteLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 	CallF(Write2File("    <FileInfo>1001-03</FileInfo>\r\n"), return 1);//2022/12/18
 	CallF(Write2File("    <FileComment>%s</FileComment>\r\n", fbxcomment), return 1);//2021/06/08
 
-	WriteLmtReq(g_limitdegflag, m_model->GetTopBone(false));//g_limitdegflagはlimitangleのchk値用
+	//WriteLmtReq(g_limitdegflag, m_model->GetTopBone(false));//g_limitdegflagはlimitangleのchk値用
+
+	std::map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_model->GetBoneListBegin(); itrbone != m_model->GetBoneListEnd(); itrbone++) {
+		CBone* srcbone = itrbone->second;
+		if (srcbone && (srcbone->IsSkeleton())) {
+			WriteLmt(g_limitdegflag, srcbone);
+		}
+	}
+
 
 	CallF( Write2File( "</Lmt>\r\n" ), return 1 );
 

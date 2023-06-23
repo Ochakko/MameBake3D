@@ -104,7 +104,7 @@ public:
 
 	int GetCameraAnimParams(int cameramotid, double nextframe, double camdist, 
 		ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaMatrix* protmat, int inheritmode);
-
+	ChaVector3 CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVector3 befeul);
 
 	CAMERANODE* FindCameraNodeByNode(FbxNode* srcnode);
 	CAMERANODE* FindCameraNodeByBone(CBone* srcbone);

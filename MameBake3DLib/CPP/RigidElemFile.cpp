@@ -92,7 +92,16 @@ int CRigidElemFile::WriteRigidElemFile( WCHAR* strpath, CModel* srcmodel, int re
 
 	CallF( Write2File( "    <SCBTG>%f</SCBTG>\r\n", m_btgscale ), return 1 );
 
-	WriteREReq( m_model->GetTopBone(false) );
+	//WriteREReq( m_model->GetTopBone(false) );
+	std::map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_model->GetBoneListBegin(); itrbone != m_model->GetBoneListEnd(); itrbone++) {
+		CBone* srcbone = itrbone->second;
+		if (srcbone && srcbone->IsSkeleton()) {
+			WriteRE(srcbone);
+		}
+	}
+
+
 
 	CallF( Write2File( "</RIGIDELEM>\r\n" ), return 1 );
 

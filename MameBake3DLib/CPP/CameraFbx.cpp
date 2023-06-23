@@ -448,6 +448,10 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 			//##########################################################################################################
 
 
+			CQuaternion rotz2x;
+			rotz2x.SetRotationXYZ(0, ChaVector3(0.0f, 90.0f, 0.0f));
+			ChaMatrix rotz2xmat = rotz2x.MakeRotMatX();
+
 
 			//##############
 			//カメラの位置
@@ -459,9 +463,9 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				switch (inheritmode) {
 				case CAMERA_INHERIT_ALL:
 					//transformmat = nodemat * cammat;
-					//transformmat = localnodeanimmat * parentlocalnodeanimmat;//上
+					transformmat = localnodeanimmat * parentlocalnodeanimmat;//上
 					//transformmat = localnodeanimmat * rootmat;//上
-					transformmat = localnodeanimmat * parentlocalnodemat;//上
+					//transformmat = rotz2xmat * localnodeanimmat * parentlocalnodemat;
 					
 					
 					//transformmat = localnodeanimmat * rootmat;//上 ########
@@ -469,6 +473,7 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 					break;
 				case CAMERA_INHERIT_CANCEL_NULL1:
 					transformmat = localnodeanimmat;//前 ##########
+					//transformmat = rotz2xmat * localnodeanimmat;
 
 					//transformmat = nodemat * cammat * ChaMatrixInv(rootmat);
 
@@ -521,7 +526,8 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 
 
 					//transformmat = nodemat * cammat * ChaMatrixInv(rootmat) * positionmat4 * rootmat;//右　前後移動が斜めになる
-					transformmat = localnodeanimmat * positionmat4 * parentlocalnodemat;//位置は良さそう
+					transformmat = localnodeanimmat * positionmat4 * parentlocalnodemat;
+					//transformmat = rotz2xmat * localnodeanimmat * positionmat4 * parentlocalnodemat;//位置は良さそう
 					//transformmat = localnodeanimmat * positionmat4 * ChaMatrixTra(parentlocalnodemat);//位置は良さそう #######
 
 
@@ -538,6 +544,7 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 					break;
 				default:
 					_ASSERT(0);
+					//transformmat = rotz2xmat * localnodeanimmat;
 					transformmat = localnodeanimmat;
 					break;
 				}
@@ -574,13 +581,16 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				switch (inheritmode) {
 				case CAMERA_INHERIT_ALL:
 					//rotmat = nodemat * cammat;
-					//rotmat = localnodeanimmat * parentlocalnodemat;//!!!!!!
+					rotmat = localnodeanimmat * parentlocalnodemat;//!!!!!!
 					//rotmat = localnodeanimmat * rootmat;
 
 
 
 					//rotmat = localnodeanimmat * parentlocalnodeanimmat;
-					rotmat = localnodeanimmat * parentlocalnodemat;
+					//rotmat = rotz2xmat * localnodeanimmat * parentlocalnodemat;
+					//rotq = parentlocalnodemat.GetRotQ() * localnodeanimmat.GetRotQ();// *rotz2x;
+
+
 
 					//rotq = parentlocalq * localq;
 					//rotq1.RotationMatrix(localnodeanimmat);
@@ -590,9 +600,10 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				case CAMERA_INHERIT_CANCEL_NULL1:
 					//rotmat = nodemat * cammat * ChaMatrixInv(rootmat);
 					//rotmat = nodemat * cammat;
-					//rotmat = localnodeanimmat;//!!!!!!!!!!!
+					rotmat = localnodeanimmat;//!!!!!!!!!!!
 					//rotmat = nodemat * cammat * positionmat4;
-					rotmat = localnodeanimmat;
+					//rotmat = rotz2xmat * localnodeanimmat;
+					//rotq = localnodeanimmat.GetRotQ();// *rotz2x;
 
 
 					//rotq = localq;
@@ -617,6 +628,9 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 					//rotmat = localnodeanimmat * positionmat3 * ChaMatrixInv(parentlocalnodemat);
 
 					rotmat = localnodeanimmat * positionmat4 * parentlocalnodemat;
+					//rotmat = rotz2xmat * localnodeanimmat * positionmat4 * parentlocalnodemat;
+					//rotq = parentlocalnodemat.GetRotQ() * localnodeanimmat.GetRotQ();// *rotz2x;
+
 
 					//rotmat = localnodeanimmat * positionmat4 * parentlocalnodeanimmat;
 					//rotq = parentlocalq * localq;
@@ -629,7 +643,12 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				default:
 					_ASSERT(0);
 					//rotmat = nodemat * cammat;
-					rotmat = localnodeanimmat;
+					//rotmat = rotz2xmat * localnodeanimmat;
+					rotmat = localnodeanimmat;//!!!!!!!!!!!!!
+					//rotq = localnodeanimmat.GetRotQ();// *rotz2x;
+
+
+
 					//rotq = localq;
 					//rotq1.RotationMatrix(localnodeanimmat);
 					//rotq = rotq1;
@@ -646,20 +665,35 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				//ChaVector3 dirvec = ChaVector3(0.0f, 0.0f, -1.0f);
 				//ChaVector3 dirvec0 = ChaVector3(0.0f, 0.0f, 1.0f);
 				//ChaVector3 dirvec = ChaVector3(0.0f, 0.0f, 1.0f);
+				
+				
 				//rotq.Rotate(&dirvec, dirvec0);
 
+				//ChaVector3 dirvec0 = ChaVector3(0.0f, 0.0f, 1.0f);
+				//ChaVector3 dirvec1 = ChaVector3(0.0f, 0.0f, 1.0f);
+				//ChaVector3 dirvec2 = ChaVector3(0.0f, 0.0f, 1.0f);
+				//ChaVector3 dirvec0 = ChaVector3(1.0f, 0.0f, 0.0f);
+				//ChaVector3 dirvec1 = ChaVector3(1.0f, 0.0f, 0.0f);
+				//ChaVector3 dirvec2 = ChaVector3(1.0f, 0.0f, 0.0f);
+				//ChaMatrix parentconvmat = parentlocalnodemat;
+				//parentconvmat.SetTranslationZero();
+				//parentconvmat.data[MATI_44] = 0;
+				//ChaVector3TransformCoord(&dirvec1, &dirvec0, &parentconvmat);
+				//ChaVector3Normalize(&dirvec1, &dirvec1);
 
-				//quaternionにしてから回転したり　ChaMatrixRot()してから回転すると　左右首振りや上下首振りが動かなくなった
-				//以下のようにベクトル変換用にして対応
+
 				ChaMatrix convmat = rotmat;
 				convmat.SetTranslationZero();
 				convmat.data[MATI_44] = 0;
 				ChaVector3TransformCoord(&dirvec, &dirvec0, &convmat);
 
-
-
 				ChaVector3Normalize(&dirvec, &dirvec);
 				*pTargetPos = *pEyePos + dirvec * camdist;
+
+
+				//ChaVector3TransformCoord(&dirvec2, &dirvec1, &convmat);
+				//ChaVector3Normalize(&dirvec2, &dirvec2);
+				//*pTargetPos = *pEyePos + dirvec2 * camdist;
 
 				if (protmat) {
 					//*protmat = ChaMatrixRot(rotmat);
@@ -699,6 +733,101 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 }
 
 
+ChaVector3 CCameraFbx::CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVector3 befeul)
+{
+	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+
+
+	CAMERANODE* curcamera = FindCameraNodeByMotId(cameramotid);
+	if (!curcamera) {
+		//fbxにカメラが含まれていない場合　処理せずリターン
+		_ASSERT(0);
+		return cureul;
+	}
+	if (!curcamera->IsValid()) {
+		//必要な情報が読み込めていない場合　エラー
+		_ASSERT(0);
+		return cureul;
+	}
+
+
+	double roundingframe = (double)((int)(srcframe + 0.0001));
+	m_time = roundingframe;
+	FbxTime fbxtime;
+	fbxtime.SetSecondDouble(m_time / 30.0);
+	ChaVector3 zeropos = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	int notmodify180flag;
+	if (roundingframe <= 1.0) {
+		notmodify180flag = 1;
+	}
+	else {
+		notmodify180flag = 0;
+	}
+
+
+	if (IsLoaded()) {
+		if (cameramotid > 0) {
+			FbxNode* cameranode = curcamera->pnode;
+			CBone* camerabone = curcamera->pbone;
+			if (cameranode && camerabone) {
+
+				//ChaMatrix cammat = camerabone->GetWorldMat(false, cameramotid, roundingframe, 0);
+				//ChaMatrix nodemat = camerabone->GetNodeMat();
+				//ChaMatrix rootmat;
+				//if (camerabone->GetParent(false) && camerabone->GetParent(false)->IsNull()) {
+				//	rootmat = curcamera->parentenullmat;
+				//}
+				//else {
+				//	rootmat.SetIdentity();
+				//}
+				//ChaMatrix rotmat = nodemat * cammat * ChaMatrixInv(rootmat);
+				//CQuaternion eulq;
+				//eulq.RotationMatrix(rotmat);
+				////CQuaternion rotq;
+				////rotq.RotationMatrix(rotmat);
+				////CQuaternion rotz2x;
+				//////rotz2x.SetRotationXYZ(0, ChaVector3(0.0f, 90.0f, 0.0f));
+				////rotz2x.SetRotationXYZ(0, ChaVector3(0.0f, -90.0f, 0.0f));
+				////CQuaternion eulq;
+				////eulq = rotq * rotz2x;//90度回転して　初期方向を合わせる
+				////eulq = rotq;
+				//eulq.Q2EulXYZusingQ(0, befeul, &cureul, 0, 0, notmodify180flag);//XYZ
+				////eulq.Q2EulXYZusingMat((int)camerabone->GetFbxRotationOrder(), 0, befeul, &cureul, 0, 0, notmodify180flag);//rotationOrder
+				////cureul.y += 90.0f;
+
+
+
+				EFbxRotationOrder rotationorder;
+				cameranode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+				//FbxTime fbxtime;
+				//fbxtime.SetSecondDouble(roundingframe / 30.0);
+				FbxVector4 orgfbxeul = cameranode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+				cureul = ChaVector3((float)orgfbxeul[0], (float)orgfbxeul[1], (float)orgfbxeul[2]);
+
+				//ChaVector3 orgeul = ChaVector3((float)orgfbxeul[0], (float)orgfbxeul[1], (float)orgfbxeul[2]);
+				//CQuaternion rotq;
+				//rotq.SetRotation(rotationorder, 0, orgeul);
+				//CQuaternion rotz2x;
+				//rotz2x.SetRotationXYZ(0, ChaVector3(0.0f, 90.0f, 0.0f));
+				//CQuaternion eulq = rotq * rotz2x;//90度回転して　初期方向を合わせる
+				////eulq = rotq;
+				//int notmodify180flag2;
+				//if (roundingframe <= 1.0) {
+				//	notmodify180flag2 = 1;
+				//}
+				//else {
+				//	notmodify180flag2 = 0;
+				//}
+				//eulq.Q2EulXYZusingMat(rotationorder, 0, befeul, &cureul, 0, 0, notmodify180flag2);//rotationOrder
+				////eulq.Q2EulXYZusingQ(0, befeul, &cureul, 0, 0, notmodify180flag2);//XYZ
+
+			}
+		}
+	}
+
+	return cureul;
+}
 
 
 

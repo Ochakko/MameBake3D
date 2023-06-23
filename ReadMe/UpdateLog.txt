@@ -47,7 +47,12 @@
 		とりあえず　試行錯誤の痕跡(その次のコミットで消す予定)を残したものを　一度コミット
 		今後　これを足掛かりにして調整していく
 
+	2023/06/23
+		CalcLocalNodeMat()内の　prerot, lclrot, postrotの掛ける順番を修正したところ　カメラ再生が改善した　がまだ問題がある
+		TheHunt City1(VisualStudioでデバッグ時メインメモリ33GB使用)のCamera_1はOK. Camera_2はUpVecの操作を加える必要有
+		TheHunt Street1のCamera_1は大体OK. Camera_2, Camera_3はまだ位置がずれている
 		
+
 2023/06/07
 	EditMot 1.2.0.21 relase
 

@@ -4728,7 +4728,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 		//カメラの場合
 		//#############
 
-		if (GetParModel() && GetParModel()->IsCameraLoaded() && GetFbxNodeOnLoad()) {
+		if (GetParModel() && GetParModel()->IsCameraLoaded()) {
 
 			//double tmpcamdist = 100.0f;
 			//ChaVector3 tmpEyePos;
@@ -4740,49 +4740,62 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 			//GetParModel()->GetCameraAnimParams(srcmotid, roundingframe, tmpcamdist, &tmpEyePos, &tmpTargetPos, &camerarotmat, saveinheritmode);
 			//CQuaternion cameraq;
 			//cameraq.RotationMatrix(camerarotmat);
+			////CQuaternion rotz2x;
+			////rotz2x.SetRotationXYZ(0, ChaVector3(0.0f, 90.0f, 0.0f));
+			////eulq = cameraq * rotz2x;//90度回転して　初期方向を合わせる
+			//eulq = cameraq;
+			////eulq.Q2EulXYZusingQ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
+			////###############################################################
+			////カメラは　元のfbxのカメラノードのrotationorderの通りに書き出す
+			////###############################################################
+			//eulq.Q2EulXYZusingMat((int)m_rotationorder, 0, befeul, &cureul, 0, 0, notmodify180flag);//rotationOrder
+
+			cureul = GetParModel()->CalcCameraFbxEulXYZ(srcmotid, roundingframe, befeul);
+
+			//ChaMatrix cammat = GetWorldMat(false, srcmotid, roundingframe, 0);
+			//ChaMatrix nodemat = GetNodeMat();
+			//ChaMatrix rootmat;
+			//if (GetParent(false) && GetParent(false)->IsNull()) {
+			//	FbxTime time0;
+			//	time0.SetSecondDouble(0.0);
+			//	FbxAMatrix lGlobalSRT = GetFbxNodeOnLoad()->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);
+			//	rootmat = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+			//}
+			//else {
+			//	rootmat.SetIdentity();
+			//}
+			//ChaMatrix rotmat = nodemat * cammat * ChaMatrixInv(rootmat);
+			////eulq.RotationMatrix(rotmat);
+			//CQuaternion rotq;
+			//rotq.RotationMatrix(rotmat);
 			//CQuaternion rotz2x;
 			//rotz2x.SetRotationXYZ(0, ChaVector3(0.0f, 90.0f, 0.0f));
-			//eulq = cameraq * rotz2x;//90度回転して　初期方向を合わせる
-			//eulq.Q2EulXYZusingQ(0, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
+			//eulq = rotq * rotz2x;//90度回転して　初期方向を合わせる
+			//eulq.Q2EulXYZusingQ(0, befeul, &cureul, 0, 0, notmodify180flag);//XYZ
+			////eulq.Q2EulXYZusingMat((int)m_rotationorder, 0, befeul, &cureul, 0, 0, notmodify180flag);//rotationOrder
 
 
-			//#######################################################################################################
-			//2023/06/21
-			//テスト結果からの　推測
-			//　FBXSDKの関数を用いて　取得　したオイラー角は　XYZ順　になっている(GetRotationOrderの値とは関係なく)
-			//　しかし　書き出す　際には　GetRotationOrderの順で書き出すとうまくいく
-			//  特にeMesh, eNull, eCameraは　GetRotationOrderの通りに書き出すことでうまくいくようだ
-			//#######################################################################################################
 
-			EFbxRotationOrder rotationorder;
-			GetFbxNodeOnLoad()->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
-
-			FbxTime fbxtime;
-			fbxtime.SetSecondDouble(roundingframe / 30.0);
-			FbxVector4 orgfbxeul = GetFbxNodeOnLoad()->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
-			ChaVector3 orgeul = ChaVector3(orgfbxeul);
-
-			CQuaternion rotq;
-			rotq.SetRotationXYZ(0, orgeul);
-			CQuaternion rotz2x;
-			rotz2x.SetRotationXYZ(0, ChaVector3(0.0f, 90.0f, 0.0f));
-			eulq = rotq * rotz2x;//90度回転して　初期方向を合わせる
-
-			ChaVector3 befeul;
-			if (directbefeul) {
-				befeul = *directbefeul;
-			}
-			else {
-				befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-			}
-			int notmodify180flag2;
-			if (roundingframe <= 1.0) {
-				notmodify180flag2 = 1;
-			}
-			else {
-				notmodify180flag2 = 0;
-			}
-			eulq.Q2EulXYZusingMat((int)rotationorder, 0, befeul, &cureul, 0, 0, notmodify180flag2);//rotationOrder
+			//FbxTime fbxtime;
+			//fbxtime.SetSecondDouble(roundingframe / 30.0);
+			//FbxVector4 orgfbxeul = GetFbxNodeOnLoad()->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+			////cureul = ChaVector3(orgfbxeul);
+			//ChaVector3 orgeul = ChaVector3(orgfbxeul);
+			//CQuaternion rotq;
+			//rotq.SetRotation(m_rotationorder, 0, orgeul);
+			////CQuaternion rotz2x;
+			////rotz2x.SetRotationXYZ(0, ChaVector3(0.0f, 90.0f, 0.0f));
+			////eulq = rotq * rotz2x;//90度回転して　初期方向を合わせる
+			//eulq = rotq;
+			//int notmodify180flag2;
+			//if (roundingframe <= 1.0) {
+			//	notmodify180flag2 = 1;
+			//}
+			//else {
+			//	notmodify180flag2 = 0;
+			//}
+			////eulq.Q2EulXYZusingMat((int)m_rotationorder, 0, befeul, &cureul, 0, 0, notmodify180flag2);//rotationOrder
+			//eulq.Q2EulXYZusingQ(0, befeul, &cureul, 0, 0, notmodify180flag2);//XYZ
 
 		}
 		else {
@@ -7344,11 +7357,36 @@ ChaVector3 CBone::CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe)
 			//GetParModel()->GetCameraAnimParams(srcmotid, roundingframe, tmpcamdist, &tmpEyePos, &tmpTargetPos, 0, saveinheritmode);
 			//return tmpEyePos;
 
+
 			FbxTime fbxtime;
 			fbxtime.SetSecondDouble(roundingframe / 30.0);
 			FbxVector4 fbxcameratra = GetFbxNodeOnLoad()->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
-			ChaVector3 cameratra = ChaVector3(fbxcameratra);
+			ChaVector3 cameratra = ChaVector3((float)fbxcameratra[0], (float)fbxcameratra[1], (float)fbxcameratra[2]);
 			return cameratra;
+
+
+
+			//ChaMatrix cammat = GetWorldMat(false, srcmotid, roundingframe, 0);
+			//ChaMatrix nodemat = GetNodeMat();
+			//ChaMatrix rootmat;
+			//if (GetParent(false) && GetParent(false)->IsNull() && GetFbxNodeOnLoad()->GetCamera()) {
+			//	FbxTime time0;
+			//	time0.SetSecondDouble(0.0);
+			//	FbxAMatrix lGlobalSRT = GetFbxNodeOnLoad()->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);
+			//	rootmat = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+			//}
+			//else {
+			//	rootmat.SetIdentity();
+			//}
+			//ChaMatrix transformmat = nodemat * cammat * ChaMatrixInv(rootmat);
+			//ChaVector3 zeropos, retpos;
+			//zeropos.SetZeroVec3();
+			//retpos.SetZeroVec3();
+			//ChaVector3TransformCoord(&retpos, &zeropos, &transformmat);
+			//return retpos;
+
+
+
 
 		}
 		else {
@@ -9930,11 +9968,9 @@ void CBone::SaveFbxNodePosture(FbxNode* pNode)
 		m_fbxSclPiv = pNode->GetScalingPivot(FbxNode::eSourcePivot);
 		m_fbxrotationActive = pNode->GetRotationActive();
 
-		EFbxRotationOrder rotationorder;
-		pNode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);//なぞのおまじない
 
-		//2023/06/21 preとpostはxyzで計算　lclrotは記録されていたorderで計算
-		//pNode->GetRotationOrder(FbxNode::eSourcePivot, m_rotationorder);//<--- これを反映させるとなぜかうまくいかない　SDKを通した時点で　内容的にeEulerXYZになっている？
+		pNode->GetRotationOrder(FbxNode::eSourcePivot, m_rotationorder);
+
 
 		m_InheritType = pNode->InheritType.Get();//2023/06/03
 
@@ -9962,28 +9998,25 @@ int CBone::CalcLocalNodePosture(FbxNode* pNode, double srcframe, ChaMatrix* ploc
 	FbxDouble3 fbxLclPos;
 	FbxDouble3 fbxLclRot;
 	FbxDouble3 fbxLclScl;
-	//if (srcframe == 0.0) {
-	//	fbxLclPos = pNode->LclTranslation.Get();
-	//	fbxLclRot = pNode->LclRotation.Get();
-	//	fbxLclScl = pNode->LclScaling.Get();
-	//}
-	//else {
+	if (srcframe == 0.0) {
+		fbxLclPos = pNode->LclTranslation.Get();
+		fbxLclRot = pNode->LclRotation.Get();
+		fbxLclScl = pNode->LclScaling.Get();
+	}
+	else {
 		fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
 		fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
 		fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
-	//}
+	}
 
 	EFbxRotationOrder rotationorder;
 	pNode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
 
 
-	ChaMatrix fbxT, fbxRoff, fbxRp, fbxRpre, fbxR, fbxRpost, fbxRpinv, fbxSoff, fbxSp, fbxS, fbxSpinv;
+	ChaMatrix fbxT, fbxRoff, fbxRp, fbxRpinv, fbxSoff, fbxSp, fbxS, fbxSpinv;
 	fbxT.SetIdentity();
 	fbxRoff.SetIdentity();
 	fbxRp.SetIdentity();
-	fbxRpre.SetIdentity();
-	fbxR.SetIdentity();
-	fbxRpost.SetIdentity();
 	fbxRpinv.SetIdentity();
 	fbxSoff.SetIdentity();
 	fbxSp.SetIdentity();
@@ -9994,14 +10027,25 @@ int CBone::CalcLocalNodePosture(FbxNode* pNode, double srcframe, ChaMatrix* ploc
 	fbxRoff.SetTranslation(ChaVector3(m_fbxRotOff));
 	fbxRp.SetTranslation(ChaVector3(m_fbxRotPiv));
 
-	//fbxRpre.SetXYZRotation(0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
-	//fbxR.SetXYZRotation(0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
-	//fbxRpost.SetXYZRotation(0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
 
-	fbxRpre.SetRotation(eEulerXYZ, 0, ChaVector3(m_fbxPreRot));//XYZ
-	//fbxR.SetRotation(rotationorder, 0, ChaVector3(fbxLclRot));//##### at fbxtime. RotationOrder !!!!
-	fbxR.SetRotation(eEulerXYZ, 0, ChaVector3(fbxLclRot));//##### at fbxtime : この方が　カメラのあおりがうまくいく(TheHunt City1 Camera_1)
-	fbxRpost.SetRotation(eEulerXYZ, 0, ChaVector3(m_fbxPostRot));//XYZ
+	//######################################################################################################################
+	//2023/06/23 use quaternion !!!!
+	// 
+	// FbxAMatrixの掛け算の順番表記　Rpre * R * Rpost　はミスかと思ったら合っていた
+	// rotationorderについても　実際にはXYZなのではと試していたが　GetRotationOrderの結果の通りで合っていた
+	// 
+	// つまり　ChaMatrixでの掛け算順は　Rpost * R * Rpreとなり　クォータニオンでの掛け算順は　preQ * lclQ * postQとなる
+	// TheHuntのCity1シーンのCamera_1, Camera_2のモーションで検証
+	// 
+	//######################################################################################################################
+	CQuaternion rotQ1, rotQ2, preQ, lclQ, postQ;
+	preQ.SetRotation(rotationorder, 0, ChaVector3(m_fbxPreRot));
+	lclQ.SetRotation(rotationorder, 0, ChaVector3(fbxLclRot));//##### at fbxtime
+	postQ.SetRotation(rotationorder, 0, ChaVector3(m_fbxPostRot));
+	rotQ1 = preQ * lclQ * postQ;
+	rotQ2 = preQ * postQ;
+
+
 
 	fbxRpinv = ChaMatrixInv(fbxRp);
 	fbxSoff.SetTranslation(ChaVector3(m_fbxSclOff));
@@ -10017,10 +10061,12 @@ int CBone::CalcLocalNodePosture(FbxNode* pNode, double srcframe, ChaMatrix* ploc
 	//##################################################################################################################
 
 	ChaMatrix localnodemat, localnodeanimmat;
-	localnodeanimmat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRpre * fbxR * fbxRpost * fbxRp * fbxRoff * fbxT;//2023/05/17
+	//localnodeanimmat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRpre * fbxR * fbxRpost * fbxRp * fbxRoff * fbxT;//2023/05/17
+	localnodeanimmat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * rotQ1.MakeRotMatX() * fbxRp * fbxRoff * fbxT;//2023/06/23
 
 	//0フレームアニメ無し : fbxR無し
-	localnodemat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRpre * fbxRpost * fbxRp * fbxRoff * fbxT;//2023/05/17
+	//localnodemat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRpre * fbxRpost * fbxRp * fbxRoff * fbxT;//2023/05/17
+	localnodemat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * rotQ2.MakeRotMatX() * fbxRp * fbxRoff * fbxT;
 
 	*plocalnodemat = localnodemat;
 	*plocalnodeanimmat = localnodeanimmat;

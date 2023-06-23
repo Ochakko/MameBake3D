@@ -92,7 +92,15 @@ int CImpFile::WriteImpFile( WCHAR* strpath, CModel* srcmodel )
 	CallF( Write2File( "<?xml version=\"1.0\" encoding=\"Shift_JIS\"?>\r\n<IMPULSE>\r\n" ), return 1 );  
 	CallF( Write2File( "    <FileInfo>1001-01</FileInfo>\r\n" ), return 1 );
 
-	WriteImpReq( m_model->GetTopBone(false) );
+	//WriteImpReq( m_model->GetTopBone(false) );
+	std::map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_model->GetBoneListBegin(); itrbone != m_model->GetBoneListEnd(); itrbone++) {
+		CBone* srcbone = itrbone->second;
+		if (srcbone && srcbone->IsSkeleton()) {
+			WriteImp(srcbone);
+		}
+	}
+
 
 	CallF( Write2File( "</IMPULSE>\r\n" ), return 1 );
 

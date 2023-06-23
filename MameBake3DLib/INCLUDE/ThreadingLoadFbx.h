@@ -10,7 +10,7 @@ class CBone;
 
 
 #ifndef MAXLOADFBXANIMBONE
-#define MAXLOADFBXANIMBONE	512
+#define MAXLOADFBXANIMBONE	1024
 #endif
 
 class CThreadingLoadFbx : public CThreadingBase

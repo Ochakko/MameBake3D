@@ -1551,22 +1551,26 @@ int CModel::MakeObjectName()
 
 int CModel::DbgDump()
 {
-	DbgOut( L"######start DbgDump %s\r\n", GetFileName() );
 
-	DbgOut( L"Dump Bone And InfScope\r\n" );
+	//2023/06/24
+	//ジョイントが５１２個以上あるファイルで　スタックオーバーフローするので　呼び出し停止中
 
-	if( m_topbone ){
-		DbgDumpBoneReq(0, m_topbone, 0);
-	}
-
-	DbgOut( L"######end DbgDump\r\n" );
-
+	//DbgOut( L"######start DbgDump %s\r\n", GetFileName() );
+	//DbgOut( L"Dump Bone And InfScope\r\n" );
+	//if( m_topbone ){
+	//	DbgDumpBoneReq(0, m_topbone, 0);
+	//}
+	//DbgOut( L"######end DbgDump\r\n" );
 
 	return 0;
 }
 
 int CModel::DbgDumpBoneReq(int level, CBone* boneptr, int broflag)
 {
+
+	//2023/06/24
+	//ジョイントが５１２個以上あるファイルで　スタックオーバーフローするので　呼び出し停止中
+
 
 	//サイズが大きいと　複雑なファイル読み込み時に　スタックオーバーフローする
 	char mes[512] = { 0 };
@@ -5142,6 +5146,9 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 				//#### 2023/01/31 ####################################################################
 				//読み込み時にLocalEulとLimitedLocalEulの初期化をするべきなので　復活
 				//####################################################################################
+				if (IsCameraMotion(curmotid)) {
+					PostLoadCameraFbxAnim(curmotid);
+				}
 				PostLoadFbxAnim(curmotid);//並列化出来なかった計算をする
 
 
@@ -5754,6 +5761,59 @@ void CModel::CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double sr
 //	return 0;
 //}
 
+int CModel::PostLoadCameraFbxAnim(int srcmotid)
+{
+	MOTINFO* curmi = GetMotInfo(srcmotid);
+	if (curmi && curmi->cameramotion) {
+		double animlen = curmi->frameleng;
+
+
+		map<int, CBone*>::iterator itrbone;
+		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+			CBone* srcbone = itrbone->second;
+
+			if (srcbone && srcbone->IsCamera()) {
+
+				if (strcmp(curmi->motname, srcbone->GetBoneName()) == 0) {
+					//#######################################################
+					//MotionNameとBoneNameが同じ場合だけ　それらを対応付ける
+					//#######################################################
+
+					double curframe = 0.0;//!!!!!!!!!
+
+					ChaMatrix parentglobalmat;
+					parentglobalmat.SetIdentity();
+
+
+					CBone* parentbone = srcbone->GetParent(false);
+					if (parentbone) {
+						if (parentbone->IsSkeleton()) {
+							//parentglobalmat = ChaMatrixInv(parentbone->GetNodeMat()) * parentbone->GetWorldMat(false, srcmotid, curframe, 0);
+							parentglobalmat = parentbone->GetWorldMat(false, srcmotid, curframe, 0);
+						}
+						else if (parentbone->IsNull()) {
+							FbxNode* eNullNode = parentbone->GetFbxNodeOnLoad();
+							if (eNullNode) {
+								FbxTime time0;
+								time0.SetSecondDouble(0.0);
+								FbxAMatrix lGlobalSRT = eNullNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);
+								parentglobalmat = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+							}
+							else {
+								_ASSERT(0);
+								parentglobalmat.SetIdentity();
+							}
+						}
+					}
+					m_camerafbx.PostLoadFbxAnim(srcbone, srcmotid, parentglobalmat);
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
 
 int CModel::PostLoadFbxAnim(int srcmotid)
 {
@@ -5777,162 +5837,21 @@ void CModel::PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone)
 				CMotionPoint* curmp;
 				curmp = srcbone->GetMotionPoint(srcmotid, curframe);
 				if (curmp) {
-					ChaMatrix globalmat;
-					globalmat = curmp->GetWorldMat();
-
-					//if (isfirstmot && (curframe == 0.0)) {
-					//	srcbone->SetFirstMat(globalmat);
-					//}
-
 					//#############
 					//set localmat
 					//#############
-					ChaMatrix parentglobalmat;
-					parentglobalmat.SetIdentity();
-					ChaVector3 parentlcltra = ChaVector3(0.0f, 0.0f, 0.0f);
-					//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
-					//if (srcbone->GetParent()) {
-					//	CMotionPoint* parentmp = srcbone->GetParent()->GetMotionPoint(srcmotid, curframe);
-					//	if (parentmp) {
-					//		parentglobalmat = parentmp->GetWorldMat();
-					//	}
-					//	else {
-					//		parentglobalmat.SetIdentity();
-					//	}
-					//}
-					//else {
-					//	ChaMatrixIdentity(&parentglobalmat);
-					//}
 
-
-					////eNull(parentbone)には　motionpointが無いが　変換行列はある
-					//CBone* parentbone = srcbone->GetParent(false);
-					//if (parentbone) {
-					//	if (parentbone->IsSkeleton()) {
-					//		parentglobalmat = parentbone->GetWorldMat(false, srcmotid, curframe, 0);
-					//	}
-					//	else if (parentbone->IsNull()) {
-					//		FbxNode* eNullNode = parentbone->GetFbxNodeOnLoad();
-					//		if (eNullNode) {
-					//			FbxTime time0;
-					//			time0.SetSecondDouble(0.0);
-					//			FbxAMatrix lGlobalSRT = eNullNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);
-					//			parentglobalmat = ChaMatrixFromFbxAMatrix(lGlobalSRT);
-					//		}
-					//		else {
-					//			_ASSERT(0);
-					//			parentglobalmat.SetIdentity();
-					//		}
-					//	}
-					//	
-					//	if (FindNodeByBone(parentbone)) {
-					//		FbxDouble3 fbxparentlcltra = FindNodeByBone(parentbone)->LclTranslation;
-					//		parentlcltra = ChaVector3((float)fbxparentlcltra[0], (float)fbxparentlcltra[1], (float)fbxparentlcltra[2]);
-					//	}
-					//	else {
-					//		parentlcltra = ChaVector3(0.0f, 0.0f, 0.0f);
-					//	}
-					//	
-					//}
-					//else {
-					//	parentglobalmat.SetIdentity();
-					//}
-					//ChaMatrix localmat = globalmat * ChaMatrixInv(parentglobalmat);
-					//curmp->SetLocalMat(localmat);//anglelimit無し
-					//////for debug
-					////if ((curframe <= 2.1) && (strstr(srcbone->GetBoneName(), "Root") != 0)) {
-					////	_ASSERT(0);
-					////}
-					//bool limitdegflag = false;//unlimitedで計算してunlimitedにセット
-					////2023/01/31
-					//ChaVector3 cureul = srcbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, curframe, BEFEUL_BEFFRAME);
-
-
-					bool limitdegflag = false;
-					ChaVector3 cureul = srcbone->CalcFBXEulXYZ(limitdegflag, srcmotid, curframe, 0);
-					curmp->SetLocalEul(cureul);
-					curmp->SetLimitedLocalEul(cureul);
-					curmp->SetCalcLimitedWM(2);
-
-					if ((curframe == 0.0) && IsCameraMotion(srcmotid)) {
-						if (srcbone->IsCamera() && FindNodeByBone(srcbone)) {
-
-							//#######################################################
-							//MotionNameとBoneNameが同じ場合だけ　それらを対応付ける
-							//#######################################################
-							MOTINFO* chkmi = GetMotInfo(srcmotid);
-							if (chkmi) {
-								char chkmotname[256] = { 0 };
-								strcpy_s(chkmotname, 256, chkmi->motname);
-								char chkbonename[256] = { 0 };
-								strcpy_s(chkbonename, 256, srcbone->GetBoneName());
-								if (strcmp(chkmotname, chkbonename) == 0) {
-
-									
-									CBone* parentbone = srcbone->GetParent(false);
-									if (parentbone) {
-										if (parentbone->IsSkeleton()) {
-											//parentglobalmat = ChaMatrixInv(parentbone->GetNodeMat()) * parentbone->GetWorldMat(false, srcmotid, curframe, 0);
-											parentglobalmat = parentbone->GetWorldMat(false, srcmotid, curframe, 0);
-										}
-										else if (parentbone->IsNull()) {
-											FbxNode* eNullNode = parentbone->GetFbxNodeOnLoad();
-											if (eNullNode) {
-												FbxTime time0;
-												time0.SetSecondDouble(0.0);
-												FbxAMatrix lGlobalSRT = eNullNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);
-												parentglobalmat = ChaMatrixFromFbxAMatrix(lGlobalSRT);
-											}
-											else {
-												_ASSERT(0);
-												parentglobalmat.SetIdentity();
-											}
-										}
-									}
-									m_camerafbx.PostLoadFbxAnim(srcbone, srcmotid, parentglobalmat);
-								}
-							}
-						}
+					//CCameraFbx::PostLoadFbxAnim()でのmotidとCAMERANODE*の対応表エントリーよりも後で呼ぶ
+					if (srcbone->IsSkeleton() || (srcbone->IsCamera() && IsCameraMotion(srcmotid))) {
+						bool limitdegflag = false;
+						ChaVector3 cureul = srcbone->CalcFBXEulXYZ(limitdegflag, srcmotid, curframe, 0);
+						curmp->SetLocalEul(cureul);
+						curmp->SetLimitedLocalEul(cureul);
+						curmp->SetCalcLimitedWM(2);
 					}
 				}
 			}
 		}
-		//#####################################################################################################
-		//念のために　ジョイントの向きを強制リセットしていたころの　ソースをコメントアウトして残す　2022/10/31
-		//#####################################################################################################
-		//if ((bvhflag == 0) &&
-		//	GetHasBindPose()) {
-		//
-		//
-		//	//######################################
-		//	// バインドポーズがある場合
-		//	//######################################
-		//
-		//	ChaMatrix localmat;
-		//	localmat = curmp->GetLocalMat();
-		//
-		//	//###############
-		//	//calc globalmat
-		//	//###############
-		//	ChaMatrix parentglobalmat;
-		//	//parentglobalmat = curbone->CalcParentGlobalMat(motid, framecnt);//間にモーションを持たないジョイントが入っても正しくするためにこの関数で再帰計算する必要あり
-		//	if (srcbone->GetParent()) {
-		//		parentglobalmat = srcbone->GetParent()->GetWorldMat(srcmotid, curframe);
-		//	}
-		//	else {
-		//		ChaMatrixIdentity(&parentglobalmat);
-		//	}
-		//
-		//	ChaMatrix globalmat = localmat * parentglobalmat;
-		//	curmp->SetWorldMat(globalmat);//anglelimit無し
-		//
-		//
-		//	if (isfirstmot && (curframe == 0.0)) {
-		//		srcbone->SetFirstMat(globalmat);
-		//	}
-		//
-		//}
-
 
 		if (srcbone->GetChild(false)) {
 			PostLoadFbxAnimReq(srcmotid, animlen, srcbone->GetChild(false));
@@ -17451,6 +17370,24 @@ void CModel::SetRotationActiveDefaultReq(CNodeOnLoad* srcnodeonload)
 
 }
 
+
+ChaVector3 CModel::CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVector3 befeul)
+{
+	ChaVector3 reteul = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	if (!m_camerafbx.IsLoaded()) {
+		_ASSERT(0);
+		return reteul;
+	}
+
+	CAMERANODE* curcn = m_camerafbx.FindCameraNodeByMotId(cameramotid);
+	if (!curcn) {
+		_ASSERT(0);
+		return reteul;
+	}
+
+	return m_camerafbx.CalcCameraFbxEulXYZ(cameramotid, srcframe, befeul);
+}
 
 
 int CModel::GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaMatrix* protmat, int inheritmode)

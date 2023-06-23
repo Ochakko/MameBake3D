@@ -139,6 +139,7 @@ public:
 	void SetRow(int rowindex, ChaVector3 srcrow);//çs
 	void SetCol(int colindex, ChaVector3 srccol);//óÒ
 
+	CQuaternion GetRotQ();
 
 	float* GetDataPtr();
 

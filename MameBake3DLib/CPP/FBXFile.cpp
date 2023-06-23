@@ -699,9 +699,9 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode)
 	}
 
 	if (useorgorder == true) {
-		//############################################
+		//#####################################################
 		//eMesh, eNullはそのままのRotationOrderで保存
-		//############################################
+		//#####################################################
 		int orgrotationorder = (int)rotationorder;
 		psavenode->SetRotationOrder(FbxNode::eSourcePivot, rotationorder);
 		psavenode->SetRotationOrder(FbxNode::eDestinationPivot, rotationorder);
@@ -722,11 +722,12 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode)
 		psavenode->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);//2023/06/03
 		psavenode->SetRotationOrder(FbxNode::eDestinationPivot, eEulerXYZ);//2023/06/03
 
-		//ChaVector3 roteul, preroteul, postroteul;
-		//FbxDouble3 roteulxyz, preroteulxyz, postroteulxyz;
-		//roteul = ChaVector3(fbxLclRot);
-		//preroteul = ChaVector3(fbxPreRot);
-		//postroteul = ChaVector3(fbxPostRot);
+		ChaVector3 roteul, preroteul, postroteul;
+		FbxDouble3 roteulxyz, preroteulxyz, postroteulxyz;
+		roteul = ChaVector3(fbxLclRot);
+		preroteul = ChaVector3(fbxPreRot);
+		postroteul = ChaVector3(fbxPostRot);
+
 		//roteulxyz = roteul.ConvRotOrder2XYZ(rotationorder);
 		//preroteulxyz = preroteul.ConvRotOrder2XYZ(rotationorder);
 		//postroteulxyz = postroteul.ConvRotOrder2XYZ(rotationorder);
@@ -3039,6 +3040,8 @@ void AnimateSkeleton(bool limitdegflag, FbxScene* pScene, CModel* pmodel)
 		motionnum = aino;
 	}
 
+	int savecameramotid = pmodel->GetCameraMotionId();
+
 
 	qsort_s( s_ai, motionnum, sizeof( ANIMINFO ), sortfunc_leng, NULL );//モーション長が短い順に出力しないと正しく読み込めない。FBXの仕様？
 
@@ -3095,6 +3098,8 @@ void AnimateSkeleton(bool limitdegflag, FbxScene* pScene, CModel* pmodel)
 
 	}
 
+	pmodel->SetCameraMotionId(savecameramotid);
+
 
 }
 
@@ -3119,7 +3124,7 @@ void AnimateBoneReq(bool limitdegflag, FbxNode* pNode, FbxAnimLayer* lAnimLayer,
 			//注意　ここは　CBone::IsNull()==trueのときにも通る
 
 
-			//コメントアウト　RotationOrderは　CreateAndCopyFbxNodeReq()にて　CopyNodePosture()を使って設定済　eNull, eMesh, eCameraは元データと同じRotationOrder
+			//コメントアウト　RotationOrderは　CreateAndCopyFbxNodeReq()にて　CopyNodePosture()を使って設定済　eNull, eMeshは元データと同じRotationOrder
 			//lSkel->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);
 			//lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerXYZ);
 			
@@ -3145,6 +3150,7 @@ void AnimateBoneReq(bool limitdegflag, FbxNode* pNode, FbxAnimLayer* lAnimLayer,
 				WriteFBXAnimScale(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
 				WriteFBXAnimScale(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
 				WriteFBXAnimScale(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+
 			}
 		}
 	}
@@ -3347,79 +3353,10 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 
 		curbone->SaveFbxNodePosture(pNode);//2023/02/16
 
-		FbxDouble3 fbxLclPos = curbone->GetFbxLclPos();
-		FbxDouble3 fbxLclRot = curbone->GetFbxLclRot();
-		FbxDouble3 fbxLclScl = curbone->GetFbxLclScl();
+		curbone->CalcLocalNodePosture(pNode, 0.0, dstnodemat, dstnodeanimmat);
 
-		FbxDouble3 fbxRotOff = curbone->GetFbxRotOff();
-		FbxDouble3 fbxRotPiv = curbone->GetFbxRotPiv();
-		FbxDouble3 fbxPreRot = curbone->GetFbxPreRot();
-		FbxDouble3 fbxPostRot = curbone->GetFbxPostRot();
-		FbxDouble3 fbxSclOff = curbone->GetFbxSclOff();
-		FbxDouble3 fbxSclPiv = curbone->GetFbxSclPiv();
-
-		bool rotationActive = curbone->GetFbxRotationActive();
-		EFbxRotationOrder rotationorder = curbone->GetFbxRotationOrder();
-
-		ChaMatrix fbxT, fbxRoff, fbxRp, fbxRpre, fbxR, fbxRpost, fbxRpinv, fbxSoff, fbxSp, fbxS, fbxSpinv;
-		fbxT.SetIdentity();
-		fbxRoff.SetIdentity();
-		fbxRp.SetIdentity();
-		fbxRpre.SetIdentity();
-		fbxR.SetIdentity();
-		fbxRpost.SetIdentity();
-		fbxRpinv.SetIdentity();
-		fbxSoff.SetIdentity();
-		fbxSp.SetIdentity();
-		fbxS.SetIdentity();
-		fbxSpinv.SetIdentity();
-
-		fbxT.SetTranslation(ChaVector3(fbxLclPos));
-		fbxRoff.SetTranslation(ChaVector3(fbxRotOff));
-		fbxRp.SetTranslation(ChaVector3(fbxRotPiv));
-
-		//fbxRpre.SetXYZRotation(0, ChaVector3((float)fbxPreRot[0], (float)fbxPreRot[1], (float)fbxPreRot[2]));
-		//fbxR.SetXYZRotation(0, ChaVector3((float)fbxLclRot[0], (float)fbxLclRot[1], (float)fbxLclRot[2]));
-		//fbxRpost.SetXYZRotation(0, ChaVector3((float)fbxPostRot[0], (float)fbxPostRot[1], (float)fbxPostRot[2]));
-
-		////2023/03/27 : rotationorder対応 
-		fbxRpre.SetRotation(rotationorder, 0, ChaVector3(fbxPreRot));
-		fbxR.SetRotation(rotationorder, 0, ChaVector3(fbxLclRot));
-		fbxRpost.SetRotation(rotationorder, 0, ChaVector3(fbxPostRot));
-
-		fbxRpinv = ChaMatrixInv(fbxRp);
-		fbxSoff.SetTranslation(ChaVector3(fbxSclOff));
-		fbxSp.SetTranslation(ChaVector3(fbxSclPiv));
-		fbxS.SetScale(ChaVector3(fbxLclScl));
-		fbxSpinv = ChaMatrixInv(fbxSp);
-
-		//##################################################################################################################
-		// FbxAMatrix Transform = T * Roff * Rp * Rpre * R * Rpost * Rp-1 * Soff * Sp * S * Sp-1
-		// 
-		// //2023/05/16
-		// ただし　FbxAMatrixの＊演算子(左に掛けていく)は　ChaMatrixの*演算子(右に掛けていく)と逆順掛け算　(行列成分は同じ)
-		//##################################################################################################################
-
-		ChaMatrix localnodemat, localnodeanimmat;
-		////localnodeanimmat = fbxT * fbxRoff * fbxRp * fbxRpre * fbxR * fbxRpost * fbxRpinv * fbxSoff * fbxSp * fbxS * fbxSpinv;
-		////localnodeanimmat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRpost * fbxR * fbxRpre * fbxRp * fbxRoff * fbxT;
-		////localnodeanimmat = fbxSoff * fbxSpinv * fbxS * fbxSp * fbxRpinv * fbxRpre * fbxR * fbxRpost * fbxRp * fbxRoff * fbxT;
-		////localnodeanimmat = fbxSoff * fbxSpinv * fbxS * fbxSp * fbxRoff * fbxRpinv * fbxRpre * fbxR * fbxRpost * fbxRp * fbxT;
-		localnodeanimmat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRpre * fbxR * fbxRpost * fbxRp * fbxRoff * fbxT;//2023/05/17
-
-		//0フレームアニメ無し : fbxR無し
-		////localnodemat = fbxT * fbxRoff * fbxRp * fbxRpre * fbxRpost * fbxRpinv * fbxSoff * fbxSp * fbxSpinv;
-		////localnodemat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRp * fbxRoff;
-		////localnodemat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRp * fbxRoff * fbxT;
-		////localnodemat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRpost * fbxRpre * fbxRp * fbxRoff * fbxT;
-		////localnodemat = fbxSoff * fbxSpinv * fbxS * fbxSp * fbxRpinv * fbxRpre * fbxRpost * fbxRp * fbxRoff * fbxT;
-		localnodemat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * fbxRpre * fbxRpost * fbxRp * fbxRoff * fbxT;//2023/05/17
-
-		*dstnodemat = localnodemat;
-		*dstnodeanimmat = localnodeanimmat;
-
-		curbone->SetLocalNodeMat(localnodemat);
-		curbone->SetLocalNodeAnimMat(localnodeanimmat);
+		curbone->SetLocalNodeMat(*dstnodemat);
+		curbone->SetLocalNodeAnimMat(*dstnodeanimmat);
 	}
 	else {
 		_ASSERT(0);

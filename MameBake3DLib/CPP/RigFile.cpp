@@ -101,7 +101,26 @@ int CRigFile::WriteRigFile( WCHAR* strpath, CModel* srcmodel )
 	//rigcolorêVãKÅ@[RIGCOLOR_RED(0), RIGCOLOR_BLUE(2)]
 	CallF(Write2File("    <FileInfo>1001-04</FileInfo>\r\n"), return 1);
 
-	WriteRigReq( m_model->GetTopBone(false) );
+	//WriteRigReq( m_model->GetTopBone(false) );
+
+	std::map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_model->GetBoneListBegin(); itrbone != m_model->GetBoneListEnd(); itrbone++) {
+		CBone* srcbone = itrbone->second;
+		if (srcbone && srcbone->IsSkeleton()) {
+			int rigno;
+			for (rigno = 0; rigno < MAXRIGNUM; rigno++) {
+				m_customrig = srcbone->GetCustomRig(rigno);
+				if (m_customrig.useflag == 2) {
+					int isvalid = IsValidCustomRig(m_model, m_customrig, srcbone);
+					if (isvalid) {
+						WriteRig(srcbone);
+					}
+				}
+			}
+		}
+	}
+
+
 
 	CallF( Write2File( "</RIGFILE>\r\n" ), return 1 );
 

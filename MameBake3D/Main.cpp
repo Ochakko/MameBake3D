@@ -25142,8 +25142,16 @@ int OnFrameProcessCameraTime(double difftime, double* pnextframe, int* pendflag,
 			s_model->SetMotionFrame(cameramotid, rangestart);
 			*pnextframe = 0.0;
 		}
+		s_model->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, difftime, pnextframe, pendflag, ploopstartflag, cameramotid);//!!! cameramotid !!!
 	}
-	s_model->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, difftime, pnextframe, pendflag, ploopstartflag, cameramotid);//!!! cameramotid !!!
+	else {
+		if (s_owpLTimeline) {
+			*pnextframe = s_owpLTimeline->getCurrentTime();
+		}
+		else {
+			*pnextframe = 1.0;
+		}
+	}
 	//if (*pendflag == 1) {
 	//	g_previewFlag = 0;
 	//}

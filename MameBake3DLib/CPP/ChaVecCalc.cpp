@@ -1675,6 +1675,12 @@ ChaMatrix::~ChaMatrix()
 
 }
 
+CQuaternion ChaMatrix::GetRotQ()
+{
+	CQuaternion retq;
+	retq.RotationMatrix(*this);
+	return retq;
+}
 
 
 ChaMatrix ChaMatrix::operator= (ChaMatrix m) { 
@@ -1814,7 +1820,6 @@ ChaMatrix ChaMatrix::operator- (const ChaMatrix &m) const {
 	); 
 }
 ChaMatrix &ChaMatrix::operator-= (const ChaMatrix &m) { *this = *this - m; return *this; }
-
 
 ChaMatrix ChaMatrix::operator* (const ChaMatrix& m) const {
 
@@ -3056,7 +3061,7 @@ int CQuaternion::RotationArc(ChaVector3 srcvec0, ChaVector3 srcvec1)
 
 int CQuaternion::Rotate(ChaVector3* dstvec, ChaVector3 srcvec)
 {
-	if (dstvec) {
+	if (!dstvec) {
 		_ASSERT(0);
 		return 1;
 	}
