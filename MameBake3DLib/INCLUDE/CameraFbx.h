@@ -22,6 +22,7 @@ typedef struct tag_cameranode
 	ChaVector3 position;
 	ChaMatrix worldmat;
 	ChaVector3 dirvec;
+	ChaVector3 upvec;//2023/06/25
 
 	ChaMatrix localnodemat;
 
@@ -30,7 +31,6 @@ typedef struct tag_cameranode
 	ChaMatrix parentenullmat;
 	ChaMatrix adjusttra;
 
-	ChaVector3 upVector;     // アップベクトル
 	double aspectHeight; // アスペクト高
 	double aspectWidth;  // アスペクト幅
 	double nearZ;     // near平面距離
@@ -58,9 +58,9 @@ typedef struct tag_cameranode
 		parentlcltra.SetZeroVec3();
 		parentenullmat.SetIdentity();
 		dirvec = ChaVector3(0.0f, 0.0f, 1.0f);
+		upvec = ChaVector3(0.0f, 1.0f, 0.0f);
 		adjusttra.SetIdentity();
 
-		upVector = ChaVector3(0.0f, 1.0f, 0.0f);     // アップベクトル
 		aspectHeight = 600.0f; // アスペクト高
 		aspectWidth = 800.0f;  // アスペクト幅
 		nearZ = 1.0f;     // near平面距離
@@ -100,17 +100,17 @@ public:
 	//int SetFbxCamera(FbxNode* pnode, CBone* pbone);
 	int AddFbxCamera(FbxNode* pnode, CBone* pbone);
 
-	int SetZeroFrameCamera();
+	//int SetZeroFrameCamera();
 
 	int GetCameraAnimParams(int cameramotid, double nextframe, double camdist, 
-		ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaMatrix* protmat, int inheritmode);
+		ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaVector3* pcamupdir, ChaMatrix* protmat, int inheritmode);
 	ChaVector3 CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVector3 befeul);
 
 	CAMERANODE* FindCameraNodeByNode(FbxNode* srcnode);
 	CAMERANODE* FindCameraNodeByBone(CBone* srcbone);
 	CAMERANODE* FindCameraNodeByMotId(int srcmotid);
 
-	int PostLoadFbxAnim(CBone* srcbone, int srcmotid, ChaMatrix srcenullmat);
+	int PreLoadFbxAnim(CBone* srcbone, int srcmotid, ChaMatrix srcenullmat);
 
 	//CCameraFbx operator= (CCameraFbx srcrange);
 	//bool operator== (const CCameraFbx &cmp) const {

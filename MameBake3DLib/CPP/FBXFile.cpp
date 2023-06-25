@@ -667,7 +667,9 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode)
 	fbxSclOff = srcnode->GetScalingOffset(FbxNode::eSourcePivot);
 	fbxSclPiv = srcnode->GetScalingPivot(FbxNode::eSourcePivot);
 	fbxrotationActive = srcnode->GetRotationActive();
+
 	srcnode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+	
 	FbxTransform::EInheritType lInheritType = srcnode->InheritType.Get();//2023/06/03
 
 	
@@ -728,20 +730,31 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode)
 		preroteul = ChaVector3(fbxPreRot);
 		postroteul = ChaVector3(fbxPostRot);
 
-		//roteulxyz = roteul.ConvRotOrder2XYZ(rotationorder);
-		//preroteulxyz = preroteul.ConvRotOrder2XYZ(rotationorder);
-		//postroteulxyz = postroteul.ConvRotOrder2XYZ(rotationorder);
+
+		//rotationorderに変更がある場合のみ　変換する
+		//変換すると保存したものが変になる　そのままXYZ順としてセットするとなぜかうまくいく　なぞ
+		//CBone::CalcLocalNodePosture()内で　読み込み時に　rotationorderの通りに計算すると　カメラの動きが改善した　のに
+		//if (rotationorder != eEulerXYZ) {
+		//	roteulxyz = roteul.ConvRotOrder2XYZ(rotationorder);
+		//	preroteulxyz = preroteul.ConvRotOrder2XYZ(rotationorder);
+		//	postroteulxyz = postroteul.ConvRotOrder2XYZ(rotationorder);
+		//}
+		//else {
+			roteulxyz = fbxLclRot;
+			preroteulxyz = fbxPreRot;
+			postroteulxyz = fbxPostRot;
+		//}
 
 		psavenode->LclTranslation.Set(fbxLclPos);
-		psavenode->LclRotation.Set(fbxLclRot);
-		//psavenode->LclRotation.Set(roteulxyz);
+		//psavenode->LclRotation.Set(fbxLclRot);
+		psavenode->LclRotation.Set(roteulxyz);
 		psavenode->LclScaling.Set(fbxLclScl);
 		psavenode->SetRotationOffset(FbxNode::eSourcePivot, fbxRotOff);
 		psavenode->SetRotationPivot(FbxNode::eSourcePivot, fbxRotPiv);
-		psavenode->SetPreRotation(FbxNode::eSourcePivot, fbxPreRot);
-		psavenode->SetPostRotation(FbxNode::eSourcePivot, fbxPostRot);
-		//psavenode->SetPreRotation(FbxNode::eSourcePivot, preroteulxyz);
-		//psavenode->SetPostRotation(FbxNode::eSourcePivot, postroteulxyz);
+		//psavenode->SetPreRotation(FbxNode::eSourcePivot, fbxPreRot);
+		//psavenode->SetPostRotation(FbxNode::eSourcePivot, fbxPostRot);
+		psavenode->SetPreRotation(FbxNode::eSourcePivot, preroteulxyz);
+		psavenode->SetPostRotation(FbxNode::eSourcePivot, postroteulxyz);
 		psavenode->SetScalingOffset(FbxNode::eSourcePivot, fbxSclOff);
 		psavenode->SetScalingPivot(FbxNode::eSourcePivot, fbxSclPiv);
 		psavenode->SetRotationActive(fbxrotationActive);

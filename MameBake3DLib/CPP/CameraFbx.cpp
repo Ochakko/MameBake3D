@@ -183,7 +183,7 @@ int CCameraFbx::AddFbxCamera(FbxNode* pNode, CBone* pbone)
 		FbxDouble fovY = fovY_Degree * 3.14159265358979 / 180.0;
 
 
-		newcameranode->upVector = ChaVector3((float)upVector[0], (float)upVector[1], (float)upVector[2]);     // アップベクトル
+		//newcameranode->upVector = ChaVector3((float)upVector[0], (float)upVector[1], (float)upVector[2]);     // アップベクトル
 		newcameranode->aspectHeight = aspectHeight; // アスペクト高
 		newcameranode->aspectWidth = aspectWidth;  // アスペクト幅
 		newcameranode->nearZ = nearZ;     // near平面距離
@@ -207,7 +207,7 @@ int CCameraFbx::AddFbxCamera(FbxNode* pNode, CBone* pbone)
 
 }
 
-int CCameraFbx::PostLoadFbxAnim(CBone* srcbone, int srcmotid, ChaMatrix srcenullmat)
+int CCameraFbx::PreLoadFbxAnim(CBone* srcbone, int srcmotid, ChaMatrix srcenullmat)
 {
 
 	CAMERANODE* cameranode = FindCameraNodeByBone(srcbone);
@@ -235,39 +235,6 @@ int CCameraFbx::PostLoadFbxAnim(CBone* srcbone, int srcmotid, ChaMatrix srcenull
 	cameranode->parentenullmat = srcenullmat;
 
 
-	////FbxDouble3 fbxlcltra = cameranode->pnode->LclTranslation.Get();
-	//FbxDouble3 fbxlcltra = cameranode->pnode->EvaluateLocalTranslation(timezero, FbxNode::eSourcePivot, true, true);;
-	//cameranode->lcltra = ChaVector3((float)fbxlcltra[0], (float)fbxlcltra[1], (float)fbxlcltra[2]);
-
-	//FbxDouble3 fbxlcltra = cameranode->pnode->EvaluateLocalTranslation(timezero, FbxNode::eSourcePivot, true, true);
-	//FbxDouble3 fbxparentlcltra = FbxDouble3(0.0f, 0.0f, 0.0f);
-	//if (cameranode->pnode->GetParent()) {
-	//	fbxparentlcltra = cameranode->pnode->GetParent()->EvaluateLocalTranslation(timezero, FbxNode::eSourcePivot, true, true);
-	//}
-	////cameranode->lcltra = ChaVector3((float)(fbxlcltra[0] - fbxparentlcltra[0]), (float)(fbxlcltra[1] - fbxparentlcltra[1]), (float)(fbxlcltra[2] - fbxparentlcltra[2]));
-	////cameranode->lcltra = ChaVector3((float)(fbxparentlcltra[0] - fbxlcltra[0]), (float)(fbxparentlcltra[1] - fbxlcltra[1]), (float)(fbxparentlcltra[2] - fbxlcltra[2]));
-
-
-	//ChaMatrix chatra, chaparenttra;
-	//chatra.SetIdentity();
-	//chaparenttra.SetIdentity();
-	//FbxAMatrix fbxtra = cameranode->pnode->EvaluateGlobalTransform(timezero, FbxNode::eSourcePivot, true, true);
-	//chatra = ChaMatrixFromFbxAMatrix(fbxtra);
-	//FbxAMatrix fbxparenttra;
-	//fbxparenttra.SetIdentity();
-	//if (cameranode->pnode->GetParent()) {
-	//	fbxparenttra = cameranode->pnode->GetParent()->EvaluateGlobalTransform(timezero, FbxNode::eSourcePivot, true, true);
-	//}
-	//chaparenttra = ChaMatrixFromFbxAMatrix(fbxparenttra);
-
-	////cameranode->adjusttra = chatra * ChaMatrixInv(chaparenttra);
-	//ChaVector3 pos0 = cameranode->position;
-	//ChaVector3 pos1 = ChaMatrixTraVec(chatra);
-	//ChaVector3 adjustpos = pos0 - pos1;
-	//cameranode->adjusttra.SetIdentity();
-	//cameranode->adjusttra.SetTranslation(adjustpos);
-	//int dbgflag = 1;
-
 	{
 		srcbone->SaveFbxNodePosture(cameranode->pnode);
 		FbxDouble3 fbxlcltra = srcbone->GetFbxLclPos();
@@ -286,12 +253,20 @@ int CCameraFbx::PostLoadFbxAnim(CBone* srcbone, int srcmotid, ChaMatrix srcenull
 	ChaMatrix rotmat = cameramat;
 	CQuaternion cameraq;
 	cameraq.RotationMatrix(rotmat);
+
+
 	ChaVector3 firstdir = ChaVector3(1.0f, 0.0f, 0.0f);
 	ChaVector3 cameradir = ChaVector3(1.0f, 0.0f, 0.0f);
 	cameraq.Rotate(&cameradir, firstdir);
 	ChaVector3Normalize(&cameradir, &cameradir);
 	cameranode->dirvec = cameradir;
 
+
+	ChaVector3 firstupdir = ChaVector3(0.0f, 1.0f, 0.0f);
+	ChaVector3 cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
+	cameraq.Rotate(&cameraupdir, firstupdir);
+	ChaVector3Normalize(&cameraupdir, &cameraupdir);
+	cameranode->upvec = cameraupdir;
 
 
 	//###################
@@ -311,10 +286,10 @@ int CCameraFbx::PostLoadFbxAnim(CBone* srcbone, int srcmotid, ChaMatrix srcenull
 //inheritmode  0: writemode, 1:inherit all, 2:inherit cancel and Lclcancel
 //#################################################################
 int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double camdist, 
-	ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaMatrix* protmat, int inheritmode)
+	ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaVector3* pcamupvec, ChaMatrix* protmat, int inheritmode)
 {
 	//if (!pEyePos || !pTargetPos || (cameramotid <= 0)) {
-	if (!pEyePos || !pTargetPos) {//2023/05/29 cameramotid <= 0のときには　zeroframeカメラ位置をセット
+	if (!pEyePos || !pTargetPos || !pcamupvec) {//2023/05/29 cameramotid <= 0のときには　zeroframeカメラ位置をセット
 		//###################################################
 		//protmatがNULLの場合も許可　rotmatをセットしないだけ
 		//###################################################
@@ -346,8 +321,8 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 			FbxNode* cameranode = curcamera->pnode;
 			CBone* camerabone = curcamera->pbone;
 			if (cameranode && camerabone) {
-				ChaMatrix cammat = camerabone->GetWorldMat(false, cameramotid, roundingframe, 0);
-				ChaMatrix nodemat = camerabone->GetNodeMat();
+				//ChaMatrix cammat = camerabone->GetWorldMat(false, cameramotid, roundingframe, 0);
+				//ChaMatrix nodemat = camerabone->GetNodeMat();
 
 				ChaMatrix localnodemat, localnodeanimmat;
 				localnodemat.SetIdentity();
@@ -368,15 +343,6 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 					rootmat.SetIdentity();
 				}
 
-
-				//FbxDouble3 fbxlcltra = curcamera->pnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);;
-				////FbxDouble3 fbxlcltra = curcamera->pnode->LclTranslation.Get();
-				//ChaVector3 chalcltra = ChaVector3((float)fbxlcltra[0], (float)fbxlcltra[1], (float)fbxlcltra[2]);
-				//ChaMatrix lcltramat;
-				//lcltramat.SetIdentity();
-				//lcltramat.SetTranslation(chalcltra);
-
-
 				ChaMatrix lcltramat;
 				lcltramat.SetIdentity();
 				lcltramat.SetTranslation(curcamera->lcltra);
@@ -384,48 +350,23 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				parentlcltramat.SetIdentity();
 				parentlcltramat.SetTranslation(curcamera->parentlcltra);
 
-				//lcltramat.SetTranslation((curcamera->lcltra * 2.567f));
-				//lcltramat.SetTranslation(curcamera->parentlcltra - curcamera->lcltra);
-				//lcltramat.SetTranslation(curcamera->lcltra - curcamera->parentlcltra);
-				//lcltramat.SetTranslation((curcamera->lcltra * 2.0f));
-				//lcltramat = curcamera->localnodemat;
-				//ChaVector3 svec, tvec;
-				//ChaMatrix rmat;
-				//GetSRTMatrix(curcamera->localnodemat, &svec, &rmat, &tvec);
-				//ChaVector3 canceltravec = ChaVector3(tvec.x * svec.x, tvec.y * svec.y, tvec.z * svec.z);
-				//lcltramat.SetTranslation(canceltravec);
 
+				//ChaVector3 nodepos = nodemat.GetTranslation();
 
-				ChaVector3 nodepos = nodemat.GetTranslation();
-
-
-				//ChaMatrix roottramat;
-				//roottramat.SetIdentity();
-				//roottramat = ChaMatrixTra(rootmat);
 	
-				ChaMatrix positionmat1;
-				positionmat1.SetIdentity();
-				//positionmat.SetTranslation(curcamera->position);
-				positionmat1.SetTranslation(curcamera->position - curcamera->lcltra);
-				ChaMatrix positionmat2;
-				positionmat2.SetIdentity();
-				positionmat2.SetTranslation(curcamera->lcltra - curcamera->position);
-
-				ChaMatrix positionmat3;
-				positionmat3.SetIdentity();
-				//positionmat.SetTranslation(curcamera->position);
-				positionmat3.SetTranslation(curcamera->position - curcamera->parentlcltra);
+				//ChaMatrix positionmat1;
+				//positionmat1.SetIdentity();
+				//positionmat1.SetTranslation(curcamera->position - curcamera->lcltra);
+				//ChaMatrix positionmat2;
+				//positionmat2.SetIdentity();
+				//positionmat2.SetTranslation(curcamera->lcltra - curcamera->position);
+				//ChaMatrix positionmat3;
+				//positionmat3.SetIdentity();
+				////positionmat.SetTranslation(curcamera->position);
+				//positionmat3.SetTranslation(curcamera->position - curcamera->parentlcltra);
 				ChaMatrix positionmat4;
 				positionmat4.SetIdentity();
 				positionmat4.SetTranslation(curcamera->parentlcltra - curcamera->position);
-
-
-				//FbxVector4 fbxgeotra = cameranode->GetGeometricTranslation(FbxNode::eSourcePivot);
-				//ChaVector3 chageotra = ChaVector3((float)fbxgeotra[0], (float)fbxgeotra[1], (float)fbxgeotra[2]);
-				//ChaMatrix geotramat;
-				//geotramat.SetIdentity();
-				//geotramat.SetTranslation(chageotra);//identity
-
 
 
 			//##########################################################################################################
@@ -447,12 +388,6 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 			// 今後　これを足掛かりにして調整していく
 			//##########################################################################################################
 
-
-			CQuaternion rotz2x;
-			rotz2x.SetRotationXYZ(0, ChaVector3(0.0f, 90.0f, 0.0f));
-			ChaMatrix rotz2xmat = rotz2x.MakeRotMatX();
-
-
 			//##############
 			//カメラの位置
 			//##############
@@ -463,88 +398,24 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				switch (inheritmode) {
 				case CAMERA_INHERIT_ALL:
 					//transformmat = nodemat * cammat;
-					transformmat = localnodeanimmat * parentlocalnodeanimmat;//上
-					//transformmat = localnodeanimmat * rootmat;//上
-					//transformmat = rotz2xmat * localnodeanimmat * parentlocalnodemat;
-					
-					
-					//transformmat = localnodeanimmat * rootmat;//上 ########
-					
+					transformmat = localnodeanimmat * parentlocalnodeanimmat;//ParentRot有り
 					break;
+
 				case CAMERA_INHERIT_CANCEL_NULL1:
+					//transformmat = nodemat * cammat * ChaMatrixInv(rootmat);
 					transformmat = localnodeanimmat;//前 ##########
-					//transformmat = rotz2xmat * localnodeanimmat;
-
-					//transformmat = nodemat * cammat * ChaMatrixInv(rootmat);
-
-					//transformmat = nodemat * cammat * positionmat4;//着地点は良い　前後移動が斜めになってしまう
-					//transformmat = nodemat * cammat * positionmat3;//すごい上
-
-					//transformmat = localnodeanimmat * ChaMatrixInv(parentlocalnodeanimmat);//前　右
-					//transformmat = localnodeanimmat * ChaMatrixInv(rootmat);//前　右
-					//transformmat = parentlocalnodeanimmat * localnodeanimmat;
-					//transformmat = localnodeanimmat * positionmat1;//更に上
-					//transformmat = localnodeanimmat * positionmat3;//上
-					
-					//transformmat = nodemat * cammat * ChaMatrixInv(rootmat);
-					//transformmat = cammat * ChaMatrixInv(rootmat) * roottramat;
-					//transformmat = cammat * roottramat * ChaMatrixInv(rootmat);
 					break;
+
 				case CAMERA_INHERIT_CANCEL_NULL2:
 					//################################################################################################
 					//UnityにおいてはRootMotionチェックオン. Mayaにおいてはトランスフォームの継承チェックオフ　に相当
 					//################################################################################################
 					//transformmat = cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);
-					//transformmat = cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat) * roottramat;
-					//transformmat = cammat * ChaMatrixInv(curcamera->adjusttra) * ChaMatrixInv(rootmat);
-					//transformmat = cammat * ChaMatrixInv(roottramat) * ChaMatrixInv(rootmat);
-					//transformmat = cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat) * camerabone->GetParent(false)->GetNodeMat();//nodepos : 上過ぎ
-					//transformmat = nodemat * cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat) * camerabone->GetParent(false)->GetNodeMat();//zeropos : 上過ぎ
-					//transformmat = nodemat * cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat) * parentlcltramat;//zeropos : 上過ぎ
-					//transformmat = nodemat * cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat) * ChaMatrixInv(parentlcltramat);//zeropos : 前　下
-				//{
-				//	ChaMatrix localfbxmat = curcamera->pbone->CalcFbxLocalMatrix(false, cameramotid, roundingframe);
-				//	transformmat = localfbxmat * ChaMatrixInv(parentlcltramat);//zeropos : 前　下
-				//}
-				
-
-					//transformmat = localnodeanimmat;//前
-					//transformmat = localnodeanimmat * ChaMatrixInv(parentlocalnodemat);//前　下
-					//transformmat = localnodeanimmat * parentlocalnodeanimmat * ChaMatrixInv(parentlcltramat);//前
-					//transformmat = localnodeanimmat * ChaMatrixInv(positionmat);//前　下
-					//transformmat = localnodeanimmat * positionmat;//上
-					//transformmat = localnodeanimmat * ChaMatrixInv(lcltramat) * parentlocalnodemat;//前　下
-					//transformmat = localnodeanimmat * lcltramat * parentlocalnodemat;//上
-
-					//transformmat = localnodeanimmat * geotramat * parentlocalnodemat;
-
-					//transformmat = localnodeanimmat * ChaMatrixInv(lcltramat);//lcltra 0 : 前
-					//transformmat = ChaMatrixInv(localnodeanimmat) * ChaMatrixInv(parentlocalnodeanimmat);
-					//transformmat = localnodeanimmat * ChaMatrixInv(parentlcltramat);
-					//transformmat = localnodeanimmat * positionmat2;//すごい下
-					//transformmat = localnodeanimmat * positionmat4;//下
-
-
-					//transformmat = nodemat * cammat * ChaMatrixInv(rootmat) * positionmat4 * rootmat;//右　前後移動が斜めになる
-					transformmat = localnodeanimmat * positionmat4 * parentlocalnodemat;
-					//transformmat = rotz2xmat * localnodeanimmat * positionmat4 * parentlocalnodemat;//位置は良さそう
-					//transformmat = localnodeanimmat * positionmat4 * ChaMatrixTra(parentlocalnodemat);//位置は良さそう #######
-
-
-					//transformmat = localnodeanimmat * positionmat4 * parentlocalnodeanimmat;
-					//transformmat = localnodeanimmat * parentlocalnodeanimmat * positionmat4;
-					//transformmat = localnodeanimmat * parentlocalnodemat * positionmat4;
-					//transformmat = localnodeanimmat * ChaMatrixInv(positionmat4) * ChaMatrixInv(parentlocalnodemat);//すごい前
-
-					//transformmat = nodemat * cammat * positionmat4 * ChaMatrixInv(rootmat);//下
-					//transformmat = nodemat * cammat * ChaMatrixInv(rootmat) * positionmat4;//下
-					//transformmat = nodemat * cammat * positionmat3 * ChaMatrixInv(rootmat);//上
-					//transformmat = localnodeanimmat * positionmat3 * ChaMatrixInv(parentlocalnodemat);//すごい前
-
+					transformmat = localnodeanimmat * positionmat4 * parentlocalnodemat;//###################### ParentRot無し TheHunt Street1 Camera1
 					break;
+
 				default:
 					_ASSERT(0);
-					//transformmat = rotz2xmat * localnodeanimmat;
 					transformmat = localnodeanimmat;
 					break;
 				}
@@ -554,146 +425,64 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				//ChaVector3TransformCoord(pEyePos, &(curcamera->parentlcltra), &transformmat);
 
 
-				////FbxVector4 fbxpos = curcamera->pcamera->EvaluatePosition(fbxtime);
-				////*pEyePos = ChaVector3(fbxpos);
-
-				//ChaMatrix localfbxmat = curcamera->pbone->CalcFbxLocalMatrix(false, cameramotid, roundingframe);
-				////ChaVector3 svec, tvec;
-				////ChaMatrix rmat;
-				////GetSRTMatrix(localfbxmat, &svec, &rmat, &tvec);
-				////*pEyePos = tvec;
-				//ChaVector3TransformCoord(pEyePos, &nodepos, &localfbxmat);
-
-
 			//##############
 			//カメラの向き
 			//##############
-				//CQuaternion localq, parentlocalq;
-				//localq.RotationMatrix(localnodeanimmat);
-				////parentlocalq.RotationMatrix(parentlocalnodeanimmat);
-				//parentlocalq.RotationMatrix(parentlocalnodemat);
-				//CQuaternion rotq;
 
-				//CQuaternion rotq, rotq1, rotq2;
-
+			
+				ChaVector3 dirvec0 = ChaVector3(-1.0f, 0.0f, 0.0f);
+				ChaVector3 dirvec = ChaVector3(-1.0f, 0.0f, 0.0f);
 
 				ChaMatrix rotmat;
 				switch (inheritmode) {
 				case CAMERA_INHERIT_ALL:
 					//rotmat = nodemat * cammat;
-					rotmat = localnodeanimmat * parentlocalnodemat;//!!!!!!
-					//rotmat = localnodeanimmat * rootmat;
-
-
-
-					//rotmat = localnodeanimmat * parentlocalnodeanimmat;
-					//rotmat = rotz2xmat * localnodeanimmat * parentlocalnodemat;
-					//rotq = parentlocalnodemat.GetRotQ() * localnodeanimmat.GetRotQ();// *rotz2x;
-
-
-
-					//rotq = parentlocalq * localq;
-					//rotq1.RotationMatrix(localnodeanimmat);
-					//rotq2.RotationMatrix(parentlocalnodemat);
-					//rotq = rotq2 * rotq1;
+					//rotmat = localnodeanimmat * parentlocalnodemat;//!!!!!!
+					rotmat = localnodeanimmat * parentlocalnodeanimmat;//ParentRot有り
 					break;
+
 				case CAMERA_INHERIT_CANCEL_NULL1:
 					//rotmat = nodemat * cammat * ChaMatrixInv(rootmat);
-					//rotmat = nodemat * cammat;
 					rotmat = localnodeanimmat;//!!!!!!!!!!!
-					//rotmat = nodemat * cammat * positionmat4;
-					//rotmat = rotz2xmat * localnodeanimmat;
-					//rotq = localnodeanimmat.GetRotQ();// *rotz2x;
-
-
-					//rotq = localq;
-					//rotq1.RotationMatrix(localnodeanimmat);
-					//rotq = rotq1;
 					break;
+
 				case CAMERA_INHERIT_CANCEL_NULL2:
+
 					//################################################################################################
 					//UnityにおいてはRootMotionチェックオン. Mayaにおいてはトランスフォームの継承チェックオフ　に相当
 					//################################################################################################
 					////rotmat = nodemat * cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);
-					//rotmat = nodemat * cammat;
-					////rotmat = nodemat * cammat * ChaMatrixInv(curcamera->adjusttra) * ChaMatrixInv(rootmat);
-					//rotmat = localnodeanimmat * positionmat4 * parentlocalnodemat;//!!!!!!!!!!!!
-					//rotmat = localnodeanimmat * positionmat4 * ChaMatrixTra(parentlocalnodemat);
-					
-					
-					//rotmat = localnodeanimmat * ChaMatrixInv(positionmat4) * ChaMatrixInv(parentlocalnodemat);
-					//rotmat = nodemat * cammat * positionmat4 * ChaMatrixInv(rootmat);
-					//rotmat = nodemat * cammat * ChaMatrixInv(rootmat) * positionmat4;
-					//rotmat = nodemat * cammat * positionmat3 * ChaMatrixInv(rootmat);
-					//rotmat = localnodeanimmat * positionmat3 * ChaMatrixInv(parentlocalnodemat);
-
-					rotmat = localnodeanimmat * positionmat4 * parentlocalnodemat;
-					//rotmat = rotz2xmat * localnodeanimmat * positionmat4 * parentlocalnodemat;
-					//rotq = parentlocalnodemat.GetRotQ() * localnodeanimmat.GetRotQ();// *rotz2x;
-
-
-					//rotmat = localnodeanimmat * positionmat4 * parentlocalnodeanimmat;
-					//rotq = parentlocalq * localq;
-					//rotq1.RotationMatrix(localnodeanimmat);
-					////rotq2.RotationMatrix(positionmat4 * parentlocalnodemat);
-					//rotq2.RotationMatrix(parentlocalnodemat);//!!!!!!!!!!!!!!!!!!!!
-					////rotq2.RotationMatrix(parentlocalnodeanimmat);
-					//rotq = rotq2 * rotq1;
+					rotmat = localnodeanimmat * positionmat4 * parentlocalnodemat;//###################### ParentRot無し　TheHunt Street1 Camera1
 					break;
+
 				default:
 					_ASSERT(0);
 					//rotmat = nodemat * cammat;
-					//rotmat = rotz2xmat * localnodeanimmat;
 					rotmat = localnodeanimmat;//!!!!!!!!!!!!!
-					//rotq = localnodeanimmat.GetRotQ();// *rotz2x;
-
-
-
-					//rotq = localq;
-					//rotq1.RotationMatrix(localnodeanimmat);
-					//rotq = rotq1;
 					break;
 				}
 
-				//CQuaternion rotq;
-				//rotq.RotationMatrix(rotmat);
-				//ChaVector3 dirvec0 = ChaVector3(1.0f, 0.0f, 0.0f);
-				//ChaVector3 dirvec = ChaVector3(1.0f, 0.0f, 0.0f);
-				ChaVector3 dirvec0 = ChaVector3(-1.0f, 0.0f, 0.0f);
-				ChaVector3 dirvec = ChaVector3(-1.0f, 0.0f, 0.0f);
-				//ChaVector3 dirvec0 = ChaVector3(0.0f, 0.0f, -1.0f);
-				//ChaVector3 dirvec = ChaVector3(0.0f, 0.0f, -1.0f);
-				//ChaVector3 dirvec0 = ChaVector3(0.0f, 0.0f, 1.0f);
-				//ChaVector3 dirvec = ChaVector3(0.0f, 0.0f, 1.0f);
-				
-				
-				//rotq.Rotate(&dirvec, dirvec0);
 
-				//ChaVector3 dirvec0 = ChaVector3(0.0f, 0.0f, 1.0f);
-				//ChaVector3 dirvec1 = ChaVector3(0.0f, 0.0f, 1.0f);
-				//ChaVector3 dirvec2 = ChaVector3(0.0f, 0.0f, 1.0f);
-				//ChaVector3 dirvec0 = ChaVector3(1.0f, 0.0f, 0.0f);
-				//ChaVector3 dirvec1 = ChaVector3(1.0f, 0.0f, 0.0f);
-				//ChaVector3 dirvec2 = ChaVector3(1.0f, 0.0f, 0.0f);
-				//ChaMatrix parentconvmat = parentlocalnodemat;
-				//parentconvmat.SetTranslationZero();
-				//parentconvmat.data[MATI_44] = 0;
-				//ChaVector3TransformCoord(&dirvec1, &dirvec0, &parentconvmat);
-				//ChaVector3Normalize(&dirvec1, &dirvec1);
-
-
-				ChaMatrix convmat = rotmat;
-				convmat.SetTranslationZero();
-				convmat.data[MATI_44] = 0;
+				ChaMatrix convmat = ChaMatrixRot(rotmat);
+				//convmat.SetTranslationZero();
+				//convmat.data[MATI_44] = 0;
 				ChaVector3TransformCoord(&dirvec, &dirvec0, &convmat);
+
 
 				ChaVector3Normalize(&dirvec, &dirvec);
 				*pTargetPos = *pEyePos + dirvec * camdist;
 
 
-				//ChaVector3TransformCoord(&dirvec2, &dirvec1, &convmat);
-				//ChaVector3Normalize(&dirvec2, &dirvec2);
-				//*pTargetPos = *pEyePos + dirvec2 * camdist;
+				//2023/06/25
+				//ChaVector3 upvec = ChaMatrixRot(convmat).GetRow(1);
+				//ChaVector3Normalize(&upvec, &upvec);
+				//*pcamupvec = upvec;
+				ChaVector3 firstupdir = ChaVector3(0.01f, 0.99f, 0.0f);
+				ChaVector3 cameraupdir = ChaVector3(0.01f, 0.99f, 0.0f);
+				ChaVector3TransformCoord(&cameraupdir, &firstupdir, &convmat);
+				ChaVector3Normalize(&cameraupdir, &cameraupdir);
+				*pcamupvec = cameraupdir;
+
 
 				if (protmat) {
 					//*protmat = ChaMatrixRot(rotmat);
@@ -707,6 +496,7 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				//ZeroFrameCamera
 				*pEyePos = curcamera->position;
 				*pTargetPos = *pEyePos + curcamera->dirvec * camdist;
+				*pcamupvec = curcamera->upvec;
 
 				if (protmat) {
 					*protmat = ChaMatrixRot(curcamera->worldmat);
@@ -718,6 +508,7 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 			//ZeroFrameCamera
 			*pEyePos = curcamera->position;
 			*pTargetPos = *pEyePos + curcamera->dirvec * camdist;
+			*pcamupvec = curcamera->upvec;
 
 			if (protmat) {
 				*protmat = ChaMatrixRot(curcamera->worldmat);

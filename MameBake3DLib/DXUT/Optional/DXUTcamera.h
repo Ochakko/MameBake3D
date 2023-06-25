@@ -147,7 +147,7 @@ public:
 
     // Functions to change camera matrices
     virtual void Reset();
-    virtual void SetViewParams( _In_ DirectX::CXMVECTOR vEyePt, _In_ DirectX::CXMVECTOR vLookatPt );
+    virtual void SetViewParams(_In_ DirectX::CXMVECTOR vEyePt, _In_ DirectX::CXMVECTOR vLookatPt);
     virtual void SetProjParams( _In_ float fFOV, _In_ float fAspect, _In_ float fNearPlane, _In_ float fFarPlane );
 
     // Functions to change behavior
@@ -310,7 +310,8 @@ public:
     // Functions to change behavior
     virtual void SetDragRect( _In_ const RECT& rc ) override;
     virtual void Reset() override;
-    virtual void SetViewParams( _In_ DirectX::CXMVECTOR pvEyePt, _In_ DirectX::CXMVECTOR pvLookatPt ) override;
+    virtual void SetViewParams(_In_ DirectX::CXMVECTOR pvEyePt, _In_ DirectX::CXMVECTOR pvLookatPt) override;
+    void SetViewParamsWithUpVec( _In_ DirectX::CXMVECTOR pvEyePt, _In_ DirectX::CXMVECTOR pvLookatPt, _In_ DirectX::CXMVECTOR pvUpVec);//2023/06/25
     void SetButtonMasks( _In_ int nRotateModelButtonMask = MOUSE_LEFT_BUTTON, _In_ int nZoomButtonMask = MOUSE_WHEEL,
                          _In_ int nRotateCameraButtonMask = MOUSE_RIGHT_BUTTON )
     {

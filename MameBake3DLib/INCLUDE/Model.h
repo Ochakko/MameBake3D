@@ -846,9 +846,9 @@ public:
 	void SetRotationActiveTrueReq(CNodeOnLoad* srcnodeonload);
 	void SetRotationActiveDefaultReq(CNodeOnLoad* srcnodeonload);
 
-	int GetCameraAnimParams(int cameramotid, double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaMatrix* protmat, int inheritmode);
-	int GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaMatrix* protmat, int inheritmode);
-	int GetCameraProjParams(int cameramotid, float* pprojnear, float* pprojfar, float* pfovy, ChaVector3* pcampos, ChaVector3* pcamdir);
+	int GetCameraAnimParams(int cameramotid, double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaVector3* pcamupvec, ChaMatrix* protmat, int inheritmode);
+	int GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaVector3* pcamupvec, ChaMatrix* protmat, int inheritmode);
+	int GetCameraProjParams(int cameramotid, float* pprojnear, float* pprojfar, float* pfovy, ChaVector3* pcampos, ChaVector3* pcamdir, ChaVector3* pcamupvec);
 	ChaVector3 CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVector3 befeul);
 
 	ChaVector3 GetCameraLclTra(int cameramotid);
@@ -876,7 +876,7 @@ private:
 	void WaitLoadFbxAnimFinished();
 	int PostLoadFbxAnim(int srcmotid);
 	void PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone);
-	int PostLoadCameraFbxAnim(int srcmotid);
+	int PreLoadCameraFbxAnim(int srcmotid);
 
 
 	//void MakeBoneReq( CBone* parentbone, CMQOFace* curface, ChaVector3* pointptr, int broflag, int* errcntptr );

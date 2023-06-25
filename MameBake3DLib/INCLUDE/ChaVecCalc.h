@@ -203,7 +203,7 @@ public:
 	ChaVector3(float srcx, float srcy, float srcz);
 	ChaVector3(DirectX::XMVECTOR v);
 	ChaVector3(FbxDouble3 srcdouble3);
-	ChaVector3(FbxVector4 srcdouble3);
+	ChaVector3(FbxVector4 srcvector4, bool divbyw);
 	~ChaVector3();
 
 	void SetZeroVec3();
@@ -249,8 +249,9 @@ public:
 	DirectX::XMVECTOR XMVECTOR(float w);
 #endif
 
+
 public:
-	 float x;
+	float x;
 	float y;
 	float z;
 

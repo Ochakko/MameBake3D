@@ -28,6 +28,9 @@
     <Filter Include="BulletWorld">
       <UniqueIdentifier>{f16445e7-a029-4270-bb0b-51573c44d467}</UniqueIdentifier>
     </Filter>
+    <Filter Include="DXUT_Camera">
+      <UniqueIdentifier>{4d8edfe9-7ce0-407c-b9fa-badae69db104}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -209,6 +212,9 @@
     </ClCompile>
     <ClCompile Include="..\CPP\CameraFbx.cpp">
       <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DXUT\Optional\DXUTcamera.cpp">
+      <Filter>DXUT_Camera</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1285,6 +1291,9 @@
     </ClInclude>
     <ClInclude Include="..\INCLUDE\CameraFbx.h">
       <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DXUT\Optional\DXUTcamera.h">
+      <Filter>DXUT_Camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

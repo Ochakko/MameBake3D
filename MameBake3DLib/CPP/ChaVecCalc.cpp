@@ -1125,17 +1125,25 @@ ChaVector3::ChaVector3(FbxDouble3 src)
 	y = (float)src[1];
 	z = (float)src[2];
 }
-ChaVector3::ChaVector3(FbxVector4 src)
+
+ChaVector3::ChaVector3(FbxVector4 src, bool divbyw)
 {
-	if ((src[3] != 0.0) && (src[3] != 1.0)) {
-		x = (float)(src[0] / src[3]);
-		y = (float)(src[1] / src[3]);
-		z = (float)(src[2] / src[3]);
-	}
-	else {
+	if (divbyw == false) {
 		x = (float)src[0];
 		y = (float)src[1];
 		z = (float)src[2];
+	}
+	else {
+		if ((src[3] != 0.0) && (src[3] != 1.0)) {
+			x = (float)(src[0] / src[3]);
+			y = (float)(src[1] / src[3]);
+			z = (float)(src[2] / src[3]);
+		}
+		else {
+			x = (float)src[0];
+			y = (float)src[1];
+			z = (float)src[2];
+		}
 	}
 }
 
@@ -2084,7 +2092,7 @@ double CQuaternion::QuaternionLimitPhai(double srcphai)
 		retphai = srcphai - (double)((int)(srcphai / (2.0 * PAI))) * (2.0 * PAI);
 		return retphai;
 	}
-	else if (srcphai < 0.0f) {
+	else if (srcphai < 0.0) {
 		retphai = srcphai + (double)((int)(srcphai / (2.0 * PAI))) * (2.0 * PAI);
 		return retphai;
 	}

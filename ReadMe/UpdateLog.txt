@@ -51,7 +51,30 @@
 		CalcLocalNodeMat()内の　prerot, lclrot, postrotの掛ける順番を修正したところ　カメラ再生が改善した　がまだ問題がある
 		TheHunt City1(VisualStudioでデバッグ時メインメモリ33GB使用)のCamera_1はOK. Camera_2はUpVecの操作を加える必要有
 		TheHunt Street1のCamera_1は大体OK. Camera_2, Camera_3はまだ位置がずれている
-		
+			
+	2023/06/25
+		カメラのモードAll,モードCancel1,モードCancel2の修正
+		カメラのUpVecアニメに対応
+
+		テスト
+			TheHunt City1
+				[Camera_1]:モードCancel1で正常再生　保存後読み込みOK
+				[Camera_2]:モードCancel1で正常表示　UpVecアニメもOK　保存後読み込みOK
+			TheHunt Street1
+				[Camera_1]:モードCancel2で正常表示　保存後読み込みは位置が上にずれた
+					   モードCancel1でXZ０地点を起点に似た動作　保存後読み込み時にもCancel1でXZ０地点を起点に似た動作
+				[Camera_2]:モードAllで正常表示　保存後読み込みOK
+				[Camera_3]:モードCancel1で位置が下にずれ　保存後読み込みはモードCancel2で位置が左にずれ　(他のモードでは大きく違う)
+			Spring_1に自分でカメラをカスタム設定
+				モードAllで正常表示　保存後読み込みOK
+
+			テストの感想
+				再生できるカメラアニメが増えた　保存も大体良さそう
+				しかし
+				Unity上ではどれも同じように設定している(つもり)なのだが　本ソフトでなぜ手動モード切替が必要なのか不明　そしてうまくいかないカメラアニメがある原因もまだ不明
+				とりあえずこの辺までにしておいて　他のことに取り掛かろうかと思っている
+
+
 
 2023/06/07
 	EditMot 1.2.0.21 relase

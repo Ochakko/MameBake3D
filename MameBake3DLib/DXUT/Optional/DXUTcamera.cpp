@@ -253,30 +253,33 @@ CBaseCamera::CBaseCamera() noexcept :
 // Client can call this to change the position and direction of camera
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-void CBaseCamera::SetViewParams( CXMVECTOR vEyePt, CXMVECTOR vLookatPt )
+void CBaseCamera::SetViewParams(CXMVECTOR vEyePt, CXMVECTOR vLookatPt)
 {
-    XMStoreFloat3( &m_vEye, vEyePt );
-    XMStoreFloat3( &m_vDefaultEye, vEyePt );
+    XMStoreFloat3(&m_vEye, vEyePt);
+    XMStoreFloat3(&m_vDefaultEye, vEyePt);
 
-    XMStoreFloat3( &m_vLookAt, vLookatPt );
-    XMStoreFloat3( &m_vDefaultLookAt , vLookatPt );
+    XMStoreFloat3(&m_vLookAt, vLookatPt);
+    XMStoreFloat3(&m_vDefaultLookAt, vLookatPt);
 
-    // Calc the view matrix
-    XMMATRIX mView = XMMatrixLookAtRH( vEyePt, vLookatPt, g_XMIdentityR1 );
-    XMStoreFloat4x4( &m_mView, mView );
+   // Calc the view matrix
+    XMMATRIX mView = XMMatrixLookAtRH(vEyePt, vLookatPt, g_XMIdentityR1);
 
-    XMMATRIX mInvView = XMMatrixInverse( nullptr, mView );
+    XMStoreFloat4x4(&m_mView, mView);
+
+    XMMATRIX mInvView = XMMatrixInverse(nullptr, mView);
 
     // The axis basis vectors and camera position are stored inside the 
     // position matrix in the 4 rows of the camera's world matrix.
     // To figure out the yaw/pitch of the camera, we just need the Z basis vector
     XMFLOAT3 zBasis;
-    XMStoreFloat3( &zBasis, mInvView.r[2] );
+    XMStoreFloat3(&zBasis, mInvView.r[2]);
 
-    m_fCameraYawAngle = atan2f( zBasis.x, zBasis.z );
-    float fLen = sqrtf( zBasis.z * zBasis.z + zBasis.x * zBasis.x );
-    m_fCameraPitchAngle = -atan2f( zBasis.y, fLen );
+    m_fCameraYawAngle = atan2f(zBasis.x, zBasis.z);
+    float fLen = sqrtf(zBasis.z * zBasis.z + zBasis.x * zBasis.x);
+    m_fCameraPitchAngle = -atan2f(zBasis.y, fLen);
 }
+
+
 
 
 //--------------------------------------------------------------------------------------
@@ -979,9 +982,37 @@ void CModelViewerCamera::Reset()
 // Override for setting the view parameters
 //--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-void CModelViewerCamera::SetViewParams( CXMVECTOR vEyePt, CXMVECTOR vLookatPt )
+void CModelViewerCamera::SetViewParamsWithUpVec( CXMVECTOR vEyePt, CXMVECTOR vLookatPt, CXMVECTOR vUpVec)
 {
-    CBaseCamera::SetViewParams( vEyePt, vLookatPt );
+    //CBaseCamera::SetViewParams( vEyePt, vLookatPt );
+    //= XMVectorSet(vUpVec.m128_f32[0], vUpVec.m128_f32[1], vUpVec.m128_f32[2], 0.0f);
+    {
+        XMStoreFloat3(&m_vEye, vEyePt);
+        XMStoreFloat3(&m_vDefaultEye, vEyePt);
+
+        XMStoreFloat3(&m_vLookAt, vLookatPt);
+        XMStoreFloat3(&m_vDefaultLookAt, vLookatPt);
+
+       // Calc the view matrix
+        //XMMATRIX mView = XMMatrixLookAtRH(vEyePt, vLookatPt, g_XMIdentityR1);
+        XMMATRIX mView = XMMatrixLookAtRH(vEyePt, vLookatPt, vUpVec);//2023/06/25
+
+        XMStoreFloat4x4(&m_mView, mView);
+
+        XMMATRIX mInvView = XMMatrixInverse(nullptr, mView);
+
+        // The axis basis vectors and camera position are stored inside the 
+        // position matrix in the 4 rows of the camera's world matrix.
+        // To figure out the yaw/pitch of the camera, we just need the Z basis vector
+        XMFLOAT3 zBasis;
+        XMStoreFloat3(&zBasis, mInvView.r[2]);
+
+        m_fCameraYawAngle = atan2f(zBasis.x, zBasis.z);
+        float fLen = sqrtf(zBasis.z * zBasis.z + zBasis.x * zBasis.x);
+        m_fCameraPitchAngle = -atan2f(zBasis.y, fLen);
+    }
+
+
 
     // Propogate changes to the member arcball
     XMMATRIX mRotation = XMMatrixLookAtRH( vEyePt, vLookatPt, g_XMIdentityR1 );
@@ -997,6 +1028,23 @@ void CModelViewerCamera::SetViewParams( CXMVECTOR vEyePt, CXMVECTOR vLookatPt )
     m_bDragSinceLastUpdate = true;
 }
 
+void CModelViewerCamera::SetViewParams(CXMVECTOR vEyePt, CXMVECTOR vLookatPt)
+{
+    CBaseCamera::SetViewParams( vEyePt, vLookatPt );
+
+    // Propogate changes to the member arcball
+    XMMATRIX mRotation = XMMatrixLookAtRH(vEyePt, vLookatPt, g_XMIdentityR1);
+    XMVECTOR quat = XMQuaternionRotationMatrix(mRotation);
+    m_ViewArcBall.SetQuatNow(quat);
+
+    // Set the radius according to the distance
+    XMVECTOR vEyeToPoint = XMVectorSubtract(vLookatPt, vEyePt);
+    float len = XMVectorGetX(XMVector3Length(vEyeToPoint));
+    SetRadius(len);
+
+    // View information changed. FrameMove should be called.
+    m_bDragSinceLastUpdate = true;
+}
 
 //--------------------------------------------------------------------------------------
 // Call this from your message proc so this class can handle window messages

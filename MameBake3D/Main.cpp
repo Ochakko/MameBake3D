@@ -1710,6 +1710,7 @@ static CCopyHistoryDlg s_copyhistorydlg;
 float g_initcamdist = 50.0f;
 //static float s_projnear = 0.001f;
 //static float s_projnear = 1.0f;
+static ChaVector3 s_cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
 static double s_cameraframe = 0.0;
 static float s_camdist = g_initcamdist;
 static float s_projnear = 0.01f;
@@ -1870,7 +1871,7 @@ static ChaMatrix s_matWorld;//シーン(カメラ)のworldmat. modelのworldmat�
 static ChaMatrix s_matProj;
 static ChaMatrix s_matVP;
 static ChaMatrix s_matView;
-static ChaVector3 s_camUpVec = ChaVector3(0.00001f, 1.0f, 0.0f);
+//static ChaVector3 s_camUpVec = ChaVector3(0.00001f, 1.0f, 0.0f);
 
 static int s_curmotid = -1;
 static int s_curboneno = -1;
@@ -3926,6 +3927,7 @@ void InitApp()
 
 	{
 		s_cameraframe = 0.0;
+		s_cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
 
 		g_initcamdist = 50.0f;
 		s_camdist = g_initcamdist;
@@ -9236,8 +9238,8 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		}
 
 
-		g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));//!!!!!!!!!!
-		//g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));//!!!!!!!!!!
+		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));//!!!!!!!!!!
+		//g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));//!!!!!!!!!!
 		ChaVector3 diffv = g_camEye - g_camtargetpos;
 		s_camdist = (float)ChaVector3LengthDbl(&diffv);
 
@@ -11983,7 +11985,7 @@ void CalcTotalBound()
 	//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
 	g_Camera->SetProjParams(s_fovy, s_fAspectRatio, s_projnear, s_projfar);
-	g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+	g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
 	g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
 
 	s_matView = g_Camera->GetViewMatrix();
@@ -13744,7 +13746,7 @@ int OnCameraMenu(bool dorefreshflag, int selindex, int saveundoflag)
 	if (s_cameramodel->IsCameraLoaded()) {
 		//fbxにカメラが在る場合
 		ChaVector3 camdir = ChaVector3(0.0f, 0.0f, 1.0f);
-		s_cameramodel->GetCameraProjParams(cameramotid, &s_projnear, &s_projfar, &s_fovy, &g_camEye, &camdir);
+		s_cameramodel->GetCameraProjParams(cameramotid, &s_projnear, &s_projfar, &s_fovy, &g_camEye, &camdir, &s_cameraupdir);
 
 		g_initcamdist = max(0.1f, min(1000.0f, s_projfar));
 		g_camtargetpos = g_camEye + camdir * g_initcamdist;
@@ -13757,7 +13759,7 @@ int OnCameraMenu(bool dorefreshflag, int selindex, int saveundoflag)
 		g_befcamtargetpos = g_camtargetpos;
 
 		g_Camera->SetProjParams(s_fovy, s_fAspectRatio, s_projnear, s_projfar);
-		g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
 		//g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
 
 		s_matView = g_Camera->GetViewMatrix();
@@ -16105,7 +16107,7 @@ LRESULT CALLBACK CameraDollyDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ2, strpos);
 			}
 
-			g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
 			s_matView = g_Camera->GetViewMatrix();
 			s_matProj = g_Camera->GetProjMatrix();
 
@@ -18953,7 +18955,7 @@ int SetCamera6Angle()
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z - camdist;
 
-		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
@@ -18968,7 +18970,7 @@ int SetCamera6Angle()
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z + camdist;
 
-		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
@@ -18982,7 +18984,7 @@ int SetCamera6Angle()
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z;
 
-		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
@@ -18996,7 +18998,7 @@ int SetCamera6Angle()
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z;
 
-		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
@@ -19010,7 +19012,7 @@ int SetCamera6Angle()
 		neweye.y = g_camtargetpos.y + camdist;
 		neweye.z = g_camtargetpos.z + delta;
 
-		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
@@ -19024,7 +19026,7 @@ int SetCamera6Angle()
 		neweye.y = g_camtargetpos.y - camdist;
 		neweye.z = g_camtargetpos.z - delta;
 
-		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
@@ -25193,8 +25195,8 @@ int OnFramePreviewCamera(double srcnextframe)
 
 			double roundingframe = (double)((int)(nextcameraframe + 0.0001));
 
-			s_cameramodel->GetCameraAnimParams(roundingframe, s_camdist, &g_camEye, &g_camtargetpos, 0, g_cameraInheritMode);//s_camdist
-			g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+			s_cameramodel->GetCameraAnimParams(roundingframe, s_camdist, &g_camEye, &g_camtargetpos, &s_cameraupdir, 0, g_cameraInheritMode);//s_camdist
+			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
 			s_cameraframe = roundingframe;
 
 		}
@@ -25203,7 +25205,7 @@ int OnFramePreviewCamera(double srcnextframe)
 			//カメラモデルが無い場合
 			//GUIによるカメラ操作可能に
 			//######################################
-			g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
 		}
 	}
 	else {
@@ -25215,7 +25217,7 @@ int OnFramePreviewCamera(double srcnextframe)
 		//######################################
 		//GUIによるカメラ操作可能に
 		//######################################
-		g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
 	}
 	ChaVector3 cameradiff = g_camtargetpos - g_camEye;
 	s_camdist = (float)ChaVector3LengthDbl(&cameradiff);
@@ -33313,8 +33315,8 @@ void AutoCameraTarget()
 			g_befcamtargetpos = g_camtargetpos;
 			g_camtargetpos = curbone->GetChildWorld();
 
-			g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));//!!!!!!!!!!!
-			//g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));//!!!!!!!!!!!
+			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));//!!!!!!!!!!!
+			//g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));//!!!!!!!!!!!
 
 			//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 			//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
@@ -34683,7 +34685,7 @@ int OnMouseMoveFunc()
 		ChaVector3TransformCoord(&neweye, &aftcameye, &invmatview);
 		ChaVector3TransformCoord(&newat, &aftcamat, &invmatview);
 
-		g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), newat.XMVECTOR(1.0f));
+		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), newat.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
@@ -34808,7 +34810,7 @@ int OnMouseMoveFunc()
 			//mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
 			//ChaVector3TransformCoord(&neweye, &weye, &mat);
 
-			g_Camera->SetViewParams(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+			g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
 			s_matView = g_Camera->GetViewMatrix();
 			s_matProj = g_Camera->GetProjMatrix();
 
@@ -34870,7 +34872,7 @@ int OnMouseMoveFunc()
 		//!!!!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
-		g_Camera->SetViewParams(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f));
+		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 

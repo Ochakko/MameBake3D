@@ -5074,6 +5074,10 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 				//	//最初に見つけたカメラモーションを　再生候補のカメラモーションにする
 				//	SetCameraMotionId(curmotid);
 				//}
+
+
+				PreLoadCameraFbxAnim(curmotid);
+				SetCameraMotionId(curmotid);
 			}
 
 
@@ -5146,9 +5150,6 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 				//#### 2023/01/31 ####################################################################
 				//読み込み時にLocalEulとLimitedLocalEulの初期化をするべきなので　復活
 				//####################################################################################
-				if (IsCameraMotion(curmotid)) {
-					PostLoadCameraFbxAnim(curmotid);
-				}
 				PostLoadFbxAnim(curmotid);//並列化出来なかった計算をする
 
 
@@ -5761,7 +5762,7 @@ void CModel::CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double sr
 //	return 0;
 //}
 
-int CModel::PostLoadCameraFbxAnim(int srcmotid)
+int CModel::PreLoadCameraFbxAnim(int srcmotid)
 {
 	MOTINFO* curmi = GetMotInfo(srcmotid);
 	if (curmi && curmi->cameramotion) {
@@ -5783,29 +5784,36 @@ int CModel::PostLoadCameraFbxAnim(int srcmotid)
 
 					ChaMatrix parentglobalmat;
 					parentglobalmat.SetIdentity();
+					ChaMatrix parentlocalmat;
+					parentlocalmat.SetIdentity();
 
 
 					CBone* parentbone = srcbone->GetParent(false);
 					if (parentbone) {
-						if (parentbone->IsSkeleton()) {
-							//parentglobalmat = ChaMatrixInv(parentbone->GetNodeMat()) * parentbone->GetWorldMat(false, srcmotid, curframe, 0);
-							parentglobalmat = parentbone->GetWorldMat(false, srcmotid, curframe, 0);
-						}
-						else if (parentbone->IsNull()) {
+						//if (parentbone->IsSkeleton()) {
+						//	//parentglobalmat = ChaMatrixInv(parentbone->GetNodeMat()) * parentbone->GetWorldMat(false, srcmotid, curframe, 0);
+						//	parentglobalmat = parentbone->GetWorldMat(false, srcmotid, curframe, 0);
+						//}
+						//else if (parentbone->IsNull()) {
+						if (parentbone->IsNull()) {
 							FbxNode* eNullNode = parentbone->GetFbxNodeOnLoad();
 							if (eNullNode) {
 								FbxTime time0;
 								time0.SetSecondDouble(0.0);
 								FbxAMatrix lGlobalSRT = eNullNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);
 								parentglobalmat = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+								FbxAMatrix lLocalSRT = eNullNode->EvaluateLocalTransform(time0, FbxNode::eSourcePivot, true, true);
+								parentlocalmat = ChaMatrixFromFbxAMatrix(lLocalSRT);
 							}
 							else {
 								_ASSERT(0);
 								parentglobalmat.SetIdentity();
+								parentlocalmat.SetIdentity();
 							}
 						}
 					}
-					m_camerafbx.PostLoadFbxAnim(srcbone, srcmotid, parentglobalmat);
+					m_camerafbx.PreLoadFbxAnim(srcbone, srcmotid, parentglobalmat);
+					//m_camerafbx.PreLoadFbxAnim(srcbone, srcmotid, parentlocalmat);
 				}
 			}
 		}
@@ -17390,9 +17398,11 @@ ChaVector3 CModel::CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVect
 }
 
 
-int CModel::GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaMatrix* protmat, int inheritmode)
+int CModel::GetCameraAnimParams(double nextframe, double camdist, 
+	ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaVector3* pcamupvec, 
+	ChaMatrix* protmat, int inheritmode)
 {
-	if (!pEyePos || !pTargetPos) {
+	if (!pEyePos || !pTargetPos || !pcamupvec) {
 		//###################################################
 		//protmatがNULLの場合も許可　rotmatをセットしないだけ
 		//###################################################
@@ -17419,13 +17429,13 @@ int CModel::GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pE
 
 
 	int cameramotionid = GetCameraMotionId();
-	return GetCameraAnimParams(cameramotionid, nextframe, camdist, pEyePos, pTargetPos, protmat, inheritmode);
+	return GetCameraAnimParams(cameramotionid, nextframe, camdist, pEyePos, pTargetPos, pcamupvec, protmat, inheritmode);
 
 }
 
-int CModel::GetCameraAnimParams(int cameramotionid, double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaMatrix* protmat, int inheritmode)
+int CModel::GetCameraAnimParams(int cameramotionid, double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaVector3* pcamupvec, ChaMatrix* protmat, int inheritmode)
 {
-	if (!pEyePos || !pTargetPos) {
+	if (!pEyePos || !pTargetPos || !pcamupvec) {
 		//###################################################
 		//protmatがNULLの場合も許可　rotmatをセットしないだけ
 		//###################################################
@@ -17447,7 +17457,7 @@ int CModel::GetCameraAnimParams(int cameramotionid, double nextframe, double cam
 		*pTargetPos = *pEyePos + curcn->dirvec * camdist;
 	}
 	else {
-		m_camerafbx.GetCameraAnimParams(cameramotionid, nextframe, camdist, pEyePos, pTargetPos, protmat, inheritmode);
+		m_camerafbx.GetCameraAnimParams(cameramotionid, nextframe, camdist, pEyePos, pTargetPos, pcamupvec, protmat, inheritmode);
 	}
 
 	return 0;
@@ -17475,9 +17485,9 @@ ChaVector3 CModel::GetCameraLclTra(int cameramotid)
 
 
 
-int CModel::GetCameraProjParams(int cameramotid, float* pprojnear, float* pprojfar, float* pfovy, ChaVector3* pcampos, ChaVector3* pcamdir)
+int CModel::GetCameraProjParams(int cameramotid, float* pprojnear, float* pprojfar, float* pfovy, ChaVector3* pcampos, ChaVector3* pcamdir, ChaVector3* pcamupvec)
 {
-	if (!pprojnear || !pprojfar || !pfovy || !pcampos || !pcamdir) {
+	if (!pprojnear || !pprojfar || !pfovy || !pcampos || !pcamdir || !pcamupvec) {
 		_ASSERT(0);
 		return 1;
 	}
@@ -17493,6 +17503,7 @@ int CModel::GetCameraProjParams(int cameramotid, float* pprojnear, float* pprojf
 	*pfovy = (float)curcn->fovY;
 	*pcampos = curcn->position;
 	*pcamdir = curcn->dirvec;
+	*pcamupvec = curcn->upvec;
 
 	return 0;
 }
