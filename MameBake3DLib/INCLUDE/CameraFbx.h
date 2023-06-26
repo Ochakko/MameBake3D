@@ -1,4 +1,4 @@
-#ifndef CAMERAFBXH
+ï»¿#ifndef CAMERAFBXH
 #define CAMERAFBXH
 
 #include <map>
@@ -31,14 +31,14 @@ typedef struct tag_cameranode
 	ChaMatrix parentenullmat;
 	ChaMatrix adjusttra;
 
-	double aspectHeight; // ƒAƒXƒyƒNƒg‚
-	double aspectWidth;  // ƒAƒXƒyƒNƒg•
-	double nearZ;     // near•½–Ê‹——£
-	double farZ;      // far•½–Ê‹——£
-	double aspectRatio; // ƒAƒXƒyƒNƒg”ä
-	double inch_mm;    // ƒCƒ“ƒ`¨ƒ~ƒŠ
-	double filmHeight;   // ƒtƒBƒ‹ƒ€‚iƒCƒ“ƒ`j
-	double focalLength; // ‡Å‹——£iƒ~ƒŠj
+	double aspectHeight; // ã‚¢ã‚¹ãƒšã‚¯ãƒˆé«˜
+	double aspectWidth;  // ã‚¢ã‚¹ãƒšã‚¯ãƒˆå¹…
+	double nearZ;     // nearå¹³é¢è·é›¢
+	double farZ;      // farå¹³é¢è·é›¢
+	double aspectRatio; // ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”
+	double inch_mm;    // ã‚¤ãƒ³ãƒâ†’ãƒŸãƒª
+	double filmHeight;   // ãƒ•ã‚£ãƒ«ãƒ é«˜ï¼ˆã‚¤ãƒ³ãƒï¼‰
+	double focalLength; // åˆç„¦è·é›¢ï¼ˆãƒŸãƒªï¼‰
 	double filmHeight_mm;
 	double fovY;
 	double fovY_Degree;
@@ -61,14 +61,14 @@ typedef struct tag_cameranode
 		upvec = ChaVector3(0.0f, 1.0f, 0.0f);
 		adjusttra.SetIdentity();
 
-		aspectHeight = 600.0f; // ƒAƒXƒyƒNƒg‚
-		aspectWidth = 800.0f;  // ƒAƒXƒyƒNƒg•
-		nearZ = 1.0f;     // near•½–Ê‹——£
-		farZ = 1000.0f;      // far•½–Ê‹——£
-		aspectRatio = 1.0f; // ƒAƒXƒyƒNƒg”ä
-		inch_mm = 25.4;    // ƒCƒ“ƒ`¨ƒ~ƒŠ
-		filmHeight = 100.0f;   // ƒtƒBƒ‹ƒ€‚iƒCƒ“ƒ`j
-		focalLength = 100.0f; // ‡Å‹——£iƒ~ƒŠj
+		aspectHeight = 600.0f; // ã‚¢ã‚¹ãƒšã‚¯ãƒˆé«˜
+		aspectWidth = 800.0f;  // ã‚¢ã‚¹ãƒšã‚¯ãƒˆå¹…
+		nearZ = 1.0f;     // nearå¹³é¢è·é›¢
+		farZ = 1000.0f;      // farå¹³é¢è·é›¢
+		aspectRatio = 1.0f; // ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”
+		inch_mm = 25.4;    // ã‚¤ãƒ³ãƒâ†’ãƒŸãƒª
+		filmHeight = 100.0f;   // ãƒ•ã‚£ãƒ«ãƒ é«˜ï¼ˆã‚¤ãƒ³ãƒï¼‰
+		focalLength = 100.0f; // åˆç„¦è·é›¢ï¼ˆãƒŸãƒªï¼‰
 		filmHeight_mm = inch_mm * filmHeight;
 		fovY = atan2(filmHeight_mm, 2.0 * focalLength);
 		fovY_Degree = fovY * 180.0 / 3.14159265358979;
@@ -154,7 +154,7 @@ public:
 	//}
 	//ChaVector3 GetTargetPos()
 	//{
-	//	_ASSERT(0);//Œ»İ@–¢İ’è
+	//	_ASSERT(0);//ç¾åœ¨ã€€æœªè¨­å®š
 	//	return m_targetpos;
 	//}
 	//ChaVector3 GetDirVec()
@@ -168,31 +168,31 @@ public:
 	//}
 	//double GetAspectHeight()
 	//{
-	//	return m_aspectHeight; // ƒAƒXƒyƒNƒg‚
+	//	return m_aspectHeight; // ã‚¢ã‚¹ãƒšã‚¯ãƒˆé«˜
 	//}
 	//double GetAspectWidth()
 	//{
-	//	return m_aspectWidth;  // ƒAƒXƒyƒNƒg•
+	//	return m_aspectWidth;  // ã‚¢ã‚¹ãƒšã‚¯ãƒˆå¹…
 	//}
 	//double GetNearPlane()
 	//{
-	//	return m_nearZ;     // near•½–Ê‹——£
+	//	return m_nearZ;     // nearå¹³é¢è·é›¢
 	//}
 	//double GetFarPlane()
 	//{
-	//	return m_farZ;      // far•½–Ê‹——£
+	//	return m_farZ;      // farå¹³é¢è·é›¢
 	//}
 	//double GetAspectRatio()
 	//{
-	//	return m_aspectRatio; // ƒAƒXƒyƒNƒg”ä
+	//	return m_aspectRatio; // ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”
 	//}
 	//double GetFilmHeight()
 	//{
-	//	return m_filmHeight;   // ƒtƒBƒ‹ƒ€‚iƒCƒ“ƒ`j
+	//	return m_filmHeight;   // ãƒ•ã‚£ãƒ«ãƒ é«˜ï¼ˆã‚¤ãƒ³ãƒï¼‰
 	//}
 	//double GetFocalLength()
 	//{
-	//	return m_focalLength; // ‡Å‹——£iƒ~ƒŠj
+	//	return m_focalLength; // åˆç„¦è·é›¢ï¼ˆãƒŸãƒªï¼‰
 	//}
 	//double GetFilmHeightMM()
 	//{

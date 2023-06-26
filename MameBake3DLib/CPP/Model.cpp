@@ -3802,6 +3802,78 @@ int CModel::CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime s
 	return 0;
 }
 
+void CModel::CalcMeshMatReq(FbxNode* pNode, ChaMatrix* pmeshmat)
+{
+
+	//###########################################################################
+	//CBone::SaveFbxNodePosture()とCBone::CalcLocalNodePosture()と内容を合わせる
+	//###########################################################################
+
+
+	if (!pNode || !pmeshmat) {
+		_ASSERT(0);
+		return;
+	}
+
+	FbxDouble3 fbxLclPos = pNode->LclTranslation.Get();
+	FbxDouble3 fbxLclRot = pNode->LclRotation.Get();
+	FbxDouble3 fbxLclScl = pNode->LclScaling.Get();
+	FbxVector4 fbxRotOff = pNode->GetRotationOffset(FbxNode::eSourcePivot);
+	FbxVector4 fbxRotPiv = pNode->GetRotationPivot(FbxNode::eSourcePivot);
+	FbxVector4 fbxPreRot = pNode->GetPreRotation(FbxNode::eSourcePivot);
+	FbxVector4 fbxPostRot = pNode->GetPostRotation(FbxNode::eSourcePivot);
+	FbxVector4 fbxSclOff = pNode->GetScalingOffset(FbxNode::eSourcePivot);
+	FbxVector4 fbxSclPiv = pNode->GetScalingPivot(FbxNode::eSourcePivot);
+	bool fbxrotationActive = pNode->GetRotationActive();
+	EFbxRotationOrder rotationorder;
+	pNode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
+	//InheritType = pNode->InheritType.Get();
+
+
+	ChaMatrix fbxT, fbxRoff, fbxRp, fbxRpinv, fbxSoff, fbxSp, fbxS, fbxSpinv;
+	fbxT.SetIdentity();
+	fbxRoff.SetIdentity();
+	fbxRp.SetIdentity();
+	fbxRpinv.SetIdentity();
+	fbxSoff.SetIdentity();
+	fbxSp.SetIdentity();
+	fbxS.SetIdentity();
+	fbxSpinv.SetIdentity();
+
+	fbxT.SetTranslation(ChaVector3(fbxLclPos));//##### at fbxtime
+	fbxRoff.SetTranslation(ChaVector3(fbxRotOff));
+	fbxRp.SetTranslation(ChaVector3(fbxRotPiv));
+
+	CQuaternion rotQ1, rotQ2, preQ, lclQ, postQ;
+	preQ.SetRotation(rotationorder, 0, ChaVector3(fbxPreRot));
+	lclQ.SetRotation(rotationorder, 0, ChaVector3(fbxLclRot));//##### at fbxtime
+	postQ.SetRotation(rotationorder, 0, ChaVector3(fbxPostRot));
+	rotQ1 = preQ * lclQ * postQ;
+	rotQ2 = preQ * postQ;
+
+	fbxRpinv = ChaMatrixInv(fbxRp);
+	fbxSoff.SetTranslation(ChaVector3(fbxSclOff));
+	fbxSp.SetTranslation(ChaVector3(fbxSclPiv));
+	fbxS.SetScale(ChaVector3(fbxLclScl));//##### at fbxtime
+	fbxSpinv = ChaMatrixInv(fbxSp);
+
+
+	//ChaMatrix localnodemat, localnodeanimmat;
+	//localnodeanimmat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * rotQ1.MakeRotMatX() * fbxRp * fbxRoff * fbxT;
+	//0フレームアニメ無し : fbxR無し
+	//localnodemat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * rotQ2.MakeRotMatX() * fbxRp * fbxRoff * fbxT;
+
+	ChaMatrix localnodeanimmat;
+	localnodeanimmat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * rotQ1.MakeRotMatX() * fbxRp * fbxRoff * fbxT;
+
+	*pmeshmat = *pmeshmat * localnodeanimmat;//親方向へ辿りながら実行するので　pmeshmatにとってlocalnodeanimmatはparent
+
+	if (pNode->GetParent()) {
+		CalcMeshMatReq(pNode->GetParent(), pmeshmat);
+	}
+}
+
+
 
 CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 {
@@ -3828,13 +3900,19 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 	{
 		globalmeshmat.SetIdentity();
 
-		FbxTime fbxtime0;
-		fbxtime0.SetSecondDouble(0.0);
-		FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
-		//FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot);
-		globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
+		//######################################################################################################
+		//currentのfbxのanimationに何がセットされているか不定なので　複数アニメーションがある場合に問題が起こる
+		//解決策としては　CalcMeshMatReq()を使用する
+		//######################################################################################################
+		//FbxTime fbxtime0;
+		//fbxtime0.SetSecondDouble(0.0);
+		//FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
+		////FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot);
+		//globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
 
-		//CalcMeshMatReq(pNode, &globalmeshmat);
+
+		CalcMeshMatReq(pNode, &globalmeshmat);
+
 
 		//for debug
 		{

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <math.h>
@@ -124,7 +124,7 @@ int CCameraFbx::AddFbxCamera(FbxNode* pNode, CBone* pbone)
 
 	CAMERANODE* chkcameranode = FindCameraNodeByNode(pNode);
 	if (chkcameranode) {
-		//Šù‚É‘¶İ‚·‚é‚Ì‚ÅƒŠƒ^[ƒ“
+		//æ—¢ã«å­˜åœ¨ã™ã‚‹ã®ã§ãƒªã‚¿ãƒ¼ãƒ³
 		_ASSERT(0);
 		return 0;
 	}
@@ -162,19 +162,19 @@ int CCameraFbx::AddFbxCamera(FbxNode* pNode, CBone* pbone)
 
 
 
-		FbxVector4 upVector = newcameranode->pcamera->UpVector.Get();     // ƒAƒbƒvƒxƒNƒgƒ‹
-		FbxDouble aspectHeight = newcameranode->pcamera->AspectHeight.Get(); // ƒAƒXƒyƒNƒg‚
-		FbxDouble aspectWidth = newcameranode->pcamera->AspectWidth.Get();  // ƒAƒXƒyƒNƒg•
+		FbxVector4 upVector = newcameranode->pcamera->UpVector.Get();     // ã‚¢ãƒƒãƒ—ãƒ™ã‚¯ãƒˆãƒ«
+		FbxDouble aspectHeight = newcameranode->pcamera->AspectHeight.Get(); // ã‚¢ã‚¹ãƒšã‚¯ãƒˆé«˜
+		FbxDouble aspectWidth = newcameranode->pcamera->AspectWidth.Get();  // ã‚¢ã‚¹ãƒšã‚¯ãƒˆå¹…
 
-		//FbxDouble nearZ = newcameranode->pcamera->GetNearPlane();     // near•½–Ê‹——£
-		//FbxDouble farZ = newcameranode->pcamera->GetFarPlane();      // far•½–Ê‹——£
-		FbxDouble nearZ = newcameranode->pcamera->NearPlane.Get();     // near•½–Ê‹——£
-		FbxDouble farZ = newcameranode->pcamera->FarPlane.Get();      // far•½–Ê‹——£
+		//FbxDouble nearZ = newcameranode->pcamera->GetNearPlane();     // nearå¹³é¢è·é›¢
+		//FbxDouble farZ = newcameranode->pcamera->GetFarPlane();      // farå¹³é¢è·é›¢
+		FbxDouble nearZ = newcameranode->pcamera->NearPlane.Get();     // nearå¹³é¢è·é›¢
+		FbxDouble farZ = newcameranode->pcamera->FarPlane.Get();      // farå¹³é¢è·é›¢
 		
-		FbxDouble aspectRatio = aspectWidth / aspectHeight; // ƒAƒXƒyƒNƒg”ä
-		FbxDouble inch_mm = 25.4;    // ƒCƒ“ƒ`¨ƒ~ƒŠ
-		FbxDouble filmHeight = newcameranode->pcamera->FilmHeight.Get();   // ƒtƒBƒ‹ƒ€‚iƒCƒ“ƒ`j
-		FbxDouble focalLength = newcameranode->pcamera->FocalLength.Get(); // ‡Å‹——£iƒ~ƒŠj
+		FbxDouble aspectRatio = aspectWidth / aspectHeight; // ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”
+		FbxDouble inch_mm = 25.4;    // ã‚¤ãƒ³ãƒâ†’ãƒŸãƒª
+		FbxDouble filmHeight = newcameranode->pcamera->FilmHeight.Get();   // ãƒ•ã‚£ãƒ«ãƒ é«˜ï¼ˆã‚¤ãƒ³ãƒï¼‰
+		FbxDouble focalLength = newcameranode->pcamera->FocalLength.Get(); // åˆç„¦è·é›¢ï¼ˆãƒŸãƒªï¼‰
 		FbxDouble filmHeight_mm = inch_mm * filmHeight;
 
 
@@ -183,15 +183,15 @@ int CCameraFbx::AddFbxCamera(FbxNode* pNode, CBone* pbone)
 		FbxDouble fovY = fovY_Degree * 3.14159265358979 / 180.0;
 
 
-		//newcameranode->upVector = ChaVector3((float)upVector[0], (float)upVector[1], (float)upVector[2]);     // ƒAƒbƒvƒxƒNƒgƒ‹
-		newcameranode->aspectHeight = aspectHeight; // ƒAƒXƒyƒNƒg‚
-		newcameranode->aspectWidth = aspectWidth;  // ƒAƒXƒyƒNƒg•
-		newcameranode->nearZ = nearZ;     // near•½–Ê‹——£
-		newcameranode->farZ = farZ;      // far•½–Ê‹——£
-		newcameranode->aspectRatio = aspectRatio; // ƒAƒXƒyƒNƒg”ä
-		newcameranode->inch_mm = inch_mm;    // ƒCƒ“ƒ`¨ƒ~ƒŠ
-		newcameranode->filmHeight = filmHeight;   // ƒtƒBƒ‹ƒ€‚iƒCƒ“ƒ`j
-		newcameranode->focalLength = focalLength; // ‡Å‹——£iƒ~ƒŠj
+		//newcameranode->upVector = ChaVector3((float)upVector[0], (float)upVector[1], (float)upVector[2]);     // ã‚¢ãƒƒãƒ—ãƒ™ã‚¯ãƒˆãƒ«
+		newcameranode->aspectHeight = aspectHeight; // ã‚¢ã‚¹ãƒšã‚¯ãƒˆé«˜
+		newcameranode->aspectWidth = aspectWidth;  // ã‚¢ã‚¹ãƒšã‚¯ãƒˆå¹…
+		newcameranode->nearZ = nearZ;     // nearå¹³é¢è·é›¢
+		newcameranode->farZ = farZ;      // farå¹³é¢è·é›¢
+		newcameranode->aspectRatio = aspectRatio; // ã‚¢ã‚¹ãƒšã‚¯ãƒˆæ¯”
+		newcameranode->inch_mm = inch_mm;    // ã‚¤ãƒ³ãƒâ†’ãƒŸãƒª
+		newcameranode->filmHeight = filmHeight;   // ãƒ•ã‚£ãƒ«ãƒ é«˜ï¼ˆã‚¤ãƒ³ãƒï¼‰
+		newcameranode->focalLength = focalLength; // åˆç„¦è·é›¢ï¼ˆãƒŸãƒªï¼‰
 		newcameranode->filmHeight_mm = filmHeight_mm;
 		newcameranode->fovY = fovY;
 		newcameranode->fovY_Degree = fovY_Degree;
@@ -221,7 +221,7 @@ int CCameraFbx::PreLoadFbxAnim(CBone* srcbone, int srcmotid, ChaMatrix srcenullm
 	}
 
 	//################################################################################
-	//fbx‚ÌƒJƒŒƒ“ƒgƒAƒjƒ[ƒVƒ‡ƒ“‚ªƒJƒƒ‰ƒAƒjƒ‚É‚È‚Á‚Ä‚¢‚éŠÔ‚ÉEvaluateŒ‹‰Ê‚ğ•Û‘¶‚·‚é
+	//fbxã®ã‚«ãƒ¬ãƒ³ãƒˆã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒã‚«ãƒ¡ãƒ©ã‚¢ãƒ‹ãƒ¡ã«ãªã£ã¦ã„ã‚‹é–“ã«Evaluateçµæœã‚’ä¿å­˜ã™ã‚‹
 	//################################################################################
 	FbxTime timezero;
 	timezero.SetSecondDouble(m_time);
@@ -270,7 +270,7 @@ int CCameraFbx::PreLoadFbxAnim(CBone* srcbone, int srcmotid, ChaMatrix srcenullm
 
 
 	//###################
-	//cameramotion‚É“o˜^
+	//cameramotionã«ç™»éŒ²
 	//###################
 	CAMERANODE* chkcameranode = FindCameraNodeByMotId(srcmotid);
 	if (!chkcameranode) {
@@ -289,9 +289,9 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 	ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaVector3* pcamupvec, ChaMatrix* protmat, int inheritmode)
 {
 	//if (!pEyePos || !pTargetPos || (cameramotid <= 0)) {
-	if (!pEyePos || !pTargetPos || !pcamupvec) {//2023/05/29 cameramotid <= 0‚Ì‚Æ‚«‚É‚Í@zeroframeƒJƒƒ‰ˆÊ’u‚ğƒZƒbƒg
+	if (!pEyePos || !pTargetPos || !pcamupvec) {//2023/05/29 cameramotid <= 0ã®ã¨ãã«ã¯ã€€zeroframeã‚«ãƒ¡ãƒ©ä½ç½®ã‚’ã‚»ãƒƒãƒˆ
 		//###################################################
-		//protmat‚ªNULL‚Ìê‡‚à‹–‰Â@rotmat‚ğƒZƒbƒg‚µ‚È‚¢‚¾‚¯
+		//protmatãŒNULLã®å ´åˆã‚‚è¨±å¯ã€€rotmatã‚’ã‚»ãƒƒãƒˆã—ãªã„ã ã‘
 		//###################################################
 		_ASSERT(0);
 		return 1;
@@ -299,12 +299,12 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 
 	CAMERANODE* curcamera = FindCameraNodeByMotId(cameramotid);
 	if (!curcamera) {
-		//fbx‚ÉƒJƒƒ‰‚ªŠÜ‚Ü‚ê‚Ä‚¢‚È‚¢ê‡@ˆ—‚¹‚¸ƒŠƒ^[ƒ“
+		//fbxã«ã‚«ãƒ¡ãƒ©ãŒå«ã¾ã‚Œã¦ã„ãªã„å ´åˆã€€å‡¦ç†ã›ãšãƒªã‚¿ãƒ¼ãƒ³
 		_ASSERT(0);
 		return 0;
 	}
 	if (!curcamera->IsValid()) {
-		//•K—v‚Èî•ñ‚ª“Ç‚İ‚ß‚Ä‚¢‚È‚¢ê‡@ƒGƒ‰[
+		//å¿…è¦ãªæƒ…å ±ãŒèª­ã¿è¾¼ã‚ã¦ã„ãªã„å ´åˆã€€ã‚¨ãƒ©ãƒ¼
 		_ASSERT(0);
 		return 1;
 	}
@@ -370,26 +370,26 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 
 
 			//##########################################################################################################
-			//2023/06/21@ƒƒ‚
-			//Unity2022‚ÌLTS‚ª”­•\‚³‚ê‚½@‰½‚©‚ª•Ï‚í‚Á‚½H‚æ‚¤‚Å@ƒJƒƒ‰ƒAƒjƒ‚Ì•\¦‚ª•Ï‚É‚È‚Á‚½
-			//Unity2022.3.1f1‚Åo—Í‚µ‚½ƒJƒƒ‰ƒAƒjƒ•t‚Ìfbx‚ğ•\¦‚·‚é‚½‚ß‚É@söŒë‚Ì—’
-			//‚È‚ñ‚Æ‚©Ä¶‚Å‚«‚é‚æ‚¤‚É‚È‚Á‚½
-			//g‚¢•û
-			//@ƒJƒƒ‰‚Ì‰Šú‚ÌˆÊ’u‚ÆŒü‚«İ’è—pNullƒm[ƒh‚Ì‰º‚É@ƒJƒƒ‰ƒIƒuƒWƒFƒNƒg(ˆÊ’uŒü‚«‚Íİ’è‚µ‚È‚¢)‚ğ’u‚­
-			//@ƒJƒƒ‰ƒIƒuƒWƒFƒNƒg‚ÉƒAƒjƒ[ƒVƒ‡ƒ“‚ğƒRƒ“ƒ|[ƒlƒ“ƒg‚Æ‚µ‚Ä’Ç‰Á
-			//@!!!!!!!! ƒJƒƒ‰ƒIƒuƒWƒFƒNƒg‚Ì–¼‘O‚Æ@ƒAƒjƒ[ƒVƒ‡ƒ“‚Ì–¼‘O‚ğˆê’v‚³‚¹‚é‚±‚Æ‚ª“Ç‚İ‚İğŒ !!!!!!!!!!!!!!
+			//2023/06/21ã€€ãƒ¡ãƒ¢
+			//Unity2022ã®LTSãŒç™ºè¡¨ã•ã‚ŒãŸã€€ä½•ã‹ãŒå¤‰ã‚ã£ãŸï¼Ÿã‚ˆã†ã§ã€€ã‚«ãƒ¡ãƒ©ã‚¢ãƒ‹ãƒ¡ã®è¡¨ç¤ºãŒå¤‰ã«ãªã£ãŸ
+			//Unity2022.3.1f1ã§å‡ºåŠ›ã—ãŸã‚«ãƒ¡ãƒ©ã‚¢ãƒ‹ãƒ¡ä»˜ã®fbxã‚’è¡¨ç¤ºã™ã‚‹ãŸã‚ã«ã€€è©¦è¡ŒéŒ¯èª¤ã®åµ
+			//ãªã‚“ã¨ã‹å†ç”Ÿã§ãã‚‹ã‚ˆã†ã«ãªã£ãŸ
+			//ä½¿ã„æ–¹
+			//ã€€ã‚«ãƒ¡ãƒ©ã®åˆæœŸã®ä½ç½®ã¨å‘ãè¨­å®šç”¨Nullãƒãƒ¼ãƒ‰ã®ä¸‹ã«ã€€ã‚«ãƒ¡ãƒ©ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ(ä½ç½®å‘ãã¯è¨­å®šã—ãªã„)ã‚’ç½®ã
+			//ã€€ã‚«ãƒ¡ãƒ©ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã«ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’ã‚³ãƒ³ãƒãƒ¼ãƒãƒ³ãƒˆã¨ã—ã¦è¿½åŠ 
+			//ã€€!!!!!!!! ã‚«ãƒ¡ãƒ©ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã®åå‰ã¨ã€€ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®åå‰ã‚’ä¸€è‡´ã•ã›ã‚‹ã“ã¨ãŒèª­ã¿è¾¼ã¿æ¡ä»¶ !!!!!!!!!!!!!!
 			// 
-			//  ã‹L‚Ì‚æ‚¤‚ÈNullƒm[ƒh-->ƒJƒƒ‰ƒIƒuƒWƒFƒNƒg-->ƒAƒjƒ‚P‚Â‚ÌƒZƒbƒg‚ğ@•¡”“Ç‚İ‚İÄ¶‰Â”\
+			//  ä¸Šè¨˜ã®ã‚ˆã†ãªNullãƒãƒ¼ãƒ‰-->ã‚«ãƒ¡ãƒ©ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ-->ã‚¢ãƒ‹ãƒ¡ï¼‘ã¤ã®ã‚»ãƒƒãƒˆã‚’ã€€è¤‡æ•°èª­ã¿è¾¼ã¿å†ç”Ÿå¯èƒ½
 			// 
-			//2023/06/21Œ»İ@‚¤‚Ü‚­Ä¶‚Å‚«‚é‚à‚Ì‚Æ@•Ï‚É‚È‚é‚à‚Ì‚ª‚ ‚éó‘Ô
+			//2023/06/21ç¾åœ¨ã€€ã†ã¾ãå†ç”Ÿã§ãã‚‹ã‚‚ã®ã¨ã€€å¤‰ã«ãªã‚‹ã‚‚ã®ãŒã‚ã‚‹çŠ¶æ…‹
 			// 
 			// 
-			// ‚Æ‚è‚ ‚¦‚¸@söŒë‚Ì­Õ(‚»‚ÌŸ‚ÌƒRƒ~ƒbƒg‚ÅÁ‚·—\’è)‚ğc‚µ‚½‚à‚Ì‚ğ@ˆê“xƒRƒ~ƒbƒg
-			// ¡Œã@‚±‚ê‚ğ‘«Š|‚©‚è‚É‚µ‚Ä’²®‚µ‚Ä‚¢‚­
+			// ã¨ã‚Šã‚ãˆãšã€€è©¦è¡ŒéŒ¯èª¤ã®ç—•è·¡(ãã®æ¬¡ã®ã‚³ãƒŸãƒƒãƒˆã§æ¶ˆã™äºˆå®š)ã‚’æ®‹ã—ãŸã‚‚ã®ã‚’ã€€ä¸€åº¦ã‚³ãƒŸãƒƒãƒˆ
+			// ä»Šå¾Œã€€ã“ã‚Œã‚’è¶³æ›ã‹ã‚Šã«ã—ã¦èª¿æ•´ã—ã¦ã„ã
 			//##########################################################################################################
 
 			//##############
-			//ƒJƒƒ‰‚ÌˆÊ’u
+			//ã‚«ãƒ¡ãƒ©ã®ä½ç½®
 			//##############
 				//ChaMatrix transformmat = nodemat * cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);
 				//ChaVector3TransformCoord(pEyePos, &zeropos, &transformmat);
@@ -398,20 +398,20 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				switch (inheritmode) {
 				case CAMERA_INHERIT_ALL:
 					//transformmat = nodemat * cammat;
-					transformmat = localnodeanimmat * parentlocalnodeanimmat;//ParentRot—L‚è
+					transformmat = localnodeanimmat * parentlocalnodeanimmat;//ParentRotæœ‰ã‚Š
 					break;
 
 				case CAMERA_INHERIT_CANCEL_NULL1:
 					//transformmat = nodemat * cammat * ChaMatrixInv(rootmat);
-					transformmat = localnodeanimmat;//‘O ##########
+					transformmat = localnodeanimmat;//å‰ ##########
 					break;
 
 				case CAMERA_INHERIT_CANCEL_NULL2:
 					//################################################################################################
-					//Unity‚É‚¨‚¢‚Ä‚ÍRootMotionƒ`ƒFƒbƒNƒIƒ“. Maya‚É‚¨‚¢‚Ä‚Íƒgƒ‰ƒ“ƒXƒtƒH[ƒ€‚ÌŒp³ƒ`ƒFƒbƒNƒIƒt@‚É‘Š“–
+					//Unityã«ãŠã„ã¦ã¯RootMotionãƒã‚§ãƒƒã‚¯ã‚ªãƒ³. Mayaã«ãŠã„ã¦ã¯ãƒˆãƒ©ãƒ³ã‚¹ãƒ•ã‚©ãƒ¼ãƒ ã®ç¶™æ‰¿ãƒã‚§ãƒƒã‚¯ã‚ªãƒ•ã€€ã«ç›¸å½“
 					//################################################################################################
 					//transformmat = cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);
-					transformmat = localnodeanimmat * positionmat4 * parentlocalnodemat;//###################### ParentRot–³‚µ TheHunt Street1 Camera1
+					transformmat = localnodeanimmat * positionmat4 * parentlocalnodemat;//###################### ParentRotç„¡ã— TheHunt Street1 Camera1
 					break;
 
 				default:
@@ -426,7 +426,7 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 
 
 			//##############
-			//ƒJƒƒ‰‚ÌŒü‚«
+			//ã‚«ãƒ¡ãƒ©ã®å‘ã
 			//##############
 
 			
@@ -438,7 +438,7 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				case CAMERA_INHERIT_ALL:
 					//rotmat = nodemat * cammat;
 					//rotmat = localnodeanimmat * parentlocalnodemat;//!!!!!!
-					rotmat = localnodeanimmat * parentlocalnodeanimmat;//ParentRot—L‚è
+					rotmat = localnodeanimmat * parentlocalnodeanimmat;//ParentRotæœ‰ã‚Š
 					break;
 
 				case CAMERA_INHERIT_CANCEL_NULL1:
@@ -449,10 +449,10 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				case CAMERA_INHERIT_CANCEL_NULL2:
 
 					//################################################################################################
-					//Unity‚É‚¨‚¢‚Ä‚ÍRootMotionƒ`ƒFƒbƒNƒIƒ“. Maya‚É‚¨‚¢‚Ä‚Íƒgƒ‰ƒ“ƒXƒtƒH[ƒ€‚ÌŒp³ƒ`ƒFƒbƒNƒIƒt@‚É‘Š“–
+					//Unityã«ãŠã„ã¦ã¯RootMotionãƒã‚§ãƒƒã‚¯ã‚ªãƒ³. Mayaã«ãŠã„ã¦ã¯ãƒˆãƒ©ãƒ³ã‚¹ãƒ•ã‚©ãƒ¼ãƒ ã®ç¶™æ‰¿ãƒã‚§ãƒƒã‚¯ã‚ªãƒ•ã€€ã«ç›¸å½“
 					//################################################################################################
 					////rotmat = nodemat * cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);
-					rotmat = localnodeanimmat * positionmat4 * parentlocalnodemat;//###################### ParentRot–³‚µ@TheHunt Street1 Camera1
+					rotmat = localnodeanimmat * positionmat4 * parentlocalnodemat;//###################### ParentRotç„¡ã—ã€€TheHunt Street1 Camera1
 					break;
 
 				default:
@@ -516,7 +516,7 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 		}
 	}
 	else {
-		//‰½‚à‚µ‚È‚¢
+		//ä½•ã‚‚ã—ãªã„
 	}
 
 
@@ -531,12 +531,12 @@ ChaVector3 CCameraFbx::CalcCameraFbxEulXYZ(int cameramotid, double srcframe, Cha
 
 	CAMERANODE* curcamera = FindCameraNodeByMotId(cameramotid);
 	if (!curcamera) {
-		//fbx‚ÉƒJƒƒ‰‚ªŠÜ‚Ü‚ê‚Ä‚¢‚È‚¢ê‡@ˆ—‚¹‚¸ƒŠƒ^[ƒ“
+		//fbxã«ã‚«ãƒ¡ãƒ©ãŒå«ã¾ã‚Œã¦ã„ãªã„å ´åˆã€€å‡¦ç†ã›ãšãƒªã‚¿ãƒ¼ãƒ³
 		_ASSERT(0);
 		return cureul;
 	}
 	if (!curcamera->IsValid()) {
-		//•K—v‚Èî•ñ‚ª“Ç‚İ‚ß‚Ä‚¢‚È‚¢ê‡@ƒGƒ‰[
+		//å¿…è¦ãªæƒ…å ±ãŒèª­ã¿è¾¼ã‚ã¦ã„ãªã„å ´åˆã€€ã‚¨ãƒ©ãƒ¼
 		_ASSERT(0);
 		return cureul;
 	}
@@ -581,7 +581,7 @@ ChaVector3 CCameraFbx::CalcCameraFbxEulXYZ(int cameramotid, double srcframe, Cha
 				//////rotz2x.SetRotationXYZ(0, ChaVector3(0.0f, 90.0f, 0.0f));
 				////rotz2x.SetRotationXYZ(0, ChaVector3(0.0f, -90.0f, 0.0f));
 				////CQuaternion eulq;
-				////eulq = rotq * rotz2x;//90“x‰ñ“]‚µ‚Ä@‰Šú•ûŒü‚ğ‡‚í‚¹‚é
+				////eulq = rotq * rotz2x;//90åº¦å›è»¢ã—ã¦ã€€åˆæœŸæ–¹å‘ã‚’åˆã‚ã›ã‚‹
 				////eulq = rotq;
 				//eulq.Q2EulXYZusingQ(0, befeul, &cureul, 0, 0, notmodify180flag);//XYZ
 				////eulq.Q2EulXYZusingMat((int)camerabone->GetFbxRotationOrder(), 0, befeul, &cureul, 0, 0, notmodify180flag);//rotationOrder
@@ -601,7 +601,7 @@ ChaVector3 CCameraFbx::CalcCameraFbxEulXYZ(int cameramotid, double srcframe, Cha
 				//rotq.SetRotation(rotationorder, 0, orgeul);
 				//CQuaternion rotz2x;
 				//rotz2x.SetRotationXYZ(0, ChaVector3(0.0f, 90.0f, 0.0f));
-				//CQuaternion eulq = rotq * rotz2x;//90“x‰ñ“]‚µ‚Ä@‰Šú•ûŒü‚ğ‡‚í‚¹‚é
+				//CQuaternion eulq = rotq * rotz2x;//90åº¦å›è»¢ã—ã¦ã€€åˆæœŸæ–¹å‘ã‚’åˆã‚ã›ã‚‹
 				////eulq = rotq;
 				//int notmodify180flag2;
 				//if (roundingframe <= 1.0) {

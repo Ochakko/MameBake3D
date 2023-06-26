@@ -1096,6 +1096,8 @@ public: //accesser
 
 
 	ChaMatrix GetENullMatrix();
+	void CalcEnullMatReq(ChaMatrix* plocalnodeanimmat);//parent•ûŒü‚ÖŒvŽZ
+
 	ChaMatrix CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcframe);
 
 	ANGLELIMIT GetAngleLimit(bool limitdegflag, int getchkflag);

@@ -4702,8 +4702,14 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 				}
 				else if (parentbone->IsNull()) {
 					//2023/05/16 eNullにもIdentity以外のNodeMatが設定されたため修正
-					parentwm = ChaMatrixInv(parentbone->GetNodeMat()) * parentbone->GetENullMatrix();//ENullMatrixにはNodeMatが掛かっている
-					eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
+					//parentwm = ChaMatrixInv(parentbone->GetNodeMat()) * parentbone->GetENullMatrix();//ENullMatrixにはNodeMatが掛かっている
+					//eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
+
+
+					//2023/06/26 書き出し時にworldmat (InvNodeMat * EvaluateGlobalTransform)にenullの　回転の　影響は入っていない? NodeMatに入っている？　？？？
+					//モデルのeNullをY180度回転したモデルの読み書き読み書き読みテストで確認
+					//下記のように変更しないと　eNullをY180度回転したモデルの読み書き読み時にオイラー角表現が変質し　読み書き読み書き読みテストで　モデル向きが反対を向く
+					eulq = ChaMatrix2Q(curwm);
 				}
 				else {
 					eulq = ChaMatrix2Q(curwm);
@@ -9829,6 +9835,11 @@ int CBone::SwapCurrentMotionPoint()
 
 void CBone::SaveFbxNodePosture(FbxNode* pNode)
 {
+	//#############################################
+	//CModel::CalcMeshMatReq()と内容を同期すること
+	//#############################################
+
+
 	if (pNode) {
 		//m_fbxLclPos = pNode->LclTranslation.Get();
 		//m_fbxLclRot = pNode->LclRotation.Get();
@@ -9863,8 +9874,41 @@ void CBone::SaveFbxNodePosture(FbxNode* pNode)
 	}
 }
 
+void CBone::CalcEnullMatReq(ChaMatrix* plocalnodeanimmat)
+{
+	if (!plocalnodeanimmat) {
+		_ASSERT(0);
+		return;
+	}
+	if (!GetFbxNodeOnLoad()) {
+		return;
+	}
+
+	double enulltime = 0.0;
+	ChaMatrix localnodemat, localnodeanimmat;
+	localnodemat.SetIdentity();
+	localnodeanimmat.SetIdentity();
+	CalcLocalNodePosture(GetFbxNodeOnLoad(), enulltime, &localnodemat, &localnodeanimmat);
+
+	*plocalnodeanimmat = *plocalnodeanimmat * localnodeanimmat;
+
+
+	//parent方向へ計算
+	if (GetParent(false)) {
+		GetParent(false)->CalcEnullMatReq(plocalnodeanimmat);
+	}
+
+}
+
+
 int CBone::CalcLocalNodePosture(FbxNode* pNode, double srcframe, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat)
 {
+
+	//#############################################
+	//CModel::CalcMeshMatReq()と内容を同期すること
+	//#############################################
+
+
 	if (!plocalnodemat || !plocalnodeanimmat) {
 		_ASSERT(0);
 		return 0;
@@ -10190,20 +10234,32 @@ void CBone::GetBrotherReq(bool excludenullflag, CBone** ppfindbone)
 
 ChaMatrix CBone::GetENullMatrix()
 {
-	FbxNode* eNullNode = GetFbxNodeOnLoad();
-	if (eNullNode) {
-		FbxTime time0;
-		time0.SetSecondDouble(0.0);
-		FbxAMatrix lGlobalSRT = eNullNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);
-		ChaMatrix retmat = ChaMatrixFromFbxAMatrix(lGlobalSRT);
-		return retmat;
-	}
-	else {
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+
+	if (!GetParModel()) {
 		_ASSERT(0);
-		ChaMatrix retmat;
-		retmat.SetIdentity();
 		return retmat;
 	}
+
+	CalcEnullMatReq(&retmat);
+	return retmat;
+
+
+	//FbxNode* eNullNode = GetFbxNodeOnLoad();
+	//if (eNullNode) {
+	//	FbxTime time0;
+	//	time0.SetSecondDouble(0.0);
+	//	FbxAMatrix lGlobalSRT = eNullNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);
+	//	ChaMatrix retmat = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+	//	return retmat;
+	//}
+	//else {
+	//	_ASSERT(0);
+	//	ChaMatrix retmat;
+	//	retmat.SetIdentity();
+	//	return retmat;
+	//}
 }
 
 ChaMatrix CBone::CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcframe)
