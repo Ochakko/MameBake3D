@@ -852,6 +852,8 @@ public:
 	ChaVector3 CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVector3 befeul);
 
 	ChaVector3 GetCameraLclTra(int cameramotid);
+	ChaVector3 GetCameraAdjustPos(int cameramotid);
+
 
 private:
 	int InitParams();

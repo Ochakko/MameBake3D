@@ -269,6 +269,24 @@ int CCameraFbx::PreLoadFbxAnim(CBone* srcbone, int srcmotid, ChaMatrix srcenullm
 	cameranode->upvec = cameraupdir;
 
 
+	//2023/06/27
+	//CAMERA_INHERIT_CANCEL_NULL2の位置補正用
+	FbxTime fbxtime0;
+	fbxtime0.SetSecondDouble(0.0);
+	FbxVector4 lcltime0 = cameranode->pnode->EvaluateLocalTranslation(fbxtime0, FbxNode::eSourcePivot, true, true);
+	ChaVector3 chalcltime0 = ChaVector3(lcltime0, false);
+	ChaVector3 charotpiv = ChaVector3(cameranode->pnode->GetRotationPivot(FbxNode::eSourcePivot));
+	ChaVector3 nodepos = ChaMatrixTraVec(srcbone->GetNodeMat());
+	//cameranode->adjustpos = nodepos - cameranode->position + chalcltime0 - charotpiv;
+	//cameranode->adjustpos = nodepos - charotpiv;
+	//cameranode->adjustpos = cameranode->position - charotpiv;//上
+	//cameranode->adjustpos = charotpiv - cameranode->position;//下
+	//cameranode->adjustpos = cameranode->position - (chalcltime0 - charotpiv);//1:上　3:左
+	//cameranode->adjustpos = (chalcltime0 - charotpiv) - cameranode->position;//1:少し前少し下　3:右下
+	//cameranode->adjustpos = chalcltime0 - charotpiv;//1:すごい上　3:少し右
+	cameranode->adjustpos = charotpiv - chalcltime0;
+
+
 	//###################
 	//cameramotionに登録
 	//###################
@@ -330,6 +348,7 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				camerabone->CalcLocalNodePosture(0, roundingframe, &localnodemat, &localnodeanimmat);
 
 
+				//time 0.0
 				ChaMatrix rootmat;
 				ChaMatrix parentlocalnodemat, parentlocalnodeanimmat;
 				parentlocalnodemat.SetIdentity();
@@ -337,43 +356,30 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				if (camerabone->GetParent(false) && camerabone->GetParent(false)->IsNull()) {
 					rootmat = curcamera->parentenullmat;
 					//camerabone->GetParent(false)->CalcLocalNodePosture(0, 0.0, &parentlocalnodemat, &parentlocalnodeanimmat);
-					camerabone->GetParent(false)->CalcLocalNodePosture(0, roundingframe, &parentlocalnodemat, &parentlocalnodeanimmat);
+					//camerabone->GetParent(false)->CalcLocalNodePosture(0, roundingframe, &parentlocalnodemat, &parentlocalnodeanimmat);
+					camerabone->GetParent(false)->CalcLocalNodePosture(0, 0.0, &parentlocalnodemat, &parentlocalnodeanimmat);
 				}
 				else {
 					rootmat.SetIdentity();
 				}
 
-				ChaMatrix lcltramat;
-				lcltramat.SetIdentity();
-				lcltramat.SetTranslation(curcamera->lcltra);
-				ChaMatrix parentlcltramat;
-				parentlcltramat.SetIdentity();
-				parentlcltramat.SetTranslation(curcamera->parentlcltra);
 
+				//ChaMatrix lcltramat;
+				//lcltramat.SetIdentity();
+				//lcltramat.SetTranslation(curcamera->lcltra);
+				//ChaMatrix parentlcltramat;
+				//parentlcltramat.SetIdentity();
+				//parentlcltramat.SetTranslation(curcamera->parentlcltra);
 
-				//ChaVector3 nodepos = nodemat.GetTranslation();
+				ChaVector3 nodepos = ChaMatrixTraVec(camerabone->GetNodeMat());
 
-	
-				//ChaMatrix positionmat1;
-				//positionmat1.SetIdentity();
-				//positionmat1.SetTranslation(curcamera->position - curcamera->lcltra);
-				//ChaMatrix positionmat2;
-				//positionmat2.SetIdentity();
-				//positionmat2.SetTranslation(curcamera->lcltra - curcamera->position);
-				//ChaMatrix positionmat3;
-				//positionmat3.SetIdentity();
-				////positionmat.SetTranslation(curcamera->position);
-				//positionmat3.SetTranslation(curcamera->position - curcamera->parentlcltra);
-				ChaMatrix positionmat4;
-				positionmat4.SetIdentity();
-				positionmat4.SetTranslation(curcamera->parentlcltra - curcamera->position);
-
+				ChaMatrix adjusttra;
+				adjusttra.SetIdentity();
+				//adjusttra.SetTranslation(testpos - curcamera->position);//
+				adjusttra.SetTranslation(curcamera->adjustpos);
 
 			//##########################################################################################################
 			//2023/06/21　メモ
-			//Unity2022のLTSが発表された　何かが変わった？ようで　カメラアニメの表示が変になった
-			//Unity2022.3.1f1で出力したカメラアニメ付のfbxを表示するために　試行錯誤の嵐
-			//なんとか再生できるようになった
 			//使い方
 			//　カメラの初期の位置と向き設定用Nullノードの下に　カメラオブジェクト(位置向きは設定しない)を置く
 			//　カメラオブジェクトにアニメーションをコンポーネントとして追加
@@ -383,9 +389,6 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 			// 
 			//2023/06/21現在　うまく再生できるものと　変になるものがある状態
 			// 
-			// 
-			// とりあえず　試行錯誤の痕跡(その次のコミットで消す予定)を残したものを　一度コミット
-			// 今後　これを足掛かりにして調整していく
 			//##########################################################################################################
 
 			//##############
@@ -411,7 +414,9 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 					//UnityにおいてはRootMotionチェックオン. Mayaにおいてはトランスフォームの継承チェックオフ　に相当
 					//################################################################################################
 					//transformmat = cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);
-					transformmat = localnodeanimmat * positionmat4 * parentlocalnodemat;//###################### ParentRot無し TheHunt Street1 Camera1
+					//transformmat = localnodeanimmat * positionmat4 * parentlocalnodemat;//###################### ParentRot無し TheHunt Street1 Camera1
+					transformmat = localnodeanimmat * adjusttra * parentlocalnodemat;
+
 					break;
 
 				default:
@@ -452,7 +457,8 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 					//UnityにおいてはRootMotionチェックオン. Mayaにおいてはトランスフォームの継承チェックオフ　に相当
 					//################################################################################################
 					////rotmat = nodemat * cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);
-					rotmat = localnodeanimmat * positionmat4 * parentlocalnodemat;//###################### ParentRot無し　TheHunt Street1 Camera1
+					//rotmat = localnodeanimmat * positionmat4 * parentlocalnodemat;//###################### ParentRot無し　TheHunt Street1 Camera1
+					rotmat = localnodeanimmat * adjusttra * parentlocalnodemat;
 					break;
 
 				default:

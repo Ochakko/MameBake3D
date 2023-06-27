@@ -29,7 +29,7 @@ typedef struct tag_cameranode
 	ChaVector3 lcltra;
 	ChaVector3 parentlcltra;
 	ChaMatrix parentenullmat;
-	ChaMatrix adjusttra;
+	ChaVector3 adjustpos;
 
 	double aspectHeight; // アスペクト高
 	double aspectWidth;  // アスペクト幅
@@ -59,7 +59,7 @@ typedef struct tag_cameranode
 		parentenullmat.SetIdentity();
 		dirvec = ChaVector3(0.0f, 0.0f, 1.0f);
 		upvec = ChaVector3(0.0f, 1.0f, 0.0f);
-		adjusttra.SetIdentity();
+		adjustpos.SetZeroVec3();
 
 		aspectHeight = 600.0f; // アスペクト高
 		aspectWidth = 800.0f;  // アスペクト幅

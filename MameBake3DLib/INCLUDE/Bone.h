@@ -393,7 +393,7 @@ public:
  * @return ê¨å˜ÇµÇΩÇÁÇOÅB
  */
 	int CalcLocalInfo(bool limitdegflag, int motid, double frameno, CMotionPoint* pdstmp);
-	int CalcCurrentLocalInfo(CMotionPoint* pdstmp);
+	//int CalcCurrentLocalInfo(CMotionPoint* pdstmp);
 	int CalcBtLocalInfo(CMotionPoint* pdstmp);
 
 	//int CalcInitLocalInfo(int motid, double frameno, CMotionPoint* pdstmp);

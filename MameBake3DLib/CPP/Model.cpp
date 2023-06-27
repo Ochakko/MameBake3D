@@ -3815,9 +3815,16 @@ void CModel::CalcMeshMatReq(FbxNode* pNode, ChaMatrix* pmeshmat)
 		return;
 	}
 
-	FbxDouble3 fbxLclPos = pNode->LclTranslation.Get();
-	FbxDouble3 fbxLclRot = pNode->LclRotation.Get();
-	FbxDouble3 fbxLclScl = pNode->LclScaling.Get();
+	//FbxDouble3 fbxLclPos = pNode->LclTranslation.Get();
+	//FbxDouble3 fbxLclRot = pNode->LclRotation.Get();
+	//FbxDouble3 fbxLclScl = pNode->LclScaling.Get();
+
+
+	FbxTime fbxtime;
+	fbxtime.SetSecondDouble(0.0);
+	FbxDouble3 fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);//Bone.cpp SaveFbxNodePosture()と合わせる
+	FbxDouble3 fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+	FbxDouble3 fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
 	FbxVector4 fbxRotOff = pNode->GetRotationOffset(FbxNode::eSourcePivot);
 	FbxVector4 fbxRotPiv = pNode->GetRotationPivot(FbxNode::eSourcePivot);
 	FbxVector4 fbxPreRot = pNode->GetPreRotation(FbxNode::eSourcePivot);
@@ -3900,18 +3907,18 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 	{
 		globalmeshmat.SetIdentity();
 
-		//######################################################################################################
-		//currentのfbxのanimationに何がセットされているか不定なので　複数アニメーションがある場合に問題が起こる
-		//解決策としては　CalcMeshMatReq()を使用する
-		//######################################################################################################
-		//FbxTime fbxtime0;
-		//fbxtime0.SetSecondDouble(0.0);
-		//FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
-		////FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot);
-		//globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
+		FbxTime fbxtime0;
+		fbxtime0.SetSecondDouble(0.0);
+		FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
+		//FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot);
+		globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
 
 
-		CalcMeshMatReq(pNode, &globalmeshmat);
+		//2023/06/27
+		//CalcMeshMatReq()は　まだ何か違うらしい
+		//TheHunt Street1 で手に持っているHUDの位置が変になった
+		//直るまで　EvaluateGlobalTransformを使う
+		//CalcMeshMatReq(pNode, &globalmeshmat);
 
 
 		//for debug
@@ -17556,6 +17563,24 @@ ChaVector3 CModel::GetCameraLclTra(int cameramotid)
 
 
 	rettra = curcn->lcltra;
+	return rettra;
+}
+
+ChaVector3 CModel::GetCameraAdjustPos(int cameramotid)
+{
+	ChaVector3 rettra = ChaVector3(0.0f, 0.0f, 0.0f);
+
+	if (!m_camerafbx.IsLoaded()) {
+		return rettra;
+	}
+
+	CAMERANODE* curcn = m_camerafbx.FindCameraNodeByMotId(cameramotid);
+	if (!curcn) {
+		return rettra;
+	}
+
+
+	rettra = curcn->adjustpos;
 	return rettra;
 }
 

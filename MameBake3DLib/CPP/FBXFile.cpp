@@ -650,12 +650,12 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode)
 
 	FbxTime fbxtime;
 	fbxtime.SetSecondDouble(0.0);
-	//fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);//Bone.cpp SaveFbxNodePosture()と合わせる
-	//fbxLclRot = srcnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
-	//fbxLclScl = srcnode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
-	fbxLclPos = srcnode->LclTranslation.Get();
-	fbxLclRot = srcnode->LclRotation.Get();
-	fbxLclScl = srcnode->LclScaling.Get();
+	fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);//Bone.cpp SaveFbxNodePosture()と合わせる
+	fbxLclRot = srcnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+	fbxLclScl = srcnode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
+	//fbxLclPos = srcnode->LclTranslation.Get();
+	//fbxLclRot = srcnode->LclRotation.Get();
+	//fbxLclScl = srcnode->LclScaling.Get();
 	//fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);//target false
 	//fbxLclRot = srcnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);//target false
 	//fbxLclScl = srcnode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);//target false
