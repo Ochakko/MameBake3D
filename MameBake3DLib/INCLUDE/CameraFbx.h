@@ -29,7 +29,7 @@ typedef struct tag_cameranode
 	ChaVector3 lcltra;
 	ChaVector3 parentlcltra;
 	ChaMatrix parentenullmat;
-	ChaVector3 adjustpos;
+	ChaVector3 adjustpos;//CAMERA_INHERIT_CANCEL_NULL2の位置補正用
 
 	double aspectHeight; // アスペクト高
 	double aspectWidth;  // アスペクト幅

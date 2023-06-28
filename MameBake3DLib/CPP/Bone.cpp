@@ -9846,10 +9846,12 @@ void CBone::SaveFbxNodePosture(FbxNode* pNode)
 
 
 	if (pNode) {
-		//m_fbxLclPos = pNode->LclTranslation.Get();
-		//m_fbxLclRot = pNode->LclRotation.Get();
-		//m_fbxLclScl = pNode->LclScaling.Get();
 
+		//#########################################################################################
+		//2023/06/28
+		//Enullノードの子供のCancel2Modeで正常に再生可能なカメラアニメ保存読み込みで検証したところ
+		//Lcl*.Get()を保存するとアニメが変質したが　EvaluateLocal*を保存すると変質しなかった
+		//#########################################################################################
 		FbxTime fbxtime;
 		fbxtime.SetSecondDouble(0.0);
 		m_fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);//FbxFile.cpp CopyNodePosture()と合わせる
@@ -9858,9 +9860,7 @@ void CBone::SaveFbxNodePosture(FbxNode* pNode)
 		//m_fbxLclPos = pNode->LclTranslation.Get();//2023/05/17
 		//m_fbxLclRot = pNode->LclRotation.Get();//2023/05/17
 		//m_fbxLclScl = pNode->LclScaling.Get();//2023/05/17
-		//m_fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);//target false
-		//m_fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);//target false
-		//m_fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);//target false
+
 
 		m_fbxRotOff = pNode->GetRotationOffset(FbxNode::eSourcePivot);
 		m_fbxRotPiv = pNode->GetRotationPivot(FbxNode::eSourcePivot);
@@ -9930,6 +9930,12 @@ int CBone::CalcLocalNodePosture(FbxNode* pNode, double srcframe, ChaMatrix* ploc
 	FbxTime fbxtime;
 	fbxtime.SetSecondDouble((double)((int)(srcframe + 0.0001)) / 30.0);
 
+
+	//#########################################################################################
+	//2023/06/28
+	//Enullノードの子供のCancel2Modeで正常に再生可能なカメラアニメ保存読み込みで検証したところ
+	//Lcl*.Get()を保存するとアニメが変質したが　EvaluateLocal*を保存すると変質しなかった
+	//#########################################################################################
 	FbxDouble3 fbxLclPos;
 	FbxDouble3 fbxLclRot;
 	FbxDouble3 fbxLclScl;
@@ -9943,6 +9949,8 @@ int CBone::CalcLocalNodePosture(FbxNode* pNode, double srcframe, ChaMatrix* ploc
 		fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
 		fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
 	//}
+
+
 
 	EFbxRotationOrder rotationorder;
 	pNode->GetRotationOrder(FbxNode::eSourcePivot, rotationorder);
@@ -9974,9 +9982,25 @@ int CBone::CalcLocalNodePosture(FbxNode* pNode, double srcframe, ChaMatrix* ploc
 	// 
 	//######################################################################################################################
 	CQuaternion rotQ1, rotQ2, preQ, lclQ, postQ;
-	preQ.SetRotation(rotationorder, 0, ChaVector3(m_fbxPreRot));
+	//preQ.SetRotation(rotationorder, 0, ChaVector3(m_fbxPreRot));
+	//lclQ.SetRotation(rotationorder, 0, ChaVector3(fbxLclRot));//##### at fbxtime
+	//postQ.SetRotation(rotationorder, 0, ChaVector3(m_fbxPostRot));
+
+
+	//##############################################################################################################################
+	//2023/06/28
+	//Mesh用の変換行列計算(CModel::CalcMeshMatReq())時には　prerot, postrotlclrotはXYZ順　lclrotはrotationorder順でうまくいくようだ
+	//		ただし　カメラの子供のメッシュについては　うまくいっていない(parentがeCameraの場合の計算に対応していない)
+	//
+	//TheHunt Street1 Camera_1の　HUDの位置向き　壁の位置向き　　　TheHunt City1 Camera_1の子供のArmsのなどで検証
+	// CBone::CalcLocalNodePosture(), CFbxFile::CopyNodePosture()もそれに合わせる
+	// 読み書き読み書き読みで変わらないことを確認
+	//##############################################################################################################################
+	preQ.SetRotationXYZ(0, ChaVector3(m_fbxPreRot));//
 	lclQ.SetRotation(rotationorder, 0, ChaVector3(fbxLclRot));//##### at fbxtime
-	postQ.SetRotation(rotationorder, 0, ChaVector3(m_fbxPostRot));
+	postQ.SetRotationXYZ(0, ChaVector3(m_fbxPostRot));//
+
+
 	rotQ1 = preQ * lclQ * postQ;
 	rotQ2 = preQ * postQ;
 

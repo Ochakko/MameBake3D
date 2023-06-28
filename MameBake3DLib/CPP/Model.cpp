@@ -3815,10 +3815,14 @@ void CModel::CalcMeshMatReq(FbxNode* pNode, ChaMatrix* pmeshmat)
 		return;
 	}
 
+	//#########################################################################################
+	//2023/06/28
+	//Enullノードの子供のCancel2Modeで正常に再生可能なカメラアニメ保存読み込みで検証したところ
+	//Lcl*.Get()を保存するとアニメが変質したが　EvaluateLocal*を保存すると変質しなかった
+	//#########################################################################################
 	//FbxDouble3 fbxLclPos = pNode->LclTranslation.Get();
 	//FbxDouble3 fbxLclRot = pNode->LclRotation.Get();
 	//FbxDouble3 fbxLclScl = pNode->LclScaling.Get();
-
 
 	FbxTime fbxtime;
 	fbxtime.SetSecondDouble(0.0);
@@ -3852,11 +3856,24 @@ void CModel::CalcMeshMatReq(FbxNode* pNode, ChaMatrix* pmeshmat)
 	fbxRp.SetTranslation(ChaVector3(fbxRotPiv));
 
 	CQuaternion rotQ1, rotQ2, preQ, lclQ, postQ;
-	preQ.SetRotation(rotationorder, 0, ChaVector3(fbxPreRot));
+	//preQ.SetRotation(rotationorder, 0, ChaVector3(fbxPreRot));
+	//lclQ.SetRotation(rotationorder, 0, ChaVector3(fbxLclRot));//##### at fbxtime
+	//postQ.SetRotation(rotationorder, 0, ChaVector3(fbxPostRot));
+
+	//##############################################################################################################################
+	//2023/06/28
+	//Mesh用の変換行列計算(CModel::CalcMeshMatReq())時には　prerot, postrotlclrotはXYZ順　lclrotはrotationorder順でうまくいくようだ
+	//		ただし　カメラの子供のメッシュについては　うまくいっていない(parentがeCameraの場合の計算に対応していない)
+	// 
+	//TheHunt Street1 Camera_1の　HUDの位置向き　壁の位置向き　　　TheHunt City1 Camera_1の子供のArmsのなどで検証
+	// 読み書き読み書き読みで変わらないことを確認
+	//##############################################################################################################################
+	preQ.SetRotationXYZ(0, ChaVector3(fbxPreRot));//!!!!!! prerotはXYZ
 	lclQ.SetRotation(rotationorder, 0, ChaVector3(fbxLclRot));//##### at fbxtime
-	postQ.SetRotation(rotationorder, 0, ChaVector3(fbxPostRot));
+	postQ.SetRotationXYZ(0, ChaVector3(fbxPostRot));//!!!!!! postrotはXYZ
 	rotQ1 = preQ * lclQ * postQ;
 	rotQ2 = preQ * postQ;
+
 
 	fbxRpinv = ChaMatrixInv(fbxRp);
 	fbxSoff.SetTranslation(ChaVector3(fbxSclOff));
@@ -3907,18 +3924,14 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 	{
 		globalmeshmat.SetIdentity();
 
-		FbxTime fbxtime0;
-		fbxtime0.SetSecondDouble(0.0);
-		FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
-		//FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot);
-		globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
+		//FbxTime fbxtime0;
+		//fbxtime0.SetSecondDouble(0.0);
+		//FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot, true, true);
+		////FbxAMatrix lGlobalPosition = pNode->EvaluateGlobalTransform(fbxtime0, FbxNode::eSourcePivot);
+		//globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
 
 
-		//2023/06/27
-		//CalcMeshMatReq()は　まだ何か違うらしい
-		//TheHunt Street1 で手に持っているHUDの位置が変になった
-		//直るまで　EvaluateGlobalTransformを使う
-		//CalcMeshMatReq(pNode, &globalmeshmat);
+		CalcMeshMatReq(pNode, &globalmeshmat);
 
 
 		//for debug
@@ -5152,14 +5165,6 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 				//if (GetCameraFbx()) {
 				//	GetCameraFbx()->SetAnimLayer(m_pscene, chkanimname);
 				//}
-
-
-				//SetCameraMotionId()は　カレントのfbxのアニメーションを変更するので　ここでは呼ばない
-				//if (GetCameraMotionId() <= 0) {
-				//	//最初に見つけたカメラモーションを　再生候補のカメラモーションにする
-				//	SetCameraMotionId(curmotid);
-				//}
-
 
 				PreLoadCameraFbxAnim(curmotid);
 				SetCameraMotionId(curmotid);

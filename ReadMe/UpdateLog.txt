@@ -96,6 +96,12 @@
 				TheHunt Street1 Camera_1の子供のArmsなど　対応未定
 				表示メニューのオブジェクトパネルで　変になるオブジェクトは非表示にしていてください
 
+	2023/06/28_1
+		RotationOrderを見直し　テストし直し
+			CalcMeshMatReq(), CalcLocalNodePosture(), CopyNodePosture()修正
+			読み書き読み書き読みテストで変質しないように修正
+			ただし　カメラの子供のメッシュについては　現在未対応
+
 
 2023/06/07
 	EditMot 1.2.0.21 relase

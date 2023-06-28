@@ -648,6 +648,12 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode)
 	bool fbxrotationActive;
 	EFbxRotationOrder rotationorder;
 
+	
+	//#########################################################################################
+	//2023/06/28
+	//Enullノードの子供のCancel2Modeで正常に再生可能なカメラアニメ保存読み込みで検証したところ
+	//Lcl*.Get()を保存するとアニメが変質したが　EvaluateLocal*を保存すると変質しなかった
+	//#########################################################################################
 	FbxTime fbxtime;
 	fbxtime.SetSecondDouble(0.0);
 	fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);//Bone.cpp SaveFbxNodePosture()と合わせる
@@ -656,9 +662,7 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode)
 	//fbxLclPos = srcnode->LclTranslation.Get();
 	//fbxLclRot = srcnode->LclRotation.Get();
 	//fbxLclScl = srcnode->LclScaling.Get();
-	//fbxLclPos = srcnode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot);//target false
-	//fbxLclRot = srcnode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot);//target false
-	//fbxLclScl = srcnode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot);//target false
+
 
 	fbxRotOff = srcnode->GetRotationOffset(FbxNode::eSourcePivot);
 	fbxRotPiv = srcnode->GetRotationPivot(FbxNode::eSourcePivot);
@@ -730,10 +734,9 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode)
 		preroteul = ChaVector3(fbxPreRot);
 		postroteul = ChaVector3(fbxPostRot);
 
-
-		//rotationorderに変更がある場合のみ　変換する
-		//変換すると保存したものが変になる　そのままXYZ順としてセットするとなぜかうまくいく　なぞ
-		//CBone::CalcLocalNodePosture()内で　読み込み時に　rotationorderの通りに計算すると　カメラの動きが改善した　のに
+		////rotationorderに変更がある場合のみ　変換する
+		////変換すると保存したものが変になる　そのままXYZ順としてセットするとなぜかうまくいく　なぞ
+		////CBone::CalcLocalNodePosture()内で　読み込み時に　rotationorderの通りに計算すると　カメラの動きが改善した　のに
 		//if (rotationorder != eEulerXYZ) {
 		//	roteulxyz = roteul.ConvRotOrder2XYZ(rotationorder);
 		//	preroteulxyz = preroteul.ConvRotOrder2XYZ(rotationorder);
@@ -744,6 +747,23 @@ int CopyNodePosture(FbxNode* srcnode, FbxNode* psavenode)
 			preroteulxyz = fbxPreRot;
 			postroteulxyz = fbxPostRot;
 		//}
+
+		//##################################################################################################################################################
+		//2023/06/28
+		//Mesh用の変換行列計算(CModel::CalcMeshMatReq())時には　prerot, postrot, lclrotはXYZ順　でうまくいくようだ
+		//TheHunt Street1 Camera_1の　HUDの位置向き　壁の位置向き　　　TheHunt City1 Camera_1の子供のArmsのなどで検証
+		//		ただし　カメラの子供のメッシュについては　うまくいっていない(parentがeCameraの場合の計算に対応していない)
+		//
+		// CBone::CalcLocalNodePosture(), CFbxFile::CopyNodePosture()もそれに合わせる
+		// 読み書き読み書き読みで変わらないことを確認する
+		// 　と思ったのだけれど
+		// 読み書き読み書き読みテストで表示が変わらないようにするには　書き出し時には　prerot, postrot, lclrotをそのままセットしなければならなかった
+		// (なぞ)
+		//##################################################################################################################################################
+		roteulxyz = fbxLclRot;
+		preroteulxyz = fbxPreRot;
+		postroteulxyz = fbxPostRot;
+
 
 		psavenode->LclTranslation.Set(fbxLclPos);
 		//psavenode->LclRotation.Set(fbxLclRot);
