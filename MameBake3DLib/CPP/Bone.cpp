@@ -1113,8 +1113,8 @@ CMotionPoint* CBone::AddMotionPoint(int srcmotid, double srcframe, int* existptr
 		return 0;
 	}
 
-	//2023/04/28 2023/05/23
-	if (IsNotSkeleton() && IsNotCamera()) {
+	//2023/04/28 2023/05/23 2023/06/29
+	if (IsNotSkeleton() && IsNotCamera() && IsNotNull()) {
 		if (existptr) {
 			*existptr = 0;
 		}
@@ -1263,7 +1263,7 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 
 
 	//2023/04/28 2023/05/23
-	if (IsNotSkeleton() && IsNotCamera()) {
+	if (IsNotSkeleton() && IsNotCamera() && IsNotNull()) {
 		if (ppbef) {
 			*ppbef = 0;
 		}
@@ -1619,7 +1619,7 @@ int CBone::DeleteMPOutOfRange( int motid, double srcleng )
 {
 
 	//2023/04/28 2023/05/23
-	if (IsNotSkeleton() && IsNotCamera()) {
+	if (IsNotSkeleton() && IsNotCamera() && IsNotNull()) {
 		return 0;
 	}
 
@@ -1814,9 +1814,9 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bi
 			tmpparentbtmat = GetParent(false)->GetNodeMat() * GetParent(false)->GetBtMat();
 		}
 		else if (GetParent(false)->IsNull()) {
-			tmpparentzerofm = GetParent(false)->GetENullMatrix();
-			tmpparentlimwm = GetParent(false)->GetENullMatrix();
-			tmpparentbtmat = GetParent(false)->GetENullMatrix();
+			tmpparentzerofm = GetParent(false)->GetENullMatrix(0.0);
+			tmpparentlimwm = GetParent(false)->GetENullMatrix(0.0);
+			tmpparentbtmat = GetParent(false)->GetENullMatrix(0.0);
 		}
 		else {
 			tmpparentzerofm.SetIdentity();
@@ -4626,7 +4626,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 
-	if (IsNotSkeleton() && IsNotCamera()) {
+	if (IsNotSkeleton() && IsNotCamera() && IsNotNull()) {
 		return cureul;
 	}
 
@@ -4679,10 +4679,10 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 
 	CQuaternion eulq;
 
-	if (IsNotCamera()) {
+	if (IsSkeleton()) {
 
 		//###########################
-		//カメラ以外　skeletonの場合
+		//skeletonの場合
 		//###########################
 		CMotionPoint* curmp = 0;
 		curmp = GetMotionPoint(srcmotid, roundingframe);
@@ -4707,7 +4707,12 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 					//2023/06/26 書き出し時にworldmat (InvNodeMat * EvaluateGlobalTransform)にenullの　回転の　影響は入っていない? NodeMatに入っている？　？？？
 					//モデルのeNullをY180度回転したモデルの読み書き読み書き読みテストで確認
 					//下記のように変更しないと　eNullをY180度回転したモデルの読み書き読み時にオイラー角表現が変質し　読み書き読み書き読みテストで　モデル向きが反対を向く
-					eulq = ChaMatrix2Q(curwm);
+					//eulq = ChaMatrix2Q(curwm);
+
+
+					//2023/06/29 eNullもアニメーション可能にしたので
+					parentwm = parentbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+					eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
 				}
 				else {
 					eulq = ChaMatrix2Q(curwm);
@@ -4726,11 +4731,11 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 		eulq.Q2EulXYZusingQ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 
 	}
-	else {
+	else if(IsCamera()){
 		
-		//#############
+		//########################
 		//カメラの場合
-		//#############
+		//########################
 
 		if (GetParModel() && GetParModel()->IsCameraLoaded()) {
 
@@ -4742,6 +4747,25 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 			cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 		}
 
+	}
+	else if (IsNull()) {
+
+		//########################
+		//eNullの場合
+		//########################
+
+		if (GetFbxNodeOnLoad()) {
+			FbxTime fbxtime;
+			fbxtime.SetSecondDouble(roundingframe / 30.0);
+			FbxVector4 orgfbxeul = GetFbxNodeOnLoad()->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
+			cureul = ChaVector3(orgfbxeul, false);
+		}
+		else {
+			return cureul;
+		}
+	}
+	else {
+		return cureul;
 	}
 
 	return cureul;
@@ -6604,12 +6628,12 @@ ChaMatrix CBone::GetWorldMat(bool limitdegflag,
 
 
 		//2023/05/16 eNullのNodeMatがIdentityではなくなったため
-		//return ChaMatrixInv(GetNodeMat()) * GetENullMatrix();//!!!!!!!!!!!!
+		return ChaMatrixInv(GetNodeMat()) * GetENullMatrix(srcframe);//!!!!!!!!!!!!
 
 		//2023/06/27
 		//CalcLocalEulXYZ()の検証で　ParentがeNullのときには　parentwmはIdentityにするべきだったので　それに合わせる
-		curmat.SetIdentity();
-		return curmat;
+		//curmat.SetIdentity();
+		//return curmat;
 	}
 	else if (IsNotSkeleton() && IsNotCamera()) {//2023/05/23
 		curmat.SetIdentity();
@@ -7074,11 +7098,11 @@ ChaVector3 CBone::CalcFbxScaleAnim(bool limitdegflag, int srcmotid, double srcfr
 
 	//ChaMatrix localfbxmat = wmanim * ChaMatrixInv(parentfbxwm);
 
-	if (IsNotCamera()) {
+	if (IsSkeleton()) {
 		ChaMatrix localfbxmat = CalcFbxLocalMatrix(limitdegflag, srcmotid, srcframe);
 		GetSRTMatrix(localfbxmat, &svec, &rmat, &tvec);
 	}
-	else {
+	else if(IsNull() || IsCamera()){
 		if (GetFbxNodeOnLoad()) {
 			FbxTime fbxtime;
 			fbxtime.SetSecondDouble(roundingframe / 30.0);
@@ -7088,6 +7112,9 @@ ChaVector3 CBone::CalcFbxScaleAnim(bool limitdegflag, int srcmotid, double srcfr
 		else {
 			svec = ChaVector3(1.0f, 1.0f, 1.0f);
 		}
+	}
+	else {
+		svec = ChaVector3(1.0f, 1.0f, 1.0f);
 	}
 
 	return svec;
@@ -7258,10 +7285,10 @@ ChaVector3 CBone::CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe)
 
 	double roundingframe = (double)((int)(srcframe + 0.0001));
 
-	if (IsNotCamera()) {
+	if (IsSkeleton()) {
 
 		//#################
-		//カメラ以外の場合
+		//Skeletonの場合
 		//#################
 
 		ChaMatrix localfbxmat = CalcFbxLocalMatrix(limitdegflag, srcmotid, srcframe);
@@ -7270,20 +7297,20 @@ ChaVector3 CBone::CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe)
 		GetSRTMatrix(localfbxmat, &svec, &rmat, &tvec);
 		return tvec;
 	}
-	else {
+	else if(IsCamera() || IsNull()){
 
-		//#################
-		//カメラの場合
-		//#################
+		//#########################
+		//カメラまたはeNull の場合
+		//#########################
 
-		if (GetParModel() && GetParModel()->IsCameraLoaded() && GetFbxNodeOnLoad()) {
-
+		//if (GetParModel() && GetParModel()->IsCameraLoaded() && GetFbxNodeOnLoad()) {
+		if (GetParModel() && GetFbxNodeOnLoad()) {
 			FbxTime fbxtime;
 			fbxtime.SetSecondDouble(roundingframe / 30.0);
-			FbxVector4 fbxcameratra = GetFbxNodeOnLoad()->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
-			ChaVector3 cameratra = ChaVector3((float)fbxcameratra[0], (float)fbxcameratra[1], (float)fbxcameratra[2]);
+			FbxVector4 fbxtra = GetFbxNodeOnLoad()->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);
+			ChaVector3 tra = ChaVector3(fbxtra, false);
 
-			return cameratra;
+			return tra;
 
 		}
 		else {
@@ -7291,6 +7318,9 @@ ChaVector3 CBone::CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe)
 			return ChaVector3(0.0f, 0.0f, 0.0f);
 		}
 
+	}
+	else {
+		return ChaVector3(0.0f, 0.0f, 0.0f);
 	}
 
 
@@ -8760,7 +8790,7 @@ int CBone::CreateIndexedMotionPoint(int srcmotid, double animleng)
 	//###############################################
 
 	//2023/04/28
-	if (IsNotSkeleton() && IsNotCamera()) {//2023/05/23
+	if (IsNotSkeleton() && IsNotCamera() && IsNotNull()) {//2023/05/23  2023/06/29
 		return 0;
 	}
 
@@ -9181,9 +9211,19 @@ int CBone::GetFBXAnim(FbxNode* pNode, int animno, int motid, double animleng, bo
 	}
 
 	//2023/04/28 2023/05/23
+	//if (IsNotSkeleton() && IsNotCamera() && IsNotNull()) {
 	if (IsNotSkeleton() && IsNotCamera()) {
 		return 0;
 	}
+
+
+	//if (IsNull()) {
+	//	char motionname[256] = { 0 };
+	//	GetParModel()->GetMotionName(motid, 256, motionname);
+	//	if (strcmp(GetBoneName(), motionname) != 0) {
+	//		return 0;
+	//	}
+	//}
 
 
 	FbxTime fbxtime;
@@ -9879,7 +9919,7 @@ void CBone::SaveFbxNodePosture(FbxNode* pNode)
 	}
 }
 
-void CBone::CalcEnullMatReq(ChaMatrix* plocalnodeanimmat)
+void CBone::CalcEnullMatReq(double srctime, ChaMatrix* plocalnodeanimmat)
 {
 	if (!plocalnodeanimmat) {
 		_ASSERT(0);
@@ -9889,18 +9929,19 @@ void CBone::CalcEnullMatReq(ChaMatrix* plocalnodeanimmat)
 		return;
 	}
 
-	double enulltime = 0.0;
+	//double enulltime = 0.0;
 	ChaMatrix localnodemat, localnodeanimmat;
 	localnodemat.SetIdentity();
 	localnodeanimmat.SetIdentity();
-	CalcLocalNodePosture(GetFbxNodeOnLoad(), enulltime, &localnodemat, &localnodeanimmat);
+	//CalcLocalNodePosture(GetFbxNodeOnLoad(), enulltime, &localnodemat, &localnodeanimmat);
+	CalcLocalNodePosture(GetFbxNodeOnLoad(), srctime, &localnodemat, &localnodeanimmat);
 
 	*plocalnodeanimmat = *plocalnodeanimmat * localnodeanimmat;
 
 
 	//parent方向へ計算
 	if (GetParent(false)) {
-		GetParent(false)->CalcEnullMatReq(plocalnodeanimmat);
+		GetParent(false)->CalcEnullMatReq(srctime, plocalnodeanimmat);
 	}
 
 }
@@ -10261,7 +10302,7 @@ void CBone::GetBrotherReq(bool excludenullflag, CBone** ppfindbone)
 
 
 
-ChaMatrix CBone::GetENullMatrix()
+ChaMatrix CBone::GetENullMatrix(double srctime)
 {
 	ChaMatrix retmat;
 	retmat.SetIdentity();
@@ -10271,7 +10312,7 @@ ChaMatrix CBone::GetENullMatrix()
 		return retmat;
 	}
 
-	CalcEnullMatReq(&retmat);
+	CalcEnullMatReq(srctime, &retmat);
 	return retmat;
 
 
@@ -10314,7 +10355,7 @@ ChaMatrix CBone::CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcf
 			localfbxmat = GetNodeMat() * wmanim * ChaMatrixInv(parentfbxwm);
 		}
 		else if (parentbone->IsNull()) {
-			parentfbxwm = parentbone->GetENullMatrix();
+			parentfbxwm = parentbone->GetENullMatrix(srcframe);
 			localfbxmat = GetNodeMat() * wmanim * ChaMatrixInv(parentfbxwm);
 		}
 		else {
@@ -10327,51 +10368,33 @@ ChaMatrix CBone::CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcf
 		localfbxmat = GetNodeMat() * wmanim;
 	}
 	
-
-	//if (IsNotCamera()) {
-
-	//	//#################
-	//	//カメラ以外の場合
-	//	//#################
-
-	//	localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
-	//}
-	//else {
-	//	
-	//	//#################
-	//	//カメラの場合
-	//	//#################
-
-	//	if (GetParModel() && GetParModel()->IsCameraLoaded()) {
-	//		ChaMatrix lcltramat;
-	//		lcltramat.SetIdentity();
-	//		lcltramat.SetTranslation(GetParModel()->GetCameraLclTra(srcmotid));
-
-	//		switch (g_cameraInheritMode)
-	//		{
-	//		case CAMERA_INHERIT_ALL:
-	//			localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);//localにする必要がある？から
-	//			break;
-	//		case CAMERA_INHERIT_CANCEL_NULL1:
-	//			localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
-	//			break;
-	//		case CAMERA_INHERIT_CANCEL_NULL2:
-	//		{
-	//			localfbxmat = fbxwm * ChaMatrixInv(lcltramat) * ChaMatrixInv(parentfbxwm);
-	//		}
-	//		break;
-	//		default:
-	//			_ASSERT(0);
-	//			localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
-	//			break;
-	//		}
-	//	}
-	//	else {
-	//		localfbxmat = fbxwm * ChaMatrixInv(parentfbxwm);
-	//	}
-	//}
-
 	return localfbxmat;
+
+}
+
+bool CBone::HasMotionCurve()
+{
+	if (!GetParModel() || !GetFbxNodeOnLoad()) {
+		return false;
+	}
+
+	FbxAnimLayer* panimlayer = GetParModel()->GetCurrentAnimLayer();
+	if (panimlayer) {
+		const char* strChannel;
+		strChannel = FBXSDK_CURVENODE_COMPONENT_X;
+		FbxAnimCurve* lCurve;
+		bool createflag = false;
+		lCurve = GetFbxNodeOnLoad()->LclTranslation.GetCurve(panimlayer, strChannel, createflag);
+		if (lCurve) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	else {
+		return false;
+	}
 
 }
 

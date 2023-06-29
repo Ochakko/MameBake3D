@@ -534,6 +534,8 @@ public:
 
 	//int Adjust180Deg(int srcmotid, double srcleng);
 
+	bool HasMotionCurve();
+
 private:
 
 /**
@@ -1095,8 +1097,8 @@ public: //accesser
 	};
 
 
-	ChaMatrix GetENullMatrix();
-	void CalcEnullMatReq(ChaMatrix* plocalnodeanimmat);//parent•ûŒü‚ÖŒvŽZ
+	ChaMatrix GetENullMatrix(double srctime);
+	void CalcEnullMatReq(double srctime, ChaMatrix* plocalnodeanimmat);//parent•ûŒü‚ÖŒvŽZ
 
 	ChaMatrix CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcframe);
 

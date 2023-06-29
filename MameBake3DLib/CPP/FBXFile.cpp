@@ -3152,7 +3152,7 @@ void AnimateBoneReq(bool limitdegflag, FbxNode* pNode, FbxAnimLayer* lAnimLayer,
 	if ((itrbone != s_savenode2bone.end()) && (strcmp(pNode->GetName(), "Root") != 0)) {
 		lSkel = pNode;
 		CBone* curbone = itrbone->second;
-		if (curbone) {
+		if (curbone && curbone->GetParModel()) {
 
 			//注意　ここは　CBone::IsNull()==trueのときにも通る
 
@@ -3160,31 +3160,69 @@ void AnimateBoneReq(bool limitdegflag, FbxNode* pNode, FbxAnimLayer* lAnimLayer,
 			//コメントアウト　RotationOrderは　CreateAndCopyFbxNodeReq()にて　CopyNodePosture()を使って設定済　eNull, eMeshは元データと同じRotationOrder
 			//lSkel->SetRotationOrder(FbxNode::eSourcePivot, eEulerXYZ);
 			//lSkel->SetRotationOrder(FbxNode::eDestinationPivot, eEulerXYZ);
-			
-
+	
 			s_convPivot = FbxNode::eDestinationPivot;
 
 			CFBXBone fbxbone;
 			fbxbone.SetSkelNode(pNode);
 			fbxbone.SetBone(curbone);
 
-			if (curbone->IsSkeleton() || 
-				(curbone->IsCamera() && curbone->GetParModel() && (curmotid == curbone->GetParModel()->GetCameraMotionId()))) {//2023/06/05
-				//カメラモーション以外でカメラの姿勢を書き出すと　カメラ設定ありかつカメラアニメ無しのfbxにおいて変になる　
 
-				WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
-				WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
-				WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
-
-				WriteFBXAnimRot(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
-				WriteFBXAnimRot(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
-				WriteFBXAnimRot(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
-
-				WriteFBXAnimScale(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
-				WriteFBXAnimScale(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
-				WriteFBXAnimScale(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
-
+			char motionname[256] = { 0 };
+			curbone->GetParModel()->GetMotionName(curmotid, 256, motionname);
+			if (strcmp(curbone->GetBoneName(), motionname) == 0) {
+				int dbgflag = 1;
 			}
+
+			if (curmotid != curbone->GetParModel()->GetCameraMotionId()) {
+				//通常モーション
+				if (curbone->IsSkeleton()) {
+					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+
+					WriteFBXAnimRot(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+					WriteFBXAnimRot(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+					WriteFBXAnimRot(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+
+					WriteFBXAnimScale(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+					WriteFBXAnimScale(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+					WriteFBXAnimScale(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+				}
+			}
+			else {
+				//カメラモーション
+				if (((curbone->IsCamera() || curbone->IsNull()) && (strcmp(curbone->GetBoneName(), motionname) == 0)) || 
+					(curbone->IsNull() && curbone->HasMotionCurve())) {
+					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+
+					WriteFBXAnimRot(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+					WriteFBXAnimRot(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+					WriteFBXAnimRot(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+
+					WriteFBXAnimScale(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+					WriteFBXAnimScale(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+					WriteFBXAnimScale(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+				}
+			}
+
+
+			//if (curbone->IsSkeleton() || 
+			//	(curbone->IsCamera() && curbone->GetParModel() && (curmotid == curbone->GetParModel()->GetCameraMotionId())) //2023/06/05
+			//	) {
+			//	//カメラモーション以外でカメラの姿勢を書き出すと　カメラ設定ありかつカメラアニメ無しのfbxにおいて変になる　
+			//	WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+			//	WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+			//	WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+			//	WriteFBXAnimRot(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+			//	WriteFBXAnimRot(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+			//	WriteFBXAnimRot(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+			//	WriteFBXAnimScale(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
+			//	WriteFBXAnimScale(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
+			//	WriteFBXAnimScale(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
+			//}
 		}
 	}
 
@@ -5098,6 +5136,13 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 	CBone* curbone = nodeonload->GetBone();
 
 
+	//rootから辿る際に　pNode != NULL かつ　curbone == NULLは　再帰の処理対象
+
+	if (curbone && !curbone->GetParModel()) {
+		_ASSERT(0);
+		return;
+	}
+
 	FbxAMatrix lGlobalPosition;
 	lGlobalPosition.SetIdentity();
 
@@ -5241,7 +5286,28 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 			else {
 				//eNull Rotation含む
 				calcnodeanimmat = localnodeanimmat * parentnodemat;
-				calcnodemat = calcnodeanimmat;
+
+				FbxAnimLayer* panimlayer = curbone->GetParModel()->GetCurrentAnimLayer();
+				if (panimlayer) {
+					const char* strChannel;
+					strChannel = FBXSDK_CURVENODE_COMPONENT_X;
+					FbxAnimCurve* lCurve;
+					bool createflag = false;
+					lCurve = pNode->LclTranslation.GetCurve(panimlayer, strChannel, createflag);
+					if (lCurve) {
+						//eNull animation在り
+						calcnodemat = localnodemat * parentnodemat;
+					}
+					else {
+						//eNull animation無し
+						calcnodemat = calcnodeanimmat;//rot入りと同じ
+					}
+				}
+				else {
+					//eNull animation無し
+					calcnodemat = calcnodeanimmat;//rot入りと同じ
+				}
+				
 			}
 		}
 

@@ -357,8 +357,8 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				if (camerabone->GetParent(false) && camerabone->GetParent(false)->IsNull()) {
 					rootmat = curcamera->parentenullmat;
 					//camerabone->GetParent(false)->CalcLocalNodePosture(0, 0.0, &parentlocalnodemat, &parentlocalnodeanimmat);
-					//camerabone->GetParent(false)->CalcLocalNodePosture(0, roundingframe, &parentlocalnodemat, &parentlocalnodeanimmat);
-					camerabone->GetParent(false)->CalcLocalNodePosture(0, 0.0, &parentlocalnodemat, &parentlocalnodeanimmat);
+					camerabone->GetParent(false)->CalcLocalNodePosture(0, roundingframe, &parentlocalnodemat, &parentlocalnodeanimmat);
+					//camerabone->GetParent(false)->CalcLocalNodePosture(0, 0.0, &parentlocalnodemat, &parentlocalnodeanimmat);
 				}
 				else {
 					rootmat.SetIdentity();

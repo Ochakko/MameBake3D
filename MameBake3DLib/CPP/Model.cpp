@@ -1064,7 +1064,7 @@ _ASSERT(m_bonelist[0]);
 		map<int, CBone*>::iterator itrbone;
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 			CBone* curbone = itrbone->second;
-			if (curbone && (curbone->IsSkeleton() || curbone->IsCamera())) {
+			if (curbone && (curbone->IsSkeleton() || curbone->IsCamera() || curbone->IsNull())) {
 				curbone->SetBtKinFlag(1);
 			}
 		}
@@ -2868,6 +2868,29 @@ int CModel::SetMotionFrame(int srcmotid, double srcframe)
 	return 0;
 }
 
+
+int CModel::GetMotionName(int srcmotid, int dstnamelen, char* dstname)
+{
+	if (!dstname) {
+		_ASSERT(0);
+		return 1;
+	}
+	if (dstnamelen != 256) {//!!!!!!!!!!!
+		_ASSERT(0);
+		return 1;
+	}
+
+	MOTINFO* curmi = GetMotInfo(srcmotid);
+	if (curmi) {
+		strcpy_s(dstname, dstnamelen, curmi->motname);
+		return 0;
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
+
+}
 
 int CModel::GetMotionFrame( double* dstframe )
 {
@@ -5175,7 +5198,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 			map<int, CBone*>::iterator itrbone;
 			for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 				CBone* curbone = itrbone->second;
-				if (curbone && (curbone->IsSkeleton() || curbone->IsCamera())) {
+				if (curbone && (curbone->IsSkeleton() || curbone->IsCamera() || curbone->IsNull())) {
 					curbone->SetGetAnimFlag(0);
 				}
 			}
@@ -5357,7 +5380,10 @@ void CModel::CreateIndexedMotionPointReq(CBone* srcbone, int srcmotid, double sr
 		return;
 	}
 
+	char motionname[256] = { 0 };
+	GetMotionName(srcmotid, 256, motionname);
 
+	//if (srcbone->IsSkeleton() || srcbone->IsCamera() || (srcbone->IsNull() && strcmp(srcbone->GetBoneName(), motionname) == 0)) {
 	if (srcbone->IsSkeleton() || srcbone->IsCamera()) {
 		int result;
 		result = srcbone->CreateIndexedMotionPoint(srcmotid, srcanimleng);
@@ -17632,7 +17658,7 @@ void CModel::SetCameraMotionId(int srcid)
 		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
 			CBone* curbone = itrbone->second;
 			if (curbone) {
-				if (curbone->IsCamera()) {
+				if (curbone->IsCamera() || (curbone->IsNull() && (strcmp(curbone->GetBoneName(), camerami->motname) == 0))) {
 					curbone->SetCurrentMotion(srcid, camerami->frameleng);
 				}
 			}

@@ -374,6 +374,7 @@ public:
  * @return 成功したら０。
  */
 	int GetMotionFrame( double* dstframe );
+	int GetMotionName(int srcmotid, int dstnamelen, char* dstname);
 
 /**
  * @fn

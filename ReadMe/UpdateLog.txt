@@ -107,6 +107,15 @@
 			カメラアニメについてのドキュメントを1.2.0.22用に修正
 			Documants/TroubleShooting/AboutCameraAnim.docx
 
+	2023/06/29
+		eNullにアタッチしたアニメーションの読み書き再生対応
+
+		アニメーションをアタッチしたeNullの子供にカメラオブジェクトを置いた場合の読み書き再生対応
+			TheHuntのカメラアニメの読み込みが簡単に
+
+		ドキュメント更新
+			Documants/TroubleShooting/AboutCameraAnim.docx
+
 
 2023/06/07
 	EditMot 1.2.0.21 relase
