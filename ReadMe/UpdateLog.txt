@@ -115,6 +115,9 @@
 
 		ドキュメント更新
 			Documants/TroubleShooting/AboutCameraAnim.docx
+	
+	2023/06/30
+		eNullの計算に関して　Bone.cppにコメント追加
 
 
 2023/06/07

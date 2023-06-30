@@ -4710,7 +4710,16 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 					//eulq = ChaMatrix2Q(curwm);
 
 
+
+
 					//2023/06/29 eNullもアニメーション可能にしたので
+					//GetENullMatrixを修正してCalcEnullMatReqで計算するようにしたところが2023/06/26から変わったところ
+					//SetWorldMat()時には　回転計算用のローカル行列取得時に　parenetがeNullの場合関してもGetWorldMat[invNode * CalcENullMat]を使用
+					//移動計算時には　CalcFbxLocalMatrix内にて　parentがeNullの場合　GetENullMatrixを使用
+					//
+					//nullの　回転の　影響は入っていない? NodeMatに入っている？に関して
+					//eNullがアニメーションしない場合には　eNullの初期行列はNodeMatに含まれる　eNullのアニメーション分はInvNode * ENullMat = Indentityとなる
+					//eNullがアニメーションする場合には　eNullの初期行列としてはRotを含まないようにする　eNullのアニメーション分はInvNode * ENullMat != Indentityとなり後ろに掛ける　
 					parentwm = parentbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 					eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
 				}
@@ -6009,6 +6018,11 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 		beflocalmat.SetIdentity();
 		newlocalmat.SetIdentity();
 		if (GetParent(false)) {
+			//eNullもアニメーション可能
+			//GetENullMatrixを修正してCalcEnullMatReqで計算するようにしたところが2023/06/26から変わったところ
+			//SetWorldMat()時には　回転計算用のローカル行列取得時に　parenetがeNullの場合関してもGetWorldMat[invNode * CalcENullMat]を使用
+			//Fbx回転計算時には　CalcLocalEulXYZ()内にて　parentがeNullの場合　invNode * CalcENullMatを使用
+			//Fbx移動計算時には　CalcLocalFbxMatrix内にて　parentがeNullの場合　GetENullMatrixを使用
 			ChaMatrix befparentwm;
 			befparentwm = GetParent(false)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 			beflocalmat = saveworldmat * ChaMatrixInv(befparentwm);
@@ -10355,6 +10369,10 @@ ChaMatrix CBone::CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcf
 			localfbxmat = GetNodeMat() * wmanim * ChaMatrixInv(parentfbxwm);
 		}
 		else if (parentbone->IsNull()) {
+			//2023/06/29 eNullもアニメーション可能にしたので
+			//GetENullMatrixを修正してCalcEnullMatReqで計算するようにしたところが2023/06/26から変わったところ
+			//SetWorldMat()時には　回転計算用のローカル行列取得時に　parenetがeNullの場合関してもGetWorldMat[invNode * CalcENullMat]を使用
+			//Fbx回転計算時には　CalcLocalEulXYZ()内にて　parentがeNullの場合　invNode * CalcENullMatを使用
 			parentfbxwm = parentbone->GetENullMatrix(srcframe);
 			localfbxmat = GetNodeMat() * wmanim * ChaMatrixInv(parentfbxwm);
 		}
