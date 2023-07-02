@@ -1476,6 +1476,29 @@ public: //accesser
 		}
 	}
 
+	bool HasMotionCurve(int srcmotid) 
+	{
+		std::map<int, bool>::iterator itrhascurve;
+		itrhascurve = m_hasmotioncurve.find(srcmotid);
+		if (itrhascurve != m_hasmotioncurve.end()) {
+			return itrhascurve->second;
+		}
+		else {
+			return false;
+		}
+	}
+	void SetHasMotionCurve(int srcmotid, bool srcval)
+	{
+		std::map<int, bool>::iterator itrhascurve;
+		itrhascurve = m_hasmotioncurve.find(srcmotid);
+		if (itrhascurve != m_hasmotioncurve.end()) {
+			itrhascurve->second = srcval;
+		}
+		else {
+			m_hasmotioncurve[srcmotid] = srcval;
+		}
+	}
+
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
 	CRITICAL_SECTION m_CritSection_AddMP;
@@ -1638,7 +1661,7 @@ private:
 	ChaMatrix m_localnodemat;
 	ChaMatrix m_localnodeanimmat;
 
-
+	std::map<int, bool> m_hasmotioncurve;
 
 	bool m_ikstopflag;
 	bool m_iktargetflag;

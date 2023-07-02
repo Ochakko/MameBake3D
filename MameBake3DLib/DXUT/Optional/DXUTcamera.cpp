@@ -977,12 +977,8 @@ void CModelViewerCamera::Reset()
     m_ViewArcBall.Reset();
 }
 
-
-//--------------------------------------------------------------------------------------
-// Override for setting the view parameters
-//--------------------------------------------------------------------------------------
 _Use_decl_annotations_
-void CModelViewerCamera::SetViewParamsWithUpVec( CXMVECTOR vEyePt, CXMVECTOR vLookatPt, CXMVECTOR vUpVec)
+void CModelViewerCamera::SetViewParamsWithUpVec(CXMVECTOR vEyePt, CXMVECTOR vLookatPt, CXMVECTOR vUpVec)
 {
     //CBaseCamera::SetViewParams( vEyePt, vLookatPt );
     //= XMVectorSet(vUpVec.m128_f32[0], vUpVec.m128_f32[1], vUpVec.m128_f32[2], 0.0f);
@@ -1015,19 +1011,24 @@ void CModelViewerCamera::SetViewParamsWithUpVec( CXMVECTOR vEyePt, CXMVECTOR vLo
 
 
     // Propogate changes to the member arcball
-    XMMATRIX mRotation = XMMatrixLookAtRH( vEyePt, vLookatPt, g_XMIdentityR1 );
-    XMVECTOR quat = XMQuaternionRotationMatrix( mRotation );
-    m_ViewArcBall.SetQuatNow( quat );
+    XMMATRIX mRotation = XMMatrixLookAtRH(vEyePt, vLookatPt, g_XMIdentityR1);
+    XMVECTOR quat = XMQuaternionRotationMatrix(mRotation);
+    m_ViewArcBall.SetQuatNow(quat);
 
     // Set the radius according to the distance
-    XMVECTOR vEyeToPoint = XMVectorSubtract( vLookatPt, vEyePt );
-    float len = XMVectorGetX( XMVector3Length( vEyeToPoint ) );
-    SetRadius( len );
+    XMVECTOR vEyeToPoint = XMVectorSubtract(vLookatPt, vEyePt);
+    float len = XMVectorGetX(XMVector3Length(vEyeToPoint));
+    SetRadius(len);
 
     // View information changed. FrameMove should be called.
     m_bDragSinceLastUpdate = true;
 }
 
+//--------------------------------------------------------------------------------------
+// Override for setting the view parameters
+//--------------------------------------------------------------------------------------
+
+_Use_decl_annotations_
 void CModelViewerCamera::SetViewParams(CXMVECTOR vEyePt, CXMVECTOR vLookatPt)
 {
     CBaseCamera::SetViewParams( vEyePt, vLookatPt );

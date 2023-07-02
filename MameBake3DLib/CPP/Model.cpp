@@ -3713,7 +3713,6 @@ void CModel::CreateFBXCameraReq(FbxNode* pNode)
 		{
 			CBone* camerabone = FindBoneByNode(pNode);
 			if (camerabone) {
-				//m_camerafbx.SetFbxCamera(pNode, camerabone);
 				m_camerafbx.AddFbxCamera(pNode, camerabone);
 			}
 			else {
@@ -5263,7 +5262,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 				//#### 2023/01/31 ####################################################################
 				//読み込み時にLocalEulとLimitedLocalEulの初期化をするべきなので　復活
 				//####################################################################################
-				PostLoadFbxAnim(curmotid);//並列化出来なかった計算をする
+				PostLoadFbxAnim(mCurrentAnimLayer, curmotid);//並列化出来なかった計算をする
 
 
 				//2023/02/11
@@ -5896,40 +5895,7 @@ int CModel::PreLoadCameraFbxAnim(int srcmotid)
 					//MotionNameとBoneNameが同じ場合だけ　それらを対応付ける
 					//#######################################################
 
-					double curframe = 0.0;//!!!!!!!!!
-
-					ChaMatrix parentglobalmat;
-					parentglobalmat.SetIdentity();
-					ChaMatrix parentlocalmat;
-					parentlocalmat.SetIdentity();
-
-
-					CBone* parentbone = srcbone->GetParent(false);
-					if (parentbone) {
-						//if (parentbone->IsSkeleton()) {
-						//	//parentglobalmat = ChaMatrixInv(parentbone->GetNodeMat()) * parentbone->GetWorldMat(false, srcmotid, curframe, 0);
-						//	parentglobalmat = parentbone->GetWorldMat(false, srcmotid, curframe, 0);
-						//}
-						//else if (parentbone->IsNull()) {
-						if (parentbone->IsNull()) {
-							FbxNode* eNullNode = parentbone->GetFbxNodeOnLoad();
-							if (eNullNode) {
-								FbxTime time0;
-								time0.SetSecondDouble(0.0);
-								FbxAMatrix lGlobalSRT = eNullNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);
-								parentglobalmat = ChaMatrixFromFbxAMatrix(lGlobalSRT);
-								FbxAMatrix lLocalSRT = eNullNode->EvaluateLocalTransform(time0, FbxNode::eSourcePivot, true, true);
-								parentlocalmat = ChaMatrixFromFbxAMatrix(lLocalSRT);
-							}
-							else {
-								_ASSERT(0);
-								parentglobalmat.SetIdentity();
-								parentlocalmat.SetIdentity();
-							}
-						}
-					}
-					m_camerafbx.PreLoadFbxAnim(srcbone, srcmotid, parentglobalmat);
-					//m_camerafbx.PreLoadFbxAnim(srcbone, srcmotid, parentlocalmat);
+					m_camerafbx.PreLoadFbxAnim(srcbone, srcmotid);//srcboneはFbxCamera*を持つFbxNodeに対応するCBone*　motionがコンポーネントとしてアタッチされていないboneの場合もある
 				}
 			}
 		}
@@ -5939,18 +5905,18 @@ int CModel::PreLoadCameraFbxAnim(int srcmotid)
 }
 
 
-int CModel::PostLoadFbxAnim(int srcmotid)
+int CModel::PostLoadFbxAnim(FbxAnimLayer* mCurrentAnimLayer, int srcmotid)
 {
 	MOTINFO* curmi = GetMotInfo(srcmotid);
 	if (curmi) {
 		double animlen = curmi->frameleng;
 
-		PostLoadFbxAnimReq(srcmotid, animlen, GetTopBone(false));
+		PostLoadFbxAnimReq(mCurrentAnimLayer, srcmotid, animlen, GetTopBone(false));
 	}
 	return 0;
 }
 
-void CModel::PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone)
+void CModel::PostLoadFbxAnimReq(FbxAnimLayer* mCurrentAnimLayer, int srcmotid, double animlen, CBone* srcbone)
 {
 	if (srcbone) {
 
@@ -5977,11 +5943,48 @@ void CModel::PostLoadFbxAnimReq(int srcmotid, double animlen, CBone* srcbone)
 			}
 		}
 
+	
+		FbxNode* pNode = FindNodeByBone(srcbone);
+		if (pNode) {
+			if (mCurrentAnimLayer) {
+				const char* strChannel;
+				strChannel = FBXSDK_CURVENODE_COMPONENT_X;//X成分でチェック
+
+				//移動のカーブがあるかどうか
+				FbxAnimCurve* lCurveT;
+				bool createflag = false;
+				lCurveT = pNode->LclTranslation.GetCurve(mCurrentAnimLayer, strChannel, createflag);
+				if (lCurveT) {
+					srcbone->SetHasMotionCurve(srcmotid, true);
+				}
+				else {
+					//回転のカーブがあるかどうか
+					FbxAnimCurve* lCurveR;
+					lCurveR = pNode->LclRotation.GetCurve(mCurrentAnimLayer, strChannel, createflag);
+					if (lCurveR) {
+						srcbone->SetHasMotionCurve(srcmotid, true);
+					}
+					else {
+						srcbone->SetHasMotionCurve(srcmotid, false);
+					}
+				}
+			}
+			else {
+				srcbone->SetHasMotionCurve(srcmotid, false);
+			}
+		}
+		else {
+			srcbone->SetHasMotionCurve(srcmotid, false);
+		}
+
+
+
+
 		if (srcbone->GetChild(false)) {
-			PostLoadFbxAnimReq(srcmotid, animlen, srcbone->GetChild(false));
+			PostLoadFbxAnimReq(mCurrentAnimLayer, srcmotid, animlen, srcbone->GetChild(false));
 		}
 		if (srcbone->GetBrother(false)) {
-			PostLoadFbxAnimReq(srcmotid, animlen, srcbone->GetBrother(false));
+			PostLoadFbxAnimReq(mCurrentAnimLayer, srcmotid, animlen, srcbone->GetBrother(false));
 		}
 	}
 }
@@ -17494,6 +17497,19 @@ void CModel::SetRotationActiveDefaultReq(CNodeOnLoad* srcnodeonload)
 
 }
 
+ChaMatrix CModel::GetCameraTransformMat(int cameramotid, double nextframe, int inheritmode, bool multInvNodeMat)
+{
+	ChaMatrix retmat;
+
+	if (!m_camerafbx.IsLoaded()) {
+		_ASSERT(0);
+		retmat.SetIdentity();
+		return retmat;
+	}
+
+	return m_camerafbx.GetCameraTransformMat(cameramotid, nextframe, inheritmode, multInvNodeMat);
+
+}
 
 ChaVector3 CModel::CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVector3 befeul)
 {
@@ -17504,7 +17520,7 @@ ChaVector3 CModel::CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVect
 		return reteul;
 	}
 
-	CAMERANODE* curcn = m_camerafbx.FindCameraNodeByMotId(cameramotid);
+	CAMERANODE* curcn = m_camerafbx.GetCameraNode(cameramotid);
 	if (!curcn) {
 		_ASSERT(0);
 		return reteul;
@@ -17563,7 +17579,7 @@ int CModel::GetCameraAnimParams(int cameramotionid, double nextframe, double cam
 		return 0;
 	}
 
-	CAMERANODE* curcn = m_camerafbx.FindCameraNodeByMotId(cameramotionid);
+	CAMERANODE* curcn = m_camerafbx.GetCameraNode(cameramotionid);
 	if (!curcn) {
 		return 0;
 	}
@@ -17579,23 +17595,6 @@ int CModel::GetCameraAnimParams(int cameramotionid, double nextframe, double cam
 	return 0;
 }
 
-ChaVector3 CModel::GetCameraLclTra(int cameramotid)
-{
-	ChaVector3 rettra = ChaVector3(0.0f, 0.0f, 0.0f);
-
-	if (!m_camerafbx.IsLoaded()) {
-		return rettra;
-	}
-
-	CAMERANODE* curcn = m_camerafbx.FindCameraNodeByMotId(cameramotid);
-	if (!curcn) {
-		return rettra;
-	}
-
-
-	rettra = curcn->lcltra;
-	return rettra;
-}
 
 ChaVector3 CModel::GetCameraAdjustPos(int cameramotid)
 {
@@ -17605,7 +17604,7 @@ ChaVector3 CModel::GetCameraAdjustPos(int cameramotid)
 		return rettra;
 	}
 
-	CAMERANODE* curcn = m_camerafbx.FindCameraNodeByMotId(cameramotid);
+	CAMERANODE* curcn = m_camerafbx.GetCameraNode(cameramotid);
 	if (!curcn) {
 		return rettra;
 	}
@@ -17627,7 +17626,7 @@ int CModel::GetCameraProjParams(int cameramotid, float* pprojnear, float* pprojf
 	}
 
 
-	CAMERANODE* curcn = m_camerafbx.FindCameraNodeByMotId(cameramotid);
+	CAMERANODE* curcn = m_camerafbx.GetCameraNode(cameramotid);
 	if (!curcn) {
 		return 0;
 	}

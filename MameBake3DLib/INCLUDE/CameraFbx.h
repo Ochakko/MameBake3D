@@ -16,19 +16,15 @@ class CBone;
 
 typedef struct tag_cameranode
 {
-	FbxNode* pnode;
-	CBone* pbone;
-	FbxCamera* pcamera;
+	FbxNode* pnode;//FbxCamera*を持つNodeへのポインタ
+	CBone* pbone;//pnodeに対応するCBone*
+	FbxCamera* pcamera;//pnodeが持つFbxCamera*
+
 	ChaVector3 position;
 	ChaMatrix worldmat;
 	ChaVector3 dirvec;
 	ChaVector3 upvec;//2023/06/25
 
-	ChaMatrix localnodemat;
-
-	ChaVector3 lcltra;
-	ChaVector3 parentlcltra;
-	ChaMatrix parentenullmat;
 	ChaVector3 adjustpos;//CAMERA_INHERIT_CANCEL_NULL2の位置補正用
 
 	double aspectHeight; // アスペクト高
@@ -52,11 +48,6 @@ typedef struct tag_cameranode
 		position.SetZeroVec3();
 		worldmat.SetIdentity();
 
-		localnodemat.SetIdentity();
-
-		lcltra.SetZeroVec3();
-		parentlcltra.SetZeroVec3();
-		parentenullmat.SetIdentity();
 		dirvec = ChaVector3(0.0f, 0.0f, 1.0f);
 		upvec = ChaVector3(0.0f, 1.0f, 0.0f);
 		adjustpos.SetZeroVec3();
@@ -97,20 +88,20 @@ public:
 	CCameraFbx();
 	~CCameraFbx();
 	int Clear();
-	//int SetFbxCamera(FbxNode* pnode, CBone* pbone);
+
 	int AddFbxCamera(FbxNode* pnode, CBone* pbone);
+	int PreLoadFbxAnim(CBone* srcbone, int srcmotid);
 
-	//int SetZeroFrameCamera();
 
+	CAMERANODE* GetCameraNode(int cameramotid);
+	ChaMatrix GetCameraNodeMat(int cameramotid);
+	ChaMatrix GetCameraTransformMat(int cameramotid, double nextframe, int inheritmode, bool multInvNodeMat);
 	int GetCameraAnimParams(int cameramotid, double nextframe, double camdist, 
 		ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaVector3* pcamupdir, ChaMatrix* protmat, int inheritmode);
 	ChaVector3 CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVector3 befeul);
 
-	CAMERANODE* FindCameraNodeByNode(FbxNode* srcnode);
-	CAMERANODE* FindCameraNodeByBone(CBone* srcbone);
-	CAMERANODE* FindCameraNodeByMotId(int srcmotid);
 
-	int PreLoadFbxAnim(CBone* srcbone, int srcmotid, ChaMatrix srcenullmat);
+
 
 	//CCameraFbx operator= (CCameraFbx srcrange);
 	//bool operator== (const CCameraFbx &cmp) const {
@@ -139,6 +130,11 @@ public:
 private:
 	int InitParams();
 	int DestroyObjs();
+
+
+	CAMERANODE* FindCameraNodeByNode(FbxNode* srcnode);
+	CAMERANODE* FindCameraNodeByBone(CBone* srcbone);
+	CAMERANODE* FindCameraNodeByMotId(int srcmotid);
 
 public:
 	bool IsLoaded();

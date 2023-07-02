@@ -3192,8 +3192,7 @@ void AnimateBoneReq(bool limitdegflag, FbxNode* pNode, FbxAnimLayer* lAnimLayer,
 			}
 			else {
 				//カメラモーション
-				if (((curbone->IsCamera() || curbone->IsNull()) && (strcmp(curbone->GetBoneName(), motionname) == 0)) || 
-					(curbone->IsNull() && curbone->HasMotionCurve())) {
+				if (curbone->HasMotionCurve(curmotid) && (curbone->IsCamera() || curbone->IsNull())) {
 					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
 					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
 					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
@@ -5287,27 +5286,19 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 				//eNull Rotation含む
 				calcnodeanimmat = localnodeanimmat * parentnodemat;
 
-				FbxAnimLayer* panimlayer = curbone->GetParModel()->GetCurrentAnimLayer();
-				if (panimlayer) {
-					const char* strChannel;
-					strChannel = FBXSDK_CURVENODE_COMPONENT_X;
-					FbxAnimCurve* lCurve;
-					bool createflag = false;
-					lCurve = pNode->LclTranslation.GetCurve(panimlayer, strChannel, createflag);
-					if (lCurve) {
-						//eNull animation在り
-						calcnodemat = localnodemat * parentnodemat;
-					}
-					else {
-						//eNull animation無し
-						calcnodemat = calcnodeanimmat;//rot入りと同じ
-					}
-				}
-				else {
-					//eNull animation無し
-					calcnodemat = calcnodeanimmat;//rot入りと同じ
-				}
-				
+
+				////アニメーションを持っていないeNullノードのNodeMatは　LclRotを含む
+				////アニメーションを持っているeNullノードのNodeMatは　LclRotを含まず　WorldMatとしてLclRotを含む
+				//if (curbone->HasMotionCurve()) {
+				//	//eNull animation在り
+				//	calcnodemat = localnodemat * parentnodemat;
+				//}
+				//else {
+				//	//eNull animation無し
+				//	calcnodemat = calcnodeanimmat;//rot入りと同じ
+				//}
+
+				calcnodemat = calcnodeanimmat;//rot入りと同じ
 			}
 		}
 
