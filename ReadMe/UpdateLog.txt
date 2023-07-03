@@ -128,6 +128,13 @@
 		
 		カメラの子供にスキンメッシュがある場合には　まだ未対応　未対応だが保存した場合に形が崩れて巨大化などはしなくなった
 
+	2023/07/03
+		NodeMat計算修正
+			BindPoseとclusterの検索をコメントアウトしてNodeMatの計算だけで読み書きテストをしたところ　NodeMat計算時にはlclrotを含める必要があった
+
+			修正後テスト
+				TheHunt City1 Camera1, Camera8
+				リターゲット：　Spring1とbvh121,Rokoko.　TheHuntCharactorとbvh121
 
 2023/06/07
 	EditMot 1.2.0.21 relase

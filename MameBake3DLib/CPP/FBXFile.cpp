@@ -5268,7 +5268,6 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 
 		if (pNode) {
 
-
 			ChaMatrix localnodemat, localnodeanimmat;
 			CalcLocalNodeMat(pmodel, curbone, &localnodemat, &localnodeanimmat);//2022/12/21 support prerot postrot ...etc.
 			ChaMatrix parentnodemat, parentnodeanimmat;
@@ -5278,26 +5277,26 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 				parentnodemat = curbone->GetParent(false)->GetNodeMat();
 				parentnodeanimmat = curbone->GetParent(false)->GetNodeAnimMat();
 			}
+
+
 			if (curbone->IsSkeleton() || curbone->IsCamera()) {
-				calcnodemat = localnodemat * parentnodemat;
+				//calcnodemat = localnodemat * parentnodemat;
+
+				//2023/07/03
+				//BindPoseとcluster検索を無効にしてNodeMat計算だけでテスト(TheHunt City1 Camera_1, Camera8)した結果　NodeMatには回転が入っている必要があった
+				//GetNodeMatとGetNodeAnimMatは同じ結果を返すことになった
+				//この変更後にRetargetもテスト　Spring1とbvh121,Rokoko  TheHunt Charactorとbvh121
+				calcnodemat = localnodeanimmat * parentnodeanimmat;
 				calcnodeanimmat = localnodeanimmat * parentnodeanimmat;
 			}
 			else {
-				//eNull Rotation含む
-				calcnodeanimmat = localnodeanimmat * parentnodemat;
-
-
-				////アニメーションを持っていないeNullノードのNodeMatは　LclRotを含む
-				////アニメーションを持っているeNullノードのNodeMatは　LclRotを含まず　WorldMatとしてLclRotを含む
-				//if (curbone->HasMotionCurve()) {
-				//	//eNull animation在り
-				//	calcnodemat = localnodemat * parentnodemat;
-				//}
-				//else {
-				//	//eNull animation無し
-				//	calcnodemat = calcnodeanimmat;//rot入りと同じ
-				//}
-
+				//eNull
+				
+				//2023/07/03
+				//BindPoseとcluster検索を無効にしてNodeMat計算だけでテスト(TheHunt City1 Camera_1, Camera8)した結果　NodeMatには回転が入っている必要があった
+				//GetNodeMatとGetNodeAnimMatは同じ結果を返すことになった
+				//この変更後にRetargetもテスト　Spring1とbvh121,Rokoko  TheHunt Charactorとbvh121
+				calcnodeanimmat = localnodeanimmat * parentnodeanimmat;
 				calcnodemat = calcnodeanimmat;//rot入りと同じ
 			}
 		}
@@ -5348,6 +5347,11 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 				//##################################################
 				curbone->SetDefBonePosKind(DEFBONEPOS_FROMCALC);//2023/06/06
 
+
+				//2023/07/03
+				//BindPoseとcluster検索を無効にしてNodeMat計算だけでテスト(TheHunt City1 Camera_1, Camera8)した結果　NodeMatには回転が入っている必要があった
+				//GetNodeMatとGetNodeAnimMatは同じ結果を返すことになった
+				//この変更後にRetargetもテスト　Spring1とbvh121,Rokoko  TheHunt Charactorとbvh121
 				nodemat = calcnodemat;
 				nodeanimmat = calcnodeanimmat;
 
