@@ -1098,7 +1098,7 @@ public: //accesser
 
 
 	ChaMatrix GetENullMatrix(double srctime);
-	void CalcEnullMatReq(double srctime, ChaMatrix* plocalnodeanimmat);//parent•ûŒü‚ÖŒvŽZ
+	void CalcEnullMatReq(double srctime, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat);//parent•ûŒü‚ÖŒvŽZ
 
 	ChaMatrix CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcframe);
 

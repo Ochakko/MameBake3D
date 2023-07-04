@@ -9952,9 +9952,9 @@ void CBone::SaveFbxNodePosture(FbxNode* pNode)
 	}
 }
 
-void CBone::CalcEnullMatReq(double srctime, ChaMatrix* plocalnodeanimmat)
+void CBone::CalcEnullMatReq(double srctime, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat)
 {
-	if (!plocalnodeanimmat) {
+	if (!plocalnodemat || !plocalnodeanimmat) {
 		_ASSERT(0);
 		return;
 	}
@@ -9967,14 +9967,15 @@ void CBone::CalcEnullMatReq(double srctime, ChaMatrix* plocalnodeanimmat)
 	localnodemat.SetIdentity();
 	localnodeanimmat.SetIdentity();
 	//CalcLocalNodePosture(GetFbxNodeOnLoad(), enulltime, &localnodemat, &localnodeanimmat);
-	CalcLocalNodePosture(GetFbxNodeOnLoad(), srctime, &localnodemat, &localnodeanimmat);
+	CalcLocalNodePosture(GetFbxNodeOnLoad(), srctime, &localnodemat, &localnodeanimmat);//lclrot入りかどうかはGetRotationActive()で判断
 
+	*plocalnodemat = *plocalnodemat * localnodemat;
 	*plocalnodeanimmat = *plocalnodeanimmat * localnodeanimmat;
 
 
 	//parent方向へ計算
 	if (GetParent(false)) {
-		GetParent(false)->CalcEnullMatReq(srctime, plocalnodeanimmat);
+		GetParent(false)->CalcEnullMatReq(srctime, plocalnodemat, plocalnodeanimmat);
 	}
 
 }
@@ -10003,6 +10004,10 @@ int CBone::CalcLocalNodePosture(FbxNode* pNode, double srcframe, ChaMatrix* ploc
 
 	FbxTime fbxtime;
 	fbxtime.SetSecondDouble((double)((int)(srcframe + 0.0001)) / 30.0);
+
+
+	//2023/07/04
+	bool fbxRotationActive = pNode->GetRotationActive();//lclrot入りかどうかはGetRotationActive()で判断
 
 
 	//#########################################################################################
@@ -10105,8 +10110,33 @@ int CBone::CalcLocalNodePosture(FbxNode* pNode, double srcframe, ChaMatrix* ploc
 	//localnodemat = fbxT * fbxRoff * fbxRp * rotQ2.MakeRotMatX() * fbxRpinv * fbxSoff * fbxS * fbxSpinv;
 
 
-	*plocalnodemat = localnodemat;
-	*plocalnodeanimmat = localnodeanimmat;
+	//2023/07/04
+	//lclrot入りかどうかは　原則としてGetRotationActive()依存　ただしSkeletonの場合はlclrot無し
+		//読み書き読み書き読みテスト
+		//Rokoko womandance BP無し 0frameAnim在り, left90 BP無し 0frameAnim在り
+		//bvh121
+		//Spring1
+		//TheHunt City1 Camera1 Camera8
+		//TheHunt Street1 Camera1 Camera2 Caemra3
+		//Spring1にbvh121とRokoko BP在り無しをリターゲットテスト
+
+	if (IsSkeleton()) {
+		//2023/07/04
+		//	Rokoko womandanceとbvh121について　読み書き読み書き読みテストで　lclrot無しにしないとうまくいかなかった
+		//  TheHuntCity1 Camera1のCameraの子供のスキンメッシュには　BPがあるが　lclrot無しにしないと読み書き読み書き読みで形が崩れた
+		//  よってBPの有無に関わらず　Skeletonの場合にはlclrot無しとした
+		*plocalnodemat = localnodemat;
+	}
+	else if (fbxRotationActive) {
+		*plocalnodemat = localnodeanimmat;
+	}
+	else {
+		*plocalnodemat = localnodemat;
+	}
+	
+
+	*plocalnodeanimmat = localnodeanimmat;//明示的にlclrot入りの姿勢を使う場合用
+
 
 	return 0;
 }
@@ -10339,13 +10369,15 @@ ChaMatrix CBone::GetENullMatrix(double srctime)
 {
 	ChaMatrix retmat;
 	retmat.SetIdentity();
+	ChaMatrix tmpmat;
+	tmpmat.SetIdentity();
 
 	if (!GetParModel()) {
 		_ASSERT(0);
 		return retmat;
 	}
 
-	CalcEnullMatReq(srctime, &retmat);
+	CalcEnullMatReq(srctime, &retmat, &tmpmat);
 	return retmat;
 
 

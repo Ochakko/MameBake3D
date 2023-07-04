@@ -135,7 +135,7 @@ static void CreateSkinMeshReq(FbxManager* pSdkManager, FbxScene* pScene, CModel*
 
 
 //static CFBXBone* CreateFBXBone( FbxScene* pScene, CModel* pmodel );
-static void CreateFBXBoneReq( FbxScene* pScene, CBone* pbone, CFBXBone* parfbxbone );
+//static void CreateFBXBoneReq( FbxScene* pScene, CBone* pbone, CFBXBone* parfbxbone );
 
 static CFBXBone* CreateFBXBoneOfBVH( FbxScene* pScene );
 static void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbone );
@@ -3911,6 +3911,10 @@ CFBXBone* CreateFBXBoneOfBVH( FbxScene* pScene )
 	lSkeletonNodeAttribute->Size.Set(1.0);
 	lSkeletonNode->SetNodeAttribute(lSkeletonNodeAttribute);
 	lSkeletonNode->LclTranslation.Set(FbxVector4(0.0, 0.0, 0.0));
+
+	//2023/07/04
+	lSkeletonNode->SetRotationActive(false);
+
 	CFBXBone* fbxbone = new CFBXBone();
 	if( !fbxbone ){
 		_ASSERT( 0 );
@@ -3929,6 +3933,10 @@ CFBXBone* CreateFBXBoneOfBVH( FbxScene* pScene )
 	lSkeletonNodeAttribute2->Size.Set(1.0);
 	lSkeletonNode2->SetNodeAttribute(lSkeletonNodeAttribute2);
 	lSkeletonNode2->LclTranslation.Set(FbxVector4(s_behead->GetPosition().x, s_behead->GetPosition().y, s_behead->GetPosition().z));
+	
+	//2023/07/04
+	lSkeletonNode2->SetRotationActive(false);
+	
 	CFBXBone* fbxbone2 = new CFBXBone();
 	if (!fbxbone2){
 		_ASSERT(0);
@@ -4000,6 +4008,10 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 		lSkeletonLimbNode2->SetNodeAttribute(lSkeletonLimbNodeAttribute2);
 		//lSkeletonLimbNode2->LclTranslation.Set(FbxVector4(curpos2.x - parentpos2.x, curpos2.y - parentpos2.y, curpos2.z - parentpos2.z));
 		lSkeletonLimbNode2->LclTranslation.Set(FbxVector4(0.0, 0.0, 0.0));
+
+		//2023/07/04
+		lSkeletonLimbNode2->SetRotationActive(false);
+
 		parfbxbone->GetSkelNode()->AddChild(lSkeletonLimbNode2);
 
 		fbxbone2->SetBvhElem(parpbe);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -4030,6 +4042,10 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 			//lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(parentpos.x - gparentpos.x, parentpos.y - gparentpos.y, parentpos.z - gparentpos.z));
 			lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x, curpos.y, curpos.z));//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		}
+
+		//2023/07/04
+		lSkeletonLimbNode1->SetRotationActive(false);
+
 		fbxbone2->GetSkelNode()->AddChild(lSkeletonLimbNode1);
 
 		fbxbone->SetBvhElem(pbe);
@@ -4091,6 +4107,10 @@ void CreateFBXBoneOfBVHReq( FbxScene* pScene, CBVHElem* pbe, CFBXBone* parfbxbon
 			lSkeletonLimbNode1->LclTranslation.Set(FbxVector4(curpos.x, curpos.y, curpos.z));//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			_ASSERT(0);
 		}
+
+		//2023/07/04
+		lSkeletonLimbNode1->SetRotationActive(false);
+
 		parfbxbone->GetSkelNode()->AddChild(lSkeletonLimbNode1);
 
 		fbxbone->SetBvhElem(pbe);
@@ -5279,26 +5299,49 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 			}
 
 
-			if (curbone->IsSkeleton() || curbone->IsCamera()) {
-				//calcnodemat = localnodemat * parentnodemat;
+			//if (curbone->IsSkeleton() || curbone->IsCamera()) {
+			//	//calcnodemat = localnodemat * parentnodemat;
+			//	//2023/07/03
+			//	//BindPoseとcluster検索を無効にしてNodeMat計算だけでテスト(TheHunt City1 Camera_1, Camera8)した結果　NodeMatには回転が入っている必要があった
+			//	//GetNodeMatとGetNodeAnimMatは同じ結果を返すことになった
+			//	//この変更後にRetargetもテスト　Spring1とbvh121,Rokoko  TheHunt Charactorとbvh121
+			//	calcnodemat = localnodeanimmat * parentnodeanimmat;
+			//	calcnodeanimmat = localnodeanimmat * parentnodeanimmat;
+			//}
+			//else {
+			//	//eNull
+			//	
+			//	//2023/07/03
+			//	//BindPoseとcluster検索を無効にしてNodeMat計算だけでテスト(TheHunt City1 Camera_1, Camera8)した結果　NodeMatには回転が入っている必要があった
+			//	//GetNodeMatとGetNodeAnimMatは同じ結果を返すことになった
+			//	//この変更後にRetargetもテスト　Spring1とbvh121,Rokoko  TheHunt Charactorとbvh121
+			//	calcnodeanimmat = localnodeanimmat * parentnodeanimmat;
+			//	calcnodemat = calcnodeanimmat;//rot入りと同じ
+			//}
 
-				//2023/07/03
-				//BindPoseとcluster検索を無効にしてNodeMat計算だけでテスト(TheHunt City1 Camera_1, Camera8)した結果　NodeMatには回転が入っている必要があった
-				//GetNodeMatとGetNodeAnimMatは同じ結果を返すことになった
-				//この変更後にRetargetもテスト　Spring1とbvh121,Rokoko  TheHunt Charactorとbvh121
-				calcnodemat = localnodeanimmat * parentnodeanimmat;
-				calcnodeanimmat = localnodeanimmat * parentnodeanimmat;
-			}
-			else {
-				//eNull
+
+			//2023/07/03
+			//BindPoseとcluster検索を無効にしてNodeMat計算だけでテスト(TheHunt City1 Camera_1, Camera8)した結果　NodeMatには回転が入っている必要があった
+			//GetNodeMatとGetNodeAnimMatは同じ結果を返すことになった
+			//この変更後にRetargetもテスト　Spring1とbvh121,Rokoko  TheHunt Charactorとbvh121
 				
-				//2023/07/03
-				//BindPoseとcluster検索を無効にしてNodeMat計算だけでテスト(TheHunt City1 Camera_1, Camera8)した結果　NodeMatには回転が入っている必要があった
-				//GetNodeMatとGetNodeAnimMatは同じ結果を返すことになった
-				//この変更後にRetargetもテスト　Spring1とbvh121,Rokoko  TheHunt Charactorとbvh121
-				calcnodeanimmat = localnodeanimmat * parentnodeanimmat;
-				calcnodemat = calcnodeanimmat;//rot入りと同じ
-			}
+
+			//2023/07/04 More Tests And Modify CBone::CalcLocalNodePosture()
+			//	NodeMat計算部分(CBone::CalcLocalNodePosture())について　テストケースを増やして　更に修正
+			//	NodeMatをlclrot入りにするかかどうかは　原則としてGetRotationActive()依存　ただしSkeletonの場合はlclrot無し
+			//	読み書き読み書き読みテスト
+			//	Rokoko womandance BP無し 0frameAnim在り, left90 BP無し 0frameAnim在り
+			//	bvh121
+			//	Spring1
+			//	TheHunt City1 Camera1 Camera8
+			//	TheHunt Street1 Camera1 Camera2 Camera3
+			//	Spring1にbvh121とRokokoBP在り無しをリターゲット
+			//	Rokoko womandanceとbvh121について　読み書き読み書き読みテストで　lclrot無しにしないとうまくいかなかった
+			//	TheHuntCity1 Camera1のCameraの子供のスキンメッシュには　BPがあるが　lclrot無しにしないと読み書き読み書き読みで形が崩れた
+			//	よってBPの有無に関わらず　Skeletonの場合にはlclrot無しとした
+			calcnodemat = localnodemat * parentnodemat;
+			calcnodeanimmat = localnodeanimmat * parentnodeanimmat;
+
 		}
 
 

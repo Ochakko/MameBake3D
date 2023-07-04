@@ -6994,7 +6994,9 @@ int CModel::SetDefaultBonePos(FbxScene* pScene)
 	}
 
 
-	SetRotationActiveToBone();//SetFbxDefaultBonePosReq()よりも前で呼ぶ
+	//2023/07/04 
+	//NodeMatが変わらないように　SetRotationActiveは変更しないことに
+	//SetRotationActiveToBone();//SetFbxDefaultBonePosReq()よりも前で呼ぶ
 
 
 	FbxPose* bindpose = GetBindPose();
@@ -17384,118 +17386,119 @@ CBone* CModel::FindBoneByNode(FbxNode* srcnode)
 }
 
 
-void CModel::SetRotationActiveToBone()
-{
-	SetRotationActiveToBoneReq(GetNodeOnLoad());
-}
-void CModel::SetRotationActiveFalse()
-{
-	SetRotationActiveFalseReq(GetNodeOnLoad());
-}
-void CModel::SetRotationActiveTrue()
-{
-	SetRotationActiveTrueReq(GetNodeOnLoad());
-}
-void CModel::SetRotationActiveDefault()
-{
-	SetRotationActiveDefaultReq(GetNodeOnLoad());
-}
-
-void CModel::SetRotationActiveToBoneReq(CNodeOnLoad* srcnodeonload)
-{
-	if (srcnodeonload) {
-
-		FbxNode* pNode = srcnodeonload->GetNode();
-		if (pNode) {
-			CBone* curbone = srcnodeonload->GetBone();
-			if (curbone) {
-				curbone->SetFbxRotationActive(pNode->GetRotationActive());
-			}
-		}
-
-		int childnum = srcnodeonload->GetChildNum();
-		int childno;
-		for (childno = 0; childno < childnum; childno++) {
-			CNodeOnLoad* childonload = srcnodeonload->GetChild(childno);
-			if (childonload) {
-				SetRotationActiveToBoneReq(childonload);
-			}
-		}
-	}
-}
-void CModel::SetRotationActiveFalseReq(CNodeOnLoad* srcnodeonload)
-{
-	if (srcnodeonload) {
-
-		FbxNode* pNode = srcnodeonload->GetNode();
-		if (pNode) {
-			CBone* curbone = srcnodeonload->GetBone();
-			if (curbone) {
-				if (curbone->IsSkeleton()) {
-					pNode->SetRotationActive(false);
-				}
-				else {
-					pNode->SetRotationActive(true);
-				}
-			}
-		}
-
-		int childnum = srcnodeonload->GetChildNum();
-		int childno;
-		for (childno = 0; childno < childnum; childno++) {
-			CNodeOnLoad* childonload = srcnodeonload->GetChild(childno);
-			if (childonload) {
-				SetRotationActiveFalseReq(childonload);
-			}
-		}
-	}
-}
-void CModel::SetRotationActiveTrueReq(CNodeOnLoad* srcnodeonload)
-{
-	if (srcnodeonload) {
-
-		FbxNode* pNode = srcnodeonload->GetNode();
-		if (pNode) {
-			CBone* curbone = srcnodeonload->GetBone();
-			if (curbone && curbone->IsSkeleton()) {
-				pNode->SetRotationActive(true);
-			}
-		}
-
-		int childnum = srcnodeonload->GetChildNum();
-		int childno;
-		for (childno = 0; childno < childnum; childno++) {
-			CNodeOnLoad* childonload = srcnodeonload->GetChild(childno);
-			if (childonload) {
-				SetRotationActiveTrueReq(childonload);
-			}
-		}
-	}
-
-}
-void CModel::SetRotationActiveDefaultReq(CNodeOnLoad* srcnodeonload)
-{
-	if (srcnodeonload) {
-
-		FbxNode* pNode = srcnodeonload->GetNode();
-		if (pNode) {
-			CBone* curbone = srcnodeonload->GetBone();
-			if (curbone) {
-				pNode->SetRotationActive(curbone->GetFbxRotationActive());
-			}
-		}
-
-		int childnum = srcnodeonload->GetChildNum();
-		int childno;
-		for (childno = 0; childno < childnum; childno++) {
-			CNodeOnLoad* childonload = srcnodeonload->GetChild(childno);
-			if (childonload) {
-				SetRotationActiveDefaultReq(childonload);
-			}
-		}
-	}
-
-}
+//2023/07/04 NodeMatが変わらないように　SetRotationActiveは変更しないことに
+//void CModel::SetRotationActiveToBone()
+//{
+//	SetRotationActiveToBoneReq(GetNodeOnLoad());
+//}
+//void CModel::SetRotationActiveFalse()
+//{
+//	SetRotationActiveFalseReq(GetNodeOnLoad());
+//}
+//void CModel::SetRotationActiveTrue()
+//{
+//	SetRotationActiveTrueReq(GetNodeOnLoad());
+//}
+//void CModel::SetRotationActiveDefault()
+//{
+//	SetRotationActiveDefaultReq(GetNodeOnLoad());
+//}
+//
+//void CModel::SetRotationActiveToBoneReq(CNodeOnLoad* srcnodeonload)
+//{
+//	if (srcnodeonload) {
+//
+//		FbxNode* pNode = srcnodeonload->GetNode();
+//		if (pNode) {
+//			CBone* curbone = srcnodeonload->GetBone();
+//			if (curbone) {
+//				curbone->SetFbxRotationActive(pNode->GetRotationActive());
+//			}
+//		}
+//
+//		int childnum = srcnodeonload->GetChildNum();
+//		int childno;
+//		for (childno = 0; childno < childnum; childno++) {
+//			CNodeOnLoad* childonload = srcnodeonload->GetChild(childno);
+//			if (childonload) {
+//				SetRotationActiveToBoneReq(childonload);
+//			}
+//		}
+//	}
+//}
+//void CModel::SetRotationActiveFalseReq(CNodeOnLoad* srcnodeonload)
+//{
+//	if (srcnodeonload) {
+//
+//		FbxNode* pNode = srcnodeonload->GetNode();
+//		if (pNode) {
+//			CBone* curbone = srcnodeonload->GetBone();
+//			if (curbone) {
+//				if (curbone->IsSkeleton()) {
+//					pNode->SetRotationActive(false);
+//				}
+//				else {
+//					pNode->SetRotationActive(true);
+//				}
+//			}
+//		}
+//
+//		int childnum = srcnodeonload->GetChildNum();
+//		int childno;
+//		for (childno = 0; childno < childnum; childno++) {
+//			CNodeOnLoad* childonload = srcnodeonload->GetChild(childno);
+//			if (childonload) {
+//				SetRotationActiveFalseReq(childonload);
+//			}
+//		}
+//	}
+//}
+//void CModel::SetRotationActiveTrueReq(CNodeOnLoad* srcnodeonload)
+//{
+//	if (srcnodeonload) {
+//
+//		FbxNode* pNode = srcnodeonload->GetNode();
+//		if (pNode) {
+//			CBone* curbone = srcnodeonload->GetBone();
+//			if (curbone && curbone->IsSkeleton()) {
+//				pNode->SetRotationActive(true);
+//			}
+//		}
+//
+//		int childnum = srcnodeonload->GetChildNum();
+//		int childno;
+//		for (childno = 0; childno < childnum; childno++) {
+//			CNodeOnLoad* childonload = srcnodeonload->GetChild(childno);
+//			if (childonload) {
+//				SetRotationActiveTrueReq(childonload);
+//			}
+//		}
+//	}
+//
+//}
+//void CModel::SetRotationActiveDefaultReq(CNodeOnLoad* srcnodeonload)
+//{
+//	if (srcnodeonload) {
+//
+//		FbxNode* pNode = srcnodeonload->GetNode();
+//		if (pNode) {
+//			CBone* curbone = srcnodeonload->GetBone();
+//			if (curbone) {
+//				pNode->SetRotationActive(curbone->GetFbxRotationActive());
+//			}
+//		}
+//
+//		int childnum = srcnodeonload->GetChildNum();
+//		int childno;
+//		for (childno = 0; childno < childnum; childno++) {
+//			CNodeOnLoad* childonload = srcnodeonload->GetChild(childno);
+//			if (childonload) {
+//				SetRotationActiveDefaultReq(childonload);
+//			}
+//		}
+//	}
+//
+//}
 
 ChaMatrix CModel::GetCameraTransformMat(int cameramotid, double nextframe, int inheritmode, bool multInvNodeMat)
 {

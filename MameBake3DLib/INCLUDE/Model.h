@@ -838,14 +838,16 @@ public:
 	FbxNode* FindNodeByBone(CBone* srcbone);
 	CBone* FindBoneByNode(FbxNode* srcnode);
 
-	void SetRotationActiveToBone();
-	void SetRotationActiveFalse();
-	void SetRotationActiveTrue();
-	void SetRotationActiveDefault();
-	void SetRotationActiveToBoneReq(CNodeOnLoad* srcnodeonload);
-	void SetRotationActiveFalseReq(CNodeOnLoad* srcnodeonload);
-	void SetRotationActiveTrueReq(CNodeOnLoad* srcnodeonload);
-	void SetRotationActiveDefaultReq(CNodeOnLoad* srcnodeonload);
+
+	//NodeMatが変わらないように　SetRotationActiveは変更しないことに
+	//void SetRotationActiveToBone();
+	//void SetRotationActiveFalse();
+	//void SetRotationActiveTrue();
+	//void SetRotationActiveDefault();
+	//void SetRotationActiveToBoneReq(CNodeOnLoad* srcnodeonload);
+	//void SetRotationActiveFalseReq(CNodeOnLoad* srcnodeonload);
+	//void SetRotationActiveTrueReq(CNodeOnLoad* srcnodeonload);
+	//void SetRotationActiveDefaultReq(CNodeOnLoad* srcnodeonload);
 
 	int GetCameraAnimParams(int cameramotid, double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaVector3* pcamupvec, ChaMatrix* protmat, int inheritmode);
 	int GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaVector3* pcamupvec, ChaMatrix* protmat, int inheritmode);
