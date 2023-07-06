@@ -1786,6 +1786,32 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bi
 		*dstmat = inimat;
 		return 0.0f;
 	}
+	if (!GetParModel()) {
+		_ASSERT(0);
+		ChaMatrix inimat;
+		ChaMatrixIdentity(&inimat);
+		*dstmat = inimat;
+		return 0.0f;
+	}
+
+	int curmotid;
+	curmotid = GetParModel()->GetCurrentMotion();
+	if (curmotid <= 0) {
+		ChaMatrix inimat;
+		ChaMatrixIdentity(&inimat);
+		*dstmat = inimat;
+		return 0.0f;
+	}
+	double curframe;
+	curframe = GetParModel()->GetCurrentMotionFrame();
+	if (curframe < 0.0) {
+		_ASSERT(0);
+		ChaMatrix inimat;
+		ChaMatrixIdentity(&inimat);
+		*dstmat = inimat;
+		return 0.0f;
+	}
+
 
 	////2023/04/28
 	if (IsNotSkeleton()) {
@@ -1814,9 +1840,9 @@ float CBone::CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bi
 			tmpparentbtmat = GetParent(false)->GetNodeMat() * GetParent(false)->GetBtMat();
 		}
 		else if (GetParent(false)->IsNull()) {
-			tmpparentzerofm = GetParent(false)->GetENullMatrix(0.0);
-			tmpparentlimwm = GetParent(false)->GetENullMatrix(0.0);
-			tmpparentbtmat = GetParent(false)->GetENullMatrix(0.0);
+			tmpparentzerofm = GetParent(false)->GetTransformMat(0.0, false);
+			tmpparentlimwm = GetParent(false)->GetTransformMat(curframe, false);
+			tmpparentbtmat = GetParent(false)->GetTransformMat(curframe, false);
 		}
 		else {
 			tmpparentzerofm.SetIdentity();
@@ -4722,7 +4748,8 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 					//
 					//nullの　回転の　影響は入っていない? NodeMatに入っている？に関して
 					//eNullがアニメーションしない場合には　eNullの初期行列はNodeMatに含まれる　eNullのアニメーション分はInvNode * ENullMat = Indentityとなる
-					//eNullがアニメーションする場合には　eNullの初期行列としてはRotを含まないようにする　eNullのアニメーション分はInvNode * ENullMat != Indentityとなり後ろに掛ける　
+					//eNullがアニメーションする場合には　eNullのアニメーション分はInvNode * ENullMat != Indentityとなり後ろに掛ける　
+					//補足：NodeMatはジョイントの位置である　NodeMatを途中で変えることはジョイント位置を途中で変えることであり　通常NodeMatは変えない
 					parentwm = parentbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 					eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
 				}
@@ -6654,7 +6681,10 @@ ChaMatrix CBone::GetWorldMat(bool limitdegflag,
 
 
 		//2023/05/16 eNullのNodeMatがIdentityではなくなったため
-		return ChaMatrixInv(GetNodeMat()) * GetENullMatrix(srcframe);//!!!!!!!!!!!!
+		//return ChaMatrixInv(GetNodeMat()) * GetENullMatrix(srcframe);//!!!!!!!!!!!!
+
+		//return ChaMatrixInv(GetNodeMat()) * GetTransformMat(srcframe, true);
+		return ChaMatrixInv(GetNodeMat()) * GetTransformMat(0.0, true);
 
 		//2023/06/27
 		//CalcLocalEulXYZ()の検証で　ParentがeNullのときには　parentwmはIdentityにするべきだったので　それに合わせる
@@ -6662,8 +6692,9 @@ ChaMatrix CBone::GetWorldMat(bool limitdegflag,
 		//return curmat;
 	}
 	else if (IsCamera()) {
-		bool multInvNodeMat = true;
-		return GetParModel()->GetCameraTransformMat(srcmotid, srcframe, g_cameraInheritMode, multInvNodeMat);
+		//bool multInvNodeMat = true;
+		//return GetParModel()->GetCameraTransformMat(srcmotid, srcframe, g_cameraInheritMode, multInvNodeMat);
+		return ChaMatrixInv(GetNodeMat()) * GetTransformMat(0.0, true);//2023/07/05 Cameraの子供のスキンメッシュの形が　読み書き読み書き読みテストで形崩れしないように
 
 	}
 	else if (IsSkeleton()) {
@@ -9952,36 +9983,39 @@ void CBone::SaveFbxNodePosture(FbxNode* pNode)
 	}
 }
 
-void CBone::CalcEnullMatReq(double srctime, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat)
-{
-	if (!plocalnodemat || !plocalnodeanimmat) {
-		_ASSERT(0);
-		return;
-	}
-	if (!GetFbxNodeOnLoad()) {
-		return;
-	}
+//#####################################################################################################################
+//現状　CalcNodePostureReq()と変わらず
+//#####################################################################################################################
+//void CBone::CalcEnullMatReq(double srctime, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat)
+//{
+//	if (!plocalnodemat || !plocalnodeanimmat) {
+//		_ASSERT(0);
+//		return;
+//	}
+//	if (!GetFbxNodeOnLoad()) {
+//		return;
+//	}
+//
+//	//double enulltime = 0.0;
+//	ChaMatrix localnodemat, localnodeanimmat;
+//	localnodemat.SetIdentity();
+//	localnodeanimmat.SetIdentity();
+//	//CalcLocalNodePosture(GetFbxNodeOnLoad(), enulltime, &localnodemat, &localnodeanimmat);
+//	CalcLocalNodePosture(GetFbxNodeOnLoad(), srctime, &localnodemat, &localnodeanimmat);//lclrot入りかどうかはGetRotationActive()で判断
+//
+//	*plocalnodemat = *plocalnodemat * localnodemat;
+//	*plocalnodeanimmat = *plocalnodeanimmat * localnodeanimmat;
+//
+//
+//	//parent方向へ計算
+//	if (GetParent(false)) {
+//		GetParent(false)->CalcEnullMatReq(srctime, plocalnodemat, plocalnodeanimmat);
+//	}
+//
+//}
 
-	//double enulltime = 0.0;
-	ChaMatrix localnodemat, localnodeanimmat;
-	localnodemat.SetIdentity();
-	localnodeanimmat.SetIdentity();
-	//CalcLocalNodePosture(GetFbxNodeOnLoad(), enulltime, &localnodemat, &localnodeanimmat);
-	CalcLocalNodePosture(GetFbxNodeOnLoad(), srctime, &localnodemat, &localnodeanimmat);//lclrot入りかどうかはGetRotationActive()で判断
 
-	*plocalnodemat = *plocalnodemat * localnodemat;
-	*plocalnodeanimmat = *plocalnodeanimmat * localnodeanimmat;
-
-
-	//parent方向へ計算
-	if (GetParent(false)) {
-		GetParent(false)->CalcEnullMatReq(srctime, plocalnodemat, plocalnodeanimmat);
-	}
-
-}
-
-
-int CBone::CalcLocalNodePosture(FbxNode* pNode, double srcframe, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat)
+int CBone::CalcLocalNodePosture(bool bindposeflag, FbxNode* pNode, double srcframe, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat)
 {
 
 	//#############################################
@@ -10120,11 +10154,14 @@ int CBone::CalcLocalNodePosture(FbxNode* pNode, double srcframe, ChaMatrix* ploc
 		//TheHunt Street1 Camera1 Camera2 Caemra3
 		//Spring1にbvh121とRokoko BP在り無しをリターゲットテスト
 
-	if (IsSkeleton()) {
+	if ((bindposeflag == true) && IsSkeleton()) {
 		//2023/07/04
 		//	Rokoko womandanceとbvh121について　読み書き読み書き読みテストで　lclrot無しにしないとうまくいかなかった
 		//  TheHuntCity1 Camera1のCameraの子供のスキンメッシュには　BPがあるが　lclrot無しにしないと読み書き読み書き読みで形が崩れた
 		//  よってBPの有無に関わらず　Skeletonの場合にはlclrot無しとした
+
+		//2023/07/06
+		//skeletonの場合だけlclrot無しにするのはbindpose計算時だけ. カレントのポーズ計算時には通常通りGetRotationActiveに依存する
 		*plocalnodemat = localnodemat;
 	}
 	else if (fbxRotationActive) {
@@ -10141,6 +10178,27 @@ int CBone::CalcLocalNodePosture(FbxNode* pNode, double srcframe, ChaMatrix* ploc
 	return 0;
 }
 
+void CBone::CalcNodePostureReq(bool bindposeflag, FbxNode* pNode, double srcframe, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat)
+{
+	if (!pNode || !plocalnodemat || !plocalnodeanimmat) {
+		_ASSERT(0);
+		return;
+	}
+
+	ChaMatrix localnodemat, localnodeanimmat;
+	localnodemat.SetIdentity();
+	localnodeanimmat.SetIdentity();
+	CalcLocalNodePosture(bindposeflag, pNode, srcframe, &localnodemat, &localnodeanimmat);
+
+	//親方向へ計算
+	*plocalnodemat = *plocalnodemat * localnodemat;
+	*plocalnodeanimmat = *plocalnodeanimmat * localnodeanimmat;
+
+	//親方向へ計算
+	if (GetParent(false)) {
+		GetParent(false)->CalcNodePostureReq(bindposeflag, pNode->GetParent(), srcframe, plocalnodemat, plocalnodeanimmat);
+	}
+}
 
 
 
@@ -10360,42 +10418,63 @@ void CBone::GetBrotherReq(bool excludenullflag, CBone** ppfindbone)
 	}
 }
 
-
-
-
-
-
-ChaMatrix CBone::GetENullMatrix(double srctime)
+ChaMatrix CBone::GetTransformMat(double srctime, bool forceanimflag)
 {
 	ChaMatrix retmat;
 	retmat.SetIdentity();
-	ChaMatrix tmpmat;
-	tmpmat.SetIdentity();
+	ChaMatrix retanimmat;
+	retanimmat.SetIdentity();
 
-	if (!GetParModel()) {
-		_ASSERT(0);
-		return retmat;
+	if (GetFbxNodeOnLoad()) {
+		bool bindposeflag = false;//!!!!!!!!!!!!! カレントポーズ計算
+		CalcNodePostureReq(bindposeflag, GetFbxNodeOnLoad(), srctime, &retmat, &retanimmat);
 	}
-
-	CalcEnullMatReq(srctime, &retmat, &tmpmat);
-	return retmat;
-
-
-	//FbxNode* eNullNode = GetFbxNodeOnLoad();
-	//if (eNullNode) {
-	//	FbxTime time0;
-	//	time0.SetSecondDouble(0.0);
-	//	FbxAMatrix lGlobalSRT = eNullNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);
-	//	ChaMatrix retmat = ChaMatrixFromFbxAMatrix(lGlobalSRT);
-	//	return retmat;
-	//}
-	//else {
-	//	_ASSERT(0);
-	//	ChaMatrix retmat;
-	//	retmat.SetIdentity();
-	//	return retmat;
-	//}
+	else {
+		_ASSERT(0);
+	}
+	
+	if (forceanimflag == false) {
+		return retmat;//FbxNode::GetRotationActive()の値に依存してlclrotを含む
+	}
+	else {
+		return retanimmat;//強制的にlclrotを含む
+	}
 }
+
+//##############################
+//GetTransformMat()[上記]が吸収
+//##############################
+//ChaMatrix CBone::GetENullMatrix(double srctime)
+//{
+//	//ChaMatrix retmat;
+//	//retmat.SetIdentity();
+//	//ChaMatrix tmpmat;
+//	//tmpmat.SetIdentity();
+//
+//	//if (!GetParModel()) {
+//	//	_ASSERT(0);
+//	//	return retmat;
+//	//}
+//
+//	//CalcEnullMatReq(srctime, &retmat, &tmpmat);
+//	//return retmat;
+//
+//
+//	FbxNode* eNullNode = GetFbxNodeOnLoad();
+//	if (eNullNode) {
+//		FbxTime time0;
+//		time0.SetSecondDouble(srctime / 30.0);
+//		FbxAMatrix lGlobalSRT = eNullNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);
+//		ChaMatrix retmat = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+//		return retmat;
+//	}
+//	else {
+//		_ASSERT(0);
+//		ChaMatrix retmat;
+//		retmat.SetIdentity();
+//		return retmat;
+//	}
+//}
 
 ChaMatrix CBone::CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcframe)
 {
@@ -10432,12 +10511,20 @@ ChaMatrix CBone::CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcf
 			//GetENullMatrixを修正してCalcEnullMatReqで計算するようにしたところが2023/06/26から変わったところ
 			//SetWorldMat()時には　回転計算用のローカル行列取得時に　parenetがeNullの場合関してもGetWorldMat[invNode * CalcENullMat]を使用
 			//Fbx回転計算時には　CalcLocalEulXYZ()内にて　parentがeNullの場合　invNode * CalcENullMatを使用
-			parentfbxwm = parentbone->GetENullMatrix(roundingframe);
+			//parentfbxwm = parentbone->GetENullMatrix(roundingframe);
+
+			//parentfbxwm = parentbone->GetTransformMat(roundingframe, true);
+			parentfbxwm = parentbone->GetTransformMat(0.0, true);
 			localfbxmat = GetNodeMat() * wmanim * ChaMatrixInv(parentfbxwm);
 		}
 		else if (parentbone->IsCamera()) {
-			bool multInvNodeMat = false;
-			parentfbxwm = GetParModel()->GetCameraTransformMat(srcmotid, roundingframe, g_cameraInheritMode, multInvNodeMat);
+			//bool multInvNodeMat = false;
+			//parentfbxwm = GetParModel()->GetCameraTransformMat(srcmotid, roundingframe, g_cameraInheritMode, multInvNodeMat);
+
+
+			//parentfbxwm = parentbone->GetTransformMat(srcframe, true);
+
+			parentfbxwm = parentbone->GetTransformMat(0.0, true);//2023/07/05 Cameraの子供のスキンメッシュの形が　読み書き読み書き読みテストで形崩れしないように
 			localfbxmat = GetNodeMat() * wmanim * ChaMatrixInv(parentfbxwm);
 		}
 		else {

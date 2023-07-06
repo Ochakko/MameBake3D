@@ -474,6 +474,9 @@ int CModel::InitParams()
 
 	InitCameraFbx();
 
+	m_enulltime = 0.0;//SetShaderConstにおける　ボーンの無いメッシュアニメ enull evaluate用の時間
+
+
 	m_materialdisprate = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);//diffuse, specular, emissive, ambient
 	m_currentanimlayer = 0;
 
@@ -2410,22 +2413,22 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 
 
 
-	//###########
-	//for debug
-	//###########
-	{
-		int dbgcount = srcobj->GetDbgCount();
-		if (dbgcount == 0) {
-			char strdbg[1024] = { 0 };
-			WCHAR wstrdbg[1024] = { 0L };
-			sprintf_s(strdbg, 1024, "SetShaderConst firstframe : (%s : %.3f) clusternum %d\r\n",
-				srcobj->GetName(), curmi->curframe, clusternum);
-			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
-			DbgOut(wstrdbg);
-			dbgcount++;
-			srcobj->SetDbgCount(dbgcount);
-		}
-	}
+	////###########
+	////for debug
+	////###########
+	//{
+	//	int dbgcount = srcobj->GetDbgCount();
+	//	if (dbgcount == 0) {
+	//		char strdbg[1024] = { 0 };
+	//		WCHAR wstrdbg[1024] = { 0L };
+	//		sprintf_s(strdbg, 1024, "SetShaderConst firstframe : (%s : %.3f) clusternum %d\r\n",
+	//			srcobj->GetName(), curmi->curframe, clusternum);
+	//		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
+	//		DbgOut(wstrdbg);
+	//		dbgcount++;
+	//		srcobj->SetDbgCount(dbgcount);
+	//	}
+	//}
 
 
 	if (clusternum == 0) {
@@ -2435,8 +2438,6 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 		_ASSERT(0);
 		return 1;
 	}
-
-
 	
 	for( clcnt = 0; clcnt < clusternum; clcnt++ ){
 		CBone* curbone = srcobj->GetCluster( clcnt );
@@ -2480,43 +2481,41 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 				clustermat.GetDataPtr(), sizeof(float) * 16);
 		}
 
-		//###########
-		//for debug
-		//###########
-		{
-			int dbgoutflag = false;
-			int dbgcount = curbone->GetDbgCount();
-			if ((dbgcount == 0) && (strstr(curbone->GetBoneName(), "Hips_1") != 0)) {
-				dbgcount++;
-				curbone->SetDbgCount(dbgcount);
-				dbgoutflag = true;
-			}
-			if ((dbgcount == 0) && (strstr(curbone->GetBoneName(), "Hips_2") != 0)) {
-				dbgcount++;
-				curbone->SetDbgCount(dbgcount);
-				dbgoutflag = true;
-			}
-			if ((dbgcount == 0) && (strstr(curbone->GetBoneName(), "Hips_3") != 0)) {
-				dbgcount++;
-				curbone->SetDbgCount(dbgcount);
-				dbgoutflag = true;
-			}
-
-			if (dbgoutflag) {
-				char strdbg[1024] = { 0 };
-				WCHAR wstrdbg[1024] = { 0L };
-				sprintf_s(strdbg, 1024, "SetShaderConst clustermat : (%s)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n",
-					curbone->GetBoneName(),
-					clustermat.data[MATI_11], clustermat.data[MATI_12], clustermat.data[MATI_13], clustermat.data[MATI_14],
-					clustermat.data[MATI_21], clustermat.data[MATI_22], clustermat.data[MATI_23], clustermat.data[MATI_24],
-					clustermat.data[MATI_31], clustermat.data[MATI_32], clustermat.data[MATI_33], clustermat.data[MATI_34],
-					clustermat.data[MATI_41], clustermat.data[MATI_42], clustermat.data[MATI_43], clustermat.data[MATI_44]
-				);
-				MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
-				DbgOut(wstrdbg);
-			}
-
-		}
+		////###########
+		////for debug
+		////###########
+		//{
+		//	int dbgoutflag = false;
+		//	int dbgcount = curbone->GetDbgCount();
+		//	if ((dbgcount == 0) && (strstr(curbone->GetBoneName(), "Hips_1") != 0)) {
+		//		dbgcount++;
+		//		curbone->SetDbgCount(dbgcount);
+		//		dbgoutflag = true;
+		//	}
+		//	if ((dbgcount == 0) && (strstr(curbone->GetBoneName(), "Hips_2") != 0)) {
+		//		dbgcount++;
+		//		curbone->SetDbgCount(dbgcount);
+		//		dbgoutflag = true;
+		//	}
+		//	if ((dbgcount == 0) && (strstr(curbone->GetBoneName(), "Hips_3") != 0)) {
+		//		dbgcount++;
+		//		curbone->SetDbgCount(dbgcount);
+		//		dbgoutflag = true;
+		//	}
+		//	if (dbgoutflag) {
+		//		char strdbg[1024] = { 0 };
+		//		WCHAR wstrdbg[1024] = { 0L };
+		//		sprintf_s(strdbg, 1024, "SetShaderConst clustermat : (%s)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n",
+		//			curbone->GetBoneName(),
+		//			clustermat.data[MATI_11], clustermat.data[MATI_12], clustermat.data[MATI_13], clustermat.data[MATI_14],
+		//			clustermat.data[MATI_21], clustermat.data[MATI_22], clustermat.data[MATI_23], clustermat.data[MATI_24],
+		//			clustermat.data[MATI_31], clustermat.data[MATI_32], clustermat.data[MATI_33], clustermat.data[MATI_34],
+		//			clustermat.data[MATI_41], clustermat.data[MATI_42], clustermat.data[MATI_43], clustermat.data[MATI_44]
+		//		);
+		//		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
+		//		DbgOut(wstrdbg);
+		//	}
+		//}
 
 		setclcnt++;
 	}
@@ -3824,17 +3823,24 @@ int CModel::CreateFBXShape( FbxAnimLayer* panimlayer, double animleng, FbxTime s
 	return 0;
 }
 
-void CModel::CalcMeshMatReq(FbxNode* pNode, ChaMatrix* pmeshmat)
+ChaMatrix CModel::CalcLocalMeshMat(FbxNode* pNode, double srctime)
 {
+
+	//現在 eMeshにCBone*メンバが無い　eMeshの親にeMeshがある場合などに対応するために　とりあえず　CBone*を介さないで計算するためのCalcMeshMatReq()
+
 
 	//###########################################################################
 	//CBone::SaveFbxNodePosture()とCBone::CalcLocalNodePosture()と内容を合わせる
 	//###########################################################################
 
 
-	if (!pNode || !pmeshmat) {
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+
+	if (!pNode) {
 		_ASSERT(0);
-		return;
+		retmat.SetIdentity();
+		return retmat;
 	}
 
 	//#########################################################################################
@@ -3847,10 +3853,15 @@ void CModel::CalcMeshMatReq(FbxNode* pNode, ChaMatrix* pmeshmat)
 	//FbxDouble3 fbxLclScl = pNode->LclScaling.Get();
 
 	FbxTime fbxtime;
-	fbxtime.SetSecondDouble(0.0);
+	//fbxtime.SetSecondDouble(0.0);
+	fbxtime.SetSecondDouble(srctime / 30.0);
+
+	bool fbxRotationActive = pNode->GetRotationActive();//lclrot入りかどうかはGetRotationActive()で判断
+
 	FbxDouble3 fbxLclPos = pNode->EvaluateLocalTranslation(fbxtime, FbxNode::eSourcePivot, true, true);//Bone.cpp SaveFbxNodePosture()と合わせる
 	FbxDouble3 fbxLclRot = pNode->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
 	FbxDouble3 fbxLclScl = pNode->EvaluateLocalScaling(fbxtime, FbxNode::eSourcePivot, true, true);
+
 	FbxVector4 fbxRotOff = pNode->GetRotationOffset(FbxNode::eSourcePivot);
 	FbxVector4 fbxRotPiv = pNode->GetRotationPivot(FbxNode::eSourcePivot);
 	FbxVector4 fbxPreRot = pNode->GetPreRotation(FbxNode::eSourcePivot);
@@ -3888,7 +3899,7 @@ void CModel::CalcMeshMatReq(FbxNode* pNode, ChaMatrix* pmeshmat)
 	//		ただし　カメラの子供のメッシュについては　うまくいっていない(parentがeCameraの場合の計算に対応していない)
 	// 
 	//TheHunt Street1 Camera_1の　HUDの位置向き　壁の位置向き　　　TheHunt City1 Camera_1の子供のArmsのなどで検証
-	// 読み書き読み書き読みで変わらないことを確認
+	// 読み書き読み書き読みで変わらないことを確認(カメラの子供のスキンメッシュは未対応. カメラの子供のスキンメッシュについては形は崩れない程度.)
 	//##############################################################################################################################
 	preQ.SetRotationXYZ(0, ChaVector3(fbxPreRot));//!!!!!! prerotはXYZ
 	lclQ.SetRotation(rotationorder, 0, ChaVector3(fbxLclRot));//##### at fbxtime
@@ -3904,18 +3915,65 @@ void CModel::CalcMeshMatReq(FbxNode* pNode, ChaMatrix* pmeshmat)
 	fbxSpinv = ChaMatrixInv(fbxSp);
 
 
-	//ChaMatrix localnodemat, localnodeanimmat;
-	//localnodeanimmat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * rotQ1.MakeRotMatX() * fbxRp * fbxRoff * fbxT;
+	ChaMatrix localnodemat, localnodeanimmat;
+	localnodeanimmat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * rotQ1.MakeRotMatX() * fbxRp * fbxRoff * fbxT;//2023/06/23
 	//0フレームアニメ無し : fbxR無し
-	//localnodemat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * rotQ2.MakeRotMatX() * fbxRp * fbxRoff * fbxT;
+	localnodemat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * rotQ2.MakeRotMatX() * fbxRp * fbxRoff * fbxT;
+
+
+	//#################################################################################################################################
+	//eSkeletonを特別扱いするのはbindpose計算時. カレントポーズ計算時には通常通りGetRotationActiveに依存させる
+	//#################################################################################################################################
+	if (fbxRotationActive) {
+		retmat = localnodeanimmat;
+	}
+	else {
+		retmat = localnodemat;
+	}
+
+
+	return retmat;
+
+}
+
+ChaMatrix CModel::CalcGlobalMeshMat(FbxNode* pNode, double srctime)
+{
+	ChaMatrix retmat;
+	retmat.SetIdentity();
+	if (!pNode) {
+		_ASSERT(0);
+		retmat.SetIdentity();
+		return retmat;
+	}
+
+	//現在 eMeshにCBone*メンバが無い　eMeshの親にeMeshがある場合などに対応するために　とりあえず　CBone*を介さないで計算するためのCalcMeshMatReq()
+	CalcMeshMatReq(pNode, srctime, &retmat);
+	return retmat;
+}
+
+void CModel::CalcMeshMatReq(FbxNode* pNode, double srctime, ChaMatrix* pmeshmat)
+{
+
+
+	//現在 eMeshにCBone*メンバが無い　eMeshの親にeMeshがある場合などに対応するために　とりあえず　CBone*を介さないで計算するためのCalcMeshMatReq()
+
+	//###########################################################################
+	//CBone::SaveFbxNodePosture()とCBone::CalcLocalNodePosture()と内容を合わせる
+	//###########################################################################
+
+	if (!pNode || !pmeshmat) {
+		_ASSERT(0);
+		return;
+	}
 
 	ChaMatrix localnodeanimmat;
-	localnodeanimmat = fbxSpinv * fbxS * fbxSp * fbxSoff * fbxRpinv * rotQ1.MakeRotMatX() * fbxRp * fbxRoff * fbxT;
+	localnodeanimmat.SetIdentity();
+	localnodeanimmat = CalcLocalMeshMat(pNode, srctime);
 
 	*pmeshmat = *pmeshmat * localnodeanimmat;//親方向へ辿りながら実行するので　pmeshmatにとってlocalnodeanimmatはparent
 
 	if (pNode->GetParent()) {
-		CalcMeshMatReq(pNode->GetParent(), pmeshmat);
+		CalcMeshMatReq(pNode->GetParent(), srctime, pmeshmat);
 	}
 }
 
@@ -3953,23 +4011,32 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 		//globalmeshmat = ChaMatrixFromFbxAMatrix(lGlobalPosition);
 
 
-		CalcMeshMatReq(pNode, &globalmeshmat);
+		//CalcMeshMatReq(pNode, 0.0, &globalmeshmat);
+
+		//2023/07/05
+		globalmeshmat = CalcGlobalMeshMat(pNode, 0.0);
+
+		//2023/07/04
+		//GetFbxMeshでのmeshmatはmesh自体のローカル変換だけにしておいて　アニメ可能なparentのeNullの変換をSetShaderConst()で合成する
+		//localmeshmat = CalcLocalMeshMat(pNode);
 
 
-		//for debug
-		{
-			char strdbg[1024] = { 0 };
-			WCHAR wstrdbg[1024] = { 0L };
-			sprintf_s(strdbg, 1024, "MeshMat : (%s)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n",
-				pNode->GetName(),
-				globalmeshmat.data[MATI_11], globalmeshmat.data[MATI_12], globalmeshmat.data[MATI_13], globalmeshmat.data[MATI_14],
-				globalmeshmat.data[MATI_21], globalmeshmat.data[MATI_22], globalmeshmat.data[MATI_23], globalmeshmat.data[MATI_24],
-				globalmeshmat.data[MATI_31], globalmeshmat.data[MATI_32], globalmeshmat.data[MATI_33], globalmeshmat.data[MATI_34],
-				globalmeshmat.data[MATI_41], globalmeshmat.data[MATI_42], globalmeshmat.data[MATI_43], globalmeshmat.data[MATI_44]
-			);
-			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
-			DbgOut(wstrdbg);
-		}
+
+
+		////for debug
+		//{
+		//	char strdbg[1024] = { 0 };
+		//	WCHAR wstrdbg[1024] = { 0L };
+		//	sprintf_s(strdbg, 1024, "MeshMat : (%s)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n",
+		//		pNode->GetName(),
+		//		globalmeshmat.data[MATI_11], globalmeshmat.data[MATI_12], globalmeshmat.data[MATI_13], globalmeshmat.data[MATI_14],
+		//		globalmeshmat.data[MATI_21], globalmeshmat.data[MATI_22], globalmeshmat.data[MATI_23], globalmeshmat.data[MATI_24],
+		//		globalmeshmat.data[MATI_31], globalmeshmat.data[MATI_32], globalmeshmat.data[MATI_33], globalmeshmat.data[MATI_34],
+		//		globalmeshmat.data[MATI_41], globalmeshmat.data[MATI_42], globalmeshmat.data[MATI_43], globalmeshmat.data[MATI_44]
+		//	);
+		//	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
+		//	DbgOut(wstrdbg);
+		//}
 
 		globalnormalmat = globalmeshmat;
 		globalnormalmat.SetTranslation(ChaVector3(0.0f, 0.0f, 0.0f));
@@ -3986,6 +4053,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 	}
 	newobj->SetObjFrom( OBJFROM_FBX );
 	newobj->SetName( (char*)pNode->GetName() );
+	newobj->SetFbxNode(pNode);
 	m_object[ newobj->GetObjectNo() ] = newobj;
 	m_node2mqoobj[pNode] = newobj;
 
@@ -5896,6 +5964,7 @@ int CModel::PreLoadCameraFbxAnim(int srcmotid)
 					//#######################################################
 
 					m_camerafbx.PreLoadFbxAnim(srcbone, srcmotid);//srcboneはFbxCamera*を持つFbxNodeに対応するCBone*　motionがコンポーネントとしてアタッチされていないboneの場合もある
+					break;//!!!!!!
 				}
 			}
 		}
@@ -17683,3 +17752,21 @@ int CModel::GetCameraMotionId()
 	return m_cameramotionid;
 }
 
+int CModel::GetCurrentMotion()
+{
+	if (m_curmotinfo) {
+		return m_curmotinfo->motid;
+	}
+	else {
+		return -1;
+	}
+}
+double CModel::GetCurrentMotionFrame()
+{
+	if (m_curmotinfo) {
+		return m_curmotinfo->curframe;
+	}
+	else {
+		return 1.0;
+	}
+}

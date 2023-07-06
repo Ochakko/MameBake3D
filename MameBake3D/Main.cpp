@@ -25173,6 +25173,18 @@ int OnFramePreviewCamera(double srcnextframe)
 	double nextcameraframe = 0.0;
 
 
+
+	//eNull用の時間は　カメラの時間と同じとする　(とりあえず)
+	vector<MODELELEM>::iterator itrmodel;
+	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+		CModel* curmodel = itrmodel->modelptr;
+		if (curmodel) {
+			curmodel->SetENullTime(srcnextframe);
+		}
+	}
+
+
+
 	if (g_cameraanimmode != 0) {//2023/05/29 2023/06/04
 	 
 		//########################

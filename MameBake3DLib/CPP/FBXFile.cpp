@@ -3422,8 +3422,8 @@ int CalcLocalNodeMat(CModel* pmodel, CBone* curbone, ChaMatrix* dstnodemat, ChaM
 	if (pNode) {
 
 		curbone->SaveFbxNodePosture(pNode);//2023/02/16
-
-		curbone->CalcLocalNodePosture(pNode, 0.0, dstnodemat, dstnodeanimmat);
+		bool bindposeflag = true;//!!!!! 2023/07/06
+		curbone->CalcLocalNodePosture(bindposeflag, pNode, 0.0, dstnodemat, dstnodeanimmat);
 
 		curbone->SetLocalNodeMat(*dstnodemat);
 		curbone->SetLocalNodeAnimMat(*dstnodeanimmat);

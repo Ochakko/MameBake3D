@@ -328,6 +328,14 @@ public:
 		m_dbgcount = srccount;
 	}
 
+	FbxNode* GetFbxNode()
+	{
+		return m_pnode;
+	}
+	void SetFbxNode(FbxNode* srcnode)
+	{
+		m_pnode = srcnode;
+	}
 private:
 	int m_objfrom;
 
@@ -362,6 +370,7 @@ private:
 	std::map<std::string,int> m_findshape;
 	std::map<std::string,ChaVector3*> m_shapevert;
 
+	FbxNode* m_pnode;
 
 //以下、クラス外から参照しないのでアクセッサー無し
 	int m_patch;

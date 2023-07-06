@@ -151,6 +151,22 @@
 				TheHuntCity1 Camera1のCameraの子供のスキンメッシュには　BPがあるが　lclrot無しにしないと読み書き読み書き読みで形が崩れた
 				よってBPの有無に関わらず　Skeletonの場合にはlclrot無しとした
 
+	2023/07/06
+		カメラアニメ修正
+			Documants/TroubleShooting/AboutCameraAnim.docxに書いた構成２NodeMat計算の修正で変になっていたのを修正
+
+		NodeMat, MeshMat計算修正
+			ローカル計算から組み立てて分かったのだが　bindpose計算時とカレントポーズ計算時とで　計算を変える必要があった
+
+			読み書き読み書き読みテスト
+				Rokoko womandance BP無し 0frameAnim在り, left90 BP無し 0frameAnim在り
+				bvh121
+				Spring1
+				TheHunt City1 Camera1 Camera8　カメラ構成１　カメラ構成２
+				TheHunt Street1 Camera1 Camera2 Camera3　カメラ構成１　カメラ構成２
+				Spring1にbvh121とRokokoBP在り無しをリターゲット
+
+
 
 2023/06/07
 	EditMot 1.2.0.21 relase

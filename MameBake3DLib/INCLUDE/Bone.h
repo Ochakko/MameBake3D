@@ -534,8 +534,6 @@ public:
 
 	//int Adjust180Deg(int srcmotid, double srcleng);
 
-	bool HasMotionCurve();
-
 private:
 
 /**
@@ -1097,9 +1095,9 @@ public: //accesser
 	};
 
 
-	ChaMatrix GetENullMatrix(double srctime);
-	void CalcEnullMatReq(double srctime, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat);//parent方向へ計算
-
+	//ChaMatrix GetENullMatrix(double srctime);
+	//void CalcEnullMatReq(double srctime, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat);//parent方向へ計算
+	ChaMatrix GetTransformMat(double srctime, bool forceanimflag);
 	ChaMatrix CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcframe);
 
 	ANGLELIMIT GetAngleLimit(bool limitdegflag, int getchkflag);
@@ -1320,7 +1318,8 @@ public: //accesser
 	//fbxの初期姿勢のジョイントの向きを書き出すために追加
 	void SaveFbxNodePosture(FbxNode* pNode);
 	//void RestoreFbxNodePosture(FbxNode* pNode);
-	int CalcLocalNodePosture(FbxNode* pNode, double srcframe, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat);
+	int CalcLocalNodePosture(bool bindposeflag, FbxNode* pNode, double srcframe, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat);
+	void CalcNodePostureReq(bool bindposeflag, FbxNode* pNode, double srcframe, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat);
 
 
 	void ClearIKRotRec()

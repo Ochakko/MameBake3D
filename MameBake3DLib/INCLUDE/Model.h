@@ -354,7 +354,6 @@ public:
  * @return 成功したら０。
  */
 	int SetCurrentMotion( int srcmotid );
-
 /**
  * @fn
  * SetMotionFrame
@@ -918,7 +917,9 @@ private:
 
 
 	CMQOObject* GetFBXMesh(FbxNode* pNode, FbxNodeAttribute* pAttrib);
-	void CalcMeshMatReq(FbxNode* pNode, ChaMatrix* pmeshmat);
+	ChaMatrix CalcGlobalMeshMat(FbxNode* pNode, double srctime);
+	ChaMatrix CalcLocalMeshMat(FbxNode* pNode, double srctime);
+	void CalcMeshMatReq(FbxNode* pNode, double srctime, ChaMatrix* pmeshmat);
 	int GetFBXShape(FbxMesh* pMesh, CMQOObject* curobj, FbxAnimLayer* panimlayer, double animleng, FbxTime starttime, FbxTime timestep );
 	//int ComputeShapeDeformation(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename );
 	//int ComputeShapeDeformation2(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAnimLayer * pAnimLayer, CMQOObject* curobj, char* takename );
@@ -1258,6 +1259,10 @@ public: //accesser
 	std::map<int,MOTINFO*>::iterator GetMotInfoEnd(){
 		return m_motinfo.end();
 	};
+
+
+	int GetCurrentMotion();
+	double GetCurrentMotionFrame();
 
 	MOTINFO* GetCurMotInfo(){
 		return m_curmotinfo;
@@ -1670,6 +1675,18 @@ public: //accesser
 	//CCameraFbx GetCameraFbx();
 	void SetCameraMotionId(int srcid);
 	int GetCameraMotionId();
+
+
+	void SetENullTime(double srcenulltime)
+	{
+		//SetShaderConstにおける　ボーンの無いメッシュアニメ enull evaluate用の時間
+		m_enulltime = srcenulltime;
+	};
+	double GetENullTime()
+	{
+		return m_enulltime;
+	}
+
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];
@@ -1794,6 +1811,9 @@ private:
 	int m_cameramotionid;
 
 	int m_loadbonecount;//GetFbxAnim用
+
+	double m_enulltime;//SetShaderConstにおける　ボーンの無いメッシュアニメ enull evaluate用の時間
+
 };
 
 #endif

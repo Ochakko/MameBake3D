@@ -218,7 +218,8 @@ CAMERANODE* CCameraFbx::GetCameraNode(int cameramotid)
 
 int CCameraFbx::PreLoadFbxAnim(CBone* srcbone, int srcmotid)
 {
-
+	
+	//この時点では　CAMERANODE*とsrcmotidは紐づいていない
 	CAMERANODE* cameranode = FindCameraNodeByBone(srcbone);
 	if (!cameranode) {
 		_ASSERT(0);
@@ -246,15 +247,21 @@ int CCameraFbx::PreLoadFbxAnim(CBone* srcbone, int srcmotid)
 	ChaMatrix rotmat = cameramat;
 	CQuaternion cameraq;
 	cameraq.RotationMatrix(rotmat);
-	ChaVector3 firstdir = ChaVector3(1.0f, 0.0f, 0.0f);
-	ChaVector3 cameradir = ChaVector3(1.0f, 0.0f, 0.0f);
-	cameraq.Rotate(&cameradir, firstdir);
-	ChaVector3Normalize(&cameradir, &cameradir);
-	cameranode->dirvec = cameradir;
+	//ChaVector3 firstdir = ChaVector3(1.0f, 0.0f, 0.0f);
+	//ChaVector3 cameradir = ChaVector3(1.0f, 0.0f, 0.0f);
+	ChaVector3 dirvec0;
+	ChaVector3 dirvec;
+	dirvec0 = ChaVector3(-1.0f, 0.0f, 0.0f);
+	dirvec = ChaVector3(-1.0f, 0.0f, 0.0f);
+	cameraq.Rotate(&dirvec, dirvec0);
+	ChaVector3Normalize(&dirvec, &dirvec);
+	cameranode->dirvec = dirvec;
 
 
-	ChaVector3 firstupdir = ChaVector3(0.0f, 1.0f, 0.0f);
-	ChaVector3 cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
+	//ChaVector3 firstupdir = ChaVector3(0.0f, 1.0f, 0.0f);
+	//ChaVector3 cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
+	ChaVector3 firstupdir = ChaVector3(0.01f, 0.99f, 0.0f);
+	ChaVector3 cameraupdir = ChaVector3(0.01f, 0.99f, 0.0f);
 	cameraq.Rotate(&cameraupdir, firstupdir);
 	ChaVector3Normalize(&cameraupdir, &cameraupdir);
 	cameranode->upvec = cameraupdir;
@@ -364,7 +371,8 @@ ChaMatrix CCameraFbx::GetCameraTransformMat(int cameramotid, double nextframe, i
 	ChaMatrix localnodemat, localnodeanimmat;
 	localnodemat.SetIdentity();
 	localnodeanimmat.SetIdentity();
-	camerabone->CalcLocalNodePosture(0, roundingframe, &localnodemat, &localnodeanimmat);
+	bool bindposeflag = false;
+	camerabone->CalcLocalNodePosture(bindposeflag, 0, roundingframe, &localnodemat, &localnodeanimmat);
 
 	ChaMatrix parentGlobalNodeMat, parentLocalNodeMat;
 	parentGlobalNodeMat.SetIdentity();
@@ -379,10 +387,11 @@ ChaMatrix CCameraFbx::GetCameraTransformMat(int cameramotid, double nextframe, i
 
 		ChaMatrix tmpParentLocalNodeAnimMat;
 		tmpParentLocalNodeAnimMat.SetIdentity();
-		camerabone->GetParent(false)->CalcLocalNodePosture(0, roundingframe, &parentLocalNodeMat, &tmpParentLocalNodeAnimMat);
+		camerabone->GetParent(false)->CalcLocalNodePosture(bindposeflag, 0, roundingframe, &parentLocalNodeMat, &tmpParentLocalNodeAnimMat);
 
 
-		parentGlobalNodeMat = camerabone->GetParent(false)->GetENullMatrix(roundingframe);//global
+		//parentGlobalNodeMat = camerabone->GetParent(false)->GetENullMatrix(roundingframe);//global
+		parentGlobalNodeMat = camerabone->GetParent(false)->GetTransformMat(roundingframe, true);//global
 	}
 	else {
 		parentGlobalNodeMat.SetIdentity();
@@ -412,7 +421,12 @@ ChaMatrix CCameraFbx::GetCameraTransformMat(int cameramotid, double nextframe, i
 		//UnityにおいてはRootMotionチェックオン. Mayaにおいてはトランスフォームの継承チェックオフ　に相当
 		//################################################################################################
 		//transformmat = cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);
-		transformmat = localnodeanimmat * adjusttra * parentLocalNodeMat;//###################### ParentRot無し TheHunt Street1 Camera1
+		//transformmat = localnodeanimmat * adjusttra * parentLocalNodeMat;//###################### ParentRot無し TheHunt Street1 Camera1
+
+		//2023/07/24
+		//CalcLocalNodePosture()変更により　Rot無しを明示的に数式にする必要
+		//( CalcLocalNodePosture()のnodematは　GetRotationActiveの値により回転を持つことがある )
+		transformmat = localnodeanimmat * adjusttra * ChaMatrixTra(parentLocalNodeMat);
 
 		break;
 
@@ -458,8 +472,15 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 	if (IsLoaded()) {
 		if (cameramotid > 0) {
 
+			CAMERANODE* curcamera = GetCameraNode(cameramotid);
+			if (!curcamera) {
+				_ASSERT(0);
+				return 1;
+			}
+
 			bool multInvNodeMat = false;
 			ChaMatrix transformmat;
+			transformmat.SetIdentity();
 			transformmat = GetCameraTransformMat(cameramotid, nextframe, inheritmode, multInvNodeMat);
 
 
@@ -474,8 +495,10 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 			//##############
 			//カメラの向き
 			//##############
-			ChaVector3 dirvec0 = ChaVector3(-1.0f, 0.0f, 0.0f);
-			ChaVector3 dirvec = ChaVector3(-1.0f, 0.0f, 0.0f);
+			ChaVector3 dirvec0;
+			ChaVector3 dirvec;
+			dirvec0 = ChaVector3(-1.0f, 0.0f, 0.0f);
+			dirvec = ChaVector3(-1.0f, 0.0f, 0.0f);
 
 			ChaMatrix convmat = ChaMatrixRot(transformmat);
 			ChaVector3TransformCoord(&dirvec, &dirvec0, &convmat);

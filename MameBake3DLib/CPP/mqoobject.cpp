@@ -169,6 +169,7 @@ void CMQOObject::InitParams()
 {
 	m_objfrom = OBJFROM_MQO;
 
+	m_pnode = 0;
 
 	m_normalmappingmode = 0;//0:eByPolygonVertex, 1:eByControlPoint
 	m_dbgcount = 0;
