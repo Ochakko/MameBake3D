@@ -17653,7 +17653,10 @@ int CModel::GetCameraAnimParams(int cameramotionid, double nextframe, double cam
 
 	CAMERANODE* curcn = m_camerafbx.GetCameraNode(cameramotionid);
 	if (!curcn) {
-		return 0;
+		curcn = m_camerafbx.GetFirstValidCameraNode();//anim無しのカメラ用
+		if (!curcn) {
+			return 0;
+		}
 	}
 
 	if (nextframe == 0.0) {

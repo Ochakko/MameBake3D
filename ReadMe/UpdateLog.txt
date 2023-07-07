@@ -1,5 +1,5 @@
 2023/07/07
-	EditMot 1.2.0.22 RC1
+	EditMot 1.2.0.22 RC2
 
 	使用しているMicrosoftのOSS DXUT, DirectXTex, Effect11をJun2023へバージョンアップ
 
@@ -16,6 +16,10 @@
 			Documants/TroubleShooting/AboutCameraAnim.docx (UnityとMayaとの連携の仕方についても記述)
 
 	RotationOrderを見直し　テストし直し
+
+	メモ
+		RC1 : readme.txtをUTF-8にしてRC1としてコミット. リリース前のテスト開始.
+		RC2 : アニメの無いカメラ(１つだけ)対応. 　アニメがあるカメラの0フレームの位置と向き修正.
 
 
 　おちゃっこLAB

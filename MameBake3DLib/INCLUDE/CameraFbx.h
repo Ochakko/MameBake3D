@@ -100,7 +100,7 @@ public:
 		ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaVector3* pcamupdir, ChaMatrix* protmat, int inheritmode);
 	ChaVector3 CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVector3 befeul);
 
-
+	CAMERANODE* GetFirstValidCameraNode();//anim無しカメラ用
 
 
 	//CCameraFbx operator= (CCameraFbx srcrange);

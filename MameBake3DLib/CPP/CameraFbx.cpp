@@ -190,6 +190,52 @@ int CCameraFbx::AddFbxCamera(FbxNode* pNode, CBone* pbone)
 		newcameranode->fovY_Degree = fovY_Degree;
 
 
+		//################################################################################
+		//カメラがアニメーションを持たない場合のために 0フレームの位置と向きを計算しておく
+		//################################################################################
+		FbxTime timezero;
+		timezero.SetSecondDouble(m_time);
+		FbxVector4 fbxpos = newcameranode->pcamera->EvaluatePosition(timezero);
+		newcameranode->position = ChaVector3(fbxpos);
+
+		FbxAMatrix fbxcameramat = newcameranode->pnode->EvaluateGlobalTransform(timezero, FbxNode::eSourcePivot, true, true);
+		ChaMatrix cameramat = ChaMatrixFromFbxAMatrix(fbxcameramat);
+		newcameranode->worldmat = cameramat;//!!!!!!
+
+
+		ChaMatrix rotmat = cameramat;
+		CQuaternion cameraq;
+		cameraq.RotationMatrix(rotmat);
+		//ChaVector3 firstdir = ChaVector3(1.0f, 0.0f, 0.0f);
+		//ChaVector3 cameradir = ChaVector3(1.0f, 0.0f, 0.0f);
+		ChaVector3 dirvec0;
+		ChaVector3 dirvec;
+		dirvec0 = ChaVector3(1.0f, 0.0f, 0.0f);
+		dirvec = ChaVector3(1.0f, 0.0f, 0.0f);
+		cameraq.Rotate(&dirvec, dirvec0);
+		ChaVector3Normalize(&dirvec, &dirvec);
+		newcameranode->dirvec = dirvec;
+
+
+		//ChaVector3 firstupdir = ChaVector3(0.0f, 1.0f, 0.0f);
+		//ChaVector3 cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
+		ChaVector3 firstupdir = ChaVector3(0.01f, 0.99f, 0.0f);
+		ChaVector3 cameraupdir = ChaVector3(0.01f, 0.99f, 0.0f);
+		cameraq.Rotate(&cameraupdir, firstupdir);
+		ChaVector3Normalize(&cameraupdir, &cameraupdir);
+		newcameranode->upvec = cameraupdir;
+
+
+		//2023/06/27
+		//CAMERA_INHERIT_CANCEL_NULL2の位置補正用
+		FbxTime fbxtime0;
+		fbxtime0.SetSecondDouble(0.0);
+		FbxVector4 lcltime0 = newcameranode->pnode->EvaluateLocalTranslation(fbxtime0, FbxNode::eSourcePivot, true, true);
+		ChaVector3 chalcltime0 = ChaVector3(lcltime0, false);
+		ChaVector3 charotpiv = ChaVector3(newcameranode->pnode->GetRotationPivot(FbxNode::eSourcePivot));
+		ChaVector3 nodepos = ChaMatrixTraVec(pbone->GetNodeMat());
+		newcameranode->adjustpos = charotpiv - chalcltime0;
+
 
 		m_loadedflag = true;
 
@@ -229,53 +275,6 @@ int CCameraFbx::PreLoadFbxAnim(CBone* srcbone, int srcmotid)
 		_ASSERT(0);
 		return 1;
 	}
-
-
-	//################################################################################
-	//カメラがアニメーションを持たない場合のために 0フレームの位置と向きを計算しておく
-	//################################################################################
-	FbxTime timezero;
-	timezero.SetSecondDouble(m_time);
-	FbxVector4 fbxpos = cameranode->pcamera->EvaluatePosition(timezero);
-	cameranode->position = ChaVector3(fbxpos);
-
-	FbxAMatrix fbxcameramat = cameranode->pnode->EvaluateGlobalTransform(timezero, FbxNode::eSourcePivot, true, true);
-	ChaMatrix cameramat = ChaMatrixFromFbxAMatrix(fbxcameramat);
-	cameranode->worldmat = cameramat;//!!!!!!
-
-
-	ChaMatrix rotmat = cameramat;
-	CQuaternion cameraq;
-	cameraq.RotationMatrix(rotmat);
-	//ChaVector3 firstdir = ChaVector3(1.0f, 0.0f, 0.0f);
-	//ChaVector3 cameradir = ChaVector3(1.0f, 0.0f, 0.0f);
-	ChaVector3 dirvec0;
-	ChaVector3 dirvec;
-	dirvec0 = ChaVector3(-1.0f, 0.0f, 0.0f);
-	dirvec = ChaVector3(-1.0f, 0.0f, 0.0f);
-	cameraq.Rotate(&dirvec, dirvec0);
-	ChaVector3Normalize(&dirvec, &dirvec);
-	cameranode->dirvec = dirvec;
-
-
-	//ChaVector3 firstupdir = ChaVector3(0.0f, 1.0f, 0.0f);
-	//ChaVector3 cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
-	ChaVector3 firstupdir = ChaVector3(0.01f, 0.99f, 0.0f);
-	ChaVector3 cameraupdir = ChaVector3(0.01f, 0.99f, 0.0f);
-	cameraq.Rotate(&cameraupdir, firstupdir);
-	ChaVector3Normalize(&cameraupdir, &cameraupdir);
-	cameranode->upvec = cameraupdir;
-
-
-	//2023/06/27
-	//CAMERA_INHERIT_CANCEL_NULL2の位置補正用
-	FbxTime fbxtime0;
-	fbxtime0.SetSecondDouble(0.0);
-	FbxVector4 lcltime0 = cameranode->pnode->EvaluateLocalTranslation(fbxtime0, FbxNode::eSourcePivot, true, true);
-	ChaVector3 chalcltime0 = ChaVector3(lcltime0, false);
-	ChaVector3 charotpiv = ChaVector3(cameranode->pnode->GetRotationPivot(FbxNode::eSourcePivot));
-	ChaVector3 nodepos = ChaMatrixTraVec(srcbone->GetNodeMat());
-	cameranode->adjustpos = charotpiv - chalcltime0;
 
 
 	//###################
@@ -478,67 +477,77 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 				return 1;
 			}
 
-			bool multInvNodeMat = false;
-			ChaMatrix transformmat;
-			transformmat.SetIdentity();
-			transformmat = GetCameraTransformMat(cameramotid, nextframe, inheritmode, multInvNodeMat);
+
+			if (nextframe != 0.0) {
+				bool multInvNodeMat = false;
+				ChaMatrix transformmat;
+				transformmat.SetIdentity();
+				transformmat = GetCameraTransformMat(cameramotid, nextframe, inheritmode, multInvNodeMat);
 
 
-			//##############
-			//カメラの位置
-			//##############
-			//ChaMatrix transformmat = nodemat * cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);	 
-			//ChaVector3TransformCoord(pEyePos, &nodepos, &transformmat);
-			ChaVector3TransformCoord(pEyePos, &zeropos, &transformmat);
+				//##############
+				//カメラの位置
+				//##############
+				//ChaMatrix transformmat = nodemat * cammat * ChaMatrixInv(lcltramat) * ChaMatrixInv(rootmat);	 
+				//ChaVector3TransformCoord(pEyePos, &nodepos, &transformmat);
+				ChaVector3TransformCoord(pEyePos, &zeropos, &transformmat);
 
 
-			//##############
-			//カメラの向き
-			//##############
-			ChaVector3 dirvec0;
-			ChaVector3 dirvec;
-			dirvec0 = ChaVector3(-1.0f, 0.0f, 0.0f);
-			dirvec = ChaVector3(-1.0f, 0.0f, 0.0f);
+				//##############
+				//カメラの向き
+				//##############
+				ChaVector3 dirvec0;
+				ChaVector3 dirvec;
+				dirvec0 = ChaVector3(-1.0f, 0.0f, 0.0f);
+				dirvec = ChaVector3(-1.0f, 0.0f, 0.0f);
 
-			ChaMatrix convmat = ChaMatrixRot(transformmat);
-			ChaVector3TransformCoord(&dirvec, &dirvec0, &convmat);
-			ChaVector3Normalize(&dirvec, &dirvec);
-
-
-			//###############
-			//カメラの注視点
-			//###############
-			*pTargetPos = *pEyePos + dirvec * camdist;
+				ChaMatrix convmat = ChaMatrixRot(transformmat);
+				ChaVector3TransformCoord(&dirvec, &dirvec0, &convmat);
+				ChaVector3Normalize(&dirvec, &dirvec);
 
 
-			//#######################
-			//カメラのアップベクトル
-			//#######################
-			//2023/06/25
-			//ChaVector3 upvec = ChaMatrixRot(convmat).GetRow(1);
-			//ChaVector3Normalize(&upvec, &upvec);
-			//*pcamupvec = upvec;
-			ChaVector3 firstupdir = ChaVector3(0.01f, 0.99f, 0.0f);
-			ChaVector3 cameraupdir = ChaVector3(0.01f, 0.99f, 0.0f);
-			ChaVector3TransformCoord(&cameraupdir, &firstupdir, &convmat);
-			ChaVector3Normalize(&cameraupdir, &cameraupdir);
-			*pcamupvec = cameraupdir;
+				//###############
+				//カメラの注視点
+				//###############
+				*pTargetPos = *pEyePos + dirvec * camdist;
 
 
-			if (protmat) {
-				*protmat = convmat;
+				//#######################
+				//カメラのアップベクトル
+				//#######################
+				//2023/06/25
+				//ChaVector3 upvec = ChaMatrixRot(convmat).GetRow(1);
+				//ChaVector3Normalize(&upvec, &upvec);
+				//*pcamupvec = upvec;
+				ChaVector3 firstupdir = ChaVector3(0.01f, 0.99f, 0.0f);
+				ChaVector3 cameraupdir = ChaVector3(0.01f, 0.99f, 0.0f);
+				ChaVector3TransformCoord(&cameraupdir, &firstupdir, &convmat);
+				ChaVector3Normalize(&cameraupdir, &cameraupdir);
+				*pcamupvec = cameraupdir;
+
+
+				if (protmat) {
+					*protmat = convmat;
+				}
 			}
+			else {
+				//cameraanimがある場合にも　0フレームは別計算　ZeroFrameCamera
 
+				*pEyePos = curcamera->position;
+				*pTargetPos = *pEyePos + curcamera->dirvec * camdist;
+				*pcamupvec = curcamera->upvec;
+
+				if (protmat) {
+					*protmat = ChaMatrixRot(curcamera->worldmat);
+				}
+			}
 		}
 		else {
 			//ZeroFrameCamera
 
 			//モーションを持たない複数カメラ切り替えに対して　現在GUIが未対応　最初のカメラの0フレームの位置と向きを返す
-
 			CAMERANODE* curcamera = 0;
-			if (m_cameranode.begin() != m_cameranode.end()) {
-				curcamera = *(m_cameranode.begin());
-			}
+			curcamera = GetFirstValidCameraNode();//anim無しのカメラ用
 			if (!curcamera) {
 				//何もしない
 				return 0;
@@ -648,3 +657,22 @@ bool CCameraFbx::IsLoaded()
 {
 	return m_loadedflag;
 }
+
+CAMERANODE* CCameraFbx::GetFirstValidCameraNode()
+{
+	//anim無しカメラ用
+	std::vector<CAMERANODE*>::iterator itrcameranode;
+	for (itrcameranode = m_cameranode.begin(); itrcameranode != m_cameranode.end(); itrcameranode++) {
+		CAMERANODE* curcn = *itrcameranode;
+		if (curcn) {
+			if (curcn->IsValid()) {
+				return curcn;//!!!!!!!!!!!
+			}
+		}
+	}
+
+	return 0;//みつからなかった場合
+}
+
+
+

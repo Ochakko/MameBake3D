@@ -3920,7 +3920,7 @@ void InitApp()
 
 	g_previewFlag = 0;
 	s_savepreviewFlag = 0;
-	g_cameraanimmode = 0;//0: OFF, 1:ON, 2:ON and RootMotionOption ON
+	g_cameraanimmode = 0;//0: OFF, 1:ON
 	s_savecameraanimmode = 0;
 	g_cameraInheritMode = CAMERA_INHERIT_ALL;
 	s_saveCameraInheritMode = g_cameraInheritMode;
@@ -11918,6 +11918,12 @@ int SetCameraModel()
 	}
 
 
+	//モデル読み込み中　かつ　カメラモデルがある場合　カメラアニメスイッチを強制オン
+	if (s_nowloading && s_cameramodel) {
+		ChangeCameraMode(2);
+	}
+
+
 	return 0;
 }
 
@@ -11973,7 +11979,7 @@ void CalcTotalBound()
 	g_camtargetpos = g_vCenter;
 	ChaVector3 dirz = ChaVector3(0.0f, 0.0f, 1.0);
 	g_camEye = g_vCenter + dirz * g_initcamdist;
-	ChangeCameraMode(1);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
+	//ChangeCameraMode(1);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2.  この関数の上の方のSetCameraModel()で制御するので　ここはコメントアウト
 
 
 	s_camdist = g_initcamdist;
