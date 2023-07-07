@@ -1,164 +1,152 @@
+﻿
+このソフトの著作権はおちゃっこにあります。
+オープンソースのライセンスはLGPLです。
 
-���̃\�t�g�̒��쌠�͂���������ɂ���܂��B
-�I�[�v���\�[�X�̃��C�Z���X��LGPL�ł��B
-
-���̃\�t�g�ɂ���肪�N�����Ƃ��Ă����̐ӔC�͎����܂���B
-���ȐӔC�ł��肢���܂��B
-
-
+このソフトにより問題が起きたとしてもその責任は持ちません。
+自己責任でお願いします。
 
 
-#### ����� �@��������@####
 
-	Maya�͎�̐l�H�ɑ΂��Ă͈����ŁH�񋟂���Ă���
-	�i�C���f�B�[�_��̏����ɂ��Ă͈ȉ��̃y�[�W�j
+
+#### 動作環境 　ここから　####
+
+	Mayaは趣味の人？に対しては安価で？提供されている
+	（インディー契約の条件については以下のページ）
 	https://area.autodesk.jp/product/maya-3ds-max-indie/
 
 
-�J����(2023/05/13���_)�̕ύX���������܂��B
-FBXSDK��2020.3.4(VC2022)
-VisualStudio2022Pro(VisualStudioSubscription)
-
-
-�J����(2023/04/08���_)�̕ύX���������܂��B
-FBXSDK��2020.3.2(VC2019)
-
-
-�J����(2023/03/19���_)�̕ύX���������܂��B
-GitHub��Microsoft�̃I�[�v���\�[�XDirectXTex_2023�𓱓�
-
-
-�J����(2023/02/22���_)�̕ύX���������܂��B
-FBXSDK��2020.3.1(VC2019)
-
-
-�J����(2021/03/29���_)�������܂��B
-FBXSDK��2020.2(VC2019)
+開発環境(2023/07/07時点)を書きます。
+開発環境(ソフトウェア)を書きます。
+OS Windows11 Pro
+VisualStudio2022Pro
+FBXSDKは2020.3.4(VC2022)
 Microsoft MultiThreadLibrary PPL.
-DirectX11 (Windows10 SDK or VisualStudio����C���X�g�[��)
-github��Microsoft��FX11(DirectX11��Effect���g��)�𗘗p
-github��Microsoft��DXUT(DXUT��DirectX11�ł̃I�[�v���\�[�X)�𗘗p
-github��bullet physics ver2.89(http://bulletphysics.org/wordpress/)
-VisualStudio2019Pro(VisualStudioSubscription)
-MayaIndie(Subscription FBX�̊m�F��Maya�ł���)
-�Q�[���p�b�h����p�̃��C�u������GitHub�̃q���b�`����̃I�[�v���\�[�X��ҏW���Ďg���܂����B
-(�q���b�`����̃Q�[���p�b�h���C�u�����̃��C�Z���X��ReadMe/DS4HidInput_LICENSE.txt�ɒu���܂����B)
+DirectX11 (Windows10 SDK or VisualStudioからインストール)
+githubのMicrosoftのFX11(DirectX11でEffectを使う)を利用
+githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
+githubのMicrosoftのDirectXTex(DirectX11でtgaが読める)を利用
+githubのbullet physics ver2.89(http://bulletphysics.org/wordpress/)
+VisualStudio2022Pro(VisualStudioSubscription)
+MayaIndie(Subscription FBXの確認はMayaでする)
+Unity3D 2022LTS(プロが作ったアセットをUnityAssetStoreでゲットする)
+ゲームパッド操作用のライブラリはGitHubのヒロッチさんのオープンソースを編集して使いました。
+(ヒロッチさんのゲームパッドライブラリのライセンスはReadMe/DS4HidInput_LICENSE.txtに置きました。)
 
 
 
 
-Test�f�B���N�g���̃��f���f�[�^�쐬�ɂ�VRoidStudio���g�p���Ă��܂�
+Testディレクトリのモデルデータ作成にはVRoidStudioを使用しています
 https://vroid.com/studio
 
 
 
 
 
-�J����(2021/03/19_2���_)�������܂��B
-FBXSDK��2020.2(VC2019)
+開発環境(2021/03/19_2時点)を書きます。
+FBXSDKは2020.2(VC2019)
 Microsoft MultiThreadLibrary PPL.
-DirectX11 (Windows10 SDK or VisualStudio����C���X�g�[��)
-github��Microsoft��FX11(DirectX11��Effect���g��)�𗘗p
-github��Microsoft��DXUT(DXUT��DirectX11�ł̃I�[�v���\�[�X)�𗘗p
-github��bullet physics ver2.89(http://bulletphysics.org/wordpress/)
+DirectX11 (Windows10 SDK or VisualStudioからインストール)
+githubのMicrosoftのFX11(DirectX11でEffectを使う)を利用
+githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
+githubのbullet physics ver2.89(http://bulletphysics.org/wordpress/)
 VisualStudio2019Pro(VisualStudioSubscription)
-MayaIndie(Subscription FBX�̊m�F��Maya�ł���)
+MayaIndie(Subscription FBXの確認はMayaでする)
 
 
 
-�J����(2021/03/04���_)�������܂��B
-FBXSDK��2020.2(VC2019)
-Intel OneAPI Base Toolkit v.2021��tbb(Intel�̃T�C�g�ɓo�^���ă_�E�����[�h�C���X�g�[��)
-DirectX11 (Windows10 SDK or VisualStudio����C���X�g�[��)
-github��Microsoft��FX11(DirectX11��Effect���g��)�𗘗p
-github��Microsoft��DXUT(DXUT��DirectX11�ł̃I�[�v���\�[�X)�𗘗p
+開発環境(2021/03/04時点)を書きます。
+FBXSDKは2020.2(VC2019)
+Intel OneAPI Base Toolkit v.2021のtbb(Intelのサイトに登録してダウンロードインストール)
+DirectX11 (Windows10 SDK or VisualStudioからインストール)
+githubのMicrosoftのFX11(DirectX11でEffectを使う)を利用
+githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
 VisualStudio2019Pro(VisualStudioSubscription)
-MayaIndie(Subscription FBX�̊m�F��Maya�ł���)
+MayaIndie(Subscription FBXの確認はMayaでする)
 
-2017/12/17�R�~�b�g������
-bullet physics�̃o�[�W������2.86�ɂȂ�܂����B
+2017/12/17コミット分から
+bullet physicsのバージョンが2.86になりました。
 http://bulletphysics.org/wordpress/
 
 
 
-�J����(2021/02/16���_)�������܂��B
-FBXSDK��2020.0.1(Debug�r���h���o����)
-DirectX11 (Windows10 SDK or VisualStudio����C���X�g�[��)
-github��Microsoft��FX11(DirectX11��Effect���g��)�𗘗p
-github��Microsoft��DXUT(DXUT��DirectX11�ł̃I�[�v���\�[�X)�𗘗p
+開発環境(2021/02/16時点)を書きます。
+FBXSDKは2020.0.1(Debugビルドも出来た)
+DirectX11 (Windows10 SDK or VisualStudioからインストール)
+githubのMicrosoftのFX11(DirectX11でEffectを使う)を利用
+githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
 VisualStudio2015Pro(VisualStudioSubscription)
-MayaIndie(Subscription FBX�̊m�F��Maya�ł���)
+MayaIndie(Subscription FBXの確認はMayaでする)
 
 
-�J����(2021/01/26���_)�������܂��B
-FBXSDK��2018.1.1�ɖ߂��܂���
+開発環境(2021/01/26時点)を書きます。
+FBXSDKを2018.1.1に戻しました
 
 
-�J����(2020/12/17���_)�������܂��B
-�Ȃ񂿂���ă��[�N�X�e�[�V�����i�z���C�g���[�N�X�e�[�V�����j�܂�WWS�ɂĊJ��
-Microsoft VisualStudio Subscription   VisualStudio2015Pro(2015 Comu�ł͊J���Ȃ������ł�)
-FBXSDK��2020.0.1
-  �T���v���Ƃ��ĕt���Ă���FBX�t�@�C���͂܂�2013�̂܂܂ł���
-  MameBake3D�ŕۑ����Ȃ����Ȃ��ƏC���͓K�p����Ȃ�
-Maya2013��Autodesk Maya Indie
+開発環境(2020/12/17時点)を書きます。
+なんちゃってワークステーション（ホワイトワークステーション）つまりWWSにて開発
+Microsoft VisualStudio Subscription   VisualStudio2015Pro(2015 Comuでは開けなかったです)
+FBXSDKは2020.0.1
+  サンプルとして付けているFBXファイルはまだ2013のままであり
+  MameBake3Dで保存しなおさないと修正は適用されない
+Maya2013とAutodesk Maya Indie
 
 
-�J����(2020/09/24���_)�������܂��B
-�Ȃ񂿂���ă��[�N�X�e�[�V�����i�z���C�g���[�N�X�e�[�V�����j�܂�WWS�ɂĊJ��
-VisualStudio2015Pro(2015 Comu�ł͊J���Ȃ������ł�)
-FBXSDK��2018.1�@�ǂݍ��݂�FBX2018.1�����������o����FBX2013(�莝����Maya��2013������)
-Maya2013(Autodesk�����{�l�ɂ����㐧���t���i���C���f�B�[�_���F�߂��j���[�X������܂���)
+開発環境(2020/09/24時点)を書きます。
+なんちゃってワークステーション（ホワイトワークステーション）つまりWWSにて開発
+VisualStudio2015Pro(2015 Comuでは開けなかったです)
+FBXSDKは2018.1　読み込みはFBX2018.1も可だが書き出しはFBX2013(手持ちのMayaが2013だから)
+Maya2013(Autodeskが日本人にも売上制限付き格安インディー契約を認めたニュースがありました)
 
 
-�J����(2018/11/22���_)�������܂��B
-Mac(������)��VM�B
-BootCamp�ł͂Ȃ��āA�܂�VM�ł�邱�Ƃɂ��܂����B
-�o�[�W�����A�b�v�����Ƃ���VM�ł̃o�b�N�o�b�t�@�̂��ꂪ�����Ă��܂����B
-�����������قڏo���Ă���悤�ł��B
-Ctrl + 1�L�[�������Ε����V�~�����[�V�������ɂ�60fps�œ����܂��B
+開発環境(2018/11/22時点)を書きます。
+Mac(ちくわ)とVM。
+BootCampではなくて、またVMでやることにしました。
+バージョンアップしたところVMでのバックバッファのずれが直っていました。
+垂直同期もほぼ出来ているようです。
+Ctrl + 1キーを押せば物理シミュレーション時にも60fpsで動きます。
 
 
-�ߋ��̊�
-�J����(2018/03/04���_)�������܂��B
-Mac(������)��BootCamp��Windows10 Pro �ŊJ�����Ă��܂��B
+過去の環境
+開発環境(2018/03/04時点)を書きます。
+Mac(ちくわ)とBootCampとWindows10 Pro で開発しています。
 
-#### ����� �@�����܂Ł@####
-
-
-
-���̃v���O�����͊O���̃��C�u�������g�p���Ă��܂��B
-Microsoft DirectX SDK (June 2010) (�}�C�N���\�t�g��3D�`�惉�C�u����)
-OpenGL(�R�c�`�惉�C�u����(���̃v���O�����ł�bullet���烊���N����Ă���))
-bullet physics(AMD�̃I�[�v���\�[�X�̕������Z���C�u���� http://bulletphysics.org/wordpress/)
-FBX SDK 2020.0.1(Autodesk�̌݊��p�t�@�C������SDK  http://www.autodesk.com/fbx)
-Intel TBB(Intel�̃X���b�h����p�̃��C�u�����@https://www.threadingbuildingblocks.org/)
-
-VisualStudio�̃o�[�W������2015 (VC 14)�ł��B
-
-�i
-�Q�l�܂ł�
-Visual Studio�̉ߋ��̃o�[�W������
-Microsoft�̃T�C�g��MSDN�T�u�X�N���v�V�����̌_�񂷂邱�Ƃɂ��g�p�\�ł��B
-�ʂɔ����������ł��B
-�j
+#### 動作環境 　ここまで　####
 
 
-MameBake3D.exe�Ɠ����f�B���N�g���Ɉȉ��̂S��DLL��u���K�v������܂��B
+
+このプログラムは外部のライブラリを使用しています。
+Microsoft DirectX SDK (June 2010) (マイクロソフトの3D描画ライブラリ)
+OpenGL(３Ｄ描画ライブラリ(このプログラムではbulletからリンクされている))
+bullet physics(AMDのオープンソースの物理演算ライブラリ http://bulletphysics.org/wordpress/)
+FBX SDK 2020.0.1(Autodeskの互換用ファイル操作SDK  http://www.autodesk.com/fbx)
+Intel TBB(Intelのスレッド操作用のライブラリ　https://www.threadingbuildingblocks.org/)
+
+VisualStudioのバージョンは2015 (VC 14)です。
+
+（
+参考までに
+Visual Studioの過去のバージョンは
+MicrosoftのサイトでMSDNサブスクリプションの契約することにより使用可能です。
+個別に買うより安いです。
+）
+
+
+MameBake3D.exeと同じディレクトリに以下の４つのDLLを置く必要があります。
 libfbxsdk.dll (FBX SDK)
 tbb.dll (Intel TBB)
 tbbmalloc.dll (Intel TBB)
 tbbmalloc_proxy.dll (Intel TBB)
 
 
-2017/12/17�R�~�b�g������
-bullet physics�̃o�[�W������2.86�ɂȂ�܂����B
+2017/12/17コミット分から
+bullet physicsのバージョンが2.86になりました。
 http://bulletphysics.org/wordpress/
 
-bullet physics�����������ҏW���܂����̂Ŗ��L���܂��B
-btSimulationIslandManageMt.cpp��
+bullet physicsを少しだけ編集しましたので明記します。
+btSimulationIslandManageMt.cppの
 btSimulationIslandManagerMt::Island* btSimulationIslandManagerMt::getIsland( int id )
 {
-�֐��̐擪�Ɉȉ���3�s�������܂����B
+関数の先頭に以下の3行を加えました。
 
 if (id < 0){
 
@@ -167,82 +155,82 @@ if (id < 0){
 }
 
 
-CommonRigidBodyMTBase.cpp�������ς��܂����B
+CommonRigidBodyMTBase.cppも少し変えました。
 
 static int gNumIslands = 0;
-��
+を
 
 int gNumIslands = 0;
-�ɂ��܂����B
+にしました。
 
 static bool gMultithreadedWorld = false;
-��
+を
 static bool gMultithreadedWorld = true;
-�ɂ��܂����B
+にしました。
 
 static btScalar gSliderNumThreads = 1.0f; 
-��
+を
 btScalar gSliderNumThreads = 64.0f; 
-�ɂ��܂����B
+にしました。
 
-�R���X�g���N�^��
+コンストラクタの
 m_multithreadedWorld = false;
 m_multithreadCapable = false;
-��
+を
 m_multithreadedWorld = true;m_multithreadCapable = true;
-�ɂ��܂����B
+にしました。
 
 
-createEmptyDynamicsWorld�֐���
+createEmptyDynamicsWorld関数に
 gTaskMgr.setNumThreads(int(gSliderNumThreads));
-�������܂����B
+を加えました。
 
-createDefaultParameters()�֐��̒��g��S�ăR�����g�A�E�g���܂����B
-
-
-
-�i2017/06/10�R�~�b�g������2017/12/17�܂ł�bullet physics�̃o�[�W������2.85�ł����B�j
-�i2017/06/10�ȑO�̃R�~�b�g�Ŏg�p���Ă���bullet physics�̃o�[�W������2.80�ł��B�j
+createDefaultParameters()関数の中身を全てコメントアウトしました。
 
 
-2017/12/17�R�~�b�g������Intel TBB���g�p���܂����B
+
+（2017/06/10コミット分から2017/12/17まではbullet physicsのバージョンは2.85でした。）
+（2017/06/10以前のコミットで使用していたbullet physicsのバージョンは2.80です。）
+
+
+2017/12/17コミット分からIntel TBBを使用しました。
 https://www.threadingbuildingblocks.org/
-(������肪�N�����Ƃ��Ă�Intel�͐ӔC�𕉂��܂���B)
-TBB2018��VC 14(Visual Studio 2015)�p�̃r���h�ς݃��C�u�������g�p���܂����B
+(何か問題が起きたとしてもIntelは責任を負いません。)
+TBB2018のVC 14(Visual Studio 2015)用のビルド済みライブラリを使用しました。
 
 
 
-######���^�Z�R�C�A��FBX�ǂݍ���########
-���^�Z�R�C�A��FBX�o�͂���ꍇ��
-�o�͂���O�ɖʂ̎O�p�������s���Ă��������B
+######メタセコイアのFBX読み込み########
+メタセコイアでFBX出力する場合は
+出力する前に面の三角化を実行してください。
 
-���^�Z�R�C�A�Ń{�[������ꂽ��{�[���_�C�A���O�Ń|�[�Y�o�̓��j���[�����s���Ă��������B
+メタセコイアでボーンを入れたらボーンダイアログでポーズ出力メニューを実行してください。
 
-���^�Z�R�C�A��FBX�o�̓I�v�V������
-�X���[�W���O�O���[�v���I�t�ɂ��Ă��������B
-
-
-�������@�O�����C�u�����̃\�[�X�̏ꏊ
-
-�܂߂΂��RD�ł�
-�O�����C�u�����̃\�[�X���v���W�F�N�g�ɒǉ����Ă��܂��B
-
-���̕����ɂ��ď����������Ă����܂��B
-
-�܂�Bullet Physics�̃\�[�X
-AMD�̃T�C�g����Bullet Physics 2.86���_�E�����[�h���܂��B
-�𓀂��܂��B
-data, docs, examples, Extras, src, test�̃t�H���_���܂߂΂��RD��disp4�̃t�H���_�̒��ɃR�s�[���܂��B
-������src�̃t�H���_�̖��O��BTSRC�Ƀ��l�[�����܂��B
+メタセコイアのFBX出力オプションで
+スムージンググループをオフにしてください。
 
 
+＃＃＃　外部ライブラリのソースの場所
+
+まめばけ３Dでは
+外部ライブラリのソースをプロジェクトに追加しています。
+
+その部分について少しメモしておきます。
+
+まずBullet Physicsのソース
+AMDのサイトからBullet Physics 2.86をダウンロードします。
+解凍します。
+data, docs, examples, Extras, src, testのフォルダをまめばけ３Dのdisp4のフォルダの中にコピーします。
+そしてsrcのフォルダの名前をBTSRCにリネームします。
 
 
-DXUT�ɂ��ā@(2023/02/22)
-	DXUT��GitHub��Microsoft��DXUT11���قڂ��̂܂܎g�p�ł���悤�ɂȂ�܂���
 
-	�ύX������DXUT.cpp��DXUTRender3DEnvironment()
-		fps����̂��߂̋L�q��ǉ�
+
+DXUTについて　(2023/02/22)
+	DXUTはGitHubのMicrosoftのDXUT11をほぼそのまま使用できるようになりました
+
+	変更部分はDXUT.cppのDXUTRender3DEnvironment()
+		fps制御のための記述を追加
 
 		    if(g_VSync == true)
 		    {
@@ -280,7 +268,7 @@ DXUT�ɂ��ā@(2023/02/22)
 		    }
 
 
-		Present�����͎��̂悤��
+		Present部分は次のように
 
 		    if (g_VSync) {
 		        hr = pSwapChain->Present(SyncInterval, dwFlags);
@@ -291,16 +279,16 @@ DXUT�ɂ��ā@(2023/02/22)
 
 
 
-DXUT�ɂ��ā@(�Â��o�[�W�����ɂ�����L�q)
-	����DXUT�̃\�[�X�ɂ���
-	DXUT�̃\�[�X��DirectX��SDK (Microsoft DirectX SDK (June 2010))�ɓ����Ă��܂��B
-	DXUT�̃t�H���_�i����Core�t�H���_��Optional�t�H���_�������Ă���j���܂߂΂��RD��disp4�̃t�H���_�ɃR�s�[���܂��B
+DXUTについて　(古いバージョンにおける記述)
+	次にDXUTのソースについて
+	DXUTのソースはDirectXのSDK (Microsoft DirectX SDK (June 2010))に入っています。
+	DXUTのフォルダ（中にCoreフォルダとOptionalフォルダが入っている）をまめばけ３Dのdisp4のフォルダにコピーします。
 
-	DXUT��D3DX�̕�����ChaVecCalc�Œu�������܂��B
-	[ DXUT�̒��̕K�v�ȃw�b�_�t�@�C����ChaVecCalc.h���C���N���[�h���܂��B ]
+	DXUTのD3DXの部分をChaVecCalcで置き換えます。
+	[ DXUTの中の必要なヘッダファイルでChaVecCalc.hをインクルードします。 ]
 
-	�菇�Ƃ��Ă�
-	�ȉ��̕�����u�����������܂��B
+	手順としては
+	以下の文字列置き換えをします。
 	D3DXVECTOR3 --> ChaVector3
 	D3DXMATRIX --> ChaMatrix
 	D3DXVec3 --> ChaVector3
@@ -308,45 +296,45 @@ DXUT�ɂ��ā@(�Â��o�[�W�����ɂ�����L�q)
 	D3DXQUATERNION --> CQuaternion
 	LH( --> RH(
 
-	ChaMatrixMultiply�̕������@A = B * C;�`���ɏ��������܂��B
-	ChaVector3Subtract�̕������@A = B - C;�`���ɏ��������܂��B
+	ChaMatrixMultiplyの部分を　A = B * C;形式に書き換えます。
+	ChaVector3Subtractの部分を　A = B - C;形式に書き換えます。
 
-	CQuaternionRotationMatrix�̕�����
-	quaternion.RotationMatrix(matrix);�`���ɏ��������܂��B
+	CQuaternionRotationMatrixの部分は
+	quaternion.RotationMatrix(matrix);形式に書き換えます。
 
-	DXUTmisc.cpp ��DXUTTrace�֐���return���̂Ƃ����return hr;�ɂ��܂��B
+	DXUTmisc.cpp のDXUTTrace関数のreturn文のところをreturn hr;にします。
 
-	DXUT.cpp��Create�֐���
-	m_state.m_OverrideForceVsync�̒l��= 1�ɂ��܂��B
-
-
-	�����Ăǂ����Ă�D3DX���K�v�ȕ����͂��̂悤�ɃL���X�g���܂��B
-	�Ⴆ��SetMatrix((D3DXMATRIX*)&srcchamatrix);�̂悤�ɃL���X�g���܂��B
-	(const D3DXMATRIX*)�Ȃǂ̂悤��const���K�v�ȏꏊ������܂��������Visual Studio�̃G���[��ǂ�őΉ����Ă��������B
-	�����o�ϐ��������Ȃ̂ŃL���X�g���Ă������Ɠ����܂��B
+	DXUT.cppのCreate関数の
+	m_state.m_OverrideForceVsyncの値を= 1にします。
 
 
-	2018/01/22��DXUTgui.cpp�𒲐����܂����B
-	���C�����ړ��̃X���C�_�[�ƃ`�F�b�N�{�b�N�X���N���b�N����Ƃ��͈̔͊O���N���b�N����܂�
-	GUI���\������Ȃ��s����������邽�߂̕ҏW�����܂����B
-	DXUTgui.cpp��CDXUTSlider::HandleMouse��CDXUTCheckBox::HandleMouse��
-	�ȉ���2�s���R�����g�A�E�g���܂����B
+	そしてどうしてもD3DXが必要な部分はそのようにキャストします。
+	例えばSetMatrix((D3DXMATRIX*)&srcchamatrix);のようにキャストします。
+	(const D3DXMATRIX*)などのようにconstが必要な場所もありますがそれはVisual Studioのエラーを読んで対応してください。
+	メンバ変数が同じなのでキャストしてもちゃんと動きます。
+
+
+	2018/01/22にDXUTgui.cppを調整しました。
+	メインう移動のスライダーとチェックボックスをクリックするとその範囲外をクリックするまで
+	GUIが表示されない不具合を解消するための編集をしました。
+	DXUTgui.cppのCDXUTSlider::HandleMouseとCDXUTCheckBox::HandleMouseの
+	以下の2行をコメントアウトしました。
 	if(!m_HasFocus)
 		m_pDialog->RequestFocus(this);
-	��L�Q�s���R�����g�A�E�g���邱�Ƃ�GUI��������Ǐ󂪂Ȃ��Ȃ�܂����B
+	上記２行をコメントアウトすることでGUIが消える症状がなくなりました。
 
 
 
 	2018/03/05
-	DXUT.cpp��DXUTRender3DEnvironment10()��Present�̉ӏ���
+	DXUT.cppのDXUTRender3DEnvironment10()のPresentの箇所を
 	hr = pSwapChain->Present(1, dwFlags);
-	�ɂ��܂����B
+	にしました。
 
 
 
 
 
-������
+＃＃＃
 newer log is at UpdateLog.txt
 
 
@@ -364,52 +352,52 @@ newer log is at UpdateLog.txt
 	For creating cache file, it is needed that rev2.3 fbx file is loaded once at least.
 	If fbx file is changed, it is needed that cachefile is remaked. 
 
-	�ǂݍ��݂��ȑO�Ɣ�ׂĖ�R�{�����Ȃ����B
-	FBX�A�j���[�V�����ǂݍ��݂̃L���b�V���t�@�C����ǉ��B�L���b�V���t�@�C���̖��O��FBX�t�@�C���̖��O�̌��.anim*.egp��t��������
-	rev 2.3��FBX�t�@�C�����ǂݍ��܂�FBXINFO�̃R�����g���L���b�V���t�@�C���ƈ�v�������A�L���b�V���t�@�C�����ǂݍ��܂��
-	FBX��rev��rev. 2.3�ɂ��邽�߂ɂ�file���j���[�Ńv���W�F�N�g�t�@�C����ۑ�����K�v������
-	�L���b�V���t�@�C�����쐬���邽�߂ɂ́Arev. 2.3��fbx�t�@�C�������Ȃ��Ƃ���x�ǂݍ��ޕK�v������
-	FBX�t�@�C���̓��e���X�V���ꂽ�ꍇ�A�L���b�V���t�@�C������蒼���K�v������
+	読み込みが以前と比べて約３倍速くなった。
+	FBXアニメーション読み込みのキャッシュファイルを追加。キャッシュファイルの名前はFBXファイルの名前の後に.anim*.egpを付けたもの
+	rev 2.3のFBXファイルが読み込まれFBXINFOのコメントがキャッシュファイルと一致した時、キャッシュファイルが読み込まれる
+	FBXのrevをrev. 2.3にするためにはfileメニューでプロジェクトファイルを保存する必要がある
+	キャッシュファイルを作成するためには、rev. 2.3のfbxファイルを少なくとも一度読み込む必要がある
+	FBXファイルの内容が更新された場合、キャッシュファイルも作り直す必要がある
 
 
 2021/05/10_1
-	FBX�̃}���`�X���b�h�ǂݍ��݂�SDK�ɔC���邱�ƂɁi���̂܂܂ł�����CPU�������Ă��܂����j�B
-	�A�j���[�V�����ǂݍ��ݎ��A���b�V���̍s��ƃX�P���g���̍s��ǂݍ��݊֐���ʂɂ����B
-	EvaluateGlobalTransform��Evaluator����Ăяo���悤�ɁB
+	FBXのマルチスレッド読み込みはSDKに任せることに（そのままでも複数CPUが動いていました）。
+	アニメーション読み込み時、メッシュの行列とスケルトンの行列読み込み関数を別にした。
+	EvaluateGlobalTransformはEvaluatorから呼び出すように。
 
 	MeshTransform at GetMeshAnimReq, SkeletonTransform at GetFBXAnimReq.
 	Use FbxAnimEvaluator.
 
 
 2021/05/08_1
-	�}���`�X���b�h�ǂݍ��݂̏C���i�G���[�ɂȂ�Ȃ��悤�Ɂj
-	��ԏd���֐����킩�������A���̊֐��̃}���`�X���b�h���͓�����Ƃ��킩�����B
-	FBX SDK��MD�ƃ����N�����B
+	マルチスレッド読み込みの修正（エラーにならないように）
+	一番重い関数がわかったが、その関数のマルチスレッド化は難しいこともわかった。
+	FBX SDKのMDとリンクした。
 
 	Modify multiThread loading of FBX animation.
 	Link Fbx md library.
 
 2021/05/07_1
-	FBX�t�@�C���̃A�j���[�V�����ǂݍ��ݕ������S�X���b�h�̃}���`�X���b�h��
-	�������Ƃ����̂ő����͂Ȃ�Ȃ������������̕��ׂ����U����
+	FBXファイルのアニメーション読み込み部分を４スレッドのマルチスレッド化
+	同期をとったので速くはならなかったが処理の負荷が分散した
 	
 	Four threads loading of FBX Animation.
 	It is not faster than prev version, but Load distributed.
 
 2021/05/06_1
-	fbx�t�@�C���̓ǂݍ��݂�FbxStream���g���ăo�b�t�@����ǂݍ��ނ悤�ɏC��
-	�������A�ǂݍ��ݑ��x�̃{�g���l�b�N�ł͂Ȃ������i�قƂ�Ǒ����Ȃ�Ȃ������j
-	�u���b�N�A���P�[�g�C���i�O��Ō���f�[�^�������[�X�����ꍇ�̍l���j
+	fbxファイルの読み込みをFbxStreamを使ってバッファから読み込むように修正
+	しかし、読み込み速度のボトルネックではなかった（ほとんど速くならなかった）
+	ブロックアロケート修正（前回最後尾データをリリースした場合の考慮）
 
 	Use FbxStream on load FBX file.
 	Modify block alloc of CMotionPoint, CBone, CRigidElem and EulKey.
 
 
 2021/05/04_1
-	file->bvh2fbx���j���[���s�̍ۂɗ�����悤�ɂȂ��Ă����̂��C��
-	bvh�t�@�C����MotionBuilder friendly�̂��̂ɑΉ����邱�Ƃɂ���
-	�J�[�l�M�[��������w��bvh file : MotionBuilder friendly�ŕϊ��Đ��e�X�gOK�I�I
-	�P�̕\���I�u�W�F�N�g�ɑ΂���ő�N���X�^�[�����V�O����Q�O�O�ɕύX�A�r�f�I�J�[�h�̃V�F�[�_�[�萔�̐��̖��ɂȂ蓾�邪���傤���Ȃ��B
+	file->bvh2fbxメニュー実行の際に落ちるようになっていたのを修正
+	bvhファイルはMotionBuilder friendlyのものに対応することにした
+	カーネギーメロン大学のbvh file : MotionBuilder friendlyで変換再生テストOK！！
+	１つの表示オブジェクトに対する最大クラスター数を７０から２００に変更、ビデオカードのシェーダー定数の数の問題になり得るがしょうがない。
 
 	Debug function of file->bvh2fbx menu.
 	bvh2fbx function is tested ok using Motionbuilder-friendly BVH conversion release of 
@@ -418,31 +406,31 @@ newer log is at UpdateLog.txt
 
 
 2021/05/03_1
-	�I�[�v���v���W�F�N�g�t�@�C������������
-	�E�C���h�E�^�C�g���ɃL�����N�^�[�̃C���f�b�N�X���\��
+	オープンプロジェクトファイル履歴を改良
+	ウインドウタイトルにキャラクターのインデックスも表示
 
 	Improve OpenProjectFileHistory.
 	Display charactor index at WindowTitle too.
 
 2021/05/01_3
-�@�@�@�@����y�����V�~���̃x�C�N�zMameBake3D�ŕ������x�C�N�y�t���[���͈͎w��OK�z
-�@�@�@�@https://youtu.be/E-w6tpksu4I
+　　　　動画【物理シミュのベイク】MameBake3Dで物理をベイク【フレーム範囲指定OK】
+　　　　https://youtu.be/E-w6tpksu4I
 
 2021/05/01_2
-	�����V�~�����[�V�������ɃA���h�D������ƌ`�������̂�
-	�A���h�D�[�̍ۂɕ����V�~�����[�V�����������Ŏ~�߂�悤�ɂ��܂����B
+	物理シミュレーション中にアンドゥをすると形が崩れるので
+	アンドゥーの際に物理シミュレーションを自動で止めるようにしました。
 
 	Call StopBt OnFrameUndo.
 
 2021/05/01_1
-	�����V�~�����[�V���������[�V�����ɏ����o����悤�ɂ��܂���
-	���C���E�C���h�E��Bullet Physics�v���[�g���N���b�N����GUI��\�����ABT REC�{�^���������ƍĐ��ۑ����܂��B�ۑ��ɂ͏������Ԃ�������܂��B
+	物理シミュレーションをモーションに書き出せるようにしました
+	メインウインドウのBullet PhysicsプレートをクリックしてGUIを表示し、BT RECボタンを押すと再生保存します。保存には少し時間がかかります。
 	
-	����̂��m�点
-�@�@�@�@�y����IK�zMameBake3D�̕���IK���ۑ��\�Ɂy�ʒu�R���X�g���C���g�z
-�@�@�@�@https://youtu.be/EOqRf35o7u8
+	動画のお知らせ
+　　　　【物理IK】MameBake3Dの物理IKが保存可能に【位置コンストレイント】
+　　　　https://youtu.be/EOqRf35o7u8
 
-	�����V�~�����[�V�����̕ۑ��̓���͌�قǎB��\��
+	物理シミュレーションの保存の動画は後ほど撮る予定
 
 	Simulation result of bullet physics is saved on click BT REC button.
 	new movie : saving of Physics IK  https://youtu.be/EOqRf35o7u8
@@ -450,34 +438,34 @@ newer log is at UpdateLog.txt
 	moview about Simulation result of bullet physics will be up later.
 	
 2021/04/30_2
-	����IK�̃f�o�b�O�B�����̎����g���悤�ɂ����B
-	����IK�Ŏ肪�ςɂȂ�Ȃ��悤��
-	��i���O��Hand���邢��Elbow_branch���܂܂��W���C���g���q���̃W���C���g�j�����ŃL�l�}�e�B�b�N�t���O���Z�b�g�B
+	物理IKのデバッグ。いつもの式を使うようにした。
+	物理IKで手が変にならないように
+	手（名前にHandあるいはElbow_branchが含まれるジョイントより子供のジョイント）自動でキネマティックフラグをセット。
 	Debug CModel::ApplyPhysIkRecReq using ordinary formula. Auto Hand KinematicFlag.
 
 2021/04/30_1
-	���C���E�C���h�E�̃^�C�g���ɃJ�����g��RigidElem�t�@�C��(*.ref)�����\�����܂���
-	�ݒ肵���͂��̕����̓����ƈقȂ�ꍇ�ɂ̓J�����g��ref�t�@�C�����قȂ邱�Ƃ��^���܂��B
-	ref�t�@�C���̓��C�����j���[�̍��̐ݒ�؂�ւ�(select rigid)���j���[�őI�����܂��B
+	メインウインドウのタイトルにカレントのRigidElemファイル(*.ref)名も表示しました
+	設定したはずの物理の動きと異なる場合にはカレントのrefファイルが異なることを疑います。
+	refファイルはメインメニューの剛体設定切り替え(select rigid)メニューで選択します。
 
 	Current RigidElemFileName(*.ref) is displayed at MainWindowTitle.
 	If behavior of physics simulation is diffrent form what you expected, you will doubt current ref selection.
 	For selecting current ref file, there is the "select rigid" Menu at MainWindowMenu.
 
 2021/04/29_1
-	����IK�̐����ɃR�����g������������܂����B
+	物理IKの数式にコメントをたくさんつけました。
 	Comment politely at PhysicsIK formula of CModel::ApplyPhysIkRecReq.
 
 2021/04/27_1
-	���L�̃y�[�W�ŁA����IK�̑���菇�⒍�ӓ_��}�����܂���
+	日記のページで、物理IKの操作手順や注意点を図解しました
 	https://moo-ochakkolab.ssl-lolipop.jp/diary_win.html#PhysicsIK_20210426
 
 2021/04/26_2
 	Debug a problem that first time of PhysRot and PhysMv is fail.
 	For keep hand figure, it is needed to set Hand KinematicONtoLower with RightClickMenu.
 
-	����̕���IK�����s��������f�o�b�O�B
-	����IK�̊ԁA��̌`��ۂ��߂ɂ́A�����E�N���b�N���ă��j���[���o��KinematicONtoLowerJoits��ݒ肷��K�v�L��B
+	初回の物理IKが失敗する問題をデバッグ。
+	物理IKの間、手の形を保つためには、手首を右クリックしてメニューを出しKinematicONtoLowerJoitsを設定する必要有り。
 
 2021/04/26_1
 	Result of PhysicsRot and PhysicsMv is applied to selected frame range.
@@ -485,10 +473,10 @@ newer log is at UpdateLog.txt
 	Recording of PhysicsIK is finished and Apply result to selected frame range when mouse LButtonUp.
 	Apply rate is enable when PhysicsIK too.
 
-	����IK�̌��ʂ��I���t���[���ɓK�p�����悤�ɂȂ����B
-	PhysRot�܂���PhysMv�{�^���������Ă���W���C���g���h���b�O����ƕҏW���e���L�^����n�߂�B
-	�ҏW���e�̋L�^�̓}�E�X���{�^�����A�b�v�������ɏI�����A���ʂ��I���t���[���ɓK�p�����B
-	�I��͈͂̃u���V�̎R�̒��_�̈ʒu�����߂邽�߂�ApplyRate�X���C�_�[�͕���IK�̂Ƃ����L���ɓ����B
+	物理IKの結果が選択フレームに適用されるようになった。
+	PhysRotまたはPhysMvボタンを押してからジョイントをドラッグすると編集内容が記録され始める。
+	編集内容の記録はマウス左ボタンをアップした時に終了し、結果が選択フレームに適用される。
+	選択範囲のブラシの山の頂点の位置を決めるためのApplyRateスライダーは物理IKのときも有効に働く。
 
  
 2021/04/25_2
@@ -592,17 +580,17 @@ newer log is at UpdateLog.txt
 		And then select menu item : L stick and 0 button.
 	
 2021/04/11_2
-	�⑫�FUndo, Redo���[�V�����ҏW�Ɋւ���Undo, Redo�B
+	補足：Undo, Redoモーション編集に関するUndo, Redo。
 
-	File��Open���j���[�̃v���W�F�N�g�I�[�v�������ɏd��������̂�\�����Ȃ��悤�ɁB
+	FileのOpenメニューのプロジェクトオープン履歴に重複するものを表示しないように。
 
 	Undo and Redo is concerned with editting of motions.
 	Exclude same project entries of Open Project Dialog.
 	
 
 2021/04/11_1
-	�Q�[���p�b�h�Ή��̑���
-		Undo, Redo�������Ȃ��Ȃ��Ă����̂��C��
+	ゲームパッド対応の続き
+		Undo, Redoが動かなくなっていたのを修正
 	
 		Keyboard
 			Ctrl + Z : Undo
@@ -611,19 +599,19 @@ newer log is at UpdateLog.txt
 			L2 + X button : Undo
 			R3 + X button : Redo
 
-		��ʊO�փh���b�O����ƃh���b�O�����f��������ĂяC��
+		画面外へドラッグするとドラッグが中断する問題を再び修正
 
 
 2021/04/10
-	�Q�[���p�b�h�Ή��̑���
-		�v���W�F�N�g�ǂݍ��݂ɐ������邽�т�Temp�t�H���_�Ƀv���W�F�N�g�p�X���L�^
-			File��Open���j���[����o���_�C�A���O���Q�[���p�b�h�ŉ�����悤�ɂ���
-			�Q�[���p�b�h����v���W�F�N�g��ǂݍ��߂�悤��File��Open���j���[�ɗ����p�X�̃��W�I�{�^����z�u
+	ゲームパッド対応の続き
+		プロジェクト読み込みに成功するたびにTempフォルダにプロジェクトパスを記録
+			FileのOpenメニューから出すダイアログをゲームパッドで押せるようにした
+			ゲームパッドからプロジェクトを読み込めるようにFileのOpenメニューに履歴パスのラジオボタンを配置
 
-		R�X�e�B�b�N�㉺�Ō��݂̃��C�����j���[�o�[���ځA���E�łЂƂ��܂��͈�E�̃��C�����j���[�o�[����
+		Rスティック上下で現在のメインメニューバー項目、左右でひとつ左または一つ右のメインメニューバー項目
 
 
-		L2,R2�̃A�N�Z���@�\��L�X�e�B�b�N�̃}�E�X�ړ��������BL2��R2�̗����������Ă���Ƃ���ɉ����B
+		L2,R2のアクセル機能はLスティックのマウス移動を加速。L2とR2の両方を押しているとさらに加速。
 
 
 		Open Project History is saved at temp directory.
@@ -632,50 +620,50 @@ newer log is at UpdateLog.txt
 		Accel function of L2 or R2 is double effective by both is pushed. 	
 
 2021/04/07_1
-	�Q�[���p�b�h�Ή��̑���
-		R�X�e�B�b�N���E�Ń��C���E�C���h�E�̃��j���[�o�[�I��
-			�X�e�B�b�N���E�Ńh���b�v�_�E�����o���āAX�{�^���ŃL�����Z�����Ă��J��Ԃ��č��E�ւƐi��
-			�h���b�v�_�E�����o����L�X�e�B�b�N�Ń}�E�X�ʒu�ړ����Z�{�^���Ō���
+	ゲームパッド対応の続き
+		Rスティック左右でメインウインドウのメニューバー選択
+			スティック左右でドロップダウンを出して、Xボタンでキャンセルしてを繰り返して左右へと進む
+			ドロップダウンが出たらLスティックでマウス位置移動し〇ボタンで決定
 
-		�܂�
-		���C�����j���[�o�[�h���b�v�_�E���FR�X�e�B�b�N
-		�h���b�v�_�E���L�����Z���FX�{�^��
-		�}�E�X�J�[�\���ړ��FL�X�e�B�b�N
-		���j���[�I������F�Z�{�^��
+		つまり
+		メインメニューバードロップダウン：Rスティック
+		ドロップダウンキャンセル：Xボタン
+		マウスカーソル移動：Lスティック
+		メニュー選択決定：〇ボタン
 
 	DropDown main menu : R stick.
 	Cancel DropDown : X button.
 	Move Mouse Cursor : L stick.
-	Enter button : �Z button.
+	Enter button : 〇 button.
 
 
 2021/04/05_3
-	����yMameBake3D�z���[�V�����c�[�����Q�[���p�b�h�œ������Ă݂��yDualSence�z
-�@	https://youtu.be/AdJPZ3Uv6-c
+	動画【MameBake3D】モーションツールをゲームパッドで動かしてみた【DualSence】
+　	https://youtu.be/AdJPZ3Uv6-c
 
 2021/04/05_2
-	L3, R3�{�^�����������Ƃ��̋@�\�̉���
-		�ݒ�E�C���h�E��ł��{�^���������Ă���Ԕ������A�j��������悤�ɂ���
-		�ݒ�E�C���h�E��ł��w�i�F�𓧉߂��ĕ`�悵��
+	L3, R3ボタンを押したときの機能の改良
+		設定ウインドウ上でもボタンを押している間半透明アニメをするようにした
+		設定ウインドウ上でも背景色を透過して描画した
 
 	UFO Transparent and AlphaBlendAnimation at mouse pos while L3 or R3 is pushed. 
 
 2021/04/05_1
-	L3, R3�{�^��(�A�i���O�X�e�B�b�N��)���������Ƃ��Ƀ}�E�X�ʒu��UFO��\�����܂���
-	�ݒ�p�E�C���h�E�ɂ��RD�E�C���h�E�ɂ��o�܂�
+	L3, R3ボタン(アナログスティックを)を押したときにマウス位置にUFOを表示しました
+	設定用ウインドウにも３Dウインドウにも出ます
 
 	For not lose sight of mouse pos, UFO appear at window on L3 or R3 button.
 	L3(R3) button is pushed when L(R) analog stick is pushed.
  
 
 2021/04/04
-	R1�{�^�����P�񉟂��ƂRD�E�C���h�E�̃W���C���g�ʒu�փW�����v�A
-	������񉟂��ƃW���C���g�ʒu�փW�����v����O�̈ʒu�ɃW�����v
+	R1ボタンを１回押すと３Dウインドウのジョイント位置へジャンプ、
+	もう一回押すとジョイント位置へジャンプする前の位置にジャンプ
 
-	L3�{�^���AR3�{�^���������Ă���ԁA�}�E�X�ʒu�ɃE�F�C�e�B���O�J�[�\����\��
-	�}�E�X�J�[�\����������Ȃ����߂̋@�\
+	L3ボタン、R3ボタンを押している間、マウス位置にウェイティングカーソルを表示
+	マウスカーソルを見失わないための機能
 
-	L1�{�^�������񂩉����ĊK�w�G�f�B�^�I��������̏\���{�^���ɂ��W���C���g�K�w�I�����Ƀ}�E�X���Ǐ]
+	L1ボタンを何回か押して階層エディタ選択した後の十字ボタンによるジョイント階層選択時にマウスも追従
 
 	Mouse cursor is jumped to joint pos at 3dwindow on push R1 button,
 	it jumped to prev pos on one more push R1 button.
@@ -685,50 +673,50 @@ newer log is at UpdateLog.txt
 	Mouse position is moved to selecting tree elem too.(by L1 button and corss buttons)
 
 2021/04/03_2
-	�Q�[���p�b�hR1�{�^���̃W���C���g�ʒu�C��
+	ゲームパッドR1ボタンのジョイント位置修正
 	Fix mouse cursor pos problem on R1 button.
 
 2021/04/03_1
-	�Q�[���p�b�h�Ή�����
-		R1�{�^���łRD�E�C���h�E��I�����đI�𒆂̃W���C���g�̈ʒu�Ƀ}�E�X�ʒu�W�����v
+	ゲームパッド対応続き
+		R1ボタンで３Dウインドウを選択して選択中のジョイントの位置にマウス位置ジャンプ
 
 	On R1 button, select 3d window and jump to selected joint pos.
 
 
 2021/04/02
-	�J�����X�v���C�g�̃h���b�O�����̏C��
-		�^��Ɛ^���ł��邭��������C��
+	カメラスプライトのドラッグ処理の修正
+		真上と真下でくるくる回る問題を修正
 
-	�Q�[���p�b�h���Ȃ�����ԂŃ}�E�X�Ńh���b�O�����
-	�}�E�X���RD�E�C���h�E�̊O�ɏo���Ƃ��ɃL���v�`���[���������������C��
+	ゲームパッドをつないだ状態でマウスでドラッグすると
+	マウスが３Dウインドウの外に出たときにキャプチャーが解除される問題を修正
 
-	�Q�[���p�b�h��L1�{�^���łRD�E�C���h�E��I�����i�E�C���h�E�E��ɉ��F�����v�_���j
-	���{�^���������ăJ�����X�v���C�g�ɂ��W�����v�ł���悤�ɏC��
-	�J�����X�v���C�g����GUI�ւ̃W�����v�͏\�����E�{�^��
-	GUI�v���[�g�̎�ނ��܂����ꍇ�̃}�E�X�W�����v���\�����E�{�^��
-	���������{�^���ƁZ�{�^����GUI��\�����Ă����Ԃł���K�v�L��B
+	ゲームパッドのL1ボタンで３Dウインドウを選択し（ウインドウ右上に黄色ランプ点灯）
+	矢印ボタンを押してカメラスプライトにもジャンプできるように修正
+	カメラスプライトからGUIへのジャンプは十字左右ボタン
+	GUIプレートの種類をまたぐ場合のマウスジャンプも十字左右ボタン
+	ただし□ボタンと〇ボタンでGUIを表示している状態である必要有り。
 
 
 2021/04/01_1
-	�Q�[���p�b�h�iSony DualSence, Sony DualShock4�j�Ή�
-		L1�ŃE�C���h�E��I����
-			�\���{�^���ŃR���g���[���I��
-			�Z�{�^���Ō���
-			�Z�{�^���{L�X�e�B�b�N�Ńh���b�O
+	ゲームパッド（Sony DualSence, Sony DualShock4）対応
+		L1でウインドウを選択後
+			十字ボタンでコントロール選択
+			〇ボタンで決定
+			〇ボタン＋Lスティックでドラッグ
 
 		After selecting a window by L1 button,
 			select control by cross button,
-			enter by �Z button,
-			drag by �Z button + L stick.
+			enter by 〇 button,
+			drag by 〇 button + L stick.
 
 	
 2021/03/30_1
-	�}�E�X�L���v�`���[�Ɋւ���C��
+	マウスキャプチャーに関する修正
 
-	�\���L�[�ŃX���C�_�[��I�������ۂ̃}�E�X�|�C���^�̈ʒu�̏C��
+	十字キーでスライダーを選択した際のマウスポインタの位置の修正
 
-	���t�@�N�^�����O
-		�X�v���C�g�̔z��A�N�Z�X�ɂ�����镔����enum�ɒu������
+	リファクタリング
+		スプライトの配列アクセスにかかわる部分をenumに置き換え
 
 	Modify operation of mouse capturing.
 	Fix problem of mouse position on selectiong a slider by cross button.
@@ -736,75 +724,75 @@ newer log is at UpdateLog.txt
 
 
 2021/03/29_2
-	�}�E�X�h���b�O���P
-		�Q�[���p�b�h�g�p���ɂ����Ă�
-		�h���b�O���Ƀ}�E�X���E�C���h�E�O�ɏo���ꍇ�Ƀh���b�O���ʂ������悤�ɂ��܂���
+	マウスドラッグ改善
+		ゲームパッド使用時においても
+		ドラッグ中にマウスがウインドウ外に出た場合にドラッグ効果が続くようにしました
 
 	Improve mouse drag operations.
 	In case of using GamePad, effect of mouse drag is continued even if mouse is out of window.
  
 
 2021/03/29_1
-	Sony PlayStation�p�̃Q�[���p�b�h�ɑΉ�(��)
-		PS5�p��DualSence��PS4�p��DualShock4�ɑΉ�(��)
+	Sony PlayStation用のゲームパッドに対応(中)
+		PS5用のDualSenceとPS4用のDualShock4に対応(中)
 		
-		�J�G���{�^�������F���{�^��
-		�v���[�g���j���[�ړ��G���{�^��
-		�v���[�g���j���[�I������F�Z�{�^��
-		�A�N�Z���FL2,R2		
+		カエルボタン押下：△ボタン
+		プレートメニュー移動；□ボタン
+		プレートメニュー選択決定：〇ボタン
+		アクセル：L2,R2		
 
-		����F�Z�{�^��		
-			GUI���������Ƃ��o���܂�
+		決定：〇ボタン		
+			GUIを押すことが出来ます
 
-		�q�E�C���h�E�I���FL1�{�^��
-			�q�E�C���h�E��I��������Ԃ�GUI�R���g���[����I���F�\���L�[�ňړ����āZ�{�^���Ō���
+		子ウインドウ選択：L1ボタン
+			子ウインドウを選択した状態でGUIコントロールを選択：十字キーで移動して〇ボタンで決定
 
-		�}�E�X�J�[�\���ړ��FL�A�i���O�X�e�B�b�N
+		マウスカーソル移動：Lアナログスティック
 
-		�K�w�G�f�B�^�̑���(L1�{�^���ŊK�w�G�f�B�^�I����)
-			�\���{�^���ŃW���C���g��I��
-			�e�W���C���g�I���F��{�^��
-			�q���W���C���g�I���F���{�^��
-			�V�X�^�[�W���C���g�I���F�E�{�^��
-			�u���U�[�W���C���g�I���F���{�^��
-			�e�K�w�̃u�����`�W���C���g�I���FL2���邢��R2�{��{�^��
-			�q�K�w�̃u�����`�W���C���g�I���FL2���邢��R2�{���{�^��
+		階層エディタの操作(L1ボタンで階層エディタ選択後)
+			十字ボタンでジョイントを選択
+			親ジョイント選択：上ボタン
+			子供ジョイント選択：下ボタン
+			シスタージョイント選択：右ボタン
+			ブラザージョイント選択：左ボタン
+			親階層のブランチジョイント選択：L2あるいはR2＋上ボタン
+			子階層のブランチジョイント選択：L2あるいはR2＋下ボタン
 			
-		�h���b�O�F�Z�{�^���������Ȃ���L�A�i���O�X�e�B�b�N
-			�W���C���g�̃h���b�O
-			�X�v���C�g�̃h���b�O
-			�X���C�_�[�̃h���b�O
-			�R���{�{�b�N�X�̃h���b�O
-			�����t���[���I��
-			�Ȃǂ��o���܂�
+		ドラッグ：〇ボタンを押しながらLアナログスティック
+			ジョイントのドラッグ
+			スプライトのドラッグ
+			スライダーのドラッグ
+			コンボボックスのドラッグ
+			複数フレーム選択
+			などが出来ます
 
 
-		���ӁF�Q�[���p�b�h��USB�ڑ����Ďg�p����K�v������܂��B
+		注意：ゲームパッドはUSB接続して使用する必要があります。
 
-		���ӁF�Q�[���p�b�h����p�̃��C�u������GitHub�̃q���b�`����̃I�[�v���\�[�X��ҏW���Ďg���܂����B
-		�@�@�@�q���b�`����̃Q�[���p�b�h���C�u�����̃��C�Z���X��ReadMe/DS4HidInput_LICENSE.txt�ɒu���܂����B
+		注意：ゲームパッド操作用のライブラリはGitHubのヒロッチさんのオープンソースを編集して使いました。
+		　　　ヒロッチさんのゲームパッドライブラリのライセンスはReadMe/DS4HidInput_LICENSE.txtに置きました。
 
-		���ӁF���݂͂܂��Ή����̒i�K�ł��B
+		注意：現在はまだ対応中の段階です。
 
-		���ӁF�|�b�v�A�b�v���j���[�̑I���͏o���܂�������͂܂��ł��܂���B
-		�@�@�@�|�b�v�A�b�v���j���[�I������̓L�[�{�[�h�̃G���^�[�L�[�������Ă��������B		
+		注意：ポップアップメニューの選択は出来ますが決定はまだできません。
+		　　　ポップアップメニュー選択決定はキーボードのエンターキーを押してください。		
 				
-		���ӁF�Z�{�^������x�����Ă�GUI�������Ȃ��ꍇ������܂��B���̏ꍇ�ɂ͂������Z�{�^���������Ă��������B
+		注意：〇ボタンを一度押してもGUIを押せない場合があります。その場合にはもう一回〇ボタンを押してください。
 
-		���ӁF�E�C���h�E�E��̂R�̃{�^���i�ŏ����A�ő剻�A�I���j�̓}�E�X�ŉ����Ă��������B
+		注意：ウインドウ右上の３つのボタン（最小化、最大化、終了）はマウスで押してください。
 
-		���ӁF�I���ł��Ȃ��Ȃ����ꍇ�ɂ̓^�X�N�}�l�[�W����FBX�A�j���[�V�����c�[����I�����ďI�����Ă��������B
+		注意：終了できなくなった場合にはタスクマネージャでFBXアニメーションツールを選択して終了してください。
 
 		
 2021/03/24_1
 	Change number of LogLines of CInfoWindow from 500,000 to 6,000.
 	Change LogLines of CInfoWindow to ring buffer.
-	CInfoWindow�̃��O�p�������̍s����500,000�s����6,000�s�̃����O�o�b�t�@�ɕύX
+	CInfoWindowのログ用メモリの行数を500,000行から6,000行のリングバッファに変更
 
 	Change PICKRANGE from 6 to 16.
 	Change pickmode to relative mode.
-	�s�b�N�̌덷���e�͈͂��U�s�N�Z������P�U�s�N�Z���ɕύX�B
- 	�s�b�N���[�h���}�E�X�ʒu���΃��[�h�ɕύX�B
+	ピックの誤差許容範囲を６ピクセルから１６ピクセルに変更。
+ 	ピックモードをマウス位置相対モードに変更。
 
 2021/03/23_2
 	Use memory blocks on allocating CRigidElem for cache hit.
@@ -827,7 +815,7 @@ newer log is at UpdateLog.txt
 	Fix EulerGraph problem that euler is not displayed at cases of loading multi characters multi motions.
 
 2021/03/19_3
-	Bullet Physics ver2.89�̃��������[�N�C��
+	Bullet Physics ver2.89のメモリリーク修正
 	Fix Memory Leak of Bullet Physics ver 2.89.
 
 		//btDiscreteDynamicsWorldMt.cpp
@@ -853,14 +841,14 @@ newer log is at UpdateLog.txt
 		Becaouse bullet physics 2 series (old version) is not treated with new Intel oneAPI.
 
 	Develop Env(2021/03/19_2)
-		FBXSDK��2020.2(VC2019)
+		FBXSDKは2020.2(VC2019)
 		Microsoft MultiThreadLibrary PPL.
-		DirectX11 (Windows10 SDK or VisualStudio����C���X�g�[��)
-		github��Microsoft��FX11(DirectX11��Effect���g��)�𗘗p
-		github��Microsoft��DXUT(DXUT��DirectX11�ł̃I�[�v���\�[�X)�𗘗p
-		github��bullet physics ver2.89(http://bulletphysics.org/wordpress/)
+		DirectX11 (Windows10 SDK or VisualStudioからインストール)
+		githubのMicrosoftのFX11(DirectX11でEffectを使う)を利用
+		githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
+		githubのbullet physics ver2.89(http://bulletphysics.org/wordpress/)
 		VisualStudio2019Pro(VisualStudioSubscription)
-		MayaIndie(Subscription FBX�̊m�F��Maya�ł���)
+		MayaIndie(Subscription FBXの確認はMayaでする)
 
 2021/03/19_1
 	Replace std::tr1::function to std::function.
@@ -919,2329 +907,2329 @@ newer log is at UpdateLog.txt
 
 
 2021/03/08_1
-	Media�t�H���_�̒��̃T���v���f�[�^�̏C��
-		���O�ݒ�t�@�C���@yuri_12_1_walk.fbx.rig�@�̏C��
-		Rig�̃v���O�����ɂ͖�肪���������̂����A�Ȃ����ݒ�t�@�C�����Ԉ���Ă���
-			���A����ɑ���p�̃��O�L
-			���O���s���[�h���甲����ɂ́A���C���E�C���h�E�̌������ĉE��̐��F�̉~�̃}�[�N���N���b�N
+	Mediaフォルダの中のサンプルデータの修正
+		リグ設定ファイル　yuri_12_1_walk.fbx.rig　の修正
+		Rigのプログラムには問題が無かったのだが、なぜか設定ファイルが間違っていた
+			手首、足首に操作用のリグ有
+			リグ実行モードから抜けるには、メインウインドウの向かって右上の水色の円のマークをクリック
 
 2021/03/06_1
-	�v���[�g���j���[�̃R�[�h��Refactoring
+	プレートメニューのコードをRefactoring
 
-	�v���[�g���j���[��Retarget�Ɠ����K�w��LimitEuler��ǉ�
+	プレートメニューのRetargetと同じ階層にLimitEulerを追加
 
 		
 2021/03/05_1
-	���������[�N�Ɋւ���C��
-		blendstate�̃����[�X���Y��C��
+	メモリリークに関する修正
+		blendstateのリリースし忘れ修正
 
-		DirectX11��DXUT(Microsoft��OSS���g�p)�Ɋւ��āiD3D11�̃f�o�C�X�ȂǂɊւ��āj�́A
-		differred destroy�Ƃ����x����������̂��߂Ƀ��t�@�����X�J�E���^���c���Ă���悤�ɂ݂��邱�Ƃ�����Ƃ̂���
+		DirectX11のDXUT(MicrosoftのOSSを使用)に関して（D3D11のデバイスなどに関して）は、
+		differred destroyという遅延解放処理のためにリファレンスカウンタが残っているようにみえることがあるとのこと
 
 2021/03/04_2
-	VisualStudio2019Pro�Ή�
-		�J����(2021/03/04���_)�������܂��B
-		FBXSDK��2020.2(VC2019)
-		Intel OneAPI Base Toolkit v.2021��tbb(Intel�̃T�C�g�ɓo�^���ă_�E�����[�h�C���X�g�[��)
-		DirectX11 (Windows10 SDK or VisualStudio����C���X�g�[��)
-		github��Microsoft��FX11(DirectX11��Effect���g��)�𗘗p
-		github��Microsoft��DXUT(DXUT��DirectX11�ł̃I�[�v���\�[�X)�𗘗p
+	VisualStudio2019Pro対応
+		開発環境(2021/03/04時点)を書きます。
+		FBXSDKは2020.2(VC2019)
+		Intel OneAPI Base Toolkit v.2021のtbb(Intelのサイトに登録してダウンロードインストール)
+		DirectX11 (Windows10 SDK or VisualStudioからインストール)
+		githubのMicrosoftのFX11(DirectX11でEffectを使う)を利用
+		githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
 		VisualStudio2019Pro(VisualStudioSubscription)
-		MayaIndie(Subscription FBX�̊m�F��Maya�ł���)
+		MayaIndie(Subscription FBXの確認はMayaでする)
 	
 2021/03/04_1
-	���^�[�Q�b�g�E�C���h�E���T�C�h�E�C���h�E�ɔz�u
-		�J�G���{�^�����P�񉟂��ƕ����p�����[�^���j���[
-		�J�G���{�^��������ɂ�����񉟂��ƃ��^�[�Q�b�g���j���[
-		�J�G���{�^����������񉟂��ƃ��C��GUI�I���I�t���j���[
+	リターゲットウインドウをサイドウインドウに配置
+		カエルボタンを１回押すと物理パラメータメニュー
+		カエルボタンをさらにもう一回押すとリターゲットメニュー
+		カエルボタンをもう一回押すとメインGUIオンオフメニュー
 
 2021/02/26_1
-	�T���v���̕������ȑO�Ɠ����悤�ɓ����悤�ɏC��
-		DXUT��fps�����VSYNC�ɐݒ�
-		previewflag == 4�̂Ƃ��Ɍ��ߑł����Ă����p�����[�^��ݒ�t�@�C���ɓK�p���ĕۑ�
+	サンプルの物理が以前と同じように動くように修正
+		DXUTのfps制御をVSYNCに設定
+		previewflag == 4のときに決め打ちしていたパラメータを設定ファイルに適用して保存
 			Media/TestData_20210226_1
 
 2021/02/24_2
-	����y�J�G���{�^���z�v���[�g���j���[��GUI��؂�ւ��y�v���[�g���j���[�z
+	動画【カエルボタン】プレートメニューでGUIを切り替え【プレートメニュー】
 	https://youtu.be/GW0OVv7_0SA
 
 2021/02/24_1
-	�J�G��(Frog)�̃X�v���C�g���N���b�N�����
-		���C���E�C���h�E��GUI�R���g���[�����j���[�ƃT�C�h�E�C���h�E�I�����j���[���؂�ւ��܂�
-		�T�C�h�E�C���h�E�I�����j���[�ɂ͈ȉ��̂S��ނ�����܂�
+	カエル(Frog)のスプライトをクリックすると
+		メインウインドウのGUIコントロールメニューとサイドウインドウ選択メニューが切り替わります
+		サイドウインドウ選択メニューには以下の４種類があります
 			Rigid, Impulse, Ground, Damp
-		�T�C�h�E�C���h�E�I�����j���[�̓��f���f�[�^��ǂݍ���Ń{�[�����N���b�N���đI�����Ă���Ƃ��̂݋@�\���܂�
-		�T�C�h�E�C���h�E�̏㕔�̃{�^������\���E�C���h�E��؂�ւ��邱�Ƃ��\
+		サイドウインドウ選択メニューはモデルデータを読み込んでボーンをクリックして選択しているときのみ機能します
+		サイドウインドウの上部のボタンから表示ウインドウを切り替えることも可能
 
 
-	Bullet Physics�V�~�����[�V�������̃p�����[�^�̌��ߑł������ɂ���
-		�J���̓r������
-		�K�؂ȃp�����[�^�l��T�����߂�
-		previewflag 5, 6�̍Đ����ɂ̓p�����[�^�����ߑł����čĐ����Ă���
+	Bullet Physicsシミュレーション時のパラメータの決め打ち解除について
+		開発の途中から
+		適切なパラメータ値を探すために
+		previewflag 5, 6の再生時にはパラメータを決め打ちして再生していた
 
-		���̂���RigidParamdDialg�Őݒ肵���l��
-		�����V�~�����[�V�������ɂ͏㏑������Ă���
+		そのためRigidParamdDialgで設定した値は
+		物理シミュレーション時には上書きされていた
 
-		����ARigidParamsDialog��O�ʂɏo�����ƂɂȂ���
-		previewflag 5 �̍Đ����ɂ̓p�����[�^�����ߑł����~�߂�
-		����ċ������ς�邩������Ȃ�
+		今回、RigidParamsDialogを前面に出すことになって
+		previewflag 5 の再生時にはパラメータを決め打ちを止めた
+		よって挙動が変わるかもしれない
 	
-		���ߑł��̕�����
-		�Y���v���O��������
-		//���ߑł�
-		�Ƃ����R�����g�����Ă������̂�
-		���ߑł��p�����[�^�l��m�肽���ꍇ�ɂ݂͂Ă�������
+		決め打ちの部分は
+		該当プログラム個所に
+		//決め打ち
+		というコメントをしておいたので
+		決め打ちパラメータ値を知りたい場合にはみてください
 
 2021/02/22_2
-	����yMameBake3D�z�ώG��GUI���X�C�b�`�ŃI���I�t�y�v���[�g�X�C�b�`�z
+	動画【MameBake3D】煩雑なGUIをスイッチでオンオフ【プレートスイッチ】
 	https://youtu.be/DhcikN88D5A
 
 2021/02/22
-	�RD�E�C���h�E�̉�����SpritePlateSwitch���T���\��
-		SpritePlateSwitch���N���b�N���邱�Ƃɂ��RD�E�C���h�E����GUI�̃I���I�t
+	３Dウインドウの下部にSpritePlateSwitchを５枚表示
+		SpritePlateSwitchをクリックすることにより３Dウインドウ内のGUIのオンオフ
 
 2021/02/21_1
-	Save-->Project���j���[�ɂ����ĎQ�ƃ{�^���������ƌł܂�s��ɑΉ�
-		�V����UI���w�肷��t���O����菜���Ɠ����悤�ɂȂ���
+	Save-->Projectメニューにおいて参照ボタンを押すと固まる不具合に対応
+		新しいUIを指定するフラグを取り除くと動くようになった
 
 2021/02/17_2
-	dds�t�@�C���ɑΉ�
+	ddsファイルに対応
 
 2021/02/17_1
-	DirectX11�Ή��łɃt�@�C����add���Y��Ă����̂�ǉ�
+	DirectX11対応版にファイルをaddし忘れていたのを追加
 		Media/MameMedia/bonecircle.png
-	�⑫����
-		DXUT��UI�f�B���N�g���͎��s���ɂ�exe�̂���ꏊ�փR�s�[����K�v�L
-		ControlFlowGuard�̓����[�X�r���h�̂�
+	補足説明
+		DXUTのUIディレクトリは実行時にはexeのある場所へコピーする必要有
+		ControlFlowGuardはリリースビルドのみ
 
 2021/02/16
-	DirectX11�Ή�
-	FBX SDK 2020.0.1�Ή�
+	DirectX11対応
+	FBX SDK 2020.0.1対応
 
-	�J����(2021/02/16���_)�������܂��B
-	FBXSDK��2020.0.1(Debug�r���h���o����)
-	DirectX11 (Windows10 SDK or VisualStudio����C���X�g�[��)
-	github��Microsoft��FX11(DirectX11��Effect���g��)�𗘗p
-	github��Microsoft��DXUT(DXUT��DirectX11�ł̃I�[�v���\�[�X)�𗘗p
+	開発環境(2021/02/16時点)を書きます。
+	FBXSDKは2020.0.1(Debugビルドも出来た)
+	DirectX11 (Windows10 SDK or VisualStudioからインストール)
+	githubのMicrosoftのFX11(DirectX11でEffectを使う)を利用
+	githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
 	VisualStudio2015Pro(VisualStudioSubscription)
-	MayaIndie(Subscription FBX�̊m�F��Maya�ł���)
+	MayaIndie(Subscription FBXの確認はMayaでする)
 
 2021/02/11
-	ControlFlowGuard��Guard�ɐݒ肵�ăr���h���܂���
+	ControlFlowGuardをGuardに設定してビルドしました
 
 2021/02/06
-	����yMameBake3D�z���[�V�����ɃA�N�Z���g���y���[�V�����u���V�z
+	動画【MameBake3D】モーションにアクセントを【モーションブラシ】
 	https://youtu.be/WqB03hMqbgc
 
 2021/02/03_1
-	�I�C���[�O���t�̃y�A�����g�I�C���[�̃`�F�b�N�{�b�N�X���f�t�H���g�ŃI���ɂ��܂���
-	��K�w��IK���삪��ԑ������삾�Ǝv���̂ŁA�`�F�b�N�{�b�N�X���`�F�b�N�����ԂƎv���Ⴂ������Ǝv���܂��B
+	オイラーグラフのペアレントオイラーのチェックボックスをデフォルトでオンにしました
+	一階層のIK操作が一番多い操作だと思うので、チェックボックスをチェックする手間と思い違いが減ると思います。
 
 2021/02/02_2
-	����@
-	�yMameBake3D�z���[�V�������u���V�Ő���I�I�y���[�V�����u���V�z
+	動画　
+	【MameBake3D】モーションをブラシで盛る！！【モーションブラシ】
 	https://youtu.be/rZFTNVLYXPU
-	�i���J�I�����܂����j
+	（公開終了しました）
 
 
 2021/02/02_1
 	Rename EditScale to MotinBrush.
-	�G�f�B�b�g�X�P�[���Ƃ����@�\�������[�V�����u���V�Ƃ������O�ɕύX���܂����B
-	���[�V�����u���V�Ƃ������O�ɂ��邱�Ƃ�
-	MameBake3D�Ƃ����\�t�g�̎d�g�݂𒼊��I�ɗ����\���Ǝv���܂��B
-	���ΓI�ȃ��[�V�����ҏW�Ƃ��������u���V�Ő���Ƃ������������I�B
+	エディットスケールという機能名をモーションブラシという名前に変更しました。
+	モーションブラシという名前にすることで
+	MameBake3Dというソフトの仕組みを直感的に理解可能だと思われます。
+	相対的なモーション編集というよりもブラシで盛るという方が直感的。
 	
-	������₷�����t���݂������̂�
-	��قǁA���̌��t��MameBake3D�̎g�����̓��������Ă݂܂��B
+	分かりやすい言葉がみつかったので
+	後ほど、この言葉でMameBake3Dの使い方の動画を作ってみます。
 
 
 2021/01/30_1
-	EditScale�̏C��
-		�I�C���[�p�����ׂĂO�x�̏ꍇ��EditScale�`�󂪃t���b�g�ɂȂ��Ă��܂��s����C��
+	EditScaleの修正
+		オイラー角がすべて０度の場合にEditScale形状がフラットになってしまう不具合を修正
 
 2021/01/28_1
-	EditScale�̏C��
+	EditScaleの修正
 
-	EditScale�̎�ނ�"cos(x^2+PI)�R"��"��`�R"��ǉ�
+	EditScaleの種類に"cos(x^2+PI)山"と"矩形山"を追加
 
 2021/01/27_3
-	�yMameBake3D�z���ΓI�ҏW�Ƃ͂ǂ��������Ƃ��ɂ��āyPseudoLocal Edit�z 
+	【MameBake3D】相対的編集とはどういうことかについて【PseudoLocal Edit】 
 
-	�����t���[���ɑ΂���ҏW������
-	���f���̌������ς������
-	�ҏW���ʂ����������Ȃ�񂶂�Ȃ����Ƃ���
-	�^��ɉ����铮��
+	複数フレームに対する編集だから
+	モデルの向きが変わったら
+	編集結果がおかしくなるんじゃないかという
+	疑問に応える動画
 
-	PseudoLocal�ƌĂԋZ�p�ŉ������Ă��܂�
+	PseudoLocalと呼ぶ技術で解決しています
 
 
 	https://youtu.be/iyQS7ZPEQLk
-	�i���J�I�����܂����j
+	（公開終了しました）
 
 
 2021/01/27_2
-	�G�f�B�b�g�X�P�[���̓���@https://youtu.be/uqMUoQo7egE
-	�i���J�I�����܂����j
+	エディットスケールの動画　https://youtu.be/uqMUoQo7egE
+	（公開終了しました）
 
 
 2021/01/27_1
-	EditScale�̃o�[�W�����A�b�v
-		�p���K�p�ʒu�X���C�_�[�ɑΉ�
-		EditScale�̌`����R���{�{�b�N�X��"���`�R"(Mountain of Linear)��"Cos(x+PI)�R"(Mountain of Cos)����I�ׂ�悤�ɂ��܂���
+	EditScaleのバージョンアップ
+		姿勢適用位置スライダーに対応
+		EditScaleの形状をコンボボックスで"線形山"(Mountain of Linear)と"Cos(x+PI)山"(Mountain of Cos)から選べるようにしました
 
-	IK�̌��ʂ��݂�ɂ̓h���b�O���Ă���W���C���g�̐e�W���C���g�̃I�C���[�p���݂܂�
-		�I�C���[�O���t��"ParentEuler"�`�F�b�N�{�b�N�X�Ƀ`�F�b�N�������
-		�W���C���g�̑I���͂��̂܂܂őI�������W���C���g�̐e�̃I�C���[�p��\�����܂�
+	IKの効果をみるにはドラッグしているジョイントの親ジョイントのオイラー角をみます
+		オイラーグラフの"ParentEuler"チェックボックスにチェックを入れると
+		ジョイントの選択はそのままで選択したジョイントの親のオイラー角を表示します
 
 2021/01/26
-	FBXSDK��2018.1.1�ɖ߂��܂���(Debug�r���h�Ń����N�G���[���o��̂�)
+	FBXSDKを2018.1.1に戻しました(Debugビルドでリンクエラーが出るので)
 
-	�����t���[���I�����ɃI�C���[�O���t�����ɕҏW�{��(EditScale)��\�����܂���
+	複数フレーム選択時にオイラーグラフ部分に編集倍率(EditScale)を表示しました
 	
-	EditScale�Ƃ̓��C���E�C���h�E�ɂ�����W���C���g�̃h���b�O�A���h�h���b�v�̌��ʂ�
-	�ǂ̃t���[���ɂǂꂾ���K�p���邩������킵�܂�
-	�܂��͈�ԒP���Ȑ��`�̎R�̌`��EditScxale�ɂ��܂���
-	�R�������t���[�������ɂ͂���������ʂ�^���A�R�������������ɑ΂��Ă͌��ʂ����������܂��B
+	EditScaleとはメインウインドウにおけるジョイントのドラッグアンドドロップの効果を
+	どのフレームにどれだけ適用するかをあらわします
+	まずは一番単純な線形の山の形のEditScxaleにしました
+	山が高いフレーム部分にはたくさん効果を与え、山が小さい部分に対しては効果を小さくします。
 
-	EditScale�̌��ʂ��O�̕����͌��̎p���ɂȂ�܂��B
-	�܂葊�ΓI�ȕҏW���ʂł��B
+	EditScaleの効果が０の部分は元の姿勢になります。
+	つまり相対的な編集効果です。
 
-	EditScale�̌`��Ɋւ��Ă�
-	�X�v���C���Ȑ����`�ȂǕ����p�ӂ��đI�ׂ�悤�ɂ���\��ł��B
+	EditScaleの形状に関しては
+	スプライン曲線や矩形など複数用意して選べるようにする予定です。
 
 2020/12/24
-	GitHub 2021/08/13�Ƀp�X���[�h�p�~�̂��m�点���󂯂�
-	ssh��push�̃e�X�g
+	GitHub 2021/08/13にパスワード廃止のお知らせを受けて
+	sshでpushのテスト
 
-2020/12/17���̂P
-	FBXSDK�̃o�[�W�����A�b�v
-		Maya2020���g�p���邱�ƂɂȂ����̂�FBXSDK��2020.0.1�Ƀo�[�W�����A�b�v
+2020/12/17その１
+	FBXSDKのバージョンアップ
+		Maya2020を使用することになったのでFBXSDKも2020.0.1にバージョンアップ
 		
 
-2020/11/08���̂P
-	FBX�o�͂̏C��
-	�e���x�o�͂̏C��
-		Maya2018�œǂݍ��񂾎��ɗ]�v��JointSet���o���Ȃ��悤�ɂ���
-		�_�~�[���b�V���̒��_����������ƌv�Z���ăZ�b�g����
-	Apple��RealityConverter��usdz�ɕϊ����Ă��`������Ȃ��Ȃ��������[�V����������
-	Apple��RealityConverter��usdz�ɕϊ�����ƃe�N�X�`����񂪖����Ȃ����悤�ɂ݂���
+2020/11/08その１
+	FBX出力の修正
+	影響度出力の修正
+		Maya2018で読み込んだ時に余計なJointSetが出来ないようにした
+		ダミーメッシュの頂点数をきちんと計算してセットした
+	AppleのRealityConverterでusdzに変換しても形が崩れなくなったしモーションも正常
+	AppleのRealityConverterでusdzに変換するとテクスチャ情報が無くなったようにみえた
 
-2020/10/31���̂Q
-	FBX�o�͂̏C��
-	LinkMeshToSkeletonReq�̏C��
+2020/10/31その２
+	FBX出力の修正
+	LinkMeshToSkeletonReqの修正
 
 
-2020/10/31���̂P
-	FBX�o�͂̏C��
-	RokDeBone2-->MameBake3D-->MameBake3D�Ƃ����o�H��
-	RokDeBone2-->MameBake3D-->Maya2018�Ƃ����o�H�Ŋm�F
-	Maya2018�ŃG���[���x�����o���ɐ���ɓǂݍ��߂邱�Ƃ��m�F
+2020/10/31その１
+	FBX出力の修正
+	RokDeBone2-->MameBake3D-->MameBake3Dという経路と
+	RokDeBone2-->MameBake3D-->Maya2018という経路で確認
+	Maya2018でエラーも警告も出ずに正常に読み込めることを確認
 
-	���������݁A(Joint��)JointSet�Ƃ������O�̃I�u�W�F�N�g�������o����Ǐ󂪏o�Ă���
-	Apple��Reality Converter(Beta)��usdz�ɕϊ����邽�߂ɂ�
-	Maya2018��(Joint��)JointSet�����ׂč폜����K�v��������
+	ただし現在、(Joint名)JointSetという名前のオブジェクトが多数出来る症状が出ている
+	AppleのReality Converter(Beta)でusdzに変換するためには
+	Maya2018で(Joint名)JointSetをすべて削除する必要があった
 
-	XYZ���[�e�[�V�����I�[�_�[�ɂ�����CBone::ModifyEulerXYZ��V�K
+	XYZローテーションオーダーにおけるCBone::ModifyEulerXYZを新規
 
-	�T���v���Ƃ��ĕt���Ă���FBX�t�@�C���͂܂�2013�̂܂܂ł���
-	MameBake3D�ŕۑ����Ȃ����Ȃ��ƏC���͓K�p����Ȃ�
+	サンプルとして付けているFBXファイルはまだ2013のままであり
+	MameBake3Dで保存しなおさないと修正は適用されない
 
 2020/10/21
-	FBX���o�̓e�X�g�̑���
-	2020/10/19��FBX�o�͎���RootNode��V�K�ɂ͍쐬���Ȃ��悤�ɂ�����
-	������yuri�̃f�[�^�̓��o�͂ŕs����������̂�
-	RootNode�̈��������ɖ߂���
+	FBX入出力テストの続き
+	2020/10/19でFBX出力時にRootNodeを新規には作成しないようにしたが
+	同梱のyuriのデータの入出力で不具合が生じたので
+	RootNodeの扱いを元に戻した
 
 
 2020/10/20
-	FBX�̎󂯓n�����Ƃ���
+	FBXの受け渡し順として
 	RokDeBone2-->Maya2018-->MameBake3D-->MameBake3D
-	�Ƃ����o�H��
+	という経路と
 	RokDeBone2-->Maya2018-->MameBake3D-->Maya2018
-	�Ƃ����o�H�ɂ�����
-	FBX���������󂯓n����悤�Ƀf�o�b�O����
+	という経路において
+	FBXが正しく受け渡せるようにデバッグした
 	
-	RokDeBone2��MameBake3D�Ɨ����̏C�����K�v������
-	RokDeBone2�ł͖��ʂȒ��_�o�b�t�@���o�͂���Ă��Ĉ��e����^���邱�Ƃ��������̂��C��
-	MameBake3D�ł̓C���f�b�N�X��UV�̓ǂݍ��ݎ��Ə����o�����̏�������������
-	MameBake3D�ł͉e���x�o�͂̍ۂ̎Q�ƂƏ����o���̃C���f�b�N�X��org�Ȃ̂�opt�Ȃ̂����͂����肳����
+	RokDeBone2とMameBake3Dと両方の修正が必要だった
+	RokDeBone2では無駄な頂点バッファが出力されていて悪影響を与えることがあったのを修正
+	MameBake3DではインデックスとUVの読み込み時と書き出し時の処理を見直した
+	MameBake3Dでは影響度出力の際の参照と書き出しのインデックスがorgなのかoptなのかをはっきりさせた
 	
 	
-	��L�̂Q�̌o�H�Ő����FBX�̎󂯓n�����o���邱�Ƃ��m�F
-	������
+	上記の２つの経路で正常にFBXの受け渡しが出来ることを確認
+	ただし
 	RokDeBone2-->Maya2018-->MameBake3D-->Maya2018
-	�̌o�H�ɂ����Ă�
-	Maya��Ŗ@���̕��σ��j���[�����s����Ȃǂ��ăX���[�W���O�����邱�Ƃ��K�v������
+	の経路においては
+	Maya上で法線の平均メニューを実行するなどしてスムージングをすることが必要だった
 	
 	
 
 2020/10/19
-	�����o����FBX��Maya�ł݂�Ɠ����Ȃ������������邱�Ƃ�������
-	�����͒��_�����Q�{�ɂ��Ă������̖��ʂ���菜�����Ƃ��Ē��_�����œK�����镔��
+	書き出したFBXをMayaでみると動かない部分が生じることがあった
+	原因は頂点数を２倍にしていた時の無駄を取り除こうとして頂点数を最適化する部分
 	
-	�܂�PolyMesh4::GetOrgPointNum()�̕s�������
+	つまりPolyMesh4::GetOrgPointNum()の不具合だった
 	
-	���_�����Q�{���đ��������̒��_�ɉ����ŉe���x��t���Ă��܂�����ōœK������Ɠ����Ȃ�
-	�Ƃ������߂ɗ���������
+	頂点数を２倍して増えた方の頂点に何かで影響度を付けてしまった後で最適化すると動かない
+	という解釈に落ち着いた
 	
-	�C��������Maya�ŉe���x��ݒ肵�Ȃ����Ȃ��Ɖ��������������ꍇ�͑����悤��
-	FBX����肵����܂���Maya�̃X�N���v�g�������ŉe���x���o�b�N�A�b�v����ׂ�
-	�e���x�ɕs����o����o�b�N�A�b�v����e���x�𕜌�����
+	修正したがMayaで影響度を設定しなおさないと何かがおかしい場合は多いようだ
+	FBXを入手したらまずはMayaのスクリプトか何かで影響度をバックアップするべき
+	影響度に不具合が出たらバックアップから影響度を復元する
 	
-	�iMaya�����邱�Ƃ��O��j
+	（Mayaがあることが前提）
 	
-	���݂�FBX�����o���̃o�[�W�����͍ĂтQ�O�P�W�ɖ߂��Ă��܂�
+	現在のFBX書き出しのバージョンは再び２０１８に戻っています
 	
 	
-	Maya�͎�̐l�H�ɑ΂��Ă͈����ŁH�񋟂���Ă���
-	�i�C���f�B�[�_��̏����ɂ��Ă͈ȉ��̃y�[�W�j
+	Mayaは趣味の人？に対しては安価で？提供されている
+	（インディー契約の条件については以下のページ）
 	https://area.autodesk.jp/product/maya-3ds-max-indie/
 	
 	
 
 2020/10/18
-	2020/07/18��FBX�����o����API201300�ɂ����������[���o�b�N����FBX2018�ɂ���
+	2020/07/18にFBX書き出しをAPI201300にした件をロールバックしてFBX2018にした
 
 
-	�Y��Ă�����2013��2018�Ƃł͌`��f�[�^�̃C���f�b�N�X�̎g�������قȂ��Ă����̂��v���o����
-	�o�[�W�����w�肾���ł͂��܂������Ȃ��f�[�^��������
-	�i�P�̃I�u�W�F�N�g�ɕ����̃}�e���A��������ꍇ��������Ȃ������؂ł��Ă��Ȃ��j
+	忘れていたが2013と2018とでは形状データのインデックスの使い方が異なっていたのを思い出した
+	バージョン指定だけではうまくいかないデータがあった
+	（１つのオブジェクトに複数のマテリアルがある場合かもしれないが検証できていない）
 	
-	����̕��j�Ƃ��Ă�
-	�����o����FBX2018�ɖ߂���
-	Maya�̃o�[�W������2018�ȍ~���g�p���Ă���
+	今後の方針としては
+	書き出しはFBX2018に戻して
+	Mayaのバージョンも2018以降を使用していく
 	
 
 2020/09/24
-	���̂̕\���ɂ��ďC��
-		���̐ݒ�_�C�A���O�ɂĖ����ɂ������͕̂\�����Ȃ��悤�ɂ��܂���
-		��ԍŏ���FBX�f�[�^�ǂݍ��݂���n�߂�ꍇ�ɂ�
-		���̐ݒ�_�C�A���O�ŁA���ׂĂ̍��̂�L���ɂ���{�^���������Ă���A�K�v�Ȃ����̗̂L���`�F�b�N���͂����܂�
+	剛体の表示について修正
+		剛体設定ダイアログにて無効にした剛体は表示しないようにしました
+		一番最初にFBXデータ読み込みから始める場合には
+		剛体設定ダイアログで、すべての剛体を有効にするボタンを押してから、必要ない剛体の有効チェックをはずします
 
-	�r���h���̒���
-		���݁A�ÓI�����N���C�u�����[�iMameBake3DLib.lib�j��MameBake3D�{�́iMameBake3D.exe�j�̃v���W�F�N�g���P�̃\�����[�V�������ɑ��݂��܂��B
-		�Â�MameBake3DLib.lib���A�v���P�[�V�����p�X�iMameBake3D�t�H���_�[�j�ɑ��݂����
-		�\�[�X���X�V���ă��r���h���Ă��Â�MameBake3DLib.lib�ƃ����N���Ă��܂����ۂ��m�F���܂����B
-		�J�����ɂ̓A�v���P�[�V�����p�X�iMameBake3D�t�H���_�[�j��MameBake3DLib.lib��u���Ȃ��悤�ɂ��܂��傤�B
+	ビルド時の注意
+		現在、静的リンクライブラリー（MameBake3DLib.lib）とMameBake3D本体（MameBake3D.exe）のプロジェクトが１つのソリューション内に存在します。
+		古いMameBake3DLib.libがアプリケーションパス（MameBake3Dフォルダー）に存在すると
+		ソースを更新してリビルドしても古いMameBake3DLib.libとリンクしてしまう現象を確認しました。
+		開発時にはアプリケーションパス（MameBake3Dフォルダー）にMameBake3DLib.libを置かないようにしましょう。
 
 2020/07/18
-	�o�͂���FBX��������FBX���ǂ�����Maya�œǂݍ��܂Ȃ��ƕ�����Ȃ��I�I
-	�����Ă���̂�Maya2013�̃p�[�\�i��CM�i�v���C�Z���X
+	出力したFBXが正しいFBXかどうかはMayaで読み込まないと分からない！！
+	持っているのはMaya2013のパーソナルCM永久ライセンス
 
-	�����
-	�o�͂���FBX��2013�ɂ��܂���
+	よって
+	出力するFBXは2013にしました
 
-	FBXSDK��2018.1���g�p���Ă���̂�2018.1�܂ł̓ǂݍ��݂͉\
-	�o�͂�FBX201300
+	FBXSDKは2018.1を使用しているので2018.1までの読み込みは可能
+	出力はFBX201300
 
-	VisualStudio��2015
+	VisualStudioは2015
 
 2020/07/15
-	�Ȃ񂿂���Ăȃ��[�N�X�e�[�V�����ɂčX�V
+	なんちゃってなワークステーションにて更新
 
-	�E�C���h�E�T�C�Y��GUI�z�u�̒������s����C��
-		���C�g�X���C�_�[���N���b�N����Ɨ�����s����C��
+	ウインドウサイズとGUI配置の調整中不具合を修正
+		ライトスライダーをクリックすると落ちる不具合を修正
 
 2018/11/22
-	�J����(2018/11/22���_)�������܂��B
-	Mac(������)��VM�B
-	BootCamp�ł͂Ȃ��āA�܂�VM�ł�邱�Ƃɂ��܂����B
-	�o�[�W�����A�b�v�����Ƃ���VM�ł̃o�b�N�o�b�t�@�̂��ꂪ�����Ă��܂����B
-	�����������قڏo���Ă���悤�ł��B
-	Ctrl + 1�L�[�������Ε����V�~�����[�V�������ɂ�60fps�œ����܂��B
+	開発環境(2018/11/22時点)を書きます。
+	Mac(ちくわ)とVM。
+	BootCampではなくて、またVMでやることにしました。
+	バージョンアップしたところVMでのバックバッファのずれが直っていました。
+	垂直同期もほぼ出来ているようです。
+	Ctrl + 1キーを押せば物理シミュレーション時にも60fpsで動きます。
 	
-	����IK�̌��؂ƏC���̂Â�
-		�u�����́v�ʒu�R���X�g���C���g��ݒ肵����Ԃ�
-		�����Ȏp���Ƀh���b�O���悤�Ƃ���Ɣj�]����s������邱�Ƃ�����
-		����C�����Ă����\��		
+	物理IKの検証と修正のつづき
+		「複数の」位置コンストレイントを設定した状態で
+		無理な姿勢にドラッグしようとすると破綻する不具合があることが判明
+		今後修正していく予定		
 
 2018/11/07_1
-	����IK�̌��؂ƏC���̂Â�
-		Kinematic�ݒ莞�̕���IK�̃f�o�b�O
-		���ʃ[���iMass0�j�ݒ莞�̕���IK�̃f�o�b�O
-		���ʃ[����Kinematic�𗼕����������ɐݒ肵���ꍇ�ɂ͎��ʃ[����D��i�t���O���x���Łj
+	物理IKの検証と修正のつづき
+		Kinematic設定時の物理IKのデバッグ
+		質量ゼロ（Mass0）設定時の物理IKのデバッグ
+		質量ゼロとKinematicを両方同じ部分に設定した場合には質量ゼロを優先（フラグレベルで）
 
-		Mass0�ɂ��ʒu�R���X�g���C���g�̒������B
+		Mass0による位置コンストレイントの調整中。
 
-		����IK�͎����i�K�Ȃ̂Ń����h���b�O��������Ԃł�
-			�j�]���Ă��]�����N���b�N���邱�ƂŌ��ɖ߂�܂�
-	�����������؂���B
+		物理IKは実験段階なのでワンドラッグお試し状態です
+			破綻しても余白をクリックすることで元に戻ります
+	引き続き検証する。
 
 2018/10/30_1
-	����IK�̌��؂ƏC���̂Â�
-		PhysicsMV�i����IK�̈ړ��@�\�j�͂��[���Ɠ������Ȃ��Ɣj�]����ꍇ���������Ƃ���������
-		Edit Physics Rate�X���C�_�[�̏����l��1.0����0.1�ɏC��
-		�ʒu�R���X�g���C���g�͂܂��ۑ肪�������
+	物理IKの検証と修正のつづき
+		PhysicsMV（物理IKの移動機能）はそーっと動かさないと破綻する場合が多いことが分かった
+		Edit Physics Rateスライダーの初期値を1.0から0.1に修正
+		位置コンストレイントはまだ課題が多い状態
 
-		����IK�͎����i�K�Ȃ̂Ń����h���b�O��������Ԃł�
-			�j�]���Ă��]�����N���b�N���邱�ƂŌ��ɖ߂�܂�
-	�����������؂���B
+		物理IKは実験段階なのでワンドラッグお試し状態です
+			破綻しても余白をクリックすることで元に戻ります
+	引き続き検証する。
 2018/10/27_1
-�@�@����@�y����IK�z���ʂO�ƃ|�X�g�����ɂ��ʒu�R���X�g���C���g
-�@�@�@�i1�����炢�̃e�X�g����j
-�@�@�@https://youtu.be/q9z_DhzZQYU
+　　動画　【物理IK】質量０とポスト処理による位置コンストレイント
+　　　（1分くらいのテスト動画）
+　　　https://youtu.be/q9z_DhzZQYU
 2018/10/26_1
-	����IK�̌��؂ƏC���̂Â�
-		����IK���̈ʒu�␳�v�Z�̏C��
-		����IK���Ɍ����̕␳�v�Z������
-		����IK���ɉE�N���b�N���j���[��Mass0�̃I�������邱�Ƃňʒu�R���X�g���C���g������
-		�����Ȃ̂ł�����蓮�����Ȃ��Ɨ���₷��
-		Kinematic�w�肵�Ȃ��ł��w�Ȃǂ̌`������Ȃ��Ȃ��Ă���
-		�������Ȃ̂�Mass0��Kinematic�̗����𓯂��{�[���ɐݒ肵���ꍇ
-	�����������؂���B
+	物理IKの検証と修正のつづき
+		物理IK時の位置補正計算の修正
+		物理IK時に向きの補正計算も実装
+		物理IK時に右クリックメニューのMass0のオンをすることで位置コンストレイントを実現
+		物理なのでゆっくり動かさないと乱れやすい
+		Kinematic指定しないでも指などの形が崩れなくなってきた
+		未実装なのはMass0とKinematicの両方を同じボーンに設定した場合
+	引き続き検証する。
 2018/10/25_1
-	�I�C���[�p�ɂ��p�x�����̌��؂ƏC���̂Â�
-		����IK���Ɋ֐߂Ɍ��Ԃ��o���߂��Ȃ��悤�ɂ��܂����B
-			����{�[�����牺�w�����Ə�w���������ăg�b�v�_�E����Post�������邱�Ƃɂ�����
-		����IK���ɑ��삵�Ă��Ȃ��{�[�����s���R�ɂ���炷�錻�ۂ������Ȃ�܂����B
-		Mass0���ʂ̏C�����K�v�ȏ��
-	�����������؂���B
+	オイラー角による角度制限の検証と修正のつづき
+		物理IK時に関節に隙間が出来過ぎないようにしました。
+			操作ボーンから下層方向と上層方向そしてトップダウンでPost処理することにより実現
+		物理IK時に操作していないボーンが不自然にゆらゆらする現象が無くなりました。
+		Mass0効果の修正が必要な状態
+	引き続き検証する。
 2018/10/23_1
-	�I�C���[�p�ɂ��p�x�����̌��؂ƏC���̂Â�
-		����IK����Kinematic�w��i�E�N���b�N���j���[�Ŏw��j�����̓���̏C��
-			Kinematic�w�蕔���͌`������Ȃ��悤�ɂ��܂���
-			�Ⴆ�΁A��̍b��艺�w�ɑ΂���Kinematic���w�肵�Ă���r�𕨗�IK����΂Ă̂Ђ�̌`�����ꂸ�ɕ���IK�\
-	�����������؂���B
+	オイラー角による角度制限の検証と修正のつづき
+		物理IK時のKinematic指定（右クリックメニューで指定）部分の動作の修正
+			Kinematic指定部分は形が崩れないようにしました
+			例えば、手の甲より下層に対してKinematicを指定してから腕を物理IKすればてのひらの形が崩れずに物理IK可能
+	引き続き検証する。
 2018/10/16_1
-	�I�C���[�p�ɂ��p�x�����̌��؂ƏC���̂Â�
-		Physics MV�̌��ʂ����̕����I�Ȍ��ʂɖ߂��܂���
-			�̂̒��S���h���b�O���Ď���Œ肵�đ̂𓮂�������o���܂�
-		Kinematic�̃I���I�t�̃��j���[��ǉ�
-			�����̃I���I�t�Ƃ������܂��B
-			����{�[���ȊO��Kinematic���I���ɂ����
-				Physics Rot�̍ۂɂ͓����܂���
-				Physics MV�̍ۂɂ̓h���b�O���������u����点���Ɂv�ꏏ�ɓ����܂�
+	オイラー角による角度制限の検証と修正のつづき
+		Physics MVの効果を元の物理的な効果に戻しました
+			体の中心をドラッグして手を固定して体を動かしたり出来ます
+		Kinematicのオンオフのメニューを追加
+			物理のオンオフとも言えます。
+			操作ボーン以外のKinematicをオンにすると
+				Physics Rotの際には動きません
+				Physics MVの際にはドラッグしただけ「ゆらゆらせずに」一緒に動きます
 			
-		�p���ɂ���Ă͕���IK������炷�錻�ۂƂ������y��
-		����IK���ɘr�𓮂����Ǝw���傫������炷�邱�Ƃ�����܂���
-			�������������ăh���b�O�I���n�_�Ń}�E�X�{�^�����������܂ܑ҂��Ă���ƌ��̌`��ɖ߂�܂�
+		姿勢によっては物理IKがゆらゆらする現象というを軽減
+		物理IK時に腕を動かすと指が大きくゆらゆらすることがありますが
+			少しずつ動かしてドラッグ終了地点でマウスボタンを押したまま待っていると元の形状に戻ります
 
-	�����������؂���B
+	引き続き検証する。
 2018/10/15_1
-	�I�C���[�p�ɂ��p�x�����̌��؂ƏC���̂Â�
-		����IK�̊J�n���Ɏp��������Ȃ��悤�ɏC���B
+	オイラー角による角度制限の検証と修正のつづき
+		物理IKの開始時に姿勢が乱れないように修正。
 	
-	�����������؂���B
+	引き続き検証する。
 2018/10/10_1
-	�I�C���[�p�ɂ��p�x�����̌��؂ƏC���̂Â�
-		�ʒu�R���X�g���C���g�̎������@�̕ύX�̌����Ǝ������B
-			�{�[���̍��̂�Mass0(���ʃ[��)�̃I���ƃI�t�ɂ���Ĉʒu�R���X�g���C���g���ʂ𓾂�B
-			�E�N���b�N���j���[��Mass0�֘A���j���[�����ǉ��B
+	オイラー角による角度制限の検証と修正のつづき
+		位置コンストレイントの実装方法の変更の検討と試験中。
+			ボーンの剛体のMass0(質量ゼロ)のオンとオフによって位置コンストレイント効果を得る。
+			右クリックメニューにMass0関連メニュー多数追加。
 
-			�Ⴆ�΁A�܂��u���ׂẴW���C���g��Mass0 ON�v���j���[��I�т܂��B
-			���ɑ��삵�����W���C���g��I�����Ă���u���̃W���C���g��艺�w��Mass0 OFF�v���j���[��I�т܂��B
-			���̏�Ԃŕ���IK�������Mass0���I�t�̃{�[�������������܂��B
-			���ɖ߂��ꍇ�́u���ׂẴW���C���g��Mass0 OFF�v���j���[��I�т܂��B
+			例えば、まず「すべてのジョイントのMass0 ON」メニューを選びます。
+			次に操作したいジョイントを選択してから「このジョイントより下層のMass0 OFF」メニューを選びます。
+			この状態で物理IKをするとMass0がオフのボーンだけが動きます。
+			元に戻す場合は「すべてのジョイントのMass0 OFF」メニューを選びます。
 
-			�{�[�����Ԃꂸ�ɃR���X�g���C���g�\�ł���B
+			ボーンがぶれずにコンストレイント可能である。
 
-	�����������؂���B
+	引き続き検証する。
 2018/10/09_1
-	�I�C���[�p�ɂ��p�x�����̌��؂ƏC���̂Â�
-		���ؒ�
-		IK���Ƀ}�j�s�����[�^�Ƀ}�E�X�𓖂Ă��ۂɃ}�j�s�����[�^���n�C���C�g���Ȃ��Ȃ��Ă����̂��C��
+	オイラー角による角度制限の検証と修正のつづき
+		検証中
+		IK時にマニピュレータにマウスを当てた際にマニピュレータがハイライトしなくなっていたのを修正
 
-	�����������؂���B
+	引き続き検証する。
 2018/10/07
-	�I�C���[�p�ɂ��p�x�����̌��؂ƏC���̂Â�
-		CalcAxisMatX�̏C���i�w�̍��̂��\��ɂ����悤�ɏC���j
-			���̏C���͏����p���̏C���Ɠ����Ӗ��ł��B
-			�Â��f�[�^�͓ǂݍ��݌�A�u�ҏW�E�ϊ��v->�u�{�[������X�ɍČv�Z�v���j���[�ŏ����p�����Čv�Z��
-			File���j���[����v���W�F�N�g���ƕۑ����Ȃ����Ă��������B
-		InfoWindow�̏o�͂��}���`�X���b�h��
-			�ʏ�IK���ɏo�͂��������ďd���Ȃ��Ă����̂����P
-		����IK�̏C��
-			�[���t���[���ȊO�ł̓�������P
-		�ʒu�R���X�g���C���g�̏C��
-			�[���t���[���ȊO�ł̓�������P���邽�߂ɏC�����B�r���B
-			�E�N���b�N���j���[�ɑ����ǉ�
-	�����������؂���B
+	オイラー角による角度制限の検証と修正のつづき
+		CalcAxisMatXの修正（指の剛体が暴れにくいように修正）
+			この修正は初期姿勢の修正と同じ意味です。
+			古いデータは読み込み後、「編集・変換」->「ボーン軸をXに再計算」メニューで初期姿勢を再計算後
+			Fileメニューからプロジェクトごと保存しなおしてください。
+		InfoWindowの出力をマルチスレッド化
+			通常IK時に出力が激しくて重くなっていたのを改善
+		物理IKの修正
+			ゼロフレーム以外での動作を改善
+		位置コンストレイントの修正
+			ゼロフレーム以外での動作を改善するために修正中。途中。
+			右クリックメニューに多数追加
+	引き続き検証する。
 2018/09/29_1
-	�I�C���[�p�ɂ��p�x�����̌��؂ƏC���̂Â�
-		PhysicsRotAxisDelta�̃f�o�b�O
+	オイラー角による角度制限の検証と修正のつづき
+		PhysicsRotAxisDeltaのデバッグ
 2018/09/25_1
-	�I�C���[�p�ɂ��p�x�����̌��؂ƏC���̂Â�
-		�I�C���[�p�͒ʏ�IK���̂��̂𗘗p���ĕ���IK�������B
-		�ʏ�IK�ƕ���IK�ƂŃI�C���[�p�̐����p�x�����ꂳ�ꂽ�B
-		InfoWindow�͐����s����50,000�s�ɁB
-		�ʏ�IK���ɂ�InfoWindow�ɏo�́B
-		�����������؂���B
+	オイラー角による角度制限の検証と修正のつづき
+		オイラー角は通常IK時のものを利用して物理IKをした。
+		通常IKと物理IKとでオイラー角の制限角度が統一された。
+		InfoWindowは制限行数を50,000行に。
+		通常IK時にもInfoWindowに出力。
+		引き続き検証する。
 2018/09/24_1
-	�I�C���[�p�ɂ��p�x�����̌��؂ƏC���̂Â�
-		InfoWindow�A�b�v�f�[�g
-			�Â��f�[�^-->��B�V�����f�[�^-->���B
-			�T�O�O�O�s�����B
-			�z�C�[���ŃX�N���[���B
-			�ŐV�s��\�����Ă��鎞�ɃI�[�g�X�N���[���B
-			�I����info_(date).txt�ɕۑ��B	
+	オイラー角による角度制限の検証と修正のつづき
+		InfoWindowアップデート
+			古いデータ-->上。新しいデータ-->下。
+			５０００行制限。
+			ホイールでスクロール。
+			最新行を表示している時にオートスクロール。
+			終了時info_(date).txtに保存。	
 
 2018/09/22_1
-	�I�C���[�p�ɂ��p�x�����̌��؂ƏC���̂Â�
-		InfoWindow��ǉ��B
-		����IK�̂Ƃ��̎p���ւ̓K�p���I�C���[�p�Ɖ����ǂ�����InfoWindow�Ƀe�L�X�g�\���B	
+	オイラー角による角度制限の検証と修正のつづき
+		InfoWindowを追加。
+		物理IKのときの姿勢への適用候補オイラー角と可動かどうかをInfoWindowにテキスト表示。	
 
 2018/09/16_1
-	�I�C���[�p�ɂ��p�x�����̌��؂ƏC���̂Â�
-		PhysicsRotAxisDelta�̂Ƃ��A�p���ҏW�̂Ƃ��̍��W�ϊ��Ɛ����p�x�`�F�b�N�̎��̍��W�ϊ����قȂ��Ă����̂��C���B
+	オイラー角による角度制限の検証と修正のつづき
+		PhysicsRotAxisDeltaのとき、姿勢編集のときの座標変換と制限角度チェックの時の座標変換が異なっていたのを修正。
 
-		����Ɍ��؂��K�v�B
+		さらに検証が必要。
 
 2018/09/12_1
-	�I�C���[�p�ɂ��p�x�����̌��؂ƏC���̂Â�
-		����IK�̂Ƃ��iPhysicsRot()��PhysicsRotAxisDelta()�j�̌��؂ƏC��
+	オイラー角による角度制限の検証と修正のつづき
+		物理IKのとき（PhysicsRot()とPhysicsRotAxisDelta()）の検証と修正
 
-		����Ɍ��؂��K�v�B
+		さらに検証が必要。
 
-	[�ǋL]
-	�@�@�@GitHub�Ń\�[�X���Q�b�g����Visual Studio������s�����
-	�@�@�@VisualStudio�̏o�̓^�u�ɕ���IK�����Ă���Ƃ��̃I�C���[�p���\������܂��B
-	�@�@�@�Ȃ�œ����Ȃ��́H�Ƃ����ꍇ�̓����ɂȂ��Ă���ł��傤�B���Ԃ�B
-	�@�@�@�����p�x��.lmt�t�@�C���ł��B
-	�@�@�@���Ȃ݂ɏo�̓^�u�̕�����̒��́ueul�v�́u�I�C���v�Ɠǂ݂܂��B
-	�@�@�@���A����ƔO�̂��߁B����IK�͎������̋@�\�Ȃ̂ŗE�C��������p�ł��B
+	[追記]
+	　　　GitHubでソースをゲットしてVisual Studioから実行すると
+	　　　VisualStudioの出力タブに物理IKをしているときのオイラー角が表示されます。
+	　　　なんで動かないの？という場合の答えになっているでしょう。たぶん。
+	　　　制限角度は.lmtファイルです。
+	　　　ちなみに出力タブの文字列の中の「eul」は「オイル」と読みます。
+	　　　あ、それと念のため。物理IKは実験中の機能なので勇気がある方用です。
 	
 2018/09/09_1
-	����I�C���[�p�ɂ��p�x�����̌��؂ƏC��
-		����IK�̂Ƃ��iPhysicsRot()��PhysicsRotAxisDelta()�j�̌��؂ƏC��
+	統一オイラー角による角度制限の検証と修正
+		物理IKのとき（PhysicsRot()とPhysicsRotAxisDelta()）の検証と修正
 
-		�܂��r���B
+		まだ途中。
 
 2018/09/01
-�@�@�@�܂߂΂��RD�̂��m�点
-�@�@�@�@���ꂩ��قƂ�ǌ��؍�Ƃ͂��Ă��܂��񂪁A
-�@�@�@�@�c�C���e�[�����}�j�s�����[�^��XYZ���ꂼ��̎��ŉ�]���邱�Ƃ��炢�͊m�F�ςł��B
-�@�@�@�@FBX�t�@�C����.lmt�Ƃ������O�̃t�@�C���ɐ����p�x���L�q����̂ł���
-�@�@�@�@���݃c�C���e�[�������͐����p�x��Y�����}15�x�ő��̎����}�T�x�ɂȂ��Ă��܂��B
-�@�@�@�@����ăc�C���e�[���̓L�����N�^�[�̐��ʂɑ΂��Ď�ɑO��ɗh���悤�ɂȂ��Ă��܂��B
-�@�@�@�@Z�����}�P�T�x�ɂ��đ��̎����}�T�x�ɕύX����Ɖ��ɗh��܂��B
-�@�@�@�@�ʏ�IK�̂Ƃ��ƕ���IK�̂Ƃ��ƕ����V�~���̂Ƃ��ɓ����悤�ɋ@�\����悤�ɂ�������ł��B
-�@�@�@�@�����V�~����bullet physics�̊p�x�����𗘗p�����̂�
-�@�@�@�@fps�ƌv�Z�񐔂��������Ȃ�قړ��l�Ɋp�x�����������Ǝv���܂��B
-�@�@�@�@�Ƃ����󋵁B
+　　　まめばけ３Dのお知らせ
+　　　　あれからほとんど検証作業はしていませんが、
+　　　　ツインテールがマニピュレータのXYZそれぞれの軸で回転することくらいは確認済です。
+　　　　FBXファイル名.lmtという名前のファイルに制限角度を記述するのですが
+　　　　現在ツインテール部分は制限角度のY軸が±15度で他の軸が±５度になっています。
+　　　　よってツインテールはキャラクターの正面に対して主に前後に揺れるようになっています。
+　　　　Z軸を±１５度にして他の軸を±５度に変更すると横に揺れます。
+　　　　通常IKのときと物理IKのときと物理シミュのときに同じように機能するようにしたつもりです。
+　　　　物理シミュはbullet physicsの角度制限を利用したので
+　　　　fpsと計算回数が同じ環境ならほぼ同様に角度制限が働くと思われます。
+　　　　という状況。
 
 2018/08/19_1
-	�����̂Ƃ��ƕ����łȂ��Ƃ��̃I�C���[�p�𓝈�B
-		�����̃I�C���[�p�f�[�^��XYZ�ϓ_�����ɓ���B
-		�}�j�s�����[�^�̎���̃I�C���[�p�Ŋp�x�����i�����ƕ����łȂ��Ƃ������j�B
-		*.lmt�t�@�C���i�����p�x�ݒ�t�@�C���j���Ή��B
+	物理のときと物理でないときのオイラー角を統一。
+		内部のオイラー角データをXYZ観点順序に統一。
+		マニピュレータの軸基準のオイラー角で角度制限（物理と物理でないとき両方）。
+		*.lmtファイル（制限角度設定ファイル）も対応。
 
-		�����ƃe�X�g�����Ƃ���A�����������Ȃ��Ƃ��ł�-5����5�x���炢�i����������Ə��Ȃ��Ă������邩������Ȃ��j�̐����p�x�ɂ��Ȃ��ƕ������j�]���₷�������B
+		ざっとテストしたところ、動かしたくないときでも-5から5度くらい（もうちょっと少なくてもいけるかもしれない）の制限角度にしないと物理が破綻しやすかった。
 
-		�Ƃ肠�����������Čy�������ăe�X�g�����i�K�ł��B���؂͂��ꂩ��B
-		�l�̂̂�����ۂ������p�x�ݒ������lmt�t�@�C����p�ӂ���̂�����̉ۑ�B
+		とりあえず実装して軽く流してテストした段階です。検証はこれから。
+		人体のそれっぽい制限角度設定をしたlmtファイルを用意するのも今後の課題。
 
 2018/08/11_2
-	�����L�����ǂݍ��ݎ��̏������C���B
-		���̂̕\�����C���B
-		�����V�~�����G���[�ɂȂ��Ă����̂��C���B
+	複数キャラ読み込み時の処理を修正。
+		剛体の表示を修正。
+		物理シミュがエラーになっていたのを修正。
 
 2018/08/11_1
-	FBX�̓ǂݍ��݌��FBX��Scene���폜����悤�ɂ��܂����B���܂ł̖񔼕��̃������ʂœ����܂��B
+	FBXの読み込み後にFBXのSceneを削除するようにしました。今までの約半分のメモリ量で動きます。
 
-	���m�̃o�O
-		�O��H�̎d�l�ύX�ȍ~�A�ʏ�IK���̍��̂̕\���y�ѕ����L�����N�^�[�ǂݍ��ݎ��̍��̂̏����ɕs������邱�Ƃ�������܂����B
-		����ȍ~�Œ����Ă����܂��A���΂炭���҂����������B
+	既知のバグ
+		前回？の仕様変更以降、通常IK時の剛体の表示及び複数キャラクター読み込み時の剛体の処理に不具合があることが分かりました。
+		次回以降で直していきます、しばらくお待ちください。
 
 2018/07/22_1
-	�����V�~���̊J�n����ɍ��̂��傫���h���̂�h�~���܂����B
-	�����V�~���̑I��͈͂ł̍Đ����o���Ȃ��Ȃ��Ă����̂��C�����܂����B
+	物理シミュの開始直後に剛体が大きく揺れるのを防止しました。
+	物理シミュの選択範囲での再生が出来なくなっていたのを修正しました。
 
 2018/07/21
-	�����V�~���A����IK�̂Ƃ��̊�̎p�����V�~���J�n���̎p������o�C���h�|�[�Y�ɕύX���܂����B
-		�ʏ�IK�̊�p�����o�C���h�|�[�Y�ł��B
-		����ɂ��ʏ�IK�̂Ƃ��ƕ����̂Ƃ��Ƃœ����I�C���[�p�𗘗p�ł���悤�ɂȂ�\��ł��B
-		�i�o�O��������Ό��݂ł������I�C���[�p�̂͂��ł����A�܂������؂̏�ԁB�j
+	物理シミュ、物理IKのときの基準の姿勢をシミュ開始時の姿勢からバインドポーズに変更しました。
+		通常IKの基準姿勢もバインドポーズです。
+		これにより通常IKのときと物理のときとで同じオイラー角を利用できるようになる予定です。
+		（バグが無ければ現在でも同じオイラー角のはずですが、まだ未検証の状態。）
 
-	����IK����ERP���Ăя��������܂����B
+	物理IK時のERPを再び小さくしました。
 
 2018/07/07_1
-�@�@�@�@�@����@�y�I�C���[�O���t�z�܂߂΂��RD�̃I�C���[�O���t�y�g�����z
-�@�@�@�@�@�@https://youtu.be/s0nHIjjcGdY
+　　　　　動画　【オイラーグラフ】まめばけ３Dのオイラーグラフ【使い方】
+　　　　　　https://youtu.be/s0nHIjjcGdY
 
-�@�@�@�@�@�i�����̂Ƃ��̃I�C���[�p�͌��ݎd�l�ύX���j
+　　　　　（物理のときのオイラー角は現在仕様変更中）
 
 2018/07/02_1
-	�W���C���g���E�N���b�N�����Ƃ��̉�]�֎~�̏����̃f�o�b�O
-		�O�x�ɌŒ�ł͂Ȃ��āA���݂̊p�x�ɌŒ肷��悤�ɏC���B
-		PhysicsRot�������Ă����]�֎~���j���[�����s����Ƌ@�\���܂��B
+	ジョイントを右クリックしたときの回転禁止の処理のデバッグ
+		０度に固定ではなくて、現在の角度に固定するように修正。
+		PhysicsRotを押してから回転禁止メニューを実行すると機能します。
 
-	ERP��0.9���炢�ɂ��Ȃ��Ɓi�f�t�H���g��1.0�j�A������PhysicsRot�����s�����ۂɃ��f�����U�����Ĕj�]����ꍇ������܂����B
-		���삷��ꏊ�ɂ����悤�ł��B
+	ERPを0.9くらいにしないと（デフォルトは1.0）、長時間PhysicsRotを実行した際にモデルが振動して破綻する場合がありました。
+		操作する場所にもよるようです。
 
 2018/07/01_1
-	PhysicsRot�̉���
-		����IK����ERP�����C���E�C���h�E�̃X���C�_�[�Őݒ�\�ɂ��܂����B
+	PhysicsRotの改良
+		物理IK時のERPをメインウインドウのスライダーで設定可能にしました。
 		
-		���܂�ERP������߂ď������l�ɂ��Ă��܂�����
-		����͂������Ȃ��ƕ���IK���I���ɂ��������ŗ��ꂪ�o������ł��B
-		�������AERP���������ƕ���IK�ɂ��֐ߕ����ɑ傫�Ȍ��Ԃ��ł��邱�Ƃ�����܂����B
-		���̏�Ԃ�BtApply�{�^���������Ă���ɕ���IK�������Ƃ��ɗ��ꂪ�o�܂����B
-		�����ERP���ő�̂P�D�O�ɂ��Ă��Ȃ�Ƃ������������Ă���悤�ł��B�i�����h��܂����j
-		����͍��܂ł̍��̊֌W�̃f�o�b�O�ɂ��\�ɂȂ������Ƃ��Ǝv���܂��B
-		ERP�P�D�O�ő����h��܂����A�֐ߊԂɑ傫�Ȍ��Ԃ��o���ɂ����̂�BtApply�ȍ~�̕���IK�����ꂪ���Ȃ��ł��B
+		今までERPをきわめて小さい値にしていましたが
+		これはそうしないと物理IKをオンにしただけで乱れが出たからです。
+		しかし、ERPが小さいと物理IKにより関節部分に大きな隙間ができることがありました。
+		その状態でBtApplyボタンを押してさらに物理IKをしたときに乱れが出ました。
+		今回はERPを最大の１．０にしてもなんとか持ちこたえているようです。（多少揺れますが）
+		これは今までの剛体関係のデバッグにより可能になったことだと思います。
+		ERP１．０で多少揺れますが、関節間に大きな隙間が出来にくいのでBtApply以降の物理IKも乱れが少ないです。
 		
 2018/06/23
-	PhysicsRot��BtApply�{�^���̃f�o�b�O�B
-		�܂��I��͈͂̐擪�t���[���ɑ΂��Ă����ł����A����IK��ۑ��ł���悤�ɂȂ�܂����B
-		PhysicsRot�{�^��-->�W���C���g�h���b�O-->BtApply�{�^��-->�i����ɑ��삷��Ȃ�PhysicsRot�{�^��-->...�j
+	PhysicsRotとBtApplyボタンのデバッグ。
+		まだ選択範囲の先頭フレームに対してだけですが、物理IKを保存できるようになりました。
+		PhysicsRotボタン-->ジョイントドラッグ-->BtApplyボタン-->（さらに操作するならPhysicsRotボタン-->...）
 
 2018/06/19_1
-	����IK����������ł���񂮂���]���Ă��܂��Ǐ󂪒���܂����B�i������BtApply�{�^���������Ȃ��ꍇ�j
-	���݁A����IK�̓����h���b�O����ŁA�h���b�O��̃����N���b�N�Ō��̏�Ԃɖ߂�܂��B
+	物理IKがある条件でぐるんぐるん回転してしまう症状が直りました。（ただしBtApplyボタンを押さない場合）
+	現在、物理IKはワンドラッグ限定で、ドラッグ後のワンクリックで元の状態に戻ります。
 
 2018/06/07_1
-	�}�j�s�����[�^�̍��W�����C���@���̂Q�B
-		IK�ɂ����W������̎p���̕ω��������o�I�ɂ킩��悤�ɂ����i�Ƃ肠�����o�[�W�����j�B
-			�f�t�H���g�̍��W�n���y�A�����g�ɁB
-			�e�{�[���̌����𐅐F�̐��ŕ\�����A�ԐF�̃��C������̕ω����Ŏp���̕ω�����������悤�ɂ����B
+	マニピュレータの座標軸を修正　その２。
+		IKによる座標軸からの姿勢の変化分が視覚的にわかるようにした（とりあえずバージョン）。
+			デフォルトの座標系をペアレントに。
+			親ボーンの向きを水色の線で表示し、赤色のラインからの変化分で姿勢の変化分が分かるようにした。
 
 2018/06/06
-	�}�j�s�����[�^�̍��W�����C���B
-		�ʏ�IK�̂Ƃ��ƕ���IK�̂Ƃ��Ɨ����C���B
-		�J�����g���W�n���f�t�H���g�̍��W�n�ɂ����B
-			�����A�����p�x����������ۂɁA
-			�J�����g���W�n�ŃJ�����g�{�[���̉�]��������Ԃ̎��̃}�j�s�����[�^���K�v�Ȃ̂ō��̎d�l�ɁB
+	マニピュレータの座標軸を修正。
+		通常IKのときと物理IKのときと両方修正。
+		カレント座標系をデフォルトの座標系にした。
+			将来、制限角度を可視化する際に、
+			カレント座標系でカレントボーンの回転が初期状態の時のマニピュレータが必要なので今の仕様に。
 	
-	�{�[�������uX���v�ɍ��킹�邽�߂̍��W���̍Čv�Z���j���[��ǉ��B			
+	ボーン軸を「X軸」に合わせるための座標軸の再計算メニューを追加。			
 
-	Model.cpp��PhyicsRot�֐������������f�o�b�O���B
-		�\�[�X�̃R�����g�Q�ƁB
+	Model.cppのPhyicsRot関数を引き続きデバッグ中。
+		ソースのコメント参照。
 
 2018/06/02_1
-	�{�[�����E�N���b�N�����Ƃ��̃��j���[��
-		�{�[���̉�]�֎~�ݒ�����������₵�܂����B
-		����IK�ł͂Ȃ����ʂ�IK�̂Ƃ��ɂ���]�֎~�t���O���Q�Ƃ���悤�ɂ��܂����B
+	ボーンを右クリックしたときのメニューに
+		ボーンの回転禁止設定をいくつか増やしました。
+		物理IKではない普通のIKのときにも回転禁止フラグを参照するようにしました。
 
-		IK�`�B�֎~�ł͂Ȃ��A��]�֎~�t���O�Ȃ̂�
-		IK�K�w����2�ȏ�ɂ��Ďg�p����ꍇ�A��]�֎~�̃{�[�����щz����IK���ʂ�K�p���邱�Ƃ��\�ł��B
-		�܂�A�p�x�R���X�g���C���g���ʂ�����܂��B
+		IK伝達禁止ではなく、回転禁止フラグなので
+		IK階層数を2以上にして使用する場合、回転禁止のボーンを飛び越えてIK結果を適用することが可能です。
+		つまり、角度コンストレイント効果があります。
 
-		����IK�̍ۂɂ���]�֎~�͎Q�Ƃ���܂����A���ڑ��삵���ꍇ��傫���͂����������ꍇ�ɂ͉�]���邱�Ƃ�����܂��B
+		物理IKの際にも回転禁止は参照されますが、直接操作した場合や大きい力がかかった場合には回転することがあります。
 
-	PhysicsRot�֐����s����ɂȂ�P�[�X���R�����g�ɏ����܂����B
+	PhysicsRot関数が不安定になるケースをコメントに書きました。
 
-	�T���v���f�[�^���X�V���܂����B
+	サンプルデータを更新しました。
 		Media/TestData_20180531_1
 
 2018/05/28_1
-	�����L�����ǂݍ��ݎ��ɃG���[�ɂȂ�s��̏C���B
-		OrgWindow�̑��dregist�s��̏C���B
-		�^�C�����C���쐬�^�C�~���O�̏C���B
+	複数キャラ読み込み時にエラーになる不具合の修正。
+		OrgWindowの多重regist不具合の修正。
+		タイムライン作成タイミングの修正。
 
 2018/05/23_1
-	�c�[���E�C���h�E�̃{�^����1��ڂ̃N���b�N�ʒu������邱�Ƃ��������̂��C���B
-		�Ⴆ�Ε�ԃ{�^���̂P��ڂ̃N���b�N�̓N���b�N�ʒu������Ď��s����Ă��Ȃ������B
+	ツールウインドウのボタンの1回目のクリック位置がずれることがあったのを修正。
+		例えば補間ボタンの１回目のクリックはクリック位置がずれて実行されていなかった。
 
-	�I�C���[�O���t�̍X�V�֐�(UpdateEditedEuler)���ŁA�I���{�[�����Ȃ��ꍇ�ɂ͈�Ԑe�̃{�[���̃O���t��\������悤�ɂ����B
-		�ǂ̃{�[�����N���b�N���Ȃ���ԂŁi�K�w�E�C���h�E�ł͈�Ԑe�{�[�����f�t�H���g�őI������Ă���j�A
-		�c�[���E�C���h�E�̕�ԃ{�^�����������ۂɁA��Ԑe�̃{�[���̃I�C���[���X�V�����悤�ɂ����B
-		�i���܂ł͍X�V����Ă��Ȃ������B�j
+	オイラーグラフの更新関数(UpdateEditedEuler)内で、選択ボーンがない場合には一番親のボーンのグラフを表示するようにした。
+		どのボーンもクリックしない状態で（階層ウインドウでは一番親ボーンがデフォルトで選択されている）、
+		ツールウインドウの補間ボタンを押した際に、一番親のボーンのオイラーが更新されるようにした。
+		（今までは更新されていなかった。）
 
 2018/05/21_1
-	�c�[���{�^���̃R�}���h�����s�����ۂɂ��I�C���[�O���t���X�V����悤�ɂ��܂����B
+	ツールボタンのコマンドを実行した際にもオイラーグラフを更新するようにしました。
 
 2018/05/17_2
-	�}�j�s�����[�^�̒����h���b�O�ɂ��IK�����̉��ǁB
-		�{�[���ʒu���}�E�X�ʒu�Ɍ��܂�悤�ɂȂ�܂����i���͈͂Ƀ}�E�X������ꍇ�j�B
+	マニピュレータの中央ドラッグによるIK処理の改良。
+		ボーン位置がマウス位置に決まるようになりました（可動範囲にマウスがある場合）。
 
 2018/05/17_1
-	CModel::IKRotate�̃f�o�b�O�Ɖ��ǒ�
-		IKRotate�̓}�j�s�����[�^�̒������h���b�O�����Ƃ��ɌĂ΂��i�����t���[����I�����Ă��邱�Ƃ��O��j�B
-		IK�̊K�w����IK�`�B����GUI�𑀍삵�Ȃ���e�X�g���Ē������B
-		RokDeBone2�̂悤�ɐL�΂��ĉ񂷕����Ƃ͈قȂ�����ŁA�L�΂��Ȃ��ł����K�w����ł���悤�ɂȂ��Ă����Ƃ���B
+	CModel::IKRotateのデバッグと改良中
+		IKRotateはマニピュレータの中央をドラッグしたときに呼ばれる（複数フレームを選択していることが前提）。
+		IKの階層数やIK伝達率のGUIを操作しながらテストして調整中。
+		RokDeBone2のように伸ばして回す方式とは異なる方式で、伸ばさないでも多階層操作できるようになってきたところ。
 
 2018/05/15_1
-	�I�C���[�O���t�̃A�b�v�f�[�g
-		�I�C���[�O���t�Ƀy�A�����g�`�F�b�N�{�b�N�X��ǉ��B
-			�y�A�����g�`�F�b�N�{�b�N�X�Ƀ`�F�b�N������ƑI�����Ă���{�[���̐e�̃{�[���̃I�C���[�p���O���t�ɕ\�����܂��B
+	オイラーグラフのアップデート
+		オイラーグラフにペアレントチェックボックスを追加。
+			ペアレントチェックボックスにチェックを入れると選択しているボーンの親のボーンのオイラー角をグラフに表示します。
 
 2018/05/14_2
-	�I�C���[�O���t�A�b�v�f�[�g
-		IK���쌋�ʂ��I�C���[�O���t�ɔ��f����悤�ɂ��܂����B
+	オイラーグラフアップデート
+		IK操作結果をオイラーグラフに反映するようにしました。
 
-		IK����͎��ۂɂ͑��삵�Ă���{�[���̐e�̃{�[���Ɏp�����ݒ肳���̂�
-		����ł͌��ʂ��m�F����ɂ͐e�̃{�[�����N���b�N���ăO���t���m�F���܂��B
+		IK操作は実際には操作しているボーンの親のボーンに姿勢が設定されるので
+		現状では結果を確認するには親のボーンをクリックしてグラフを確認します。
 
 2018/05/14_1
-	�^�C�����C������̒���
-		�z�C�[�������̒���
-			M�{�^���[�[���z�C�[���[�[��M�{�^���@�Ŏ��Ԕ͈͑I��
-			�z�C�[�������@�Ŏ��Ԉړ�����
+	タイムライン操作の調整
+		ホイール処理の調整
+			Mボタンーー＞ホイールーー＞Mボタン　で時間範囲選択
+			ホイールだけ　で時間移動だけ
 
 2018/05/13_1
-	�^�C�����C���֌W�̒���
+	タイムライン関係の調整
 
-	stdafx.h�Ɉȉ��̂S�̃X�C�b�`��ǉ����܂����B
-		//fps�`�F�b�N�̎��ɗL���ɂ���B�������������Ȃ����[�h�B
-		//DXUT.cpp ��Create()����m_state.m_OverrideForceVsync = 0;//(�ʏ�1)
-		//DXUT.cpp ��DXUTRender3DEnvironment10()��hr = pSwapChain->Present(0, 0);//(�ʏ��Present(1, dwFlags);
+	stdafx.hに以下の４つのスイッチを追加しました。
+		//fpsチェックの時に有効にする。垂直同期をしないモード。
+		//DXUT.cpp のCreate()内でm_state.m_OverrideForceVsync = 0;//(通常1)
+		//DXUT.cpp のDXUTRender3DEnvironment10()でhr = pSwapChain->Present(0, 0);//(通常はPresent(1, dwFlags);
 		//#define SPEEDTEST__
 
-		//�����O�^�C�����C���ƃI�C���[�O���t�̕`����X�L�b�v����Ƃ��ɗL���ɂ���B
+		//ロングタイムラインとオイラーグラフの描画をスキップするときに有効にする。
 		//#define SKIP_EULERGRAPH__
 
-		//�����V�~�����X�L�b�v����B
+		//物理シミュをスキップする。
 		//#define SKIP_BULLETSIMU__
 
-		//���[�V�����|�C���g�������ɃL���b�V����L���ɂ���B
-		//SPEEDTEST__��SKIP_EULERGRAPH__��SKIP_BULLETSIMU__�̂R��L���ɂ�����Ԃňȉ���L���ɂ���ƌ��ʂ�������B
-		//������̊��ł͂P�Q�L�����N�^�[�̃��[�V�����Đ����Ŕ�ׂāA�T�{����P�T�{���ɂȂ�B
+		//モーションポイント検索時にキャッシュを有効にする。
+		//SPEEDTEST__とSKIP_EULERGRAPH__とSKIP_BULLETSIMU__の３つを有効にした状態で以下を有効にすると効果が分かる。
+		//こちらの環境では１２キャラクターのモーション再生時で比べて、５倍から１５倍速になる。
 		#define USE_CACHE_ONGETMOTIONPOINT__
 
 2018/05/09_2
-	�^�C�����C���̃f�o�b�O
+	タイムラインのデバッグ
 		
 2018/05/09
-	�`��̍�����
-		�^�C�����C���ƃI�C���[�O���t��SetCurrentTime���ċA���Ă��܂����B
-		�ċA�����������Ƃ��덂�������܂����B
+	描画の高速化
+		タイムラインとオイラーグラフのSetCurrentTimeが再帰していました。
+		再帰を解消したところ高速化しました。
 
-	�p���ҏW���ʂ̃I�C���[�O���t�ւ̔��f�͎���ȍ~�ɂ��܂��B
+	姿勢編集結果のオイラーグラフへの反映は次回以降にやります。
 
 2018/05/06_1
-	�I�C���[�O���t�̑����B
-		�O��̊p�x���l�����āA�p�x���A������悤�ɂ��܂����B
-		�ڐ����t���܂����B
-		�v���X����Ń}�C�i�X�����ɂȂ�悤�ɂ��܂����B
+	オイラーグラフの続き。
+		前回の角度を考慮して、角度が連続するようにしました。
+		目盛りを付けました。
+		プラスが上でマイナスが下になるようにしました。
 
 
-	�p���ҏW���ʂ̃I�C���[�O���t�ւ̔��f�͎���ȍ~�ɂ��܂��B
+	姿勢編集結果のオイラーグラフへの反映は次回以降にやります。
 
 
 2018/05/04_1
-	�����O�^�C�����C�����㉺2�i�ɂ��ĉ��i�ɃI�C���[�O���t��`�悵�܂����i�r���j�B
-		���[�V������ǂݍ���Ń{�[�����N���b�N����Ƃ��̃{�[���̃I�C���[�O���t���\������܂��B
-		�܂��r���Ȃ̂�
-			�p�x�̖ڐ���͂���܂���B
-			�ő�p�x�ƍŏ��p�x�ɉ����Ċg��\�����Ă��܂��B
-		�F��XYZ�����ꂼ��R�AG�AB�̐F�ɂȂ��Ă��܂��B
+	ロングタイムラインを上下2段にして下段にオイラーグラフを描画しました（途中）。
+		モーションを読み込んでボーンをクリックするとそのボーンのオイラーグラフが表示されます。
+		まだ途中なので
+			角度の目盛りはありません。
+			最大角度と最小角度に応じて拡大表示しています。
+		色はXYZ軸それぞれR、G、Bの色になっています。
 
 2018/04/22_1
-	�E�C���h�E�^�C�g���ݒ�B
-	�E�C���h�E�^�C�g���Ǝ�ȃ��j���[�ɓ��{��\�L�Ɖp��\�L�̗�����ݒ�B
-	�iUNICODE�ł��B�j
+	ウインドウタイトル設定。
+	ウインドウタイトルと主なメニューに日本語表記と英語表記の両方を設定。
+	（UNICODEです。）
 
 
 2018/04/21_1
-	�E�C���h�E��̉��̑����B
-		���j���[���RD�E�C���h�E����A�v���̃E�C���h�E�Ɉړ��B
-		�RD�E�C���h�E����L���v�V��������菜�����B
-		�����̍ق𐮂����B
+	ウインドウ一体化の続き。
+		メニューを３Dウインドウからアプリのウインドウに移動。
+		３Dウインドウからキャプションを取り除いた。
+		少し体裁を整えた。
 
-		�����V�~�����[�V�������ɑ��̃E�C���h�E�i��������^�X�N�}�l�[�W���j���A�N�e�B�u�ɂ��Ă�fps�������Ȃ��Ȃ����B
+		物理シミュレーション中に他のウインドウ（メモ帳やタスクマネージャ）をアクティブにしてもfpsが落ちなくなった。
 
 2018/04/17
-	�E�C���h�E�̈�̉��J�n�B
-		��̉��̓r���B
-		����1240 x 830���炢�̑傫���B
-		�E�C���h�E�𑝂₵�����̂�1700 x 1000���炢�܂ő傫���Ȃ�\��B
+	ウインドウの一体化開始。
+		一体化の途中。
+		現在1240 x 830くらいの大きさ。
+		ウインドウを増やしたいので1700 x 1000くらいまで大きくなる予定。
 
 2018/04/12_1
-	MameBake3DLib��stdafx.h�𓱓����܂����B
-		MameBake3DLib�̃r���h����4005�Ԃ̃��[�j���O��stdafx.cpp�ł����o�Ȃ��Ȃ�܂����B
-		MameBake3D�{�̂̂ق���stdafx.h�̐ݒ�����Ă��Ȃ��̂Ńv���W�F�N�g�̐ݒ��4005�Ԃ𖳎�����悤�ɂ��Ă��܂��B
+	MameBake3DLibにstdafx.hを導入しました。
+		MameBake3DLibのビルド時の4005番のワーニングがstdafx.cppでしか出なくなりました。
+		MameBake3D本体のほうはstdafx.hの設定をしていないのでプロジェクトの設定で4005番を無視するようにしています。
 
 
 2018/03/29_2
-	�����p�x�t�@�C��(fbx�t�@�C���Ɠ����f�B���N�g�����̊g���q��lmt�̃t�@�C��)��ҏW���܂����B
-		�c�C���e�[���ȊO�͎��R�ɓ����悤�ɂ��܂����B
+	制限角度ファイル(fbxファイルと同じディレクトリ内の拡張子がlmtのファイル)を編集しました。
+		ツインテール以外は自由に動くようにしました。
 
 
 2018/03/29
-	�ÓI�����N�p���C�u�����Ƃ��Ă܂߂΂��RD�̋@�\���܂Ƃ߂܂����iMameBake3DLib.lib�j�B
-		�܂��C���^�[�t�F�C�X�Ȃǂ��̂܂܂łƂ肠�������C�u�����ɂ��܂����B
-		MameBake3DLib.lib��LGPL�̃��C�u�����Ƃ��Ďg�p���鑼�̃��C�Z���X�`���̃A�v���쐬���\�ł��B
-			������MameBake3DLib.lib�̓��e�Ɏ��������ꍇ�ɂ�LGPL�ɂȂ�܂��B
+	静的リンク用ライブラリとしてまめばけ３Dの機能をまとめました（MameBake3DLib.lib）。
+		まだインターフェイスなどそのままでとりあえずライブラリにしました。
+		MameBake3DLib.libをLGPLのライブラリとして使用する他のライセンス形式のアプリ作成が可能です。
+			ただしMameBake3DLib.libの内容に手を加える場合にはLGPLになります。
 
-	MameBake3D.exe�Ɠ����f�B���N�g���Ɉȉ��̂S��DLL��u���K�v������܂��B
+	MameBake3D.exeと同じディレクトリに以下の４つのDLLを置く必要があります。
 		libfbxsdk.dll (FBX SDK)
 		tbb.dll (Intel TBB)
 		tbbmalloc.dll (Intel TBB)
 		tbbmalloc_proxy.dll (Intel TBB)
 
 2018/03/07_1
-	bvh2FBX�̃t�@�C���I���_�C�A���O��bvh�̊g���q�̃t�B���^�[��I������悤�ɂ��܂����B
+	bvh2FBXのファイル選択ダイアログでbvhの拡張子のフィルターを選択するようにしました。
 
 
 2018/03/05
-	�R���{�{�b�N�X�̑I�����ł��Ȃ������s����C���B
+	コンボボックスの選択ができなかった不具合を修正。
 
-	DXUT.cpp�̕ύX�ӏ���ǋL�i��L�j�B
-		���������肷��悤�ɐ����������邱�Ƃɂ��܂����B
-		�`�摬�x���������ĕ����������Ȃ��Ȃ�s����������܂����B
+	DXUT.cppの変更箇所を追記（上記）。
+		物理が安定するように垂直同期することにしました。
+		描画速度が速すぎて物理が動かなくなる不具合が解消しました。
 
 
 2018/03/04_1
-	�J������ς��܂����i��L�j�B
+	開発環境を変えました（上記）。
 
-	�n�[�h�E�F�A���Ń��C���E�C���h�E�̃{�^���������Ȃ������s�������܂����B
-	����ɔ����`�摬�x�������Ȃ�܂����B
+	ハードウェア環境でメインウインドウのボタンが押せなかった不具合が直りました。
+	それに伴い描画速度も速くなりました。
 
-	�u�[�g�L�����v���ɂ����ꍇ
-	�����v�Z�̃X���b�h����CPU�̐�������������ƃG���[�I������悤�ł���B
+	ブートキャンプ環境にした場合
+	物理計算のスレッド数をCPUの数よりも多くするとエラー終了するようである。
 
 2018/02/14_1
-	���W�X�g���Ȃ��Ǝg�p�ł��Ȃ��@�\�����r���[�ȏ�ԂɂȂ��Ă��܂����B
-	������ԂŃ��W�X�g�ς݂ɂ��܂����B
+	レジストしないと使用できない機能が中途半端な状態になっていました。
+	初期状態でレジスト済みにしました。
 
-	���W�X�g�ς݂̏ꍇ��File���j���[��bvh2FBX���g�p�ł��܂��B
-		�t�@�C���_�C�A���O�̃t�@�C���̎�ނ�bvh��I�����Ĕ{����K���ɓ��͂���OK�{�^����������
-		bvh�t�@�C���Ɠ����f�B���N�g����FBX�t�@�C�����o���܂��B
-		�茳�̋L�^�ɂ��Ƃ�����Ŏg�p����bvh�̏ꍇ�ɂ͔{����0.294�{�ɂ��Ă��܂����B�Q�l�܂łɁB
-		���̎��A�܂߂΂��RD�ɂ�bvh���ǂݍ��܂�Ă��Ȃ���ԂƂȂ��Ă��܂��B
-		�\���������Ƃ��ɂ͒ʏ��FBX�ǂݍ��݂œǂݍ��݂܂��B
+	レジスト済みの場合はFileメニューのbvh2FBXが使用できます。
+		ファイルダイアログのファイルの種類でbvhを選択して倍率を適当に入力してOKボタンを押すと
+		bvhファイルと同じディレクトリにFBXファイルが出来ます。
+		手元の記録によるとこちらで使用したbvhの場合には倍率は0.294倍にしていました。参考までに。
+		この時、まめばけ３Dにはbvhが読み込まれていない状態となっています。
+		表示したいときには通常のFBX読み込みで読み込みます。
 
 		
-		�쐬����FBX�t�@�C���͌`��t����FBX�t�@�C���Ƀ��^�[�Q�b�g�\�ł��B
-		�ʓ|�Ȃ̂ōŋ߃e�X�g���Ă܂��񂪈ȑO�������Ƃ��ɂ̓��^�[�Q�b�g�ɐ������Ă��܂����B
-		���̂Ƃ��̓��������܂��B
-		�����s������������ꍇ�͘A�����Ă���������ΉɂȂƂ��ɑΉ����邩������܂���B
+		作成したFBXファイルは形状付きのFBXファイルにリターゲット可能です。
+		面倒なので最近テストしてませんが以前試したときにはリターゲットに成功していました。
+		そのときの動画もあります。
+		何か不具合が見つかった場合は連絡していただければ暇なときに対応するかもしれません。
 
-	���[�V�����Đ����ł��A�{�[����\������`�F�b�N�{�b�N�X�Ƀ`�F�b�N�������Ă���ꍇ�ɂ�
-	�{�[���}�[�N��\������悤�ɂ��܂����B
+	モーション再生中でも、ボーンを表示するチェックボックスにチェックが入っている場合には
+	ボーンマークを表示するようにしました。
 
 
 2018/02/13_1
-	FBX SDK�̃}���`�X���b�h�ł̗��p���ɏo�����Ɖ����@�̃�����Documents�t�H���_�ɏ����܂����B
+	FBX SDKのマルチスレッドでの利用時に出た問題と解決法のメモをDocumentsフォルダに書きました。
 
 
 2018/02/12_1
-	�����L�����N�^�[�ǂݍ��ݎ��ɃG���[�I�����邱�Ƃ�����s����C�����܂����B
+	複数キャラクター読み込み時にエラー終了することがある不具合を修正しました。
 
-	�����L�����N�^�[�̕����V�~�����[�V�����Ɋւ���s����C�����܂����B
+	複数キャラクターの物理シミュレーションに関する不具合を修正しました。
 
-	�t���[���͈͎w��ł̕����V�~�����[�V�����Ɋւ���s����C�����܂����B
+	フレーム範囲指定での物理シミュレーションに関する不具合を修正しました。
 
-	������ɒǋL���܂����B
+	動作環境に追記しました。
 
 
 2018/02/04_1
-	�t���[���I��͈͂̊Ԃ��J��Ԃ������V�~�����[�V�������邱�Ƃ��\�ɂȂ�܂����B
-		����IK�̂Ƃ��͈͍̔l���͎���ȍ~�Ή��\��B
+	フレーム選択範囲の間を繰り返し物理シミュレーションすることが可能になりました。
+		物理IKのときの範囲考慮は次回以降対応予定。
 
-	�g�p���Ă���DirectX SDK�̃o�[�W������Microsoft DirectX SDK (June 2010)�ł��B
+	使用しているDirectX SDKのバージョンはMicrosoft DirectX SDK (June 2010)です。
 
-	���������LAB (https://moo-ochakkolab.ssl-lolipop.jp/)�ɂăo�C�i����z�z���Ă��܂��B
+	おちゃっこLAB (https://moo-ochakkolab.ssl-lolipop.jp/)にてバイナリを配布しています。
 
 
 2018/02/03_1
-	�t���[���I���̉��ǂ����܂����B
-		�A�j���[�V�����Đ��ɂ���ăt���[���I������������Ȃ��悤�ɂ��܂����B
-		�}�E�X�ŕ����t���[����I����A���̓����I����Ԃŉ�����v���r���[�J�n�ƒ�~���\�ł��B
+	フレーム選択の改良をしました。
+		アニメーション再生によってフレーム選択が解除されないようにしました。
+		マウスで複数フレームを選択後、その同じ選択状態で何回もプレビュー開始と停止が可能です。
 
 2018/01/27_2
-	�n�ʂ̊i�q�̐��Ǝ��̐���Z�t�@�C�g�ł�����Ă����̂��C���B
-		Media/MameMedia/ground2.mqo���C���B
+	地面の格子の線と軸の線がZファイトでちらついていたのを修正。
+		Media/MameMedia/ground2.mqoを修正。
 
 2018/01/27_1
-	�A�j���[�V�����̍Đ����O�t���[������ł͂Ȃ��P�t���[������ɂ��܂����B
-		�����V�~���̊J�n���Ƀo�C���h�|�[�Y�ƃA�j���[�V�����p���Ƃ̍��قɂ��傫�ȗh�ꂪ�啝�Ɍy������܂����B
-		�i����ł��J�n���ɏ����͗h��܂��B�j
+	アニメーションの再生を０フレームからではなく１フレームからにしました。
+		物理シミュの開始時にバインドポーズとアニメーション姿勢との差異による大きな揺れが大幅に軽減されました。
+		（それでも開始時に少しは揺れます。）
 
 2018/01/24_2
-	�V�F�[�_�[�萔�ւ̃e�N�X�`���ݒ�̍œK��
-		�ύX���������Ƃ��̂ݐݒ肷��悤�ɂ��܂����B
-		2018/01/24_1�Ŏ����ς݂ł������Y�ꂽ�����������ĕs���S�ł����B
+	シェーダー定数へのテクスチャ設定の最適化
+		変更があったときのみ設定するようにしました。
+		2018/01/24_1で実装済みでしたが忘れた処理があって不完全でした。
 
 2018/01/24_1
-	Ctrl + 1 (one) �L�[�Ń��C���E�C���h�E�̃c�[�������̕\�����g�O�����܂��B
-	�u�\���v���j���[�́u���[�V�����E�C���h�E�v�̑I����
-	�K�w�\���G�f�B�^�ƃ����O�^�C�����C���E�C���h�E�̗����̕\�����g�O������悤�ɂ��܂����B
+	Ctrl + 1 (one) キーでメインウインドウのツール部分の表示がトグルします。
+	「表示」メニューの「モーションウインドウ」の選択で
+	階層構造エディタとロングタイムラインウインドウの両方の表示がトグルするようにしました。
 
-	�i������̊��ł́A�j
-	Ctrl + 1�Ńc�[�������\���ɂ��ă��[�V�����E�C���h�E���\���ɂ����ꍇ
-	9�̓ǂݍ��݌�BtStart�i�����V�~���J�n�j���fps��35fps�������̂�100fps�ɂȂ�܂����B
+	（こちらの環境では、）
+	Ctrl + 1でツール部を非表示にしてモーションウインドウを非表示にした場合
+	9体読み込み後BtStart（物理シミュ開始）後のfpsが35fpsだったのが100fpsになりました。
 
 
 2018/01/23_1
-	DirectX10�Ή��̑����B
-		Line�̕`��ɑΉ����܂����B
-		Z�o�b�t�@�[�e�X�g����ɍ��i������X�e�[�g���쐬���}�j�s�����[�^�`�掞�ɓK�p���܂����B
+	DirectX10対応の続き。
+		Lineの描画に対応しました。
+		Zバッファーテストを常に合格させるステートを作成しマニピュレータ描画時に適用しました。
 
 
 2018/01/22_1
-	DirectX10�Ή��̑����B
-		Shader(Media/Ochakko.fx)�̃e�N�j�b�N������Z�o�b�t�@��L���ɂ��܂����B
+	DirectX10対応の続き。
+		Shader(Media/Ochakko.fx)のテクニック部分でZバッファを有効にしました。
 
-	���C���E�C���h�E�̃X���C�_�[�ƃ`�F�b�N�{�b�N�X���N���b�N�����Ƃ���GUI��������Ǐ���������܂����B
-		readme.txt(���̃t�@�C��)�́u�O�����C�u�����̃\�[�X�̏ꏊ�v�ɒǋL���܂����B
+	メインウインドウのスライダーとチェックボックスをクリックしたときにGUIが消える症状を解消しました。
+		readme.txt(このファイル)の「外部ライブラリのソースの場所」に追記しました。
 
 2018/01/21_1
-	DirectX10�ւ̑Ή����J�n�B[�܂��r���ł��B]
-		�Ƃ肠����DX10�œ����Ă��܂��B
-		�V�F�[�_�[��fx_4_0�ł��B
+	DirectX10への対応を開始。[まだ途中です。]
+		とりあえずDX10で動いています。
+		シェーダーはfx_4_0です。
 
-		Line�̕`�悪�܂��ł��B
-		SetRenderState�̑���̎�i���܂�����Ă��܂���B
-		���݁A���C���E�C���h�E��GUI���i���N���b�N����Ɖ�ʂ��u�����N����o�O������܂��B
-		tga�t�@�C���̓ǂݍ��݃T�|�[�g���Ȃ��Ȃ����̂Ń��\�[�X�̏C�����K�v�ł��i�{�[���̊ۃ}�[�N�j�B
+		Lineの描画がまだです。
+		SetRenderStateの代わりの手段もまだやっていません。
+		現在、メインウインドウのGUI部品をクリックすると画面がブリンクするバグがあります。
+		tgaファイルの読み込みサポートがなくなったのでリソースの修正も必要です（ボーンの丸マーク）。
 
-	readme.txt(���̃t�@�C��)�́u�O�����C�u�����̃\�[�X�̏ꏊ�v�ɒǋL���܂����B
+	readme.txt(このファイル)の「外部ライブラリのソースの場所」に追記しました。
 
 2018/01/16_1
-	readme.txt(���̃t�@�C��)�́u�O�����C�u�����̃\�[�X�̏ꏊ�v�ɒǋL���܂����B
+	readme.txt(このファイル)の「外部ライブラリのソースの場所」に追記しました。
 
 2018/01/15_1
-	D3DX��ChaVecCalc�ɍX�ɒu�������B
-		DXUT�����ɂ��K�p�B�i�K�p�̎d���͂��̃e�L�X�g����̊O�����C�u�����̃\�[�X�̏ꏊ�̕����ɏ����܂����j
+	D3DXをChaVecCalcに更に置き換え。
+		DXUT部分にも適用。（適用の仕方はこのテキスト上方の外部ライブラリのソースの場所の部分に書きました）
 
-	CQuaternion��BoneProp��ChaVecCalc�ɓ������܂����B
+	CQuaternionとBonePropはChaVecCalcに統合しました。
 
 
 2018/01/13_2
-	2018/01/13_1�̍X�V�̃\�[�X��GitHub�ɃA�b�v
+	2018/01/13_1の更新のソースをGitHubにアップ
 
 2018/01/13_1
-	`�o�C�i����s���J�i���������LAB�ɂāj
-		FBX SDK 2018�ɑΉ����܂����B
+	`バイナリ先行公開（おちゃっこLABにて）
+		FBX SDK 2018に対応しました。
 
-		Visual Studio 2015�ɑΉ����܂����B
+		Visual Studio 2015に対応しました。
 
-		AMD Bullet Physics��Intel TBB��Visual Studio 2015�ɑΉ����܂����B
+		AMD Bullet PhysicsとIntel TBBもVisual Studio 2015に対応しました。
 
-		Media�t�H���_�̒��̃e�X�g�f�[�^���X�V���܂����B
-			�A�j���[�V�����̂O�t���[���̓o�C���h�|�[�Y�ł��B
-				�̂̂O�t���[�����o�C���h�|�[�Y�ł͂Ȃ��e�X�g�f�[�^����̈ڍs���@��������܂��B
-					�O�t���[���̂P�t���[����Ԃ��}�E�X�őI�����܂��B
-					�c�[���E�C���h�E�̎p���̏������������܂��B
-					�S�{�[���̉�]�ƈʒu���������������܂��B
-					���̂܂܂��ƂO�t���[���̏����p�����s���S�ł��B
-					File���j���[��save����v���W�F�N�g��V�����ꏊ�ɕۑ����܂��B
-					�����ǂݍ��݂Ȃ����܂��B
-					������x�V�����ꏊ�Ƀv���W�F�N�g��ۑ����܂��B
-					�ڍs�f�[�^�̏o���オ��B
+		Mediaフォルダの中のテストデータを更新しました。
+			アニメーションの０フレームはバインドポーズです。
+				昔の０フレームがバインドポーズではないテストデータからの移行方法を説明します。
+					０フレームの１フレーム区間をマウスで選択します。
+					ツールウインドウの姿勢の初期化を押します。
+					全ボーンの回転と位置両方を初期化します。
+					このままだと０フレームの初期姿勢が不完全です。
+					Fileメニューのsaveからプロジェクトを新しい場所に保存します。
+					それを読み込みなおします。
+					もう一度新しい場所にプロジェクトを保存します。
+					移行データの出来上がり。
 
 2018/01/08_1
-	D3DX9�̑����ChaVecCalc�̍X�V�B
-		�܂߂΂��RD�ł̓t���[�����[�N��DXUT���g�p���Ă���̂ł����ł�D3DX9�̗��p�͍��̒i�K�ł͑����܂��B
-		D3DX9�𗘗p�����链�Ȃ������ł�ChaVector3��ChaMatrix�N���X��D3DX()�֐��ŕϊ����Ă܂��B
-		�v���O�����Ɂu�v���v���Z�b�TCONVD3DX9�v���`�����ChaVecCalc����D3DX9�ւ̕ϊ��������L���ɂȂ�܂��B
+	D3DX9の代わりのChaVecCalcの更新。
+		まめばけ３DではフレームワークにDXUTを使用しているのでそこでのD3DX9の利用は今の段階では続けます。
+		D3DX9を利用せざる得ない部分ではChaVector3やChaMatrixクラスのD3DX()関数で変換してます。
+		プログラムに「プリプロセッサCONVD3DX9」を定義するとChaVecCalcからD3DX9への変換部分が有効になります。
 		
-		D3DX9�̗��p�������Ǐ����ł����̂ňقȂ�O���t�B�b�N���C�u�����𗘗p���铹���J�����Ǝv���܂��B
-		DirectX10��10.1���������ł����D�揇�ʓI�ɂ����Ɏ��|���邩�ǂ����͖���ł��B
+		D3DX9の利用部分を局所化できたので異なるグラフィックライブラリを利用する道が開けたと思います。
+		DirectX10や10.1を検討中ですが優先順位的にすぐに取り掛かるかどうかは未定です。
 
 2018/01/07_1
-	D3DX(DirectX9�̎Z�p�T�|�[�g)�̑����ChaVecCalc.h��ChaVecCalc.cpp��p�ӂ��܂����B
-		DirectX�ɓn�������ȊO�͂قƂ��ChaVecCalc�Ōv�Z���Ă��܂��B
-		�`�敔�����DLL�ɂ��ĈႤ����(���݂�DirectX9�ł�)�ł��`��ł���悤�ɂ��鏀���ł��B
+	D3DX(DirectX9の算術サポート)の代わりにChaVecCalc.hとChaVecCalc.cppを用意しました。
+		DirectXに渡す部分以外はほとんどChaVecCalcで計算しています。
+		描画部分を別DLLにして違う方式(現在はDirectX9です)でも描画できるようにする準備です。
 
 
 2017/12/30_1
-	�ʏ탂�[�V�����Đ��A�����V�~�����[�V�����A����IK�̍�����
-		�L���b�V���@�\��t���܂����B
-		fps�͔{���ɂȂ�܂����B
-		�P�Q�L���������ɕ����V�~�����Ă�������ł�60fps�o�Ă��܂��B
+	通常モーション再生、物理シミュレーション、物理IKの高速化
+		キャッシュ機能を付けました。
+		fpsは倍速になりました。
+		１２キャラ同時に物理シミュしてもこちらでは60fps出ています。
 
 2017/12/27
-	����Љ�
-		����@�y�܂߂΂��RD�z�����V�~�����[�V�����̃}���`�X���b�h��
-�@�@�@�@�@�@�@�@�i����͂���ׂ�܂����j
-�@�@�@�@�@�@�@�@https://youtu.be/cW7TWNiX-uk
+	動画紹介
+		動画　【まめばけ３D】物理シミュレーションのマルチスレッド化
+　　　　　　　　（今回はしゃべりました）
+　　　　　　　　https://youtu.be/cW7TWNiX-uk
 
-		����@�y�܂߂΂��RD�z�傫�ȗh��𐧌��p�x�ŏ����ȗh���
+		動画　【まめばけ３D】大きな揺れを制限角度で小さな揺れに
 		https://youtu.be/3GxO7jPOdlY
 
-		����@�y�܂߂΂��z�p�x�����t�@�C���𕨗��ɓK�p
+		動画　【まめばけ】角度制限ファイルを物理に適用
 		https://youtu.be/q0bY6-jNk20
 
 2017/12/23_1
-	bullet physics�̃t�@�C���ւ̕ύX�����������܂����i��L�j�B
+	bullet physicsのファイルへの変更部分を書きました（上記）。
 
-	�v���W�F�N�g�t�@�C��(cha�t�@�C��)�̓ǂݍ��ݎ��ɂ̓}�E�X�J�[�\���������v�ɂ��܂����B
+	プロジェクトファイル(chaファイル)の読み込み時にはマウスカーソルを砂時計にしました。
 
-	���C���E�C���h�E�ɃX���b�h���̃X���C�_�[��ǉ����܂����B
-		����������
-			�X���b�h���̃X���C�_�[�𓮂����ۂɂ�btStop�{�^���������ăV�~�����[�V�������~���Ă���ɂ��Ă��������B
-		����������
+	メインウインドウにスレッド数のスライダーを追加しました。
+		＃＃＃＃＃
+			スレッド数のスライダーを動かす際にはbtStopボタンを押してシミュレーションを停止してからにしてください。
+		＃＃＃＃＃
 
-	�U�O�������̃T���v���v���W�F�N�g�t�@�C����
-	3chara, 6chara, 9chara, 12chara�̕����L�����N�^�[�ǂݍ��ݗp�̃t�@�C���������܂����B
-		���[�h���Ԃ�exe�𒼂ɋN�������ق��������ł��i�҂����Ԃ����Ȃ�Ⴂ�܂��j�B
-		exe��x64�t�H���_�̂P��̊K�w�̃t�H���_�ɃR�s�[���Ă���_�u���N���b�N�ŋN�����܂��B
-		���������������Ȃ�ƃ��C���E�C���h�E��btCalcCnt�i�v�Z�񐔁j�̃X���C�_�[�̒l��傫������K�v������܂��B
-			�v�Z�񐔂𑝂₳�Ȃ��ƃc�C���e�[���Ȃǂ̕����������s���R�ɐL�т��肵�܂��B
-			�R�O���������x���Ȃ�Ɛ���͓���ł��B
-		������Ńe�X�g�����Ƃ���A�P�Q�L�����N�^�[�ǂݍ��݂����ĂU�S�X���b�h�Ōv�Z�񐔂P�Q��̏ꍇ
-			�R�O�������قǂœ��삵�A�S��CPU�ɕ��ׂ����U����܂����B
-			�P�Q�L�����̓ǂݍ��ݎ��Ԃ͂P����ł����B
+	６０ｆｐｓのサンプルプロジェクトファイルに
+	3chara, 6chara, 9chara, 12charaの複数キャラクター読み込み用のファイルを加えました。
+		ロード時間はexeを直に起動したほうが速いです（待ち時間がかなり違います）。
+		exeはx64フォルダの１つ上の階層のフォルダにコピーしてからダブルクリックで起動します。
+		ｆｐｓが小さくなるとメインウインドウのbtCalcCnt（計算回数）のスライダーの値を大きくする必要があります。
+			計算回数を増やさないとツインテールなどの物理部分が不自然に伸びたりします。
+			３０ｆｐｓより遅くなると制御は難しいです。
+		こちらでテストしたところ、１２キャラクター読み込みをして６４スレッドで計算回数１２回の場合
+			３０ｆｐｓほどで動作し、４つのCPUに負荷が分散されました。
+			１２キャラの読み込み時間は１分弱でした。
 
 
 
 2017/12/22_1
-	cha�t�@�C���ɃL�����N�^�[�̈ʒu����ǉ��B
-	�T���v����cha�t�@�C���ŕ����L�����̃e�X�g�B
-	�����L�����̓��������V�~�����[�V�����̃f�o�b�O�B
+	chaファイルにキャラクターの位置情報を追加。
+	サンプルのchaファイルで複数キャラのテスト。
+	複数キャラの同時物理シミュレーションのデバッグ。
 	
-	�����L������ǂݍ��񂾏ꍇ�ɂ̓��f�����j���[�Ń��f����I������ƑI���������f���̃{�[�����s�b�N�\�ɂȂ�܂��B
+	複数キャラを読み込んだ場合にはモデルメニューでモデルを選択すると選択したモデルのボーンをピック可能になります。
 
 
 2017/12/17_1
-	Bullet Physics�̃o�[�W�������グ�ă}���`�X���b�h�ŗ��p���܂����B
-		TBB���p�Ȃǂɂ��Ă͏�L�Q�Ƃ̂��ƁB
+	Bullet Physicsのバージョンを上げてマルチスレッドで利用しました。
+		TBB利用などについては上記参照のこと。
 
-		�����V�~�����[�V�������}���`�X���b�h�œ����悤�ɂȂ�܂����B
-		������̊��łS�R�A�Ńe�X�g�����Ƃ���A�f�t�H���g�̏�Ԃł�CPU0 --> 70%, CPU1--> 20%, CPU2,3 --> 10%�Ƃ����󋵂ł�����
-		�v�Z�񐔂̃X���C�_�[�Ōv�Z�񐔂𑽂������Ƃ���ACPU0-->70%, CPU1,2,3 --> 30%�̂悤�ȗ��p��ԂɂȂ�܂����B
-		�i�}���`�X���b�h�ňȑO�̂��̂Œ��ׂ�ƁACPU0-->80%, CPU1,2,3-->10%�Ƃ�����Ԃł����B�j
+		物理シミュレーションがマルチスレッドで動くようになりました。
+		こちらの環境で４コアでテストしたところ、デフォルトの状態ではCPU0 --> 70%, CPU1--> 20%, CPU2,3 --> 10%という状況でしたが
+		計算回数のスライダーで計算回数を多くしたところ、CPU0-->70%, CPU1,2,3 --> 30%のような利用状態になりました。
+		（マルチスレッド版以前のもので調べると、CPU0-->80%, CPU1,2,3-->10%という状態でした。）
 
 
 2017/12/09_5
-	PhysicsRot��PhysicsRotAxisDelta�̎p���v�Z���C�����܂����B
+	PhysicsRotとPhysicsRotAxisDeltaの姿勢計算を修正しました。
 	
-	�����Đ����̊p�x�������I���ɂ��܂����B
+	物理再生時の角度制限をオンにしました。
 
-	�����p�x�̓V�~�����[�V�����J�n���̍��̂̎��̊p�x�ł��B
-	�i�R���X�g���C���g�̎�(FrameA�̉�])�ɂ͐e�̍��̂̎���ݒ肵�Ă���܂��B�j
+	制限角度はシミュレーション開始時の剛体の軸の角度です。
+	（コンストレイントの軸(FrameAの回転)には親の剛体の軸を設定してあります。）
 
 2017/12/09_2
-	PhysicsRotAxisDelta�̎p���v�Z���C�����܂����B
-		���x�����サ�܂����B
+	PhysicsRotAxisDeltaの姿勢計算を修正しました。
+		精度が向上しました。
 
-	���݁A�p�x�����͕���IK���̂݋@�\���Ă��āA�����Đ����ɂ͊p�x�������I�t�ɂ��Ă��܂��B
-	�i�e�X�g�̂��߂ł��j
+	現在、角度制限は物理IK時のみ機能していて、物理再生時には角度制限をオフにしています。
+	（テストのためです）
 
 
 2017/12/09_1
-	PhysicsRotAxisDelta�̎p���v�Z���C�����܂����B
-		���̊֐���PhysicsRot�{�^���������ă}�j�s�����[�^�̋��������̓����O�������h���b�O��������
-		���ʂ̉�]�Ƃ��ċ@�\���܂��B
-		�����Ȃ̂ő��̍��̂���̉e�����󂯂܂����A�����������ʂ̉�]���o���܂��B
-		���x�����サ�܂����B
+	PhysicsRotAxisDeltaの姿勢計算を修正しました。
+		この関数はPhysicsRotボタンを押してマニピュレータの球もしくはリング部分をドラッグした時に
+		軸個別の回転として機能します。
+		物理なので他の剛体からの影響も受けますが、だいたい軸個別の回転が出来ます。
+		精度が向上しました。
 
 2017/12/03_1
-	PhysicsRot��PhysicsRotAxisDelta�̎p���v�Z���C�����܂����B
+	PhysicsRotとPhysicsRotAxisDeltaの姿勢計算を修正しました。
 			
-	60fps�p��lmt�t�@�C���̂Ђ��̕�����-60�x����60�x�ɂȂ��Ă��܂��B	
+	60fps用のlmtファイルのひじの部分が-60度から60度になっています。	
 
 
 2017/12/02_1
-	PhysicsRot��PhysicsRotAxisDelta�̎p���v�Z���C�����܂����B
-		�}�j�s�����[�^�ł̎��w��{���̐��x���オ��܂����B
+	PhysicsRotとPhysicsRotAxisDeltaの姿勢計算を修正しました。
+		マニピュレータでの軸指定捜査の精度が上がりました。
 
-	�U�O��������FBX�p��lmt�t�@�C���ɂ͐����p�x�̃e�X�g���l���ݒ肳��Ă��܂��i�|�P�T�x����P�T�x�j�B
+	６０ｆｐｓのFBX用のlmtファイルには制限角度のテスト数値が設定されています（－１５度から１５度）。
 
 
 
 2017/11/27_1
-	�R���X�g���C���g�̎��ƍ��̂̎��̐ݒ����v�����܂����B
-		�������؂�����Ă��܂��񂪁A�����parent mode�̃}�j�s�����[�^�̎��Ɗp�x�����̎�����v�����Ǝv���܂��B
+	コンストレイントの軸と剛体の軸の設定を一致させました。
+		少し検証が足りていませんが、これでparent modeのマニピュレータの軸と角度制限の軸が一致したと思われます。
 	
-	PhysicsRot�Ŋe���̑���iPhysicsRotDelta�֐��j�̎��ɂ��p�x�����������悤�ɂ��܂����B
-		�i���܂ł̓}�j�s�����[�^�̃Z���^�[���h���b�O�����Ƃ��݂̂̐����ł����j
+	PhysicsRotで各軸の操作（PhysicsRotDelta関数）の時にも角度制限が効くようにしました。
+		（今まではマニピュレータのセンターをドラッグしたときのみの制限でした）
 
 
 2017/11/26_1
-	bullet physics�̃I�C���[�p�v�Z���ʂ�MameBake3D�̃I�C���[�p�v�Z���ʂ̔�r���؂����܂����B
-		���낢��ȃ{�[���Ǝp���Ńe�X�g�������ʁAbullet physics�̉�]������ZYX�ł͂Ȃ�XYZ�̂悤�ł��B
-		PhysicsRot�̍ۂ�bullet physics�̌v�Z���ʂ�Q2EulXYZ�̌��ʂ��ׂ����ʂقڈ�v���܂����B
-		���̌덷�͑��͏����_�ȉ�6�ʂ�degree�̌덷���x�ł����i���܂ɏ����_�ȉ��R�ʂ̌덷�ɂȂ邱�Ƃ�����܂����j�B
+	bullet physicsのオイラー角計算結果とMameBake3Dのオイラー角計算結果の比較検証をしました。
+		いろいろなボーンと姿勢でテストした結果、bullet physicsの回転順序はZYXではなくXYZのようです。
+		PhysicsRotの際のbullet physicsの計算結果とQ2EulXYZの結果を比べた結果ほぼ一致しました。
+		その誤差は大抵は小数点以下6位のdegreeの誤差程度でした（たまに小数点以下３位の誤差になることもありました）。
 
 
 2017/11/24_1
-	CQuaternion::Q2EulZYXbt�̏C����bullet physics�̃I�C���[�p�v�Z�Ƃ̔�r
-		PhysicsRot��IK���ɃI�C���[�p���r�����B
-		�iPhysics Rot�ł̃{�[���h���b�O����VisualStudio�̏o�̓^�u�Ƀf�o�b�O�����o�͂��Ă���j
+	CQuaternion::Q2EulZYXbtの修正とbullet physicsのオイラー角計算との比較
+		PhysicsRotのIK時にオイラー角を比較した。
+		（Physics Rotでのボーンドラッグ時にVisualStudioの出力タブにデバッグ情報を出力している）
 
-		Q2EulZYXbt�̌��ʂ�bullet physics�̃I�C���[�p�v�Z���ʂ͊T�ˈ�v�������A
-		0.2degree���̌덷�͂������B�ꍇ�ɂ���Ă͂Qdegree�Ⴄ�ꍇ���������B
-		Q2EulZYXbt�̓r���̌v�Z��double�ōs���K�v�����邩������Ȃ��B
+		Q2EulZYXbtの結果とbullet physicsのオイラー角計算結果は概ね一致したが、
+		0.2degree程の誤差はあった。場合によっては２degree違う場合もあった。
+		Q2EulZYXbtの途中の計算はdoubleで行う必要があるかもしれない。
 
-	60fps�p�̃T���v����lmt�t�@�C���̓e�X�g�̂��ߑS�{�[���̐����p�x��-10�x����10�x�ɐݒ肵�Ă���܂��B
-	����͌���ł̓V�~�����[�V�����J�n������̊p�x�Ƃ��ċ@�\���܂��B
+	60fps用のサンプルのlmtファイルはテストのため全ボーンの制限角度を-10度から10度に設定してあります。
+	これは現状ではシミュレーション開始時からの角度として機能します。
 		
 
 2017/11/23_1
-	����IK�iPhysicsRot�{�^���������ă{�[�����h���b�O����IK�j�̂Ƃ��ɂ�
-	�u(FBX��).lmt�v�t�@�C���̐����p�x���l������悤�ɂ��܂����i�r���j�B
+	物理IK（PhysicsRotボタンを押してボーンをドラッグするIK）のときにも
+	「(FBX名).lmt」ファイルの制限角度を考慮するようにしました（途中）。
 
-	���݂̓V�~�����[�V�����J�n������̕ω��p�x���ɑ΂��Đ����p�x��K�p���Ă��܂��B
-	���͐e���̂̍��W�n�ł��Broll��X�ł��B
-	�e�{�[���Ƃ̊p�x�ɂ���Đ������|���邱�Ƃ������Ă݂��̂ŁA���ヂ�[�h�̐؂�ւ��ȂǂőΉ�����\��ł��B
+	現在はシミュレーション開始時からの変化角度分に対して制限角度を適用しています。
+	軸は親剛体の座標系です。rollがXです。
+	親ボーンとの角度によって制限を掛けることも試してみたので、今後モードの切り替えなどで対応する予定です。
 
-	PhysicsRot�������Ȃ���FK����ꍇ�ɂ������p�x���������Ă��܂����A������͂܂�������Ă��Ȃ��̂̏�Ԃł��B
+	PhysicsRotを押さないでFKする場合にも制限角度がかかっていますが、こちらはまだ手を入れていない昔の状態です。
 
 
 
 2017/11/12_1
-	�����V�~�����[�V�����ւ̐����p�x�������J�n�B
-	�r���ł��B
-	�����̐����p�x�̓}�j�s�����[�^�̎�����ł��B
-	FK�̍ۂ̐����p�x�Ƃ̐������͂܂�����Ă��܂���B
+	物理シミュレーションへの制限角度導入を開始。
+	途中です。
+	物理の制限角度はマニピュレータの軸が基準です。
+	FKの際の制限角度との整合性はまだ取っていません。
 
-	�����p�x�ݒ�t�@�C����FBX�t�@�C�����̌��Ɂu.lmt�v��t�����t�@�C���ƂȂ�܂��B
-	lmt�t�@�C���̓v���W�F�N�g�t�@�C���̓ǂݍ��ݎ��Ɏ����I�ɓǂݍ��܂�܂��B
+	制限角度設定ファイルはFBXファイル名の後ろに「.lmt」を付けたファイルとなります。
+	lmtファイルはプロジェクトファイルの読み込み時に自動的に読み込まれます。
 
 
 2017/11/06_1
-	�R���X�g���C���g���R�[���c�C�X�g����Generic6DofSpringConstraint�ɖ߂��܂����B
-		�R�[���c�C�X�g�Ńf�o�b�O�������ʂ��o�l�Ƀ}�[�W�����悤�Ȍ`�ɂȂ����̂�
-		�ȑO��肳��Ɉ��肵�܂����B
+	コンストレイントをコーンツイストからGeneric6DofSpringConstraintに戻しました。
+		コーンツイストでデバッグした結果をバネにマージしたような形になったので
+		以前よりさらに安定しました。
 
 
 2017/10/09_1
-	���̃p�����[�^�̐؂�ւ�����̃f�o�b�O
-		���̂�؂�ւ��ăp�����[�^��ς����ꍇ�ɁA���̍��̂։e�����o�邱�Ƃ��������o�O���C���B
-		Physics Rot, Physics Mv������ƁA���̂̃p�����[�^���ω����Ă��܂����Ƃ�����o�O���C���B
+	剛体パラメータの切り替え周りのデバッグ
+		剛体を切り替えてパラメータを変えた場合に、他の剛体へ影響が出ることがあったバグを修正。
+		Physics Rot, Physics Mvをすると、剛体のパラメータが変化してしまうことがあるバグを修正。
 
-		�imap��map�̎g�����ƃ_�C�A���O�\���̂��߂̐؂�ւ������̏C���B�j
+		（mapのmapの使い方とダイアログ表示のための切り替え処理の修正。）
 
 
 2017/09/02_1
-	�}�j�s�����[�^���[�h�̃f�o�b�O
-		���C���E�C���h�E�̃R���{�{�b�N�X��Current, Parent, Global�Ő؂�ւ��\�ɂ��܂����B
+	マニピュレータモードのデバッグ
+		メインウインドウのコンボボックスでCurrent, Parent, Globalで切り替え可能にしました。
 		
 
 2017/08/25_1
-	�}�j�s�����[�^�s��̌��؂ƃf�o�b�O
-		�J�����g�n�̓������C��
+	マニピュレータ行列の検証とデバッグ
+		カレント系の動きを修正
 
-		���݂̎d�l
-			�J�v�Z���}�b�g�@�I���W���C���g�̐e�ƑI���W���C���g�����ԃx�N�g����X���Ƃ��钼�s���W
-			�J�����g�n�@�J�v�Z���}�b�g�ɑI���W���C���g�̍s��̕ω������|��������
-			�y�A�����g�n�i���݃R�����g�A�E�g�j�@�J�v�Z���}�b�g�ɑI���W���C���g�̐e�̃W���C���g�̍s��̕ω������|��������
-			����̃W���C���g�N���b�N�i�ǂ�ł��j���ɃJ�v�Z���}�b�g���v�Z
+		現在の仕様
+			カプセルマット　選択ジョイントの親と選択ジョイントを結ぶベクトルをX軸とする直行座標
+			カレント系　カプセルマットに選択ジョイントの行列の変化分を掛けたもの
+			ペアレント系（現在コメントアウト）　カプセルマットに選択ジョイントの親のジョイントの行列の変化分を掛けたもの
+			初回のジョイントクリック（どれでも）時にカプセルマットを計算
 
 
 2017/08/23_1
-	�}�j�s�����[�^�s��f�o�b�O��
-		�J�����g�n�ƃy�A�����g�n�̓������m�F�B
-			PhysicsRotAxisDelta�Ńy�A�����g�n�̓R�����g�A�E�g���B
+	マニピュレータ行列デバッグ中
+		カレント系とペアレント系の動きを確認。
+			PhysicsRotAxisDeltaでペアレント系はコメントアウト中。
 
-		�J�����g�n�ƃy�A�����g�n�̐؂�ւ��͌��ݓ����Ă��Ȃ�
-			�J�����g�n�ɂȂ��Ă���
+		カレント系とペアレント系の切り替えは現在動いていない
+			カレント系になっている
 
 
 2017/08/21_2
-	FBX�ۑ��ŃA�j���[�V���������������Ȃ�o�O���C�����܂����B
-	���ŋߐ������o�O�ł����B		
+	FBX保存でアニメーションがおかしくなるバグを修正しました。
+	つい最近生じたバグでした。		
 
 2017/08/21_1
-	���ӁI�I�I
-		���݁AFBX�̕ۑ��������FBX�̊�{�s��Ɋւ���s�������܂��ăA�j���[�V����������Ă��܂��܂��B
-		2017/08/20�̕ύX�������ł��B
-		�o���邾�����������ɒ����\��ł��B
-		CalcAxisMatZ��NodeMat�̂�����̕s��ł��B
+	注意！！！
+		現在、FBXの保存をするとFBXの基本行列に関する不具合がありましてアニメーションが崩れてしまいます。
+		2017/08/20の変更が原因です。
+		出来るだけ早いうちに直す予定です。
+		CalcAxisMatZとNodeMatのあたりの不具合です。
 
 
 2017/08/20_2
-	�}�j�s�����[�^�̎���X���c�C�X�g�ɂ��܂����B
-		�W���C���g���}�E�X�ŃN���b�N�����ۂɁi����̃N���b�N�j���̌v�Z������܂��B
+	マニピュレータの軸をX軸ツイストにしました。
+		ジョイントをマウスでクリックした際に（初回のクリック）軸の計算がされます。
 
-	����
-		���݁APhysics*�{�^���������Ă���{�[���h���b�O�܂łɎ��Ԃ��������
-		�����V�~�����~�܂��Ă��܂��֐߂̓������A�g���Ȃ����Ƃ�����܂��B
-		����ȂƂ��̓{�^���������Ȃ����Ă�蒼���Ă��������B
-		DeactivationTime�֌W�̏Ǐ󂾂Ǝv���܂��̂ŁA���̂����ɒ��������Ǝv���܂��B
+	注意
+		現在、Physics*ボタンを押してからボーンドラッグまでに時間がかかると
+		物理シミュが止まってしまい関節の動きが連携しないことがあります。
+		そんなときはボタンを押しなおしてやり直してください。
+		DeactivationTime関係の症状だと思いますので、そのうちに直したいと思います。
 
 
 2017/08/20_1
-	���̂̎���ύX���܂����B
-		Y���c�C�X�g����X���c�C�X�g�ɕύX���܂����B
-		���̕ύX�ɂ��Abullet physics�ɂ��ConeTwistConstraint->SetLimit���g�p���Ă��j�]���Ȃ��Ȃ�܂����B
+	剛体の軸を変更しました。
+		Y軸ツイストからX軸ツイストに変更しました。
+		この変更により、bullet physicsによるConeTwistConstraint->SetLimitを使用しても破綻しなくなりました。
 
-		���̗p�̌`��t�@�C���X�V�B
+		剛体用の形状ファイル更新。
 
-		�}�j�s�����[�^�̎��͂܂��ς��Ă��܂���B
+		マニピュレータの軸はまだ変えていません。
 
-	�c�C���e�[�������V�~�����[�V���������P���܂����B
-		�p�����[�^�����i�n�[�h�R�[�h�j�B
-		ConeTwist�ɕύX���Ă���ꎞ�I�Ɏ��܂肪�����Ȃ��Ă��܂����B
+	ツインテール物理シミュレーションが改善しました。
+		パラメータ調整（ハードコード）。
+		ConeTwistに変更してから一時的に収まりが悪くなっていました。
 
 
 
 2017/08/19_1
-	�p�x�R���g���[���̏����Ƃ��ăI�C���[�p�v�Z��⋭���܂����B
-		CQuaternion�N���X��
-			Q2EelZXY, Q2EulYXZ, Q2EulXYZ�֐���ǉ��B
-			�N�H�[�^�j�I����3��ނ̉�]�����ŃI�C���[�p�ɕϊ����܂��B
+	角度コントロールの準備としてオイラー角計算を補強しました。
+		CQuaternionクラスに
+			Q2EelZXY, Q2EulYXZ, Q2EulXYZ関数を追加。
+			クォータニオンを3種類の回転順序でオイラー角に変換します。
 
-			����m�F��MameBake3D�̋@�\�ŃI�C���[�p�ɕϊ��������̂�
-			FBXSDK�̋@�\�ɂ�XYZ�ɒ����ďo�͂���FBX��Maya�œǂݍ���Ŋm�F���܂����B
-			�A�j���[�V�������������Đ�����܂����B
+			動作確認はMameBake3Dの機能でオイラー角に変換したものを
+			FBXSDKの機能にてXYZに直して出力したFBXをMayaで読み込んで確認しました。
+			アニメーションも正しく再生されました。
 
-		FBX�o�͋@�\�̕ύX�B
-			FBX�o�͎�(BVH����̕ϊ�������)�ɍŏ�����XYZ�̉�]�����ŏ��������܂����B
+		FBX出力機能の変更。
+			FBX出力時(BVHからの変換を除く)に最初からXYZの回転順序で処理をしました。
 
 
 2017/08/12_1
-	�����V�~�����[�V�����̃p�����[�^��ConeTwist�p�ɒ���
-		�R�O�������ł����肵�܂���
+	物理シミュレーションのパラメータをConeTwist用に調整
+		３０ｆｐｓでより安定しました
 
-	����������Ƃ����Ȃ��̂ŁAGZero*�\�L�i���d�͕ҏW�̈Ӂj��Physics*�\�L�ɕύX
+	誤解を招くといけないので、GZero*表記（無重力編集の意）をPhysics*表記に変更
 
 
 2017/08/10_3
 	ReadMe.txt
-		����@�y�����R���X�g���C���g�z���Ⴊ�񂾂肩���Ƃ��グ����
-�@�@�@�@�@�@�@�@https://youtu.be/JIXG7u1RciU
+		動画　【物理コンストレイント】しゃがんだりかかとを上げたり
+　　　　　　　　https://youtu.be/JIXG7u1RciU
 
 2017/08/10_2
-	�{�[���E�N���b�N���j���[�Ɂu���OMV�v���j���[��ǉ�
+	ボーン右クリックメニューに「除外MV」メニューを追加
 
-	�g�p��F
-		GZeroMV�{�^�������������
-			�ܐ�Ƃ����ƂɁuPosConstraint�v��ݒ�
-			�Ђ��Ƃ����̕t�����Ɂu���OMV�v��ݒ�
-			�J�������L�����̐^����
-			�{�[�����ǂ�ł��P����ŁA�L�����̑O�Ƀh���b�O���Ă���L�����̉��Ƀh���b�O���Ă���ɃL�����̌��Ƀh���b�O�i�������j
+	使用例：
+		GZeroMVボタンを押した後に
+			つま先とかかとに「PosConstraint」を設定
+			ひざとももの付け根に「除外MV」を設定
+			カメラをキャラの真横に
+			ボーンをどれでも１つつかんで、キャラの前にドラッグしてからキャラの下にドラッグしてさらにキャラの後ろにドラッグ（ゆっくり）
 
-			�[�[�[���@����ݒu�����܂܃L���������Ⴊ��
+			ーーー＞　足を設置したままキャラがしゃがむ
 
 
 2017/08/10_1
-	�R���X�g���C���g��6DofSpring����ConeTwist�ɕύX��
+	コンストレイントを6DofSpringからConeTwistに変更中
 		
-	���d��IK�{�^���������Ă����
-		�N���b�N�̂��тɊJ�n���̃|�[�Y�ɖ߂�
-		�|�[�Y���m�肵�����ꍇ�ɂ̓��C���E�C���h�E�㕔�́uBt Apply�v�X�v���C�g���N���b�N
+	無重力IKボタンを押している間
+		クリックのたびに開始時のポーズに戻る
+		ポーズを確定したい場合にはメインウインドウ上部の「Bt Apply」スプライトをクリック
 	
-	���d��IK�ł͂Ȃ��ʏ�̕ҏW���[�h�̖߂��uSTOP Bt�v�{�^���ǉ�
+	無重力IKではない通常の編集モードの戻す「STOP Bt」ボタン追加
 
 
-	�{�[���E�N���b�N�̃��j���[
-		�u�ꎞMass0�v���j���[�@�F�@�ꎞ�I�Ɏ��ʂ��[���ɂ��ăV�~�����[�V�������ʂ�����������B
-						��{�I�ɂ͓����Ȃ����S�������Ȃ��Ƃ����킯�ł͂Ȃ��B
+	ボーン右クリックのメニュー
+		「一時Mass0」メニュー　：　一時的に質量をゼロにしてシミュレーション効果を激減させる。
+						基本的には動かないが全く動かないというわけではない。
 
-		�uPos Constraint�v���j���[�@�F�@�ʒu�R���X�g���C���g�B�ʒu�͓����ɂ������p�x�͕ς��B
+		「Pos Constraint」メニュー　：　位置コンストレイント。位置は動きにくいが角度は変わる。
 
-		�g�p��F
-			GZeroRot�{�^�������������
-				�ܐ��PosConstraint��ݒ�B
-				�����̂����̕t������Mass0�ݒ�B
-				�����̕t�����̐e�̃{�[����Mass0�ݒ�B
-				�Ђ����h���b�O�B
+		使用例：
+			GZeroRotボタンを押した後に
+				つま先にPosConstraintを設定。
+				両方のももの付け根をMass0設定。
+				ももの付け根の親のボーンもMass0設定。
+				ひざをドラッグ。
 				
-				�[�[���Ђ��Ƃ����������オ���Ăܐ�ʒu���Œ肳��Ă����Ƃ��オ��B
+				ーー＞ひざとももが持ち上がってつま先位置が固定されてかかとが上がる。
 
 
-	�܂��_�C�A���O�Ƀo�l�̍��ڂ��c���Ă��邪���̕��j�����܂������Ύ�菜���Ă��������ŁB
+	まだダイアログにバネの項目が残っているがこの方針がうまくいけば取り除いていく方向で。
 
 
 2017/08/03_2
 	ReadMe.txt
-		����@�y�܂߂΂��RD�z�ҏW�Ɏg����(or Not?)���d��IK
+		動画　【まめばけ３D】編集に使える(or Not?)無重力IK
 		https://youtu.be/EU9owDSkDtw
 
 2017/08/03_1
-	GZeroMV(���d��k�ړ�)���C�����܂����B
-		�ҏW�\�ɂ��邱�Ƃɏd����u���ďC�����܂����B
-		GZeroMV�ł̕������ʂ̓R���X�g���C���g�i�{�[�����E�N���b�N���ďo�Ă��郁�j���[�Őݒ�j�̕��������ɍi��܂����B
-		�����I�ȓ����͐������ꂽ���̂́A�ҏW�\�ɂȂ�܂����B
+	GZeroMV(無重力k移動)を修正しました。
+		編集可能にすることに重きを置いて修正しました。
+		GZeroMVでの物理効果はコンストレイント（ボーンを右クリックして出てくるメニューで設定）の部分だけに絞りました。
+		物理的な動きは制限されたものの、編集可能になりました。
 
 2017/08/02_1
-	GZeroMV���C�����܂����B
-		�X�̍��̂̈ړ��̌v�Z���@��ύX���܂����B
-		�h���b�O���Ă��鍄�̂̈�Ԑe�̍��̂܂ňړ�������悤�ɂ��܂����i����ɂ��`�����h�~���邽�߁j
+	GZeroMVを修正しました。
+		個々の剛体の移動の計算方法を変更しました。
+		ドラッグしている剛体の一番親の剛体まで移動させるようにしました（操作による形崩れを防止するため）
 
-	�ʒu�R���X�g���C���g�̐ݒ�ɂ��ĕύX���܂����B
-		�{�[�����E�N���b�N����GZeroConstraint���j���[��I�������
-		�܂��R���X�g���C���g�ݒ肵�Ă��Ȃ������ꍇ�͐ݒ肳��A
-		���łɃR���X�g���C���g�ݒ肵�Ă����ꍇ�ɂ͐ݒ肪��������܂��B
+	位置コンストレイントの設定について変更しました。
+		ボーンを右クリックしてGZeroConstraintメニューを選択すると
+		まだコンストレイント設定していなかった場合は設定され、
+		すでにコンストレイント設定していた場合には設定が解除されます。
 
-		���̐ݒ�̃t���O��GZeroMV, GZeroRot�{�^���������Ă���������܂���B
+		この設定のフラグはGZeroMV, GZeroRotボタンを押しても解除されません。
 		
-		GZeroRot, GZeroMV�{�^�����������Ƃ��ɃR���X�g���C���g�t���O���ݒ肳��Ă���{�[���ɑ΂���
-		�u�{�^�����������Ƃ��̃{�[���̈ʒu�v�ɍS������悤�ɐݒ肵�܂��B
+		GZeroRot, GZeroMVボタンを押したときにコンストレイントフラグが設定されているボーンに対して
+		「ボタンを押したときのボーンの位置」に拘束するように設定します。
 
 2017/07/31_1
-	GZero���[�h�̂Ƃ��̃G���h�W���C���g�̈����̃f�o�b�O
-		�G���h�W���C���g���h���b�O�ł���悤�ɂȂ�܂����B
+	GZeroモードのときのエンドジョイントの扱いのデバッグ
+		エンドジョイントをドラッグできるようになりました。
 
 2017/07/30_1
-	GZeroRot��GZeroMV�̂Ƃ��̍��̃^�C�v���R�[���ɂ��邱�Ƃɂ��
-	�u����ɑ΂���ϐ��v���オ��܂����B
+	GZeroRotとGZeroMVのときの剛体タイプをコーンにすることにより
+	「操作に対する耐性」が上がりました。
 
-	�������A�f�������삷��Ǝv��ʌ��ʂɂȂ蓾�邱�Ƃɕς��͂���܂���B
+	しかし、素早く操作すると思わぬ結果になり得ることに変わりはありません。
 
 
 2017/07/24_1
-	`ReadMe.txt�X�V
-		����Љ�@�y�܂߂΂��RD�z�����ƈʒu�R���X�g���C���g������
-�@�@�@�@�@�@�@�@https://youtu.be/LgX_15AMt1o
+	`ReadMe.txt更新
+		動画紹介　【まめばけ３D】そっと位置コンストレイント実験中
+　　　　　　　　https://youtu.be/LgX_15AMt1o
 
-	GZeroMV�̈ʒu�R���X�g���C���g�͏�L�����N�̓�����݂�Ƃ킩��܂���
-	�{�[���E�N���b�N�ōs���܂��B
-	GZeroMV�̃{�^���������ƃR���X�g���C���g�͉��������̂�
-	�uGZeroMV�̃{�^���������Ă���v�{�[���E�N���b�N�ŃR���X�g���C���g�w�肵�܂��B
+	GZeroMVの位置コンストレイントは上記リンクの動画をみるとわかりますが
+	ボーン右クリックで行います。
+	GZeroMVのボタンを押すとコンストレイントは解除されるので
+	「GZeroMVのボタンを押してから」ボーン右クリックでコンストレイント指定します。
 
-	���̈ʒu�R���X�g���C���g�̐ݒ�^�C�~���O�͉��̂��̂ł��B
+	この位置コンストレイントの設定タイミングは仮のものです。
 
 
 2017/07/22_1
-	GZeroRot��GZeroMV��2��ނ̖��d�͉��ł̕ҏW���������B
-		GZeroRot�͉�]�AGZeroMV�͈ړ��ł��B
-		���C���E�C���h�E�ɂ��ꂼ��̃X�^�[�g�{�^����z�u�B
-		GZeroMV�͓��ɂ����Ƃ�����葀�삵�Ȃ��ƃr�W���A������ςȂ��ƂɂȂ�܂��B
+	GZeroRotとGZeroMVの2種類の無重力下での編集を実験中。
+		GZeroRotは回転、GZeroMVは移動です。
+		メインウインドウにそれぞれのスタートボタンを配置。
+		GZeroMVは特にそっとゆっくり操作しないとビジュアルが大変なことになります。
 
-		�������B
+		調整中。
 
 
 2017/07/18_1
-	���d��IK�̍ۂɃL�����N�^�[�S�̂̌������l�����Ă��Ȃ������̂��C���B
-		�i�ʏ��IK�̍ۂɂ͂��łɍl�����Ă����̂ŁA�������@���̗p�B�j
+	無重力IKの際にキャラクター全体の向きを考慮していなかったのを修正。
+		（通常のIKの際にはすでに考慮していたので、同じ方法を採用。）
 
 	
-	����@�y�܂߂΂��RD�z�p�����[�^������60fps�ł̃L���v�`��
-�@�@�@�@https://youtu.be/4FwFRuiF-D8	
+	動画　【まめばけ３D】パラメータ調整と60fpsでのキャプチャ
+　　　　https://youtu.be/4FwFRuiF-D8	
 
 
 2017/07/15_2
-	�p�����[�^���s����B
+	パラメータ試行錯誤。
 
-	���C���E�C���h�E�ɕ����V�~���J�n�̂��߂̃{�^���Ɩ��d��IK�J�n�̂��߂̃{�^����t���܂����B
+	メインウインドウに物理シミュ開始のためのボタンと無重力IK開始のためのボタンを付けました。
 
-	�u�I�𕔂𒍎��_�ɂ���v�`�F�b�N�{�^�����`�F�b�N�������ɂ́A�A�j���[�V�����̍Đ����ɂ��J������ǔ�������悤�ɂ��܂����B
+	「選択部を注視点にする」チェックボタンをチェックした時には、アニメーションの再生時にもカメラを追尾させるようにしました。
 
 
 2017/07/15_1
-	���d�̓��O�h�[���iF10�L�[�j�������B
-		������̊��ł͖��d�̓��O�h�[������30fps�قǂ������̂�80fps�قǂ̕`�摬�x�ɂȂ�܂����B	
+	無重力ラグドール（F10キー）高速化。
+		こちらの環境では無重力ラグドール時に30fpsほどだったのが80fpsほどの描画速度になりました。	
 
-	F9�L�[�ł̕����V�~�������܂������Ȃ��Ȃ��Ă����̂��C���B
-		��ɍ��̂̒������B
+	F9キーでの物理シミュがうまくいかなくなっていたのを修正。
+		主に剛体の長さ問題。
 
-	���m�̖��Ɖۑ�B
-		���d�̓��O�h�[���������F9�̃V�~�����[�V�����p�̃o�l�̃p�����[�^�܂ŕς���Ă��܂��B
-			(2017/07/18���_�ōČ������B���Ⴂ�̉\������B)
+	既知の問題と課題。
+		無重力ラグドールをするとF9のシミュレーション用のバネのパラメータまで変わってしまう。
+			(2017/07/18時点で再現せず。勘違いの可能性あり。)
 		
-		IK�ɐ����p�x���Ȃ��B
+		IKに制限角度がない。
 		
-		���d��IK�͉�]�����R���X�g���C���g���Ȃ���̈ړ��ɗ͂𔭊��������ł���i���ݎ������Ă���͉̂�]�̂݁j�B
+		無重力IKは回転よりもコンストレイントしながらの移動に力を発揮しそうである（現在実装しているのは回転のみ）。
 
 2017/0710_1
-	���d��IK�̍X�V�B
-	���d��IK�J�n�{�^�������C���E�C���h�E�������ɔz�u�B
-	�����̃p�����[�^�𒲐��������Ƃɂ��A�Ӑ}���Ȃ������i�������Ă��Ȃ��̂Ƀ��f�����j������j���������܂����B
+	無重力IKの更新。
+	無重力IK開始ボタンをメインウインドウ中央下に配置。
+	物理のパラメータを調整したことにより、意図しない動き（何もしていないのにモデルが泳いだり）が激減しました。
 
 2017/07/09_1
-	readme.txt�X�V�B
-	2017/07/08�̃A�b�v�f�[�g�Ń��[�V�����X�s�[�h�̃f�t�H���g�l���O�ɂȂ��Ă��܂���
-	����͖��d��IK�̃e�X�g�̂��߂ł��iF10�L�[�ŊJ�n�j�B
+	readme.txt更新。
+	2017/07/08のアップデートでモーションスピードのデフォルト値が０になっていますが
+	これは無重力IKのテストのためです（F10キーで開始）。
 
-	�ŋ߂̓�����Љ�܂��B
+	最近の動画を紹介します。
 	
-	����@�y�܂߂΂��RD�z�o�l���f��IK
-�@�@�@�@https://youtu.be/puPVYJrn0gs
+	動画　【まめばけ３D】バネモデルIK
+　　　　https://youtu.be/puPVYJrn0gs
 
-	����@�y�܂߂΂��RD�z30fps�����p�t�H�[�}���X���P
+	動画　【まめばけ３D】30fps物理パフォーマンス改善
 	https://youtu.be/lIvNlK7rlqI
 
-	����@�y�܂߂΂��RD�z30fps�Ŕj�]���Ȃ�����
+	動画　【まめばけ３D】30fpsで破綻しない物理
 	https://youtu.be/eLM-ha3nQdI
 
 
 2017/07/08_1, 2
-	`���d�̓��O�h�[��IK�@�\�쐬�X�^�[�g�B
-	F10�L�[�������Ɩ��d�̓��O�h�[����ԂɂȂ�܂��B
-	���̏�ԂŃ{�[���̊֐ߕ������h���b�O����ƃ{�[����IK��]���\�ł��B
-	������g�p���ăA�j���[�V�����̕ҏW���ł���܂łɂ��Ă����\��ł��B
+	`無重力ラグドールIK機能作成スタート。
+	F10キーを押すと無重力ラグドール状態になります。
+	その状態でボーンの関節部分をドラッグするとボーンのIK回転が可能です。
+	これを使用してアニメーションの編集ができるまでにしていく予定です。
 
 
 2017/06/29_1
-	�f�o�b�O��Motion2Bt�̉��ǁB
-	�ႢFPS�A���Ȃ��v�Z�񐔂ł����肷��悤�ɂȂ�܂����B
-	�U�O�������p�̃T���v����btCalcCnt 1�ł����肵�Ă��܂��B
-	�R�O�������p�̃T���v����btCalcCnt 3�ň��肵�Ă���A���܂荄�̂��\��Ȃ��Ȃ�܂����B
+	デバッグとMotion2Btの改良。
+	低いFPS、少ない計算回数でより安定するようになりました。
+	６０ｆｐｓ用のサンプルはbtCalcCnt 1でも安定しています。
+	３０ｆｐｓ用のサンプルはbtCalcCnt 3で安定しており、あまり剛体が暴れなくなりました。
 
 
 2017/06/25_1
-	�f�o�b�O���܂����B
-	30fps�̊��Ŏ��s����ۂ̈���x�����������܂����B
-	Media�t�H���_�ɃT���v����ǉ����܂����B
+	デバッグしました。
+	30fpsの環境で実行する際の安定度が少し増しました。
+	Mediaフォルダにサンプルを追加しました。
 
-	�{�e�L�X�g�Ɂ@�����ƃL�[�{�[�h�@�̋L�q��ǉ����܂����B
+	本テキストに　物理とキーボード　の記述を追加しました。
 
 2017/06/17_1
-	���̐ݒ胂�[�h�ŕ\�����Ă��鍄�̂̈ʒu������Ă����̂��C�����܂����B
-	����́A2017/06/13�̏C���ɂ��s��̉����ł��B
-	MameMedia�t�H���_�̒��̂RD�f�[�^�̌��_���C�����A����ɕ\�����̌v�Z���C�����܂����B
+	剛体設定モードで表示している剛体の位置がずれていたのを修正しました。
+	これは、2017/06/13の修正による不具合の解消です。
+	MameMediaフォルダの中の３Dデータの原点を修正し、さらに表示時の計算を修正しました。
 
 
 2017/06/15_1
-	Motion2Bt�̏C���B
+	Motion2Btの修正。
 
-	60fps��30fps�Ŕj�]���Ȃ��ݒ��̃T���v����ǉ��B
-	�T���v���t�H���_���Ƀp�����[�^�̒l���������̂ł��̒l��ݒ肵�Ă��������������B
+	60fpsと30fpsで破綻しない設定例のサンプルを追加。
+	サンプルフォルダ名にパラメータの値を書いたのでその値を設定してお試しください。
 
 
 
 2017/06/13_1
-	���̂̌��_�ƕϊ��s��̌��_����v���Ă��Ȃ������̂��C���B
+	剛体の原点と変換行列の原点が一致していなかったのを修正。
 	
-	���_�̏C���ɂ��bullet physics�̌v�Z�񐔂����Ȃ��čςނ悤�ɂȂ�܂����B
-	�������A�v�Z�񐔂⍄�̂̃p�����[�^�Ȃǂ̃o�����X�́Afps�Ɉˑ����Ă����Ԃł��B
-	�Ⴆ�΁A60fps�ōĐ��ł���ꍇ�ɂ�btcalccnt 2, motion speed 3�œ����܂���
-	�L���v�`���\�t�g�𓮂����Ȃǂ���30fps�̏ꍇ�́A
-	btcalccnt 4�A motion speed 2���炢�̐ݒ�ɂ��Ȃ��Ƃ��ꂢ�ɓ����܂���B
+	原点の修正によりbullet physicsの計算回数が少なくて済むようになりました。
+	しかし、計算回数や剛体のパラメータなどのバランスは、fpsに依存している状態です。
+	例えば、60fpsで再生できる場合にはbtcalccnt 2, motion speed 3で動きますが
+	キャプチャソフトを動かすなどして30fpsの場合は、
+	btcalccnt 4、 motion speed 2くらいの設定にしないときれいに動きません。
 
-	btcalccnt, erp�̐ݒ�����C���E�C���h�E�̃X���C�_�[�łł���悤�ɂ��܂����B
+	btcalccnt, erpの設定をメインウインドウのスライダーでできるようにしました。
 
 
-	������Œ����������z�ł���
-	�P�t���[��������̌v�Z��(btcalccnt)���P��ɂ���ȂǏ���������ꍇ
-	�o�l�萔������������K�v������܂����B
-	�������A�o�l�萔������������ƍ��x�͑��������ŐL�тĂ��܂����ۂ��N����܂����B
-	���̕ӂ̃o�����X�̎����͂��ꂩ��̉ۑ肩������܂���B
+	こちらで調整した感想ですが
+	１フレーム当たりの計算回数(btcalccnt)を１回にするなど小さくする場合
+	バネ定数を小さくする必要がありました。
+	しかし、バネ定数を小さくすると今度は早い動きで伸びてしまう現象が起こりました。
+	この辺のバランスの取り方はこれからの課題かもしれません。
 
-	�������Ă���o�O
-	���̂̌��_�C���ɂ�茻�݁A
-	���̐ݒ胂�[�h��DirectX�łRD�\������鍄�́i�J�v�Z���`��Ȃǁj��
-	���S�ʒu������Ă��܂��B
-	�i�\���̃o�O�j
+	分かっているバグ
+	剛体の原点修正により現在、
+	剛体設定モードでDirectXで３D表示される剛体（カプセル形状など）の
+	中心位置がずれています。
+	（表示のバグ）
 
 
 2017/06/10
-	bullet physics�̃o�[�W������2.80����2.85�ɕύX���܂����B
-	Motion2Bt�̃f�o�b�O�����ăh�L�������g���X�V���܂����B
-	�f�o�b�O�ɂ��A���܂ŕ����v�Z�͂P�t���[���ɂ��U�O�񂵂Ă��܂�����
-	�T��ōςނ悤�ɂȂ�܂����B
+	bullet physicsのバージョンを2.80から2.85に変更しました。
+	Motion2Btのデバッグをしてドキュメントも更新しました。
+	デバッグにより、今まで物理計算は１フレームにつき６０回していましたが
+	５回で済むようになりました。
 
 2017/05/26, 27
-	bullet�̃^�C���X�e�b�v�Ȃǂ̒����Ƃ���ɔ����T���v���̃p�����[�^�����B
-	�o�C���h�|�[�Y��2�d�ɓK�p���Ă����o�O���C���B
-	�d�l�����Ȃǂ̃h�L�������g�̒ǉ��B
-	�{�e�L�X�g�ւ̒ǋL�ibullet physics�̃����N��ǉ��AVisualStudio�ɂ��ĒǋL, bullet physics�̃o�[�W�����j
+	bulletのタイムステップなどの調整とそれに伴うサンプルのパラメータ調整。
+	バインドポーズを2重に適用していたバグを修正。
+	仕様メモなどのドキュメントの追加。
+	本テキストへの追記（bullet physicsのリンクを追加、VisualStudioについて追記, bullet physicsのバージョン）
 
 
-2016/07/17 ���̂P
-	MameBake3D��ł̖@����Maya��ł̖@������v���Ȃ������́A
-	���ʂ���������(�������b�V������)��Maya��ł͕\�Ɨ��̕\���������邱�Ƃ����邱�Ƃ������ł����B
-	�f�[�^���痠�ʂ��폜���ăf�[�^���C�����܂����B
+2016/07/17 その１
+	MameBake3D上での法線とMaya上での法線が一致しない原因は、
+	裏面があった時(同じメッシュ内に)にMaya上では表と裏の表示が混ざることがあることが原因でした。
+	データから裏面を削除してデータを修正しました。
 	
-	MameBake3D��Maya�ƂŖ@���̏�Ԃ���v���܂����B
+	MameBake3DとMayaとで法線の状態が一致しました。
 
-	Media/BtTest160717_8��ǉ��B
-
-
-2016/07/16 ���̂P
-	FBX�o�͂��C�����܂����B
-	�ȑO�̏o�͌��ʂł��ƁAMaya�œǂݍ���Ŗ@�����G�f�B�b�g����ۂ�Maya���G���[�ɂȂ邱�Ƃ�����܂����B
-	�C������FBX�ł��ƁAMaya�œǂݍ���ł�����ɑ���\�ł��B
-	�������A�܂�MameBake3D��ł̖@����Maya��ł̖@������v���Ă��Ȃ��悤�ł��B
-	����������܂��B
-
-	�i���܂�MameBake3D�ŕۑ�����FBX���A�V����MameBake3D�œǂݍ���ŏo�͂��Ȃ������Ƃ�
-	Maya�Ő���ɑ���\��FBX�ɂȂ�܂��B�j
-
-	Media/BtTest160716_5��add���܂����B
+	Media/BtTest160717_8を追加。
 
 
-2016/07/13 ���̂P
-	���̖т̖@�������������Ȃ��Ă����̂�Maya�Œ����܂����B
-	�o�C���h�|�[�Y����蒼���܂����B
+2016/07/16 その１
+	FBX出力を修正しました。
+	以前の出力結果ですと、Mayaで読み込んで法線をエディットする際にMayaがエラーになることがありました。
+	修正したFBXですと、Mayaで読み込んでも正常に操作可能です。
+	しかし、まだMameBake3D上での法線とMaya上での法線が一致していないようです。
+	後程調査します。
+
+	（今までMameBake3Dで保存したFBXも、新しいMameBake3Dで読み込んで出力しなおすことで
+	Mayaで正常に操作可能なFBXになります。）
+
+	Media/BtTest160716_5をaddしました。
+
+
+2016/07/13 その１
+	髪の毛の法線がおかしくなっていたのをMayaで直しました。
+	バインドポーズも作り直しました。
 	
-	���̃o�[�W��������
-	MameBake3D�ł́A�����̃o�C���h�|�[�Y�����������ꍇ�A�Ō�̃o�C���h�|�[�Y���̗p���܂��B
+	このバージョンから
+	MameBake3Dでは、複数のバインドポーズが見つかった場合、最後のバインドポーズを採用します。
 
-	�����commit�̃R�����g��debug(rigid null)
-	�Ƃ���܂������A�C���͂��̃o�[�W��������|����܂��B
-	(push�O�������̂ŁA�Ԉ����commit�R�����g��ł��������߂�revert�����̂ł����A
-	���̂Ƃ��̃~�X�ŏC����commit����Ă��܂���ł����B)
+	昨日のcommitのコメントにdebug(rigid null)
+	とありましたが、修正はこのバージョンから掛かります。
+	(push前だったので、間違ったcommitコメントを打ち直すためにrevertしたのですが、
+	そのときのミスで修正がcommitされていませんでした。)
 
-2016/07/12 ���̂P
-	F9�L�[��������bt�V�~�����[�V�����������ꍇ�A
-	���[�V�����̃t���[�����ŏI�t���[������ŏ��̃t���[���ɖ߂�������
-	�S�̈ړ��ʂȂǂ��傫�����Ƃ���A�������j���񂷂邱�Ƃ�����܂����B
+2016/07/12 その１
+	F9キーを押してbtシミュレーションをした場合、
+	モーションのフレームが最終フレームから最初のフレームに戻った時に
+	全体移動量などが大きいことから、物理が破たんすることがありました。
 
-	�ŏI�t���[������ŏ��̃t���[���ɖ߂������ɂ́A�����̏������ŏ��ɖ߂��悤�ɂ��܂����B
-	����A���̋@�\�̓I�v�V�����ɂ���\��ł��B
+	最終フレームから最初のフレームに戻った時には、物理の処理も最初に戻すようにしました。
+	今後、この機能はオプションにする予定です。
 
-	�T���v���f�[�^��Media/BtTest160712_2�Ƀo�[�W�����A�b�v���܂����B
-	���[�V�����̍Ō�̕��Ŕ��̖т���������邱�Ƃ�����܂��B
-	����͊�̉e���x�Ɣ��̖т̉e���x�����킹�邱�ƂőΉ��\��ł��B
+	サンプルデータをMedia/BtTest160712_2にバージョンアップしました。
+	モーションの最後の方で髪の毛が少しずれることがあります。
+	これは顔の影響度と髪の毛の影響度を合わせることで対応予定です。
 
 
-2016/07/11 ���̂R
-	���O�h�[���̉��P�B
+2016/07/11 その３
+	ラグドールの改善。
 
-	���̐ݒ�E�C���h�E�Ɂu��]�֎~�v�`�F�b�N�{�b�N�X��ǉ��B
-	�ʏ펞�̕��̍��̂̐ݒ��RHip, LHip, RCollar, LCollar, Neck�Ȃǂ���]�֎~�ɂ���ƁA
-	���O�h�[�����Ɍ`��j���񂵂Ȃ��Ȃ�܂��B
+	剛体設定ウインドウに「回転禁止」チェックボックスを追加。
+	通常時の方の剛体の設定でRHip, LHip, RCollar, LCollar, Neckなどを回転禁止にすると、
+	ラグドール時に形状破たんしなくなります。
 
-	F9�L�[�������Ă���D���ȃ^�C�~���O��F10�L�[�������Ƃ��̎��_���烉�O�h�[�����n�܂�܂��B
-	�҂̕����Ȃǂ��j���񂷂�󋵂͂Ȃ��Ȃ�܂������A�܂������p�x�Ȃ��Ȃ����Ԃł��̂�
-	���O�h�[���J�n�̎p���ɂ���Ă݂͂����Ȃ����i�ɂȂ�܂��̂ł����ӂ��Ă��������B
+	F9キーを押してから好きなタイミングでF10キーを押すとその時点からラグドールが始まります。
+	股の部分などが破たんする状況はなくなりましたが、まだ制限角度なく曲がる状態ですので
+	ラグドール開始の姿勢によってはみたくない光景になりますのでご注意してください。
 
-2016/07/11 ���̂Q
-	�y�������z MameBake3D �y�g�������ȁH�z
+2016/07/11 その２
+	【物理が】 MameBake3D 【使えそうな？】
 	https://youtu.be/gh_ymrdA8tM
 
-2016/07/11 ���̂P
-	CBtObject����̌��؂ƒ��������܂����B
+2016/07/11 その１
+	CBtObject周りの検証と調整をしました。
 
-	�T���v��Media/BtTest160711_3��ǉ��B
-	�X�ɒ������܂����B
-	�ǂݍ��݌��F9�������ƕ������͂��܂�܂��B
-	F10�L�[�ł̃��O�h�[���������Ԏg�������ɂȂ��Ă��܂����B
-	�������A�����ɋ߂��p������̃��O�h�[���Ō҂̕����ɕs����o�邱�Ƃ����邽�߁A
-	�ςȉf�����������Ȃ��l��F10�͉����Ȃ��ق����ǂ��Ǝv���܂��B
-
-
-2016/07/10 ���̂P
-	Bullet���g�����ӂ̃f�o�b�O�����܂����B
-	�o�O�̒��ɂ�CBtObject�̊K�w�\���ɂ�����镔��������܂����B
-
-	�T���v����Media/BtTest160710�𑫂��܂����B
-	�ǂݍ����F9�������ƃc�C���e�[���̕����������܂��B
-	�������K�w���P�K�w���₵�܂����B
-	�傫�ȓ����̎��ɂ��т�[�[��ƐL�тȂ��Ȃ�܂����B
-	�܂������̗]�n������܂����A�Ƃ肠�������̕ӂ�push�B
+	サンプルMedia/BtTest160711_3を追加。
+	更に調整しました。
+	読み込み後にF9を押すと物理がはじまります。
+	F10キーでのラグドールもだいぶ使えそうになってきました。
+	しかし、直立に近い姿勢からのラグドールで股の部分に不具合が出ることがあるため、
+	変な映像を見たくない人はF10は押さないほうが良いと思います。
 
 
-2016/07/08�@���̂Q
-	CQuaternion::RotationMatrix�̃\�[�X�����؂��܂����B
-	�s����X�P�[���ɂ��Đ��K�����鏈����������K�v������܂����B
-	MakeRotMatX��]�u����K�v������܂����B
-	�C����������RotationMatrix�̌v�Z������D3DX��ˑ��ɂ��܂����B
+2016/07/10 その１
+	Bulletを使う周辺のデバッグをしました。
+	バグの中にはCBtObjectの階層構造にかかわる部分もありました。
+
+	サンプルにMedia/BtTest160710を足しました。
+	読み込んでF9を押すとツインテールの物理が動きます。
+	動かす階層を１階層増やしました。
+	大きな動きの時にもびよーーんと伸びなくなりました。
+	まだ調整の余地がありますが、とりあえずこの辺でpush。
+
+
+2016/07/08　その２
+	CQuaternion::RotationMatrixのソースを検証しました。
+	行列をスケールについて正規化する処理を加える必要がありました。
+	MakeRotMatXを転置する必要がありました。
+	修正を加えてRotationMatrixの計算部分をD3DX非依存にしました。
 
 2016/07/08
-	����A�l�b�g�Ō�����CQuaternion::RotationMatrix��D3DX��ˑ��ł𓱓����Ď����Ă݂܂�����
-	�����A�����Ō��،v�Z�����Ă݂Ăǂ�������Ȃ��̂ň�x���[���o�b�N���܂��B
+	昨日、ネットで見つけたCQuaternion::RotationMatrixのD3DX非依存版を導入して試してみましたが
+	今日、自分で検証計算をしてみてどうも合わないので一度ロールバックします。
 
 
-2016/06/22 ���̂P
-	exe�t�@�C����git����rm���܂����B
-	�R���p�C�������Ȃ����Ŏ��s�t�@�C����������������
-	info@ochakkolab.moo.jp �܂Ń��[���ɂĂ��⍇�����������B
+2016/06/22 その１
+	exeファイルをgitからrmしました。
+	コンパイル環境がない方で実行ファイルを試したい方は
+	info@ochakkolab.moo.jp までメールにてお問合せください。
 
-2016/06/18 ���̂R
-	��ԋ@�\�ɂ�������������C���B
+2016/06/18 その３
+	補間機能における内分率を修正。
 
 
-2016/06/18 ���̂Q
-	�y�K�E�V�A���Łz MameBake3D �y�������z
+2016/06/18 その２
+	【ガウシアンで】 MameBake3D 【平滑化】
 	https://youtu.be/6iUwef1ZiYM
 
-2016/06/18 ���̂P
-	�������@�\�̃f�o�b�O�����܂����B
-	�������̃t�B���^�[�^�C�v�ƃt�B���^�[�T�C�Y���Z�b�g���Y��Ă���o�O������܂����B
-	�f�o�b�O�ɂ�蕽�������@�\����悤�ɂȂ�܂����B
-	��������s���邱�Ƃɂ��A�����ʂ�����邱�Ƃ��m�F���܂����B
+2016/06/18 その１
+	平滑化機能のデバッグをしました。
+	平滑化のフィルタータイプとフィルターサイズをセットし忘れているバグがありました。
+	デバッグにより平滑化が機能するようになりました。
+	複数回実行することにより、より効果が現れることを確認しました。
 
 
-2016/06/17 ���̂T
-	�y��ԂŁz MameBake3D �y�m�C�Y�����z
+2016/06/17 その５
+	【補間で】 MameBake3D 【ノイズ除去】
 	https://youtu.be/l4EuXXCwXcw
 
 
-2016/06/17 ���̂S
-	�c�[���E�C���h�E�Ɂu��ԁv�{�^����ǉ����܂����B
-	�I���t���[���͈͂̍ŏ��̃t���[���ƍŌ�̃t���[���̎p����ۂ����̊Ԃ̎p�����Ԃ��܂��B
+2016/06/17 その４
+	ツールウインドウに「補間」ボタンを追加しました。
+	選択フレーム範囲の最初のフレームと最後のフレームの姿勢を保ちつつその間の姿勢を補間します。
 	
-	Media/RigTest8�̑����҂����ƂȂ镔����bvh�̃f�[�^�̒l���T�t���[���ԂقǂP�W�O�x�߂��ω����Ă��邱�Ƃ������ł����B
-	���̃t���[���ԁA�Q�R�Q�t���[���ӂ肩��U�t���[�����炢�̊Ԃɑ΂��ĕ�ԋ@�\���g�p�����Ƃ��늊�炩�ɂȂ�܂����B
-	Media/RigTest8�̃f�[�^���X�V���܂����B
+	Media/RigTest8の足がぴくっとなる部分はbvhのデータの値が５フレーム間ほど１８０度近く変化していることが原因でした。
+	このフレーム間、２３２フレーム辺りから６フレームくらいの間に対して補間機能を使用したところ滑らかになりました。
+	Media/RigTest8のデータを更新しました。
 
 
-2016/06/17 ���̂R
-	�R�s�[�y�[�X�g���A�b�v�f�[�g���܂����B
-	�P�A�y�[�X�g�̍ۂɃt���[���͈͂�I��ł��Ȃ��Ƃ��́A�J�����g�̃t���[���̏ꏊ����R�s�[�����t���[�������y�[�X�g���܂��B
-	�Q�A�y�[�X�g�悪�I��ł����ăR�s�[���̃t���[������菭�Ȃ��ꍇ�́A�y�[�X�g��̃t���[���͈͂ɂ̂݃y�[�X�g���܂��B
-	�R�A�y�[�X�g�悪�I��ł����ăR�s�[���̃t���[������葽���ꍇ�́A�R�s�[���Ɠ����t���[�������y�[�X�g������A
-		�R�s�[���̍ŏI�t���[���̎p�����y�[�X�g��̎c��̃t���[���Ƀy�[�X�g���܂��B
+2016/06/17 その３
+	コピーペーストをアップデートしました。
+	１、ペーストの際にフレーム範囲を選んでいないときは、カレントのフレームの場所からコピーしたフレーム数分ペーストします。
+	２、ペースト先が選んであってコピー元のフレーム数より少ない場合は、ペースト先のフレーム範囲にのみペーストします。
+	３、ペースト先が選んであってコピー元のフレーム数より多い場合は、コピー元と同じフレーム数をペーストした後、
+		コピー元の最終フレームの姿勢をペースト先の残りのフレームにペーストします。
 
 
-2016/06/17 ���̂Q
-	CBone::CalcLocalTraAnim���C���B
-	�R�s�[�y�[�X�g���ɂQ�ڈȍ~�̃{�[���̈ړ������������Ȃ�̂��C���B
+2016/06/17 その２
+	CBone::CalcLocalTraAnimを修正。
+	コピーペースト時に２つ目以降のボーンの移動がおかしくなるのを修正。
 	
-�@�@���C���E�C���h�E�̑I���{�[���̃I�C���[�p�\���̉��ɑI���{�[���̈ړ�������\�����܂����B
+　　メインウインドウの選択ボーンのオイラー角表示の下に選択ボーンの移動成分を表示しました。
 
-	DirectX�̃f�o�C�X�쐬���ɔ{���x��FPU���w��B
+	DirectXのデバイス作成時に倍精度のFPUを指定。
 
-2016/06/17 ���̂P
-	�P�t���[���P�{�[���̎w��ŃR�s�[�y�[�X�g����Ǝp�������������Ȃ�o�O���C���B
+2016/06/17 その１
+	１フレーム１ボーンの指定でコピーペーストすると姿勢がおかしくなるバグを修正。
 
-2016/06/16 ���̂P
-	�c�[���E�C���h�E�ɕ������{�^����ǉ��B
-	Media/TestRig8�̃��[�V�����̑����҂����ƂȂ錻�ۂ̉�����ɂ͂Ȃ�܂���ł����B
-	�������͂R��ނ���܂����A��������s���Ȃ��Ƃ��܂���ʂ��o�Ȃ����Ƃ�����܂��B
+2016/06/16 その１
+	ツールウインドウに平滑化ボタンを追加。
+	Media/TestRig8のモーションの足がぴくっとなる現象の解決策にはなりませんでした。
+	平滑化は３種類ありますが、複数回実行しないとあまり効果が出ないこともあります。
 
-2016/06/15 ���̂R
-	�yRig��Rig�z MameBake3D �ypeace!�z
+2016/06/15 その３
+	【RigのRig】 MameBake3D 【peace!】
 	https://youtu.be/B_zkbayPECc
 
 
-2016/06/15 ���̂Q
-	Rig��Rig�̃T���v�������܂����B
-	Media/RigTest8/RigTest8.cha��ǂݍ��ނƎw��Rig���ǂݍ��܂�܂��B
-	�e�w��Distal_end���E�N���b�N����Ǝw���P�{���J����Rig�ɃA�N�Z�X�ł��܂��B
-	���ꂼ��̘r��Elbow���E�N���b�N����Ƙr��Rig�Ǝw���T�{�܂Ƃ߂ĊJ����Rig(Rig��Rig�̗�)�ɃA�N�Z�X�\�ł��B
-	Enable�̃`�F�b�N�{�b�N�X���g�p���邱�ƂŁA�R�{���ł��S�{���ł�(�T�{�ȉ��Ȃ�)�J�ł��܂��B
-	�T�{�܂Ƃ߂ĊJ����Rig�𑼂�Rig�̂P�v�f�Ƃ��ēo�^���邱�Ƃ��\�ł��B
+2016/06/15 その２
+	RigのRigのサンプルを作りました。
+	Media/RigTest8/RigTest8.chaを読み込むと指のRigが読み込まれます。
+	各指のDistal_endを右クリックすると指を１本ずつ開閉するRigにアクセスできます。
+	それぞれの腕のElbowを右クリックすると腕のRigと指を５本まとめて開閉するRig(RigのRigの例)にアクセス可能です。
+	Enableのチェックボックスを使用することで、３本ずつでも４本ずつでも(５本以下なら)開閉できます。
+	５本まとめて開閉するRigを他のRigの１要素として登録することも可能です。
 
 
-2016/06/15 ���̂P
-	Rig��Rig���\�ɂ��܂����B
-	Rig�̐ݒ��ʂŒʏ�̃{�[���̂Ƃ����Rig���w��ł��܂��B
-	�ł��̂�Rig��Rig���o����Ƃ������Ƃ́ARig��Rig��Rig���\�ł��B
-	�������[�v�h�~��depth(�ċA�Ăяo��)���P�O�𒴂����return���܂��B
+2016/06/15 その１
+	RigのRigを可能にしました。
+	Rigの設定画面で通常のボーンのところにRigを指定できます。
+	ですのでRigのRigが出来るということは、RigのRigのRigも可能です。
+	無限ループ防止にdepth(再帰呼び出し)が１０を超えるとreturnします。
 
-	�T���v���f�[�^���K�v���Ǝv����̂ŁA����������܂��B
+	サンプルデータが必要だと思われるので、後程準備します。
 
-2016/06/14 ���̂V
-	�X�ɃR�s�[�ƑΏ̃R�s�[�̃f�o�b�O�����܂����B
-	�y�[�X�g����ۂɁA���[�g�ȊO�̐e��q���{�[�������O�ł���悤�ɂȂ�܂����B
-	����Ώۃ{�[���̓c�[���E�C���h�E�́u�R�}���h�Ώۃ{�[���v�{�^���������Đݒ肵�܂��B
-
-
-2016/06/14 ���̂T
-	���ʂ̃R�s�[��(�Ώ̃R�s�[�ł͂Ȃ�)�ɂ����[�g�{�[�������O���ăy�[�X�g�����ꍇ�ɁA�S�̈ړ����������Ȃ�悤�ɂ��܂����B
-
-2016/06/14 ���̂S
-	�c�[���{�^���̃��[�V�����̃v���p�e�B�Ń��[�V��������ς��Ă���Ctrl + Z��Undo�����ꍇ��
-	�^�C�����C�����X�V����Ă��Ȃ������̂��C�����܂����B
-
-2016/06/14 ���̂R
-	���C���E�C���h�E�̐��F���̃X�v���C�g���N���b�N����Rig���[�h���I�t�ɂ����ꍇ��
-	CustomRigDlg�����悤�ɂ��܂����B
-
-2016/06/14 ���̂Q
-	�{�[���̑I���O�����o����悤�ɂ��܂����B
-	�{�[���́��}�[�N�ȊO���N���b�N����ƑI�����O����ă}�j�s�����[�^�̕\���������܂��B
-	���C���E�C���h�E��GUI�p�[�c��X�v���C�g����̎��ɂ͑I���𕜊������܂����B
-
-2016/06/14 ���̂P
-	�c�[���E�C���h�E�́u�p���������v�{�^���ɃT�u�T�u���j���[��t���܂����B
-	�T�u���j���[�ŁA�S�{�[���A�I���{�[���P�����A�I���{�[���Ǝq���{�[���̒�����I�Ԃ�
-	�T�u�T�u���j���[�ŁA��]�ƈړ����������A��]���������A�ړ����������̒�����I�Ԃ��Ƃ��o���܂��B
-
-	CBone::SetWorldMatFromEul��inittraflag��ǉ��B
+2016/06/14 その７
+	更にコピーと対称コピーのデバッグをしました。
+	ペーストする際に、ルート以外の親や子供ボーンを除外できるようになりました。
+	操作対象ボーンはツールウインドウの「コマンド対象ボーン」ボタンを押して設定します。
 
 
-2016/06/13 ���̂Q
-	�Ώ̃R�s�[�̏C���B
-	�Ώ̃R�s�[�����āA�����Ώۃ{�[���I���Ń��[�g�����O���Ă���y�[�X�g�����ꍇ�̏������C���B
-	���O�����{�[���̎q���̃{�[���̃A�j����񂪎����Ă����s�������܂����B
+2016/06/14 その５
+	普通のコピー時(対称コピーではなく)にもルートボーンを除外してペーストした場合に、全体移動が正しくなるようにしました。
+
+2016/06/14 その４
+	ツールボタンのモーションのプロパティでモーション長を変えてからCtrl + ZでUndoした場合に
+	タイムラインが更新されていなかったのを修正しました。
+
+2016/06/14 その３
+	メインウインドウの水色球のスプライトをクリックしてRigモードをオフにした場合に
+	CustomRigDlgを閉じるようにしました。
+
+2016/06/14 その２
+	ボーンの選択外しが出来るようにしました。
+	ボーンの○マーク以外をクリックすると選択が外されてマニピュレータの表示が消えます。
+	メインウインドウのGUIパーツやスプライト操作の時には選択を復活させました。
+
+2016/06/14 その１
+	ツールウインドウの「姿勢初期化」ボタンにサブサブメニューを付けました。
+	サブメニューで、全ボーン、選択ボーン１つだけ、選択ボーンと子供ボーンの中から選ぶと
+	サブサブメニューで、回転と移動を初期化、回転を初期化、移動を初期化の中から選ぶことが出来ます。
+
+	CBone::SetWorldMatFromEulにinittraflagを追加。
 
 
-2016/06/13 ���̂P
-�y���[�V�����z MameBake3D �y�Ώ̃R�s�[�z����
+2016/06/13 その２
+	対称コピーの修正。
+	対称コピーをして、処理対象ボーン選択でルートを除外してからペーストした場合の処理を修正。
+	除外したボーンの子供のボーンのアニメ情報が失われていた不具合が直りました。
+
+
+2016/06/13 その１
+【モーション】 MameBake3D 【対称コピー】動画
 https://youtu.be/YeM43To-xCg
 
 
-2016/06/12 ���̂Q
-	�y���^�[�Q�b�g�z MameBake3D �y���ǂ��܂����z ����
-�@�@https://youtu.be/JYT5BAdj5Q4
+2016/06/12 その２
+	【リターゲット】 MameBake3D 【改良しました】 動画
+　　https://youtu.be/JYT5BAdj5Q4
 
 2016/06/12
-	��Ɉړ��A�j���ɂ��Ẵ\�[�X�𐮗����܂����B
+	主に移動アニメについてのソースを整理しました。
 
-	���[�V�����̃��^�[�Q�b�g�̈ړ��A�j�����C�����܂����B
-	���[�V�������ƃ��f�����̃X�P�[��������Ă��Ă��A���[�V�����̍ŏ��̃t���[���̃|�[�Y�ƃ��f���̃o�C���h�|�[�Y�������ł����
-	�ړ��A�j�����܂߂čČ����̍������^�[�Q�b�g���\�ɂȂ�܂����B
-
-
-2016/06/11 ���̂P
-	�����t���[���I�����̃o�O���C���B
-		�z�C�[�����񂵂Ă���A D �L�[�̃��[�h�ő��삵�悤�Ƃ���ƁA�ȑO�̃z�C�[���ʂ����t���[�����ړ����Ă��܂��o�O���C���B
-
-	Ctrl+Shift�̃t���[���I�����[�h�̍��}�ƃ}�E�X���{�^���N���b�N�ł̃t���[���I�����[�h�̍��}�������ł���悤�ɂ��܂����B
-
-	�t���[���I�����[�h���ɂ�����
-	A D�L�[�ł̑I���t���[���ړ��ƃ}�E�X�z�C�[���ł̑I���t���[���ړ��������ł���悤�ɂ��܂����B
-	Ctrl�������Ȃ���I���t���[���ړ�����ƂP�t���[�����ړ����܂��B
-	�iCtrl�������Ȃ���ł͂Ȃ��Ƃ��ɂ́A�T�t���[�����ړ����܂��B�j
+	モーションのリターゲットの移動アニメを修正しました。
+	モーション側とモデル側のスケールが違っていても、モーションの最初のフレームのポーズとモデルのバインドポーズが同じであれば
+	移動アニメも含めて再現率の高いリターゲットが可能になりました。
 
 
-2016/06/10 ���̂Q
-	�Ώ̃R�s�[���{�[���̈ʒu�ړ��ɑΉ������܂����B
+2016/06/11 その１
+	複数フレーム選択時のバグを修正。
+		ホイールを回してからA D キーのモードで操作しようとすると、以前のホイール量だけフレームが移動してしまうバグを修正。
+
+	Ctrl+Shiftのフレーム選択モードの合図とマウス中ボタンクリックでのフレーム選択モードの合図を混合できるようにしました。
+
+	フレーム選択モード中において
+	A Dキーでの選択フレーム移動とマウスホイールでの選択フレーム移動を混合できるようにしました。
+	Ctrlを押しながら選択フレーム移動すると１フレームずつ移動します。
+	（Ctrlを押しながらではないときには、５フレームずつ移動します。）
+
+
+2016/06/10 その２
+	対称コピーをボーンの位置移動に対応させました。
 	
-	���[�g�̃{�[���Ɋւ��ẮA�Ώ̃R�s�[�{�^�����������Ƃ��Ƀ��j���[���o����
-	�R�s�[���Ɠ����A�ʒu�ƌ����Ώ́A���������Ώ́A�ʒu�����Ώ�
-	����I�ׂ�悤�ɂ��܂����B
+	ルートのボーンに関しては、対称コピーボタンを押したときにメニューを出して
+	コピー元と同じ、位置と向き対称、向きだけ対称、位置だけ対称
+	から選べるようにしました。
 
-	���[�g�{�[���̈ʒu�ƌ������y�[�X�g��̎p���̂܂܂ɂ������ꍇ��
-	�y�[�X�g����O�Ƀc�[���{�^���́u�R�}���h�Ώۃ{�[���v�Ń��[�g�̎q���̃{�[����ΏۂɎw�肵�Ă���
-	�i�܂�A�y�[�X�g�ΏۂɃ��[�g�{�[�������Ȃ��悤�ɂ��Ă���j
-	�y�[�X�g���Ă��������B
-
-
-2016/06/10 ���̂P
-	�Ώ̃R�s�[�ƃy�[�X�g�����܂������Ă��Ȃ������̂��C�����܂����B
-	���̉ߒ��ł��낢��f�o�b�O���܂����B
+	ルートボーンの位置と向きをペースト先の姿勢のままにしたい場合は
+	ペーストする前にツールボタンの「コマンド対象ボーン」でルートの子供のボーンを対象に指定してから
+	（つまり、ペースト対象にルートボーンを入れないようにしてから）
+	ペーストしてください。
 
 
-2016/06/08 ���̂S
-	Media/RigTest8���X�V�B
-	BVH2FBX�ō쐬���ꂽFBX��RigTest8�̌`��Ƀ��^�[�Q�b�g���܂����B
-	���̍ۂ̃{�[���̑Ή����킩��X�N���[���V���b�g��Media/RigTest8/MotionRetarget20160608.png�ɎB��܂����B
-	���[�V�����r���ő����҂��҂����ƂȂ镔��������܂����A����̓��[�V�����L���v�`��(BVH)�̃m�C�Y�ɂ����̂Ǝv���܂��B
-	�i�������t�B���^�[�����̗\�肪����܂��B�j
+2016/06/10 その１
+	対称コピーとペーストがうまくいっていなかったのを修正しました。
+	その過程でいろいろデバッグしました。
 
 
-2016/06/08 ���̂Q�@���̂R
-	Media/RigTest7���폜����Media/RigTest8���쐬���܂����B
-	Metasequoia 4�Ń{�[���Ɖe���x��ݒ肵�܂����B
-	(�̂�BVH�e���v���[�g�����ɁA�w��Humanoid�e���v���[�g�����ɂ��܂����B)
-
-	���O��
-		������Ankle��
-		�����Elbow_branch��
-		����̊e�w��Distal_end
-		�ɐݒ肵�Ă���܂��B
-		�E�N���b�N�ŌĂяo���܂��B
+2016/06/08 その４
+	Media/RigTest8を更新。
+	BVH2FBXで作成されたFBXをRigTest8の形状にリターゲットしました。
+	その際のボーンの対応がわかるスクリーンショットをMedia/RigTest8/MotionRetarget20160608.pngに撮りました。
+	モーション途中で足がぴくぴくっとなる部分がありますが、これはモーションキャプチャ(BVH)のノイズによるものと思われます。
+	（平滑化フィルター導入の予定があります。）
 
 
-2016/06/08 ���̂P
-	�z�C�[�����쎞��Ctrl�������Ă����ꍇ�ɂT�{���̑���ɂ��Ă��܂�����
-	Ctrl�������Ă����ꍇ�ɂ͂������Ƃ�������ɂ��邱�Ƃɂ��܂����B
-	�}�E�X�ɂ��uIK�v�A�uFK�v��u�J�����̑���v���ɂ�Ctrl�������Ƃ�����葀��ł��܂��B
+2016/06/08 その２　その３
+	Media/RigTest7を削除してMedia/RigTest8を作成しました。
+	Metasequoia 4でボーンと影響度を設定しました。
+	(体はBVHテンプレートを元に、指はHumanoidテンプレートを元にしました。)
+
+	リグは
+		両足のAnkleと
+		両手のElbow_branchと
+		両手の各指のDistal_end
+		に設定してあります。
+		右クリックで呼び出します。
+
+
+2016/06/08 その１
+	ホイール操作時にCtrlを押していた場合に５倍速の操作にしていましたが
+	Ctrlを押していた場合にはゆっくりとした操作にすることにしました。
+	マウスによる「IK」、「FK」や「カメラの操作」時にもCtrlを押すとゆっくり操作できます。
 
 2016/06/05
-	�S�@�\�e�X�g���ăf�o�b�O���܂����B
-		���[�V�������^�[�Q�b�g�̃f�o�b�O
-		���IK�I�v�V�����̃f�o�b�O
-		�G���h�W���C���g�̎p���ҏW�̃f�o�b�O
-		RigTest6�̃f�[�^�ɕs����������̂�RigTest7�ɍ����ւ�
+	全機能テストしてデバッグしました。
+		モーションリターゲットのデバッグ
+		絶対IKオプションのデバッグ
+		エンドジョイントの姿勢編集のデバッグ
+		RigTest6のデータに不具合があったのでRigTest7に差し替え
 
-	���m�̖��
-		F10�L�[�ł̃��O�h�[���͂܂�����������Ȃ��B
-			�i���f���f�[�^�̕ςȏ�Ԃ��������Ȃ��l��F10�������Ȃ��ق����ǂ��ł��B�j
+	既知の問題
+		F10キーでのラグドールはまだ調整が足りない。
+			（モデルデータの変な状態を見たくない人はF10を押さないほうが良いです。）
 
-		�Č�����������i�荞�߂Ă��Ȃ����AF9�ł̕����V�~�����[�V��������FPS���ɒ[�ɉ������ăJ�N�J�N�ɂȂ邱�Ƃ�����B
+		再現する条件が絞り込めていないが、F9での物理シミュレーション時にFPSが極端に下がってカクカクになることがある。
 
-2016/06/03 ���̂R
-	�}�j�s�����[�^�f�[�^���X�V���܂����B
-	�~�Ռ`��𑫂��Ă���A�e�F�̑I���������炭�Ȃ��Ă��܂����B
-	�~�Ռ`����}�E�X�Ƃ̏Փ˔��肩�珜�O���邱�ƂŁA�e�F�̊O���̃����O�Ƌ���I�����₷�����܂����B
-
-
-2016/06/03 ���̂Q
-	�{�[�����E�N���b�N�����Ƃ��ɏo�郁�j���[�ɃT�u���j���[��t���܂����B
-	�T�u���j���[��Rig�ݒ肩Rig���s����I�Ԃ��Ƃ��o���܂��B
-	Rig�ݒ��I��ł�Rig�𑀍삷�邱�Ƃ͉\�ł��B
-	Rig���s�̂Ƃ��ɂ͐ݒ�_�C�A���O���o�Ȃ��Ƃ����Ⴂ�ł��B
-
-	���̑���ARig�̐ݒ�_�C�A���O����Ă�Rig���[�h�͏I���܂���B
-
-	Rig���[�h�ƒʏ탂�[�h�̐؂�ւ��́A���C���E�C���h�E��XYZ�̃X�v���C�g�̉E�́u���F�̋��̃X�v���C�g�v
-	���N���b�N���Đ؂�ւ��܂��B
+2016/06/03 その３
+	マニピュレータデータを更新しました。
+	円盤形状を足してから、各色の選択がしずらくなっていました。
+	円盤形状をマウスとの衝突判定から除外することで、各色の外側のリングと球を選択しやすくしました。
 
 
-2016/06/01 ���̂Q
-�@�@�y�g���������z MameBake3D �yRig�@�\���t�����Ⴂ�܂����z
-�@�@https://youtu.be/gkqCJNsUsKE
+2016/06/03 その２
+	ボーンを右クリックしたときに出るメニューにサブメニューを付けました。
+	サブメニューでRig設定かRig実行かを選ぶことが出来ます。
+	Rig設定を選んでもRigを操作することは可能です。
+	Rig実行のときには設定ダイアログが出ないという違いです。
 
-2016/06/01 ���̂P
-	Rig�̃e�X�g�̂��߂̃T���v���f�[�^��add���܂����B
-	Media/RigTest6/RigTest6.cha�ł��B
+	その代わり、Rigの設定ダイアログを閉じてもRigモードは終わりません。
+
+	Rigモードと通常モードの切り替えは、メインウインドウのXYZのスプライトの右の「水色の球のスプライト」
+	をクリックして切り替えます。
+
+
+2016/06/01 その２
+　　【使い方説明】 MameBake3D 【Rig機能が付いちゃいました】
+　　https://youtu.be/gkqCJNsUsKE
+
+2016/06/01 その１
+	Rigのテストのためのサンプルデータをaddしました。
+	Media/RigTest6/RigTest6.chaです。
 	
-	������Foot�i��[����Q�ځj�Ɨ���̐�[�̃{�[���Ƀe�X�g��Rig���d����ł���܂��B
+	両足のFoot（先端から２個目）と両手の先端のボーンにテストのRigを仕込んであります。
 
-	���C���E�C���h�E�Ń{�[���́��}�[�N���E�N���b�N���邩�A�������͍��̃E�C���h�E�̃{�[�������E�N���b�N����
-	Rig����I�т܂��B
+	メインウインドウでボーンの○マークを右クリックするか、もしくは左のウインドウのボーン名を右クリックして
+	Rig名を選びます。
 
-	�����Đ��F�̋����h���b�O���܂��B
-	���ɂ��Ă͑���O�ɏグ�邽�߂�Rig�Ƒ������ɋȂ��邽�߂�Rig���A���ꂼ��Front��Back�Ƃ������O�œo�^���Ă��܂��B
+	そして水色の球をドラッグします。
+	足については足を前に上げるためのRigと足を後ろに曲げるためのRigを、それぞれFrontとBackという名前で登録しています。
 
-	�����Ńp�����[�^��ݒ肷��ꍇ�͐V�KRig��I��Őݒ��Apply�{�^���������܂��B
-
-
-	���������쐬�\��ł��B
+	自分でパラメータを設定する場合は新規Rigを選んで設定後Applyボタンを押します。
 
 
-2016/05/31 ���̂Q
-	�{�[�����W����]�_�C�A���O���P�x�����玟��ȍ~�J�����Ƃ��o���Ȃ��o�O���C�����܂����B
-	�{�[�����W���̉�]���s�́A���[�V�������������Ǝ��Ԃ�������܂��B���ׂẴI�C���[�p�̍Čv�Z�����邽�߂ł��B
+	解説動画を作成予定です。
 
 
-2016/05/31 ���̂P
-�@�@MameBake3D CustomRig �_�C�W�F�X�g����B
-�@�@https://youtu.be/o7UUAqea6io
-
-�@�@CustomRig���������܂����BGUI�Őݒ�\��Rig�ł��B
-
-	�����Ƃ��āu�ҏW�E�ϊ��v-->�u�I�C���[�p�@�p�x�����v���j���[�Ń{�[���̍��W����CurrentAxis�ɂ��܂��B
-	�ݒ肷��Rig�Ɋ֌W����{�[���̍��W�����u�ҏW�E�ϊ��v-->�u�{�[�����W����]�v��Rig�Ɋ֌W����{�[���̍��W���𕽍s�ɂ��܂��B
-	Rig�Ɋ֌W����{�[�����R����ꍇ�A�R�̃{�[���Ƃ�XYZ����v����K�v�͂���܂���B
-	����{�[���ɂƂ��Ă�X��������{�[���ɂƂ��Ă�Y����Z���ł��\���܂���B
-	�������A�Ή��t���鎲���m�����s�ł���ق������ꂢ�ɋȂ���܂��B
-	(���݁A�{�[�����W����]�_�C�A���O�́A�o�O�̂��߈�x����ƍĂт͊J���܂���B�Ή��\��ł��B)
-
-	���𕽍s�ɂ��鏀�����o������
-	Rig��ݒ肷���Ԏq���̃{�[�����E�N���b�N���܂��B�������͍��̃E�C���h�E�̃{�[�������E�N���b�N���܂��B
-	���̃{�[���ɂ܂�Rig���쐬�������Ƃ��Ȃ���΁A�u�V�KRig�v���������j���[�ɏo�܂��B
-	Rig��ݒ肵��Apply�{�^����������Rig���o�^����āA���񂩂�͉E�N���b�N�̃��j���[�ɍ쐬����Rig���o�����܂��B
-
-	Rig�̐ݒ�_�C�A���O���o������
-	�{�[���̊K�w�����w�肵�܂��B
-	����̊K�w�܂Őݒ肷�邩�̎w��ł��B
-	�������g���P�Ɛ�����̂ŁA�ݒ肷��{�[���Ƃ��̐e�̃{�[���̂Q�̃{�[����Rig���쐬����ꍇ�́A�K�w���͂Q��I�т܂��B
-
-	�K�w����I�ԂƃO���[�v�{�b�N�X�Ɏ����I�ɐe�����ɂ����̂ڂ����{�[���̖��O���\������܂��B
-
-	�{�[���̖��O���\������Ă���O���[�v�{�b�N�X���̐ݒ�����܂��B
-	�u���v�u�c�v�Ƃ́ARig�}�[�N�̐��F�̋������Əc�Ƀ}�E�X�Ńh���b�O�������̂��Ƃł��B
-
-	�}�E�X���h���b�O�������̉�]���Ɣ{�����w�肵�܂��B
-	�{���̓}�C�i�X�̐��l��������܂��B
-	�}�C�i�X�̐��l�͋t��]���܂��B
-	-100.0����100.0�܂ł̒l���L���ł��B
-
-	�ݒ肵����Apply�{�^����Y�ꂸ�ɁB
-
-	��͐��F�̋����}�E�X�Ńh���b�O���Ȃ��琔�l�⎲�̒��������܂��B
-
-	�ݒ肵���f�[�^��ۑ�����ꍇ�ɂ�File���j���[��Save�Łu�v���W�F�N�g�t�@�C���v��I�����ĕۑ����Ă��������B
-	�J���Ƃ���*.cha�t�@�C�����J���ƃv���W�F�N�g�S�̂��ǂݍ��܂�܂��B
+2016/05/31 その２
+	ボーン座標軸回転ダイアログを１度閉じたら次回以降開くことが出来ないバグを修正しました。
+	ボーン座標軸の回転実行は、モーション長が長いと時間がかかります。すべてのオイラー角の再計算をするためです。
 
 
-	�ǋL�F
-		Rig�R���g���[����CustomRigDlg���J���Ă��Ȃ��Əo���܂���B
-		CustomRigDlg���E��̂��ŕ���Ɛ��F�̋��������Ēʏ퓮��ɂȂ�܂��B
+2016/05/31 その１
+　　MameBake3D CustomRig ダイジェスト動画。
+　　https://youtu.be/o7UUAqea6io
+
+　　CustomRigを実装しました。GUIで設定可能なRigです。
+
+	準備として「編集・変換」-->「オイラー角　角度制限」メニューでボーンの座標軸をCurrentAxisにします。
+	設定するRigに関係するボーンの座標軸を「編集・変換」-->「ボーン座標軸回転」でRigに関係するボーンの座標軸を平行にします。
+	Rigに関係するボーンが３つある場合、３のボーンともXYZが一致する必要はありません。
+	あるボーンにとってのX軸があるボーンにとってのY軸やZ軸でも構いません。
+	しかし、対応付ける軸同士が並行であるほうがきれいに曲がります。
+	(現在、ボーン座標軸回転ダイアログは、バグのため一度閉じると再びは開きません。対応予定です。)
+
+	軸を平行にする準備が出来たら
+	Rigを設定する一番子供のボーンを右クリックします。もしくは左のウインドウのボーン名を右クリックします。
+	そのボーンにまだRigを作成したことがなければ、「新規Rig」だけがメニューに出ます。
+	Rigを設定してApplyボタンを押すとRigが登録されて、次回からは右クリックのメニューに作成したRigが出現します。
+
+	Rigの設定ダイアログを出したら
+	ボーンの階層数を指定します。
+	何個上の階層まで設定するかの指定です。
+	自分自身も１と数えるので、設定するボーンとその親のボーンの２個のボーンのRigを作成する場合は、階層数は２を選びます。
+
+	階層数を選ぶとグループボックスに自動的に親方向にさかのぼったボーンの名前が表示されます。
+
+	ボーンの名前が表示されているグループボックス内の設定をします。
+	「横」「縦」とは、Rigマークの水色の球を横と縦にマウスでドラッグした時のことです。
+
+	マウスをドラッグした時の回転軸と倍率を指定します。
+	倍率はマイナスの数値も許されます。
+	マイナスの数値は逆回転します。
+	-100.0から100.0までの値が有効です。
+
+	設定したらApplyボタンを忘れずに。
+
+	後は水色の球をマウスでドラッグしながら数値や軸の調整をします。
+
+	設定したデータを保存する場合にはFileメニューのSaveで「プロジェクトファイル」を選択して保存してください。
+	開くときは*.chaファイルを開くとプロジェクト全体が読み込まれます。
 
 
-2016/05/29 ���̂P
-	�p���ҏW���ʂ��R��ɓK�p���镔���̃f�o�b�O�����܂����B
-	�I���t���[�������Q�܂��͂R�̂Ƃ��Ɏp���̕ҏW���o���Ȃ��o�O���C���B
-	applyframe��offset�͕K�v�Ȃ����Ƃ��m�F�B
-	�K�p���̎����C���B
-
-	toolWnd�̎p����������I�񂾍ۂɃ��j���[���o���܂��B
-	���j���[�őS�{�[���̎p���������A�I���{�[���P�̎p���������A�I���{�[���Ǝq���{�[���̎p��������
-	�̒����珈����I�Ԃ��Ƃ��o���܂��B
+	追記：
+		RigコントロールはCustomRigDlgを開いていないと出来ません。
+		CustomRigDlgを右上のｘで閉じると水色の球も消えて通常動作になります。
 
 
-2016/05/28 ���̂Q
-	�A���h�D�[�̍����������܂����B
+2016/05/29 その１
+	姿勢編集結果を山状に適用する部分のデバッグをしました。
+	選択フレーム数が２または３のときに姿勢の編集が出来ないバグを修正。
+	applyframeのoffsetは必要ないことを確認。
+	適用率の式を修正。
 
-2016/05/28 ���̂P
-	�����p�x�ݒ�̕ۑ��Ɠǂݍ��݋@�\��t���܂����B
-	�����p�x�ݒ�t�@�C���́uFBX�t�@�C����.fbx.lmt�v�ł��B
-	FBX�t�@�C���̏����o�����܂��̓v���W�F�N�g�t�@�C���̏����o�����ɕۑ�����܂��B
-	FBX��ǂݍ��ލۂ�lmt�t�@�C�����ǂݍ��܂�܂��B
+	toolWndの姿勢初期化を選んだ際にメニューを出します。
+	メニューで全ボーンの姿勢初期化、選択ボーン１つの姿勢初期化、選択ボーンと子供ボーンの姿勢初期化
+	の中から処理を選ぶことが出来ます。
 
-	�v���W�F�N�g�t�@�C���ɂ͋L�q���܂��񂪁AFBX�̃t�@�C������.lmt��t�����t�@�C����
-	FBX�̓ǂݏ������Ɏ����I�ɓǂݏ�������Ƃ������Ƃł��B
+
+2016/05/28 その２
+	アンドゥーの高速化をしました。
+
+2016/05/28 その１
+	制限角度設定の保存と読み込み機能を付けました。
+	制限角度設定ファイルは「FBXファイル名.fbx.lmt」です。
+	FBXファイルの書き出し時またはプロジェクトファイルの書き出し時に保存されます。
+	FBXを読み込む際にlmtファイルも読み込まれます。
+
+	プロジェクトファイルには記述しませんが、FBXのファイル名に.lmtを付けたファイルを
+	FBXの読み書き時に自動的に読み書きするということです。
 
 
 2016/05/27
-	Angle Limit Dlg��Via180_X, Via180_Y, Via180_Z�̃`�F�b�N�{�b�N�X��t���܂����B
-	Via�Ƃ͓d�Ԃ̃A�i�E���X�ł��Ȃ��݂́u�o�R�v�̈Ӗ��ł��B
-	�ʏ�Ȃ�lower <= degree <= upper�����͈͂ɂȂ�Ƃ����
-	Via180�̃`�F�b�N������� ((-180 <= degree <= lower) || (upper <= degree <= 180))�����͈͂ɂȂ�܂��B
-	�܂�180���o�R����悤�ȋt��肪���͈͂ɂȂ�܂��B
+	Angle Limit DlgにVia180_X, Via180_Y, Via180_Zのチェックボックスを付けました。
+	Viaとは電車のアナウンスでおなじみの「経由」の意味です。
+	通常ならlower <= degree <= upperが可動範囲になるところを
+	Via180のチェックを入れると ((-180 <= degree <= lower) || (upper <= degree <= 180))が可動範囲になります。
+	つまり180を経由するような逆回りが可動範囲になります。
 
-	�{�[���̏����̃I�C���[�p��0�x�ł��B
-	���͈͂ɂO�x���܂܂�Ă��Ȃ��ꍇ�AIK��FK�œ��������Ƃ��o���Ȃ��ƍ���̂�
-	���C���E�C���h�E�Ɂu��]�p�x����������v�`�F�b�N�{�b�N�X��ǉ����܂����B
-	�{�[�������͈͂ɓ����܂ł́u��]�p�x����������v�̃`�F�b�N���͂����āA
-	���͈͂ɓ���Ă���`�F�b�N�����āA�����p�x���ő��삷�邱�Ƃ��\�ł��B
+	ボーンの初期のオイラー角は0度です。
+	可動範囲に０度が含まれていない場合、IKやFKで動かすことが出来ないと困るので
+	メインウインドウに「回転角度制限をする」チェックボックスを追加しました。
+	ボーンを可動範囲に入れるまでは「回転角度制限をする」のチェックをはずして、
+	可動範囲に入れてからチェックをして、制限角度内で操作することが可能です。
 
-	���񂩂�Win10�Ńr���h���Ă��܂��B
-	VisualStudio�͖����I�ɂ͕ύX���Ă��܂���B
+	今回からWin10でビルドしています。
+	VisualStudioは明示的には変更していません。
 
 2016/05/26
-	�u�ҏW�E�ϊ��v-->�u�{�[�����W����]�v���j���[��
-	�{�[���̍��W������]�\�ɂ��܂����B
+	「編集・変換」-->「ボーン座標軸回転」メニューで
+	ボーンの座標軸を回転可能にしました。
 
-	�����t���[���̃��[�V������ǂݍ���ł����ԂŎ��s�����
-	�S�Ẵt���[���A�S�Ẵ{�[���ɑ΂��ăI�C���[�p�̌v�Z���������̂�
-	���C���E�C���h�E�̃}�j�s�����[�^�̌����ɔ��f�����܂ŏ������Ԃ�������܂��B
+	長いフレームのモーションを読み込んでいる状態で実行すると
+	全てのフレーム、全てのボーンに対してオイラー角の計算をし直すので
+	メインウインドウのマニピュレータの向きに反映されるまで少し時間がかかります。
 
-	�{�[���̍��W����FBX�t�@�C���ɕۑ������̂�
-	�ύX��ۑ��������ꍇ��FBX�t�@�C���̕ۑ������Ă��������B
+	ボーンの座標軸はFBXファイルに保存されるので
+	変更を保存したい場合はFBXファイルの保存をしてください。
 
 
-2016/05/24 ���̂S
-	Angle Limit Dlg�Ƀ{�[�����W�n�w��̃R���{�{�b�N�X��t���܂����B
-	�{�[�����Ƃɍ��W�n�̎w�肪�o���܂��B
-	���W�n�ɂ���Đ����p�x�̊|��������ς��܂��B
+2016/05/24 その４
+	Angle Limit Dlgにボーン座標系指定のコンボボックスを付けました。
+	ボーンごとに座標系の指定が出来ます。
+	座標系によって制限角度の掛かり方も変わります。
 	
-	�����p�x�ݒ莞�u�ȊO�v�ł��{�[����I�������
-	Angle Limit Dlg�Ŏw�肵�����W�n�Ɏ����I�ɐ؂�ւ��܂��B
+	制限角度設定時「以外」でもボーンを選択すると
+	Angle Limit Dlgで指定した座標系に自動的に切り替わります。
 
-	���W�n�ɂ���ă��C���E�C���h�E����̃I�C���[�p�\�����ς��܂��B
+	座標系によってメインウインドウ左上のオイラー角表示も変わります。
 
-	���C���E�C���h�E�̍��W�n�w��R���{�{�b�N�X�́AAngle Limit Dlg�Ŏw�肵�����W�n�ƈقȂ���̂��I�Ԃ��Ƃ��o���܂��B
-	�����ăI�C���[�p�\���̓��C���E�C���h�E�̃R���{�{�b�N�X�ł̎w��ɏ]���܂��B
-	�������A��]�̐����p�x�̊|������́A���C���E�C���h�E�̃R���{�{�b�N�X�w��ɂ�����炸
-	Angle Limit Dlg�Ŏw�肵�����W�n�����Ƃɐ������܂��B
+	メインウインドウの座標系指定コンボボックスは、Angle Limit Dlgで指定した座標系と異なるものも選ぶことが出来ます。
+	そしてオイラー角表示はメインウインドウのコンボボックスでの指定に従います。
+	しかし、回転の制限角度の掛かり方は、メインウインドウのコンボボックス指定にかかわらず
+	Angle Limit Dlgで指定した座標系をもとに制限します。
 
 
-2016/05/24 ���̂R
-	�J�����g���W�n�`�F�b�N�{�b�N�X����߂�
-	���C���E�C���h�E�ɃR���{�{�b�N�X��ǉ����A
+2016/05/24 その３
+	カレント座標系チェックボックスをやめて
+	メインウインドウにコンボボックスを追加し、
 	CurrentBoneAxis, ParentBoneAxis, GlobalAxis
-	�̂R�̍��W�n����I���ł���悤�ɂȂ�܂����B
+	の３つの座標系から選択できるようになりました。
 	
-	�I�������{�[�����W�n��IK, FK���삪�\�ł��B
+	選択したボーン座標系でIK, FK操作が可能です。
 
-	�p�x�����̓o�C���h�|�[�Y�̍��W�n�ōs���Ă��܂��B
+	角度制限はバインドポーズの座標系で行っています。
 
-2016/05/24 ���̂Q
-	���C���E�C���h�E�Ɂu�J�����g���W�n�v�`�F�b�N�{�b�N�X��ǉ����ăf�t�H���g�Ń`�F�b�N���܂����B
-	�`�F�b�N�����Ă��Ȃ���Ԃł̓{�[���̍��W�n��parent���W�n(�e�̃{�[���̍��W�n)�ł���A
-	�`�F�b�N�������current���W�n(���݂̑I���{�[���̍��W�n)�ɂȂ�܂��B
-	�����p�x(�̎��̔c��)�Ƃ̑�����current���W�n�̕����ǂ��C�������̂ŁA�f�t�H���g���J�����g���W�n�ɕς��܂����B
+2016/05/24 その２
+	メインウインドウに「カレント座標系」チェックボックスを追加してデフォルトでチェックしました。
+	チェックを入れていない状態ではボーンの座標系はparent座標系(親のボーンの座標系)であり、
+	チェックを入れるとcurrent座標系(現在の選択ボーンの座標系)になります。
+	制限角度(の軸の把握)との相性はcurrent座標系の方が良い気がしたので、デフォルトをカレント座標系に変えました。
 
 
-2016/05/24�@���̂P
-	Angle Limit Dlg�����[�h���X�_�C�A���O�ɂ��܂����B
-	�܂�A�_�C�A���O���o���Ă��瑼�̃E�C���h�E�̃R���g���[���ɑ΂��đ���\�ł��B
-	�X���C�_�[��1�x�P�ʂ̐ݒ������ꍇ�ɂ́A�X���C�_�[���N���b�N���Ă���}�E�X�z�C�[������]������ƊȒP�ł��B
-	Angle Limit Dlg�̐ݒ��Apply�{�^���������Ȃ��Ɛ����ɔ��f����Ȃ��̂Œ��ӂ��Ă��������B
+2016/05/24　その１
+	Angle Limit Dlgをモードレスダイアログにしました。
+	つまり、ダイアログを出してから他のウインドウのコントロールに対して操作可能です。
+	スライダーで1度単位の設定をする場合には、スライダーをクリックしてからマウスホイールを回転させると簡単です。
+	Angle Limit Dlgの設定はApplyボタンを押さないと正式に反映されないので注意してください。
 	
 2016/05/23
-	�u�ҏW�E�ϊ��v���j���[�Ɂu�I�C���[�p�@�p�x�����v���j���[��ǉ����܂����B
-	�{�[����I�����Ă��烁�j���[�����s���܂��B
-	�Ƃ肠�������[�_���_�C�A���O�ł��B
-	�X���C�_�[��Lower�i�����j��Upper(���)�̊p�x��ݒ肵��Apply�{�^���������ƓK�p����܂��B
-	�����p�x��-180�x����180�x�̊ԂŎw�肵�܂��B
-	�p�x�̊�̓}�j�s�����[�^�Ƃ��ĕ\������Ă�����W���ł��B
-	Lower��-180�AUpper��180���w�肵���ꍇ�ɐ����u�Ȃ��v�ƂȂ�܂��B
+	「編集・変換」メニューに「オイラー角　角度制限」メニューを追加しました。
+	ボーンを選択してからメニューを実行します。
+	とりあえずモーダルダイアログです。
+	スライダーでLower（下限）とUpper(上限)の角度を設定してApplyボタンを押すと適用されます。
+	制限角度は-180度から180度の間で指定します。
+	角度の基準はマニピュレータとして表示されている座標軸です。
+	Lowerに-180、Upperに180を指定した場合に制限「なし」となります。
 
-	�I���{�[���̌��݂̃I�C���[�p�̓��C���E�C���h�E�̍���ɕ\������܂��B
+	選択ボーンの現在のオイラー角はメインウインドウの左上に表示されます。
 
-	IK, FK�̍ۂɎw��p�x�ŃN�����v���܂��B
-	XYZ�ǂꂩ�P�ł��͈͂���͂ݏo���Ă����IK,FK�̍ۂɃ{�[���͓����܂���B
-	�i�����ē����^�C�v�ł͂Ȃ��A�~�܂�^�C�v�ł��j
+	IK, FKの際に指定角度でクランプします。
+	XYZどれか１つでも範囲からはみ出しているとIK,FKの際にボーンは動きません。
+	（滑って動くタイプではなく、止まるタイプです）
 
-	�܂������p�x�̕ۑ��Ɠǂݍ��݂��t���āu���܂���v�̂Ńe�X�g���x�ɂ��Ă����Ă��������B
+	まだ制限角度の保存と読み込みが付いて「いません」のでテスト程度にしておいてください。
 
 
 2016/05/19
-	���C���E�C���h�E�ɑI���{�[���̃��[�J�����W�n�ł̃I�C���[�p��\�����܂����B
-	XYZ�̉�]��Z,X,Y�̏��Ԃɉ�]���܂��B
-	�����̎��ɑ΂��ĉ�]���s���Ƒ��쒆�̎��ȊO�̎��̊p�x���ω����邱�Ƃ�����܂���
-	����͉�]�����̎d�l�ł���o�O�ł͂���܂���B
+	メインウインドウに選択ボーンのローカル座標系でのオイラー角を表示しました。
+	XYZの回転はZ,X,Yの順番に回転します。
+	複数の軸に対して回転を行うと操作中の軸以外の軸の角度が変化することがありますが
+	これは回転順序の仕様でありバグではありません。
 
-	���������ڂ����������܂��B
-	��]�p�x�̎Z�o��ZXY�̏��Ԃŉ�]�����Ɖ��肵�ċt�v�Z�ŋ��߂܂��B
-	����ɑ΂��āA���[�V�����̕ҏW�����
-	���삵�Ă��鎲�̉�]����ԍŏ��̉�]�ɂȂ�悤�ɏ������܂�(���ʂ������I�ɕ�����悤��)�B
-	�ł����炠�鎲�̉�]�ɂ�葼�̎��̉�]�p�x���ω����邱�Ƃ�����܂��B
+	もう少し詳しく説明します。
+	回転角度の算出はZXYの順番で回転したと仮定して逆計算で求めます。
+	それに対して、モーションの編集操作は
+	操作している軸の回転が一番最初の回転になるように処理します(効果が直感的に分かるように)。
+	ですからある軸の回転により他の軸の回転角度が変化することがあります。
 
 
 2016/05/18
-	��������Ă���ƃA�v���P�[�V�����G���[�ŗ����邱�Ƃ����������̂��C���B
-	bonecnt�̌㏈���ANull Pointer�̃`�F�b�N�B
-	�ǂݍ��݁A�p���ҏW�A�A���h�D�[�Afbx�ۑ��A���f���폜�A�ǂݍ��݁A�A�A�Ȃǂ��J��Ԃ��Ă������Ȃ��Ȃ�܂����B
+	操作をしているとアプリケーションエラーで落ちることが多かったのを修正。
+	bonecntの後処理、Null Pointerのチェック。
+	読み込み、姿勢編集、アンドゥー、fbx保存、モデル削除、読み込み、、、などを繰り返しても落ちなくなりました。
 
 2016/05/17
-	���^�Z�R�C�A�f�[�^��Z�̌����̏C�������܂����B
+	メタセコイアデータのZの向きの修正をしました。
 
-	�ҏW-->�{�[������Z�ɍČv�Z���j���[�����s���ĕۑ����Ȃ����Ă��������B
-	�����IK,FK�̊p�x�����ݒ�̂��߂ɂ��A�{�[������Z�ɍČv�Z���j���[�����s���ĕۑ����Ȃ����Ă��������B
+	編集-->ボーン軸をZに再計算メニューを実行して保存しなおしてください。
+	今後のIK,FKの角度制限設定のためにも、ボーン軸をZに再計算メニューを実行して保存しなおしてください。
 
 2016/05/15
-	�V�f�[�^�Ƌ��f�[�^�̐؂�ւ��������ɂ��܂����B
+	新データと旧データの切り替えを自動にしました。
 	
-	���f�[�^
-		�f�[�^�Ƀ{�[���̍��W�����L�^����Ă��Ȃ����}�j�s�����[�^�\�����Ɏ����v�Z���ĕ\�����Ă����B
-	�V�f�[�^
-		�f�[�^�Ƀ{�[���̍��W�����L�^����Ă���A�}�j�s�����[�^�\�����ɂ�����g�p����B
+	旧データ
+		データにボーンの座標軸が記録されていないがマニピュレータ表示時に軸を計算して表示していた。
+	新データ
+		データにボーンの座標軸が記録されており、マニピュレータ表示時にそれを使用する。
 
-	�������A2016/05/12����2016/05/15�̂�����O�̃o�[�W����(RokDeBone2���܂�)�ŕۑ������ߓn���̃t�@�C���ɂ��Ă�
-	�ǂݍ��ݎ��ɏo��~�σ_�C�A���O�Ń`�F�b�N�{�b�N�X�Ƀ`�F�b�N�����ēǂݍ��ޕK�v������܂��B
-	�ߓn���t�@�C���ł���ꍇ�ɂ́A�ǂݍ��݌㑬�₩�ɕۑ����Ȃ����Ă��������B
+	ただし、2016/05/12から2016/05/15のこれより前のバージョン(RokDeBone2も含む)で保存した過渡期のファイルについては
+	読み込み時に出る救済ダイアログでチェックボックスにチェックを入れて読み込む必要があります。
+	過渡期ファイルである場合には、読み込み後速やかに保存しなおしてください。
 	
 
 2016/05/12
-	�{�[���̉�]�����l�������o�C���h�|�[�Y�ɑΉ����܂����B
-	RokDeBone2�Ń{�[���̉�]���ɑΉ�����FBX�������o���A�����ǂݍ��ނ��Ƃ��o���܂��B
+	ボーンの回転軸を考慮したバインドポーズに対応しました。
+	RokDeBone2でボーンの回転軸に対応したFBXを書き出し、それを読み込むことが出来ます。
 
-	�Â�RokDeBone2��Â�MameBake3D�ŏo�͂���FBX��ǂݍ��ނƃ{�[���̈ʒu�����������Ȃ邱�Ƃ�����܂��B
-	���̏ꍇ�̓��C���E�C���h�E�̉E���̋��f�[�^�݊��̃`�F�b�N�{�b�N�X���`�F�b�N����
-	����ɕ\������邱�Ƃ��m�F���Ă���ҏW��Ƃ�����O��FBX��ۑ����Ă��������B
-	�V����MameBake3D�ŕۑ�����FBX�̓{�[���̉�]�����l�������f�[�^�ɂȂ�܂��B
-	�ł��̂ŁA�����ǂݍ��݂Ȃ����ꍇ�ɂ͋��f�[�^�݊��̃`�F�b�N���͂����Ă��������B
+	古いRokDeBone2や古いMameBake3Dで出力したFBXを読み込むとボーンの位置がおかしくなることがあります。
+	その場合はメインウインドウの右下の旧データ互換のチェックボックスをチェックして
+	正常に表示されることを確認してから編集作業をする前にFBXを保存してください。
+	新しいMameBake3Dで保存したFBXはボーンの回転軸を考慮したデータになります。
+	ですので、それを読み込みなおす場合には旧データ互換のチェックをはずしてください。
 
-	bvh2FBX�ł�FBX�f�[�^��bvh����ϊ����Ȃ����Ă��������B
+	bvh2FBXでのFBXデータはbvhから変換しなおしてください。
 
 2016/05/03
-	����BMameBake3D [�V�����t���[���I��]�B
+	動画。MameBake3D [新しいフレーム選択]。
 	https://youtu.be/CfaFvEL2grM
 
 2016/05/02
-	�t���[���I��
-		�u�}�E�X���{�^���N���b�N-->�}�E�X�z�C�[��-->�}�E�X���{�^���N���b�N�v
-		�ŕ����t���[����I�����܂����A���̑�֕��@��ǉ����܂����B
-		�uCtrl+Shift�L�[ --> A�L�[(�}�C�i�X��)D�L�[(�v���X��) -->Ctrl+Shift�L�[�v
-		�Ƃ������@�ł��B
-		�}�E�X�z�C�[������A D�L�[����Ctrl�L�[�������ƑI�𑬓x��5�{���ɂȂ�܂��B
+	フレーム選択
+		「マウス中ボタンクリック-->マウスホイール-->マウス中ボタンクリック」
+		で複数フレームを選択しますが、この代替方法を追加しました。
+		「Ctrl+Shiftキー --> Aキー(マイナス側)Dキー(プラス側) -->Ctrl+Shiftキー」
+		という方法です。
+		マウスホイール中やA Dキー中にCtrlキーを押すと選択速度が5倍速になります。
 
-	�t���[���I���q�X�g���[
-		�t���[���͈͑I�����L�����ČĂяo����悤�ɂ��܂����B
-		�ő�P�O�O�O�O�u��ށv�̃t���[���I��͈͂��L�����܂��B
-		�I���q�X�g���[�͓o�^���̑I����ԂƓ����I����Ԃ��L�^���܂���B
-		�v���C���[�{�^���̉���{�^���ŉߋ������̃q�X�g���[�𕜌����A
-		���{�^���Ŗ��������̃q�X�g���[�𕜌����܂��B
-		�V���ɓo�^�����I�����������ꂽ��Ԃ����1��ڂ̉���{�^���͌��󕜋A�̋@�\�����܂��B
+	フレーム選択ヒストリー
+		フレーム範囲選択を記憶して呼び出せるようにしました。
+		最大１００００「種類」のフレーム選択範囲を記憶します。
+		選択ヒストリーは登録隅の選択状態と同じ選択状態を記録しません。
+		プレイヤーボタンの下印ボタンで過去方向のヒストリーを復元し、
+		上印ボタンで未来方向のヒストリーを復元します。
+		新たに登録した選択が解除された状態からの1回目の下印ボタンは現状復帰の機能をします。
 
 
 2016/04/29
-	�t���[���I���F�z�C�[�����񂷂Ƃ���Ctrl�L�[�������Ă���ꍇ�͑I�𑬓x��5�{���ɂ��܂����B
-	FBX�o�́F���[�V�������Ń\�[�g���邱�Ƃɂ�蕡�����[�V�����i�[��FBX���������o�͂Ɠ��͂��ł���悤�ɂȂ�܂����B
-		�e�L�X�g�`������o�C�i���`���ɂ��܂����B�ǂݍ��ݑ��x�������Ȃ�܂����B
-	�T���v���F�T���v����FBX���o�C�i���`���ɂ��܂����B
+	フレーム選択：ホイールを回すときにCtrlキーを押している場合は選択速度を5倍速にしました。
+	FBX出力：モーション長でソートすることにより複数モーション格納のFBXも正しく出力と入力ができるようになりました。
+		テキスト形式からバイナリ形式にしました。読み込み速度が速くなりました。
+	サンプル：サンプルのFBXをバイナリ形式にしました。
 
 2016/04/27
-	����̌�����
-	�J�����̑���F���C���E�C���h�E�́u�ځv�u��v�u�g�v�̃X�v���C�g�ł��ꂼ��ړ��A��]�A�g�債�܂��B
-	�t���[���I���F�}�E�X���N���b�N-->�}�E�X�z�C�[��-->�}�E�X���N���b�N�@��3�A�N�V�����őI�����܂��B
-		�@�@�@�ŏ��̒��N���b�N�̓X�^�[�g�t���[�������߂܂��B�N���b�N�ʒu���X�^�[�g�ɂȂ�܂��B
-		�@�@�@�z�C�[���őI��͈͂��L�тĂ����܂��B
-		�@�@�@�Ō�̒��N���b�N�őI��͈͂��m�肵�܂��B���̂Ƃ��̃N���b�N�ʒu�͊֌W���܂���B
+	操作の見直し
+	カメラの操作：メインウインドウの「移」「回」「拡」のスプライトでそれぞれ移動、回転、拡大します。
+	フレーム選択：マウス中クリック-->マウスホイール-->マウス中クリック　の3アクションで選択します。
+		　　　最初の中クリックはスタートフレームを決めます。クリック位置がスタートになります。
+		　　　ホイールで選択範囲が伸びていきます。
+		　　　最後の中クリックで選択範囲を確定します。このときのクリック位置は関係しません。
 
 2016/04/25
-	�A�C�h�����O�������ƍ��̂̃V�~�����I�����č��̂��̂ɂ��Ă��Ȃ����Ƃ�����s����C���B
-	���Ԑ����𖳌��ɂ��܂����B
+	アイドリングが長いと剛体のシミュが終了して剛体が体についてこないことがある不具合を修正。
+	時間制限を無効にしました。
 
-	(test12�̃T���v���͓ǂݍ��݂ɂP�O�b�߂�������܂�(Visual Studio����N�����Ă���Ƃ��͂����Ƃ�����܂��B)�B
-	FBX�����o�����o�C�i���ɂ��邱�Ƃ��������B)
+	(test12のサンプルは読み込みに１０秒近くかかります(Visual Studioから起動しているときはもっとかかります。)。
+	FBX書き出しをバイナリにすることを検討中。)
 
-	(�������[�V�����������o���ēǂݍ��񂾍ۂɁA���[�V�����̒��������������ꍇ������܂��B
-	FBX�����o�����Ƀ��[�V�����̒����Ń\�[�g���ďo�͂���K�v�����邱�Ƃ�Y��Ă��܂����B
-	�Ή�����\��ł��B)
+	(複数モーションを書き出して読み込んだ際に、モーションの長さがおかしい場合があります。
+	FBX書き出し時にモーションの長さでソートして出力する必要があることを忘れていました。
+	対応する予定です。)
 
 2016/04/23
-	�ŋ߂̓���B
+	最近の動画。
 
-	MameBake3D �ҏW�I�v�V�����̐���
+	MameBake3D 編集オプションの説明
 	https://youtu.be/cA7ceFJ2oLY
 
-	MameBake3D bvh�����ƕ����{�����c�C���e
+	MameBake3D bvhそっと歩き＋物理ツインテ
 	https://youtu.be/upwvM6yBGgw
 
 2016/04/22
-	Main.cpp�̑���IK�Ɛ��IK�̐��������C�����܂����B
-	test12�̍��̃p�����[�^�ŃT���v���̃L�b�N�̃��[�V������ǂݍ����F9�����Ƃ�
-	�c�C���e�[�����ŏ��̈ʒu�t�߂Ɏc��܂����A
-	����̓o�O�ł͂Ȃ��A�C�h�����O�^�C���Ɖ^����~�̊֌W�ł��B
-	�܂蒷�������Ȃ��ł���ƒ�~��ԂɂȂ�̂ł��B
-	���̕ӂ��ݒ�ł���悤�ɂ���\��ł��B
+	Main.cppの相対IKと絶対IKの説明文を修正しました。
+	test12の剛体パラメータでサンプルのキックのモーションを読み込んでF9したとき
+	ツインテールが最初の位置付近に残りますが、
+	これはバグではなくアイドリングタイムと運動停止の関係です。
+	つまり長く動かないでいると停止状態になるのです。
+	この辺も設定できるようにする予定です。
 
-	���̑��A�^�C�����C���̐��l�\���̊Ԋu�𒲐����܂����B
-	�P�O�O�O�t���[�����z����ꍇ���ǂݎ���悤�ɂȂ�܂����B
-	GetBefNextMP�̎g�������킩�肸�炢�̂ŁA
-	�u�������邱�Ƃ��o���镔����GetMotionPoint�ɒu�������܂����B
+	その他、タイムラインの数値表示の間隔を調整しました。
+	１０００フレームを越える場合も読み取れるようになりました。
+	GetBefNextMPの使い方がわかりずらいので、
+	置き換えることが出来る部分はGetMotionPointに置き換えました。
 
-	bvh�̃��[�V�����ϊ����j���[���s����
-	�S�̈ړ��ʂ�
-	Hips�Ƃ������O�̃{�[������ł͂Ȃ��A�ŏ��̃{�[���Ɍ��肵�Ď擾����悤�ɂ��܂����B
+	bvhのモーション変換メニュー実行時に
+	全体移動量は
+	Hipsという名前のボーン限定ではなく、最初のボーンに限定して取得するようにしました。
 
 
 2016/04/21
-	�S�̉�]�l���̃I�v�V�������g�����āA�e�̉�]���l������IK��FK�̃I�v�V�����Ƃ��܂����B
-	���t���āuPseudoLocal(�^�����[�J��)�v�ł��B
-	�����t���[���ɑ΂��鏈���Ȃ̂ł����A���ꂼ��̃t���[���̑���{�[���̐e�̉�]���l������
-	����𔽉f�����܂��B
-	���C���E�C���h�E�̉E���ɁuPseudoLocal(�^�����[�J��)�v�̃`�F�b�N�{�b�N�X������܂��B
-	�f�t�H���g�ŃI���ɂȂ��Ă��܂��B
+	全体回転考慮のオプションを拡張して、親の回転を考慮したIKとFKのオプションとしました。
+	名付けて「PseudoLocal(疑似ローカル)」です。
+	複数フレームに対する処理なのですが、それぞれのフレームの操作ボーンの親の回転を考慮して
+	操作を反映させます。
+	メインウインドウの右下に「PseudoLocal(疑似ローカル)」のチェックボックスがあります。
+	デフォルトでオンになっています。
 
 2016/04/20
-	IK,FK���쌋�ʂɃ��[�g�{�[���̉�]���l������悤�ɂ��܂����B
-	���C���E�C���h�E�̉E���Ɂu�S�̉�]�l���v�Ƃ����{�^��������܂��B
-	��������܂��ƁA
-	���[�g�{�[���܂�S�̂��P��]����悤�ȃ��[�V�����ɑ΂���ʏ��IK,FK����ł�
-	�O�������ɑ��삵�����ʂ��O���[�o�����ʂƂ��ĉ��������ɂ��K�p����Ă��܂��܂��B
-	�܂�O�������ɑ����L���鑀�������Ɖ��������ɂ͑����N���X���Ă��܂��܂��B
-	�u�S�̉�]�l���v�Ƀ`�F�b�N�������
-	�O�����̂Ƃ��ɑ����J�����������Ɖ������̎��ɂ������J�����ʂ�����܂��B
+	IK,FK操作結果にルートボーンの回転を考慮するようにしました。
+	メインウインドウの右下に「全体回転考慮」というボタンがあります。
+	例をあげますと、
+	ルートボーンつまり全体が１回転するようなモーションに対する通常のIK,FK操作では
+	前向き時に操作した結果がグローバル効果として横向き時にも適用されてしまいます。
+	つまり前向き時に足を広げる操作をすると横向き時には足がクロスしてしまいます。
+	「全体回転考慮」にチェックを入れると
+	前向きのときに足を開く操作をすると横向きの時にも足を開く効果があります。
 
-	�}�j�s�����[�^�̌����̃o�O�𒼂��܂����B
-	�}�j�s�����[�^�̎��̌����Ɖ�]����̎��͈�v���܂��B
-	RotateAxisDelta�֐���shadow����������W�n�ϊ������ɕς��܂����B	
+	マニピュレータの向きのバグを直しました。
+	マニピュレータの軸の向きと回転操作の軸は一致します。
+	RotateAxisDelta関数はshadow方式から座標系変換方式に変えました。	
 
 2016/04/18
-	�^�C�����C���́u<<�v�{�^���Ő擪�t���[���փW�����v�B
-	�^�C�����C���́u>>�v�{�^���ōŏI�t���[���փW�����v�B
-	�^�C�����C���́u| |�v�̃}�[�N�̃{�^���������ƌ��݂̃t���[������Ō�̃t���[���܂ł�I�����܂��B
-	�I��������ɓK�p�ʒu�́��X���C�_�[�̒l�ɑΉ�����t���[���Ɉړ����܂��B
-	InitMP��ύX���܂����B
-	test10�̍��̃p�����[�^�t�@�C��ref�t�@�C�����C�����܂����B
+	タイムラインの「<<」ボタンで先頭フレームへジャンプ。
+	タイムラインの「>>」ボタンで最終フレームへジャンプ。
+	タイムラインの「| |」のマークのボタンを押すと現在のフレームから最後のフレームまでを選択します。
+	選択した後に適用位置の％スライダーの値に対応するフレームに移動します。
+	InitMPを変更しました。
+	test10の剛体パラメータファイルrefファイルを修正しました。
 
 2016/04/14
-	F9���������Ƃ���Bt�V�~�����[�g�������Ȃ��Ȃ��Ă����̂��C���B
-	bvh���[�V�����{bt�V�~���p�̃T���v����ǉ��BMameBake3D/Media/test12�B
-	test12.cha��Open���j���[�ŊJ����F9��������bvh�̕����{bt�V�~�����Đ�����܂��B
-	test12�̃p�����[�^�ł́A���C���E�C���h�E��motion speed��2.5���炢�܂ł����E��������܂���B
-	�X�s�[�h�������Ȃ�Ƒ̂̌������P�W�O�x�ς��Ƃ���Ńc�C���e�[�����Ԃ�Ԃ�k���܂��B
-	�Ղ�Ղ�k������X�y�[�X�L�[�������ă��[�V�������Đ����Ȃ���bt�����Z�b�g���邱�Ƃ��\�ł��B
+	F9を押したときのBtシミュレートが動かなくなっていたのを修正。
+	bvhモーション＋btシミュ用のサンプルを追加。MameBake3D/Media/test12。
+	test12.chaをOpenメニューで開いてF9を押すとbvhの歩き＋btシミュが再生されます。
+	test12のパラメータでは、メインウインドウのmotion speedは2.5くらいまでが限界かもしれません。
+	スピードが速くなると体の向きが１８０度変わるところでツインテールがぶるぶる震えます。
+	ぷるぷる震えたらスペースキーを押してモーションを再生しながらbtをリセットすることも可能です。
 
 
 2016/04/13
-	bvh�̃R���o�[�g�e�X�g�p�̃f�[�^��ǉ����܂����B
-	MameBake3D/Media/testBvhConv�@�ł��B
+	bvhのコンバートテスト用のデータを追加しました。
+	MameBake3D/Media/testBvhConv　です。
 	
 2016/04/12
-	FBX�ǂݍ��ݎ��Ɉ�Ԑe�̃{�[���̈ʒu���������Ȃ������̂��C�����܂����B
+	FBX読み込み時に一番親のボーンの位置が正しくなかったのを修正しました。
 
-	BVH���[�V�����R���o�[�g���X�V���܂����B
-	bvh���̃��[�g�{�[���w���Hips�ɖ߂��܂����B
+	BVHモーションコンバートを更新しました。
+	bvh側のルートボーン指定をHipsに戻しました。
 
-	BVH���[�V�����R���o�[�g���g�p����ۂɂ�
-	BVH�̍ŏ��̃t���[���̃|�[�Y�ƁA���f�����̏����p���������K�v������܂��B
-	��Ԃ͂܂�₷���̂́A��Ԑe�̃{�[���̈ʒu���Ǝv���܂��B
-	BVH�̃��[�V������K�p���Ă��Ȃ������p���͌��_�ɂ���܂���
-	BVH�̃��[�V������K�p���������p����LHip,RHip�Ɠ��ʒu�ɂ��邱�Ƃ������悤�ł��B
-	���̂��߃��f�����̃{�[����p�ӂ���ۂɂ̓��f�����̈�Ԑe�̃{�[���̈ʒu��
-	LHip, RHip�Ɠ��ʒu�ɂ����ق����ǂ��悤�ł��B
-	������ԈႦ��Ƒ̑S�̂̉�]�̒��S�����ꂽ�ϊ����ʂɂȂ邱�Ƃ������ł��B
+	BVHモーションコンバートを使用する際には
+	BVHの最初のフレームのポーズと、モデル側の初期姿勢が同じ必要があります。
+	一番はまりやすいのは、一番親のボーンの位置だと思います。
+	BVHのモーションを適用していない初期姿勢は原点にありますが
+	BVHのモーションを適用した初期姿勢はLHip,RHipと同位置にあることが多いようです。
+	そのためモデル側のボーンを用意する際にはモデル側の一番親のボーンの位置を
+	LHip, RHipと同位置にしたほうが良いようです。
+	これを間違えると体全体の回転の中心がずれた変換結果になることが多いです。
 
 
 2016/04/11
-	BVH���[�V�����R���o�[�g�̃o�[�W�����A�b�v�B
-	�����p���ϊ���bvh���̑S�̉�]���l������悤�ɂ��܂����B
-	bvh���̃��[�g�{�[���w���Hips_bunki***�Ɍ��肷��i�z�肵�Ă���j�悤�ɂ��Ă��܂��B
-	�ȑO�̓���ł́ABVH���[�V�����R���o�[�g�̑Ή��{�[���w�莞��
-	�Œ���̎w��������ق����ǂ��ƌ����Ă��܂������A���ׂĂɎw�肵���ق����ǂ��悤�ɂȂ��Ă��܂��B
+	BVHモーションコンバートのバージョンアップ。
+	初期姿勢変換にbvh側の全体回転を考慮するようにしました。
+	bvh側のルートボーン指定をHips_bunki***に限定する（想定している）ようにしています。
+	以前の動画では、BVHモーションコンバートの対応ボーン指定時に
+	最低限の指定をしたほうが良いと言っていましたが、すべてに指定したほうが良いようになっています。
 
 
 2016/04/10
-	BVH���[�V�����R���o�[�g�̃o�[�W�����A�b�v�B
-	bvh�ƃ��f�����̈ʒu��g�嗦�����킹�Ȃ��Ă����܂��ϊ��ł���悤�ɂȂ�܂����B
+	BVHモーションコンバートのバージョンアップ。
+	bvhとモデル側の位置や拡大率を合わせなくてもうまく変換できるようになりました。
 
 2016/04/09
-	BVH���[�V�����R���o�[�g�̃o�[�W�����A�b�v�B
-	BVH�̂P�t���[���ڂɃ��[�V�������ݒ肵�Ă����Ă��A
-	�P�t���[���ڂ̎p���ƃ��f���̏����p���������ł���Εϊ��ł���悤�ɂȂ�܂����B
+	BVHモーションコンバートのバージョンアップ。
+	BVHの１フレーム目にモーションが設定してあっても、
+	１フレーム目の姿勢とモデルの初期姿勢が同じであれば変換できるようになりました。
 
 2016/04/07 
-	�@�����X���[�W���O���Ă���f�[�^��ǂݍ��񂾏ꍇ��FBX�����o�����X���[�W���O�ɑΉ������܂����B
-	bvh�p��FBX�T���v���͏������ł��B
+	法線をスムージングしてあるデータを読み込んだ場合のFBX書き出しをスムージングに対応させました。
+	bvh用のFBXサンプルは準備中です。
 
-2016/02/15 19:00���̃o�[�W����
-	BVH2FBX�ō쐬�����f�[�^��MakeBake3D�œǂݍ��ނ��Ƃ��o���A����{�[�������P���ꂽ�B
-	���̂��ƂɋN�����邩�͒��א؂�Ă��Ȃ���
-	�{�[���̃��X�g�̑I���ƂRD�̃}�j�s�����[�^�̑I���������悤�ɂȂ��Ă���̂ɋC���t�����B
-	�ȍ~�̃o�[�W�����ŏC���\��ł���B
+2016/02/15 19:00頃のバージョン
+	BVH2FBXで作成したデータをMakeBake3Dで読み込むことが出来、分岐ボーンも改善された。
+	そのことに起因するかは調べ切れていないが
+	ボーンのリストの選択と３Dのマニピュレータの選択がずれるようになっているのに気が付いた。
+	以降のバージョンで修正予定である。
 
 2016/02/15 19:50
-	�{�[���̃��X�g�ƃ}�j�s�����[�^�̂���͒������B
-	BVH2FBX���j���[���s���̏����o�����ɑ傫������ω����J�b�g����t�B���^�[���t���Ă���̂ł��邪
-	�f�[�^�ɂ���ĉςł���ׂ����Ƃ����������B
-	�ȍ~�̃o�[�W�����ŏC���\��ł���B
+	ボーンのリストとマニピュレータのずれは直った。
+	BVH2FBXメニュー実行時の書き出し時に大きすぎる変化をカットするフィルターが付いているのであるが
+	データによって可変であるべきことが分かった。
+	以降のバージョンで修正予定である。
 
-2016/02/16 19:00���̃o�[�W����
-	���򏈗��������ƏC���B
-	bvh�̉�]�����̓K�p�B
-	���[�g�̉�]�ړ��C���B
-	�o�C���h�|�[�Y�C���B
-	��]�����ϊ������ǉ��B
-	Site�Ƃ������ꖼ�ɂ�郊�X�g�I���̃o�O���C���B
+2016/02/16 19:00頃のバージョン
+	分岐処理見直しと修正。
+	bvhの回転順序の適用。
+	ルートの回転移動修正。
+	バインドポーズ修正。
+	回転順序変換部分追加。
+	Siteという同一名によるリスト選択のバグを修正。
 
-2016/02/17 01:10���̃o�[�W����
-	��]�����@�Ē����B
-	bvh rotation filter�̉��ǁB
-	BVH2FBX�̃_�C�A���O�Ƀt�B���^�[�p�x�G�f�B�b�g����ǉ��B
+2016/02/17 01:10頃のバージョン
+	回転順序　再調整。
+	bvh rotation filterの改良。
+	BVH2FBXのダイアログにフィルター角度エディット欄を追加。
 
-2016/02/17 09:45���̃o�[�W����
-	BVH2FBX�̃I�C���[�p�𔲖{�I�ɏC���B
-		�Č��������Ȃ肠����܂����B
+2016/02/17 09:45頃のバージョン
+	BVH2FBXのオイラー角を抜本的に修正。
+		再現率がかなりあがりました。
 	
-2016/02/17 11:20���̃o�[�W����
-	������FBX��ǂݍ��񂾎��̃{�[���\���̂��߂̋@�\��ǉ��B
-		�����ǂݍ��񂾌��Ctrl + A�������ƁA�ǂݍ��݃��f�����ׂẴ{�[����\�����܂��B
-		Ctrl + A���������тɃI���I�t��؂�ւ��܂��B
-		���i��Model���j���[�őI���������f���ɂ����{�[���͕\������܂���B
-		Ctrl + A���L���̎��ɂ͈�Ԑe����̃{�[���͕\������܂���B
+2016/02/17 11:20頃のバージョン
+	複数のFBXを読み込んだ時のボーン表示のための機能を追加。
+		複数読み込んだ後にCtrl + Aを押すと、読み込みモデルすべてのボーンを表示します。
+		Ctrl + Aを押すたびにオンオフを切り替えます。
+		普段はModelメニューで選択したモデルにしかボーンは表示されません。
+		Ctrl + Aが有効の時には一番親からのボーンは表示されません。
 
 2016/03/13
-	���f����FBX�Ƀ��[�V������FBX��K�p����@�\�̒ǉ��B
-	���f���ƃ��[�V�����Ƃ̃{�[���\���������قȂ��Ă��Ă��Ή��ł��܂��B
+	モデルのFBXにモーションのFBXを適用する機能の追加。
+	モデルとモーションとのボーン構造が多少異なっていても対応できます。
 
-	���f���̃{�[���̈ʒu�Ƀ��[�V�����̃{�[���̈ʒu�����킹��悤�Ȏ��Ƃ͕K�v����܂���B
-	�i�����p���������K�v�͂���܂��B�Ⴆ��T���^�̎p���ł���Ƃ��B�j
+	モデルのボーンの位置にモーションのボーンの位置を合わせるような手作業は必要ありません。
+	（初期姿勢が同じ必要はあります。例えばT字型の姿勢であるとか。）
 
-	�g�����̐��������
+	使い方の説明動画は
 		https://youtu.be/ERaqn16GsU0
 
 
 
-/////////// �ȉ��A��������
+/////////// 以下、説明動画
 
-�y���[�L���v�c�[���zEditMot 1.0.0.31�y�P���Љ�z
+【モーキャプツール】EditMot 1.0.0.31【１分紹介】
 https://youtu.be/3Azcq_we_B0
 
-�y���m�zEditMot 1.0.0.30�y���[�L���v�ҏW�\�t�g�z
-���惊���N
+【告知】EditMot 1.0.0.30【モーキャプ編集ソフト】
+動画リンク
 https://youtu.be/1hE2d4g_Ijw
 
-����@EditMot �A�b�v�f�[�g2022/09
+動画　EditMot アップデート2022/09
 https://youtu.be/4J-sD2t_qG8
 
-����@EditMot�̎g���ǂ���̎g����
+動画　EditMotの使いどころの使い方
 https://youtu.be/1Fa7Y5Ojidk
 
-����@EditMot�̊�{����
+動画　EditMotの基本操作
 https://youtu.be/ZHDBf-QSjl4
 
-����@MotionBrushFree�t���[�E�F�A�����Č��J�J�n
+動画　MotionBrushFreeフリーウェア化して公開開始
 https://youtu.be/qFGGUuA21O8
 
 2021/07/07
-����y���[�V�����c�[���zver1.0.0.7�����ł̂����Ƃ���y�������܂����z
+動画【モーションツール】ver1.0.0.7完成版のいいところ【完成しますた】
 https://youtu.be/nApvd9___mQ
 
 2021/06/19
-����yMotionBrush�z���^�[�Q�b�g���ʂ��ȒP�C���y�������݁z
+動画【MotionBrush】リターゲット結果を簡単修正【流し込み】
 https://youtu.be/AEMJ_Yp5Fig
 
 2021/06/11
-����yMotionBrush�z���^�[�Q�b�g�o�b�`�����@�\�t���܂����yver1.0.0.3�z
+動画【MotionBrush】リターゲットバッチ処理機能付きました【ver1.0.0.3】
 https://youtu.be/YW5fu4SdU1k
 
 2021/05/01_3
-����y�����V�~���̃x�C�N�zMameBake3D�ŕ������x�C�N�y�t���[���͈͎w��OK�z
+動画【物理シミュのベイク】MameBake3Dで物理をベイク【フレーム範囲指定OK】
 https://youtu.be/E-w6tpksu4I
 
 2021/04/30
-����y����IK�zMameBake3D�̕���IK���ۑ��\�Ɂy�ʒu�R���X�g���C���g�z
+動画【物理IK】MameBake3Dの物理IKが保存可能に【位置コンストレイント】
 https://youtu.be/EOqRf35o7u8
 
 2021/04/05_3
-����yMameBake3D�z���[�V�����c�[�����Q�[���p�b�h�œ������Ă݂��yDualSence�z
+動画【MameBake3D】モーションツールをゲームパッドで動かしてみた【DualSence】
 https://youtu.be/AdJPZ3Uv6-c
 
 2021/02/24_2
-����y�J�G���{�^���z�v���[�g���j���[��GUI��؂�ւ��y�v���[�g���j���[�z
+動画【カエルボタン】プレートメニューでGUIを切り替え【プレートメニュー】
 https://youtu.be/GW0OVv7_0SA
 
 2021/02/22_2
-����yMameBake3D�z�ώG��GUI���X�C�b�`�ŃI���I�t�y�v���[�g�X�C�b�`�z
+動画【MameBake3D】煩雑なGUIをスイッチでオンオフ【プレートスイッチ】
 https://youtu.be/DhcikN88D5A
 
 2021/02/06
-����yMameBake3D�z���[�V�����ɃA�N�Z���g���y���[�V�����u���V�z
+動画【MameBake3D】モーションにアクセントを【モーションブラシ】
 https://youtu.be/WqB03hMqbgc
 
 2021/02/02_2
-����@
-�yMameBake3D�z���[�V�������u���V�Ő���I�I�y���[�V�����u���V�z
+動画　
+【MameBake3D】モーションをブラシで盛る！！【モーションブラシ】
 https://youtu.be/rZFTNVLYXPU
-(���J�I�����܂���)
+(公開終了しました)
 
-�yMameBake3D�z���ΓI�ҏW�Ƃ͂ǂ��������Ƃ��ɂ��āyPseudoLocal Edit�z 
-�����t���[���ɑ΂���ҏW������	���f���̌������ς������
-�ҏW���ʂ����������Ȃ�񂶂�Ȃ����Ƃ���
-�^��ɉ����铮��
-PseudoLocal�ƌĂԋZ�p�ŉ������Ă��܂�
+【MameBake3D】相対的編集とはどういうことかについて【PseudoLocal Edit】 
+複数フレームに対する編集だから	モデルの向きが変わったら
+編集結果がおかしくなるんじゃないかという
+疑問に応える動画
+PseudoLocalと呼ぶ技術で解決しています
 https://youtu.be/iyQS7ZPEQLk
-(���J�I�����܂���)
+(公開終了しました)
 
-�yMameBake3D�z�G�f�B�b�g�X�P�[���y�ҏW�̎R�z
+【MameBake3D】エディットスケール【編集の山】
 https://youtu.be/uqMUoQo7egE
-(���J�I�����܂���)
+(公開終了しました)
 
-�y����IK�z���ʂO�ƃ|�X�g�����ɂ��ʒu�R���X�g���C���g
-�i1�����炢�̃e�X�g����j
+【物理IK】質量０とポスト処理による位置コンストレイント
+（1分くらいのテスト動画）
 https://youtu.be/q9z_DhzZQYU
 
-�y�I�C���[�O���t�z�܂߂΂��RD�̃I�C���[�O���t�y�g�����z
+【オイラーグラフ】まめばけ３Dのオイラーグラフ【使い方】
 https://youtu.be/s0nHIjjcGdY
 
-�y�܂߂΂��RD�z�����V�~�����[�V�����̃}���`�X���b�h��
-�i����͂���ׂ�܂����j
+【まめばけ３D】物理シミュレーションのマルチスレッド化
+（今回はしゃべりました）
 https://youtu.be/cW7TWNiX-uk
 
-����@�y�܂߂΂��RD�z�傫�ȗh��𐧌��p�x�ŏ����ȗh���
+動画　【まめばけ３D】大きな揺れを制限角度で小さな揺れに
 https://youtu.be/3GxO7jPOdlY
 
-�y�܂߂΂��z�p�x�����t�@�C���𕨗��ɓK�p
+【まめばけ】角度制限ファイルを物理に適用
 https://youtu.be/q0bY6-jNk20
 
-�y�����R���X�g���C���g�z���Ⴊ�񂾂肩���Ƃ��グ����
+【物理コンストレイント】しゃがんだりかかとを上げたり
 https://youtu.be/JIXG7u1RciU
 
-�y�܂߂΂��RD�z�ҏW�Ɏg����(or Not?)���d��IK
+【まめばけ３D】編集に使える(or Not?)無重力IK
 https://youtu.be/EU9owDSkDtw
 
-�y�܂߂΂��RD�z�����ƈʒu�R���X�g���C���g������
+【まめばけ３D】そっと位置コンストレイント実験中
 https://youtu.be/LgX_15AMt1o
 
-�܂߂΂��RD�z�o�l���f��IK
+まめばけ３D】バネモデルIK
 https://youtu.be/puPVYJrn0gs
 
-�y�܂߂΂��RD�z30fps�����p�t�H�[�}���X���P
+【まめばけ３D】30fps物理パフォーマンス改善
 https://youtu.be/lIvNlK7rlqI
 
-�y�܂߂΂��RD�z30fps�Ŕj�]���Ȃ�����
+【まめばけ３D】30fpsで破綻しない物理
 https://youtu.be/eLM-ha3nQdI
 
-�y�������z MameBake3D �y�g�������ȁH�z
+【物理が】 MameBake3D 【使えそうな？】
 https://youtu.be/gh_ymrdA8tM
 
-�y�K�E�V�A���Łz MameBake3D �y�������z
+【ガウシアンで】 MameBake3D 【平滑化】
 https://youtu.be/6iUwef1ZiYM
 
-�y��ԂŁz MameBake3D �y�m�C�Y�����z
+【補間で】 MameBake3D 【ノイズ除去】
 https://youtu.be/l4EuXXCwXcw
 
-�yRig��Rig�z MameBake3D �ypeace!�z
+【RigのRig】 MameBake3D 【peace!】
 https://youtu.be/B_zkbayPECc
 
-�y���[�V�����z MameBake3D �y�Ώ̃R�s�[�z����
+【モーション】 MameBake3D 【対称コピー】動画
 https://youtu.be/YeM43To-xCg
 
-�y���^�[�Q�b�g�z MameBake3D �y���ǂ��܂����z ����
+【リターゲット】 MameBake3D 【改良しました】 動画
 https://youtu.be/JYT5BAdj5Q4
 
-�y�g���������z MameBake3D �yRig�@�\���t�����Ⴂ�܂����z
+【使い方説明】 MameBake3D 【Rig機能が付いちゃいました】
 https://youtu.be/gkqCJNsUsKE
 
-MameBake3D CustomRig �_�C�W�F�X�g����B
+MameBake3D CustomRig ダイジェスト動画。
 https://youtu.be/o7UUAqea6io
 
-MameBake3D�̎g�����B�x�C�N�̘b�B
-�x�C�N�ςƂ́B�x�C�N�σ��[�V�����̕ҏW���@�ɂ��āB
+MameBake3Dの使い方。ベイクの話。
+ベイク済とは。ベイク済モーションの編集方法について。
 https://youtu.be/Z0UacTlXs7w
 
-MameBake3D �ҏW�I�v�V�����̐���
+MameBake3D 編集オプションの説明
 https://youtu.be/cA7ceFJ2oLY
 
-MameBake3D [�V�����t���[���I��]�B
+MameBake3D [新しいフレーム選択]。
 https://youtu.be/CfaFvEL2grM
 
-MameBake3D��������B���f��FBX�Ƀ��[�V����FBX��K�p����b�B
+MameBake3D説明動画。モデルFBXにモーションFBXを適用する話。
 https://youtu.be/ERaqn16GsU0
 
-MameBake3D�̎g�����BBVH����FBX�ւ̕ϊ��̘b�B
-�I�C���[�p�o�͂𔲖{�I�Ɍ����������ʁA���[�V�����Č��������Ȃ�㏸���܂����B
-perfume�̂R�l���x�铮��B
+MameBake3Dの使い方。BVHからFBXへの変換の話。
+オイラー角出力を抜本的に見直した結果、モーション再現率がかなり上昇しました。
+perfumeの３人が踊る動画。
 https://youtu.be/ONnB1jDVi6k
 
-MameBake3D bvh�����ƕ����{�����c�C���e
+MameBake3D bvhそっと歩き＋物理ツインテ
 https://youtu.be/upwvM6yBGgw
 
-MameBake3D�̎g�����B
-(MameBake3D��bvh��FBX�ɂ���Maya�Ń��f���Ƀo�C���h����
-�Ă�MameBake3D�œǂݍ��݁A�A�j���[�V�������C������܂ł̐�������)
+MameBake3Dの使い方。
+(MameBake3DでbvhをFBXにしてMayaでモデルにバインドして
+再びMameBake3Dで読み込み、アニメーションを修正するまでの説明動画)
 http://youtu.be/EjGnHuXPZm0
 
 
-MameBake3D�ł̕����̐ݒ�̎d���B
+MameBake3Dでの物理の設定の仕方。
 http://youtu.be/56kIA5OsZ0M
 
 ///////////////////
-�T���v���ɂ���
+サンプルについて
 2016/03/30
 
-Media�t�H���_�̒���test10�����܂����B
-test10.cha���I�[�v������ƑS���ǂݍ��܂�܂��B
-���[�V�����̑I���ŁuFor_F9_Test�v�Ƃ������O�̃��[�V������I��ł���
-F9�������ƕ����V�~�����[�g�������c�C���e�[�����h��܂��B
-F10�������Ɠ����������Ń��O�h�[�����܂��B
-�o�O�����Ă��Ă���̂ňȑO���͂��Ȃ舵���₷���Ȃ��Ă��܂��B
+Mediaフォルダの中にtest10を入れました。
+test10.chaをオープンすると全部読み込まれます。
+モーションの選択で「For_F9_Test」という名前のモーションを選んでから
+F9を押すと物理シミュレートが動きツインテールが揺れます。
+F10を押すと同じく物理でラグドールします。
+バグが取れてきているので以前よりはかなり扱いやすくなっています。
 
 2016/03/31
 
-test10�̒���fbx�t�@�C���̃{�[���̓��^�Z�R�C�A��BVH�e���v���[�g�̊K�w�������������Ďg�p�������̂ł��B
-��قǋC���t�����̂ł����A��ʓI��BVH�Ɣ�ׂđ���Ȃ��{�[��������悤�ł��B
-���݂�main.cpp��ConvBoneRotation�֐��́A���f�����̃{�[����bvh�������������ɂ͂��܂������܂���
-���f�����̃{�[���̕������Ȃ����ɂ͂��܂������܂���B
-���f���f�[�^�̃A�b�v�f�[�g������\��ł����A�������Ԃ������邩������܂���B
-�Â�fbx��git�ɂ͊܂܂�Ă���͂��ł��̂ŁA������Ŏ����Ă��炤�̂��ǂ���������܂���B
+test10の中のfbxファイルのボーンはメタセコイアのBVHテンプレートの階層を少しいじって使用したものです。
+先ほど気が付いたのですが、一般的なBVHと比べて足りないボーンがあるようです。
+現在のmain.cppのConvBoneRotation関数は、モデル側のボーンがbvh側よりも多い時にはうまくいきますが
+モデル側のボーンの方が少ない時にはうまくいきません。
+モデルデータのアップデートをする予定ですが、少し時間がかかるかもしれません。
+古いfbxもgitには含まれているはずですので、そちらで試してもらうのも良いかもしれません。
 
 
 2016/04/08 18:30
 
-bvh�̓K�p�����܂��������̂Ƃ��܂������Ȃ����̂�����܂����B
-���܂������Ȃ������͏�L�ł́A�{�[��������Ȃ��������Ƃ������Ƃɂ��Ă��܂����B
-�������A���̌�̒�����bvh�̍ŏ��̃t���[���ɂ����[�V�������L�q���Ă���ꍇ�����邱�Ƃ��킩��܂����B
-�܂�A�����p�����z�肵�Ă������̂ƈقȂ��Ă����̂ł��B
-�i�ŏ��̃t���[���̎p���͑��𕽍s�ɂ��Ă������A���[�V�������폜���Ă݂��瑫�͑�̎��������B�j
-���̍X�V�͂��̕ӂ̕ϊ������Ă݂悤�Ǝv���܂��B
+bvhの適用がうまくいくものとうまくいかないものがありました。
+うまくいかない原因は上記では、ボーンが足りないせいだということにしていました。
+しかし、その後の調査でbvhの最初のフレームにもモーションが記述してある場合があることがわかりました。
+つまり、初期姿勢が想定していたものと異なっていたのです。
+（最初のフレームの姿勢は足を平行にしていたが、モーションを削除してみたら足は大の字だった。）
+次の更新はこの辺の変換をしてみようと思います。
 

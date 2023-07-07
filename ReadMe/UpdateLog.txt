@@ -1,3 +1,49 @@
+2023/07/07
+	EditMot 1.2.0.22 RC1
+
+	使用しているMicrosoftのOSS DXUT, DirectXTex, Effect11をJun2023へバージョンアップ
+
+	カメラパネル新規
+		4Kモードの時にはモーションパネルの下に埋め込み　それ以外の場合には表示メニューのカメラパネル実行でパネル表示非表示切り替え
+		複数カメラアニメ対応
+		カメラアニメのフレーム番号(時間)は　キャラクタアニメのフレーム番号とは別管理
+
+	カメラのUpVecアニメに対応
+
+	Nullノードにアタッチしたアニメーションの読み書き再生対応
+		２種類のカメラ構成に対応し　アセットのカメラへの対応が楽に
+		ドキュメント更新
+			Documants/TroubleShooting/AboutCameraAnim.docx (UnityとMayaとの連携の仕方についても記述)
+
+	RotationOrderを見直し　テストし直し
+
+
+　おちゃっこLAB
+	https://ochakkolab.jp/
+
+　YouTubeチャンネル
+	https://www.youtube.com/@ochakkolab
+
+	動画　【小人】小人制御の物理【ドリブン】
+		https://youtu.be/SRoi8Ds9NYI
+
+	動画　いろいろ直った物理でボクシングの動画	
+		https://youtu.be/Zr7fT1gsCl4
+
+	動画　作り直した位置コンストレイント
+		https://youtu.be/8p13H6MGQZ8
+
+	動画　変な風には曲がらない位置コンストレイント
+		https://youtu.be/9Xt8cxjByeA
+
+	動画　制限角度をキャプチャーする
+		https://youtu.be/mkkpo5cmLBs
+
+	動画　モーキャプの動きを盛れ！
+		https://youtu.be/DV9gYsgDzz0
+
+
+
 2023/06/15
 	EditMot 1.2.0.22へ向けて
 
@@ -195,30 +241,6 @@
 	ドキュメント追加
 		Documants/TroubleShooting/AboutCameraAnim.docx (UnityとMayaとの連携の仕方についても追記)
 			
-
-　おちゃっこLAB
-	https://ochakkolab.jp/
-
-　YouTubeチャンネル
-	https://www.youtube.com/@ochakkolab
-
-	動画　【小人】小人制御の物理【ドリブン】
-		https://youtu.be/SRoi8Ds9NYI
-
-	動画　いろいろ直った物理でボクシングの動画	
-		https://youtu.be/Zr7fT1gsCl4
-
-	動画　作り直した位置コンストレイント
-		https://youtu.be/8p13H6MGQZ8
-
-	動画　変な風には曲がらない位置コンストレイント
-		https://youtu.be/9Xt8cxjByeA
-
-	動画　制限角度をキャプチャーする
-		https://youtu.be/mkkpo5cmLBs
-
-	動画　モーキャプの動きを盛れ！
-		https://youtu.be/DV9gYsgDzz0
 
 
 2023/06/05_2
