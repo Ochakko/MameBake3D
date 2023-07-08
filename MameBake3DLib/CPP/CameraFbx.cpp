@@ -226,15 +226,6 @@ int CCameraFbx::AddFbxCamera(FbxNode* pNode, CBone* pbone)
 		newcameranode->upvec = cameraupdir;
 
 
-		//2023/06/27
-		//CAMERA_INHERIT_CANCEL_NULL2の位置補正用
-		FbxTime fbxtime0;
-		fbxtime0.SetSecondDouble(0.0);
-		FbxVector4 lcltime0 = newcameranode->pnode->EvaluateLocalTranslation(fbxtime0, FbxNode::eSourcePivot, true, true);
-		ChaVector3 chalcltime0 = ChaVector3(lcltime0, false);
-		ChaVector3 charotpiv = ChaVector3(newcameranode->pnode->GetRotationPivot(FbxNode::eSourcePivot));
-		ChaVector3 nodepos = ChaMatrixTraVec(pbone->GetNodeMat());
-		newcameranode->adjustpos = charotpiv - chalcltime0;
 
 
 		m_loadedflag = true;
@@ -275,6 +266,20 @@ int CCameraFbx::PreLoadFbxAnim(CBone* srcbone, int srcmotid)
 		_ASSERT(0);
 		return 1;
 	}
+
+
+	//2023/06/27
+	//CAMERA_INHERIT_CANCEL_NULL2の位置補正用
+	//2023/07/08
+	//!!!!!  カレントモーションがカメラのモーションの時に計算する  !!!!!
+	FbxTime fbxtime0;
+	fbxtime0.SetSecondDouble(0.0);
+	FbxVector4 lcltime0 = cameranode->pnode->EvaluateLocalTranslation(fbxtime0, FbxNode::eSourcePivot, true, true);
+	ChaVector3 chalcltime0 = ChaVector3(lcltime0, false);
+	ChaVector3 charotpiv = ChaVector3(cameranode->pnode->GetRotationPivot(FbxNode::eSourcePivot));
+	ChaVector3 nodepos = ChaMatrixTraVec(srcbone->GetNodeMat());
+	cameranode->adjustpos = charotpiv - chalcltime0;
+
 
 
 	//###################

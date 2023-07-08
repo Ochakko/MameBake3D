@@ -1,5 +1,5 @@
 2023/07/07
-	EditMot 1.2.0.22 RC2
+	EditMot 1.2.0.22 release
 
 	使用しているMicrosoftのOSS DXUT, DirectXTex, Effect11をJun2023へバージョンアップ
 
@@ -17,10 +17,21 @@
 
 	RotationOrderを見直し　テストし直し
 
+	bvh2fbxによるfbx出力形式修正
+
+	Test/testBvhConvフォルダのfbxのサンプル更新
+		bvh2fbxによるfbx出力形式が変わったのでサンプルも更新
+
+	読み込みボーン最大数を256から1024へ変更
+
 	メモ
 		RC1 : readme.txtをUTF-8にしてRC1としてコミット. リリース前のテスト開始.
 		RC2 : アニメの無いカメラ(１つだけ)対応. 　アニメがあるカメラの0フレームの位置と向き修正.
 
+		release : 
+			Test/testBvhConvフォルダのfbxサンプル更新
+			RC2における修正の部分的ロールバック(INHERIT_CANCEL_NULl2用の位置補正の計算場所を元の場所に)
+			アセット読み込み時にリターゲットウインドウが真っ白 ---> CONVBONEMAXを256から1024へ変更　アセット読み込み時にボーン制限数をオーバーしたため
 
 　おちゃっこLAB
 	https://ochakkolab.jp/

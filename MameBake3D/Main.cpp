@@ -2041,7 +2041,11 @@ static OWP_Button* s_toolMaterialRateB = 0;
 static OWP_Button* s_toolModelWorldMatB = 0;
 
 
-#define CONVBONEMAX		256
+//#define CONVBONEMAX		256
+
+//2023/07/08 TheHunt のアセット読み込み時にボーン数制限オーバーしたので　値を大きく
+#define CONVBONEMAX		1024
+
 static OrgWindow* s_convboneWnd = 0;
 static OWP_ScrollWnd* s_convboneSCWnd = 0;
 static int s_convbonenum = 0;
