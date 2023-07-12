@@ -1,3 +1,7 @@
+2023/07/12
+	カメラの名前の付け方の補足を追記
+		Documants/TroubleShooting/AboutCameraAnim.docx
+	
 2023/07/07
 	EditMot 1.2.0.22 release
 
