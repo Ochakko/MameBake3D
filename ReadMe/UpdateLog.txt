@@ -1,3 +1,11 @@
+2023/07/20
+	README.md更新
+	
+	動画追加
+	0.07倍速でパンチしたら物理はどうなるんだろう？
+	https://youtu.be/gKuLzPDt-cc
+
+
 2023/07/12
 	カメラの名前の付け方の補足を追記
 		Documants/TroubleShooting/AboutCameraAnim.docx
