@@ -472,6 +472,8 @@ int CModel::InitParams()
 	m_node2mqoobj.clear();
 	m_node2bone.clear();
 
+	m_ikstopname.clear();
+
 	InitCameraFbx();
 
 	m_enulltime = 0.0;//SetShaderConstにおける　ボーンの無いメッシュアニメ enull evaluate用の時間
@@ -4933,16 +4935,20 @@ CBone* CModel::CreateNewFbxBone(FbxNodeAttribute::EType type, FbxNode* curnode, 
 	m_bonename[newbone->GetBoneName()] = newbone;
 
 
+	//2023/07/21 SetIKStopFlag()に移動　chaファイルで指定した名前のジョイントにセット
 	//2023/02/19
 	//とりあえず　ジョイント名をみて　自動でIKStopFlagをセット
-	if ((strstr(newbone->GetBoneName(), "UpperLeg") != 0) ||
-		//(strstr(newbone->GetBoneName(), "UpperArm") != 0)) {
-		(strstr(newbone->GetBoneName(), "Shoulder") != 0)) {
-		newbone->SetIKStopFlag(true);
-	}
-	else {
-		newbone->SetIKStopFlag(false);
-	}
+	//if ((strstr(newbone->GetBoneName(), "UpperLeg") != 0) ||
+	//	//(strstr(newbone->GetBoneName(), "UpperArm") != 0)) {
+	//	(strstr(newbone->GetBoneName(), "Shoulder") != 0)) {
+	//	newbone->SetIKStopFlag(true);
+	//}
+	//else {
+	//	newbone->SetIKStopFlag(false);
+	//}
+	
+
+
 
 	//const char* strextend;
 	//strextend = strstr(newbone->GetBoneName(), "_extend_");
@@ -17772,4 +17778,23 @@ double CModel::GetCurrentMotionFrame()
 	else {
 		return 1.0;
 	}
+}
+
+//2023/07/21
+int CModel::SetIKStopFlag()
+{
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+		CBone* srcbone = itrbone->second;
+		if (srcbone) {
+			if (IsIKStopName(srcbone->GetBoneName())) {
+				srcbone->SetIKStopFlag(true);
+			}
+			else {
+				srcbone->SetIKStopFlag(false);
+			}
+		}
+	}
+
+	return 0;
 }

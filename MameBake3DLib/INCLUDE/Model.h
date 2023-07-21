@@ -857,6 +857,9 @@ public:
 	ChaVector3 GetCameraAdjustPos(int cameramotid);
 
 
+	int SetIKStopFlag();
+
+
 private:
 	int InitParams();
 	int DestroyObjs();
@@ -1687,6 +1690,77 @@ public: //accesser
 		return m_enulltime;
 	}
 
+	void ClearIKStopName()
+	{
+		m_ikstopname.clear();
+	}
+	void AddIKStopName(const char* srcname)
+	{
+		if (!srcname) {
+			_ASSERT(0);
+			return;
+		}
+		size_t len = strlen(srcname);
+		if ((len == 0) || (len >= 256)) {
+			_ASSERT(0);
+			return;
+		}
+		m_ikstopname.push_back(srcname);
+
+	}
+	int GetIKStopNameSize()
+	{
+		return (int)m_ikstopname.size();
+	}
+	std::string GetIKStopName(int srcindex, int* perror)
+	{
+		if (!perror) {
+			_ASSERT(0);
+			return std::string("error!!!");
+		}
+		*perror = 0;
+
+		int num = GetIKStopNameSize();
+		if (num <= 0) {
+			*perror = 1;
+			return std::string("none!!!");
+		}
+		if ((srcindex >= 0) && (srcindex < num)) {
+			*perror = 0;
+			return m_ikstopname[srcindex];
+		}
+		else {
+			*perror = 2;
+			return std::string("outofrange!!!");
+		}
+	}
+	bool IsIKStopName(const char* srcname)
+	{
+		if (!srcname) {
+			_ASSERT(0);
+			return false;
+		}
+		size_t len = strlen(srcname);
+		if ((len == 0) || (len >= 256)) {
+			_ASSERT(0);
+			return false;
+		}
+
+		int stopnamesize = GetIKStopNameSize();
+		int cmpno;
+		for (cmpno = 0; cmpno < stopnamesize; cmpno++) {
+			int errorno = 0;
+			std::string cmpname = GetIKStopName(cmpno, &errorno);
+			if (errorno == 0) {
+				if (strstr(srcname, cmpname.c_str()) != 0) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];
@@ -1718,6 +1792,7 @@ private:
 	std::map<int, CMQOObject*> m_object;//オブジェクト。別の言葉でいうと３Dモデルにおける名前が付けられているパーツや部品。
 	std::map<int, CBone*> m_bonelist;//ボーンをボーンIDから検索できるようにしたmap。
 	std::map<std::string, CBone*> m_bonename;//ボーンを名前から検索できるようにしたmap。
+	std::vector<std::string> m_ikstopname;//2023/07/21 IKStopフラグを設定するジョイントの名前の一部
 
 	CBone* m_topbone;//一番親のボーン。
 	CBtObject* m_topbt;//一番親のbullet剛体オブジェクト。

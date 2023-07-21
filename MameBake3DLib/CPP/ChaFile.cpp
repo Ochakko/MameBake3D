@@ -141,7 +141,9 @@ int CChaFile::WriteFileInfo()
 	//version 1002 : 2023/03/24 1.2.0.17 RC2
 	//CallF(Write2File("  <FileInfo>\r\n    <kind>ChatCats3D_ProjectFile</kind>\r\n    <version>1002</version>\r\n    <type>0</type>\r\n  </FileInfo>\r\n"), return 1);
 	//version 1003 : 2023/03/24 1.2.0.17 RC3
-	CallF(Write2File("  <FileInfo>\r\n    <kind>ChatCats3D_ProjectFile</kind>\r\n    <version>1003</version>\r\n    <type>0</type>\r\n  </FileInfo>\r\n"), return 1);
+	//CallF(Write2File("  <FileInfo>\r\n    <kind>ChatCats3D_ProjectFile</kind>\r\n    <version>1003</version>\r\n    <type>0</type>\r\n  </FileInfo>\r\n"), return 1);
+	//version 1004 : 2023/07/21 1.2.0.23へ向けて
+	CallF(Write2File("  <FileInfo>\r\n    <kind>ChatCats3D_ProjectFile</kind>\r\n    <version>1004</version>\r\n    <type>0</type>\r\n  </FileInfo>\r\n"), return 1);
 
 	
 	CallF( Write2File( "  <ProjectInfo>\r\n" ), return 1 );
@@ -180,6 +182,18 @@ int CChaFile::WriteChara(bool limitdegflag, MODELELEM* srcme, WCHAR* projname)
 	CallF(Write2File("    <EmissiveDispRate>%f</EmissiveDispRate>\r\n", materialdisprate.z), return 1);
 	CallF(Write2File("    <AmbientDispRate>%f</AmbientDispRate>\r\n", materialdisprate.w), return 1);
 
+
+	//2023/07/21
+	CallF(Write2File("    <CustomIKStopName>1</CustomIKStopName>\r\n"), return 1);
+	int ikstopsize = curmodel->GetIKStopNameSize();
+	int ikstopno;
+	for (ikstopno = 0; ikstopno < ikstopsize; ikstopno++) {
+		int errorno = 0;
+		string stopname = curmodel->GetIKStopName(ikstopno, &errorno);
+		if (errorno == 0) {
+			CallF(Write2File("    <IKStopName>%s</IKStopName>\r\n", stopname.c_str()), return 1);
+		}
+	}
 
 
 	CallF( Write2File( "    <RGDMORPH>%d</RGDMORPH>\r\n", curmodel->GetRgdMorphIndex() ), return 1 );
@@ -361,7 +375,7 @@ int CChaFile::WriteChara(bool limitdegflag, MODELELEM* srcme, WCHAR* projname)
 }
 
 int CChaFile::LoadChaFile(bool limitdegflag, WCHAR* strpath, 
-	CModel* (*srcfbxfunc)( bool dorefreshtl, int skipdefref, int inittimelineflag ), 
+	CModel* (*srcfbxfunc)( bool callfromcha, bool dorefreshtl, int skipdefref, int inittimelineflag, std::vector<std::string> ikstopname ),
 	int (*srcReffunc)(), int (*srcImpFunc)(), int (*srcGcoFunc)(),
 	int (*srcReMenu)( int selindex1, int callbymenu1 ), 
 	int (*srcRgdMenu)( int selindex2, int callbymenu2 ), 
@@ -564,6 +578,37 @@ int CChaFile::ReadChara(bool limitdegflag, int charanum, int characnt, XMLIOBUF*
 	Read_Int( xmlbuf, "<RGDMORPH>", "</RGDMORPH>", &morphindex );
 
 
+	//2023/07/21
+	std::vector<std::string> ikstopname;
+	{
+		XMLIOBUF custombuf;
+		ZeroMemory(&custombuf, sizeof(XMLIOBUF));
+		int errorno1 = SetXmlIOBuf(xmlbuf, "<CustomIKStopName>", "</CustomIKStopName>", &custombuf, 0);//このタグがある場合には　新しいファイルとみなす
+		if (errorno1 == 0) {
+			bool findikstopname = true;
+			while (findikstopname) {
+				XMLIOBUF refbuf;
+				ZeroMemory(&refbuf, sizeof(XMLIOBUF));
+				int errorno = SetXmlIOBuf(xmlbuf, "<IKStopName>", "</IKStopName>", &refbuf, 0);
+				if (errorno != 0) {
+					findikstopname = false;
+					break;
+				}
+				char stopname[256] = { 0 };
+				CallF(Read_Str(&refbuf, "<IKStopName>", "</IKStopName>", stopname, 256), return 1);
+
+				ikstopname.push_back(stopname);
+			}
+		}
+		else {
+			//古いファイルには　IKStopNameタグエントリーは無い　デフォルト設定する
+			ikstopname.push_back("Shoulder");
+			ikstopname.push_back("UpperLeg");
+		}
+	}
+
+
+
 	char mmqopath[MAX_PATH] = {0};
 	WCHAR wmodelfolder[MAX_PATH] = {0L};
 	WCHAR wfilename[MAX_PATH] = {0L};
@@ -582,7 +627,8 @@ int CChaFile::ReadChara(bool limitdegflag, int charanum, int characnt, XMLIOBUF*
 	int skipdefref = (int)(refnum != 0);//default_ref.refが無い場合にCModel::LoadFBXでdefault_ref.refを作るためのフラグ
 	//int skipdefref = 0;//CModel::LoadFBXでCreateRigidElemReqを呼ぶ必要がある。FBXだけ読み込んでいる状態でdefault_refが必要。
 	CModel* newmodel = 0;
-	newmodel = (this->m_FbxFunc)( (characnt == (charanum - 1)), skipdefref, inittimeline );
+	bool callfromcha = true;
+	newmodel = (this->m_FbxFunc)( callfromcha, (characnt == (charanum - 1)), skipdefref, inittimeline, ikstopname );
 	
 	if (!newmodel) {
 		_ASSERT(0);
@@ -596,6 +642,9 @@ int CChaFile::ReadChara(bool limitdegflag, int charanum, int characnt, XMLIOBUF*
 	newmodel->SetModelRotation(ChaVector3(rotx, roty, rotz));
 	newmodel->CalcModelWorldMatOnLoad();
 	newmodel->SetMaterialDispRate(materialdisprate);
+
+
+
 
 	if( refnum > 0 ){
 		int refcnt;

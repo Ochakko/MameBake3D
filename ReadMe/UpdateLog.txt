@@ -1,3 +1,28 @@
+2023/07/21
+    EditMot 1.2.0.23へ向けて
+
+    IKStopFlagの指定をchaファイルで指定可能に
+        古いchaファイルを保存し直すと次のようなエントリーがテキスト出力される
+            <CustomIKStopName>1</CustomIKStopName>
+            <IKStopName>Shoulder</IKStopName>
+            <IKStopName>UpperLeg</IKStopName>
+
+	このエントリーを例えば次のように指定し直すことが可能
+            <CustomIKStopName>1</CustomIKStopName>
+            <IKStopName>UpperArm</IKStopName>
+            <IKStopName>Neck</IKStopName>
+            <IKStopName>UpperLeg</IKStopName>
+
+	IKStopNameの指定は　ジョイント名の一部で良い(名前の部分一致で判定する)
+
+	IKStopFlagの指定は　IK階層数コンボボックスで階層数に1より大きい値を指定している場合に作用する
+		例えば階層数を４に指定すると　ドラッグしたジョイントを含めて親方向に４階層分回転する
+		しかし　４階層の途中にIKStopFlag指定のジョイントがあると　そこでドラッグによる回転は止まる
+
+	chaファイルではなくfbxファイルだけを読み込んだ場合や古いchaファイルを読み込んだ場合は
+		ShoulderとUpperLegを名前に含むジョイントにIKStopFlagを設定する(デフォルト設定)
+
+
 2023/07/20
 	README.md更新
 	

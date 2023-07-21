@@ -2931,7 +2931,7 @@ static int InitCurMotion(int selectflag, double expandmotion);
 
 static int OpenChaFile();
 CModel* OpenMQOFile();
-CModel* OpenFBXFile(bool dorefreshtl, int skipdefref, int inittimelineflag);
+CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int inittimelineflag, std::vector<std::string> ikstopname);
 static int OpenREFile();
 static int OpenImpFile();
 static int OpenGcoFile();
@@ -11047,7 +11047,9 @@ int RetargetFile(char* fbxpath)
 
 		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, fbxpath, MAX_PATH, g_tmpmqopath, MAX_PATH);
 		CModel* newmodel = 0;
-		newmodel = OpenFBXFile(false, 0, 1);
+		std::vector<std::string> ikstopname;
+		ikstopname.clear();
+		newmodel = OpenFBXFile(false, false, 0, 1, ikstopname);
 		if (newmodel) {
 			//s_model = s_convbone_model_batch;
 
@@ -11641,7 +11643,9 @@ int OpenFile()
 			if (s_modelindex.size() > 0) {
 				OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
 			}
-			newmodel = OpenFBXFile(true, 0, 1);
+			std::vector<std::string> ikstopname;
+			ikstopname.clear();
+			newmodel = OpenFBXFile(false, true, 0, 1, ikstopname);
 			if (newmodel) {
 				result = 0;
 			}
@@ -11720,7 +11724,9 @@ int OpenFile()
 				if (s_modelindex.size() > 0) {
 					OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
 				}
-				newmodel = OpenFBXFile(true, 0, 1);
+				std::vector<std::string> ikstopname;
+				ikstopname.clear();
+				newmodel = OpenFBXFile(false, true, 0, 1, ikstopname);
 				if (newmodel) {
 					result = 0;
 				}
@@ -12004,7 +12010,7 @@ void CalcTotalBound()
 }
 
 
-CModel* OpenFBXFile(bool dorefreshtl, int skipdefref, int inittimelineflag)
+CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int inittimelineflag, std::vector<std::string> ikstopname)
 {
 	static int s_dbgcnt = 0;
 	s_dbgcnt++;
@@ -12112,6 +12118,22 @@ CModel* OpenFBXFile(bool dorefreshtl, int skipdefref, int inittimelineflag)
 	else {
 		s_model = newmodel;
 	}
+
+	if (callfromcha == true) {
+		//ChaFile.cppで　*.cha fileの記述から読み取る
+		std::vector<std::string>::iterator itrname;
+		for (itrname = ikstopname.begin(); itrname != ikstopname.end(); itrname++) {
+			string curname = *itrname;
+			newmodel->AddIKStopName(curname.c_str());
+		}
+	}
+	else {
+		//set default IKStopName
+		newmodel->AddIKStopName("Shoulder");
+		newmodel->AddIKStopName("UpperLeg");
+	}
+	newmodel->SetIKStopFlag();
+
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
@@ -34154,7 +34176,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.21 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.23 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -41732,7 +41754,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.21 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.23 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
