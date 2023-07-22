@@ -371,10 +371,15 @@ int CCopyHistoryDlg::ParamsToDlg()
 		//2022/11/10
 		//m_selectname　代入初期化
 		//履歴ウインドウ表示直後に　最新のコピーを適用チェックを外したとき　m_selectnameに何も入っていないとペーストされない件を修正
-		if (m_copyhistory[0].wfilename[0] != 0L) {
-			m_selectname[MAX_PATH - 1] = 0L;
-			wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[0].wfilename);
-			m_selectname[MAX_PATH - 1] = 0L;
+		if (!m_copyhistory.empty()) {//2023/07/22
+			if (m_copyhistory[0].wfilename[0] != 0L) {
+				m_selectname[MAX_PATH - 1] = 0L;
+				wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[0].wfilename);
+				m_selectname[MAX_PATH - 1] = 0L;
+			}
+		}
+		else {
+			m_selectname[0] = 0L;
 		}
 
 

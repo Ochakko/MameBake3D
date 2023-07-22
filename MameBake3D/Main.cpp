@@ -15346,11 +15346,18 @@ void SetDlgHistory(HWND hDlgWnd, std::vector<wstring> vecopenfilename, int pagen
 	}
 
 
-	int disppage;
-	disppage = currentpage % pagenum + 1;
-	WCHAR strpages[256] = { 0L };
-	swprintf_s(strpages, 256, L"%03d / %03d Pages", disppage, pagenum);
-	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_PAGES), strpages);
+	if (pagenum > 0) {
+		int disppage;
+		disppage = currentpage % pagenum + 1;
+		WCHAR strpages[256] = { 0L };
+		swprintf_s(strpages, 256, L"%03d / %03d Pages", disppage, pagenum);
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_PAGES), strpages);
+	}
+	else {
+		WCHAR strpages[256] = { 0L };
+		swprintf_s(strpages, 256, L"0 / 0 NoPages");
+		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_PAGES), strpages);
+	}
 
 }
 
@@ -42276,8 +42283,17 @@ int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha, i
 
 
 						if (filtermatch == true) {
-							vecopenfilename.push_back(readwstr);
-							foundnum++;
+							DWORD fattr;
+							fattr = GetFileAttributes(readwstr);
+							if ((fattr != INVALID_FILE_ATTRIBUTES) && 
+								((fattr & FILE_ATTRIBUTE_DIRECTORY) == 0) &&
+								((fattr & FILE_ATTRIBUTE_SYSTEM) == 0)
+								) {
+
+								//ファイルが存在する場合
+								vecopenfilename.push_back(readwstr);
+								foundnum++;
+							}
 						}
 						//if (foundnum >= dispnum) {
 						if (foundnum >= numhistory) {
@@ -42298,30 +42314,35 @@ int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha, i
 			if ((numhistory2 - fullpagenum * OPENHISTORYMAXNUM) > 0) {
 				pagenum++;
 			}
+			if (pagenum > 0) {
+				int setpage;
+				if (currentpage < 0) {
+					setpage = 0;
+				}
+				else if ((currentpage + 1) <= pagenum) {
+					setpage = currentpage;
+				}
+				else {
+					setpage = currentpage % pagenum;
+				}
+				int startno, restnum, endno, dispnum2;
+				startno = setpage * OPENHISTORYMAXNUM;
+				restnum = numhistory2 - startno;
+				dispnum2 = min(restnum, OPENHISTORYMAXNUM);
+				endno = startno + dispnum2 - 1;
 
-			int setpage;
-			if (currentpage < 0) {
-				setpage = 0;
-			}
-			else if ((currentpage + 1) <= pagenum) {
-				setpage = currentpage;
+				int copyno;
+				for (copyno = startno; copyno <= endno; copyno++) {
+					wstring curstring = vecopenfilename[copyno];
+					dstvecopenfilename.push_back(curstring);
+				}
+
+				return pagenum;
 			}
 			else {
-				setpage = currentpage % pagenum;
+				dstvecopenfilename.clear();
+				return 0;
 			}
-			int startno, restnum, endno, dispnum2;
-			startno = setpage * OPENHISTORYMAXNUM;
-			restnum = numhistory2 - startno;
-			dispnum2 = min(restnum, OPENHISTORYMAXNUM);
-			endno = startno + dispnum2 - 1;
-
-			int copyno;
-			for (copyno = startno; copyno <= endno; copyno++) {
-				wstring curstring = vecopenfilename[copyno];
-				dstvecopenfilename.push_back(curstring);
-			}
-
-			return pagenum;
 		}
 		else {
 			dstvecopenfilename.clear();
@@ -42412,8 +42433,18 @@ int GetRtgHistoryDir(std::vector<wstring>& dstvecopenfilename, int currentpage)
 						}
 					}
 					if (foundsame == false) {
-						vecopenfilename.push_back(readwstr);
-						foundnum++;
+						DWORD fattr;
+						fattr = GetFileAttributes(readwstr);
+						if ((fattr != INVALID_FILE_ATTRIBUTES) &&
+							((fattr & FILE_ATTRIBUTE_DIRECTORY) == 0) &&
+							((fattr & FILE_ATTRIBUTE_SYSTEM) == 0)
+							) {
+
+							//ファイルが存在する場合
+							vecopenfilename.push_back(readwstr);
+							foundnum++;
+						}
+
 						//if (foundnum >= dispnum) {
 						if (foundnum >= numhistory) {
 							CloseHandle(hfile);
@@ -42435,29 +42466,35 @@ int GetRtgHistoryDir(std::vector<wstring>& dstvecopenfilename, int currentpage)
 				pagenum++;
 			}
 
-			int setpage;
-			if (currentpage < 0) {
-				setpage = 0;
-			}
-			else if ((currentpage + 1) <= pagenum) {
-				setpage = currentpage;
+			if (pagenum > 0) {
+				int setpage;
+				if (currentpage < 0) {
+					setpage = 0;
+				}
+				else if ((currentpage + 1) <= pagenum) {
+					setpage = currentpage;
+				}
+				else {
+					setpage = currentpage % pagenum;
+				}
+				int startno, restnum, endno, dispnum2;
+				startno = setpage * OPENHISTORYMAXNUM;
+				restnum = numhistory2 - startno;
+				dispnum2 = min(restnum, OPENHISTORYMAXNUM);
+				endno = startno + dispnum2 - 1;
+
+				int copyno;
+				for (copyno = startno; copyno <= endno; copyno++) {
+					wstring curstring = vecopenfilename[copyno];
+					dstvecopenfilename.push_back(curstring);
+				}
+
+				return pagenum;
 			}
 			else {
-				setpage = currentpage %	pagenum;
+				dstvecopenfilename.clear();
+				return 0;
 			}
-			int startno, restnum, endno, dispnum2;
-			startno = setpage * OPENHISTORYMAXNUM;
-			restnum = numhistory2 - startno;
-			dispnum2 = min(restnum, OPENHISTORYMAXNUM);
-			endno = startno + dispnum2 - 1;
-
-			int copyno;
-			for (copyno = startno; copyno <= endno; copyno++) {
-				wstring curstring = vecopenfilename[copyno];
-				dstvecopenfilename.push_back(curstring);
-			}
-
-			return pagenum;
 		}
 		else {
 			dstvecopenfilename.clear();
@@ -42549,8 +42586,18 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename, int currentpage)
 						}
 					}
 					if (foundsame == false) {
-						vecopenfilename.push_back(readwstr);
-						foundnum++;
+						DWORD fattr;
+						fattr = GetFileAttributes(readwstr);
+						if ((fattr != INVALID_FILE_ATTRIBUTES) &&
+							((fattr & FILE_ATTRIBUTE_DIRECTORY) == 0) &&
+							((fattr & FILE_ATTRIBUTE_SYSTEM) == 0)
+							) {
+
+							//ファイルが存在する場合
+							vecopenfilename.push_back(readwstr);
+							foundnum++;
+						}
+
 						//if (foundnum >= dispnum) {
 						if (foundnum >= numhistory) {
 							CloseHandle(hfile);
@@ -42571,29 +42618,35 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename, int currentpage)
 				pagenum++;
 			}
 
-			int setpage;
-			if (currentpage < 0) {
-				setpage = 0;
-			}
-			else if ((currentpage + 1) <= pagenum) {
-				setpage = currentpage;
+			if (pagenum > 0) {
+				int setpage;
+				if (currentpage < 0) {
+					setpage = 0;
+				}
+				else if ((currentpage + 1) <= pagenum) {
+					setpage = currentpage;
+				}
+				else {
+					setpage = currentpage % pagenum;
+				}
+				int startno, restnum, endno, dispnum2;
+				startno = setpage * OPENHISTORYMAXNUM;
+				restnum = numhistory2 - startno;
+				dispnum2 = min(restnum, OPENHISTORYMAXNUM);
+				endno = startno + dispnum2 - 1;
+
+				int copyno;
+				for (copyno = startno; copyno <= endno; copyno++) {
+					wstring curstring = vecopenfilename[copyno];
+					dstvecopenfilename.push_back(curstring);
+				}
+
+				return pagenum;
 			}
 			else {
-				setpage = currentpage % pagenum;
+				dstvecopenfilename.clear();
+				return 0;
 			}
-			int startno, restnum, endno, dispnum2;
-			startno = setpage * OPENHISTORYMAXNUM;
-			restnum = numhistory2 - startno;
-			dispnum2 = min(restnum, OPENHISTORYMAXNUM);
-			endno = startno + dispnum2 - 1;
-
-			int copyno;
-			for (copyno = startno; copyno <= endno; copyno++) {
-				wstring curstring = vecopenfilename[copyno];
-				dstvecopenfilename.push_back(curstring);
-			}
-
-			return pagenum;
 		}
 		else {
 			dstvecopenfilename.clear();
