@@ -2957,10 +2957,10 @@ static int SaveBatchHistory(WCHAR* selectname);
 static int GetBatchHistoryDir(WCHAR* dstname, int dstlen);
 static int Savebvh2FBXHistory(WCHAR* selectname);
 static int SaveRtgHistory(WCHAR* selectname);
-static int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename);
-static int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha);
+static int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename, int currentpage);
+static int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha, int currentpage);
 static int GetCPTFileName(std::vector<HISTORYELEM>& dstcptfilename);
-static int GetRtgHistoryDir(std::vector<wstring>& dstvecopenfilename);
+static int GetRtgHistoryDir(std::vector<wstring>& dstvecopenfilename, int currentpage);
 static int SaveProject();
 static int SaveREFile();
 static int SaveImpFile();
@@ -3192,7 +3192,7 @@ static int GetSymRootMode();
 static int UpdateEditedEuler();
 
 
-static void SetDlgHistory(HWND hDlgWnd, std::vector<wstring> vecopenfilename);
+static void SetDlgHistory(HWND hDlgWnd, std::vector<wstring> vecopenfilename, int pagenum, int currentpage);
 static bool FindAtTheLast(std::wstring const& strsource, std::wstring const& strpat);
 
 
@@ -15179,7 +15179,7 @@ int CalcPickRay(ChaVector3* startptr, ChaVector3* endptr)
 ////}
 
 
-void SetDlgHistory(HWND hDlgWnd, std::vector<wstring> vecopenfilename)
+void SetDlgHistory(HWND hDlgWnd, std::vector<wstring> vecopenfilename, int pagenum, int currentpage)
 {
 	int radiocnt = 0;
 	int radionum = min(OPENHISTORYMAXNUM, (int)vecopenfilename.size());
@@ -15345,6 +15345,13 @@ void SetDlgHistory(HWND hDlgWnd, std::vector<wstring> vecopenfilename)
 		SetWindowTextW(GetDlgItem(hDlgWnd, IDC_RADI70), L"Loading History not Exist.");
 	}
 
+
+	int disppage;
+	disppage = currentpage % pagenum + 1;
+	WCHAR strpages[256] = { 0L };
+	swprintf_s(strpages, 256, L"%03d / %03d Pages", disppage, pagenum);
+	SetWindowTextW(GetDlgItem(hDlgWnd, IDC_PAGES), strpages);
+
 }
 
 
@@ -15389,10 +15396,18 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	static int s_filter_cha = 1;
 
+	
+	static int pagenum = 1;//2023/07/22
+	static int currentpage = 0;//2023/07/22
+	static int testcurrentpage = 0;//2023/07/22
 
 	switch (msg) {
 	case WM_INITDIALOG:
 	{
+		pagenum = 1;
+		currentpage = 0;
+		testcurrentpage = 0;
+
 
 		SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
 
@@ -15423,24 +15438,39 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 		if (s_filterindex == 5) {
 			//bvh2FBXの単体ファイル履歴
-			std::vector<wstring> vecopenfilename;
-			GetbvhHistoryDir(vecopenfilename);
 
-			SetDlgHistory(hDlgWnd, vecopenfilename);
+			EnableWindow(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), FALSE);
+			EnableWindow(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), FALSE);
+			EnableWindow(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), FALSE);
+
+			std::vector<wstring> vecopenfilename;
+			pagenum = GetbvhHistoryDir(vecopenfilename, currentpage);
+
+			SetDlgHistory(hDlgWnd, vecopenfilename, pagenum, currentpage);
 		}
 		else if (s_filterindex == 7) {
 			//retarget fileの単体ファイル履歴
-			std::vector<wstring> vecopenfilename;
-			GetRtgHistoryDir(vecopenfilename);
 
-			SetDlgHistory(hDlgWnd, vecopenfilename);
+			EnableWindow(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), FALSE);
+			EnableWindow(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), FALSE);
+			EnableWindow(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), TRUE);
+
+			std::vector<wstring> vecopenfilename;
+			pagenum = GetRtgHistoryDir(vecopenfilename, currentpage);
+
+			SetDlgHistory(hDlgWnd, vecopenfilename, pagenum, currentpage);
 		}
 		else {
 			//cha, fbxファイル履歴
-			std::vector<wstring> vecopenfilename;
-			GetchaHistoryDir(vecopenfilename, s_filter_cha);
 
-			SetDlgHistory(hDlgWnd, vecopenfilename);
+			EnableWindow(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), TRUE);
+			EnableWindow(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), TRUE);
+			EnableWindow(GetDlgItem(hDlgWnd, IDC_FILTER_RTG), FALSE);
+
+			std::vector<wstring> vecopenfilename;
+			pagenum = GetchaHistoryDir(vecopenfilename, s_filter_cha, currentpage);
+
+			SetDlgHistory(hDlgWnd, vecopenfilename, pagenum, currentpage);
 		}
 
 		RECT dlgrect;
@@ -15694,6 +15724,8 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 
 		case IDC_FILTER_CHA:
+			currentpage = 0;
+
 			if (s_filterindex != 7) {
 				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, TRUE, 0);
 				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
@@ -15703,20 +15735,22 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				if (s_filterindex == 5) {
 					//bvh2FBXの単体ファイル履歴
 					std::vector<wstring> vecopenfilename;
-					GetbvhHistoryDir(vecopenfilename);
-					SetDlgHistory(hDlgWnd, vecopenfilename);
+					pagenum = GetbvhHistoryDir(vecopenfilename, currentpage);
+					SetDlgHistory(hDlgWnd, vecopenfilename, pagenum, currentpage);
 				}
 				else {
 					//cha, fbxファイル履歴
 					std::vector<wstring> vecopenfilename;
-					GetchaHistoryDir(vecopenfilename, s_filter_cha);
-					SetDlgHistory(hDlgWnd, vecopenfilename);
+					pagenum = GetchaHistoryDir(vecopenfilename, s_filter_cha, currentpage);
+					SetDlgHistory(hDlgWnd, vecopenfilename, pagenum, currentpage);
 				}
 			}
 			break;
 
 
 		case IDC_FILTER_FBX:
+			currentpage = 0;
+
 			if (s_filterindex != 7) {
 				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
 				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, TRUE, 0);
@@ -15726,19 +15760,21 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				if (s_filterindex == 5) {
 					//bvh2FBXの単体ファイル履歴
 					std::vector<wstring> vecopenfilename;
-					GetbvhHistoryDir(vecopenfilename);
-					SetDlgHistory(hDlgWnd, vecopenfilename);
+					pagenum = GetbvhHistoryDir(vecopenfilename, currentpage);
+					SetDlgHistory(hDlgWnd, vecopenfilename, pagenum, currentpage);
 				}
 				else {
 					//cha, fbxファイル履歴
 					std::vector<wstring> vecopenfilename;
-					GetchaHistoryDir(vecopenfilename, s_filter_cha);
-					SetDlgHistory(hDlgWnd, vecopenfilename);
+					pagenum = GetchaHistoryDir(vecopenfilename, s_filter_cha, currentpage);
+					SetDlgHistory(hDlgWnd, vecopenfilename, pagenum, currentpage);
 				}
 			}
 			break;
 
 		case IDC_FILTER_RTG:
+			currentpage = 0;
+
 			if (s_filterindex == 7) {
 				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_CHA), BM_SETSTATE, FALSE, 0);
 				SendMessage(GetDlgItem(hDlgWnd, IDC_FILTER_FBX), BM_SETSTATE, FALSE, 0);
@@ -15746,9 +15782,132 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 				//Retarget fileの単体ファイル履歴
 				std::vector<wstring> vecopenfilename;
-				GetRtgHistoryDir(vecopenfilename);
-				SetDlgHistory(hDlgWnd, vecopenfilename);
+				pagenum = GetRtgHistoryDir(vecopenfilename, currentpage);
+				SetDlgHistory(hDlgWnd, vecopenfilename, pagenum, currentpage);
 			}
+			break;
+		case IDC_PREVPAGE:
+			testcurrentpage = 0;
+			
+			//##############
+			//check pagenum 
+			//##############
+
+			if (s_filterindex == 5) {
+				//bvh2FBXの単体ファイル履歴
+				std::vector<wstring> vecopenfilename;
+				pagenum = GetbvhHistoryDir(vecopenfilename, currentpage);
+			}
+			else if (s_filterindex == 7) {
+				//Retarget fileの単体ファイル履歴
+				std::vector<wstring> vecopenfilename;
+				pagenum = GetRtgHistoryDir(vecopenfilename, testcurrentpage);
+			}
+			else {
+				//cha, fbxファイル履歴
+				std::vector<wstring> vecopenfilename;
+				pagenum = GetchaHistoryDir(vecopenfilename, s_filter_cha, testcurrentpage);
+			}
+
+			//###################
+			//change currentpage
+			//###################
+			if (pagenum >= 1) {
+				if (currentpage >= 1) {
+					currentpage--;
+				}
+				else {
+					currentpage = pagenum - 1;
+				}
+			}
+			else {
+				currentpage = 0;
+			}
+
+			//##############
+			//set history
+			//##############
+			if (s_filterindex == 5) {
+				//bvh2FBXの単体ファイル履歴
+				std::vector<wstring> vecopenfilename;
+				pagenum = GetbvhHistoryDir(vecopenfilename, currentpage);
+				SetDlgHistory(hDlgWnd, vecopenfilename, pagenum, currentpage);
+			}
+			else if (s_filterindex == 7) {
+				//Retarget fileの単体ファイル履歴
+				std::vector<wstring> vecopenfilename;
+				pagenum = GetRtgHistoryDir(vecopenfilename, currentpage);
+				SetDlgHistory(hDlgWnd, vecopenfilename, pagenum, currentpage);
+			}
+			else {
+				//cha, fbxファイル履歴
+				std::vector<wstring> vecopenfilename;
+				pagenum = GetchaHistoryDir(vecopenfilename, s_filter_cha, currentpage);
+				SetDlgHistory(hDlgWnd, vecopenfilename, pagenum, currentpage);
+			}
+			
+			break;
+
+		case IDC_NEXTPAGE:
+
+			testcurrentpage = 0;
+
+			//##############
+			//check pagenum 
+			//##############
+			if (s_filterindex == 5) {
+				//bvh2FBXの単体ファイル履歴
+				std::vector<wstring> vecopenfilename;
+				pagenum = GetbvhHistoryDir(vecopenfilename, currentpage);
+			}
+			else if (s_filterindex == 7) {
+				//Retarget fileの単体ファイル履歴
+				std::vector<wstring> vecopenfilename;
+				pagenum = GetRtgHistoryDir(vecopenfilename, currentpage);
+			}
+			else {
+				//cha, fbxファイル履歴
+				std::vector<wstring> vecopenfilename;
+				pagenum = GetchaHistoryDir(vecopenfilename, s_filter_cha, currentpage);
+			}
+
+			//###################
+			//change currentpage
+			//###################
+			if (pagenum >= 1) {
+				if (currentpage < (pagenum - 1)) {
+					currentpage++;
+				}
+				else {
+					currentpage = 0;
+				}
+			}
+			else {
+				currentpage = 0;
+			}
+
+			//##############
+			//set history
+			//##############
+			if (s_filterindex == 5) {
+				//bvh2FBXの単体ファイル履歴
+				std::vector<wstring> vecopenfilename;
+				pagenum = GetbvhHistoryDir(vecopenfilename, currentpage);
+				SetDlgHistory(hDlgWnd, vecopenfilename, pagenum, currentpage);
+			}
+			else if (s_filterindex == 7) {
+				//Retarget fileの単体ファイル履歴
+				std::vector<wstring> vecopenfilename;
+				pagenum = GetRtgHistoryDir(vecopenfilename, currentpage);
+				SetDlgHistory(hDlgWnd, vecopenfilename, pagenum, currentpage);
+			}
+			else {
+				//cha, fbxファイル履歴
+				std::vector<wstring> vecopenfilename;
+				pagenum = GetchaHistoryDir(vecopenfilename, s_filter_cha, currentpage);
+				SetDlgHistory(hDlgWnd, vecopenfilename, pagenum, currentpage);
+			}
+
 			break;
 
 		default:
@@ -42025,8 +42184,13 @@ bool FindAtTheLast(std::wstring const& strsource, std::wstring const& strpat) {
 	return (strsource.rfind(strpat) == (strsource.size() - strpat.size()));
 }
 
-int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha)
+int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha, int currentpage)
 {
+	//##################################
+	//2023/07/22 pagenumをリターンする
+	//##################################
+
+
 	dstvecopenfilename.clear();
 
 	//MB3DOpenProj_20210410215628.txt
@@ -42066,9 +42230,7 @@ int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha)
 		std::reverse(vechistory.begin(), vechistory.end());
 
 		int numhistory = (int)vechistory.size();
-		int dispnum = min(OPENHISTORYMAXNUM, numhistory);
-
-
+		//int dispnum = min(OPENHISTORYMAXNUM, numhistory);
 
 		int foundnum = 0;
 		int historyno;
@@ -42117,7 +42279,9 @@ int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha)
 							vecopenfilename.push_back(readwstr);
 							foundnum++;
 						}
-						if (foundnum >= dispnum) {
+						//if (foundnum >= dispnum) {
+						if (foundnum >= numhistory) {
+							CloseHandle(hfile);
 							break;
 						}
 					}
@@ -42125,21 +42289,60 @@ int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha)
 				CloseHandle(hfile);
 			}
 		}
-	}
 
+		//重複を除いたヒストリー
+		int numhistory2 = (int)vecopenfilename.size();
+		if (numhistory2 > 0) {
+			int fullpagenum = numhistory2 / OPENHISTORYMAXNUM;//満たされているページの数
+			int pagenum = fullpagenum;//端数込みのページ数
+			if ((numhistory2 - fullpagenum * OPENHISTORYMAXNUM) > 0) {
+				pagenum++;
+			}
 
-	if (!vecopenfilename.empty()) {
-		dstvecopenfilename = vecopenfilename;
+			int setpage;
+			if (currentpage < 0) {
+				setpage = 0;
+			}
+			else if ((currentpage + 1) <= pagenum) {
+				setpage = currentpage;
+			}
+			else {
+				setpage = currentpage % pagenum;
+			}
+			int startno, restnum, endno, dispnum2;
+			startno = setpage * OPENHISTORYMAXNUM;
+			restnum = numhistory2 - startno;
+			dispnum2 = min(restnum, OPENHISTORYMAXNUM);
+			endno = startno + dispnum2 - 1;
+
+			int copyno;
+			for (copyno = startno; copyno <= endno; copyno++) {
+				wstring curstring = vecopenfilename[copyno];
+				dstvecopenfilename.push_back(curstring);
+			}
+
+			return pagenum;
+		}
+		else {
+			dstvecopenfilename.clear();
+			return 0;
+		}
 	}
 	else {
 		dstvecopenfilename.clear();
+		return 0;
 	}
+
 	return 0;
 
 }
 
-int GetRtgHistoryDir(std::vector<wstring>& dstvecopenfilename)
+int GetRtgHistoryDir(std::vector<wstring>& dstvecopenfilename, int currentpage)
 {
+	//##################################
+	//2023/07/22 pagenumをリターンする
+	//##################################
+
 	dstvecopenfilename.clear();
 	//ZeroMemory(dstname, sizeof(WCHAR) * dstlen);
 
@@ -42181,7 +42384,7 @@ int GetRtgHistoryDir(std::vector<wstring>& dstvecopenfilename)
 		std::reverse(vechistory.begin(), vechistory.end());
 
 		int numhistory = (int)vechistory.size();
-		int dispnum = min(OPENHISTORYMAXNUM, numhistory);
+		//int dispnum = min(OPENHISTORYMAXNUM, numhistory);
 
 		int foundnum = 0;
 		int historyno;
@@ -42211,7 +42414,9 @@ int GetRtgHistoryDir(std::vector<wstring>& dstvecopenfilename)
 					if (foundsame == false) {
 						vecopenfilename.push_back(readwstr);
 						foundnum++;
-						if (foundnum >= dispnum) {
+						//if (foundnum >= dispnum) {
+						if (foundnum >= numhistory) {
+							CloseHandle(hfile);
 							break;
 						}
 					}
@@ -42219,21 +42424,61 @@ int GetRtgHistoryDir(std::vector<wstring>& dstvecopenfilename)
 				CloseHandle(hfile);
 			}
 		}
-	}
 
-	if (!vecopenfilename.empty()) {
-		dstvecopenfilename = vecopenfilename;
+
+		//重複を除いたヒストリー
+		int numhistory2 = (int)vecopenfilename.size();
+		if (numhistory2 > 0) {
+			int fullpagenum = numhistory2 / OPENHISTORYMAXNUM;//満たされているページの数
+			int pagenum = fullpagenum;//端数込みのページ数
+			if ((numhistory2 - fullpagenum * OPENHISTORYMAXNUM) > 0) {
+				pagenum++;
+			}
+
+			int setpage;
+			if (currentpage < 0) {
+				setpage = 0;
+			}
+			else if ((currentpage + 1) <= pagenum) {
+				setpage = currentpage;
+			}
+			else {
+				setpage = currentpage %	pagenum;
+			}
+			int startno, restnum, endno, dispnum2;
+			startno = setpage * OPENHISTORYMAXNUM;
+			restnum = numhistory2 - startno;
+			dispnum2 = min(restnum, OPENHISTORYMAXNUM);
+			endno = startno + dispnum2 - 1;
+
+			int copyno;
+			for (copyno = startno; copyno <= endno; copyno++) {
+				wstring curstring = vecopenfilename[copyno];
+				dstvecopenfilename.push_back(curstring);
+			}
+
+			return pagenum;
+		}
+		else {
+			dstvecopenfilename.clear();
+			return 0;
+		}
 	}
 	else {
 		dstvecopenfilename.clear();
+		return 0;
 	}
+
 	return 0;
 
 }
 
 
-int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
+int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename, int currentpage)
 {
+	//##################################
+	//2023/07/22 pagenumをリターンする
+	//##################################
 
 	dstvecopenfilename.clear();
 	//ZeroMemory(dstname, sizeof(WCHAR) * dstlen);
@@ -42276,7 +42521,7 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 		std::reverse(vechistory.begin(), vechistory.end());
 
 		int numhistory = (int)vechistory.size();
-		int dispnum = min(OPENHISTORYMAXNUM, numhistory);
+		//int dispnum = min(OPENHISTORYMAXNUM, numhistory);
 
 		int foundnum = 0;
 		int historyno;
@@ -42306,7 +42551,9 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 					if (foundsame == false) {
 						vecopenfilename.push_back(readwstr);
 						foundnum++;
-						if (foundnum >= dispnum) {
+						//if (foundnum >= dispnum) {
+						if (foundnum >= numhistory) {
+							CloseHandle(hfile);
 							break;
 						}
 					}
@@ -42314,14 +42561,50 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 				CloseHandle(hfile);
 			}
 		}
-	}
 
-	if (!vecopenfilename.empty()) {
-		dstvecopenfilename = vecopenfilename;
+		//重複を除いたヒストリー
+		int numhistory2 = (int)vecopenfilename.size();
+		if (numhistory2 > 0) {
+			int fullpagenum = numhistory2 / OPENHISTORYMAXNUM;//満たされているページの数
+			int pagenum = fullpagenum;//端数込みのページ数
+			if ((numhistory2 - fullpagenum * OPENHISTORYMAXNUM) > 0) {
+				pagenum++;
+			}
+
+			int setpage;
+			if (currentpage < 0) {
+				setpage = 0;
+			}
+			else if ((currentpage + 1) <= pagenum) {
+				setpage = currentpage;
+			}
+			else {
+				setpage = currentpage % pagenum;
+			}
+			int startno, restnum, endno, dispnum2;
+			startno = setpage * OPENHISTORYMAXNUM;
+			restnum = numhistory2 - startno;
+			dispnum2 = min(restnum, OPENHISTORYMAXNUM);
+			endno = startno + dispnum2 - 1;
+
+			int copyno;
+			for (copyno = startno; copyno <= endno; copyno++) {
+				wstring curstring = vecopenfilename[copyno];
+				dstvecopenfilename.push_back(curstring);
+			}
+
+			return pagenum;
+		}
+		else {
+			dstvecopenfilename.clear();
+			return 0;
+		}
 	}
 	else {
 		dstvecopenfilename.clear();
+		return 0;
 	}
+
 	return 0;
 }
 
