@@ -21,7 +21,7 @@ EditMotはそのためのソフトです
 
 # Images
 ![TopFig0](ReadMe/SS_EditMot_RefPos_2_600.png "トップ絵0")  
-Fig.1 Edit using RefPos  
+Fig.1 Edit using RefPos.  
 
 ![TopFig](ReadMe/SS_EditMot12014_1_600.png "トップ絵")
 Fig.2 CustomRig ON.  
