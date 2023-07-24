@@ -25,10 +25,10 @@ DirectX11 (Windows10 SDK or VisualStudioからインストール)
 githubのMicrosoftのFX11(DirectX11でEffectを使う)を利用
 githubのMicrosoftのDXUT(DXUTのDirectX11版のオープンソース)を利用
 githubのMicrosoftのDirectXTex(DirectX11でtgaが読める)を利用
-githubのbullet physics ver2.89(http://bulletphysics.org/wordpress/)
+githubのbullet physics ver2.89(https://pybullet.org/wordpress/)
 VisualStudio2022Pro(VisualStudioSubscription)
 MayaIndie(Subscription FBXの確認はMayaでする)
-Unity3D 2022LTS(プロが作ったアセットをUnityAssetStoreでゲットする)
+Unity3D 2022LTS(2022.3.3)プロが作ったアセットをUnityAssetStore(https://assetstore.unity.com/?locale=ja-JP)でゲットする)
 ゲームパッド操作用のライブラリはGitHubのヒロッチさんのオープンソースを編集して使いました。
 (ヒロッチさんのゲームパッドライブラリのライセンスはReadMe/DS4HidInput_LICENSE.txtに置きました。)
 
@@ -117,8 +117,8 @@ Mac(ちくわ)とBootCampとWindows10 Pro で開発しています。
 このプログラムは外部のライブラリを使用しています。
 Microsoft DirectX SDK (June 2010) (マイクロソフトの3D描画ライブラリ)
 OpenGL(３Ｄ描画ライブラリ(このプログラムではbulletからリンクされている))
-bullet physics(AMDのオープンソースの物理演算ライブラリ http://bulletphysics.org/wordpress/)
-FBX SDK 2020.0.1(Autodeskの互換用ファイル操作SDK  http://www.autodesk.com/fbx)
+bullet physics(AMDのオープンソースの物理演算ライブラリ https://pybullet.org/wordpress/)
+FBX SDK 2020.0.1(Autodeskの互換用ファイル操作SDK  https://www.autodesk.com/products/fbx/)
 Intel TBB(Intelのスレッド操作用のライブラリ　https://www.threadingbuildingblocks.org/)
 
 VisualStudioのバージョンは2015 (VC 14)です。

@@ -38,6 +38,10 @@ void CCopyHistoryDlg::InitParams()
 	m_ischeckedmostrecent = true;
 	ZeroMemory(m_selectname, sizeof(WCHAR) * MAX_PATH);
 
+	m_pagenum = 0;
+	m_currentpage = 0;
+	m_startno = 0;
+
 	m_namenum = 0;
 	m_copyhistory.clear();
 
@@ -196,7 +200,7 @@ LRESULT CCopyHistoryDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bH
 	size_t selectedno = 0;//チェックされていない場合(あり得ないが)、一番最初
 	size_t nameno;
 	for (nameno = 0; nameno < m_namenum; nameno++) {
-		if (m_dlg_wnd.IsDlgButtonChecked(m_ctrlid[nameno]) && (m_copyhistory[nameno].hascpinfo == 1)) {
+		if (m_dlg_wnd.IsDlgButtonChecked(m_ctrlid[nameno]) && (m_copyhistory[m_startno + nameno].hascpinfo == 1)) {
 			selectedno = nameno;
 			break;
 		}
@@ -204,7 +208,7 @@ LRESULT CCopyHistoryDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bH
 
 	if ((selectedno >= 0) && (selectedno < m_namenum)) {
 		m_selectname[MAX_PATH - 1] = 0L;
-		wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[selectedno].wfilename);
+		wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[m_startno + selectedno].wfilename);
 		m_selectname[MAX_PATH - 1] = 0L;
 	}
 
@@ -238,24 +242,24 @@ int CCopyHistoryDlg::ParamsToDlg()
 	for (nameno = 0; nameno < m_namenum; nameno++) {
 
 		WCHAR dispname[MAX_PATH] = { 0L };
-		wcscpy_s(dispname, MAX_PATH, m_copyhistory[nameno].cpinfo.fbxname);
+		wcscpy_s(dispname, MAX_PATH, m_copyhistory[m_startno + nameno].cpinfo.fbxname);
 		wcscat_s(dispname, MAX_PATH, L"_");
-		wcscat_s(dispname, MAX_PATH, m_copyhistory[nameno].cpinfo.motionname);
+		wcscat_s(dispname, MAX_PATH, m_copyhistory[m_startno + nameno].cpinfo.motionname);
 		m_dlg_wnd.SetDlgItemTextW(m_ctrlid[nameno], dispname);
 
-		if (m_copyhistory[nameno].hascpinfo == 1) {
+		if (m_copyhistory[m_startno + nameno].hascpinfo == 1) {
 			WCHAR textstartframe[MAX_PATH] = { 0L };
-			swprintf_s(textstartframe, MAX_PATH, L"%.0lf", m_copyhistory[nameno].cpinfo.startframe);
+			swprintf_s(textstartframe, MAX_PATH, L"%.0lf", m_copyhistory[m_startno + nameno].cpinfo.startframe);
 			m_dlg_wnd.SetDlgItemTextW(m_startframeid[nameno], textstartframe);
 
 			WCHAR textframenum[MAX_PATH] = { 0L };
-			swprintf_s(textframenum, MAX_PATH, L"%.0lf", m_copyhistory[nameno].cpinfo.framenum);
+			swprintf_s(textframenum, MAX_PATH, L"%.0lf", m_copyhistory[m_startno + nameno].cpinfo.framenum);
 			m_dlg_wnd.SetDlgItemTextW(m_framenumid[nameno], textframenum);
 
-			int curbvhtype = m_copyhistory[nameno].cpinfo.bvhtype;
+			int curbvhtype = m_copyhistory[m_startno + nameno].cpinfo.bvhtype;
 			WCHAR textbvhtype[MAX_PATH] = { 0L };
 			if ((curbvhtype >= 1) && (curbvhtype <= 144)) {
-				swprintf_s(textbvhtype, MAX_PATH, L"bvh_%03d", m_copyhistory[nameno].cpinfo.bvhtype);
+				swprintf_s(textbvhtype, MAX_PATH, L"bvh_%03d", m_copyhistory[m_startno + nameno].cpinfo.bvhtype);
 			}
 			else {
 				swprintf_s(textbvhtype, MAX_PATH, L"bvh_Undef");
@@ -263,9 +267,9 @@ int CCopyHistoryDlg::ParamsToDlg()
 			m_dlg_wnd.SetDlgItemTextW(m_bvhtypeid[nameno], textbvhtype);
 
 
-			int curimportance = m_copyhistory[nameno].cpinfo.importance;
+			int curimportance = m_copyhistory[m_startno + nameno].cpinfo.importance;
 			WCHAR textimportance[MAX_PATH] = { 0L };
-			if ((curimportance >= 0) && (curimportance <= 6)) {
+			if ((curimportance >= 0) && (curimportance < IMPORTANCEKINDNUM)) {
 				swprintf_s(textimportance, MAX_PATH, m_strimportance[curimportance]);
 			}
 			else {
@@ -274,11 +278,11 @@ int CCopyHistoryDlg::ParamsToDlg()
 			m_dlg_wnd.SetDlgItemTextW(m_importanceid[nameno], textimportance);
 
 
-			m_copyhistory[nameno].cpinfo.comment[32 - 1] = 0L;
-			m_dlg_wnd.SetDlgItemTextW(m_commentid[nameno], m_copyhistory[nameno].cpinfo.comment);
+			m_copyhistory[m_startno + nameno].cpinfo.comment[INPORTANCESTRLEN - 1] = 0L;
+			m_dlg_wnd.SetDlgItemTextW(m_commentid[nameno], m_copyhistory[m_startno + nameno].cpinfo.comment);
 
 
-			if ((m_selectname[0] != 0L) && (wcscmp(m_selectname, m_copyhistory[nameno].wfilename) == 0)) {
+			if ((m_selectname[0] != 0L) && (wcscmp(m_selectname, m_copyhistory[m_startno + nameno].wfilename) == 0)) {
 				m_dlg_wnd.CheckRadioButton(IDC_RADIO1, IDC_RADIO10, m_ctrlid[nameno]);
 				ischeck = true;
 			}
@@ -293,7 +297,7 @@ int CCopyHistoryDlg::ParamsToDlg()
 		}
 	}
 	size_t nameno2;
-	for (nameno2 = m_namenum; nameno2 < 10; nameno2++) {
+	for (nameno2 = m_namenum; nameno2 < COPYNUMFORDISP; nameno2++) {
 		m_dlg_wnd.SetDlgItemTextW(m_ctrlid[nameno2], L"no more.");
 		m_dlg_wnd.SetDlgItemTextW(m_startframeid[nameno2], L"no more.");
 		m_dlg_wnd.SetDlgItemTextW(m_framenumid[nameno2], L"no more.");
@@ -312,10 +316,29 @@ int CCopyHistoryDlg::ParamsToDlg()
 		m_dlg_wnd.CheckDlgButton(IDC_CHECK1, BST_UNCHECKED);
 	}
 
+
+	if (m_pagenum > 0) {
+		int disppage;
+		disppage = m_currentpage % m_pagenum + 1;
+		WCHAR strpages[256] = { 0L };
+		swprintf_s(strpages, 256, L"%03d / %03d Pages", disppage, m_pagenum);
+		m_dlg_wnd.SetDlgItemTextW(IDC_PAGES, strpages);
+	}
+	else {
+		WCHAR strpages[256] = { 0L };
+		swprintf_s(strpages, 256, L"0 / 0 NoPages");
+		m_dlg_wnd.SetDlgItemTextW(IDC_PAGES, strpages);
+	}
+
+
+
 	SetEnableCtrls();
 
 	if (m_initsearchcomboflag == false) {
+		//##################
 		//ctrls for seasrch
+		//##################
+
 		m_strcombo_fbxname.clear();
 		m_strcombo_motionname.clear();
 		m_strcombo_bvhtype.clear();
@@ -372,9 +395,9 @@ int CCopyHistoryDlg::ParamsToDlg()
 		//m_selectname　代入初期化
 		//履歴ウインドウ表示直後に　最新のコピーを適用チェックを外したとき　m_selectnameに何も入っていないとペーストされない件を修正
 		if (!m_copyhistory.empty()) {//2023/07/22
-			if (m_copyhistory[0].wfilename[0] != 0L) {
+			if (m_copyhistory[m_startno + 0].wfilename[0] != 0L) {
 				m_selectname[MAX_PATH - 1] = 0L;
-				wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[0].wfilename);
+				wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[m_startno + 0].wfilename);
 				m_selectname[MAX_PATH - 1] = 0L;
 			}
 		}
@@ -383,6 +406,9 @@ int CCopyHistoryDlg::ParamsToDlg()
 		}
 
 
+		//###############
+		//検索用ボタン
+		//###############
 
 		CWindow combofbxnamewnd = m_dlg_wnd.GetDlgItem(IDC_COMBO1);
 		if (combofbxnamewnd.IsWindow()) {
@@ -547,7 +573,7 @@ void CCopyHistoryDlg::SetEnableCtrls()
 	}
 
 	int nameno;
-	for (nameno = 0; nameno < 10; nameno++) {
+	for (nameno = 0; nameno < COPYNUMFORDISP; nameno++) {
 		CWindow radiobutton = m_dlg_wnd.GetDlgItem(m_ctrlid[nameno]);
 		if (radiobutton.IsWindow()) {
 			radiobutton.EnableWindow(srcenable);
@@ -596,7 +622,21 @@ int CCopyHistoryDlg::SetNames(std::vector<HISTORYELEM>& copyhistory)
 	m_copyhistory = copyhistory;
 	m_savecopyhistory = copyhistory;
 
-	m_namenum = min(10, m_copyhistory.size());
+
+	{
+		int numhistory2 = (int)m_copyhistory.size();
+		int fullpagenum = numhistory2 / COPYNUMFORDISP;//満たされているページの数
+		m_pagenum = fullpagenum;//端数込みのページ数
+		if ((numhistory2 - fullpagenum * COPYNUMFORDISP) > 0) {
+			m_pagenum++;
+		}
+		m_currentpage = 0;
+
+		m_startno = m_currentpage * COPYNUMFORDISP;//!!!!!!!!!!!!!!!!!!!
+		int restnum = numhistory2 - m_startno;
+		m_namenum = min(restnum, COPYNUMFORDISP);//!!!!!!!!!!!!!!!!!!!
+	}
+
 	
 	ParamsToDlg();//表示されていないときにはm_hWndがNULLの場合があるのでShowWindowの後でSetNamesを呼ぶ
 
@@ -792,11 +832,22 @@ LRESULT CCopyHistoryDlg::OnSearch(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 
 
 	m_copyhistory = copyhistory5;
-	m_namenum = min(10, m_copyhistory.size());
+
+	{
+		int numhistory2 = (int)m_copyhistory.size();
+		int fullpagenum = numhistory2 / COPYNUMFORDISP;//満たされているページの数
+		m_pagenum = fullpagenum;//端数込みのページ数
+		if ((numhistory2 - fullpagenum * COPYNUMFORDISP) > 0) {
+			m_pagenum++;
+		}
+		m_currentpage = 0;
+
+		m_startno = m_currentpage * COPYNUMFORDISP;//!!!!!!!!!!!!!!!!!!!
+		int restnum = numhistory2 - m_startno;
+		m_namenum = min(restnum, COPYNUMFORDISP);//!!!!!!!!!!!!!!!!!!!
+	}
 
 	ParamsToDlg();
-
-
 
 	return 0;
 }
@@ -849,7 +900,7 @@ LRESULT CCopyHistoryDlg::OnDelete(size_t delid)
 	}
 
 	WCHAR delcpt[MAX_PATH] = { 0L };
-	wcscpy_s(delcpt, MAX_PATH, m_copyhistory[delid].wfilename);
+	wcscpy_s(delcpt, MAX_PATH, m_copyhistory[m_startno + delid].wfilename);
 	delcpt[MAX_PATH - 1] = 0L;
 	if (delcpt[0] != 0L) {
 		BOOL bexist;
@@ -859,7 +910,7 @@ LRESULT CCopyHistoryDlg::OnDelete(size_t delid)
 		}
 	}
 
-	if (m_copyhistory[delid].hascpinfo == 1) {
+	if (m_copyhistory[m_startno + delid].hascpinfo == 1) {
 		WCHAR delcpi[MAX_PATH] = { 0L };
 		wcscpy_s(delcpi, MAX_PATH, delcpt);
 		delcpi[MAX_PATH - 1] = 0L;
@@ -875,10 +926,28 @@ LRESULT CCopyHistoryDlg::OnDelete(size_t delid)
 		}
 	}
 
-	wcscpy_s(m_copyhistory[delid].wfilename, MAX_PATH, L"deleted.");
-	m_copyhistory[delid].hascpinfo = 0;
-	wcscpy_s(m_copyhistory[delid].cpinfo.fbxname, MAX_PATH, L"deleted.");
-	wcscpy_s(m_copyhistory[delid].cpinfo.motionname, MAX_PATH, L"deleted.");
+	wcscpy_s(m_copyhistory[m_startno + delid].wfilename, MAX_PATH, L"deleted.");
+	m_copyhistory[m_startno + delid].hascpinfo = 0;
+	wcscpy_s(m_copyhistory[m_startno + delid].cpinfo.fbxname, MAX_PATH, L"deleted.");
+	wcscpy_s(m_copyhistory[m_startno + delid].cpinfo.motionname, MAX_PATH, L"deleted.");
+
+	//#######################
+	//削除中は　pageそのまま
+	//#######################
+	//{
+	//	int numhistory2 = (int)m_copyhistory.size();
+	//	int fullpagenum = numhistory2 / COPYNUMFORDISP;//満たされているページの数
+	//	m_pagenum = fullpagenum;//端数込みのページ数
+	//	if ((numhistory2 - fullpagenum * COPYNUMFORDISP) > 0) {
+	//		m_pagenum++;
+	//	}
+
+	//	m_currentpage = 0;
+
+	//	m_startno = m_currentpage * COPYNUMFORDISP;//!!!!!!!!!!!!!!!!!!!
+	//	int restnum = numhistory2 - m_startno;
+	//	m_namenum = min(restnum, COPYNUMFORDISP);//!!!!!!!!!!!!!!!!!!!
+	//}
 
 	ParamsToDlg();
 
@@ -930,11 +999,11 @@ LRESULT CCopyHistoryDlg::OnRadio10(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOO
 LRESULT CCopyHistoryDlg::OnRadio(size_t radioid)
 {
 
-	size_t chknamenum = min(10, m_copyhistory.size());
-	if (chknamenum != m_namenum) {
-		_ASSERT(0);
-		return 1;
-	}
+	//size_t chknamenum = min(10, m_copyhistory.size());
+	//if (chknamenum != m_namenum) {
+	//	_ASSERT(0);
+	//	return 1;
+	//}
 
 	if (radioid >= m_namenum) {
 		return 0;
@@ -942,7 +1011,7 @@ LRESULT CCopyHistoryDlg::OnRadio(size_t radioid)
 
 	//OKボタンを押さないでも反映されるように
 	m_selectname[MAX_PATH - 1] = 0L;
-	wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[radioid].wfilename);
+	wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[m_startno + radioid].wfilename);
 	m_selectname[MAX_PATH - 1] = 0L;
 
 	m_ischeckedmostrecent = m_dlg_wnd.IsDlgButtonChecked(IDC_CHECK1);
@@ -955,3 +1024,71 @@ LRESULT CCopyHistoryDlg::OnChkRecent(WORD wNotifyCode, WORD wID, HWND hWndCtl, B
 	m_ischeckedmostrecent = m_dlg_wnd.IsDlgButtonChecked(IDC_CHECK1);
 	return 0;
 }
+
+LRESULT CCopyHistoryDlg::OnPrevPage(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	{
+		int numhistory2 = (int)m_copyhistory.size();
+		int fullpagenum = numhistory2 / COPYNUMFORDISP;//満たされているページの数
+		m_pagenum = fullpagenum;//端数込みのページ数
+		if ((numhistory2 - fullpagenum * COPYNUMFORDISP) > 0) {
+			m_pagenum++;
+		}
+
+		if (m_pagenum >= 1) {
+			if (m_currentpage >= 1) {
+				m_currentpage--;
+			}
+			else {
+				m_currentpage = m_pagenum - 1;
+			}
+		}
+		else {
+			m_currentpage = 0;
+		}
+
+		m_startno = m_currentpage * COPYNUMFORDISP;//!!!!!!!!!!!!!!!!!!!
+		int restnum = numhistory2 - m_startno;
+		m_namenum = min(restnum, COPYNUMFORDISP);//!!!!!!!!!!!!!!!!!!!
+	}
+
+	ParamsToDlg();
+
+	return 0;
+
+}
+LRESULT CCopyHistoryDlg::OnNextPage(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+{
+	{
+		int numhistory2 = (int)m_copyhistory.size();
+		int fullpagenum = numhistory2 / COPYNUMFORDISP;//満たされているページの数
+		m_pagenum = fullpagenum;//端数込みのページ数
+		if ((numhistory2 - fullpagenum * COPYNUMFORDISP) > 0) {
+			m_pagenum++;
+		}
+
+		if (m_pagenum >= 1) {
+			if (m_currentpage < (m_pagenum - 1)) {
+				m_currentpage++;
+			}
+			else {
+				m_currentpage = 0;
+			}
+		}
+		else {
+			m_currentpage = 0;
+		}
+
+		m_startno = m_currentpage * COPYNUMFORDISP;//!!!!!!!!!!!!!!!!!!!
+		int restnum = numhistory2 - m_startno;
+		m_namenum = min(restnum, COPYNUMFORDISP);//!!!!!!!!!!!!!!!!!!!
+	}
+
+	ParamsToDlg();
+
+	return 0;
+
+}
+
+
+

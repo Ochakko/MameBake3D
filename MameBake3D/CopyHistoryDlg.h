@@ -15,6 +15,13 @@
 #include <vector>
 #include <string>
 
+
+#define COPYNUMFORDISP	10
+#define IMPORTANCEKINDNUM	7
+#define INPORTANCESTRLEN	32
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CCopyHistoryDlg
 class CCopyHistoryDlg : 
@@ -55,6 +62,8 @@ BEGIN_MSG_MAP(CCopyHistoryDlg)
 	COMMAND_ID_HANDLER(IDC_RADIO9, OnRadio9)
 	COMMAND_ID_HANDLER(IDC_RADIO10, OnRadio10)
 	COMMAND_ID_HANDLER(IDC_CHECK1, OnChkRecent)
+	COMMAND_ID_HANDLER(IDC_PREVPAGE, OnPrevPage)
+	COMMAND_ID_HANDLER(IDC_NEXTPAGE, OnNextPage)
 END_MSG_MAP()
 // ハンドラのプロトタイプ:
 //  LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -95,6 +104,10 @@ END_MSG_MAP()
 
 	LRESULT OnChkRecent(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
+	LRESULT OnPrevPage(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnNextPage(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+
+
 	int SetNames(std::vector<HISTORYELEM>& copyhistory);
 
 	bool IsCheckedMostRecent()
@@ -130,6 +143,13 @@ private:
 	void SetEnableCtrls();
 
 private:
+
+/*
+#define COPYNUMFORDISP	10
+#define IMPORTANCEKINDNUM	7
+#define INPORTANCESTRLEN	32
+*/
+
 	bool m_createdflag;
 	CWindow m_dlg_wnd;
 
@@ -137,20 +157,23 @@ private:
 	bool m_ischeckedmostrecent;
 	WCHAR m_selectname[MAX_PATH];
 
+	int m_pagenum;
+	int m_currentpage;
+	int m_startno;
 	std::vector<HISTORYELEM> m_copyhistory;
 	std::vector<HISTORYELEM> m_savecopyhistory;
 
-	UINT m_ctrlid[10];
-	UINT m_startframeid[10];
-	UINT m_framenumid[10];
-	UINT m_bvhtypeid[10];
-	UINT m_importanceid[10];
-	UINT m_commentid[10];
+	UINT m_ctrlid[COPYNUMFORDISP];
+	UINT m_startframeid[COPYNUMFORDISP];
+	UINT m_framenumid[COPYNUMFORDISP];
+	UINT m_bvhtypeid[COPYNUMFORDISP];
+	UINT m_importanceid[COPYNUMFORDISP];
+	UINT m_commentid[COPYNUMFORDISP];
 
-	UINT m_text1[10];
-	UINT m_text2[10];
+	UINT m_text1[COPYNUMFORDISP];
+	UINT m_text2[COPYNUMFORDISP];
 
-	WCHAR m_strimportance[7][32];
+	WCHAR m_strimportance[IMPORTANCEKINDNUM][INPORTANCESTRLEN];
 
 	std::vector<std::wstring> m_strcombo_fbxname;
 	std::vector<std::wstring> m_strcombo_motionname;
