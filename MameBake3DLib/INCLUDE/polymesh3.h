@@ -143,9 +143,9 @@ public:
 		return m_facet;
 	};
 
-	CInfBone* GetInfBone(){
-		return m_infbone;
-	};
+	//CInfBone* GetInfBone(){
+	//	return m_infbone;
+	//};
 
 	int GetOptLeng(){
 		return m_optleng;
@@ -182,7 +182,7 @@ private:
 	int m_facenum;//éOäpï™äÑå„ÇÃñ êî
 
 	float m_facet;
-	CInfBone* m_infbone;//orgpointnumí∑
+	//CInfBone* m_infbone;//orgpointnumí∑
 
 	int m_optleng;
 	int m_optmatnum;

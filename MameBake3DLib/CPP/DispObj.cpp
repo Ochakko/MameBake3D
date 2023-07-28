@@ -1263,6 +1263,7 @@ int CDispObj::RenderNormalPM3(bool withalpha,
 
 		pd3d11DeviceContext->IASetIndexBuffer(m_IB, DXGI_FORMAT_R32_UINT, 0);
 
+
 		ID3D11ShaderResourceView* texresview = 0;
 		if (curmat->GetTexID() >= 0) {
 			CTexElem* findtex = g_texbank->GetTexElem(curmat->GetTexID());
@@ -1279,7 +1280,8 @@ int CDispObj::RenderNormalPM3(bool withalpha,
 		}
 
 		if (texresview && (texresview != g_presview)) {
-			g_hMeshTexture->SetResource(texresview);
+			hr = g_hMeshTexture->SetResource(texresview);
+			_ASSERT(SUCCEEDED(hr));
 			g_presview = texresview;
 		}
 		else {

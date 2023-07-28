@@ -73,7 +73,7 @@ void CPolyMesh3::InitParams()
 	m_dispv = 0;
 	m_createoptflag = 0;
 
-	m_infbone = 0;
+	//m_infbone = 0;
 
 	m_matblock = 0;
 	m_dispindex = 0;
@@ -118,10 +118,10 @@ typedef  struct tag_n3p
 		m_matblock = 0;
 	}
 
-	if( m_infbone ){
-		delete [] m_infbone;
-		m_infbone = 0;
-	}
+	//if( m_infbone ){
+	//	delete [] m_infbone;
+	//	m_infbone = 0;
+	//}
 
 	InitParams();
 }
@@ -332,11 +332,11 @@ int CPolyMesh3::CreatePM3( int pointnum, int facenum, float facet, ChaVector3* p
 	CallF( CalcBound(), return 1 );
 
 
-	m_infbone = new CInfBone[ m_orgpointnum ];
-	if( !m_infbone ){
-		_ASSERT( 0 );
-		return 1;
-	}
+	//m_infbone = new CInfBone[ m_orgpointnum ];
+	//if( !m_infbone ){
+	//	_ASSERT( 0 );
+	//	return 1;
+	//}
 
 	m_createoptflag = 1;
 
@@ -679,6 +679,7 @@ int CPolyMesh3::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 	int startmatflag = 0;
 	int setno = 0;
 	int curfaceno = 0;
+	int curtrino = 0;
 	int beffaceno = 0;
 	N3P* curn3p = 0;
 	N3P* befn3p = 0;
@@ -686,6 +687,7 @@ int CPolyMesh3::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 		curn3p = m_n3p + n3;
 		curmaterialno = curn3p->perface->materialno;
 		curfaceno = n3 / 3;
+		curtrino = n3 - curfaceno * 3;
 
 		if( befmaterialno != curmaterialno ){
 			if( dispv ){
@@ -718,7 +720,8 @@ int CPolyMesh3::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 				curv->pos.y = (m_pointbuf + curn3p->pervert->vno)->y;
 				curv->pos.z = (m_pointbuf + curn3p->pervert->vno)->z;
 				curv->pos.w = 1.0f;
-				curv->normal = curn3p->pervert->smnormal;
+				//curv->normal = curn3p->pervert->smnormal;
+				curv->normal = -curn3p->pervert->smnormal;//2023/07/29 ”½“]
 				curv->uv = curn3p->pervert->uv[0];
 
 				/***
@@ -734,7 +737,23 @@ int CPolyMesh3::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 				curoptv->vcol = curn3p->pervert->vcol;
 				***/
 
-				*( m_dispindex + setno ) = setno;
+
+				//*( m_dispindex + setno ) = setno;
+
+				//2023/07/29 ”½‘ÎŽü‚è
+				if (curtrino == 0) {
+					*(m_dispindex + setno) = curfaceno * 3 + 2;
+				}
+				else if (curtrino == 1) {
+					*(m_dispindex + setno) = curfaceno * 3 + 1;
+				}
+				else if (curtrino == 2) {
+					*(m_dispindex + setno) = curfaceno * 3 + 0;
+				}
+				else {
+					_ASSERT(0);
+					*(m_dispindex + setno) = setno;
+				}
 			}
 
 			setno++;

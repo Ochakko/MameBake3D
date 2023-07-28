@@ -510,7 +510,7 @@ int CModel::InitParams()
 	//ZeroMemory(m_arhthread, sizeof(HANDLE) * 6);
 
 	m_physicsikcnt = 0;
-	ChaMatrixIdentity(&m_worldmat);
+	//ChaMatrixIdentity(&m_worldmat);
 	m_modelposition = ChaVector3(0.0f, 0.0f, 0.0f);//読み込み時位置
 	m_modelrotation = ChaVector3(0.0f, 0.0f, 0.0f);//読み込み時向き
 	m_initaxismatx = 0;
@@ -767,6 +767,10 @@ int CModel::LoadMQO( ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateConte
 
 	DestroyMaterial();
 	DestroyObject();
+
+
+	SetNoBoneFlag(true);//2023/07/28
+
 
 	CMQOFile mqofile;
 	ChaVector3 vop( 0.0f, 0.0f, 0.0f );
@@ -1033,7 +1037,16 @@ _ASSERT(m_bonelist[0]);
 
 
 	DbgOut(L"fbx bonenum %d\r\n", (int)m_bonelist.size());
-_ASSERT(m_bonelist[0]);
+	_ASSERT(m_bonelist[0]);
+
+
+
+	if (motioncachebatchflag == FALSE) {
+		CallF(CreateMaterialTexture(pd3dImmediateContext), return 1);
+		CallF(MakeObjectName(), return 1);
+	}
+
+
 
 	ChaMatrix offsetmat;
 	ChaMatrixIdentity( &offsetmat );
@@ -1044,10 +1057,37 @@ _ASSERT(m_bonelist[0]);
 		if( curobj ){
 			CallF( curobj->MultMat( offsetmat ), return 1 );
 			CallF( curobj->MultVertex(), return 1; );
+
+			if (motioncachebatchflag == FALSE) {
+				//int clusternum = (int)curobj->GetClusterSize();//mqoobjectのclustersizeはCreateFbxSkinReqでセットされるので　まだ使えない
+
+				CNodeOnLoad* nodeonload = FindNodeOnLoadByName(curobj->GetName());
+				if (nodeonload) {
+					FbxNode* fbxnode = nodeonload->GetNode();
+					if (fbxnode) {
+						FbxNodeAttribute* pAttrib = 0;
+						bool hascluster = HasCluster(fbxnode, &pAttrib);
+						if (hascluster == true) {
+							CallF(curobj->MakePolymesh4(m_pdev), return 1);
+							GetFBXSkin(pAttrib, fbxnode);
+						}
+						else {
+							bool fbxfileflag = true;
+							CallF(curobj->MakePolymesh3(fbxfileflag, m_pdev, m_material), return 1);
+						}
+					}
+				}
+			}
 		}
 	}
 
-_ASSERT(m_bonelist[0]);
+	//if (GetNoBoneFlag() == false) {
+	//	CreateFBXSkinReq(pRootNode);//clustersizeも決まる
+	//}
+	SetMaterialName();
+
+
+	_ASSERT(m_bonelist[0]);
 
 	//m_ktime0.SetTime(0, 0, 0, 1, 0, pScene->GetGlobalSettings().GetTimeMode());
 //	m_ktime0.SetSecondDouble( 1.0 / 300.0 );
@@ -1055,14 +1095,22 @@ _ASSERT(m_bonelist[0]);
 
 
 	if (motioncachebatchflag == FALSE) {
-		CallF(MakePolyMesh4(), return 1);
-		CallF(MakeObjectName(), return 1);
-		CallF(CreateMaterialTexture(pd3dImmediateContext), return 1);
-		if (GetTopBone()) {//GetNoBoneFlag() == trueのときにも　CreateFbxSkinReq()は　polymesh4表示のために必要
-			CreateFBXSkinReq(pRootNode);
-		}
 
-		SetMaterialName();
+		//if (GetNoBoneFlag() == false) {
+		//	CallF(CreateMaterialTexture(pd3dImmediateContext), return 1);
+		//	CallF(MakePolyMesh4(), return 1);
+		//	CallF(MakeObjectName(), return 1);
+		//	CreateFBXSkinReq(pRootNode);
+		//}
+		//else {
+		//	//Boneが無い場合には　PolyMesh3
+		//	CallF(CreateMaterialTexture(pd3dImmediateContext), return 1);
+		//	bool fbxfileflag = true;
+		//	CallF(MakePolyMesh3(fbxfileflag), return 1);
+		//	CallF(MakeObjectName(), return 1);
+		//}
+		
+		//SetMaterialName();
 
 		_ASSERT(m_bonelist[0]);
 
@@ -1097,11 +1145,12 @@ _ASSERT(m_bonelist[0]);
 			m_rigideleminfo.push_back(reinfo);
 			m_impinfo.push_back(m_defaultimpname);
 
-			if (GetTopBone()) {
+			//if (GetTopBone()) {
+			if (GetNoBoneFlag() == false) {
 				CreateRigidElemReq(GetTopBone(false), 1, m_defaultrename, 1, m_defaultimpname);
+				SetCurrentRigidElem(0);
 			}
 
-			SetCurrentRigidElem(0);
 			m_curreindex = 0;
 			m_curimpindex = 0;
 		}
@@ -1130,7 +1179,7 @@ int CModel::LoadFBXAnim( FbxManager* psdk, FbxImporter* pimporter, FbxScene* psc
 		return 0;
 	}
 
-	if(!GetTopBone()){
+	if(!GetTopBone() || GetNoBoneFlag()){
 		return 0;
 	}
 
@@ -1167,7 +1216,6 @@ int CModel::CreateMaterialTexture(ID3D11DeviceContext* pd3dImmediateContext)
 		CallF( curmat->CreateTexture( pd3dImmediateContext, m_dirname, m_texpool ), return 1 );
 	}
 
-
 	map<int,CMQOObject*>::iterator itrobj;
 	for( itrobj = m_object.begin(); itrobj != m_object.end(); itrobj++ ){
 		CMQOObject* curobj = itrobj->second;
@@ -1182,6 +1230,32 @@ int CModel::CreateMaterialTexture(ID3D11DeviceContext* pd3dImmediateContext)
 
 	return 0;
 }
+
+//CMQOMaterial* CModel::GetMQOMaterialByName(std::string srcname)
+//{
+//	CMQOMaterial* retmat = 0;
+//
+//	map<int, CMQOObject*>::iterator itrobj;
+//	for (itrobj = m_object.begin(); itrobj != m_object.end(); itrobj++) {
+//		CMQOObject* curobj = itrobj->second;
+//		if (curobj) {
+//			map<int, CMQOMaterial*>::iterator itrmat;
+//			for (itrmat = curobj->GetMaterialBegin(); itrmat != curobj->GetMaterialEnd(); itrmat++) {
+//				CMQOMaterial* curmat = itrmat->second;
+//				if (strcmp(curmat->GetName(), srcname.c_str()) == 0) {
+//					retmat = curmat;
+//					break;
+//				}
+//			}
+//		}
+//	}
+//
+//	return retmat;
+//
+//}
+
+
+
 
 int CModel::OnRender(bool withalpha, 
 	ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int btflag )
@@ -1652,13 +1726,13 @@ int CModel::DbgDumpBoneReq(int level, CBone* boneptr, int broflag)
 	return 0;
 }
 
-int CModel::MakePolyMesh3()
+int CModel::MakePolyMesh3(bool fbxfileflag)
 {
 	map<int,CMQOObject*>::iterator itr;
 	for( itr = m_object.begin(); itr != m_object.end(); itr++ ){
 		CMQOObject* curobj = itr->second;
 		if( curobj ){
-			CallF( curobj->MakePolymesh3( m_pdev, m_material ), return 1 );
+			CallF(curobj->MakePolymesh3(fbxfileflag, m_pdev, m_material), return 1);
 		}
 	}
 
@@ -1693,17 +1767,33 @@ int CModel::MakeExtLine()
 int CModel::MakeDispObj()
 {
 	int hasbone;
-	if( m_bonelist.empty() ){
-		hasbone = 0;
-	}else{
-		hasbone = 1;
-	}
+	//if( m_bonelist.empty() ){
+	//	hasbone = 0;
+	//}else{
+	//	hasbone = 1;
+	//}
+
+	//if (GetNoBoneFlag() == false) {
+	//	hasbone = 1;
+	//}
+	//else {
+	//	hasbone = 0;
+	//}
 
 	map<int,CMQOObject*>::iterator itr;
 	for( itr = m_object.begin(); itr != m_object.end(); itr++ ){
 		CMQOObject* curobj = itr->second;
 		if( curobj ){
-			CallF( curobj->MakeDispObj( m_pdev, m_material, hasbone ), return 1 );
+
+			int clusternum = (int)curobj->GetClusterSize();
+			if ((GetNoBoneFlag() == false) && (clusternum >= 1)) {
+				hasbone = 1;
+			}
+			else {
+				hasbone = 0;
+			}
+
+			CallF( curobj->MakeDispObj( m_pdev, hasbone ), return 1 );
 		}
 	}
 
@@ -2376,24 +2466,40 @@ int CModel::GetShapeWeight(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAn
 int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 {
 
+	//ボーンが無くても　非スキンメッシュを表示することはある
+	//g_hmWorld->SetMatrix(m_worldmat.GetDataPtr());
+	g_hmWorld->SetMatrix(m_matWorld.GetDataPtr());
+	ChaMatrix inimat;
+	inimat.SetIdentity();
+	MoveMemory(&(m_setfl4x4[16 * 0]),
+		inimat.GetDataPtr(), sizeof(float) * 16);
+	g_hm4x4Mat->SetMatrixArray((float*)(&m_setfl4x4[0]), 0, 0);
+
+
+
+
 	if( !GetTopBone()){
 		//_ASSERT(0);
 		return 0;//!!!!!!!!!!!
 	}
+	if (GetNoBoneFlag() == true) {
+		return 0;
+	}
+
 
 	MOTINFO* curmi = 0;
 	int curmotid;
 	double curframe;
 	curmi = GetCurMotInfo();
 	if (!curmi) {
-		_ASSERT(0);
+		//_ASSERT(0);
 		return 0;
 	}
 	curmotid = curmi->motid;
 	curframe = (double)((int)(curmi->curframe + 0.0001));
 
 
-	g_hmWorld->SetMatrix(m_worldmat.GetDataPtr());
+	//g_hmWorld->SetMatrix(m_worldmat.GetDataPtr());
 	//g_pEffect->SetMatrix(g_hmWorld, &(m_worldmat.D3DX()));
 
 
@@ -2702,6 +2808,11 @@ int CModel::AddMotion(const char* srcname, const WCHAR* wfilename, double srclen
 
 	*dstid = -1;
 	//int leng = (int)strlen(srcname);
+
+
+	if (GetNoBoneFlag() == true) {
+		return 0;
+	}
 
 
 
@@ -4099,6 +4210,7 @@ CMQOObject* CModel::GetFBXMesh(FbxNode* pNode, FbxNodeAttribute *pAttrib)
 		DbgOut(L"mesh %s, materialNum_ %d\r\n", wname, materialNum_);
 
 
+
 		// マテリアル情報を取得
 		//for( int i = 0; i < materialNum_; ++i ) {
 		for (int i = 0; i < materialNum_; i++) {
@@ -4738,6 +4850,7 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 
    return 0;
 }
+
 
 //// Get specific property value and connected texture if any.
 //// Value = Property value * Factor property value (if no factor property, multiply by 1).
@@ -6176,8 +6289,58 @@ void CModel::CreateFBXSkinReq( FbxNode* pNode )
 
 	return;
 }
+
+
+bool CModel::HasCluster(FbxNode* srcnode, FbxNodeAttribute** ppAttrib)
+{
+	if (!srcnode) {
+		_ASSERT(0);
+		return false;
+	}
+	if (!ppAttrib) {
+		_ASSERT(0);
+		return false;
+	}
+
+
+	bool hascluster = false;
+
+	FbxNodeAttribute* pAttrib = srcnode->GetNodeAttribute();
+	if (pAttrib) {
+
+		*ppAttrib = pAttrib;
+
+		FbxNodeAttribute::EType type = pAttrib->GetAttributeType();
+		if (type == FbxNodeAttribute::eMesh) {
+			FbxMesh* pMesh = (FbxMesh*)pAttrib;
+			int skinCount = pMesh->GetDeformerCount(FbxDeformer::eSkin);
+			if (skinCount >= 1) {
+				for (int i = 0; i < skinCount; i++) {
+					// i番目のスキンを取得
+					FbxSkin* skin = (FbxSkin*)(pMesh->GetDeformer(i, FbxDeformer::eSkin));
+
+					// クラスターの数を取得
+					int clusterNum = skin->GetClusterCount();
+
+					hascluster = true;
+					break;
+				}
+			}
+		}
+	}
+
+	return hascluster;
+}
+
+
 int CModel::GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode )
 {
+	if (!pAttrib || !pNode) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
 	//const char* nodename = pNode->GetName();
 
 	FbxMesh *pMesh = (FbxMesh*)pAttrib;
@@ -7525,6 +7688,9 @@ int CModel::CreateBtObject(bool limitdegflag, int onfirstcreate )
 	DestroyBtObject();
 
 	if(!GetTopBone()){
+		return 0;
+	}
+	if (GetNoBoneFlag()) {
 		return 0;
 	}
 	if (!m_btWorld){
@@ -9855,7 +10021,7 @@ int CModel::SetCurrentRigidElem( int curindex )
 		return 0;
 	}
 	if( curindex >= (int)m_rigideleminfo.size() ){
-		_ASSERT( 0 );
+		//_ASSERT( 0 );
 		return 0;
 	}
 
@@ -9898,6 +10064,9 @@ REINFO CModel::GetCurrentRigidElemInfo(int* retindex)
 
 void CModel::SetCurrentRigidElemReq(CBone* srcbone, string curname)
 {
+	if (GetNoBoneFlag() == true) {
+		return;
+	}
 
 	if (!srcbone) {
 		return;
@@ -15954,6 +16123,11 @@ void CModel::CalcBoneEulReq(bool limitdegflag, CBone* curbone, int srcmotid, dou
 
 int CModel::CalcBoneEul(bool limitdegflag, int srcmotid)
 {
+	if (GetNoBoneFlag() == true) {
+		return 0;
+	}
+
+
 	if (srcmotid >= 0){
 		MOTINFO* mi = GetMotInfo(srcmotid);
 		if (mi){
@@ -16889,6 +17063,10 @@ int CModel::AngleLimitReplace180to170(CBone* srcbone)
 
 int CModel::CopyWorldToLimitedWorld()
 {
+	if (GetNoBoneFlag() == true) {
+		return 0;
+	}
+
 	ChaMatrix tmpwm = GetWorldMat();
 	MOTINFO* curmi = GetCurMotInfo();
 	if (curmi) {
@@ -17194,6 +17372,9 @@ void CModel::InitMPReq(bool limitdegflag, CBone* curbone, int srcmotid, double c
 	if (!curbone) {
 		return;
 	}
+	if (GetNoBoneFlag() == true) {
+		return;
+	}
 
 	if (curbone->IsSkeleton()) {
 		InitMP(limitdegflag, curbone, srcmotid, curframe);
@@ -17245,7 +17426,7 @@ int CModel::InitMP(bool limitdegflag, CBone* curbone, int srcmotid, double curfr
 	//curbone->SetLocalEul(GetCurMotInfo()->motid, curframe, cureul);
 
 	
-	if (curbone && (curbone->IsSkeleton())) {
+	if ((GetNoBoneFlag() == false) && curbone && (curbone->IsSkeleton())) {
 		curbone->InitMP(limitdegflag, srcmotid, curframe);
 	}
 	
@@ -17326,7 +17507,8 @@ void CModel::CalcModelWorldMatOnLoad()
 	worldmatonload.SetIdentity();
 	worldmatonload = ChaMatrixFromSRT(true, true, modelnodemat, &scalemat, &rotmat, &tramat);
 
-	m_worldmat = worldmatonload;
+	//m_worldmat = worldmatonload;
+	m_matWorld = worldmatonload;
 }
 
 CBone* CModel::GetTopBone(bool excludenullflag)//default : excludenullflag = true
@@ -17798,3 +17980,5 @@ int CModel::SetIKStopFlag()
 
 	return 0;
 }
+
+

@@ -12282,7 +12282,7 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 
 	//Handle a model not has motion.
 	int motnum = s_model->GetMotInfoSize();
-	if (motnum == 0) {
+	if ((motnum == 0) && (s_model->GetNoBoneFlag() == false)) {
 		CallF(AddMotion(0), return 0);
 		s_modelindex[mindex].tlarray = s_tlarray;
 		s_modelindex[mindex].lineno2boneno = s_lineno2boneno;
@@ -12308,7 +12308,7 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 		s_curmotid = s_model->GetCurMotInfo()->motid;
 	}
 	else {
-		_ASSERT(0);
+		//_ASSERT(0);
 		s_curmotid = 0;
 	}
 
@@ -12441,7 +12441,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 		if (curmi) {
 			//CallF(s_model->FillUpEmptyMotion(curmi->motid), return 0);
 			CBone* topbone = s_model->GetTopBone(false);
-			if (topbone) {
+			if (topbone && (s_model->GetNoBoneFlag() == false)) {
 				double motleng = curmi->frameleng;
 				//_ASSERT(0);
 
@@ -13602,6 +13602,14 @@ int EraseKeyList()
 
 int AddMotion(const WCHAR* wfilename, double srcmotleng)
 {
+	if (!s_model) {
+		return 0;
+	}
+	if (s_model->GetNoBoneFlag() == true) {
+		return 0;
+	}
+
+
 	int motnum = (int)s_tlarray.size();
 	if (motnum >= MAXMOTIONNUM) {
 		::DSMessageBox(s_3dwnd, L"Can't Load More.", L"error!!!", MB_OK);
@@ -23682,6 +23690,11 @@ int ApplyNewLimitsToWM(CModel* srcmodel)
 	//呼び出し元で SetCursor 砂時計している
 
 	if (srcmodel) {
+
+		if (srcmodel->GetNoBoneFlag() == true) {
+			return 0;
+		}
+
 		ChaMatrix tmpwm = srcmodel->GetWorldMat();
 		MOTINFO* curmi = srcmodel->GetCurMotInfo();
 		if (curmi) {

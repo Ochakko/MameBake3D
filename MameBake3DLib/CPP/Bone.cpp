@@ -694,10 +694,12 @@ int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMat
 		//2023/02/02
 		//modelのworldmatが掛かっていないアニメ姿勢も保存　GetCurrent..., CalcCurrent...用
 			m_curmp.SetAnimMat(newworldmat);
+			SetWorldMat(limitdegflag, srcmotid, roundingframe, newworldmat, &m_curmp);//roundingframe!!!!
+
 
 		//modelのworldmatを掛ける
 			ChaMatrix tmpmat = newworldmat * *wmat; // !!!!!!!!!!!!!!!!!!!!!!!!!!!
-			SetWorldMat(limitdegflag, srcmotid, roundingframe, tmpmat, &m_curmp);//roundingframe!!!!
+			//SetWorldMat(limitdegflag, srcmotid, roundingframe, tmpmat, &m_curmp);//roundingframe!!!!
 			if (limitdegflag == true) {
 				m_curmp.SetCalcLimitedWM(2);
 			}

@@ -49,10 +49,10 @@ public:
 
 	int Dump();
 
-	int MakePolymesh3( ID3D11Device* pdev, std::map<int,CMQOMaterial*>& srcmat );
+	int MakePolymesh3(bool fbxfileflag, ID3D11Device* pdev, std::map<int, CMQOMaterial*>& srcmaterial);
 	int MakePolymesh4( ID3D11Device* pdev );
 	int MakeExtLine();
-	int MakeDispObj( ID3D11Device* pdev, std::map<int,CMQOMaterial*>& srcmat, int hasbone );
+	int MakeDispObj( ID3D11Device* pdev, int hasbone );
 //	int MakeExtLine( map<int,CMQOMaterial*>& srcmat );
 
 	int HasPolygon();

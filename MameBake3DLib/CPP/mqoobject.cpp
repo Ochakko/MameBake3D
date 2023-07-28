@@ -739,7 +739,8 @@ int CMQOObject::SetColor( char* srcchar, int srcleng )
 
 	return 0;
 }
-int CMQOObject::MakePolymesh3( ID3D11Device* pdev, std::map<int,CMQOMaterial*>& srcmaterial )
+
+int CMQOObject::MakePolymesh3(bool fbxfileflag, ID3D11Device* pdev, std::map<int, CMQOMaterial*>& srcmaterial)
 {
 	if( !m_pointbuf || !m_facebuf )
 		return 0;
@@ -815,7 +816,41 @@ int CMQOObject::MakePolymesh3( ID3D11Device* pdev, std::map<int,CMQOMaterial*>& 
 		return 1;
 	}
 
-	CallF( m_pm3->CreatePM3( vert_count, face_count, m_facet, pointptr, faceptr, srcmaterial, m_multmat ), return 1 );
+	if (fbxfileflag == false) {
+		//mqofile
+		//material‚ÍCModel‚©‚çˆø”‚ÅŽó‚¯Žæ‚Á‚½srcmaterial
+		CallF(m_pm3->CreatePM3(vert_count, face_count, m_facet, pointptr, faceptr, srcmaterial, m_multmat), return 1);
+	}
+	else {
+		
+		//fbxfile
+		//material‚ÍCMQOObject‚Ìm_material
+		//uv‚ÍCMQOObject‚Ìm_uvbuf
+
+		if (m_uvbuf ) {
+			int datano1 = 0;
+			int faceno1;
+			int trino1;
+			for (faceno1 = 0; faceno1 < face_count; faceno1++) {
+				CMQOFace* curface = faceptr + faceno1;
+				if (curface) {
+
+					curface->SetHasUV(1);
+
+					for (trino1 = 0; trino1 < 3; trino1++) {
+						if ((datano1 >= vert_count) || (datano1 >= m_uvleng)) {
+							_ASSERT(0);
+							break;
+						}
+						ChaVector2* srcuv = m_uvbuf + faceno1 * 3 + trino1;
+						curface->SetUV(trino1, *srcuv);
+					}
+				}
+			}
+		}
+
+		CallF(m_pm3->CreatePM3(vert_count, face_count, m_facet, pointptr, faceptr, m_material, m_multmat), return 1);
+	}
 	
 	return 0;
 }
@@ -879,7 +914,7 @@ int CMQOObject::MakeExtLine()
 	return 0;
 }
 
-int CMQOObject::MakeDispObj( ID3D11Device* pdev, map<int,CMQOMaterial*>& srcmat, int hasbone )
+int CMQOObject::MakeDispObj( ID3D11Device* pdev, int hasbone )
 {
 	if( m_dispobj ){
 		delete m_dispobj;
@@ -1968,13 +2003,17 @@ int CMQOObject::CollisionLocal_Ray(ChaVector3 startlocal, ChaVector3 dirlocal,
 int CMQOObject::AddInfBone( int srcboneno, int srcvno, float srcweight, int isadditive )
 {
 	CInfBone* ibptr = 0;
-	if( m_pm3 && m_pm3->GetInfBone() ){
-		if( (srcvno < 0) || (srcvno >= m_pm3->GetOrgPointNum()) ){
-			_ASSERT( 0 );
-			return 1;
-		}
-		ibptr = m_pm3->GetInfBone() + srcvno;
-	}else if( m_pm4 && m_pm4->GetInfBone() ){
+	if (m_pm3) {
+		//‰½‚à‚µ‚È‚¢
+	}
+	//if( m_pm3 && m_pm3->GetInfBone() ){
+	//	if( (srcvno < 0) || (srcvno >= m_pm3->GetOrgPointNum()) ){
+	//		_ASSERT( 0 );
+	//		return 1;
+	//	}
+	//	ibptr = m_pm3->GetInfBone() + srcvno;
+	//}
+	else if( m_pm4 && m_pm4->GetInfBone() ){
 		if( (srcvno < 0) || (srcvno >= m_pm4->GetOrgPointNum()) ){
 			_ASSERT( 0 );
 			return 1;
@@ -2000,8 +2039,10 @@ int CMQOObject::AddInfBone( int srcboneno, int srcvno, float srcweight, int isad
 
 int CMQOObject::NormalizeInfBone()
 {
-	if( m_pm3 && m_pm3->GetInfBone() ){
-		_ASSERT( 0 );
+	//if( m_pm3 && m_pm3->GetInfBone() ){
+	//	_ASSERT( 0 );
+	if(m_pm3){
+		//‰½‚à‚µ‚È‚¢
 	}else if( m_pm4 && m_pm4->GetInfBone() ){
 		int vno;
 		for( vno = 0; vno < m_pm4->GetOrgPointNum(); vno++ ){

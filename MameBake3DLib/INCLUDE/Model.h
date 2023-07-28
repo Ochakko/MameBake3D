@@ -261,7 +261,7 @@ public:
  * @breaf メタセコイアから読み込んだデータの表示用データを作成する。
  * @return 成功したら０。
  */
-	int MakePolyMesh3();
+	int MakePolyMesh3(bool fbxfileflag);
 
 /**
  * @fn
@@ -836,7 +836,7 @@ public:
 	CNodeOnLoad* FindNodeOnLoadByName(const char* srcname);
 	FbxNode* FindNodeByBone(CBone* srcbone);
 	CBone* FindBoneByNode(FbxNode* srcnode);
-
+	bool HasCluster(FbxNode* srcnode, FbxNodeAttribute** ppAttrib);
 
 	//NodeMatが変わらないように　SetRotationActiveは変更しないことに
 	//void SetRotationActiveToBone();
@@ -1241,16 +1241,26 @@ public: //accesser
 	};
 
 	int GetMotInfoSize(){
-		return (int)m_motinfo.size();
+		if (GetNoBoneFlag() == false) {
+			return (int)m_motinfo.size();
+		}
+		else {
+			return 0;
+		}
 	};
 	MOTINFO* GetMotInfo( int srcid ){//motidは1から
 		//return m_motinfo[srcid - 1];
 
-		//DeleteMotion時に要素をeraseするのでid - 1が配列のインデックスになるとは限らない//2021/08/26
-		int miindex;
-		miindex = MotionID2Index(srcid);
-		if (miindex >= 0) {
-			return m_motinfo[miindex];
+		if (GetNoBoneFlag() == false) {
+			//DeleteMotion時に要素をeraseするのでid - 1が配列のインデックスになるとは限らない//2021/08/26
+			int miindex;
+			miindex = MotionID2Index(srcid);
+			if (miindex >= 0) {
+				return m_motinfo[miindex];
+			}
+			else {
+				return 0;
+			}
 		}
 		else {
 			return 0;
@@ -1268,7 +1278,12 @@ public: //accesser
 	double GetCurrentMotionFrame();
 
 	MOTINFO* GetCurMotInfo(){
-		return m_curmotinfo;
+		if (GetNoBoneFlag() == false) {
+			return m_curmotinfo;
+		}
+		else {
+			return 0;
+		}
 	};
 	void SetCurMotInfo( MOTINFO* srcinfo ){
 		if (m_curmotinfo) {
@@ -1277,16 +1292,21 @@ public: //accesser
 	};
 	MOTINFO* GetFirstValidMotInfo()
 	{
-		MOTINFO* retmi = 0;
-		std::map<int, MOTINFO*>::iterator itrmi;
-		for (itrmi = m_motinfo.begin(); itrmi != m_motinfo.end(); itrmi++) {
-			MOTINFO* curmi = itrmi->second;
-			if (curmi) {//NULLではないとき
-				retmi = curmi;
-				break;
+		if (GetNoBoneFlag() == false) {
+			MOTINFO* retmi = 0;
+			std::map<int, MOTINFO*>::iterator itrmi;
+			for (itrmi = m_motinfo.begin(); itrmi != m_motinfo.end(); itrmi++) {
+				MOTINFO* curmi = itrmi->second;
+				if (curmi) {//NULLではないとき
+					retmi = curmi;
+					break;
+				}
 			}
+			return retmi;
 		}
-		return retmi;
+		else {
+			return 0;
+		}
 	};
 
 
@@ -1426,6 +1446,7 @@ public: //accesser
 		m_tmpmotspeed = srcval;
 	};
 
+
 	int GetMQOMaterialSize(){
 		return (int)m_material.size();
 	};
@@ -1438,11 +1459,9 @@ public: //accesser
 	std::map<int,CMQOMaterial*>::iterator GetMQOMaterialEnd(){
 		return m_material.end();
 	};
-
 	void SetMQOMaterial( int srcindex, CMQOMaterial* srcmat ){
 		m_material[ srcindex ] = srcmat;
 	};
-
 	CMQOMaterial* GetMQOMaterialByName(std::string srcname ){
 		return m_materialname[ srcname ];
 	};
@@ -1541,15 +1560,25 @@ public: //accesser
 	//	m_worldmat.data[MATI_42] = m_modelposition.y;
 	//	m_worldmat.data[MATI_43] = m_modelposition.z;
 	//};
-	void SetWorldMat(ChaMatrix srcmat) {
-		m_worldmat = srcmat;
-	};
+
+
+	//###########################################
+	//使うのはm_matWorld. m_worldmatではなくて.
+	//###########################################
+	//void SetWorldMat(ChaMatrix srcmat) {
+	//	m_worldmat = srcmat;
+	//};
+	//ChaMatrix GetWorldMat()
+	//{
+	//	return m_worldmat;
+	//	//m_worldmat = CalcModelWorldMatOnLoad();
+	//	//return m_worldmat;
+	//};
 	ChaMatrix GetWorldMat()
 	{
-		return m_worldmat;
-		//m_worldmat = CalcModelWorldMatOnLoad();
-		//return m_worldmat;
+		return m_matWorld;
 	};
+
 
 	int GetFbxComment(char* dstcomment, int dstlen)
 	{
@@ -1817,7 +1846,7 @@ private:
 
 	float m_tmpmotspeed;//モーション再生倍率の一時保存用。
 
-	//polymesh3用のマテリアル。polymesh4はmqoobjectのmqomaterialを使用する。
+	////polymesh3用のマテリアル。polymesh4はmqoobjectのmqomaterialを使用する。
 	std::map<int, CMQOMaterial*> m_material;
 	std::map<std::string, CMQOMaterial*> m_materialname;
 
@@ -1859,7 +1888,7 @@ private:
 	int m_undo_writepoint;
 	int m_undo_firstflag;
 
-	ChaMatrix m_worldmat;
+	//ChaMatrix m_worldmat;
 	ChaVector3 m_modelposition;//読み込み時位置
 	ChaVector3 m_modelrotation;//読み込み時向き
 

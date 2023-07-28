@@ -260,7 +260,10 @@ int CMQOFile::LoadMQOFile_aft( float multiple, ChaVector3 offsetpos, ChaVector3 
 	//map<int, CMQOObject*> curobject;
 	//m_modelptr->GetMqoObject2( curobject );
 	CallF( Multiple(), return 1 );
-	CallF( m_modelptr->MakePolyMesh3(), return 1 );
+
+	bool fbxfileflag = false;
+	CallF( m_modelptr->MakePolyMesh3(fbxfileflag), return 1 );
+	
 	CallF( m_modelptr->MakeExtLine(), return 1 );
 	CallF( m_modelptr->MakeObjectName(), return 1 );
 
