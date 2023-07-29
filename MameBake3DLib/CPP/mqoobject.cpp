@@ -170,6 +170,7 @@ void CMQOObject::InitParams()
 	m_objfrom = OBJFROM_MQO;
 
 	m_pnode = 0;
+	m_cluster.clear();
 
 	m_normalmappingmode = 0;//0:eByPolygonVertex, 1:eByControlPoint
 	m_dbgcount = 0;
@@ -2003,9 +2004,9 @@ int CMQOObject::CollisionLocal_Ray(ChaVector3 startlocal, ChaVector3 dirlocal,
 int CMQOObject::AddInfBone( int srcboneno, int srcvno, float srcweight, int isadditive )
 {
 	CInfBone* ibptr = 0;
-	if (m_pm3) {
-		//‰½‚à‚µ‚È‚¢
-	}
+	//if (m_pm3) {
+	//	//‰½‚à‚µ‚È‚¢
+	//}
 	//if( m_pm3 && m_pm3->GetInfBone() ){
 	//	if( (srcvno < 0) || (srcvno >= m_pm3->GetOrgPointNum()) ){
 	//		_ASSERT( 0 );
@@ -2013,14 +2014,15 @@ int CMQOObject::AddInfBone( int srcboneno, int srcvno, float srcweight, int isad
 	//	}
 	//	ibptr = m_pm3->GetInfBone() + srcvno;
 	//}
-	else if( m_pm4 && m_pm4->GetInfBone() ){
+	//else 
+	if( m_pm4 && m_pm4->GetInfBone() ){
 		if( (srcvno < 0) || (srcvno >= m_pm4->GetOrgPointNum()) ){
 			_ASSERT( 0 );
 			return 1;
 		}
 		ibptr = m_pm4->GetInfBone() + srcvno;
 	}else{
-		//_ASSERT( 0 );
+		_ASSERT( 0 );
 	}
 	if( ibptr ){
 		INFELEM ie;

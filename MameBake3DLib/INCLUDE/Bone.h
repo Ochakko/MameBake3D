@@ -995,7 +995,7 @@ public: //accesser
 	{
 		return (GetType() != FBXBONE_CAMERA);
 	}
-
+	bool HasCameraParent();
 	
 	CBone* GetParent(bool excludenullflag);
 	CBone* GetChild(bool excludenullflag);

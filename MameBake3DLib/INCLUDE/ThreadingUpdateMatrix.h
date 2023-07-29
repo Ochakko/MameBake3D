@@ -8,7 +8,8 @@
 
 //ƒXƒŒƒbƒh‚P‚Â‚Ìê‡‚à‚ ‚é‚Ì‚Å512‚Ü‚Å‚É‚µ‚½
 //#define MAXBONEUPDATE	256
-#define MAXBONEUPDATE	512
+//#define MAXBONEUPDATE	512
+#define MAXBONEUPDATE	1024
 
 
 class CBone;

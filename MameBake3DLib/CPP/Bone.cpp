@@ -694,12 +694,13 @@ int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMat
 		//2023/02/02
 		//modelのworldmatが掛かっていないアニメ姿勢も保存　GetCurrent..., CalcCurrent...用
 			m_curmp.SetAnimMat(newworldmat);
-			SetWorldMat(limitdegflag, srcmotid, roundingframe, newworldmat, &m_curmp);//roundingframe!!!!
 
 
 		//modelのworldmatを掛ける
+			//skinmeshの変換の際にはシェーダーでg_hmWorldは掛けない　すでにg_hmWorldが掛かっている必要有
 			ChaMatrix tmpmat = newworldmat * *wmat; // !!!!!!!!!!!!!!!!!!!!!!!!!!!
-			//SetWorldMat(limitdegflag, srcmotid, roundingframe, tmpmat, &m_curmp);//roundingframe!!!!
+			SetWorldMat(limitdegflag, srcmotid, roundingframe, tmpmat, &m_curmp);//roundingframe!!!!
+
 			if (limitdegflag == true) {
 				m_curmp.SetCalcLimitedWM(2);
 			}
@@ -4791,9 +4792,9 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 	}
 	else if (IsNull()) {
 
-		//########################
+		//###########
 		//eNullの場合
-		//########################
+		//###########
 
 		if (GetFbxNodeOnLoad()) {
 			FbxTime fbxtime;
@@ -6055,7 +6056,7 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 			//GetENullMatrixを修正してCalcEnullMatReqで計算するようにしたところが2023/06/26から変わったところ
 			//SetWorldMat()時には　回転計算用のローカル行列取得時に　parenetがeNullの場合関してもGetWorldMat[invNode * CalcENullMat]を使用
 			//Fbx回転計算時には　CalcLocalEulXYZ()内にて　parentがeNullの場合　invNode * CalcENullMatを使用
-			//Fbx移動計算時には　CalcLocalFbxMatrix内にて　parentがeNullの場合　GetENullMatrixを使用
+			//Fbx移動計算時には　CalcFbxLocalMatrix内にて　parentがeNullの場合　GetENullMatrixを使用
 			ChaMatrix befparentwm;
 			befparentwm = GetParent(false)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 			beflocalmat = saveworldmat * ChaMatrixInv(befparentwm);
@@ -6697,7 +6698,6 @@ ChaMatrix CBone::GetWorldMat(bool limitdegflag,
 		//bool multInvNodeMat = true;
 		//return GetParModel()->GetCameraTransformMat(srcmotid, srcframe, g_cameraInheritMode, multInvNodeMat);
 		return ChaMatrixInv(GetNodeMat()) * GetTransformMat(0.0, true);//2023/07/05 Cameraの子供のスキンメッシュの形が　読み書き読み書き読みテストで形崩れしないように
-
 	}
 	else if (IsSkeleton()) {
 		if (srcmp) {
@@ -7365,9 +7365,9 @@ ChaVector3 CBone::CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe)
 	}
 	else if(IsCamera() || IsNull()){
 
-		//#########################
+		//########################
 		//カメラまたはeNull の場合
-		//#########################
+		//########################
 
 		//if (GetParModel() && GetParModel()->IsCameraLoaded() && GetFbxNodeOnLoad()) {
 		if (GetParModel() && GetFbxNodeOnLoad()) {
@@ -10193,8 +10193,12 @@ void CBone::CalcNodePostureReq(bool bindposeflag, FbxNode* pNode, double srcfram
 	CalcLocalNodePosture(bindposeflag, pNode, srcframe, &localnodemat, &localnodeanimmat);
 
 	//親方向へ計算
-	*plocalnodemat = *plocalnodemat * localnodemat;
-	*plocalnodeanimmat = *plocalnodeanimmat * localnodeanimmat;
+	ChaMatrix tmpmat1, tmpmat2;
+	tmpmat1 = *plocalnodemat * localnodemat;
+	tmpmat2 = *plocalnodeanimmat * localnodeanimmat;
+
+	*plocalnodemat = tmpmat1;
+	*plocalnodeanimmat = tmpmat2;
 
 	//親方向へ計算
 	if (GetParent(false)) {
@@ -10516,6 +10520,7 @@ ChaMatrix CBone::CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcf
 			//parentfbxwm = parentbone->GetENullMatrix(roundingframe);
 
 			//parentfbxwm = parentbone->GetTransformMat(roundingframe, true);
+
 			parentfbxwm = parentbone->GetTransformMat(0.0, true);
 			localfbxmat = GetNodeMat() * wmanim * ChaMatrixInv(parentfbxwm);
 		}
@@ -10541,5 +10546,22 @@ ChaMatrix CBone::CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcf
 	
 	return localfbxmat;
 
+}
+
+bool CBone::HasCameraParent()
+{
+	bool hascameraparent = false;
+
+	CBone* chkparent = GetParent(false);
+	while (chkparent) {
+		if (chkparent->IsCamera()) {
+			hascameraparent = true;
+			break;
+		}
+
+		chkparent = chkparent->GetParent(false);
+	}
+
+	return hascameraparent;
 }
 

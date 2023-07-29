@@ -22,6 +22,7 @@
 #include <Model.h>
 #include <MQOObject.h>
 #include <Bone.h>
+#include <PolyMesh3.h>
 #include <PolyMesh4.h>
 #include <MQOMaterial.h>
 #include <MQOFace.h>
@@ -1373,6 +1374,7 @@ void CreateSkinMeshReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 	}
 
 
+
 	FbxNode* srcnode = ploadnode->GetNode();
 	FbxNode* psavenode = 0;
 
@@ -1399,8 +1401,12 @@ void CreateSkinMeshReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 					{
 						CMQOObject* curobj = ploadnode->GetMqoObject();
 						if (curobj) {
-							//const char* dummynameptr = strstr(curobj->GetName(), "_ND_dtri");
-							//if (!dummynameptr) {
+
+							int mqoobjclusternum = curobj->GetClusterSize();
+							if (mqoobjclusternum >= 1) {//2023/07/29
+
+								//const char* dummynameptr = strstr(curobj->GetName(), "_ND_dtri");
+								//if (!dummynameptr) {
 								FbxGeometry* lLoadMeshAttribute = (FbxGeometry*)srcnode->GetNodeAttribute();
 								if (lLoadMeshAttribute) {
 									int loadskincount = lLoadMeshAttribute->GetDeformerCount();
@@ -1472,13 +1478,22 @@ void CreateSkinMeshReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 																							double curw = *(ploadw + index);
 																							lSaveCluster->AddControlPointIndex(curindex, curw);
 																						}
+
+																						lSaveSkin->AddCluster(lSaveCluster);
+																					}
+																					else if (ploadindices) {//2023/07/29
+																						int index;
+																						for (index = 0; index < loadindicesnum; index++) {
+																							int curindex = *(ploadindices + index);
+																							lSaveCluster->AddControlPointIndex(curindex, 1.0);
+																						}
+
+																						lSaveSkin->AddCluster(lSaveCluster);
 																					}
 																					else {
 																						_ASSERT(0);
+																						lSaveCluster->Destroy();//2023/07/29
 																					}
-
-																					lSaveSkin->AddCluster(lSaveCluster);
-
 																				}
 																				else {
 																					_ASSERT(0);
@@ -1522,8 +1537,9 @@ void CreateSkinMeshReq(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel
 										//lSaveMeshAttribute->Copy(*lLoadMeshAttribute);
 									}
 								}
-								
-							//}
+
+								//}
+							}
 						}
 
 
@@ -2370,18 +2386,10 @@ int CreateFbxMaterial(FbxManager* pSdkManager, FbxScene* pScene, FbxNode* lNode,
 		return 1;
 	}
 
-	//CPolyMesh3* pm3 = curobj->GetPm3();
+	CPolyMesh3* pm3 = curobj->GetPm3();
 	CPolyMesh4* pm4 = curobj->GetPm4();
 
 	int materialnum;
-	//if (pm3) {
-	//	materialnum = 1;
-	//	CMQOMaterial* curmqomat = curobj->GetMaterialBegin()->second;
-	//	if (curmqomat != NULL) {
-	//		CreateFbxMaterialFromMQOMaterial(pSdkManager, pScene, lNode, lMaterialElement, pmodel, curobj, curmqomat, lMesh->GetPolygonCount());
-	//	}
-	//}
-	//else 
 	if (pm4) {
 		materialnum = pm4->GetDispMaterialNum();
 		int materialcnt;
@@ -2395,6 +2403,23 @@ int CreateFbxMaterial(FbxManager* pSdkManager, FbxScene* pScene, FbxNode* lNode,
 			}
 		}
 		//lMaterialElement->GetIndexArray().SetCount(lMesh->GetPolygonCount());
+	}
+	else if (pm3) {
+		//materialnum = 1;
+		//CMQOMaterial* curmqomat = curobj->GetMaterialBegin()->second;
+		//if (curmqomat != NULL) {
+		//	CreateFbxMaterialFromMQOMaterial(pSdkManager, pScene, lNode, lMaterialElement, pmodel, curobj, curmqomat, lMesh->GetPolygonCount());
+		//}
+
+		int blno;
+		for (blno = 0; blno < pm3->GetOptMatNum(); blno++) {
+			MATERIALBLOCK* currb = pm3->GetMatBlock() + blno;
+			CMQOMaterial* curmqomat = currb->mqomat;
+			int curtrinum = currb->endface - currb->startface + 1;
+			if ((curmqomat != NULL) && (curtrinum > 0)) {
+				CreateFbxMaterialFromMQOMaterial(pSdkManager, pScene, lNode, lMaterialElement, pmodel, curobj, curmqomat, curtrinum);
+			}
+		}
 	}
 	else {
 		_ASSERT(0);
@@ -2413,16 +2438,23 @@ int	CreateFbxMaterialFromMQOMaterial(FbxManager* pSdkManager, FbxScene* pScene, 
 	char matname[256];
 	char tmpname[256] = { 0 };
 	strcpy_s(tmpname, 256, mqomat->GetName());
-	char* underbar = strchr(tmpname, '_');
-	if (underbar) {
-		*underbar = 0;
-		sprintf_s(matname, 256, "%s_%d", tmpname, s_matcnt);
-	}
-	else {
-		sprintf_s(matname, 256, "%s_%d", curobj->GetEngName(), s_matcnt);
-	}
-	//sprintf_s( matname, 256, "%s_%d", mqomat->GetName(), s_matcnt );
-	//FbxString lMaterialName = mqomat->name;
+
+	//_(number)_(number)_...のように番号が際限なく付いていく不具合は大分昔の不具合　
+	//不具合回避が不具合を生む可能性があるので　コメントアウト
+	//char* underbar = strchr(tmpname, '_');
+	//if (underbar) {
+	//	*underbar = 0;
+	//	sprintf_s(matname, 256, "%s_%d", tmpname, s_matcnt);
+	//}
+	//else {
+	//	sprintf_s(matname, 256, "%s_%d", curobj->GetEngName(), s_matcnt);
+	//}
+	////sprintf_s( matname, 256, "%s_%d", mqomat->GetName(), s_matcnt );
+	////FbxString lMaterialName = mqomat->name;
+	sprintf_s(matname, 256, "%s", tmpname);
+
+
+	
 	FbxString lMaterialName = matname;
 	FbxString lShadingName = "Phong";
 	FbxSurfacePhong* lMaterial = FbxSurfacePhong::Create(pScene, lMaterialName.Buffer());
@@ -3176,7 +3208,7 @@ void AnimateBoneReq(bool limitdegflag, FbxNode* pNode, FbxAnimLayer* lAnimLayer,
 
 			if (curmotid != curbone->GetParModel()->GetCameraMotionId()) {
 				//通常モーション
-				if (curbone->IsSkeleton()) {
+				if (curbone->HasMotionCurve(curmotid) && curbone->IsSkeleton()) {
 					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
 					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
 					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
@@ -3192,7 +3224,8 @@ void AnimateBoneReq(bool limitdegflag, FbxNode* pNode, FbxAnimLayer* lAnimLayer,
 			}
 			else {
 				//カメラモーション
-				if (curbone->HasMotionCurve(curmotid) && (curbone->IsCamera() || curbone->IsNull())) {
+				if (curbone->HasMotionCurve(curmotid) && 
+					(curbone->IsCamera() || curbone->IsNull())) {
 					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
 					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
 					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);

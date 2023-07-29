@@ -2469,11 +2469,11 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 	//ボーンが無くても　非スキンメッシュを表示することはある
 	//g_hmWorld->SetMatrix(m_worldmat.GetDataPtr());
 	g_hmWorld->SetMatrix(m_matWorld.GetDataPtr());
-	ChaMatrix inimat;
-	inimat.SetIdentity();
-	MoveMemory(&(m_setfl4x4[16 * 0]),
-		inimat.GetDataPtr(), sizeof(float) * 16);
-	g_hm4x4Mat->SetMatrixArray((float*)(&m_setfl4x4[0]), 0, 0);
+	//ChaMatrix inimat;
+	//inimat.SetIdentity();
+	//MoveMemory(&(m_setfl4x4[16 * 0]),
+	//	inimat.GetDataPtr(), sizeof(float) * 16);
+	//g_hm4x4Mat->SetMatrixArray((float*)(&m_setfl4x4[0]), 0, 0);
 
 
 
@@ -6318,15 +6318,20 @@ bool CModel::HasCluster(FbxNode* srcnode, FbxNodeAttribute** ppAttrib)
 				for (int i = 0; i < skinCount; i++) {
 					// i番目のスキンを取得
 					FbxSkin* skin = (FbxSkin*)(pMesh->GetDeformer(i, FbxDeformer::eSkin));
-
-					// クラスターの数を取得
-					int clusterNum = skin->GetClusterCount();
-
-					hascluster = true;
-					break;
+					if (skin) {
+						// クラスターの数を取得
+						int clusterNum = skin->GetClusterCount();
+						if (clusterNum >= 1) {
+							hascluster = true;
+							break;
+						}
+					}
 				}
 			}
 		}
+	}
+	else {
+		*ppAttrib = 0;
 	}
 
 	return hascluster;
@@ -6410,7 +6415,7 @@ int CModel::GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode )
 				if (curbone) {
 					int curclusterno = newobj->GetClusterSize();
 
-					if (curclusterno >= MAXCLUSTERNUM) {
+					if ((curclusterno < 0) || (curclusterno >= MAXCLUSTERNUM)) {
 						WCHAR wmes[256];
 						swprintf_s(wmes, 256, L"１つのパーツに影響できるボーンの制限数(%d個)を超えました。読み込めません。", MAXCLUSTERNUM);
 						MessageBoxW(NULL, wmes, L"ボーン数エラー", MB_OK);
@@ -6418,36 +6423,45 @@ int CModel::GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode )
 						return 1;
 					}
 
-
-					newobj->PushBackCluster(curbone);
-
 					int pointNum = cluster->GetControlPointIndicesCount();
 					int* pointAry = cluster->GetControlPointIndices();
 					double* weightAry = cluster->GetControlPointWeights();
 
-					FbxCluster::ELinkMode lClusterMode = (FbxCluster::ELinkMode)cluster->GetLinkMode();
-					int index;
-					float weight;
-					for (int i2 = 0; i2 < pointNum; i2++) {
-						// 頂点インデックスとウェイトを取得
-						index = pointAry[i2];
-						weight = (float)weightAry[i2];
+					if ((pointNum >= 1) && pointAry) {//2023/07/29
+						newobj->PushBackCluster(curbone);
 
-						int isadditive;
-						if (lClusterMode == FbxCluster::eAdditive) {
-							isadditive = 1;
-						}
-						else {
-							isadditive = 0;
+						FbxCluster::ELinkMode lClusterMode = (FbxCluster::ELinkMode)cluster->GetLinkMode();
+						int index;
+						float weight;
+						for (int i2 = 0; i2 < pointNum; i2++) {
+							// 頂点インデックスとウェイトを取得
+							index = pointAry[i2];
+
+							//2023/07/29
+							if (lClusterMode == FbxCluster::eTotalOne) {
+								weight = 1.0f;
+							}
+							else {
+								weight = (float)weightAry[i2];
+							}
+
+							int isadditive;
+							if (lClusterMode == FbxCluster::eAdditive) {
+								isadditive = 1;
+							}
+							else {
+								isadditive = 0;
+							}
+
+
+							if ((lClusterMode == FbxCluster::eAdditive) || (weight >= 0.05f)) {
+								//if ((lClusterMode == FbxCluster::eAdditive)){
+								newobj->AddInfBone(curclusterno, index, weight, isadditive);
+							}
 						}
 
-						if ((lClusterMode == FbxCluster::eAdditive) || (weight >= 0.05f)) {
-							//if ((lClusterMode == FbxCluster::eAdditive)){
-							newobj->AddInfBone(curclusterno, index, weight, isadditive);
-						}
+						makecnt++;
 					}
-
-					makecnt++;
 
 				}
 				else {
