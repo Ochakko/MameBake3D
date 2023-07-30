@@ -53,6 +53,10 @@ class CBone
 {
 public:
 
+	static void InitColDisp();
+	static void DestroyColDisp();
+
+
 	ChaVector3 m_btparentpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
 	ChaVector3 m_btchildpos;//Motion2Bt時のボーンの位置(剛体行列計算用)
 	ChaMatrix m_btdiffmat;//Motion2Bt時のbtmatの変化分(剛体行列計算用)
@@ -113,7 +117,7 @@ public:
  * @detail 指定モーションの指定時間の姿勢を計算する。グローバルな姿勢の計算である。
  */
 	int UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, bool callingbythread = false);
-	int SwapCurrentMotionPoint();
+	//int SwapCurrentMotionPoint();
 
 
 	//int UpdateMatrixFromEul(int srcmotid, double srcframe, ChaVector3 neweul, ChaMatrix* wmat, ChaMatrix* vpmat);
@@ -714,14 +718,14 @@ public: //accesser
 
 	CQuaternion GetAxisQ(){ return m_axisq; };
 	void SetAxisQ( CQuaternion srcq ){ m_axisq = srcq; };
-
 	ChaMatrix GetLAxisMat(){ return m_laxismat; };
-	ChaMatrix GetAxisMatPar(){ return m_axismat_par; };
-	ChaMatrix GetInvAxisMatPar(){
-		ChaMatrix invaxis;
-		ChaMatrixInverse(&invaxis, NULL, &m_axismat_par);
-		return invaxis;
-	};
+
+	//ChaMatrix GetAxisMatPar(){ return m_axismat_par; };
+	//ChaMatrix GetInvAxisMatPar(){
+	//	ChaMatrix invaxis;
+	//	ChaMatrixInverse(&invaxis, NULL, &m_axismat_par);
+	//	return invaxis;
+	//};
 
 	//ChaMatrix GetStartMat2(){ return m_startmat2; };
 	//ChaMatrix GetInvStartMat2(){
@@ -1224,46 +1228,46 @@ public: //accesser
 		return m_extendflag;
 	};
 
-	void InitAddLimitQ()
-	{
-		m_addlimitq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-	}
-	void Add2AddLimitQ(CQuaternion srcq);
-	CQuaternion GetAddLimitQ()
-	{
-		return m_addlimitq;
-	}
+	//void InitAddLimitQ()
+	//{
+	//	m_addlimitq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	//}
+	//void Add2AddLimitQ(CQuaternion srcq);
+	//CQuaternion GetAddLimitQ()
+	//{
+	//	return m_addlimitq;
+	//}
 
-	CQuaternion GetLocalR0() {
-		return m_localR0;
-	}
-	void SetLocalR0(CQuaternion srcq) {
-		m_localR0 = srcq;
-	}
-	ChaMatrix GetLocalS0() {
-		return m_localS0;
-	}
-	void SetLocalS0(ChaMatrix srcval) {
-		m_localS0 = srcval;
-	}
-	ChaMatrix GetLocalT0() {
-		return m_localT0;
-	}
-	void SetLocalT0(ChaMatrix srcval) {
-		m_localT0 = srcval;
-	}
-	ChaMatrix GetFirstSRT() {
-		return m_firstSRT;
-	}
-	void SetFirstSRT(ChaMatrix srcval) {
-		m_firstSRT = srcval;
-	}
-	ChaMatrix GetFirstGlobalSRT() {
-		return m_firstGlobalSRT;
-	}
-	void SetFirstGlobalSRT(ChaMatrix srcval) {
-		m_firstGlobalSRT = srcval;
-	}
+	//CQuaternion GetLocalR0() {
+	//	return m_localR0;
+	//}
+	//void SetLocalR0(CQuaternion srcq) {
+	//	m_localR0 = srcq;
+	//}
+	//ChaMatrix GetLocalS0() {
+	//	return m_localS0;
+	//}
+	//void SetLocalS0(ChaMatrix srcval) {
+	//	m_localS0 = srcval;
+	//}
+	//ChaMatrix GetLocalT0() {
+	//	return m_localT0;
+	//}
+	//void SetLocalT0(ChaMatrix srcval) {
+	//	m_localT0 = srcval;
+	//}
+	//ChaMatrix GetFirstSRT() {
+	//	return m_firstSRT;
+	//}
+	//void SetFirstSRT(ChaMatrix srcval) {
+	//	m_firstSRT = srcval;
+	//}
+	//ChaMatrix GetFirstGlobalSRT() {
+	//	return m_firstGlobalSRT;
+	//}
+	//void SetFirstGlobalSRT(ChaMatrix srcval) {
+	//	m_firstGlobalSRT = srcval;
+	//}
 
 	//void SetTempLocalEul(ChaVector3 srcorgeul, ChaVector3 srcneweul)
 	//{
@@ -1444,22 +1448,22 @@ public: //accesser
 		m_dbgcount = srccount;
 	}
 
-	ChaMatrix GetLocalNodeMat()
-	{
-		return m_localnodemat;
-	}
-	void SetLocalNodeMat(ChaMatrix srcmat)
-	{
-		m_localnodemat = srcmat;
-	}
-	ChaMatrix GetLocalNodeAnimMat()
-	{
-		return m_localnodeanimmat;
-	}
-	void SetLocalNodeAnimMat(ChaMatrix srcmat)
-	{
-		m_localnodeanimmat = srcmat;
-	}
+	//ChaMatrix GetLocalNodeMat()
+	//{
+	//	return m_localnodemat;
+	//}
+	//void SetLocalNodeMat(ChaMatrix srcmat)
+	//{
+	//	m_localnodemat = srcmat;
+	//}
+	//ChaMatrix GetLocalNodeAnimMat()
+	//{
+	//	return m_localnodeanimmat;
+	//}
+	//void SetLocalNodeAnimMat(ChaMatrix srcmat)
+	//{
+	//	m_localnodeanimmat = srcmat;
+	//}
 
 	int GetDefBonePosKind()
 	{
@@ -1498,6 +1502,7 @@ public: //accesser
 		}
 	}
 
+
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
 	CRITICAL_SECTION m_CritSection_AddMP;
@@ -1505,6 +1510,8 @@ private:
 	int m_useflag;//0: not use, 1: in use
 	int m_indexofpool;//index of pool vector
 	int m_allocheadflag;//1: head pointer at allocated
+
+
 
 
 	//int m_posconstraint;
@@ -1527,11 +1534,11 @@ private:
 	bool m_posefoundflag;//BindPoseの中にこのボーンの位置情報があった場合true。
 
 
-	ChaMatrix m_localS0;//local Scale at Frame0
-	CQuaternion m_localR0;//local Rotation at Frame0
-	ChaMatrix m_localT0;//local Translation at Frame0
-	ChaMatrix m_firstSRT;//SRT matrix at Frame0
-	ChaMatrix m_firstGlobalSRT;//globalSRT matrix at Frame0
+	//ChaMatrix m_localS0;//local Scale at Frame0
+	//CQuaternion m_localR0;//local Rotation at Frame0
+	//ChaMatrix m_localT0;//local Translation at Frame0
+	//ChaMatrix m_firstSRT;//SRT matrix at Frame0
+	//ChaMatrix m_firstGlobalSRT;//globalSRT matrix at Frame0
 
 
 	ChaVector3 m_childworld;//ボーンの子供のモーション行列適用後の座標。
@@ -1542,8 +1549,8 @@ private:
 
 	std::map<int, CMotionPoint*> m_motionkey;//m_motionkey[ モーションID ]でモーションの最初のフレームの姿勢にアクセスできる。
 	CMotionPoint m_curmp;//現在のWVP適用後の姿勢データ。 ### 計算済 ###
-	CMotionPoint m_calccurmp;////現在のWVP適用後の姿勢データ。 ### 計算中 ###
-	CMotionPoint m_befmp;//一回前の姿勢データ。
+	//CMotionPoint m_calccurmp;////現在のWVP適用後の姿勢データ。 ### 計算中 ###
+	//CMotionPoint m_befmp;//一回前の姿勢データ。
 	CMotionPoint* m_cachebefmp[MAXMOTIONNUM + 1];//motidごとのキャッシュ
 
 	//std::vector<CMotionPoint*> m_indexedmp;
@@ -1552,13 +1559,13 @@ private:
 	CMotionPoint m_dummymp;
 
 	CQuaternion m_axisq;//ボーンの軸のクォータニオン表現。
-
 	ChaMatrix m_laxismat;//Zボーンのaxismat
+
 	//ChaMatrix m_gaxismatXpar;//Xボーンのグローバルのaxismat
-	ChaMatrix m_gaxismatYpar;//Yボーンのグローバルのaxismat
-	ChaMatrix m_axismat_par;//Xボーンのローカルのaxismat
+	//ChaMatrix m_gaxismatYpar;//Yボーンのグローバルのaxismat
+	//ChaMatrix m_axismat_par;//Xボーンのローカルのaxismat
 	//ChaMatrix m_firstaxismatX;//初期状態でのXボーンのグローバルaxismat
-	ChaMatrix m_firstaxismatZ;//初期状態でのZボーンのグローバルaxismat
+	//ChaMatrix m_firstaxismatZ;//初期状態でのZボーンのグローバルaxismat
 
 
 	//ChaMatrix m_startmat2;//ワールド行列を保存しておくところ。剛体シミュレーションを始める際などに保存する。
@@ -1584,7 +1591,7 @@ private:
 	int m_defboneposkind;//FbxFile.cpp FbxSetDefaultBonePosReq()でセット　BPの有無など
 
 
-	CQuaternion m_addlimitq;
+	//CQuaternion m_addlimitq;
 
 	ChaMatrix m_btmat;
 	ChaMatrix m_befbtmat;
@@ -1619,7 +1626,6 @@ private:
 	//最初のintはmotid。次のmapはframenoと更新フラグ。更新フラグは読み込み時のマークは０、それ以後の編集マークは１にする予定。色を変えるかも。
 	std::map<int, std::map<double,int>> m_motmark;
 
-	CModel* m_coldisp[COL_MAX];
 
 	CModel* m_parmodel;
 
@@ -1657,8 +1663,8 @@ private:
 	EFbxRotationOrder m_rotationorder;
 	FbxTransform::EInheritType m_InheritType;
 
-	ChaMatrix m_localnodemat;
-	ChaMatrix m_localnodeanimmat;
+	//ChaMatrix m_localnodemat;
+	//ChaMatrix m_localnodeanimmat;
 
 	std::map<int, bool> m_hasmotioncurve;
 

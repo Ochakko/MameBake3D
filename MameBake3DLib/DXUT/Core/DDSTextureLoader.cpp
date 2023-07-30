@@ -1749,7 +1749,9 @@ namespace
     #if !defined(NO_D3D11_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
         if (texture || textureView)
         {
-            CHAR strFileA[MAX_PATH];
+            CHAR strFileA[MAX_PATH] = { 0 };
+            CHAR strprivatedata[MAX_PATH] = { 0 };
+
             const int result = WideCharToMultiByte(CP_UTF8,
                 WC_NO_BEST_FIT_CHARS,
                 fileName,
@@ -1761,30 +1763,41 @@ namespace
             );
             if (result > 0)
             {
-                const char* pstrName = strrchr(strFileA, '\\');
+                //const char* pstrName = strrchr(strFileA, '\\');
+                char* pstrName = strrchr(strFileA, '\\');
                 if (!pstrName)
                 {
-                    pstrName = strFileA;
+                    strcpy_s(strprivatedata, MAX_PATH, strFileA);
                 }
                 else
                 {
-                    pstrName++;
+                    strcpy_s(strprivatedata, MAX_PATH, pstrName + 1);
                 }
+                UINT datalen = static_cast<UINT>(strnlen_s(strprivatedata, MAX_PATH));
+                char* dataforset = new char[datalen + 1];
+                ZeroMemory(dataforset, sizeof(char) * (datalen + 1));
+                MoveMemory(dataforset, strprivatedata, strnlen_s(strprivatedata, datalen + 1));
 
                 if (texture && *texture)
                 {
                     (*texture)->SetPrivateData(WKPDID_D3DDebugObjectName,
-                        static_cast<UINT>(strnlen_s(pstrName, MAX_PATH)),
-                        pstrName
+                        datalen,
+                        (const void*)dataforset
                     );
                 }
 
                 if (textureView && *textureView)
                 {
                     (*textureView)->SetPrivateData(WKPDID_D3DDebugObjectName,
-                        static_cast<UINT>(strnlen_s(pstrName, MAX_PATH)),
-                        pstrName
+                        datalen,
+                        (const void*)dataforset
                     );
+                }
+
+                if (dataforset)
+                {
+                    delete [] dataforset;
+                    dataforset = 0;
                 }
             }
         }

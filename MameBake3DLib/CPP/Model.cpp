@@ -2004,17 +2004,17 @@ void CModel::Motion2BtReq( CBtObject* srcbto )
 //	}
 //}
 
-int CModel::SwapCurrentMotionPoint()
-{
-	map<int, CBone*>::iterator itrbone;
-	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
-		CBone* curbone = itrbone->second;
-		if (curbone && (curbone->IsSkeleton())) {
-			curbone->SwapCurrentMotionPoint();
-		}
-	}
-	return 0;
-}
+//int CModel::SwapCurrentMotionPoint()
+//{
+//	map<int, CBone*>::iterator itrbone;
+//	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+//		CBone* curbone = itrbone->second;
+//		if (curbone && (curbone->IsSkeleton())) {
+//			curbone->SwapCurrentMotionPoint();
+//		}
+//	}
+//	return 0;
+//}
 
 int CModel::UpdateMatrix(bool limitdegflag, ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinished) // default : needwaitfinished = false
 {
@@ -8945,6 +8945,11 @@ void CModel::CreateRigidElemReq( CBone* curbone, int reflag, string rename, int 
 	if (!curbone){
 		return;
 	}
+
+	if (GetNoBoneFlag() == true) {
+		return;
+	}
+
 	//CBone* parentbone = curbone->GetParent();
 	//if (parentbone){
 	//	parentbone->CreateRigidElem(curbone, reflag, rename, impflag, impname);
@@ -10051,6 +10056,11 @@ void CModel::SetKinematicFlagReq(CBtObject* srcbto)
 
 int CModel::SetCurrentRigidElem( int curindex )
 {
+	if (GetNoBoneFlag() == true) {
+		return 0;
+	}
+
+
 	if( curindex < 0 ){
 		return 0;
 	}

@@ -42,25 +42,25 @@ int CMotionPoint::InitParams()
 	m_frame = 0.0;
 	m_q.SetParams( 1.0f, 0.0f, 0.0f, 0.0f );
 	m_tra = ChaVector3( 0.0f, 0.0f, 0.0f );
-	m_firstframetra = ChaVector3(0.0f, 0.0f, 0.0f);
+	//m_firstframetra = ChaVector3(0.0f, 0.0f, 0.0f);
 
 	m_localeul = ChaVector3(0.0f, 0.0f, 0.0f);
 
 	ChaMatrixIdentity(&m_worldmat);
 	ChaMatrixIdentity(&m_localmat);
 	ChaMatrixIdentity(&m_absmat);
-	ChaMatrixIdentity(&m_befworldmat);
+	//ChaMatrixIdentity(&m_befworldmat);
 	ChaMatrixIdentity(&m_befeditmat);
 
 	ChaMatrixIdentity(&m_animmat);
 
 
-	ChaMatrixIdentity(&m_SRT);
+	//ChaMatrixIdentity(&m_SRT);
 
 	//m_newwmowner = 0;
 	//ChaMatrixIdentity(&m_newworldmat);
 
-	m_setbefworldmatflag = false;
+	//m_setbefworldmatflag = false;
 
 	m_calclimitedwm = 0;
 	ChaMatrixIdentity(&m_limitedwm);
@@ -291,9 +291,9 @@ int CMotionPoint::CopyMP( CMotionPoint* srcmp )
 
 int CMotionPoint::CalcQandTra( ChaMatrix srcmat, CBone* boneptr, float hrate )
 {
-	//ChaVector3 svec, tvec;
-	//ChaMatrix rmat;
-	//GetSRTMatrix(srcmat, &svec, &rmat, &tvec);
+	////ChaVector3 svec, tvec;
+	////ChaMatrix rmat;
+	////GetSRTMatrix(srcmat, &svec, &rmat, &tvec);
 
 	if (boneptr){
 		ChaVector3 aftpos;
@@ -305,16 +305,15 @@ int CMotionPoint::CalcQandTra( ChaMatrix srcmat, CBone* boneptr, float hrate )
 		ChaVector3 srcbonepos = boneptr->GetFirstFrameBonePos() * hrate;
 		ChaVector3 aftpos2;
 		ChaVector3TransformCoord(&aftpos2, &srcbonepos, &srcmat);
-		m_firstframetra = aftpos - srcbonepos;
-		//m_firstframetra = aftpos;
-
-		//m_tra = tvec - boneptr->GetJointFPos();
-		//ChaVector3 srcbonepos = boneptr->GetFirstFrameBonePos() * hrate;
-		//m_firstframetra = tvec - srcbonepos;
+		//m_firstframetra = aftpos - srcbonepos;
+		////m_firstframetra = aftpos;
+		////m_tra = tvec - boneptr->GetJointFPos();
+		////ChaVector3 srcbonepos = boneptr->GetFirstFrameBonePos() * hrate;
+		////m_firstframetra = tvec - srcbonepos;
 	}
 	else{
 		m_tra = ChaVector3(0.0f, 0.0f, 0.0f);
-		m_firstframetra = ChaVector3(0.0f, 0.0f, 0.0f);
+		//m_firstframetra = ChaVector3(0.0f, 0.0f, 0.0f);
 	}
 
 	m_q.RotationMatrix(srcmat);
@@ -339,16 +338,16 @@ CMotionPoint CMotionPoint::operator= (CMotionPoint mp)
 	m_frame = mp.m_frame;
 	m_q = mp.m_q;
 	m_tra = mp.m_tra;
-	m_firstframetra = mp.m_firstframetra;
+	//m_firstframetra = mp.m_firstframetra;
 	m_localeul = mp.m_localeul;
 	m_worldmat = mp.m_worldmat;
 	m_localmat = mp.m_localmat;
 	m_absmat = mp.m_absmat;
-	m_befworldmat = mp.m_befworldmat;
+	//m_befworldmat = mp.m_befworldmat;
 	m_befeditmat = mp.m_befeditmat;
 	m_animmat = mp.m_animmat;
-	m_SRT = mp.m_SRT;
-	m_setbefworldmatflag = mp.m_setbefworldmatflag;
+	//m_SRT = mp.m_SRT;
+	//m_setbefworldmatflag = mp.m_setbefworldmatflag;
 	m_calclimitedwm = mp.m_calclimitedwm;
 	m_limitedwm = mp.m_limitedwm;
 	m_limitedlocaleul = mp.m_limitedlocaleul;

@@ -1245,7 +1245,7 @@ DXGI_FORMAT MAKE_TYPELESS( _In_ DXGI_FORMAT format )
 //-------------------------------------------------------------------------------------- 
 HRESULT DXUTSnapD3D11Screenshot( _In_z_ LPCWSTR szFileName, _In_ bool usedds )
 {
-    IDXGISwapChain *pSwap = DXUTGetDXGISwapChain();
+ /*   IDXGISwapChain *pSwap = DXUTGetDXGISwapChain();
 
     if (!pSwap)
         return E_FAIL;
@@ -1272,6 +1272,7 @@ HRESULT DXUTSnapD3D11Screenshot( _In_z_ LPCWSTR szFileName, _In_ bool usedds )
 
     SAFE_RELEASE(pBackBuffer);
 
-    return hr;
+    return hr;*/
 
+    return 0;
 }

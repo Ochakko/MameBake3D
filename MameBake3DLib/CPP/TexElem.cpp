@@ -141,10 +141,15 @@ int CTexElem::CreateTexData(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 		//_ASSERT( ret );
 	}
 
-	int miplevels = 0;
+	//int miplevels = 0;
 	//int mipfilter = D3DX_FILTER_TRIANGLE;
 
-	HRESULT hr0, hr1, hr2, hr3;
+	int miplevels = 1;
+	size_t resizew = 512;
+	size_t resizeh = 512;
+
+
+	HRESULT hr0, hr1, hr2, hr3;// , hr4;
 	WCHAR patdds[256] = { 0L };
 	wcscpy_s(patdds, 256, L".dds");
 	WCHAR pattga[256] = { 0L };
@@ -168,6 +173,7 @@ int CTexElem::CreateTexData(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 			_ASSERT(0);
 			DbgOut(L"TexElem : CreateTexData : LoadFromTGAFile error!!! %x, path : %s, name : %s\r\n",
 				hr1, m_path, m_name);
+			image.reset();
 			return -1;
 		}
 
@@ -176,8 +182,43 @@ int CTexElem::CreateTexData(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 			_ASSERT(0);
 			DbgOut(L"TexElem : CreateTexData : CreateShaderResourceView error!!! %x, path : %s, name : %s\r\n",
 				hr2, m_path, m_name);
+			image.reset();
 			return -1;
 		}
+		image.reset();
+
+
+		//if (meta.width >= 512) {
+		//	resizew = 512;
+		//}
+		//if (meta.height >= 512) {
+		//	resizeh = 512;
+		//}
+		//std::unique_ptr<ScratchImage> image2(new ScratchImage);
+		//hr4 = Resize(image->GetImages(), image->GetImageCount(),
+		//	meta,
+		//	resizew, resizeh, TEX_FILTER_DEFAULT,
+		//	*image2);
+		//image.reset();
+		//if (FAILED(hr4)) {
+		//	_ASSERT(0);
+		//	DbgOut(L"TexElem : CreateTexData : Resize error!!! %x, path : %s, name : %s\r\n",
+		//		hr1, m_path, m_name);
+		//	return -1;
+		//}
+		//TexMetadata meta2 = meta;
+		//meta2.width = resizew;
+		//meta2.height = resizeh;
+		//meta2.mipLevels = 1;
+		//hr2 = CreateShaderResourceView(pdev, image2->GetImages(), image2->GetImageCount(), meta2, &m_ResView);
+		//if (FAILED(hr2)) {
+		//	_ASSERT(0);
+		//	DbgOut(L"TexElem : CreateTexData : CreateShaderResourceView error!!! %x, path : %s, name : %s\r\n",
+		//		hr2, m_path, m_name);
+		//	image2.reset();
+		//	return -1;
+		//}
+		//image2.reset();
 	}
 	else if (finddds) {
 		TexMetadata meta;
@@ -196,21 +237,58 @@ int CTexElem::CreateTexData(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 			_ASSERT(0);
 			DbgOut(L"TexElem : CreateTexData : LoadFromTGAFile error!!! %x, path : %s, name : %s\r\n", 
 				hr1, m_path, m_name);
+			image.reset();
 			return -1;
 		}
 
 		hr2 = CreateShaderResourceView(pdev, image->GetImages(), image->GetImageCount(), meta, &m_ResView);
+		//hr2 = CreateShaderResourceView(pdev, image->GetImages(), 1, meta, &m_ResView);
 		if (FAILED(hr2)) {
 			_ASSERT(0);
-			DbgOut(L"TexElem : CreateTexData : CreateShaderResourceView error!!! %x, path : %s, name : %s\r\n", 
+			DbgOut(L"TexElem : CreateTexData : CreateShaderResourceView error!!! %x, path : %s, name : %s\r\n",
 				hr2, m_path, m_name);
+			image.reset();
 			return -1;
 		}
+		image.reset();
+
+		//if (meta.width >= 512) {
+		//	resizew = 512;
+		//}
+		//if (meta.height >= 512) {
+		//	resizeh = 512;
+		//}
+		//std::unique_ptr<ScratchImage> image2(new ScratchImage);
+		//hr4 = Resize(image->GetImages(), image->GetImageCount(),
+		//	meta,
+		//	resizew, resizeh, TEX_FILTER_DEFAULT,
+		//	*image2);
+		//image.reset();
+		//if (FAILED(hr4)) {
+		//	_ASSERT(0);
+		//	DbgOut(L"TexElem : CreateTexData : Resize error!!! %x, path : %s, name : %s\r\n",
+		//		hr1, m_path, m_name);
+		//	return -1;
+		//}
+		//TexMetadata meta2 = meta;
+		//meta2.width = resizew;
+		//meta2.height = resizeh;
+		//meta2.mipLevels = 1;
+		//hr2 = CreateShaderResourceView(pdev, image2->GetImages(), image2->GetImageCount(), meta2, &m_ResView);
+		////hr2 = CreateShaderResourceView(pdev, image->GetImages(), 1, meta, &m_ResView);
+		//if (FAILED(hr2)) {
+		//	_ASSERT(0);
+		//	DbgOut(L"TexElem : CreateTexData : CreateShaderResourceView error!!! %x, path : %s, name : %s\r\n", 
+		//		hr2, m_path, m_name);
+		//	image2.reset();
+		//	return -1;
+		//}
+		//image2.reset();
 	}
 	else {
 		TexMetadata meta;
 		ZeroMemory(&meta, sizeof(TexMetadata));
-		hr0 = GetMetadataFromWICFile(m_name, WIC_FLAGS_NONE, meta);
+		hr0 = GetMetadataFromWICFile(m_name, WIC_FLAGS_NONE, meta, nullptr);
 		if (FAILED(hr0)) {
 			_ASSERT(0);
 			DbgOut(L"TexElem : CreateTexData : GetMetadataFromWICFile error!!! %x, path : %s, name : %s\r\n",
@@ -221,20 +299,59 @@ int CTexElem::CreateTexData(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 		std::unique_ptr<ScratchImage> image(new ScratchImage);
 		hr1 = LoadFromWICFile(m_name, 
 			//WIC_FLAGS_ALL_FRAMES, 
-			WIC_FLAGS_NONE, &meta, *image);
+			WIC_FLAGS_NONE, &meta, *image, nullptr);
 		if (FAILED(hr1)) {
 			_ASSERT(0);
 			DbgOut(L"TexElem : CreateTexData : LoadFromTGAFile error!!! %x, path : %s, name : %s\r\n", 
 				hr1, m_path, m_name);
+			image.reset();
 			return -1;
 		}
+
 		hr2 = CreateShaderResourceView(pdev, image->GetImages(), image->GetImageCount(), meta, &m_ResView);
+		//hr2 = CreateShaderResourceView(pdev, image->GetImages(), 1, meta, &m_ResView);
 		if (FAILED(hr2)) {
 			_ASSERT(0);
-			DbgOut(L"TexElem : CreateTexData : CreateShaderResourceView error!!! %x, path : %s, name : %s\r\n", 
+			DbgOut(L"TexElem : CreateTexData : CreateShaderResourceView error!!! %x, path : %s, name : %s\r\n",
 				hr2, m_path, m_name);
+			image.reset();
 			return -1;
 		}
+		image.reset();
+
+
+		//if (meta.width >= 512) {
+		//	resizew = 512;
+		//}
+		//if (meta.height >= 512) {
+		//	resizeh = 512;
+		//}
+		//std::unique_ptr<ScratchImage> image2(new ScratchImage);
+		//hr4 = Resize(image->GetImages(), image->GetImageCount(),
+		//	meta,
+		//	resizew, resizeh, TEX_FILTER_DEFAULT,
+		//	*image2);
+		//image.reset();
+		//if (FAILED(hr4)) {
+		//	_ASSERT(0);
+		//	DbgOut(L"TexElem : CreateTexData : Resize error!!! %x, path : %s, name : %s\r\n",
+		//		hr1, m_path, m_name);
+		//	return -1;
+		//}
+		//TexMetadata meta2 = meta;
+		//meta2.width = resizew;
+		//meta2.height = resizeh;
+		//meta2.mipLevels = 1;
+		//hr2 = CreateShaderResourceView(pdev, image2->GetImages(), image2->GetImageCount(), meta2, &m_ResView);
+		////hr2 = CreateShaderResourceView(pdev, image->GetImages(), 1, meta, &m_ResView);
+		//if (FAILED(hr2)) {
+		//	_ASSERT(0);
+		//	DbgOut(L"TexElem : CreateTexData : CreateShaderResourceView error!!! %x, path : %s, name : %s\r\n", 
+		//		hr2, m_path, m_name);
+		//	image2.reset();
+		//	return -1;
+		//}
+		//image2.reset();
 	}
 
 

@@ -747,18 +747,20 @@ HRESULT WINAPI DXUTSaveTextureToFile( ID3D11DeviceContext* pContext, ID3D11Resou
     if ( !pContext || !pSource || !szFileName )
         return E_INVALIDARG;
 
-    HRESULT hr;
+    //HRESULT hr;
 
-    if ( usedds )
-    {
-        hr = DirectX::SaveDDSTextureToFile( pContext, pSource, szFileName );
-    }
-    else
-    {
-        hr = DirectX::SaveWICTextureToFile( pContext, pSource, GUID_ContainerFormatBmp, szFileName );
-    }
+    //if ( usedds )
+    //{
+    //    hr = DirectX::SaveDDSTextureToFile( pContext, pSource, szFileName );
+    //}
+    //else
+    //{
+    //    hr = DirectX::SaveWICTextureToFile( pContext, pSource, GUID_ContainerFormatBmp, szFileName );
+    //}
 
-    return hr;
+    //return hr;
+
+    return E_NOTIMPL;
 }
 
 

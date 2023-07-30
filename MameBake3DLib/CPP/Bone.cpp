@@ -314,6 +314,8 @@ int IsValidRigElem(CModel* srcmodel, RIGELEM srcrigelem)
 
 //class
 
+static CModel* s_coldisp[COL_MAX];
+
 
 CBone::CBone( CModel* parmodel )// : m_curmp(), m_axisq()
 {
@@ -344,19 +346,19 @@ int CBone::InitParams()
 	m_fbxnodeonload = 0;//2022/11/01
 
 	m_curmp.InitParams();
-	m_calccurmp.InitParams();
+	//m_calccurmp.InitParams();
 	m_axisq.InitParams();
 
 	m_motionkey.clear();
 	m_motionkey[0] = 0;
 
-	m_addlimitq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	//m_addlimitq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 
-	ChaMatrixIdentity(&m_localS0);
-	m_localR0.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-	ChaMatrixIdentity(&m_localT0);
-	ChaMatrixIdentity(&m_firstSRT);
-	ChaMatrixIdentity(&m_firstGlobalSRT);
+	//ChaMatrixIdentity(&m_localS0);
+	//m_localR0.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	//ChaMatrixIdentity(&m_localT0);
+	//ChaMatrixIdentity(&m_firstSRT);
+	//ChaMatrixIdentity(&m_firstGlobalSRT);
 
 
 	m_tmpkinematic = false;
@@ -365,7 +367,7 @@ int CBone::InitParams()
 	//m_excludemv = 0;
 	//m_mass0 = 0;
 	//m_posconstraint = 0;
-	ZeroMemory(m_coldisp, sizeof(CModel*)* COL_MAX);
+	//ZeroMemory(m_coldisp, sizeof(CModel*)* COL_MAX);
 
 	ChaMatrixIdentity(&m_tmpsymmat);
 
@@ -396,12 +398,12 @@ int CBone::InitParams()
 	ChaMatrixIdentity( &m_invfirstmat );
 	ChaMatrixIdentity( &m_firstmat );
 	//ChaMatrixIdentity( &m_startmat2 );
-	ChaMatrixIdentity( &m_axismat_par );
+	//ChaMatrixIdentity( &m_axismat_par );
 	ChaMatrixIdentity(&m_initmat);
 	ChaMatrixIdentity(&m_invinitmat);
 	ChaMatrixIdentity(&m_tmpmat);
 	//ChaMatrixIdentity(&m_firstaxismatX);
-	ChaMatrixIdentity(&m_firstaxismatZ);
+	//ChaMatrixIdentity(&m_firstaxismatZ);
 
 	m_boneno = 0;
 	m_topboneflag = 0;
@@ -471,8 +473,8 @@ int CBone::InitParams()
 
 	m_InheritType = FbxTransform::eInheritRrSs;//0
 
-	m_localnodemat.SetIdentity();
-	m_localnodeanimmat.SetIdentity();
+	//m_localnodemat.SetIdentity();
+	//m_localnodeanimmat.SetIdentity();
 
 	m_hasmotioncurve.clear();
 
@@ -512,6 +514,23 @@ int CBone::InitParamsForReUse(CModel* srcparmodel)
 	SetUseFlag(1);
 
 	return 0;
+}
+
+
+void CBone::InitColDisp()//static function
+{
+	ZeroMemory(s_coldisp, sizeof(CModel*) * COL_MAX);
+}
+void CBone::DestroyColDisp()//static function
+{
+	int colindex;
+	for (colindex = 0; colindex < COL_MAX; colindex++) {
+		CModel* curcol = s_coldisp[colindex];
+		if (curcol) {
+			delete curcol;
+			s_coldisp[colindex] = 0;
+		}
+	}
 }
 
 
@@ -561,16 +580,6 @@ void CBone::InitAngleLimit()
 int CBone::DestroyObjs()
 {
 	ZeroMemory(m_cachebefmp, sizeof(CMotionPoint*) * (MAXMOTIONNUM + 1));
-
-	int colindex;
-	for (colindex = 0; colindex < COL_MAX; colindex++){
-		CModel* curcol = m_coldisp[colindex];
-		if (curcol){
-			delete curcol;
-			m_coldisp[colindex] = 0;
-		}
-	}
-
 
 
 	m_motmark.clear();
@@ -2500,7 +2509,7 @@ int CBone::CalcRigidElemParams( CBone* childbone, int setstartflag )
 	//_ASSERT( colptr );
 	_ASSERT( childbone );
 
-	CModel* curcoldisp = m_coldisp[curre->GetColtype()];
+	CModel* curcoldisp = s_coldisp[curre->GetColtype()];
 	_ASSERT( curcoldisp );
 
 
@@ -7790,42 +7799,50 @@ int CBone::LoadCapsuleShape(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 		}
 	}
 
-	m_coldisp[COL_CONE_INDEX] = new CModel();
-	if (!m_coldisp[COL_CONE_INDEX]){
-		_ASSERT(0);
-		return 1;
+	if (!s_coldisp[COL_CONE_INDEX]) {
+		s_coldisp[COL_CONE_INDEX] = new CModel();
+		if (!s_coldisp[COL_CONE_INDEX]) {
+			_ASSERT(0);
+			return 1;
+		}
+		swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"cone_dirX.mqo");
+		CallF(s_coldisp[COL_CONE_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
+		//CallF(m_coldisp[COL_CONE_INDEX]->MakeDispObj(), return 1);
 	}
 
-	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"cone_dirX.mqo");
-	CallF(m_coldisp[COL_CONE_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
-	//CallF(m_coldisp[COL_CONE_INDEX]->MakeDispObj(), return 1);
-
-	m_coldisp[COL_CAPSULE_INDEX] = new CModel();
-	if (!m_coldisp[COL_CAPSULE_INDEX]){
-		_ASSERT(0);
-		return 1;
+	if (!s_coldisp[COL_CAPSULE_INDEX]) {
+		s_coldisp[COL_CAPSULE_INDEX] = new CModel();
+		if (!s_coldisp[COL_CAPSULE_INDEX]) {
+			_ASSERT(0);
+			return 1;
+		}
+		swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"capsule_dirX.mqo");
+		CallF(s_coldisp[COL_CAPSULE_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
+		//CallF(m_coldisp[COL_CAPSULE_INDEX]->MakeDispObj(), return 1);
 	}
-	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"capsule_dirX.mqo");
-	CallF(m_coldisp[COL_CAPSULE_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
-	//CallF(m_coldisp[COL_CAPSULE_INDEX]->MakeDispObj(), return 1);
 
-	m_coldisp[COL_SPHERE_INDEX] = new CModel();
-	if (!m_coldisp[COL_SPHERE_INDEX]){
-		_ASSERT(0);
-		return 1;
+	if (!s_coldisp[COL_SPHERE_INDEX]) {
+		s_coldisp[COL_SPHERE_INDEX] = new CModel();
+		if (!s_coldisp[COL_SPHERE_INDEX]) {
+			_ASSERT(0);
+			return 1;
+		}
+		swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"sphere_dirX.mqo");
+		CallF(s_coldisp[COL_SPHERE_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
+		//CallF(m_coldisp[COL_SPHERE_INDEX]->MakeDispObj(), return 1);
 	}
-	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"sphere_dirX.mqo");
-	CallF(m_coldisp[COL_SPHERE_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
-	//CallF(m_coldisp[COL_SPHERE_INDEX]->MakeDispObj(), return 1);
 
-	m_coldisp[COL_BOX_INDEX] = new CModel();
-	if (!m_coldisp[COL_BOX_INDEX]){
-		_ASSERT(0);
-		return 1;
+	if (!s_coldisp[COL_BOX_INDEX]) {
+		s_coldisp[COL_BOX_INDEX] = new CModel();
+		if (!s_coldisp[COL_BOX_INDEX]) {
+			_ASSERT(0);
+			return 1;
+		}
+		swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"box.mqo");
+		CallF(s_coldisp[COL_BOX_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
+		//CallF(m_coldisp[COL_BOX_INDEX]->MakeDispObj(), return 1);
 	}
-	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"box.mqo");
-	CallF(m_coldisp[COL_BOX_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
-	//CallF(m_coldisp[COL_BOX_INDEX]->MakeDispObj(), return 1);
+
 
 	return 0;
 }
@@ -7854,7 +7871,7 @@ CModel* CBone::GetColDisp(CBone* childbone, int srcindex)
 	//_ASSERT(colptr);
 	_ASSERT(childbone);
 
-	CModel* retcoldisp = m_coldisp[srcindex];
+	CModel* retcoldisp = s_coldisp[srcindex];
 	_ASSERT(retcoldisp);
 
 	return retcoldisp;
@@ -7884,7 +7901,7 @@ CModel* CBone::GetCurColDisp(CBone* childbone)
 	//_ASSERT(colptr);
 	_ASSERT(childbone);
 
-	CModel* curcoldisp = m_coldisp[curre->GetColtype()];
+	CModel* curcoldisp = s_coldisp[curre->GetColtype()];
 	_ASSERT(curcoldisp);
 
 	return curcoldisp;
@@ -9938,11 +9955,11 @@ bool CBone::IsHipsBone()
 }
 
 
-int CBone::SwapCurrentMotionPoint()
-{
-	m_curmp.CopyMP(&m_calccurmp);
-	return 0;
-}
+//int CBone::SwapCurrentMotionPoint()
+//{
+//	//m_curmp.CopyMP(&m_calccurmp);
+//	return 0;
+//}
 
 void CBone::SaveFbxNodePosture(FbxNode* pNode)
 {

@@ -3863,6 +3863,8 @@ void InitApp()
 
 	InitCommonControls();
 
+	CBone::InitColDisp();
+
 
 	{
 		g_hRenderBoneL0 = 0;
@@ -6394,6 +6396,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 
 	s_modelindex.clear();
 	s_model = 0;
+
+
+	CBone::DestroyColDisp();
+
 
 	if (s_undosprite) {
 		delete s_undosprite;

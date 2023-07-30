@@ -51,7 +51,7 @@ public:
 	ChaVector3 GetTra(){ return m_tra; };
 	void SetTra( ChaVector3 srctra ){ m_tra = srctra; };
 
-	ChaVector3 GetFirstFrameTra(){ return m_firstframetra; };
+	//ChaVector3 GetFirstFrameTra(){ return m_firstframetra; };
 
 	CQuaternion GetQ(){ return m_q; };
 	CQuaternion GetInvQ(){
@@ -62,7 +62,8 @@ public:
 	void SetQ( CQuaternion srcq ){ m_q = srcq; };
 
 	ChaMatrix GetWorldMat();
-	void SetWorldMat(ChaMatrix srcmat) { m_calclimitedwm = 0; SetBefWorldMat(m_worldmat); m_worldmat = srcmat; };
+	//void SetWorldMat(ChaMatrix srcmat) { m_calclimitedwm = 0; SetBefWorldMat(m_worldmat); m_worldmat = srcmat; };
+	void SetWorldMat(ChaMatrix srcmat) { m_calclimitedwm = 0; m_worldmat = srcmat; };
 	//void SetNewWorldMat(CBone* ownerbone, ChaMatrix srcmat);//after limit eul
 
 
@@ -87,8 +88,7 @@ public:
 	//GetBefWorldMat()‚ÍŽg—p‚µ‚È‚¢‚±‚Æ‚É‚µ‚½
 	//
 	//ChaMatrix GetBefWorldMat(){ return m_befworldmat; };
-
-	void SetBefWorldMat( ChaMatrix srcmat ){ m_befworldmat = srcmat; };
+	//void SetBefWorldMat( ChaMatrix srcmat ){ m_befworldmat = srcmat; };
 
 	ChaMatrix GetBefEditMat(){ return m_befeditmat; };
 	void SetBefEditMat( ChaMatrix srcmat ){ m_befeditmat = srcmat; };
@@ -175,14 +175,14 @@ public:
 		return m_limitedlocaleul;
 	};
 
-	void SetSRT(ChaMatrix srcmat) 
-	{
-		m_SRT = srcmat;
-	}
-	ChaMatrix GetSRT()
-	{
-		return m_SRT;
-	}
+	//void SetSRT(ChaMatrix srcmat) 
+	//{
+	//	m_SRT = srcmat;
+	//}
+	//ChaMatrix GetSRT()
+	//{
+	//	return m_SRT;
+	//}
 
 	void SetSaveSRTandTraAnim(ChaMatrix srcsmat, ChaMatrix srcrmat, ChaMatrix srctmat, ChaMatrix srctanimmat) {
 		m_savesmat = srcsmat;
@@ -255,7 +255,7 @@ private:
 	int m_localmatflag;
 	//ChaVector3 m_eul;
 	ChaVector3 m_tra;
-	ChaVector3 m_firstframetra;
+	//ChaVector3 m_firstframetra;
 
 	CQuaternion m_q;
 	ChaVector3 m_localeul;
@@ -269,15 +269,15 @@ private:
 	ChaMatrix m_animmat;
 
 
-	ChaMatrix m_befworldmat;
+	//ChaMatrix m_befworldmat;
 	ChaMatrix m_befeditmat;
 
 	ChaMatrix m_absmat;
 
-	ChaMatrix m_SRT;
+	//ChaMatrix m_SRT;
 
 
-	bool m_setbefworldmatflag;
+	//bool m_setbefworldmatflag;
 
 
 	//btmat‚ÍCBone‚ÉˆÚ“®
