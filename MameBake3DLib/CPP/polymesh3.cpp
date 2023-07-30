@@ -57,6 +57,8 @@ CPolyMesh3::~CPolyMesh3()
 
 void CPolyMesh3::InitParams()
 {
+	m_fbxfileflag = false;
+
 	m_orgpointnum = 0;
 	m_orgfacenum = 0;
 	m_facenum = 0;
@@ -97,21 +99,8 @@ typedef  struct tag_n3p
 	N3SM*		n3sm;
 }N3P;//n*3
 */
-	if( m_n3p ){
-		delete [] m_n3p;
-		m_n3p = 0;
-	}
 
-	if( m_dispv ){
-		free( m_dispv );
-		m_dispv = 0;
-	}
-
-	if( m_dispindex ){
-		free( m_dispindex );
-		m_dispindex = 0;
-	}
-
+	DestroySystemDispObj();
 
 	if( m_matblock ){
 		free( m_matblock );
@@ -125,6 +114,27 @@ typedef  struct tag_n3p
 
 	InitParams();
 }
+
+void CPolyMesh3::DestroySystemDispObj()
+{
+	if (m_n3p) {
+		delete[] m_n3p;
+		m_n3p = 0;
+	}
+
+	if (m_dispv) {
+		free(m_dispv);
+		m_dispv = 0;
+	}
+
+	if (m_dispindex) {
+		free(m_dispindex);
+		m_dispindex = 0;
+	}
+
+}
+
+
 
 int sortfunc_material( void *context, const void *elem1, const void *elem2)
 {
@@ -211,14 +221,15 @@ int sortfunc_order0( void *context, const void *elem1, const void *elem2)
 
 
 
-int CPolyMesh3::CreatePM3( int pointnum, int facenum, float facet, ChaVector3* pointptr, CMQOFace* faceptr, 
-	map<int,CMQOMaterial*>& srcmat, ChaMatrix multmat )
+int CPolyMesh3::CreatePM3(bool fbxfileflag, int pointnum, int facenum, float facet, ChaVector3* pointptr, CMQOFace* faceptr, 
+	map<int,CMQOMaterial*>& srcmat, ChaMatrix multmat)
 {
 	m_orgpointnum = pointnum;
 	m_orgfacenum = facenum;
 	m_mqoface = faceptr;
 	m_pointbuf = pointptr;
 	m_facet = facet;
+	m_fbxfileflag = fbxfileflag;
 
 	CallF( CreateN3PFromMQOFace( 0, &m_facenum ), return 1 );
 
@@ -720,8 +731,15 @@ int CPolyMesh3::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 				curv->pos.y = (m_pointbuf + curn3p->pervert->vno)->y;
 				curv->pos.z = (m_pointbuf + curn3p->pervert->vno)->z;
 				curv->pos.w = 1.0f;
+				
 				//curv->normal = curn3p->pervert->smnormal;
-				curv->normal = -curn3p->pervert->smnormal;//2023/07/29 ”½“]
+				if (m_fbxfileflag == true) {
+					curv->normal = -curn3p->pervert->smnormal;//2023/07/29 ”½“]
+				}
+				else {
+					curv->normal = curn3p->pervert->smnormal;
+				}
+				
 				curv->uv = curn3p->pervert->uv[0];
 
 				/***
@@ -740,18 +758,23 @@ int CPolyMesh3::SetOptV( PM3DISPV* dispv, int* pleng, int* matnum, map<int,CMQOM
 
 				//*( m_dispindex + setno ) = setno;
 
-				//2023/07/29 ”½‘ÎŽü‚è
-				if (curtrino == 0) {
-					*(m_dispindex + setno) = curfaceno * 3 + 2;
-				}
-				else if (curtrino == 1) {
-					*(m_dispindex + setno) = curfaceno * 3 + 1;
-				}
-				else if (curtrino == 2) {
-					*(m_dispindex + setno) = curfaceno * 3 + 0;
+				if (m_fbxfileflag == true) {
+					//2023/07/29 ”½‘ÎŽü‚è
+					if (curtrino == 0) {
+						*(m_dispindex + setno) = curfaceno * 3 + 2;
+					}
+					else if (curtrino == 1) {
+						*(m_dispindex + setno) = curfaceno * 3 + 1;
+					}
+					else if (curtrino == 2) {
+						*(m_dispindex + setno) = curfaceno * 3 + 0;
+					}
+					else {
+						_ASSERT(0);
+						*(m_dispindex + setno) = setno;
+					}
 				}
 				else {
-					_ASSERT(0);
 					*(m_dispindex + setno) = setno;
 				}
 			}

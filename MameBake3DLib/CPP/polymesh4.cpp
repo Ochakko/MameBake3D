@@ -90,44 +90,52 @@ void CPolyMesh4::InitParams()
 }
 void CPolyMesh4::DestroyObjs()
 {
-	if( m_triface ){
-		delete [] m_triface;
+
+	DestroySystemDispObj();
+
+}
+
+void CPolyMesh4::DestroySystemDispObj()
+{
+	if (m_triface) {
+		delete[] m_triface;
 		m_triface = 0;
 	}
 
-	if( m_dispv ){
-		free( m_dispv );
+	if (m_dispv) {
+		free(m_dispv);
 		m_dispv = 0;
 	}
 
-	if( m_dispindex ){
-		free( m_dispindex );
+	if (m_dispindex) {
+		free(m_dispindex);
 		m_dispindex = 0;
 	}
 
-	if( m_orgindex ){
-		free( m_orgindex );
+	if (m_orgindex) {
+		free(m_orgindex);
 		m_orgindex = 0;
 	}
-	if (m_fbxindex){
+	if (m_fbxindex) {
 		free(m_fbxindex);
 		m_fbxindex = 0;
 	}
 
-	if( m_infbone ){
-		delete [] m_infbone;
+	if (m_infbone) {
+		delete[] m_infbone;
 		m_infbone = 0;
 	}
 
-	if( m_pm3inf ){
-		free( m_pm3inf );
+	if (m_pm3inf) {
+		free(m_pm3inf);
 		m_pm3inf = 0;
 	}
 
-	if (m_dirtyflag){
+	if (m_dirtyflag) {
 		free(m_dirtyflag);
 		m_dirtyflag = 0;
 	}
+
 }
 
 int sortfunc_material( void *context, const void *elem1, const void *elem2)

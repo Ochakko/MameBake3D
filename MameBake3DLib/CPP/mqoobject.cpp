@@ -820,7 +820,7 @@ int CMQOObject::MakePolymesh3(bool fbxfileflag, ID3D11Device* pdev, std::map<int
 	if (fbxfileflag == false) {
 		//mqofile
 		//material‚ÍCModel‚©‚çˆø”‚ÅŽó‚¯Žæ‚Á‚½srcmaterial
-		CallF(m_pm3->CreatePM3(vert_count, face_count, m_facet, pointptr, faceptr, srcmaterial, m_multmat), return 1);
+		CallF(m_pm3->CreatePM3(fbxfileflag, vert_count, face_count, m_facet, pointptr, faceptr, srcmaterial, m_multmat), return 1);
 	}
 	else {
 		
@@ -850,7 +850,7 @@ int CMQOObject::MakePolymesh3(bool fbxfileflag, ID3D11Device* pdev, std::map<int
 			}
 		}
 
-		CallF(m_pm3->CreatePM3(vert_count, face_count, m_facet, pointptr, faceptr, m_material, m_multmat), return 1);
+		CallF(m_pm3->CreatePM3(fbxfileflag, vert_count, face_count, m_facet, pointptr, faceptr, m_material, m_multmat), return 1);
 	}
 	
 	return 0;
@@ -941,6 +941,10 @@ int CMQOObject::MakeDispObj( ID3D11Device* pdev, int hasbone )
 			return 1;
 		}
 		CallF( m_dispobj->CreateDispObj( pdev, m_pm3, hasbone ), return 1 );
+
+		m_pm3->DestroySystemDispObj();
+
+
 	}else if( m_pm4 && m_pm4->GetCreateOptFlag() ){
 		if( hasbone ){
 			CallF(m_pm4->SetPm3Inf(this), return 1);
@@ -952,6 +956,8 @@ int CMQOObject::MakeDispObj( ID3D11Device* pdev, int hasbone )
 			return 1;
 		}
 		CallF( m_dispobj->CreateDispObj( pdev, m_pm4, hasbone ), return 1 );
+
+		m_pm4->DestroySystemDispObj();
 	}
 
 	if( m_extline ){

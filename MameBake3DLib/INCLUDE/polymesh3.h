@@ -24,8 +24,8 @@ public:
 	CPolyMesh3();
 	~CPolyMesh3();
 
-	int CreatePM3( int pointnum, int facenum, float facet, ChaVector3* pointptr, CMQOFace* faceptr, 
-		std::map<int,CMQOMaterial*>& srcmat, ChaMatrix multmat );
+	int CreatePM3(bool fbxfileflag, int pointnum, int facenum, float facet, ChaVector3* pointptr, CMQOFace* faceptr, 
+		std::map<int,CMQOMaterial*>& srcmat, ChaMatrix multmat);
 	
 	//int SetIndexBuf();	
 	//int InvIndexBuf();
@@ -36,6 +36,8 @@ public:
 	//int CalcInfNoSkin( CBone* applybone );
 
 	int MultScale( ChaVector3 srcscale, ChaVector3 srctra );
+
+	void DestroySystemDispObj();
 
 private:
 	void InitParams();
@@ -177,6 +179,8 @@ public:
 
 
 private:
+	bool m_fbxfileflag;
+
 	int m_orgpointnum;
 	int m_orgfacenum;
 	int m_facenum;//éOäpï™äÑå„ÇÃñ êî

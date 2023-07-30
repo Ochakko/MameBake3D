@@ -4931,7 +4931,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 		return S_FALSE;
 	}
 	CallF(s_select->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\select_2.mqo", 0, 1.0f, 0), return S_FALSE);
-	CallF(s_select->MakeDispObj(), return S_FALSE;);
+	//CallF(s_select->MakeDispObj(), return S_FALSE;);
 
 	s_matred = s_select->GetMQOMaterialByName("matred");
 	if (!s_matred) {
@@ -5001,7 +5001,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 		return S_FALSE;
 	}
 	CallF(s_select_posture->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\select_2_posture.mqo", 0, 1.0f, 0), return S_FALSE);
-	CallF(s_select_posture->MakeDispObj(), return S_FALSE);
+	//CallF(s_select_posture->MakeDispObj(), return S_FALSE);
 
 
 	int rigopemarkno;
@@ -5012,7 +5012,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 				float rigmult = 0.30f * (float)(rigopemarkno + 1) * 0.5f;
 				CallF(s_rigopemark_sphere[rigopemarkno]->LoadMQO(s_pdev, pd3dImmediateContext,
 					L"..\\Media\\MameMedia\\rigmark.mqo", 0, rigmult, 0), return S_FALSE);
-				CallF(s_rigopemark_sphere[rigopemarkno]->MakeDispObj(), return S_FALSE);
+				//CallF(s_rigopemark_sphere[rigopemarkno]->MakeDispObj(), return S_FALSE);
 				s_rigmaterial_sphere[rigopemarkno] = s_rigopemark_sphere[rigopemarkno]->GetMQOMaterialByName("mat1");
 				if (!s_rigmaterial_sphere[rigopemarkno]) {
 					_ASSERT(0);
@@ -5033,7 +5033,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 				float rigmult = (float)(rigopemarkno + 1) * 0.5f;
 				CallF(s_rigopemark_ringX[rigopemarkno]->LoadMQO(s_pdev, pd3dImmediateContext,
 					L"..\\Media\\MameMedia\\ringX.mqo", 0, rigmult, 0), return S_FALSE);
-				CallF(s_rigopemark_ringX[rigopemarkno]->MakeDispObj(), return S_FALSE);
+				//CallF(s_rigopemark_ringX[rigopemarkno]->MakeDispObj(), return S_FALSE);
 				s_rigmaterial_ringX[rigopemarkno] = s_rigopemark_ringX[rigopemarkno]->GetMQOMaterialByName("ringred");
 				if (!s_rigmaterial_ringX[rigopemarkno]) {
 					_ASSERT(0);
@@ -5054,7 +5054,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 				float rigmult = (float)(rigopemarkno + 1) * 0.5f;
 				CallF(s_rigopemark_ringY[rigopemarkno]->LoadMQO(s_pdev, pd3dImmediateContext,
 					L"..\\Media\\MameMedia\\ringY.mqo", 0, rigmult, 0), return S_FALSE);
-				CallF(s_rigopemark_ringY[rigopemarkno]->MakeDispObj(), return S_FALSE);
+				//CallF(s_rigopemark_ringY[rigopemarkno]->MakeDispObj(), return S_FALSE);
 				s_rigmaterial_ringY[rigopemarkno] = s_rigopemark_ringY[rigopemarkno]->GetMQOMaterialByName("ringgreen");
 				if (!s_rigmaterial_ringY[rigopemarkno]) {
 					_ASSERT(0);
@@ -5075,7 +5075,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 				float rigmult = (float)(rigopemarkno + 1) * 0.5f;
 				CallF(s_rigopemark_ringZ[rigopemarkno]->LoadMQO(s_pdev, pd3dImmediateContext,
 					L"..\\Media\\MameMedia\\ringZ.mqo", 0, rigmult, 0), return S_FALSE);
-				CallF(s_rigopemark_ringZ[rigopemarkno]->MakeDispObj(), return S_FALSE);
+				//CallF(s_rigopemark_ringZ[rigopemarkno]->MakeDispObj(), return S_FALSE);
 				s_rigmaterial_ringZ[rigopemarkno] = s_rigopemark_ringZ[rigopemarkno]->GetMQOMaterialByName("ringblue");
 				if (!s_rigmaterial_ringZ[rigopemarkno]) {
 					_ASSERT(0);
@@ -5100,7 +5100,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 		return S_FALSE;
 	}
 	CallF(s_bmark->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\bonemark.mqo", 0, 1.0f, 0), return S_FALSE);
-	CallF(s_bmark->MakeDispObj(), return S_FALSE);
+	//CallF(s_bmark->MakeDispObj(), return S_FALSE);
 
 
 
@@ -5112,7 +5112,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 		return S_FALSE;
 	}
 	CallF(s_ground->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\ground2.mqo", 0, 1.0f, 0), return S_FALSE);
-	CallF(s_ground->MakeDispObj(), return S_FALSE);
+	//CallF(s_ground->MakeDispObj(), return S_FALSE);
 
 	s_gplane = new CModel();
 	if (!s_gplane) {
@@ -5121,7 +5121,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 		return S_FALSE;
 	}
 	CallF(s_gplane->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\gplane.mqo", 0, 1.0f, 0), return S_FALSE);
-	CallF(s_gplane->MakeDispObj(), return S_FALSE);
+	//CallF(s_gplane->MakeDispObj(), return S_FALSE);
 	ChaVector3 tra(0.0f, 0.0, 0.0f);
 	ChaVector3 mult(5.0f, 1.0f, 5.0f);
 	CallF(s_gplane->MultDispObj(mult, tra), return S_FALSE);
@@ -11861,7 +11861,7 @@ CModel* OpenMQOFile()
 	else {
 		s_model = newmodel;
 	}
-	CallF(s_model->MakeDispObj(), return 0);
+	//CallF(s_model->MakeDispObj(), return 0);
 	CallF(s_model->DbgDump(), return 0);
 
 	int mindex;
@@ -12139,7 +12139,7 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 		OnRenderNowLoading();
 	}
 
-	CallF(s_model->MakeDispObj(), return 0);
+	//CallF(s_model->MakeDispObj(), return 0);
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();

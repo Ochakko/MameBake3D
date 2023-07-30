@@ -784,6 +784,10 @@ int CModel::LoadMQO( ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateConte
 
 	SetMaterialName();
 
+	
+	CallF(MakeDispObj(), return 1);
+
+
 	return 0;
 }
 
@@ -1168,6 +1172,8 @@ _ASSERT(m_bonelist[0]);
 	}
 	pImporter->Destroy();
 
+
+	CallF(MakeDispObj(), return 1);
 
 	return 0;
 }

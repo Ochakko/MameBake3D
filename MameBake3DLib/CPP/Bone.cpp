@@ -7798,7 +7798,7 @@ int CBone::LoadCapsuleShape(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 
 	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"cone_dirX.mqo");
 	CallF(m_coldisp[COL_CONE_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
-	CallF(m_coldisp[COL_CONE_INDEX]->MakeDispObj(), return 1);
+	//CallF(m_coldisp[COL_CONE_INDEX]->MakeDispObj(), return 1);
 
 	m_coldisp[COL_CAPSULE_INDEX] = new CModel();
 	if (!m_coldisp[COL_CAPSULE_INDEX]){
@@ -7807,7 +7807,7 @@ int CBone::LoadCapsuleShape(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 	}
 	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"capsule_dirX.mqo");
 	CallF(m_coldisp[COL_CAPSULE_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
-	CallF(m_coldisp[COL_CAPSULE_INDEX]->MakeDispObj(), return 1);
+	//CallF(m_coldisp[COL_CAPSULE_INDEX]->MakeDispObj(), return 1);
 
 	m_coldisp[COL_SPHERE_INDEX] = new CModel();
 	if (!m_coldisp[COL_SPHERE_INDEX]){
@@ -7816,7 +7816,7 @@ int CBone::LoadCapsuleShape(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 	}
 	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"sphere_dirX.mqo");
 	CallF(m_coldisp[COL_SPHERE_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
-	CallF(m_coldisp[COL_SPHERE_INDEX]->MakeDispObj(), return 1);
+	//CallF(m_coldisp[COL_SPHERE_INDEX]->MakeDispObj(), return 1);
 
 	m_coldisp[COL_BOX_INDEX] = new CModel();
 	if (!m_coldisp[COL_BOX_INDEX]){
@@ -7825,7 +7825,7 @@ int CBone::LoadCapsuleShape(ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmedia
 	}
 	swprintf_s(wfilename, MAX_PATH, L"%s\\%s", mpath, L"box.mqo");
 	CallF(m_coldisp[COL_BOX_INDEX]->LoadMQO(pdev, pd3dImmediateContext, wfilename, 0, 1.0f, 0), return 1);
-	CallF(m_coldisp[COL_BOX_INDEX]->MakeDispObj(), return 1);
+	//CallF(m_coldisp[COL_BOX_INDEX]->MakeDispObj(), return 1);
 
 	return 0;
 }
