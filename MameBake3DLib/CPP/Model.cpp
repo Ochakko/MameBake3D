@@ -1079,6 +1079,20 @@ _ASSERT(m_bonelist[0]);
 							bool fbxfileflag = true;
 							CallF(curobj->MakePolymesh3(fbxfileflag, m_pdev, m_material), return 1);
 						}
+
+						//##################################################################################################
+						//Peekメモリ使用量が大きくなり過ぎないように　CQMOObjectごとにMakeDispObjして同時に不要メモリを削除
+						//##################################################################################################
+						int hasbone = 0;
+						int clusternum = (int)curobj->GetClusterSize();
+						if ((GetNoBoneFlag() == false) && (clusternum >= 1)) {
+							hasbone = 1;
+						}
+						else {
+							hasbone = 0;
+						}
+						CallF(curobj->MakeDispObj(m_pdev, hasbone), return 1);
+
 					}
 				}
 			}
@@ -1173,7 +1187,7 @@ _ASSERT(m_bonelist[0]);
 	pImporter->Destroy();
 
 
-	CallF(MakeDispObj(), return 1);
+	//CallF(MakeDispObj(), return 1);//MakePlymesh直後にCMQOObjectごとに呼ぶように変更
 
 	return 0;
 }
@@ -1360,7 +1374,7 @@ int CModel::GetModelBound( MODELBOUND* dstb )
 	for( itr = m_object.begin(); itr != m_object.end(); itr++ ){
 		CMQOObject* curobj = itr->second;
 		if( curobj->GetPm3() ){
-			curobj->GetPm3()->CalcBound();
+			//curobj->GetPm3()->CalcBound();
 			if( calcflag == 0 ){
 				mb = curobj->GetPm3()->GetBound();
 			}else{
@@ -1370,7 +1384,7 @@ int CModel::GetModelBound( MODELBOUND* dstb )
 			calcflag++;
 		}
 		if( curobj->GetPm4() ){
-			curobj->GetPm4()->CalcBound();
+			//curobj->GetPm4()->CalcBound();
 			if( calcflag == 0 ){
 				mb = curobj->GetPm4()->GetBound();
 			}else{
@@ -1380,7 +1394,7 @@ int CModel::GetModelBound( MODELBOUND* dstb )
 			calcflag++;
 		}
 		if( curobj->GetExtLine() ){
-			curobj->GetExtLine()->CalcBound();
+			//curobj->GetExtLine()->CalcBound();
 			if( calcflag == 0 ){
 				mb = curobj->GetExtLine()->m_bound;
 			}else{

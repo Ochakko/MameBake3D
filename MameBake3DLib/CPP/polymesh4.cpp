@@ -136,6 +136,14 @@ void CPolyMesh4::DestroySystemDispObj()
 		m_dirtyflag = 0;
 	}
 
+	//###############################################
+	//CMQOObject::DestroySystemDispObj()が呼ばれた後
+	//###############################################
+	m_mqoface = 0;//外部メモリ
+	m_pointbuf = 0;//外部メモリ
+	m_normal = 0;//外部メモリ
+	m_uvbuf = 0;//外部メモリ
+
 }
 
 int sortfunc_material( void *context, const void *elem1, const void *elem2)

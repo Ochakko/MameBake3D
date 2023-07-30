@@ -132,6 +132,14 @@ void CPolyMesh3::DestroySystemDispObj()
 		m_dispindex = 0;
 	}
 
+	if (GetFbxFileFlag()) {
+		//###############################################
+		//CMQOObject::DestroySystemDispObj()‚ªŒÄ‚Î‚ê‚½Œã
+		//###############################################
+		m_mqoface = 0;//ŠO•”ƒƒ‚ƒŠ
+		m_pointbuf = 0;//ŠO•”ƒƒ‚ƒŠ
+	}
+
 }
 
 

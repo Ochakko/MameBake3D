@@ -102,6 +102,8 @@ public:
 	int ExistShape( char* nameptr );
 	int SetShapeVert( char* nameptr, int vno, ChaVector3 srcv );
 
+	void DestroySystemDispObj();
+
 private:
 	void InitParams();
 

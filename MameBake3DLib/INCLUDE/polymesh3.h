@@ -177,6 +177,10 @@ public:
 		return m_bound;
 	};
 
+	bool GetFbxFileFlag()
+	{
+		return m_fbxfileflag;
+	}
 
 private:
 	bool m_fbxfileflag;

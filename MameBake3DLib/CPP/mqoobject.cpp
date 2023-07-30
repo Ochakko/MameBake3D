@@ -62,40 +62,9 @@ CMQOObject::CMQOObject()
 
 CMQOObject::~CMQOObject()
 {
-	if( m_pointbuf ){
-		free( m_pointbuf );
-		m_pointbuf = 0;
-	}
 
-	if( m_facebuf ){
-		delete [] m_facebuf;
-		m_facebuf = 0;
-	}
+	DestroySystemDispObj();
 
-	if( m_colorbuf ){
-		free( m_colorbuf );
-		m_colorbuf = 0;
-	}
-
-	if( m_pointbuf2 ){
-		free( m_pointbuf2 );
-		m_pointbuf2 = 0;
-	}
-
-	if( m_facebuf2 ){
-		delete [] m_facebuf2;
-		m_facebuf2 = 0;
-	}
-
-	if( m_colorbuf2 ){
-		free( m_colorbuf2 );
-		m_colorbuf2 = 0;
-	}
-
-	if( m_connectface ){
-		delete [] m_connectface;
-		m_connectface = 0;
-	}
 
 	if( m_pm3 ){
 		delete m_pm3;
@@ -120,21 +89,9 @@ CMQOObject::~CMQOObject()
 		m_displine = 0;
 	}
 
-	if( m_normal ){
-		free( m_normal );
-		m_normal = 0;
-	}
-	if( m_uvbuf ){
-		free( m_uvbuf );
-		m_uvbuf = 0;
-	}
 
 	DestroyShapeObj();
 
-	if( m_mpoint ){
-		free( m_mpoint );
-		m_mpoint = 0;
-	}
 
 	map<int, CMQOMaterial*>::iterator itr;
 	for( itr = m_material.begin(); itr != m_material.end(); itr++ ){
@@ -146,6 +103,60 @@ CMQOObject::~CMQOObject()
 	m_material.clear();
 
 }
+
+void CMQOObject::DestroySystemDispObj()
+{
+	if (m_pointbuf) {
+		free(m_pointbuf);
+		m_pointbuf = 0;
+	}
+
+	if (m_facebuf) {
+		delete[] m_facebuf;
+		m_facebuf = 0;
+	}
+
+	if (m_colorbuf) {
+		free(m_colorbuf);
+		m_colorbuf = 0;
+	}
+
+	if (m_pointbuf2) {
+		free(m_pointbuf2);
+		m_pointbuf2 = 0;
+	}
+
+	if (m_facebuf2) {
+		delete[] m_facebuf2;
+		m_facebuf2 = 0;
+	}
+
+	if (m_colorbuf2) {
+		free(m_colorbuf2);
+		m_colorbuf2 = 0;
+	}
+
+	if (m_connectface) {
+		delete[] m_connectface;
+		m_connectface = 0;
+	}
+
+	if (m_normal) {
+		free(m_normal);
+		m_normal = 0;
+	}
+	if (m_uvbuf) {
+		free(m_uvbuf);
+		m_uvbuf = 0;
+	}
+
+	if (m_mpoint) {
+		free(m_mpoint);
+		m_mpoint = 0;
+	}
+
+}
+
 
 int CMQOObject::DestroyShapeObj()
 {
@@ -942,7 +953,14 @@ int CMQOObject::MakeDispObj( ID3D11Device* pdev, int hasbone )
 		}
 		CallF( m_dispobj->CreateDispObj( pdev, m_pm3, hasbone ), return 1 );
 
+
+		m_pm3->CalcBound();
+
+		if (m_pm3->GetFbxFileFlag()) {//mqo‚©‚ç“Ç‚Ýž‚ñ‚¾ê‡‚ÍPickRay()‚ÅŽg‚¤‚Ì‚ÅDestroy‚µ‚È‚¢
+			DestroySystemDispObj();
+		}
 		m_pm3->DestroySystemDispObj();
+
 
 
 	}else if( m_pm4 && m_pm4->GetCreateOptFlag() ){
@@ -957,7 +975,11 @@ int CMQOObject::MakeDispObj( ID3D11Device* pdev, int hasbone )
 		}
 		CallF( m_dispobj->CreateDispObj( pdev, m_pm4, hasbone ), return 1 );
 
+		m_pm4->CalcBound();
+
+		DestroySystemDispObj();
 		m_pm4->DestroySystemDispObj();
+
 	}
 
 	if( m_extline ){
@@ -967,6 +989,10 @@ int CMQOObject::MakeDispObj( ID3D11Device* pdev, int hasbone )
 			return 1;
 		}
 		CallF( m_displine->CreateDispObj( pdev, m_extline ), return 1 );
+
+		m_extline->CalcBound();
+
+		DestroySystemDispObj();
 	}
 
 	return 0;
