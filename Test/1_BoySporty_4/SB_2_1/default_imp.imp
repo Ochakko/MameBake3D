@@ -2,15 +2,6 @@
 <IMPULSE>
     <FileInfo>1001-01</FileInfo>
   <Bone>
-    <Name>Root_Joint</Name>
-    <RigidElem>
-      <ChildName>Group_Joint</ChildName>
-      <ImpulseX>0.000000</ImpulseX>
-      <ImpulseY>0.000000</ImpulseY>
-      <ImpulseZ>0.000000</ImpulseZ>
-    </RigidElem>
-  </Bone>
-  <Bone>
     <Name>Group_Joint</Name>
     <RigidElem>
       <ChildName>Hip_Joint</ChildName>

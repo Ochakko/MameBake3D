@@ -1274,5 +1274,5 @@ HRESULT DXUTSnapD3D11Screenshot( _In_z_ LPCWSTR szFileName, _In_ bool usedds )
 
     return hr;*/
 
-    return 0;
+    return E_NOTIMPL;
 }

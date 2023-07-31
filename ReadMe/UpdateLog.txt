@@ -1,3 +1,68 @@
+2023/07/31
+    EditMot 1.2.0.23 RC1 (リリース候補1)
+
+	使用メモリ大幅削減
+		約３万ポリゴンVRoid 1体 1000フレームモーキャプ１つの場合
+			1.2.0.22 : 1.4GB
+			今回 :	   0.4GB
+		UnityAsset TheHuntのCity1読み込みで比較
+			1.2.0.22 :  21.8GB
+			今回 :	     1.4GB (Peak使用量 2.9GB)
+		UnityAsset MountainEnvironment読み込み比較
+			1.2.0.22 :  56.5GB
+			今回 :	     1.2GB (Peak使用量 11.1GB)
+	
+
+        ファイルオーブン用のダイアログの履歴にページ機能追加
+		Next PageボタンとPrev Pageボタンでページをめくる
+
+
+	コピー履歴ダイアログにもNextPageボタンとPrevPageボタンを追加　複数ページ対応
+
+
+        IKStopFlagの指定をchaファイルで指定可能に
+            IK階層数コンボボックスで 1 よりも大きい値を選んだ場合　途中でIKStopがあるとそこで回転は止まる
+            古いchaファイルを保存し直すと次のようなエントリーがテキスト出力される
+                <CustomIKStopName>1</CustomIKStopName>
+                <IKStopName>Shoulder</IKStopName>
+                <IKStopName>UpperLeg</IKStopName>
+            このエントリーを例えば次のように指定し直すことが可能
+                <CustomIKStopName>1</CustomIKStopName>
+                <IKStopName>UpperArm</IKStopName>
+                <IKStopName>Neck</IKStopName>
+                <IKStopName>UpperLeg</IKStopName>
+            IKStopNameの指定は　ジョイント名の一部で良い(名前の部分一致で判定する)
+
+
+　おちゃっこLAB
+	https://ochakkolab.jp/
+
+　YouTubeチャンネル
+	https://www.youtube.com/@ochakkolab
+
+	動画　0.07倍速でパンチしたら物理はどうなるんだろう？
+		https://youtu.be/gKuLzPDt-cc
+
+	動画　【小人】小人制御の物理【ドリブン】
+		https://youtu.be/SRoi8Ds9NYI
+
+	動画　いろいろ直った物理でボクシングの動画	
+		https://youtu.be/Zr7fT1gsCl4
+
+	動画　作り直した位置コンストレイント
+		https://youtu.be/8p13H6MGQZ8
+
+	動画　変な風には曲がらない位置コンストレイント
+		https://youtu.be/9Xt8cxjByeA
+
+	動画　制限角度をキャプチャーする
+		https://youtu.be/mkkpo5cmLBs
+
+	動画　モーキャプの動きを盛れ！
+		https://youtu.be/DV9gYsgDzz0
+
+
+
 2023/07/21
     EditMot 1.2.0.23へ向けて
 
@@ -157,31 +222,6 @@
 			Test/testBvhConvフォルダのfbxサンプル更新
 			RC2における修正の部分的ロールバック(INHERIT_CANCEL_NULl2用の位置補正の計算場所を元の場所に)
 			アセット読み込み時にリターゲットウインドウが真っ白 ---> CONVBONEMAXを256から1024へ変更　アセット読み込み時にボーン制限数をオーバーしたため
-
-　おちゃっこLAB
-	https://ochakkolab.jp/
-
-　YouTubeチャンネル
-	https://www.youtube.com/@ochakkolab
-
-	動画　【小人】小人制御の物理【ドリブン】
-		https://youtu.be/SRoi8Ds9NYI
-
-	動画　いろいろ直った物理でボクシングの動画	
-		https://youtu.be/Zr7fT1gsCl4
-
-	動画　作り直した位置コンストレイント
-		https://youtu.be/8p13H6MGQZ8
-
-	動画　変な風には曲がらない位置コンストレイント
-		https://youtu.be/9Xt8cxjByeA
-
-	動画　制限角度をキャプチャーする
-		https://youtu.be/mkkpo5cmLBs
-
-	動画　モーキャプの動きを盛れ！
-		https://youtu.be/DV9gYsgDzz0
-
 
 
 2023/06/15

@@ -3,34 +3,6 @@
     <FileInfo>1001-01</FileInfo>
     <SCBTG>9.070000</SCBTG>
   <Bone>
-    <Name>Root_Joint</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>Group_Joint</ChildName>
-      <ColType>3</ColType>
-      <SkipFlag>1</SkipFlag>
-      <ShpRate>2.137405</ShpRate>
-      <BoxzRate>1.984733</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>3</AK>
-      <CUSAK>1952.988525</CUSAK>
-      <Mass>0.171756</Mass>
-      <LDMP>1.000000</LDMP>
-      <ADMP>1.000000</ADMP>
-      <BTG>-0.090000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>2</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
     <Name>Group_Joint</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>

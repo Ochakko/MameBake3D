@@ -1775,29 +1775,32 @@ namespace
                 }
                 UINT datalen = static_cast<UINT>(strnlen_s(strprivatedata, MAX_PATH));
                 char* dataforset = new char[datalen + 1];
-                ZeroMemory(dataforset, sizeof(char) * (datalen + 1));
-                MoveMemory(dataforset, strprivatedata, strnlen_s(strprivatedata, datalen + 1));
-
-                if (texture && *texture)
-                {
-                    (*texture)->SetPrivateData(WKPDID_D3DDebugObjectName,
-                        datalen,
-                        (const void*)dataforset
-                    );
-                }
-
-                if (textureView && *textureView)
-                {
-                    (*textureView)->SetPrivateData(WKPDID_D3DDebugObjectName,
-                        datalen,
-                        (const void*)dataforset
-                    );
-                }
-
                 if (dataforset)
                 {
-                    delete [] dataforset;
-                    dataforset = 0;
+                    ZeroMemory(dataforset, sizeof(char) * (datalen + 1));
+                    MoveMemory(dataforset, strprivatedata, strnlen_s(strprivatedata, datalen + 1));
+
+                    if (texture && *texture)
+                    {
+                        (*texture)->SetPrivateData(WKPDID_D3DDebugObjectName,
+                            datalen,
+                            (const void*)dataforset
+                        );
+                    }
+
+                    if (textureView && *textureView)
+                    {
+                        (*textureView)->SetPrivateData(WKPDID_D3DDebugObjectName,
+                            datalen,
+                            (const void*)dataforset
+                        );
+                    }
+
+                    if (dataforset)
+                    {
+                        delete[] dataforset;
+                        dataforset = 0;
+                    }
                 }
             }
         }

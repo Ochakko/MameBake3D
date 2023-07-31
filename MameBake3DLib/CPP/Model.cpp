@@ -1072,16 +1072,22 @@ _ASSERT(m_bonelist[0]);
 						FbxNodeAttribute* pAttrib = 0;
 						bool hascluster = HasCluster(fbxnode, &pAttrib);
 						if (hascluster == true) {
+							//#####################
+							//SkinMesh : PolyMesh4
+							//#####################
 							CallF(curobj->MakePolymesh4(m_pdev), return 1);
 							GetFBXSkin(pAttrib, fbxnode);
 						}
 						else {
+							//########################
+							//NonSkinMesh : PolyMesh3
+							//########################
 							bool fbxfileflag = true;
 							CallF(curobj->MakePolymesh3(fbxfileflag, m_pdev, m_material), return 1);
 						}
 
 						//##################################################################################################
-						//Peekメモリ使用量が大きくなり過ぎないように　CQMOObjectごとにMakeDispObjして同時に不要メモリを削除
+						//Peakメモリ使用量が大きくなり過ぎないように　CQMOObjectごとにMakeDispObjして同時に不要メモリを削除
 						//##################################################################################################
 						int hasbone = 0;
 						int clusternum = (int)curobj->GetClusterSize();
@@ -1091,6 +1097,10 @@ _ASSERT(m_bonelist[0]);
 						else {
 							hasbone = 0;
 						}
+
+						//MakeDispObj内で　不要メモリ削除
+						//PolyMesh4は マウスとの当たり判定をしない前提で不要メモリを削除
+						//PolyMesh3は　fbxfileflagがtrue --> マウスとの当たり判定をしない前提で不要メモリを削除
 						CallF(curobj->MakeDispObj(m_pdev, hasbone), return 1);
 
 					}
@@ -1102,7 +1112,6 @@ _ASSERT(m_bonelist[0]);
 	//if (GetNoBoneFlag() == false) {
 	//	CreateFBXSkinReq(pRootNode);//clustersizeも決まる
 	//}
-	SetMaterialName();
 
 
 	_ASSERT(m_bonelist[0]);
@@ -1114,6 +1123,8 @@ _ASSERT(m_bonelist[0]);
 
 	if (motioncachebatchflag == FALSE) {
 
+
+		//メモリ使用量のpeak値を小さくするためには　MakePolyMesh*, MakeDispObjをCMQOObject毎に呼ぶ必要有　少し上のコードでそのように実行
 		//if (GetNoBoneFlag() == false) {
 		//	CallF(CreateMaterialTexture(pd3dImmediateContext), return 1);
 		//	CallF(MakePolyMesh4(), return 1);
@@ -1127,8 +1138,8 @@ _ASSERT(m_bonelist[0]);
 		//	CallF(MakePolyMesh3(fbxfileflag), return 1);
 		//	CallF(MakeObjectName(), return 1);
 		//}
-		
-		//SetMaterialName();
+		SetMaterialName();
+
 
 		_ASSERT(m_bonelist[0]);
 
@@ -1374,7 +1385,7 @@ int CModel::GetModelBound( MODELBOUND* dstb )
 	for( itr = m_object.begin(); itr != m_object.end(); itr++ ){
 		CMQOObject* curobj = itr->second;
 		if( curobj->GetPm3() ){
-			//curobj->GetPm3()->CalcBound();
+			//curobj->GetPm3()->CalcBound();//MakeDispObj()に移動　ここでは既にpointbufなどが削除された後
 			if( calcflag == 0 ){
 				mb = curobj->GetPm3()->GetBound();
 			}else{
@@ -1384,7 +1395,7 @@ int CModel::GetModelBound( MODELBOUND* dstb )
 			calcflag++;
 		}
 		if( curobj->GetPm4() ){
-			//curobj->GetPm4()->CalcBound();
+			//curobj->GetPm4()->CalcBound();//MakeDispObj()に移動　ここでは既にpointbufなどが削除された後
 			if( calcflag == 0 ){
 				mb = curobj->GetPm4()->GetBound();
 			}else{
@@ -1394,7 +1405,7 @@ int CModel::GetModelBound( MODELBOUND* dstb )
 			calcflag++;
 		}
 		if( curobj->GetExtLine() ){
-			//curobj->GetExtLine()->CalcBound();
+			//curobj->GetExtLine()->CalcBound();//MakeDispObj()に移動　ここでは既にpointbufなどが削除された後
 			if( calcflag == 0 ){
 				mb = curobj->GetExtLine()->m_bound;
 			}else{

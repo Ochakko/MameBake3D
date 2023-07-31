@@ -1,34 +1,7 @@
 <?xml version="1.0" encoding="Shift_JIS"?>
 <RIGIDELEM>
     <FileInfo>1001-01</FileInfo>
-    <SCBTG>9.070000</SCBTG>
-  <Bone>
-    <Name>Root_Joint</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Bip_C_Hips_Joint</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>1</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>0</COLIIDNUM>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
+    <SCBTG>100.000000</SCBTG>
   <Bone>
     <Name>J_Bip_C_Hips_Joint</Name>
     <BTKIN>0</BTKIN>
@@ -40,12 +13,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -63,12 +36,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -86,12 +59,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -113,12 +86,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -140,12 +113,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -167,12 +140,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -190,12 +163,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -213,12 +186,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -236,12 +209,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -259,12 +232,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -286,12 +259,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -313,12 +286,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -340,12 +313,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -367,12 +340,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -390,12 +363,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -413,12 +386,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -436,12 +409,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -459,12 +432,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -482,12 +455,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -505,12 +478,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -528,12 +501,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -551,12 +524,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -574,12 +547,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -597,12 +570,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -620,12 +593,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -643,12 +616,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -670,12 +643,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -697,12 +670,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -724,12 +697,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -751,12 +724,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -778,12 +751,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -805,12 +778,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -832,12 +805,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -859,12 +832,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -886,12 +859,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -913,12 +886,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -940,12 +913,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -967,12 +940,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -994,12 +967,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1021,12 +994,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1048,12 +1021,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1075,12 +1048,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1102,12 +1075,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1129,12 +1102,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1156,12 +1129,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1183,12 +1156,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1210,12 +1183,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1237,12 +1210,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1264,12 +1237,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1291,12 +1264,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1318,12 +1291,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1345,12 +1318,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1368,12 +1341,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1391,12 +1364,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1418,12 +1391,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1445,12 +1418,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1472,12 +1445,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1499,12 +1472,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1522,12 +1495,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1545,12 +1518,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1568,12 +1541,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1591,12 +1564,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1618,12 +1591,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1645,12 +1618,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1672,12 +1645,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1699,12 +1672,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1726,12 +1699,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1753,12 +1726,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1780,12 +1753,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1807,12 +1780,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1834,12 +1807,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1861,12 +1834,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1888,12 +1861,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1915,12 +1888,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1938,12 +1911,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1961,12 +1934,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -1988,12 +1961,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2015,12 +1988,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2042,12 +2015,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2069,12 +2042,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2092,12 +2065,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2115,12 +2088,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2138,12 +2111,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2161,12 +2134,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2188,12 +2161,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2215,12 +2188,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2242,12 +2215,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2269,12 +2242,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2296,12 +2269,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2323,12 +2296,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2350,12 +2323,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2377,12 +2350,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2404,12 +2377,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2431,12 +2404,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2458,12 +2431,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2481,12 +2454,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2504,12 +2477,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2527,12 +2500,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2554,12 +2527,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2581,12 +2554,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2608,12 +2581,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2635,12 +2608,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2662,12 +2635,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2689,12 +2662,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2712,12 +2685,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2735,12 +2708,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2758,12 +2731,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2785,12 +2758,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2812,12 +2785,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2839,12 +2812,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2866,12 +2839,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
@@ -2893,12 +2866,12 @@
       <BoxzRate>0.600000</BoxzRate>
       <LK>2</LK>
       <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
       <Mass>1.000000</Mass>
       <LDMP>0.500000</LDMP>
       <ADMP>0.500000</ADMP>
-      <BTG>-0.090000</BTG>
+      <BTG>-1.000000</BTG>
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
