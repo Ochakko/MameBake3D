@@ -3208,7 +3208,7 @@ void AnimateBoneReq(bool limitdegflag, FbxNode* pNode, FbxAnimLayer* lAnimLayer,
 
 			if (curmotid != curbone->GetParModel()->GetCameraMotionId()) {
 				//通常モーション
-				if (curbone->HasMotionCurve(curmotid) && curbone->IsSkeleton()) {
+				if (curbone->IsSkeleton()) {
 					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_X);
 					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Y);
 					WriteFBXAnimTra(limitdegflag, &fbxbone, lAnimLayer, curmotid, maxframe, AXIS_Z);
