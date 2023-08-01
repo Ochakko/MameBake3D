@@ -2045,6 +2045,15 @@ int CModel::UpdateMatrix(bool limitdegflag, ChaMatrix* wmat, ChaMatrix* vpmat, b
 	double curframe = m_curmotinfo->curframe;
 
 
+	//if (g_previewFlag != 0) {
+	//	WCHAR dbgline[1024] = { 0 };
+	//	swprintf_s(dbgline, 1024, L"UpdateMatrix ### curmotid %d, curframe %.3f\n",
+	//		curmotid, curframe);
+	//	OutputDebugString(dbgline);
+	//}
+
+
+
 	//if ((m_boneupdatematrix != NULL) && (m_bonelist.size() >= (m_creatednum_boneupdatematrix * 4))) {
 	if ((m_boneupdatematrix != NULL) && (m_bonelist.size() >= (m_creatednum_boneupdatematrix * 2))) {
 
@@ -2997,7 +3006,7 @@ int CModel::SetMotionFrame( double srcframe )
 		return 1;
 	}
 
-	m_curmotinfo->curframe = max( 0.0, min( (m_curmotinfo->frameleng - 1), srcframe ) );
+	m_curmotinfo->curframe = max( 0.0, min( (m_curmotinfo->frameleng - 1.0), srcframe ) );
 
 	return 0;
 }
@@ -3005,7 +3014,7 @@ int CModel::SetMotionFrame(int srcmotid, double srcframe)
 {
 	MOTINFO* curmi = GetMotInfo(srcmotid);
 	if (curmi) {
-		curmi->curframe = max(0.0, min((curmi->frameleng - 1), srcframe));
+		curmi->curframe = max(0.0, min((curmi->frameleng - 1.0), srcframe));
 	}
 
 	return 0;

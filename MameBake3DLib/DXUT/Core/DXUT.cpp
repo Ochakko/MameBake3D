@@ -1,4 +1,4 @@
-//--------------------------------------------------------------------------------------
+ï»¿//--------------------------------------------------------------------------------------
 // File: DXUT.cpp
 //
 // Copyright (c) Microsoft Corporation.
@@ -12,6 +12,8 @@
 #ifndef NDEBUG
 #include <dxgidebug.h>
 #endif
+
+#include <GlobalVar.h>
 
 
 extern bool g_VSync;//GlobalVar.h
@@ -2926,15 +2928,15 @@ void WINAPI DXUTRender3DEnvironment()
 
             GetDXUTState().SetOverrideConstantFrameTime(true);
             GetDXUTState().SetOverrideConstantTimePerFrame((float)oneframetime);
-            //DXUTSetConstantFrameTime(true, (float)oneframetime);//truew’è‚·‚é‚Æ@1frame’PˆÊ‚Å‚µ‚©Ä¶‚Å‚«‚È‚­‚È‚é
-            DXUTSetConstantFrameTime(false, (float)oneframetime);//2023/02/27@smooth preview between frames
+            //DXUTSetConstantFrameTime(true, (float)oneframetime);//trueæŒ‡å®šã™ã‚‹ã¨ã€€1frameå˜ä½ã§ã—ã‹å†ç”Ÿã§ããªããªã‚‹
+            DXUTSetConstantFrameTime(false, (float)oneframetime);//2023/02/27ã€€smooth preview between frames
         }
         else
         {
             GetDXUTState().SetOverrideConstantFrameTime(false);
             GetDXUTState().SetOverrideConstantTimePerFrame(fElapsedTime);
-            //DXUTSetConstantFrameTime(true, fElapsedTime);//truew’è‚·‚é‚Æ@1frame’PˆÊ‚Å‚µ‚©Ä¶‚Å‚«‚È‚­‚È‚é
-            DXUTSetConstantFrameTime(false, fElapsedTime);//2023/02/27@smooth preview between frames
+            //DXUTSetConstantFrameTime(true, fElapsedTime);//trueæŒ‡å®šã™ã‚‹ã¨ã€€1frameå˜ä½ã§ã—ã‹å†ç”Ÿã§ããªããªã‚‹
+            DXUTSetConstantFrameTime(false, fElapsedTime);//2023/02/27ã€€smooth preview between frames
         }
     }
     else
@@ -2942,8 +2944,8 @@ void WINAPI DXUTRender3DEnvironment()
         double oneframetime = 1.0 / 30.0;
         GetDXUTState().SetOverrideConstantFrameTime(true);
         GetDXUTState().SetOverrideConstantTimePerFrame((float)oneframetime);
-        //DXUTSetConstantFrameTime(true, (float)oneframetime);//truew’è‚·‚é‚Æ@1frame’PˆÊ‚Å‚µ‚©Ä¶‚Å‚«‚È‚­‚È‚é
-        DXUTSetConstantFrameTime(false, (float)oneframetime);//2023/02/27@smooth preview between frames
+        //DXUTSetConstantFrameTime(true, (float)oneframetime);//trueæŒ‡å®šã™ã‚‹ã¨ã€€1frameå˜ä½ã§ã—ã‹å†ç”Ÿã§ããªããªã‚‹
+        DXUTSetConstantFrameTime(false, (float)oneframetime);//2023/02/27ã€€smooth preview between frames
     }
 
     // Store the time for the app

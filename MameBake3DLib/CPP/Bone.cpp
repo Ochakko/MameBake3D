@@ -1409,8 +1409,7 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 		else {
 			*ppnext = pcur;
 		}
-
-
+		
 	}
 	else {
 
@@ -1455,7 +1454,12 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 		
 		if (*ppbef) {
 			double mpframe = (*ppbef)->GetFrame();
-			if ((mpframe >= ((double)curframeindex - 0.0001)) && (mpframe <= ((double)curframeindex + 0.0001))) {
+			//if ((mpframe >= ((double)curframeindex - 0.0001)) && (mpframe <= ((double)curframeindex + 0.0001))) {
+
+			//2023/08/02
+			//GetBefNextMPには(m_curmp)以外の場合　端数在りの時間を渡す　justの計算も端数在りでする
+			//if分を以下のようにしないと　モーションによっては　0.007倍速などでカクカクする　変更前でもモーション時間がたまたまintの場合には滑らかだった
+			if ((mpframe >= (srcframe - 0.0001)) && (mpframe <= (srcframe + 0.0001))) {
 				*existptr = 1;
 			}
 			else {
@@ -1530,6 +1534,7 @@ int CBone::CalcFBXFrame(bool limitdegflag, double srcframe, CMotionPoint* befptr
 
 	if( existflag == 1 ){
 		*dstmpptr = *befptr;
+		dstmpptr->SetFrame(roundingframe);
 		return 0;
 	}else if( !befptr ){
 		dstmpptr->InitParams();
@@ -1544,8 +1549,11 @@ int CBone::CalcFBXFrame(bool limitdegflag, double srcframe, CMotionPoint* befptr
 		_ASSERT( diffframe != 0.0 );
 		double t = ( srcframe - befptr->GetFrame() ) / diffframe;
 
-		ChaMatrix tmpmat = GetWorldMat(limitdegflag, m_curmotid, befptr->GetFrame(), befptr) + 
-			(GetWorldMat(limitdegflag, m_curmotid, nextptr->GetFrame(), nextptr) - GetWorldMat(limitdegflag, m_curmotid, befptr->GetFrame(), befptr)) * (float)t;
+		ChaMatrix befmat, nextmat;
+		befmat = GetWorldMat(limitdegflag, m_curmotid, befptr->GetFrame(), befptr);
+		nextmat = GetWorldMat(limitdegflag, m_curmotid, nextptr->GetFrame(), nextptr);
+
+		ChaMatrix tmpmat = befmat + (nextmat - befmat) * (float)t;
 
 		SetWorldMat(limitdegflag, m_curmotid, roundingframe, tmpmat, dstmpptr);
 		dstmpptr->SetFrame(roundingframe);

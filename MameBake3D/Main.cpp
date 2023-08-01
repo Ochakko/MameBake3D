@@ -1213,7 +1213,7 @@ static int s_appcnt = 0;
 static int s_launchbyc4 = 0;
 static int s_launchc4diffx = 0;
 static int s_launchc4diffy = 0;
-static int s_onefps = 0;
+//static int s_onefps = 0;
 
 
 static vector<wstring> s_bvh2fbxout;
@@ -4276,7 +4276,7 @@ void InitApp()
 	s_onselectplugin = 0;
 	s_plugin = 0;
 
-	s_onefps = 0;
+	//s_onefps = 0;
 
 	s_rectime = 0.0;
 	s_reccnt = 0;
@@ -7515,7 +7515,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		s_time = fTime;
 		g_Camera->FrameMove(fElapsedTime);
 		double difftime = fTime - savetime;
-
+		//double difftime = fElapsedTime;
 
 		//Preview前に　CameraAnimのために　時間を確定する必要がある
 		//時間が確定 --> CameraAnim --> s_matWorld, s_matProj, s_matVP確定 --> Preview時のUpdataMatrix(  s_matVP )
@@ -7537,6 +7537,12 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		OnFrameProcessCameraTime(difftime, &cameranextframe, &cameraendflag, &cameraloopstartflag);
 		OnFramePreviewCamera(cameranextframe);
 	
+		//if (g_previewFlag != 0) {
+		//	WCHAR dbgline[1024] = { 0 };
+		//	swprintf_s(dbgline, 1024, L"difftime %f, nextframe %.3f, caemranextframe %.3f\n",
+		//		difftime, nextframe, cameranextframe);
+		//	OutputDebugString(dbgline);
+		//}
 
 
 		//###################
@@ -7977,6 +7983,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 	else {
 		OnRenderNowLoading();
 	}
+
 }
 
 //--------------------------------------------------------------------------------------
@@ -12697,7 +12704,7 @@ int AddTimeLine(int newmotid, bool dorefreshtl)
 						}
 						});
 					s_owpLTimeline->setSelectListener([]() {
-						if (s_model) {
+						if (s_model && (s_selectFlag == false)) {
 							s_selectFlag = true;
 						}
 						});
@@ -25679,7 +25686,7 @@ int OnFrameProcessTime(double difftime, double* pnextframe, int* pendflag, int* 
 				s_model->SetMotionFrame(rangestart);
 				*pnextframe = 0.0;
 			}
-			s_model->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, difftime, pnextframe, pendflag, ploopstartflag, -1);
+			s_model->AdvanceTime(0, s_previewrange, g_previewFlag, difftime, pnextframe, pendflag, ploopstartflag, -1);
 			if (*pendflag == 1) {
 				g_previewFlag = 0;
 			}
@@ -25719,7 +25726,7 @@ int OnFrameProcessCameraTime(double difftime, double* pnextframe, int* pendflag,
 			s_model->SetMotionFrame(cameramotid, rangestart);
 			*pnextframe = 0.0;
 		}
-		s_model->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, difftime, pnextframe, pendflag, ploopstartflag, cameramotid);//!!! cameramotid !!!
+		s_model->AdvanceTime(0, s_previewrange, g_previewFlag, difftime, pnextframe, pendflag, ploopstartflag, cameramotid);//!!! cameramotid !!!
 	}
 	else {
 		if (s_owpLTimeline) {
@@ -25878,6 +25885,9 @@ int OnFramePreviewNormal(double nextframe, double difftime, int endflag, int loo
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel && curmodel->GetCurMotInfo()) {
 			curmodel->SetMotionFrame(nextframe);
+
+			ChaMatrix tmpwm = curmodel->GetWorldMat();
+			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 		}
 	}
 
@@ -25890,14 +25900,14 @@ int OnFramePreviewNormal(double nextframe, double difftime, int endflag, int loo
 	}
 #endif
 
-
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel) {
-			ChaMatrix tmpwm = curmodel->GetWorldMat();
-			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
-		}
-	}
+	//2023/08/02　SetMotionFrameと同じループ内に移動
+	//for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
+	//	CModel* curmodel = itrmodel->modelptr;
+	//	if (curmodel) {
+	//		ChaMatrix tmpwm = curmodel->GetWorldMat();
+	//		curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
+	//	}
+	//}
 
 
 
@@ -25911,12 +25921,12 @@ int OnFramePreviewNormal(double nextframe, double difftime, int endflag, int loo
 
 
 	//playerButtonのonefpsボタン
-	if (s_onefps == 1) {
-		Sleep(1000);//1fps
-	}
-	else if (s_onefps == 2) {
-		Sleep(500);//2fps
-	}
+	//if (s_onefps == 1) {
+	//	Sleep(1000);//1fps
+	//}
+	//else if (s_onefps == 2) {
+	//	Sleep(500);//2fps
+	//}
 
 
 	return 0;
@@ -26098,12 +26108,12 @@ int OnFramePreviewBt(double nextframe, double difftime, int endflag, int loopsta
 
 
 	//playerButtonのonefpsボタン
-	if (s_onefps == 1) {
-		Sleep(1000);//1fps
-	}
-	else if (s_onefps == 2) {
-		Sleep(500);//2fps
-	}
+	//if (s_onefps == 1) {
+	//	Sleep(1000);//1fps
+	//}
+	//else if (s_onefps == 2) {
+	//	Sleep(500);//2fps
+	//}
 
 
 	return 0;
@@ -26645,7 +26655,6 @@ int OnFrameTimeLineWnd()
 	//selectFlagは　タイムライン選択範囲が１フレームでも変わるとtrueになる
 	if (s_selectFlag) {//selectFlagとLupFlagは本来は別物　しかしLupのときだけ処理するものがある
 		if (s_owpLTimeline) {
-			s_selectFlag = false;
 			s_selectKeyInfoList.clear();
 			s_selectKeyInfoList = s_owpLTimeline->getSelectedKey();
 			s_editrange.SetRange(s_selectKeyInfoList, s_owpLTimeline->getCurrentTime());
@@ -26690,6 +26699,7 @@ int OnFrameTimeLineWnd()
 				}
 			}
 		}
+		s_selectFlag = false;
 	}
 
 	if (s_LupFlag) {
