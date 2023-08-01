@@ -3226,7 +3226,84 @@ std::wstring ReplaceString
 	return String1;
 }
 
-
+//#############################################
+//保存時のダイアログの初期フォルダ設定用　メモ
+//#############################################
+//// パス取得バッファ
+//TCHAR waFolderPath[MAX_PATH];
+//// デスクトップのパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_DESKTOP, 0);
+//// デスクトップのパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_DESKTOPDIRECTORY, 0);
+//// スタートメニューのパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_STARTMENU, 0);
+//// Program Filesのパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_PROGRAMS, 0);
+//// Startupのパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_STARTUP, 0);
+//// Startup(AllUser)のパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_ALTSTARTUP, 0);
+//// My Documentsのパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_PERSONAL, 0);
+//// お気に入りのパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_FAVORITES, 0);
+//// ゴミ箱のパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_RECENT, 0);
+//// Sendtoのパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_SENDTO, 0);
+//// NetHoodのバスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_NETHOOD, 0);
+//// Fontsのバスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_FONTS, 0);
+//// ShellNewのバスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_TEMPLATES, 0);
+//// AppDataのバスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_APPDATA, 0);
+//// PrintHoodのバスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_PRINTHOOD, 0);
+//// INetキャッシュのパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_INTERNET_CACHE, 0);
+//// INet Cookiesのパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_COOKIES, 0);
+//// 履歴のパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_HISTORY, 0);
+//// デスクトップ(AllUser)のパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_COMMON_DESKTOPDIRECTORY, 0);
+//// スタートメニュー(AllUser)のパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_COMMON_STARTMENU, 0);
+//// Program Files(AllUser)のパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_COMMON_PROGRAMS, 0);
+//// スタートアップ(AllUser)のパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_COMMON_STARTUP, 0);
+//// スタートアップ(AllUser)のパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_COMMON_ALTSTARTUP, 0);
+//// お気に入りのパスを取得
+//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_COMMON_FAVORITES, 0);
+//実行結果
+//CSIDL_DESKTOP : C:\Users\testuser\Desktop
+//CSIDL_DESKTOPDIRECTORY : C:\Users\testuser\Desktop
+//CSIDL_STARTMENU : C:\Users\testuser\AppData\Roaming\Microsoft\Windows\Start Menu
+//CSIDL_PROGRAMS : C:\Users\testuser\AppData\Roaming\Microsoft\Windows\Start Menu\Programs
+//CSIDL_STARTUP : C:\Users\testuser\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+//CSIDL_ALTSTARTUP : C:\Users\testuser\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+//CSIDL_PERSONAL : C:\Users\testuser\Documents
+//CSIDL_FAVORITES : C:\Users\testuser\Favorites
+//CSIDL_RECENT : C:\Users\testuser\AppData\Roaming\Microsoft\Windows\Recent
+//CSIDL_SENDTO : C:\Users\testuser\AppData\Roaming\Microsoft\Windows\SendTo
+//CSIDL_NETHOOD : C:\Users\testuser\AppData\Roaming\Microsoft\Windows\Network Shortcuts
+//CSIDL_FONTS : C:\WINDOWS\Fonts
+//CSIDL_TEMPLATES : C:\Users\testuser\AppData\Roaming\Microsoft\Windows\Templates
+//CSIDL_APPDATA : C:\Users\testuser\AppData\Roaming
+//CSIDL_PRINTHOOD : C:\Users\testuser\AppData\Roaming\Microsoft\Windows\Printer Shortcuts
+//CSIDL_INTERNET_CACHE : C:\Users\testuser\AppData\Local\Microsoft\Windows\INetCache
+//CSIDL_COOKIES : C:\Users\testuser\AppData\Local\Microsoft\Windows\INetCookies
+//CSIDL_HISTORY : C:\Users\testuser\AppData\Local\Microsoft\Windows\History
+//CSIDL_COMMON_DESKTOPDIRECTORY : C:\Users\Public\Desktop
+//CSIDL_COMMON_STARTMENU : C:\ProgramData\Microsoft\Windows\Start Menu
+//CSIDL_COMMON_PROGRAMS : C:\ProgramData\Microsoft\Windows\Start Menu\Programs
+//CSIDL_COMMON_STARTUP : C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
+//CSIDL_COMMON_ALTSTARTUP : C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
+//CSIDL_COMMON_FAVORITES : C:\Users\testuser\Favorites
 
 
 
@@ -11604,6 +11681,7 @@ int OpenFile()
 	WCHAR* tmpsavepath = new WCHAR[MULTIPATH];
 	if (!tmpsavepath) {
 		_ASSERT(0);
+		s_nowloading = false;
 		return 1;
 	}
 	ZeroMemory(tmpsavepath, sizeof(WCHAR) * MULTIPATH);
@@ -11698,7 +11776,6 @@ int OpenFile()
 
 			if (tmpsavepath)
 				delete[] tmpsavepath;
-
 			return 1;
 		}
 
@@ -11716,7 +11793,6 @@ int OpenFile()
 				s_nowloading = false;
 				if (tmpsavepath)
 					delete[] tmpsavepath;
-
 				return 0;
 			}
 			int result = 0;
@@ -11767,7 +11843,6 @@ int OpenFile()
 				s_nowloading = false;
 				if (tmpsavepath)
 					delete[] tmpsavepath;
-
 				return 1;
 			}
 
@@ -11784,7 +11859,6 @@ int OpenFile()
 				s_nowloading = false;
 				if (tmpsavepath)
 					delete[] tmpsavepath;
-
 				return 1;
 			}
 		}
@@ -15433,7 +15507,8 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	ofn.lpstrCustomFilter = NULL;
 	ofn.nMaxCustFilter = 0;
 	ofn.nFilterIndex = s_filterindex;
-	ofn.lpstrFile = g_tmpmqopath;
+	//ofn.lpstrFile = g_tmpmqopath;
+	ofn.lpstrFile = NULL;
 	ofn.nMaxFile = MULTIPATH;
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
@@ -15454,16 +15529,20 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 	WCHAR strmult[256];
 	wcscpy_s(strmult, 256, L"1.000");
+	WCHAR wfilename[MAX_PATH] = { 0L };
 
 	static int s_openmqoproctimer = 336;
 	static bool s_refokflag = false;
-
 	static int s_filter_cha = 1;
+	static WCHAR s_beffolder[MAX_PATH] = { 0L };
+	static bool s_underrefflag = false;//参照中に参照ボタンを押さないように
 
-	
 	static int pagenum = 1;//2023/07/22
 	static int currentpage = 0;//2023/07/22
 	static int testcurrentpage = 0;//2023/07/22
+	
+
+
 
 	switch (msg) {
 	case WM_INITDIALOG:
@@ -15478,6 +15557,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		s_refokflag = false;
 		g_tmpmqomult = 1.0f;
 		ZeroMemory(g_tmpmqopath, sizeof(WCHAR) * MULTIPATH);
+		ZeroMemory(wfilename, sizeof(WCHAR) * MAX_PATH);
 		SetDlgItemText(hDlgWnd, IDC_MULT, strmult);
 		SetDlgItemText(hDlgWnd, IDC_FILEPATH, L"PushRefButtonToSelectFile.");
 
@@ -15617,12 +15697,18 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 					}
+					else {
+						g_tmpmqopath[0] = 0L;
+					}
 				}
 				else if (ischecked4 == BST_CHECKED) {
 					WCHAR checkedpath[MAX_PATH] = { 0L };
 					GetDlgItemTextW(hDlgWnd, IDC_RADI54, checkedpath, MAX_PATH);
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+					else {
+						g_tmpmqopath[0] = 0L;
 					}
 				}
 				else if (ischecked5 == BST_CHECKED) {
@@ -15631,12 +15717,18 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 					}
+					else {
+						g_tmpmqopath[0] = 0L;
+					}
 				}
 				else if (ischecked6 == BST_CHECKED) {
 					WCHAR checkedpath[MAX_PATH] = { 0L };
 					GetDlgItemTextW(hDlgWnd, IDC_RADI56, checkedpath, MAX_PATH);
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+					else {
+						g_tmpmqopath[0] = 0L;
 					}
 				}
 				else if (ischecked7 == BST_CHECKED) {
@@ -15645,12 +15737,18 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 					}
+					else {
+						g_tmpmqopath[0] = 0L;
+					}
 				}
 				else if (ischecked8 == BST_CHECKED) {
 					WCHAR checkedpath[MAX_PATH] = { 0L };
 					GetDlgItemTextW(hDlgWnd, IDC_RADI58, checkedpath, MAX_PATH);
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+					else {
+						g_tmpmqopath[0] = 0L;
 					}
 				}
 				else if (ischecked9 == BST_CHECKED) {
@@ -15659,12 +15757,18 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 					}
+					else {
+						g_tmpmqopath[0] = 0L;
+					}
 				}
 				else if (ischecked10 == BST_CHECKED) {
 					WCHAR checkedpath[MAX_PATH] = { 0L };
 					GetDlgItemTextW(hDlgWnd, IDC_RADI60, checkedpath, MAX_PATH);
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+					else {
+						g_tmpmqopath[0] = 0L;
 					}
 				}
 				else if (ischecked11 == BST_CHECKED) {
@@ -15693,12 +15797,18 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 					}
+					else {
+						g_tmpmqopath[0] = 0L;
+					}
 				}
 				else if (ischecked14 == BST_CHECKED) {
 					WCHAR checkedpath[MAX_PATH] = { 0L };
 					GetDlgItemTextW(hDlgWnd, IDC_RADI64, checkedpath, MAX_PATH);
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+					else {
+						g_tmpmqopath[0] = 0L;
 					}
 				}
 				else if (ischecked15 == BST_CHECKED) {
@@ -15707,12 +15817,18 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 					}
+					else {
+						g_tmpmqopath[0] = 0L;
+					}
 				}
 				else if (ischecked16 == BST_CHECKED) {
 					WCHAR checkedpath[MAX_PATH] = { 0L };
 					GetDlgItemTextW(hDlgWnd, IDC_RADI66, checkedpath, MAX_PATH);
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+					else {
+						g_tmpmqopath[0] = 0L;
 					}
 				}
 				else if (ischecked17 == BST_CHECKED) {
@@ -15721,12 +15837,18 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 					}
+					else {
+						g_tmpmqopath[0] = 0L;
+					}
 				}
 				else if (ischecked18 == BST_CHECKED) {
 					WCHAR checkedpath[MAX_PATH] = { 0L };
 					GetDlgItemTextW(hDlgWnd, IDC_RADI68, checkedpath, MAX_PATH);
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+					else {
+						g_tmpmqopath[0] = 0L;
 					}
 				}
 				else if (ischecked19 == BST_CHECKED) {
@@ -15735,12 +15857,18 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
 					}
+					else {
+						g_tmpmqopath[0] = 0L;
+					}
 				}
 				else if (ischecked20 == BST_CHECKED) {
 					WCHAR checkedpath[MAX_PATH] = { 0L };
 					GetDlgItemTextW(hDlgWnd, IDC_RADI70, checkedpath, MAX_PATH);
 					if (wcscmp(L"Loading History not Exist.", checkedpath) != 0) {
 						wcscpy_s(g_tmpmqopath, MAX_PATH, checkedpath);
+					}
+					else {
+						g_tmpmqopath[0] = 0L;
 					}
 				}
 				else {
@@ -15758,33 +15886,246 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 		case IDCANCEL:
 			s_mqodlghwnd = 0;
 			g_tmpmqopath[0] = 0L;
+			wfilename[0] = 0L;
 			KillTimer(hDlgWnd, s_openmqoproctimer);
 			EndDialog(hDlgWnd, IDCANCEL);
 			return TRUE;
 			break;
+
+
+
 		case IDC_REFMQO:
 		{
-			s_getfilenamehwnd = 0;
-			s_getfilenametreeview = 0;
+			if (s_underrefflag == false) {
+				s_underrefflag = true;
 
-			//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
-			//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
-			InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+				s_getfilenamehwnd = 0;
+				s_getfilenametreeview = 0;
 
-			ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+				//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+				//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
 
-			if (GetOpenFileNameW(&ofn) == IDOK) {
-				SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
-				s_refokflag = true;
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+				//###############################
+				//前回の場所を初期ディレクトリに
+				//###############################
+				//ofn.lpstrInitialDir = g_tmpmqopath;
+				g_tmpmqopath[0] = 0L;
+				wfilename[0] = 0L;
+				wcscpy_s(wfilename, MAX_PATH, s_beffolder);
+				ofn.lpstrInitialDir = s_beffolder;
+				ofn.lpstrFile = wfilename;
+
+				if (GetOpenFileNameW(&ofn) == IDOK) {
+					wcscpy_s(g_tmpmqopath, MAX_PATH, wfilename);
+					SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
+					s_refokflag = true;
+				}
+				wcscpy_s(s_beffolder, MAX_PATH, wfilename);
+				WCHAR* lastenptr = wcsrchr(s_beffolder, TEXT('\\'));
+				if (lastenptr) {
+					*lastenptr = 0L;
+				}
+
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+				//UnhookWinEvent(hhook);
+
+				s_getfilenamehwnd = 0;
+				s_getfilenametreeview = 0;
+
+				s_underrefflag = false;
 			}
-
-			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
-			//UnhookWinEvent(hhook);
-
-			s_getfilenamehwnd = 0;
-			s_getfilenametreeview = 0;
 		}
 		break;
+		case IDC_REFDESKTOP:
+		{
+			if (s_underrefflag == false) {
+				s_underrefflag = true;
+
+				s_getfilenamehwnd = 0;
+				s_getfilenametreeview = 0;
+
+				//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+				//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+
+				//###############################
+				//デスクトップを初期ディレクトリに
+				//###############################
+				g_tmpmqopath[0] = 0L;
+				wfilename[0] = 0L;
+				WCHAR waFolderPath[MAX_PATH];
+				SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_DESKTOP, 0);
+				ofn.lpstrInitialDir = waFolderPath;
+				ofn.lpstrFile = wfilename;
+
+				if (GetOpenFileNameW(&ofn) == IDOK) {
+					wcscpy_s(g_tmpmqopath, MAX_PATH, wfilename);
+					SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
+					s_refokflag = true;
+				}
+				wcscpy_s(s_beffolder, MAX_PATH, wfilename);
+				WCHAR* lastenptr = wcsrchr(s_beffolder, TEXT('\\'));
+				if (lastenptr) {
+					*lastenptr = 0L;
+				}
+
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+				//UnhookWinEvent(hhook);
+
+				s_getfilenamehwnd = 0;
+				s_getfilenametreeview = 0;
+
+				s_underrefflag = false;
+			}
+		}
+		break;
+		case IDC_REFMYDOC:
+		{
+			if (s_underrefflag == false) {
+				s_underrefflag = true;
+
+				s_getfilenamehwnd = 0;
+				s_getfilenametreeview = 0;
+
+				//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+				//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+
+				//#########################################
+				//ドキュメントフォルダを初期ディレクトリに
+				//#########################################
+				g_tmpmqopath[0] = 0L;
+				wfilename[0] = 0L;
+				WCHAR waFolderPath[MAX_PATH];
+				SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_PERSONAL, 0);
+				ofn.lpstrInitialDir = waFolderPath;
+				ofn.lpstrFile = wfilename;
+
+				if (GetOpenFileNameW(&ofn) == IDOK) {
+					wcscpy_s(g_tmpmqopath, MAX_PATH, wfilename);
+					SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
+					s_refokflag = true;
+				}
+				wcscpy_s(s_beffolder, MAX_PATH, wfilename);
+				WCHAR* lastenptr = wcsrchr(s_beffolder, TEXT('\\'));
+				if (lastenptr) {
+					*lastenptr = 0L;
+				}
+
+
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+				//UnhookWinEvent(hhook);
+
+				s_getfilenamehwnd = 0;
+				s_getfilenametreeview = 0;
+
+				s_underrefflag = false;
+			}
+		}
+		break;
+		case IDC_REFTEST:
+		{
+			if (s_underrefflag == false) {
+				s_underrefflag = true;
+
+				s_getfilenamehwnd = 0;
+				s_getfilenametreeview = 0;
+
+				//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+				//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+
+				//#################################
+				//Testフォルダを初期ディレクトリに
+				//#################################
+				g_tmpmqopath[0] = 0L;
+				wfilename[0] = 0L;
+				WCHAR waFolderPath[MAX_PATH];
+				//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_PROGRAMS, 0);//これではAppDataのパスになってしまう
+				swprintf_s(waFolderPath, MAX_PATH, L"C:\\Program Files\\OchakkoLAB\\EditMot1.2.0.23\\Test\\");
+				ofn.lpstrInitialDir = waFolderPath;
+				ofn.lpstrFile = wfilename;
+
+				if (GetOpenFileNameW(&ofn) == IDOK) {
+					wcscpy_s(g_tmpmqopath, MAX_PATH, wfilename);
+					SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
+					s_refokflag = true;
+				}
+				wcscpy_s(s_beffolder, MAX_PATH, wfilename);
+				WCHAR* lastenptr = wcsrchr(s_beffolder, TEXT('\\'));
+				if (lastenptr) {
+					*lastenptr = 0L;
+				}
+
+
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+				//UnhookWinEvent(hhook);
+
+				s_getfilenamehwnd = 0;
+				s_getfilenametreeview = 0;
+
+				s_underrefflag = false;
+			}
+		}
+		break;
+		case IDC_REFPG:
+		{
+			if (s_underrefflag == false) {
+				s_underrefflag = true;
+
+				s_getfilenamehwnd = 0;
+				s_getfilenametreeview = 0;
+
+				//HWINEVENTHOOK hhook = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, 0,
+				//	WinEventProc, 0, 0, WINEVENT_OUTOFCONTEXT);
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+
+				ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
+
+
+				//#####################################
+				//プログラムの場所を初期ディレクトリに
+				//#####################################
+				g_tmpmqopath[0] = 0L;
+				wfilename[0] = 0L;
+				ofn.lpstrInitialDir = g_basedir;
+				ofn.lpstrFile = wfilename;
+
+				if (GetOpenFileNameW(&ofn) == IDOK) {
+					wcscpy_s(g_tmpmqopath, MAX_PATH, wfilename);
+					SetDlgItemText(hDlgWnd, IDC_FILEPATH, g_tmpmqopath);
+					s_refokflag = true;
+				}
+				wcscpy_s(s_beffolder, MAX_PATH, wfilename);
+				WCHAR* lastenptr = wcsrchr(s_beffolder, TEXT('\\'));
+				if (lastenptr) {
+					*lastenptr = 0L;
+				}
+
+
+				InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+				//UnhookWinEvent(hhook);
+
+				s_getfilenamehwnd = 0;
+				s_getfilenametreeview = 0;
+
+				s_underrefflag = false;
+			}
+		}
+		break;
+
 
 
 		case IDC_FILTER_CHA:
@@ -18973,6 +19314,14 @@ int SaveRetargetFile()
 
 		CRetargetFile rtgfile;
 		result = rtgfile.WriteRetargetFile(g_tmpmqopath, s_convbone_model, s_convbone_bvh, s_convbonemap);
+		if (result != 0) {
+			::MessageBox(NULL, L"保存に失敗しました。\n書き込み禁止ディレクトリの可能性があります。\n保存場所を変えて再試行してみてください。", L"エラー", MB_OK);
+			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+			s_getfilenamehwnd = 0;
+			s_getfilenametreeview = 0;
+			_ASSERT(0);
+			return 1;
+		}
 	}
 
 
@@ -22818,7 +23167,12 @@ int ExportFBXFile()
 	sprintf_s(fbxdate, MAX_PATH, "CommentForEGP_%04u%02u%02u%02u%02u%02u",
 		localtime.wYear, localtime.wMonth, localtime.wDay, localtime.wHour, localtime.wMinute, localtime.wSecond);
 	//CallF( WriteFBXFile( s_model, fbxpath, s_dummytri, mb, g_tmpmqomult, s_fbxbunki ), return 1 );
-	CallF(WriteFBXFile(g_limitdegflag, s_psdk, s_model, fbxpath, fbxdate), return 1);
+	int result = WriteFBXFile(g_limitdegflag, s_psdk, s_model, fbxpath, fbxdate);
+	if (result != 0) {
+		::MessageBox(NULL, L"保存に失敗しました。\n書き込み禁止ディレクトリの可能性があります。\n保存場所を変えて再試行してみてください。", L"エラー", MB_OK);
+		_ASSERT(0);
+		return 1;
+	}
 
 	if (s_model->GetOldAxisFlagAtLoading() == 0) {
 		WCHAR lmtname[MAX_PATH] = { 0L };

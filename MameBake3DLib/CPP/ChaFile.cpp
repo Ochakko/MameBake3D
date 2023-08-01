@@ -86,7 +86,7 @@ int CChaFile::WriteChaFile(bool limitdegflag, BPWorld* srcbpw, WCHAR* projdir, W
 		int bret;
 		bret = CreateDirectory( m_newdirname, NULL );
 		if( bret == 0 ){
-			::MessageBox( NULL, L"ディレクトリの作成に失敗しました。\nプロジェクトの保存に失敗しました。", L"エラー", MB_OK );
+			::MessageBox( NULL, L"ディレクトリの作成に失敗しました。\n書き込み禁止ディレクトリの可能性があります。\n保存場所を変えて再試行してみてください。", L"エラー", MB_OK );
 			_ASSERT( 0 );
 			return 1;
 		}
@@ -238,7 +238,7 @@ int CChaFile::WriteChara(bool limitdegflag, MODELELEM* srcme, WCHAR* projname)
 		int bret;
 		bret = CreateDirectory( charafolder, NULL );
 		if( bret == 0 ){
-			::MessageBox( NULL, L"ディレクトリの作成に失敗しました。\nプロジェクトの保存に失敗しました。", L"エラー", MB_OK );
+			::MessageBox(NULL, L"ディレクトリの作成に失敗しました。\n書き込み禁止ディレクトリの可能性があります。\n保存場所を変えて再試行してみてください。", L"エラー", MB_OK);
 			_ASSERT( 0 );
 			return 1;
 		}
