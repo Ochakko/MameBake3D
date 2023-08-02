@@ -1457,8 +1457,11 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 			//if ((mpframe >= ((double)curframeindex - 0.0001)) && (mpframe <= ((double)curframeindex + 0.0001))) {
 
 			//2023/08/02
+			//補間計算時には
 			//GetBefNextMPには(m_curmp)以外の場合　端数在りの時間を渡す　justの計算も端数在りでする
 			//if分を以下のようにしないと　モーションによっては　0.007倍速などでカクカクする　変更前でもモーション時間がたまたまintの場合には滑らかだった
+			//上のは補間計算時の話　モーションのキーの時間はintに揃えてリサンプリングして読み込んでいる
+			//モーションデータをインデックス化していない場合の滑らか処理の修正は　上の方のコードで2022/12/26に修正済　今回の修正はインデックス化されたデータについての修正
 			if ((mpframe >= (srcframe - 0.0001)) && (mpframe <= (srcframe + 0.0001))) {
 				*existptr = 1;
 			}
