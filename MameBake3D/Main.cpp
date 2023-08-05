@@ -1516,6 +1516,10 @@ typedef struct tag_enumdist
 {
 	HWND hwnd;
 	float dist;
+	void Init() {
+		hwnd = 0;
+		dist = 0.0f;
+	};
 }ENUMDIST;
 static std::vector<ENUMDIST> s_enumdist;
 
@@ -5841,6 +5845,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	*/
 
 	D3D11_DEPTH_STENCIL_DESC dsDescNormal;
+	ZeroMemory(&dsDescNormal, sizeof(D3D11_DEPTH_STENCIL_DESC));
 	// Depth test parameters
 	dsDescNormal.DepthEnable = true;
 	dsDescNormal.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
@@ -5865,6 +5870,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 
 
 	D3D11_DEPTH_STENCIL_DESC dsDescZCmpAlways;
+	ZeroMemory(&dsDescZCmpAlways, sizeof(D3D11_DEPTH_STENCIL_DESC));
 	// Depth test parameters
 	dsDescZCmpAlways.DepthEnable = false;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	dsDescZCmpAlways.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
@@ -11253,6 +11259,7 @@ int RetargetBatch()
 
 
 	BROWSEINFO bi;
+	ZeroMemory(&bi, sizeof(BROWSEINFO));
 	LPITEMIDLIST curlpidl = 0;
 	WCHAR dispname[MAX_PATH] = { 0L };
 	WCHAR selectname[MAX_PATH] = { 0L };
@@ -11488,6 +11495,7 @@ int BVH2FBXBatch()
 	}
 
 	BROWSEINFO bi;
+	ZeroMemory(&bi, sizeof(BROWSEINFO));
 	LPITEMIDLIST curlpidl = 0;
 	WCHAR dispname[MAX_PATH] = { 0L };
 	WCHAR selectname[MAX_PATH] = { 0L };
@@ -15506,6 +15514,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 
 	OPENFILENAME ofn;
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	//ofn.hwndOwner = hDlgWnd;
 	ofn.hwndOwner = s_3dwnd;
@@ -16061,7 +16070,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				wfilename[0] = 0L;
 				WCHAR waFolderPath[MAX_PATH];
 				//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_PROGRAMS, 0);//これではAppDataのパスになってしまう
-				swprintf_s(waFolderPath, MAX_PATH, L"C:\\Program Files\\OchakkoLAB\\EditMot1.2.0.23\\Test\\");
+				swprintf_s(waFolderPath, MAX_PATH, L"C:\\Program Files\\OchakkoLAB\\EditMot1.2.0.24\\Test\\");
 				ofn.lpstrInitialDir = waFolderPath;
 				ofn.lpstrFile = wfilename;
 
@@ -16310,6 +16319,7 @@ LRESULT CALLBACK OpenBvhDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 
 	OPENFILENAME ofn;
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	//ofn.hwndOwner = hDlgWnd;
 	ofn.hwndOwner = s_3dwnd;
@@ -16940,7 +16950,8 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	}
 
 	OPENFILENAME ofn;
-	buf[0] = 0L;
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
+	//buf[0] = 0L;
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	//ofn.hwndOwner = NULL;
 	ofn.hwndOwner = s_3dwnd;
@@ -17010,7 +17021,9 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 
 			if (GetOpenFileNameW(&ofn) == IDOK) {
+				buf[0] = 0;
 				SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
+				buf[MAX_PATH - 1] = 0;
 			}
 
 			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
@@ -17052,7 +17065,8 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	}
 
 	OPENFILENAME ofn;
-	buf[0] = 0L;
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
+	//buf[0] = 0L;
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	//ofn.hwndOwner = NULL;
 	ofn.hwndOwner = s_3dwnd;
@@ -17119,7 +17133,9 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 
 			if (GetOpenFileNameW(&ofn) == IDOK) {
+				buf[0] = 0;
 				SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
+				buf[MAX_PATH - 1] = 0;
 			}
 
 			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
@@ -17162,7 +17178,8 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	}
 
 	OPENFILENAME ofn;
-	buf[0] = 0L;
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
+	//buf[0] = 0L;
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	//ofn.hwndOwner = NULL;
 	ofn.hwndOwner = s_3dwnd;
@@ -17230,7 +17247,9 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 
 			if (GetOpenFileNameW(&ofn) == IDOK) {
+				buf[0] = 0;
 				SetDlgItemText(hDlgWnd, IDC_FILENAME, buf);
+				buf[MAX_PATH - 1] = 0;
 			}
 
 			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
@@ -17269,8 +17288,10 @@ LRESULT CALLBACK SaveREDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
 	WCHAR buf[MAX_PATH];
+	ZeroMemory(buf, sizeof(WCHAR) * MAX_PATH);
 	OPENFILENAME ofn;
-	buf[0] = 0L;
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
+	//buf[0] = 0L;
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	//ofn.hwndOwner = NULL;
 	ofn.hwndOwner = s_3dwnd;
@@ -17342,7 +17363,9 @@ LRESULT CALLBACK ExportXDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 			ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_LONGNAMES | OFN_ENABLESIZING | OFN_ALLOWMULTISELECT;
 
 			if (GetOpenFileNameW(&ofn) == IDOK) {
+				buf[0] = 0;
 				SetDlgItemText(hDlgWnd, IDC_FILEPATH, buf);
+				buf[MAX_PATH - 1] = 0;
 			}
 
 			InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
@@ -19279,6 +19302,7 @@ int SaveRetargetFile()
 
 
 	OPENFILENAME ofn;
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	//ofn.hwndOwner = hDlgWnd;
 	ofn.hwndOwner = s_3dwnd;
@@ -20439,6 +20463,7 @@ LRESULT CALLBACK SaveChaDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 	//	static WCHAR s_projectdir[MAX_PATH] = {0L};
 
 	BROWSEINFO bi;
+	ZeroMemory(&bi, sizeof(BROWSEINFO));
 	LPITEMIDLIST curlpidl = 0;
 	WCHAR dispname[MAX_PATH] = { 0L };
 	WCHAR selectname[MAX_PATH] = { 0L };
@@ -23106,6 +23131,7 @@ int ExportFBXFile()
 
 	WCHAR filename[MAX_PATH] = { 0L };
 	OPENFILENAME ofn1;
+	ZeroMemory(&ofn1, sizeof(OPENFILENAME));
 	ofn1.lStructSize = sizeof(OPENFILENAME);
 	//ofn1.hwndOwner = s_3dwnd;
 	ofn1.hwndOwner = s_3dwnd;
@@ -23227,6 +23253,7 @@ int ExportBntFile()
 
 	WCHAR filename[MAX_PATH] = { 0L };
 	OPENFILENAME ofn1;
+	ZeroMemory(&ofn1, sizeof(OPENFILENAME));
 	ofn1.lStructSize = sizeof(OPENFILENAME);
 	ofn1.hwndOwner = s_3dwnd;
 	ofn1.hInstance = 0;
@@ -28200,7 +28227,7 @@ int InitPluginMenu()
 	wcscat_s(plugindir, MAX_PATH, L"\\BrushesFolder\\");
 
 	WCHAR finddir[_MAX_PATH];
-	finddir[0] = 0;
+	ZeroMemory(finddir, sizeof(WCHAR) * _MAX_PATH);
 	wcscpy_s(finddir, _MAX_PATH, plugindir);
 	wcscat(finddir, L"*.dll");
 
@@ -34672,6 +34699,7 @@ HWND CreateMainWindow()
 
 	HWND window;
 	WNDCLASSEX wcx;
+	ZeroMemory(&wcx, sizeof(WNDCLASSEX));
 	int returnCode = 0;
 
 	wcx.cbSize = sizeof(WNDCLASSEX);
@@ -34729,7 +34757,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.23 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.24 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -36455,7 +36483,7 @@ void DSR1ButtonSelectCurrentBone()
 					ChaVector3 firstpos = boneptr->GetJointFPos();
 					ChaVector3TransformCoord(&scpos, &firstpos, &transmat);
 					scpos.z = 0.0f;
-					POINT mousepos;
+					POINT mousepos = { 0, 0 };
 					mousepos.x = (LONG)((scpos.x + 1.0f) * 0.5f * s_mainwidth);
 					mousepos.y = (LONG)((-scpos.y + 1.0f) * 0.5f * s_mainheight);
 
@@ -36491,35 +36519,35 @@ void DSR1ButtonSelectCurrentBone()
 
 void SelectNextWindow(int nextwndid)
 {
-	HWND tmptlwnd;
+	HWND tmptlwnd = 0;
 	if (s_timelineWnd) {
 		tmptlwnd = s_timelineWnd->getHWnd();
 	}
 	else {
 		tmptlwnd = 0;
 	}
-	HWND tmptoolwnd;
+	HWND tmptoolwnd = 0;
 	if (s_toolWnd) {
 		tmptoolwnd = s_toolWnd->getHWnd();
 	}
 	else {
 		tmptoolwnd = 0;
 	}
-	HWND tmplongtlwnd;
+	HWND tmplongtlwnd = 0;
 	if (s_LtimelineWnd) {
 		tmplongtlwnd = s_LtimelineWnd->getHWnd();
 	}
 	else {
 		tmplongtlwnd = 0;
 	}
-	HWND tmpsidewnd;
+	HWND tmpsidewnd = 0;
 	if (s_sidemenuWnd) {
 		tmpsidewnd = s_sidemenuWnd->getHWnd();
 	}
 	else {
 		tmpsidewnd = 0;
 	}
-	HWND tmpmainmenuaimbarwnd;
+	HWND tmpmainmenuaimbarwnd = 0;
 	if (s_mainmenuaimbarWnd) {
 		tmpmainmenuaimbarwnd = s_mainmenuaimbarWnd->getHWnd();
 	}
@@ -36529,6 +36557,7 @@ void SelectNextWindow(int nextwndid)
 
 
 	HWND hwnds[MB3D_WND_MAX];
+	ZeroMemory(hwnds, sizeof(HWND) * MB3D_WND_MAX);
 	//hwnds[MB3D_WND_MAIN] = s_mainhwnd;
 	hwnds[MB3D_WND_MAIN] = tmpmainmenuaimbarwnd;
 	hwnds[MB3D_WND_3D] = s_3dwnd;
@@ -37306,7 +37335,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 									(cursorpos.y >= timelinerect.top) && (cursorpos.y <= timelinerect.bottom)) {
 
 									WindowPos currentpos = s_owpTimeline->getCurrentLinePos();
-									POINT mousepos;
+									POINT mousepos = { 0, 0 };
 									mousepos.x = currentpos.x;
 									mousepos.y = currentpos.y;
 
@@ -38108,7 +38137,7 @@ void DSCrossButtonSelectEulLimitCtrls(bool firstctrlselect)
 									(s_curdseullimitctrlno >= 0) && (s_curdseullimitctrlno < s_dseullimitctrls.size()) && (s_dseullimitctrls[s_curdseullimitctrlno])) {
 
 
-									POINT ctrlpos;
+									POINT ctrlpos = { 0, 0 };
 
 									HWND ctrlwnd = ::GetDlgItem(s_anglelimitdlg, s_dseullimitctrls[s_curdseullimitctrlno]);
 									if (ctrlwnd) {
@@ -38274,7 +38303,7 @@ void DSCrossButtonSelectRetargetCtrls(bool firstctrlselect)
 								s_curdsretargetctrlno = curdsctrlno;
 
 								OrgWinGUI::WindowPos ctrlwinpos;
-								POINT ctrlpos;
+								POINT ctrlpos = { 0, 0 };
 								ctrlwinpos = s_dsretargetctrls[s_curdsretargetctrlno]->getPos();
 								ctrlpos.x = ctrlwinpos.x;
 								ctrlpos.y = ctrlwinpos.y;
@@ -38467,7 +38496,7 @@ void DSCrossButtonSelectDampCtrls(bool firstctrlselect)
 								s_curdsdampctrlno = curdsctrlno;
 
 								OrgWinGUI::WindowPos ctrlwinpos;
-								POINT ctrlpos;
+								POINT ctrlpos = { 0, 0 };
 								ctrlwinpos = s_dsdampctrls[s_curdsdampctrlno]->getPos();
 								ctrlpos.x = ctrlwinpos.x;
 								ctrlpos.y = ctrlwinpos.y;
@@ -38660,7 +38689,7 @@ void DSCrossButtonSelectGPCtrls(bool firstctrlselect)
 								s_curdsgpctrlno = curdsctrlno;
 
 								OrgWinGUI::WindowPos ctrlwinpos;
-								POINT ctrlpos;
+								POINT ctrlpos = { 0, 0 };
 								ctrlwinpos = s_dsgpctrls[s_curdsgpctrlno]->getPos();
 								ctrlpos.x = ctrlwinpos.x;
 								ctrlpos.y = ctrlwinpos.y;
@@ -38852,7 +38881,7 @@ void DSCrossButtonSelectImpulseCtrls(bool firstctrlselect)
 								s_curdsimpulsectrlno = curdsctrlno;
 
 								OrgWinGUI::WindowPos ctrlwinpos;
-								POINT ctrlpos;
+								POINT ctrlpos = { 0, 0 };
 								ctrlwinpos = s_dsimpulsectrls[s_curdsimpulsectrlno]->getPos();
 								ctrlpos.x = ctrlwinpos.x;
 								ctrlpos.y = ctrlwinpos.y;
@@ -39046,7 +39075,7 @@ void DSCrossButtonSelectRigidCtrls(bool firstctrlselect)
 								s_curdsrigidctrlno = curdsctrlno;
 
 								OrgWinGUI::WindowPos ctrlwinpos;
-								POINT ctrlpos;
+								POINT ctrlpos = { 0, 0 };
 								ctrlwinpos = s_dsrigidctrls[s_curdsrigidctrlno]->getPos();
 								ctrlpos.x = ctrlwinpos.x;
 								ctrlpos.y = ctrlwinpos.y;
@@ -39241,7 +39270,7 @@ void DSCrossButtonSelectToolCtrls(bool firstctrlselect)
 								s_curdstoolctrlno = curdsctrlno;
 
 								OrgWinGUI::WindowPos ctrlwinpos;
-								POINT ctrlpos;
+								POINT ctrlpos = { 0, 0 };
 								ctrlwinpos = s_dstoolctrls[s_curdstoolctrlno]->getPos();
 								ctrlpos.x = ctrlwinpos.x;
 								ctrlpos.y = ctrlwinpos.y;
@@ -39404,7 +39433,7 @@ void DSCrossButtonSelectPlayerBtns(bool firstctrlselect)
 								s_curdsplayerbtnno = curdsctrlno;
 
 								OrgWinGUI::WindowPos ctrlwinpos;
-								POINT ctrlpos;
+								POINT ctrlpos = { 0, 0 };
 								ctrlwinpos = s_owpPlayerButton->getButtonPos(s_curdsplayerbtnno);
 								ctrlpos.x = ctrlwinpos.x;
 								ctrlpos.y = ctrlwinpos.y;
@@ -40688,7 +40717,7 @@ void DSOButtonSelectedPopupMenu()
 								//ディレクトリ指定用のListBoxのときにはエンターキーを押して展開表示する。
 								RECT ctrlrect;
 								GetWindowRect(ctrlwnd, &ctrlrect);
-								POINT ctrllefttop;
+								POINT ctrllefttop = { 0, 0 };
 								ctrllefttop.x = ctrlrect.left;
 								ctrllefttop.y = ctrlrect.top;
 								ScreenToClient(s_getfilenamehwnd, &ctrllefttop);
@@ -41181,13 +41210,14 @@ BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 		//#################################################################################################################################################
 		//groupboxのclassnameもButton。groupboxの中のコントロールを押すためには距離で判定する必要があった。マウス位置に一番近いコントロールを探すための情報をs_enumdistにpush_back
 		//#################################################################################################################################################
-		POINT ctrllefttop;
+		POINT ctrllefttop = { 0, 0 };
 		//ctrlcenter.x = (ctrlrect.right - ctrlrect.left) / 2;//ラジオボタンなどはコントロール真ん中ではなく左側を押すことが多いので中央はやめる
 		//ctrlcenter.y = (ctrlrect.bottom - ctrlrect.top) / 2;
 		ctrllefttop.x = ctrlrect.left;
 		ctrllefttop.y = ctrlrect.top;
 
 		ENUMDIST enumdist;
+		ZeroMemory(&enumdist, sizeof(ENUMDIST));
 		enumdist.hwnd = hwnd;
 		enumdist.dist = (float)(mousepoint.x - ctrllefttop.x) * (float)(mousepoint.x - ctrllefttop.x) + (float)(mousepoint.y - ctrllefttop.y) * (float)(mousepoint.y - ctrllefttop.y);
 		s_enumdist.push_back(enumdist);
@@ -41230,13 +41260,14 @@ BOOL CALLBACK EnumTreeViewProc(HWND hwnd, LPARAM lParam)
 		GetClientRect(hwnd, &ctrlrect);
 		//GetWindowRect(hwnd, &ctrlrect);
 
-		POINT ctrllefttop;
+		POINT ctrllefttop = { 0, 0 };
 		//ctrlcenter.x = (ctrlrect.right - ctrlrect.left) / 2;//ラジオボタンなどはコントロール真ん中ではなく左側を押すことが多いので中央はやめる
 		//ctrlcenter.y = (ctrlrect.bottom - ctrlrect.top) / 2;
 		ctrllefttop.x = ctrlrect.left;
 		ctrllefttop.y = ctrlrect.top;
 
 		ENUMDIST enumdist;
+		ZeroMemory(&enumdist, sizeof(ENUMDIST));
 		enumdist.hwnd = hwnd;
 		enumdist.dist = (float)(mousepoint.x - ctrllefttop.x) * (float)(mousepoint.x - ctrllefttop.x) + (float)(mousepoint.y - ctrllefttop.y) * (float)(mousepoint.y - ctrllefttop.y);
 		s_enumdist.push_back(enumdist);
@@ -42307,7 +42338,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.23 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.24 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

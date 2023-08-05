@@ -508,9 +508,24 @@ int CRigFile::ReadRig(XMLIOBUF* xmlbuf, int elemno)
 			dstrigelem->rigrigboneno = -1;
 			dstrigelem->rigrigno = -1;
 		}
-		else{
-			CBone* rigrigbone = 0;
-			rigrigbone = m_model->GetBoneByName(rigrigname);
+		else {
+			char rigrigname1[256];//_Joint—L‚è
+			char rigrigname2[256];//_Joint–³‚µ
+			char* rignameptr = strstr(rigrigname, "_Joint");
+			if (!rignameptr) {
+				sprintf_s(rigrigname1, 256, "%s_Joint", rigrigname);
+				strcpy_s(rigrigname, 256, rigrigname);
+			}
+			else {
+				strcpy_s(rigrigname1, 256, rigrigname);
+				strcpy_s(rigrigname2, 256, rigrigname);
+				int headleng = (int)(rignameptr - rigrigname);
+				*(rigrigname2 + headleng) = 0;
+			}
+			CBone* rigrigbone = m_model->GetBoneByName(rigrigname1);
+			if (!rigrigbone) {
+				rigrigbone = m_model->GetBoneByName(rigrigname2);
+			}
 			if (rigrigbone){
 				dstrigelem->rigrigboneno = rigrigbone->GetBoneNo();
 
@@ -540,11 +555,28 @@ int CRigFile::ReadRig(XMLIOBUF* xmlbuf, int elemno)
 	}
 
 	char bonename[256] = { 0 };
-	CallF( Read_Str( xmlbuf, "<BoneName>", "</BoneName>", bonename, 256 ), return 1 );
-	CBone* elembone = FindBoneByName(m_model, bonename, 256);
-	if (!elembone){
-		_ASSERT(0);
-		return 1;
+	char bonename1[256];//_Joint—L‚è
+	char bonename2[256];//_Joint–³‚µ
+	ZeroMemory(bonename, sizeof(char) * 256);
+	CallF(Read_Str(xmlbuf, "<BoneName>", "</BoneName>", bonename, 256), return 1);
+	char* jointnameptr = strstr(bonename, "_Joint");
+	if (!jointnameptr) {
+		sprintf_s(bonename1, 256, "%s_Joint", bonename);
+		strcpy_s(bonename2, 256, bonename);
+	}
+	else {
+		strcpy_s(bonename1, 256, bonename);
+		strcpy_s(bonename2, 256, bonename);
+		int headleng = (int)(jointnameptr - bonename);
+		*(bonename2 + headleng) = 0;
+	}
+	CBone* elembone = m_model->GetBoneByName(bonename1);
+	if (!elembone) {
+		elembone = m_model->GetBoneByName(bonename2);
+		if (!elembone) {
+			_ASSERT(0);
+			return 0;
+		}
 	}
 	dstrigelem->boneno = elembone->GetBoneNo();
 
