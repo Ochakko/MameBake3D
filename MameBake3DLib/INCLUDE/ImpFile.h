@@ -111,7 +111,7 @@ private:
  * @param (XMLIOBUF* xmliobuf) IN XMLのあるボーン１つ分のバッファ。
  * @return 成功したら０。
  */
-	int ReadBone( XMLIOBUF* xmliobuf );
+	int ReadBone(XMLIOBUF* xmliobuf, CModel* srcmodel);
 
 /**
  * @fn
@@ -121,7 +121,7 @@ private:
  * @param (CBone* srcbone) IN インパルスパラメータを持つボーン。
  * @return 成功したら０。
  */
-	int ReadRE( XMLIOBUF* xmliobuf, CBone* srcbone );
+	int ReadRE(XMLIOBUF* xmliobuf, CModel* srcmodel, CBone* srcbone);
 
 
 private:

@@ -97,7 +97,7 @@ int CLmtFile::WriteLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 	CallF(Write2File("    <FileInfo>1001-03</FileInfo>\r\n"), return 1);//2022/12/18
 	CallF(Write2File("    <FileComment>%s</FileComment>\r\n", fbxcomment), return 1);//2021/06/08
 
-	//WriteLmtReq(g_limitdegflag, m_model->GetTopBone(false));//g_limitdegflagÇÕlimitangleÇÃchkílóp
+	//WriteLmtReq(g_limitdegflag, m_model->GetTopBone(false));//g_limitdegflag„ÅØlimitangle„ÅÆchkÂÄ§Áî®
 
 	std::map<int, CBone*>::iterator itrbone;
 	for (itrbone = m_model->GetBoneListBegin(); itrbone != m_model->GetBoneListEnd(); itrbone++) {
@@ -164,7 +164,7 @@ int CLmtFile::WriteLmt(bool limitdegflag, CBone* srcbone )
 	CallF( Write2File( "    <Name>%s</Name>\r\n", srcbone->GetBoneName() ), return 1);
 
 
-	ANGLELIMIT anglelimit = srcbone->GetAngleLimit(limitdegflag, 0);//limitdegflagÇÕchkílÇ…ÇæÇØä÷åW
+	ANGLELIMIT anglelimit = srcbone->GetAngleLimit(limitdegflag, 0);//limitdegflag„ÅØchkÂÄ§„Å´„Å†„ÅëÈñ¢‰øÇ
 
 	char strboneaxistype[3][256] = {"Current", "Parent", "Global"};
 	if ((anglelimit.boneaxiskind >= 0) && (anglelimit.boneaxiskind <= 2)){
@@ -268,7 +268,7 @@ int CLmtFile::LoadLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 	//}
 
 
-	//FileCommentÉ^ÉOÇ™Ç†ÇÈèÍçáÇ…ÇÕfbxcommentÇ∆î‰ärÉ`ÉFÉbÉN
+	//FileComment„Çø„Ç∞„Åå„ÅÇ„ÇãÂ†¥Âêà„Å´„ÅØfbxcomment„Å®ÊØîËºÉ„ÉÅ„Çß„ÉÉ„ÇØ
 	char strcomment[MAX_PATH];
 	ZeroMemory(strcomment, sizeof(char) * MAX_PATH);
 	int resultgetcomment;
@@ -295,7 +295,7 @@ int CLmtFile::LoadLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 		int ret;
 		ret = SetXmlIOBuf( &m_xmliobuf, "<Bone>", "</Bone>", &bonebuf );
 		if( ret == 0 ){
-			CallF( ReadBone(g_limitdegflag, &bonebuf ), return 1 );//g_limitdegflagÇÕlimitangleÇÃchkílóp
+			CallF( ReadBone(g_limitdegflag, &bonebuf, srcmodel), return 1 );//g_limitdegflag„ÅØlimitangle„ÅÆchkÂÄ§Áî®
 		}else{
 			findflag = 0;
 		}
@@ -305,7 +305,7 @@ int CLmtFile::LoadLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 }
 
 
-int CLmtFile::ReadBone(bool limitdegflag, XMLIOBUF* xmliobuf)
+int CLmtFile::ReadBone(bool limitdegflag, XMLIOBUF* xmliobuf, CModel* srcmodel)
 {
 	/***
 	<Bone>
@@ -340,28 +340,12 @@ int CLmtFile::ReadBone(bool limitdegflag, XMLIOBUF* xmliobuf)
 	***/
 
 	char bonename[256];
-	char bonename1[256];//_JointóLÇË
-	char bonename2[256];//_Jointñ≥Çµ
 	ZeroMemory(bonename, sizeof(char) * 256);
 	CallF( Read_Str(xmliobuf, "<Name>", "</Name>", bonename, 256), return 1 );
-	char* jointnameptr = strstr(bonename, "_Joint");
-	if (!jointnameptr){
-		sprintf_s(bonename1, 256, "%s_Joint", bonename);
-		strcpy_s(bonename2, 256, bonename);
-	}
-	else{
-		strcpy_s(bonename1, 256, bonename);
-		strcpy_s(bonename2, 256, bonename);
-		int headleng = (int)(jointnameptr - bonename);
-		*(bonename2 + headleng) = 0;
-	}
-	CBone* curbone = m_model->GetBoneByName(bonename1);
+	CBone* curbone = FindBoneByName(srcmodel, bonename, 256);
 	if (!curbone){
-		curbone = m_model->GetBoneByName(bonename2);
-		if (!curbone){
-			_ASSERT(0);
-			return 0;
-		}
+		_ASSERT(0);
+		return 0;
 	}
 
 	InitAngleLimit(&m_anglelimit);
@@ -434,12 +418,12 @@ int CLmtFile::ReadBone(bool limitdegflag, XMLIOBUF* xmliobuf)
 
 	tmpint = 0;
 	CallF(Read_Int(xmliobuf, "<Lower_X>", "</Lower_X>", &tmpint), return 1);
-	//if ((tmpint >= -180) && (tmpint <= 180)){//2022/12/18 comment out : ÉIÉCÉâÅ[äpÉIÅ[ÉoÅ[ÇPÇWÇOëŒâûÇÃÇΩÇﬂ
+	//if ((tmpint >= -180) && (tmpint <= 180)){//2022/12/18 comment out : „Ç™„Ç§„É©„ÉºËßí„Ç™„Éº„Éê„ÉºÔºëÔºòÔºêÂØæÂøú„ÅÆ„Åü„ÇÅ
 		m_anglelimit.lower[0] = tmpint;
 	//}
 	tmpint = 0;
 	CallF(Read_Int(xmliobuf, "<Upper_X>", "</Upper_X>", &tmpint), return 1);
-	//if ((tmpint >= -180) && (tmpint <= 180)){//2022/12/18 comment out : ÉIÉCÉâÅ[äpÉIÅ[ÉoÅ[ÇPÇWÇOëŒâûÇÃÇΩÇﬂ
+	//if ((tmpint >= -180) && (tmpint <= 180)){//2022/12/18 comment out : „Ç™„Ç§„É©„ÉºËßí„Ç™„Éº„Éê„ÉºÔºëÔºòÔºêÂØæÂøú„ÅÆ„Åü„ÇÅ
 		m_anglelimit.upper[0] = tmpint;
 	//}
 	m_anglelimit.applyeul[0] = 0;
@@ -447,12 +431,12 @@ int CLmtFile::ReadBone(bool limitdegflag, XMLIOBUF* xmliobuf)
 
 	tmpint = 0;
 	CallF(Read_Int(xmliobuf, "<Lower_Y>", "</Lower_Y>", &tmpint), return 1);
-	//if ((tmpint >= -180) && (tmpint <= 180)){//2022/12/18 comment out : ÉIÉCÉâÅ[äpÉIÅ[ÉoÅ[ÇPÇWÇOëŒâûÇÃÇΩÇﬂ
+	//if ((tmpint >= -180) && (tmpint <= 180)){//2022/12/18 comment out : „Ç™„Ç§„É©„ÉºËßí„Ç™„Éº„Éê„ÉºÔºëÔºòÔºêÂØæÂøú„ÅÆ„Åü„ÇÅ
 		m_anglelimit.lower[1] = tmpint;
 	//}
 	tmpint = 0;
 	CallF(Read_Int(xmliobuf, "<Upper_Y>", "</Upper_Y>", &tmpint), return 1);
-	//if ((tmpint >= -180) && (tmpint <= 180)){//2022/12/18 comment out : ÉIÉCÉâÅ[äpÉIÅ[ÉoÅ[ÇPÇWÇOëŒâûÇÃÇΩÇﬂ
+	//if ((tmpint >= -180) && (tmpint <= 180)){//2022/12/18 comment out : „Ç™„Ç§„É©„ÉºËßí„Ç™„Éº„Éê„ÉºÔºëÔºòÔºêÂØæÂøú„ÅÆ„Åü„ÇÅ
 		m_anglelimit.upper[1] = tmpint;
 	//}
 	m_anglelimit.applyeul[1] = 0;
@@ -460,12 +444,12 @@ int CLmtFile::ReadBone(bool limitdegflag, XMLIOBUF* xmliobuf)
 
 	tmpint = 0;
 	CallF(Read_Int(xmliobuf, "<Lower_Z>", "</Lower_Z>", &tmpint), return 1);
-	//if ((tmpint >= -180) && (tmpint <= 180)){//2022/12/18 comment out : ÉIÉCÉâÅ[äpÉIÅ[ÉoÅ[ÇPÇWÇOëŒâûÇÃÇΩÇﬂ
+	//if ((tmpint >= -180) && (tmpint <= 180)){//2022/12/18 comment out : „Ç™„Ç§„É©„ÉºËßí„Ç™„Éº„Éê„ÉºÔºëÔºòÔºêÂØæÂøú„ÅÆ„Åü„ÇÅ
 		m_anglelimit.lower[2] = tmpint;
 	//}
 	tmpint = 0;
 	CallF(Read_Int(xmliobuf, "<Upper_Z>", "</Upper_Z>", &tmpint), return 1);
-	//if ((tmpint >= -180) && (tmpint <= 180)){//2022/12/18 comment out : ÉIÉCÉâÅ[äpÉIÅ[ÉoÅ[ÇPÇWÇOëŒâûÇÃÇΩÇﬂ
+	//if ((tmpint >= -180) && (tmpint <= 180)){//2022/12/18 comment out : „Ç™„Ç§„É©„ÉºËßí„Ç™„Éº„Éê„ÉºÔºëÔºòÔºêÂØæÂøú„ÅÆ„Åü„ÇÅ
 		m_anglelimit.upper[2] = tmpint;
 	//}
 	m_anglelimit.applyeul[2] = 0;

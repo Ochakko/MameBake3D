@@ -1145,6 +1145,37 @@ public: //accesser
 		//return m_bonename[ srcname ];
 	};
 
+	//#####################################################
+	//_Jointが付いている名前と付いていない名前の両方を検索
+	//#####################################################
+	CBone* FindBoneByName(std::string srcname) {
+		char bonename[256] = { 0 };
+		char bonename1[256];//_Joint有り
+		char bonename2[256];//_Joint無し
+		ZeroMemory(bonename, sizeof(char) * 256);
+		strcpy_s(bonename, 256, srcname.c_str());
+		char* jointnameptr = strstr(bonename, "_Joint");
+		if (!jointnameptr) {
+			sprintf_s(bonename1, 256, "%s_Joint", bonename);
+			strcpy_s(bonename2, 256, bonename);
+		}
+		else {
+			strcpy_s(bonename1, 256, bonename);
+			strcpy_s(bonename2, 256, bonename);
+			int headleng = (int)(jointnameptr - bonename);
+			*(bonename2 + headleng) = 0;
+		}
+
+		CBone* retbone = 0;
+		retbone = GetBoneByName(bonename1);
+		if (!retbone) {
+			retbone = GetBoneByName(bonename2);
+		}
+
+		return retbone;
+	};
+
+
 	CBone* GetBoneByWName(WCHAR* srcname){
 		if (!srcname){
 			return 0;

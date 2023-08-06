@@ -18,6 +18,10 @@
 
 int TermJointRepeats(char* dstname)
 {
+
+	//ジョイント名の後ろに付けていた_Jointという文字列が複数ある場合１つで終端
+	//現在は_Jointという文字列を付加しないので　あまり意味がなくなった
+
 	*(dstname + 256 - 1) = 0;
 
 	char pat1[256] = "_Joint";
@@ -34,6 +38,11 @@ int TermJointRepeats(char* dstname)
 
 int ConvEngName( int type, char* srcname, int srcleng, char* dstname, int dstleng )
 {
+
+	//この関数は現在も呼び出しているが　CBone::GetEngBoneName()を保存時に使用しなくなったので　あまり意味が無い状態
+	//ノードの名前には最初から英数字を使う前提に変更
+
+
 	static char headname[256] = "ReplacedName";
 	static int replaceno = 0;
 
@@ -42,7 +51,7 @@ int ConvEngName( int type, char* srcname, int srcleng, char* dstname, int dstlen
 	char tempprinta[1024];
 	WCHAR wtempprinta[1024];
 
-	//�����񒷂͂Q�T�U��z��B
+	//文字列長は２５６を想定。
 	if( (srcleng > 256) || (dstleng < 256) ){
 		_ASSERT( 0 );
 		return 1;
@@ -114,7 +123,7 @@ int ConvEngName( int type, char* srcname, int srcleng, char* dstname, int dstlen
 			return 1;
 		}
 			
-		sprintf_s( tempprinta, 1024, "X�t�@�C���p�p�[�c���ύX\r\n\t%s ---> %s\r\n", srcname, tempname );
+		sprintf_s( tempprinta, 1024, "Xファイル用パーツ名変更\r\n\t%s ---> %s\r\n", srcname, tempname );
 		MultiByteToWideChar( CP_ACP, MB_PRECOMPOSED, tempprinta, 1024, wtempprinta, 1024 );
 		DbgOut( wtempprinta );
 

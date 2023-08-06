@@ -230,7 +230,7 @@ int CImpFile::LoadImpFile( WCHAR* strpath, CModel* srcmodel )
 		int ret;
 		ret = SetXmlIOBuf( &m_xmliobuf, "<Bone>", "</Bone>", &bonebuf );
 		if( ret == 0 ){
-			CallF( ReadBone( &bonebuf ), return 1 );
+			CallF( ReadBone(&bonebuf, srcmodel), return 1 );
 		}else{
 			findflag = 0;
 		}
@@ -243,32 +243,16 @@ int CImpFile::LoadImpFile( WCHAR* strpath, CModel* srcmodel )
 	return 0;
 }
 
-int CImpFile::ReadBone( XMLIOBUF* xmliobuf )
+int CImpFile::ReadBone(XMLIOBUF* xmliobuf, CModel* srcmodel)
 {
 
 	char bonename[256];
-	char bonename1[256];//_Joint—L‚è
-	char bonename2[256];//_Joint–³‚µ
 	ZeroMemory(bonename, sizeof(char) * 256);
 	CallF( Read_Str( xmliobuf, "<Name>", "</Name>", bonename, 256 ), return 1 );
-	char* jointnameptr = strstr(bonename, "_Joint");
-	if (!jointnameptr){
-		sprintf_s(bonename1, 256, "%s_Joint", bonename);
-		strcpy_s(bonename2, 256, bonename);
-	}
-	else{
-		strcpy_s(bonename1, 256, bonename);
-		strcpy_s(bonename2, 256, bonename);
-		int headleng = (int)(jointnameptr - bonename);
-		*(bonename2 + headleng) = 0;
-	}
-	CBone* curbone = m_model->GetBoneByName(bonename1);
+	CBone* curbone = FindBoneByName(srcmodel, bonename, 256);//_Jointæœ‰ç„¡å¯¾å¿œ
 	if (!curbone){
-		curbone = m_model->GetBoneByName(bonename2);
-		if (!curbone){
-			_ASSERT(0);
-			return 0;
-		}
+		_ASSERT(0);
+		return 0;
 	}
 
 
@@ -279,7 +263,7 @@ int CImpFile::ReadBone( XMLIOBUF* xmliobuf )
 		int ret;
 		ret = SetXmlIOBuf( xmliobuf, "<RigidElem>", "</RigidElem>", &rebuf );
 		if( ret == 0 ){
-			CallF( ReadRE( &rebuf, curbone ), return 1 );
+			CallF( ReadRE(&rebuf, srcmodel, curbone), return 1 );
 		}else{
 			findflag = 0;
 		}
@@ -288,7 +272,7 @@ int CImpFile::ReadBone( XMLIOBUF* xmliobuf )
 	return 0;
 }
 
-int CImpFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
+int CImpFile::ReadRE(XMLIOBUF* xmlbuf, CModel* srcmodel, CBone* curbone)
 {
 /***
     <RigidElem>
@@ -300,28 +284,12 @@ int CImpFile::ReadRE( XMLIOBUF* xmlbuf, CBone* curbone )
 ***/
 
 	char childname[256];
-	char childname1[256];
-	char childname2[256];
 	ZeroMemory( childname, sizeof( char ) * 256 );
 	CallF( Read_Str( xmlbuf, "<ChildName>", "</ChildName>", childname, 256 ), return 1 );
-	char* jointnameptr = strstr(childname, "_Joint");
-	if (!jointnameptr){
-		sprintf_s(childname1, 256, "%s_Joint", childname);
-		strcpy_s(childname2, 256, childname);
-	}
-	else{
-		strcpy_s(childname1, 256, childname);
-		strcpy_s(childname2, 256, childname);
-		int headleng = (int)(jointnameptr - childname);
-		*(childname2 + headleng) = 0;
-	}
-	CBone* childbone = m_model->GetBoneByName(childname1);
+	CBone* childbone = FindBoneByName(srcmodel, childname, 256);//_Jointæœ‰ç„¡å¯¾å¿œ
 	if (!childbone){
-		childbone = m_model->GetBoneByName(childname2);
-		if (!childbone){
-			_ASSERT(0);
-			return 0;
-		}
+		_ASSERT(0);
+		return 0;
 	}
 
 

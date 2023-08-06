@@ -251,7 +251,7 @@ int CXMLIO::Read_Int( XMLIOBUF* xmliobuf, const char* startpat, const char* endp
 		return 1;
 	}
 
-	size_t startpatlen = strlen(startpat);//buf‚Éstartpat‚ªŠÜ‚Ü‚ê‚Ä‚¢‚é‚±‚Æ‚ÍŠm’è‚µ‚Ä‚¢‚é
+	size_t startpatlen = strlen(startpat);//bufã«startpatãŒå«ã¾ã‚Œã¦ã„ã‚‹ã“ã¨ã¯ç¢ºå®šã—ã¦ã„ã‚‹
 	char* srcchar = startptr + startpatlen;
 	int srcleng = (int)( endptr - srcchar );
 	if( (srcleng <= 0) || (srcleng >= 256) ){
@@ -297,7 +297,7 @@ int CXMLIO::Read_Float( XMLIOBUF* xmliobuf, const char* startpat, const char* en
 		return 1;
 	}
 
-	size_t startpatlen = strlen(startpat);//buf‚Éstartpat‚ªŠÜ‚Ü‚ê‚Ä‚¢‚é‚±‚Æ‚ÍŠm’è‚µ‚Ä‚¢‚é
+	size_t startpatlen = strlen(startpat);//bufã«startpatãŒå«ã¾ã‚Œã¦ã„ã‚‹ã“ã¨ã¯ç¢ºå®šã—ã¦ã„ã‚‹
 	char* srcchar = startptr + startpatlen;
 	int srcleng = (int)( endptr - srcchar );
 	if( (srcleng <= 0) || (srcleng >= 256) ){
@@ -345,7 +345,7 @@ int CXMLIO::Read_Vec3( XMLIOBUF* xmliobuf, const char* startpat, const char* end
 		return 1;
 	}
 
-	size_t startpatlen = strlen(startpat);//buf‚Éstartpat‚ªŠÜ‚Ü‚ê‚Ä‚¢‚é‚±‚Æ‚ÍŠm’è‚µ‚Ä‚¢‚é
+	size_t startpatlen = strlen(startpat);//bufã«startpatãŒå«ã¾ã‚Œã¦ã„ã‚‹ã“ã¨ã¯ç¢ºå®šã—ã¦ã„ã‚‹
 	char* srcchar = startptr + startpatlen;
 	int srcleng = (int)( endptr - srcchar );
 	if( (srcleng <= 0) || (srcleng >= 256) ){
@@ -417,7 +417,7 @@ int CXMLIO::Read_Q( XMLIOBUF* xmliobuf, const char* startpat, const char* endpat
 		return 1;
 	}
 
-	size_t startpatlen = strlen(startpat);//buf‚Éstartpat‚ªŠÜ‚Ü‚ê‚Ä‚¢‚é‚±‚Æ‚ÍŠm’è‚µ‚Ä‚¢‚é
+	size_t startpatlen = strlen(startpat);//bufã«startpatãŒå«ã¾ã‚Œã¦ã„ã‚‹ã“ã¨ã¯ç¢ºå®šã—ã¦ã„ã‚‹
 	char* srcchar = startptr + startpatlen;
 	int srcleng = (int)( endptr - srcchar );
 	if( (srcleng <= 0) || (srcleng >= 256) ){
@@ -498,7 +498,7 @@ int CXMLIO::Read_Str( XMLIOBUF* xmliobuf, const char* startpat, const char* endp
 		return 1;
 	}
 
-	size_t startpatlen = strlen(startpat);//buf‚Éstartpat‚ªŠÜ‚Ü‚ê‚Ä‚¢‚é‚±‚Æ‚ÍŠm’è‚µ‚Ä‚¢‚é
+	size_t startpatlen = strlen(startpat);//bufã«startpatãŒå«ã¾ã‚Œã¦ã„ã‚‹ã“ã¨ã¯ç¢ºå®šã—ã¦ã„ã‚‹
 	char* srcchar = startptr + startpatlen;
 	int srcleng = (int)( endptr - srcchar );
 	if( (srcleng <= 0) || (srcleng >= arrayleng) ){
@@ -597,7 +597,7 @@ int CXMLIO::SetXmlIOBuf( XMLIOBUF* srcbuf, const char* startpat, const char* end
 	}
 
 
-	//strstr’†‚Éƒoƒbƒtƒ@”ÍˆÍ‚ğ‰z‚¦‚È‚¢‚æ‚¤‚Éƒ`ƒFƒbƒN@2022/07/17
+	//strsträ¸­ã«ãƒãƒƒãƒ•ã‚¡ç¯„å›²ã‚’è¶Šãˆãªã„ã‚ˆã†ã«ãƒã‚§ãƒƒã‚¯ã€€2022/07/17
 
 	size_t chkendpos1;
 	chkendpos1 = srcbuf->pos + strlen(startpat);
@@ -612,7 +612,7 @@ int CXMLIO::SetXmlIOBuf( XMLIOBUF* srcbuf, const char* startpat, const char* end
 	char* startptr = 0;
 	char* endptr = 0;
 	startptr = strstr(srcbuf->buf + srcbuf->pos, startpat);
-	//endptr = strstr( srcbuf->buf + srcbuf->pos, endpat );//êŠˆÚ“®B@2022/07/17
+	//endptr = strstr( srcbuf->buf + srcbuf->pos, endpat );//å ´æ‰€ç§»å‹•ã€‚ã€€2022/07/17
 
 	size_t spatlen = strlen(startpat);
 	//if (delpatflag && startpat) {
@@ -621,7 +621,7 @@ int CXMLIO::SetXmlIOBuf( XMLIOBUF* srcbuf, const char* startpat, const char* end
 	}
 
 	if (startptr != 0) {
-		endptr = strstr(startptr, endpat);//startpat‚æ‚è‚àŒã‚ğŒŸõ‚·‚é //2022/07/17
+		endptr = strstr(startptr, endpat);//startpatã‚ˆã‚Šã‚‚å¾Œã‚’æ¤œç´¢ã™ã‚‹ //2022/07/17
 	}
 
 	if( !startptr || !endptr ){
@@ -657,32 +657,14 @@ CBone* CXMLIO::FindBoneByName(CModel* srcmodel, char* bonename, int srcleng)
 		return 0;
 	}
 
-
 	if (srcleng > 256){
 		_ASSERT(0);
 		return 0;
 	}
-	char bonename1[256] = { 0 };
-	char bonename2[256] = { 0 };
-
-	char* jointnameptr = strstr(bonename, "_Joint");
-	if (!jointnameptr){
-		sprintf_s(bonename1, 256, "%s_Joint", bonename);
-		strcpy_s(bonename2, 256, bonename);
-	}
-	else{
-		strcpy_s(bonename1, 256, bonename);
-		strcpy_s(bonename2, 256, bonename);
-		int headleng = (int)(jointnameptr - bonename);
-		*(bonename2 + headleng) = 0;
-	}
-	CBone* curbone = srcmodel->GetBoneByName(bonename1);
+	CBone* curbone = srcmodel->FindBoneByName(bonename);
 	if (!curbone){
-		curbone = srcmodel->GetBoneByName(bonename2);
-		if (!curbone){
-			_ASSERT(0);
-			return 0;
-		}
+		_ASSERT(0);
+		return 0;
 	}
 
 	return curbone;

@@ -111,7 +111,7 @@ private:
  * @param (XMLIOBUF* xmliobuf) IN XMLのあるボーン１つ分のバッファ。
  * @return 成功したら０。
  */
-	int ReadBone(bool limitdegflag, XMLIOBUF* xmliobuf);
+	int ReadBone(bool limitdegflag, XMLIOBUF* xmliobuf, CModel* srcmodel);
 
 /**
  * @fn

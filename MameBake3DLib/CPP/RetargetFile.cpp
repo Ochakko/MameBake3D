@@ -202,51 +202,18 @@ int CRetargetFile::ReadRetargetInfo( int jointcnt, XMLIOBUF* xmlbuf )
 	CBone* bvhjoint = 0;
 	char modeljointname[MAX_PATH] = { 0 };
 	char bvhjointname[MAX_PATH] = { 0 };
-	char modeljointname2[MAX_PATH] = { 0 };
-	char bvhjointname2[MAX_PATH] = { 0 };
 
 	//#############################################################################
-	//–¼‘O‚ÌÅŒã‚É_Joint‚ª•t‚¢‚Ä‚¢‚é‚à‚Ì‚Æ•t‚¢‚Ä‚¢‚È‚¢‚à‚Ì‚Ì‚Q’Ê‚è‚¸‚Âƒ`ƒFƒbƒN‚·‚é
+	//åå‰ã®æœ€å¾Œã«_JointãŒä»˜ã„ã¦ã„ã‚‹ã‚‚ã®ã¨ä»˜ã„ã¦ã„ãªã„ã‚‚ã®ã®ï¼’é€šã‚Šãšã¤ãƒã‚§ãƒƒã‚¯ã™ã‚‹
 	//#############################################################################
 
 	CallF( Read_Str( xmlbuf, "<ModelJoint>", "</ModelJoint>", modeljointname, MAX_PATH ), return 1 );
 	CallF( Read_Str( xmlbuf, "<BvhJoint>", "</BvhJoint>", bvhjointname, MAX_PATH ), return 1 );
-	strcpy_s(modeljointname2, MAX_PATH, modeljointname);
-	strcpy_s(bvhjointname2, MAX_PATH, bvhjointname);
-
 	modeljointname[MAX_PATH - 1] = 0;
 	bvhjointname[MAX_PATH - 1] = 0;
-	modeljointname2[MAX_PATH - 1] = 0;
-	bvhjointname2[MAX_PATH - 1] = 0;
 
-	int modelnamelen = (int)strlen(modeljointname);
-	int bvhnamelen = (int)strlen(bvhjointname);
-
-	char* modelsuffixjoint = strstr(modeljointname2, "_Joint");
-	char* bvhsuffixjoint = strstr(bvhjointname2, "_Joint");
-	if (modelsuffixjoint && ((INT64)modelnamelen - (INT64)(modelsuffixjoint - modeljointname2) == strlen("_Joint"))) {
-		*modelsuffixjoint = 0;
-	}
-	else {
-		strcat_s(modeljointname2, MAX_PATH, "_Joint");
-	}
-	if (bvhsuffixjoint && ((INT64)bvhnamelen - (INT64)(bvhsuffixjoint - bvhjointname2) == strlen("_Joint"))) {
-		*bvhsuffixjoint = 0;
-	}
-	else {
-		strcat_s(bvhjointname2, MAX_PATH, "_Joint");
-	}
-
-
-
-	modeljoint = m_model->GetBoneByName(modeljointname);
-	if (!modeljoint) {
-		modeljoint = m_model->GetBoneByName(modeljointname2);
-	}
-	bvhjoint = m_bvh->GetBoneByName(bvhjointname);
-	if (!bvhjoint) {
-		bvhjoint = m_bvh->GetBoneByName(bvhjointname2);
-	}
+	modeljoint = m_model->FindBoneByName(modeljointname);//_Jointæœ‰ç„¡å¯¾å¿œ
+	bvhjoint = m_bvh->FindBoneByName(bvhjointname);//_Jointæœ‰ç„¡å¯¾å¿œ
 
 	if (modeljoint) {
 		if (bvhjoint) {
