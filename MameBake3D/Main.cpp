@@ -2238,6 +2238,7 @@ enum {
 
 enum {
 	SPPLATEMENUKIND_GUI,
+	SPPLATEMENUKIND_DISP,//2023/08/07
 	SPPLATEMENUKIND_RIGID,
 	SPPLATEMENUKIND_RETARGET,
 	SPPLATEMENUKINDNUM
@@ -2251,20 +2252,31 @@ enum {
 	SPGUISWNUM
 };
 //#define SPGUISWNUM	5
+
+
+enum {//2023/08/07
+	SPDISPSW_LIGHTS,
+	SPDISPSW_DISPGROUP,
+	SPDISPSWNUM
+};
+//#define SPDISPSWNUM	2
+
 enum {
-	SPRIGIDTSW_RIGIDPARAMS,
+	SPRIGIDSW_RIGIDPARAMS,
 	SPRIGIDSW_IMPULSE,
 	SPRIGIDSW_GROUNDPLANE,
 	SPRIGIDSW_DAMPANIM,
 	SPRIGIDSWNUM
 };
 //#define SPRIGIDSWNUM	4
+
 enum {
 	SPRETARGETSW_RETARGET,
 	SPRETARGETSW_LIMITEULER,
 	SPRETARGETSWNUM
 };
 //#define SPRETARGETSWNUM	2
+
 enum {
 	SPAIMBAR_1,
 	SPAIMBAR_2,
@@ -2274,6 +2286,7 @@ enum {
 	SPAIMBARNUM
 };
 //#define SPAIMBARNUM	5
+
 enum {
 	SPMENU_FILE,
 	SPMENU_DISP,
@@ -2306,6 +2319,7 @@ static SPELEM s_spsmooth;
 static SPELEM s_spconstexe;
 static SPELEM s_spconstrefresh;
 static SPGUISW s_spguisw[SPGUISWNUM];
+static SPGUISW s_spdispsw[SPDISPSWNUM];
 static SPGUISW s_sprigidsw[SPRIGIDSWNUM];
 static SPGUISW s_spretargetsw[SPRETARGETSWNUM];
 static bool s_firstmoveaimbar = true;
@@ -2519,13 +2533,18 @@ static CDXUTControl* s_ui_physikstop = 0;
 static void GUIGetNextMenu(POINT ptCursor, int srcmenukind, int* dstmenukind, int* dstplateno);
 static void GUIMenuSetVisible(int srcmenukind, int srcplateno);
 
+
 static void GUISetVisible(int srcplateno);
-static void GUISetVisible_SpriteFK();
-static void GUISetVisible_Left();
-static void GUISetVisible_Left2nd();
+static void GUISetVisible_CameraAndIK();
+static void GUISetVisible_DispAndLimits();
+static void GUISetVisible_BrushParams();
 static void GUISetVisible_Bullet();
-static void GUISetVisible_PhysicsIK();
+static void GUISetVisible_RefPos();
 static void GUISetVisible_AimBar();
+
+static void GUIDispSetVisible(int srcplateno);
+static void ShowLightsWnd(bool srcflag);
+static void ShowDispGroupWnd(bool srcflag);
 
 static void GUIRigidSetVisible(int srcplateno);
 static void ShowRigidWnd(bool srcflag);
@@ -3107,6 +3126,8 @@ static int PickSpAxis(POINT srcpos);
 static int PickSpUndo(POINT srcpos);
 static int SetSpGUISWParams();
 static int PickSpGUISW(POINT srcpos);
+static int SetSpDispSWParams();
+static int PickSpDispSW(POINT srcpos);
 static int SetSpRigidSWParams();
 static int PickSpRigidSW(POINT srcpos);
 static int PickSpRetargetSW(POINT srcpos);
@@ -4602,19 +4623,20 @@ void InitApp()
 	s_bvhbone_cbno = 0;
 
 
-	::ZeroMemory(s_spundo, sizeof(SPELEM) * 2);
-	::ZeroMemory(s_spaxis, sizeof(SPAXIS) * SPAXISNUM);
-	::ZeroMemory(s_spcam, sizeof(SPCAM) * SPR_CAM_MAX);
-	::ZeroMemory(s_sprig, sizeof(SPELEM) * SPRIGMAX);
-	//::ZeroMemory(&s_spbt, sizeof(SPELEM));
-	::ZeroMemory(&s_spmousehere, sizeof(SPELEM));
-	::ZeroMemory(&s_spret2prev, sizeof(SPELEM));
-	::ZeroMemory(&s_spcplw2w, sizeof(SPELEM));
-	::ZeroMemory(&s_spsmooth, sizeof(SPELEM));
-	::ZeroMemory(&s_spconstexe, sizeof(SPELEM));
-	::ZeroMemory(&s_spconstrefresh, sizeof(SPELEM));
-	::ZeroMemory(&s_mousecenteron, sizeof(SPELEM));
-
+	{
+		::ZeroMemory(s_spundo, sizeof(SPELEM) * 2);
+		::ZeroMemory(s_spaxis, sizeof(SPAXIS) * SPAXISNUM);
+		::ZeroMemory(s_spcam, sizeof(SPCAM) * SPR_CAM_MAX);
+		::ZeroMemory(s_sprig, sizeof(SPELEM) * SPRIGMAX);
+		//::ZeroMemory(&s_spbt, sizeof(SPELEM));
+		::ZeroMemory(&s_spmousehere, sizeof(SPELEM));
+		::ZeroMemory(&s_spret2prev, sizeof(SPELEM));
+		::ZeroMemory(&s_spcplw2w, sizeof(SPELEM));
+		::ZeroMemory(&s_spsmooth, sizeof(SPELEM));
+		::ZeroMemory(&s_spconstexe, sizeof(SPELEM));
+		::ZeroMemory(&s_spconstrefresh, sizeof(SPELEM));
+		::ZeroMemory(&s_mousecenteron, sizeof(SPELEM));
+	}
 	{
 		::ZeroMemory(&s_spaimbar, sizeof(SPGUISW) * SPAIMBARNUM);
 		int spgno;
@@ -4629,12 +4651,10 @@ void InitApp()
 			s_spmenuaimbar[spgno].state = false;
 		}
 	}
-
 	{
 		::ZeroMemory(&s_spsel3d, sizeof(SPGUISW));
 		s_spsel3d.state = false;
 	}
-
 	{
 		::ZeroMemory(&s_spikmodesw, sizeof(SPGUISW) * 3);
 		s_spikmodesw[0].state = true;
@@ -4674,14 +4694,21 @@ void InitApp()
 		}
 	}
 	{
+		::ZeroMemory(&s_spdispsw, sizeof(SPGUISW) * SPDISPSWNUM);
+		int spgno;
+		for (spgno = 0; spgno < SPDISPSWNUM; spgno++) {
+			s_spdispsw[spgno].state = false;
+		}
+		s_spdispsw[SPDISPSW_LIGHTS].state = true;
+	}
+	{
 		::ZeroMemory(&s_sprigidsw, sizeof(SPGUISW) * SPRIGIDSWNUM);
 		int spgno;
 		for (spgno = 0; spgno < SPRIGIDSWNUM; spgno++) {
 			s_sprigidsw[spgno].state = false;
 		}
-		s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].state = true;
+		s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].state = true;
 	}
-
 	::ZeroMemory(&s_spretargetsw, sizeof(SPGUISW) * SPRETARGETSWNUM);
 	s_spretargetsw[SPRETARGETSW_RETARGET].state = false;
 	s_spretargetsw[SPRETARGETSW_LIMITEULER].state = false;
@@ -5535,14 +5562,45 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	CallF(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_RefPos140OFF.png", 0, 0), return S_FALSE);
 
 
-	//RigidSwitch ON
-	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteON = new CMySprite(s_pdev);
-	if (!s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteON) {
+	//Disp ON
+	s_spdispsw[SPDISPSW_LIGHTS].spriteON = new CMySprite(s_pdev);
+	if (!s_spdispsw[SPDISPSW_LIGHTS].spriteON) {
 		_ASSERT(0);
 		PostQuitMessage(1);
 		return S_FALSE;
 	}
-	CallF(s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuRigid140ON.png", 0, 0), return S_FALSE);
+	CallF(s_spdispsw[SPDISPSW_LIGHTS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_Lights140ON.png", 0, 0), return S_FALSE);
+	s_spdispsw[SPDISPSW_DISPGROUP].spriteON = new CMySprite(s_pdev);
+	if (!s_spdispsw[SPDISPSW_DISPGROUP].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
+	CallF(s_spdispsw[SPDISPSW_DISPGROUP].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispGroup140ON.png", 0, 0), return S_FALSE);
+	s_spdispsw[SPDISPSW_LIGHTS].spriteOFF = new CMySprite(s_pdev);
+	if (!s_spdispsw[SPDISPSW_LIGHTS].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
+	CallF(s_spdispsw[SPDISPSW_LIGHTS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_Lights140OFF.png", 0, 0), return S_FALSE);
+	s_spdispsw[SPDISPSW_DISPGROUP].spriteOFF = new CMySprite(s_pdev);
+	if (!s_spdispsw[SPDISPSW_DISPGROUP].spriteOFF) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
+	CallF(s_spdispsw[SPDISPSW_DISPGROUP].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispGroup140OFF.png", 0, 0), return S_FALSE);
+
+
+	//RigidSwitch ON
+	s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteON = new CMySprite(s_pdev);
+	if (!s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteON) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
+	CallF(s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuRigid140ON.png", 0, 0), return S_FALSE);
 	s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON = new CMySprite(s_pdev);
 	if (!s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON) {
 		_ASSERT(0);
@@ -5565,13 +5623,13 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	}
 	CallF(s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuDamp140ON.png", 0, 0), return S_FALSE);
 	//RigidSwitch OFF
-	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteOFF = new CMySprite(s_pdev);
-	if (!s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteOFF) {
+	s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteOFF = new CMySprite(s_pdev);
+	if (!s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteOFF) {
 		_ASSERT(0);
 		PostQuitMessage(1);
 		return S_FALSE;
 	}
-	CallF(s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuRigid140OFF.png", 0, 0), return S_FALSE);
+	CallF(s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuRigid140OFF.png", 0, 0), return S_FALSE);
 	s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF = new CMySprite(s_pdev);
 	if (!s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF) {
 		_ASSERT(0);
@@ -6030,6 +6088,7 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpGUISWParams();
 	SetSpIkModeSWParams();
 	SetSpRefPosSWParams();
+	SetSpDispSWParams();
 	SetSpRigidSWParams();
 	SetSpRetargetSWParams();
 	SetSpCamParams();
@@ -6433,7 +6492,9 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	}
 
 	if (s_copyhistorydlg.GetCreatedFlag() == true) {
-		s_copyhistorydlg.DestroyWindow();
+		if (::IsWindow(s_copyhistorydlg.m_hWnd)) {
+			s_copyhistorydlg.DestroyWindow();
+		}
 	}
 
 	if (s_cameradollydlgwnd) {
@@ -7302,6 +7363,23 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 				delete curspgOFF;
 			}
 			s_spguisw[spgno].spriteOFF = 0;
+
+		}
+	}
+	{
+		int spmno;
+		for (spmno = 0; spmno < SPDISPSWNUM; spmno++) {
+			CMySprite* curspmON = s_spdispsw[spmno].spriteON;
+			if (curspmON) {
+				delete curspmON;
+			}
+			s_spdispsw[spmno].spriteON = 0;
+
+			CMySprite* curspmOFF = s_spdispsw[spmno].spriteOFF;
+			if (curspmOFF) {
+				delete curspmOFF;
+			}
+			s_spdispsw[spmno].spriteOFF = 0;
 
 		}
 	}
@@ -8796,13 +8874,13 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			break;
 			case ID_40048:
 				//DispConvBoneWindow();
-				s_platemenukind = 2;
+				s_platemenukind = SPPLATEMENUKIND_RETARGET;
 				GUIMenuSetVisible(s_platemenukind, 1);
 				//return 0;
 				break;
 			case ID_40049:
 				//DispAngleLimitDlg();
-				s_platemenukind = 2;
+				s_platemenukind = SPPLATEMENUKIND_RETARGET;
 				GUIMenuSetVisible(s_platemenukind, 2);
 				//return 0;
 				break;
@@ -20872,9 +20950,9 @@ int SetSpAxisParams()
 
 }
 
-int SetSpRigidSWParams()
+int SetSpDispSWParams()
 {
-	if (!(s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteON) || !(s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].spriteOFF)) {
+	if (!(s_spdispsw[SPDISPSW_LIGHTS].spriteON) || !(s_spdispsw[SPDISPSW_LIGHTS].spriteOFF)) {
 		_ASSERT(0);
 		return 0;
 	}
@@ -20883,27 +20961,84 @@ int SetSpRigidSWParams()
 	float spgwidth = 124.0f;
 	float spgheight = 28.0f;
 	int spgshift = 6;
-	s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.x = s_guibarX0;
-	//s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486;
+	s_spdispsw[SPDISPSW_LIGHTS].dispcenter.x = s_guibarX0;
+	//s_spdispsw[SPDISPSW_LIGHTS].dispcenter.y = 486;
 
 
-	//s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486 - MAINMENUAIMBARH;
+	//s_spdispsw[SPDISPSW_LIGHTS].dispcenter.y = 486 - MAINMENUAIMBARH;
 	if (g_4kresolution) {
-		s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486 * 2 - MAINMENUAIMBARH + 32;
+		s_spdispsw[SPDISPSW_LIGHTS].dispcenter.y = 486 * 2 - MAINMENUAIMBARH + 32;
 	}
 	else {
-		s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y = 486 - MAINMENUAIMBARH;
+		s_spdispsw[SPDISPSW_LIGHTS].dispcenter.y = 486 - MAINMENUAIMBARH;
 	}
 
 
-	s_sprigidsw[SPRIGIDSW_IMPULSE].dispcenter.x = s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.x + (int)spgwidth + spgshift;
-	s_sprigidsw[SPRIGIDSW_IMPULSE].dispcenter.y = s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y;
+	s_spdispsw[SPDISPSW_DISPGROUP].dispcenter.x = s_spdispsw[SPDISPSW_LIGHTS].dispcenter.x + (int)spgwidth + spgshift;
+	s_spdispsw[SPDISPSW_DISPGROUP].dispcenter.y = s_spdispsw[SPDISPSW_LIGHTS].dispcenter.y;
+
+	int spgcnt;
+	for (spgcnt = 0; spgcnt < SPDISPSWNUM; spgcnt++) {
+		ChaVector3 disppos;
+		disppos.x = (float)(s_spdispsw[spgcnt].dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+		disppos.y = -((float)(s_spdispsw[spgcnt].dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+		disppos.z = 0.0f;
+		ChaVector2 dispsize = ChaVector2(spgwidth / (float)s_mainwidth * 2.0f, spgheight / (float)s_mainheight * 2.0f);
+
+		if (s_spdispsw[spgcnt].spriteON) {
+			CallF(s_spdispsw[spgcnt].spriteON->SetPos(disppos), return 1);
+			CallF(s_spdispsw[spgcnt].spriteON->SetSize(dispsize), return 1);
+		}
+		else {
+			_ASSERT(0);
+		}
+		if (s_spdispsw[spgcnt].spriteOFF) {
+			CallF(s_spdispsw[spgcnt].spriteOFF->SetPos(disppos), return 1);
+			CallF(s_spdispsw[spgcnt].spriteOFF->SetSize(dispsize), return 1);
+		}
+		else {
+			_ASSERT(0);
+		}
+
+	}
+
+	return 0;
+
+}
+
+
+int SetSpRigidSWParams()
+{
+	if (!(s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteON) || !(s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteOFF)) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	//float spgwidth = 140.0f;
+	float spgwidth = 124.0f;
+	float spgheight = 28.0f;
+	int spgshift = 6;
+	s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].dispcenter.x = s_guibarX0;
+	//s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].dispcenter.y = 486;
+
+
+	//s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].dispcenter.y = 486 - MAINMENUAIMBARH;
+	if (g_4kresolution) {
+		s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].dispcenter.y = 486 * 2 - MAINMENUAIMBARH + 32;
+	}
+	else {
+		s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].dispcenter.y = 486 - MAINMENUAIMBARH;
+	}
+
+
+	s_sprigidsw[SPRIGIDSW_IMPULSE].dispcenter.x = s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].dispcenter.x + (int)spgwidth + spgshift;
+	s_sprigidsw[SPRIGIDSW_IMPULSE].dispcenter.y = s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].dispcenter.y;
 
 	s_sprigidsw[SPRIGIDSW_GROUNDPLANE].dispcenter.x = s_sprigidsw[SPRIGIDSW_IMPULSE].dispcenter.x + (int)spgwidth + spgshift;
-	s_sprigidsw[SPRIGIDSW_GROUNDPLANE].dispcenter.y = s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y;
+	s_sprigidsw[SPRIGIDSW_GROUNDPLANE].dispcenter.y = s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].dispcenter.y;
 
 	s_sprigidsw[SPRIGIDSW_DAMPANIM].dispcenter.x = s_sprigidsw[SPRIGIDSW_GROUNDPLANE].dispcenter.x + (int)spgwidth + spgshift;
-	s_sprigidsw[SPRIGIDSW_DAMPANIM].dispcenter.y = s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y;
+	s_sprigidsw[SPRIGIDSW_DAMPANIM].dispcenter.y = s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].dispcenter.y;
 
 	int spgcnt;
 	for (spgcnt = 0; spgcnt < SPRIGIDSWNUM; spgcnt++) {
@@ -21934,6 +22069,67 @@ int PickSpAxis(POINT srcpos)
 	return kind;
 }
 
+int PickSpDispSW(POINT srcpos)
+{
+	int kind = 0;
+
+	//if (g_previewFlag == 5){
+	//	return 0;
+	//}
+
+
+	//ret2prev
+	int starty0 = s_spret2prev.dispcenter.y - 16;
+	int endy0 = starty0 + 32;
+	if ((srcpos.y >= starty0) && (srcpos.y <= endy0)) {
+		int startx0 = s_spret2prev.dispcenter.x - 16;
+		int endx0 = startx0 + 32;
+		if ((srcpos.x >= startx0) && (srcpos.x <= endx0)) {
+			kind = -2;
+		}
+	}
+
+	//spguisw
+	if (kind == 0) {//カエルボタンを押していないとき
+		int starty = s_spdispsw[SPDISPSW_LIGHTS].dispcenter.y - 14;
+		int endy = starty + 28;
+
+
+		if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+			int spgcnt;
+			for (spgcnt = 0; spgcnt < SPDISPSWNUM; spgcnt++) {
+				int startx = s_spdispsw[spgcnt].dispcenter.x - 70;
+				int endx = startx + 124 + 6;
+
+				if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+					switch (spgcnt) {
+					case 0:
+						kind = 1;
+						break;
+					case 1:
+						kind = 2;
+						break;
+					default:
+						kind = 0;
+						break;
+					}
+					break;
+				}
+			}
+		}
+
+
+		//DbgOut( L"pickspaxis : kind %d, mouse (%d, %d), starty %d, endy %d\r\n",
+		//	kind, srcpos.x, srcpos.y, starty, endy );
+		//int spacnt;
+		//for( spacnt = 0; spacnt < 3; spacnt++ ){
+		//	DbgOut( L"\tspa %d : startx %d, endx %d\r\n", spacnt, s_spaxis[spacnt].dispcenter.x, s_spaxis[spacnt].dispcenter.x + 32 );
+		//}
+	}
+	return kind;
+}
+
+
 int PickSpRigidSW(POINT srcpos)
 {
 	int kind = 0;
@@ -21956,13 +22152,13 @@ int PickSpRigidSW(POINT srcpos)
 
 	//spguisw
 	if (kind == 0) {//カエルボタンを押していないとき
-		int starty = s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].dispcenter.y - 14;
+		int starty = s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].dispcenter.y - 14;
 		int endy = starty + 28;
 
 
 		if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
 			int spgcnt;
-			for (spgcnt = 0; spgcnt < 4; spgcnt++) {
+			for (spgcnt = 0; spgcnt < SPRIGIDSWNUM; spgcnt++) {
 				int startx = s_sprigidsw[spgcnt].dispcenter.x - 70;
 				int endx = startx + 124 + 6;
 
@@ -29557,11 +29753,10 @@ int CreateSideMenuWnd()
 				s_ScloseFlag = true;
 			}
 			});
-
 		if (s_sidemenu_rigid) {
 			s_sidemenu_rigid->setButtonListener([]() {
 				if (s_model && (s_curboneno >= 0)) {
-					s_platemenukind = 1;
+					s_platemenukind = SPPLATEMENUKIND_RIGID;
 					GUIMenuSetVisible(s_platemenukind, 1);
 				}
 				s_sidemenuWnd->callRewrite();						//再描画
@@ -29570,7 +29765,7 @@ int CreateSideMenuWnd()
 		if (s_sidemenu_limiteul) {
 			s_sidemenu_limiteul->setButtonListener([]() {
 				if (s_model && (s_curboneno >= 0)) {
-					s_platemenukind = 2;
+					s_platemenukind = SPPLATEMENUKIND_RETARGET;
 					GUIMenuSetVisible(s_platemenukind, 2);
 				}
 				s_sidemenuWnd->callRewrite();						//再描画
@@ -29587,7 +29782,7 @@ int CreateSideMenuWnd()
 		if (s_sidemenu_retarget) {
 			s_sidemenu_retarget->setButtonListener([]() {
 				if (s_model && (s_curboneno >= 0)) {
-					s_platemenukind = 2;
+					s_platemenukind = SPPLATEMENUKIND_RETARGET;
 					GUIMenuSetVisible(s_platemenukind, 1);
 				}
 				s_sidemenuWnd->callRewrite();						//再描画
@@ -31856,21 +32051,23 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 
 		int platemenukind = s_platemenukind;
 		int platenomax = 0;
-		if (platemenukind == SPPLATEMENUKIND_GUI) {
+
+		switch (platemenukind) {
+		case SPPLATEMENUKIND_GUI:
 			platenomax = SPGUISWNUM;
-		}
-		else {
-			switch (platemenukind) {
-			case SPPLATEMENUKIND_RIGID:
-				platenomax = SPRIGIDSWNUM;
-				break;
-			case SPPLATEMENUKIND_RETARGET:
-				platenomax = SPRETARGETSWNUM;
-				break;
-			default:
-				platenomax = 0;
-				break;
-			}
+			break;
+		case SPPLATEMENUKIND_DISP:
+			platenomax = SPDISPSWNUM;
+			break;
+		case SPPLATEMENUKIND_RIGID:
+			platenomax = SPRIGIDSWNUM;
+			break;
+		case SPPLATEMENUKIND_RETARGET:
+			platenomax = SPRETARGETSWNUM;
+			break;
+		default:
+			platenomax = 0;
+			break;
 		}
 
 		{
@@ -31970,6 +32167,30 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 					else {
 						_ASSERT(0);
 					}
+				}
+			}
+		}
+	}
+	else if (s_platemenukind == SPPLATEMENUKIND_DISP) {
+		//menu 1 : Select SideMenu 
+
+		//Plate Menu 1
+		int spgcnt;
+		for (spgcnt = 0; spgcnt < SPDISPSWNUM; spgcnt++) {
+			if (s_spdispsw[spgcnt].state) {
+				if (s_spdispsw[spgcnt].spriteON) {
+					s_spdispsw[spgcnt].spriteON->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+			else {
+				if (s_spdispsw[spgcnt].spriteOFF) {
+					s_spdispsw[spgcnt].spriteOFF->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
 				}
 			}
 		}
@@ -34556,7 +34777,7 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			break;
 			case ID_40048:
 				//DispConvBoneWindow();
-				s_platemenukind = 2;
+				s_platemenukind = SPPLATEMENUKIND_RETARGET;
 				GUIMenuSetVisible(s_platemenukind, 1);
 				//return 0;
 				break;
@@ -35527,6 +35748,26 @@ void GUIRetargetSetVisible(int srcplateno)
 	}
 }
 
+void GUIDispSetVisible(int srcplateno)
+{
+	if (srcplateno == 1) {
+		ShowLightsWnd(true);
+		ShowDispGroupWnd(false);
+	}
+	else if (srcplateno == 2) {
+		ShowLightsWnd(false);
+		ShowDispGroupWnd(true);
+	}
+	else if (srcplateno == -2) {
+		ShowLightsWnd(false);
+		ShowDispGroupWnd(false);
+	}
+	else {
+		_ASSERT(0);
+	}
+}
+
+
 
 void GUIRigidSetVisible(int srcplateno)
 {
@@ -35573,19 +35814,19 @@ void GUISetVisible(int srcplateno)
 		//srcplateno == 1 --> PlaceFolderWnd visible
 	}
 	else if (srcplateno == 2) {
-		GUISetVisible_SpriteFK();
+		GUISetVisible_CameraAndIK();
 	}
 	else if (srcplateno == 3) {
-		GUISetVisible_Left();
+		GUISetVisible_DispAndLimits();
 	}
 	else if (srcplateno == 4) {
-		GUISetVisible_Left2nd();
+		GUISetVisible_BrushParams();
 	}
 	else if (srcplateno == 5) {
 		GUISetVisible_Bullet();
 	}
 	else if (srcplateno == 6) {
-		GUISetVisible_PhysicsIK();
+		GUISetVisible_RefPos();
 	}
 	else {
 		_ASSERT(0);
@@ -35632,7 +35873,7 @@ void GUISetVisible_AimBar()
 	}
 }
 
-void GUISetVisible_SpriteFK()
+void GUISetVisible_CameraAndIK()
 {
 	bool nextvisible = !(s_spguisw[SPGUISW_CAMERA_AND_IK].state);
 
@@ -35643,7 +35884,7 @@ void GUISetVisible_SpriteFK()
 	s_spguisw[SPGUISW_CAMERA_AND_IK].state = nextvisible;
 }
 
-void GUISetVisible_Left()
+void GUISetVisible_DispAndLimits()
 {
 	bool nextvisible = !(s_spguisw[SPGUISW_DISP_AND_LIMITS].state);
 
@@ -35658,7 +35899,7 @@ void GUISetVisible_Left()
 	s_spguisw[SPGUISW_DISP_AND_LIMITS].state = nextvisible;
 
 }
-void GUISetVisible_Left2nd()
+void GUISetVisible_BrushParams()
 {
 	bool nextvisible = !(s_spguisw[SPGUISW_BRUSHPARAMS].state);
 
@@ -35686,7 +35927,7 @@ void GUISetVisible_Bullet()
 
 	s_spguisw[SPGUISW_BULLETPHYSICS].state = nextvisible;
 }
-void GUISetVisible_PhysicsIK()
+void GUISetVisible_RefPos()
 {
 	bool nextvisible = !(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].state);
 
@@ -35755,6 +35996,26 @@ void ShowLimitEulerWnd(bool srcflag)
 	}
 }
 
+void ShowLightsWnd(bool srcflag)
+{
+	if (s_model) {
+		//s_rigidWnd->setVisible(srcflag);
+
+		s_spdispsw[SPDISPSW_LIGHTS].state = srcflag;
+		s_spdispsw[SPDISPSW_DISPGROUP].state = !srcflag;
+	}
+}
+
+void ShowDispGroupWnd(bool srcflag)
+{
+	if (s_model) {
+		//s_rigidWnd->setVisible(srcflag);
+
+		s_spdispsw[SPDISPSW_DISPGROUP].state = srcflag;
+		s_spdispsw[SPDISPSW_LIGHTS].state = !srcflag;
+	}
+}
+
 
 void ShowRigidWnd(bool srcflag)
 {
@@ -35776,7 +36037,7 @@ void ShowRigidWnd(bool srcflag)
 			SetRigidLeng();
 			RigidElem2WndParam();
 
-			s_sprigidsw[SPRIGIDTSW_RIGIDPARAMS].state = srcflag;
+			s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].state = srcflag;
 			//s_sprigidsw[1].state = false;
 			//s_sprigidsw[2].state = false;
 			//s_sprigidsw[3].state = false;
@@ -35890,6 +36151,7 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 			if ((srcplateno >= 1) && (srcplateno < (SPGUISWNUM + 2))) {
 				GUIRigidSetVisible(-2);
 				GUIRetargetSetVisible(-2);
+				GUIDispSetVisible(-2);
 				GUISetVisible(srcplateno);//((spgno == 0) && (spgno < SPGUISWNUM))でGUISetVisible(spgno + 2)でGUISetVisible(1)はPlaceFolderWindow用
 				if (s_placefolderWnd) {
 					s_placefolderWnd->setVisible(true);
@@ -35899,11 +36161,29 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 			else {
 				GUIRigidSetVisible(-2);
 				GUIRetargetSetVisible(-2);
+				GUIDispSetVisible(-2);
 				//GUISetVisible(-2);
 				if (s_placefolderWnd) {
 					s_placefolderWnd->setVisible(true);
 				}
 				SelectNextWindow(MB3D_WND_SIDE);
+			}
+			break;
+		case SPPLATEMENUKIND_DISP:
+			if ((srcplateno >= 1) && (srcplateno <= SPDISPSWNUM)) {
+				GUIDispSetVisible(-2);
+				if (s_customrigdlg) {
+					DestroyWindow(s_customrigdlg);
+					s_customrigdlg = 0;
+				}
+				if (s_placefolderWnd) {
+					s_placefolderWnd->setVisible(false);
+				}
+				GUIDispSetVisible(srcplateno);
+				SelectNextWindow(MB3D_WND_SIDE);
+			}
+			else {
+				_ASSERT(0);
 			}
 			break;
 		case SPPLATEMENUKIND_RIGID:
@@ -35947,6 +36227,7 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 		}
 		GUIRetargetSetVisible(-2);
 		GUIRigidSetVisible(-2);
+		GUIDispSetVisible(-2);
 		SelectNextWindow(MB3D_WND_3D);
 	}
 	else {
@@ -35959,24 +36240,40 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 
 void GUIGetNextMenu(POINT ptCursor, int srcmenukind, int* dstmenukind, int* dstplateno)
 {
-	if ((srcmenukind >= 0) && (srcmenukind <= 2)) {
+	if ((srcmenukind >= 0) && (srcmenukind < SPPLATEMENUKINDNUM)) {
 
 		int nextmenukind = srcmenukind;
 		int nextplateno = 1;
 
 		//int spckind = 0;
 		int pickguiplateno = 0;
+		int pickdispplateno = 0;
 		int pickrigidplateno = 0;
 		int pickretargetplateno = 0;
 		if (srcmenukind == SPPLATEMENUKIND_GUI) {
 			pickguiplateno = PickSpGUISW(ptCursor);//カエルボタンを押したときは -2, (SPGUISW_* + 2)が返る
 			if (pickguiplateno == -2) {
-				nextmenukind = SPPLATEMENUKIND_RIGID;
+				nextmenukind = SPPLATEMENUKIND_DISP;
 				nextplateno = 1;//最初のプレート
 			}
 			else if (pickguiplateno >= 2) {
 				nextmenukind = srcmenukind;
 				nextplateno = pickguiplateno;
+			}
+			else {
+				nextmenukind = -1;
+				nextplateno = 1;
+			}
+		}
+		else if (srcmenukind == SPPLATEMENUKIND_DISP) {
+			pickdispplateno = PickSpDispSW(ptCursor);//カエルボタンを押したときは -2
+			if (pickdispplateno == -2) {
+				nextmenukind = SPPLATEMENUKIND_RIGID;
+				nextplateno = 1;//最初のプレート
+			}
+			else if (pickdispplateno != 0) {
+				nextmenukind = srcmenukind;
+				nextplateno = pickdispplateno;
 			}
 			else {
 				nextmenukind = -1;
@@ -36936,6 +37233,9 @@ void DSSelectWindowAndCtrl()
 				if (s_platemenukind == SPPLATEMENUKIND_GUI) {
 					SelectNextWindow(MB3D_WND_3D);
 				}
+				else if (s_platemenukind == SPPLATEMENUKIND_DISP) {
+					SelectNextWindow(MB3D_WND_SIDE);
+				}
 				else if (s_platemenukind == SPPLATEMENUKIND_RIGID) {
 					SelectNextWindow(MB3D_WND_SIDE);
 				}
@@ -36974,6 +37274,11 @@ void DSSelectWindowAndCtrl()
 
 				if (platemenukind == SPPLATEMENUKIND_GUI) {
 					if (nextaimbarno >= SPGUISWNUM) {
+						nextaimbarno = 0;
+					}
+				}
+				else if (platemenukind == SPPLATEMENUKIND_DISP) {
+					if (nextaimbarno >= SPDISPSWNUM) {
 						nextaimbarno = 0;
 					}
 				}
@@ -37037,9 +37342,21 @@ void DSCrossButton(bool firstctrlselect)
 			DSCrossButtonSelectPlayerBtns(firstctrlselect);
 		}
 		else if (s_currentwndid == MB3D_WND_SIDE) {
-			if (s_platemenukind == SPPLATEMENUKIND_RIGID) {
+			if (s_platemenukind == SPPLATEMENUKIND_DISP) {
 				switch (s_platemenuno) {
-				case (SPRIGIDTSW_RIGIDPARAMS + 1):
+				case (SPDISPSW_LIGHTS + 1):
+					DSCrossButtonSelectRigidCtrls(firstctrlselect);
+					break;
+				case (SPDISPSW_DISPGROUP + 1):
+					DSCrossButtonSelectImpulseCtrls(firstctrlselect);
+					break;
+				default:
+					break;
+				}
+			}
+			else if (s_platemenukind == SPPLATEMENUKIND_RIGID) {
+				switch (s_platemenuno) {
+				case (SPRIGIDSW_RIGIDPARAMS + 1):
 					DSCrossButtonSelectRigidCtrls(firstctrlselect);
 					break;
 				case (SPRIGIDSW_IMPULSE + 1):
@@ -42155,8 +42472,20 @@ void ChangeMouseSetCapture()
 					SetCapture(s_mainhwnd);
 				}
 			}
+			else if (s_platemenukind == SPPLATEMENUKIND_DISP) {
+				if (s_platemenuno == (SPDISPSW_LIGHTS + 1)) {
+					if (s_rigidWnd) {
+						SetCapture(s_rigidWnd->getHWnd());
+					}
+				}
+				else if (s_platemenuno == (SPDISPSW_DISPGROUP + 1)) {
+					if (s_impWnd) {
+						SetCapture(s_impWnd->getHWnd());
+					}
+				}
+			}
 			else if (s_platemenukind == SPPLATEMENUKIND_RIGID) {
-				if (s_platemenuno == (SPRIGIDTSW_RIGIDPARAMS + 1)) {
+				if (s_platemenuno == (SPRIGIDSW_RIGIDPARAMS + 1)) {
 					if (s_rigidWnd) {
 						SetCapture(s_rigidWnd->getHWnd());
 					}

@@ -80,10 +80,7 @@ int CMySprite::InitParams()
 	m_pdev = 0;
 	m_texid = -1;
 
-	m_BufferDesc = (D3D11_BUFFER_DESC*)malloc(sizeof(D3D11_BUFFER_DESC));
-	if (m_BufferDesc) {
-		ZeroMemory(m_BufferDesc, sizeof(D3D11_BUFFER_DESC));
-	}
+	m_BufferDesc = 0;
 	m_layout = 0;
 	m_VB = 0;
 
@@ -111,15 +108,19 @@ int CMySprite::InitParams()
 
 	return 0;
 }
+
+
+
+
 int CMySprite::DestroyObjs()
 {
+	if (m_VB) {
+		m_VB->Release();
+		m_VB = 0;
+	}
 	if (m_layout) {
 		m_layout->Release();
 		m_layout = 0;
-	}
-	if( m_VB ){
-		m_VB->Release();
-		m_VB = 0;
 	}
 	if (m_BufferDesc) {
 		free(m_BufferDesc);
@@ -131,10 +132,16 @@ int CMySprite::DestroyObjs()
 
 int CMySprite::CreateDecl()
 {
+
+	m_BufferDesc = (D3D11_BUFFER_DESC*)malloc(sizeof(D3D11_BUFFER_DESC));
 	if (!m_BufferDesc) {
 		_ASSERT(0);
 		return 1;
 	}
+	if (m_BufferDesc) {
+		ZeroMemory(m_BufferDesc, sizeof(D3D11_BUFFER_DESC));
+	}
+
 
 	D3D11_INPUT_ELEMENT_DESC decl[] = {
 		//pos[4]
@@ -185,6 +192,8 @@ int CMySprite::CreateDecl()
 //int CMySprite::Create( WCHAR* srcpath, WCHAR* srcname, int srctransparent, int srcpool, D3DXCOLOR* srccol )
 int CMySprite::Create(ID3D11DeviceContext* pd3dImmediateContext, const WCHAR* srcpath, const WCHAR* srcname, int srctransparent, int srcpool)
 {
+	DestroyObjs();//2023/08/07
+
 	CallF( CreateDecl(), return 1 );
 
 	if( !g_texbank ){

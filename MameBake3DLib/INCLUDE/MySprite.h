@@ -31,7 +31,6 @@ private:
 	int InitParams();
 	int DestroyObjs();
 
-
 private:
 	ID3D11Device* m_pdev;
 	int m_texid;
