@@ -182,10 +182,12 @@ ID3DX11EffectTechnique* g_hRenderBoneL0 = 0;
 ID3DX11EffectTechnique* g_hRenderBoneL1 = 0;
 ID3DX11EffectTechnique* g_hRenderBoneL2 = 0;
 ID3DX11EffectTechnique* g_hRenderBoneL3 = 0;
+ID3DX11EffectTechnique* g_hRenderBoneL4 = 0;
 ID3DX11EffectTechnique* g_hRenderNoBoneL0 = 0;
 ID3DX11EffectTechnique* g_hRenderNoBoneL1 = 0;
 ID3DX11EffectTechnique* g_hRenderNoBoneL2 = 0;
 ID3DX11EffectTechnique* g_hRenderNoBoneL3 = 0;
+ID3DX11EffectTechnique* g_hRenderNoBoneL4 = 0;
 ID3DX11EffectTechnique* g_hRenderLine = 0;
 ID3DX11EffectTechnique* g_hRenderSprite = 0;
 
@@ -230,9 +232,14 @@ int g_refalpha = 50;
 //float g_physicsmvrate = 0.5f;
 float g_physicsmvrate = 0.3f;
 
-float                       g_fLightScale;
-int                         g_nNumActiveLights;
-int                         g_nActiveLight;
+float g_fLightScale;
+int g_nNumActiveLights;
+//int                         g_nActiveLight;
+ChaVector3 g_lightdir[LIGHTNUMMAX];
+ChaVector3 g_lightdiffuse[LIGHTNUMMAX];
+bool g_lightenable[LIGHTNUMMAX];
+bool g_lightdirwithview[LIGHTNUMMAX];
+
 
 int g_motionbrush_method = 0;
 double g_motionbrush_startframe = 0.0;
@@ -361,10 +368,12 @@ extern ID3DX11EffectTechnique* g_hRenderBoneL0;
 extern ID3DX11EffectTechnique* g_hRenderBoneL1;
 extern ID3DX11EffectTechnique* g_hRenderBoneL2;
 extern ID3DX11EffectTechnique* g_hRenderBoneL3;
+extern ID3DX11EffectTechnique* g_hRenderBoneL4;
 extern ID3DX11EffectTechnique* g_hRenderNoBoneL0;
 extern ID3DX11EffectTechnique* g_hRenderNoBoneL1;
 extern ID3DX11EffectTechnique* g_hRenderNoBoneL2;
 extern ID3DX11EffectTechnique* g_hRenderNoBoneL3;
+extern ID3DX11EffectTechnique* g_hRenderNoBoneL4;
 extern ID3DX11EffectTechnique* g_hRenderLine;
 extern ID3DX11EffectTechnique* g_hRenderSprite;
 
@@ -408,7 +417,12 @@ extern float g_physicsmvrate;
 
 extern float                       g_fLightScale;
 extern int                         g_nNumActiveLights;
-extern int                         g_nActiveLight;
+//extern int                         g_nActiveLight;
+extern ChaVector3 g_lightdir[LIGHTNUMMAX];
+extern ChaVector3 g_lightdiffuse[LIGHTNUMMAX];
+extern bool g_lightenable[LIGHTNUMMAX];
+extern bool g_lightdirwithview[LIGHTNUMMAX];
+
 
 extern int g_motionbrush_method;
 extern double g_motionbrush_startframe;

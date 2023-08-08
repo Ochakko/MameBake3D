@@ -216,6 +216,9 @@
     <ClCompile Include="..\DXUT\Optional\DXUTcamera.cpp">
       <Filter>DXUT_Camera</Filter>
     </ClCompile>
+    <ClCompile Include="..\CPP\ColDlg.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h">
@@ -1294,6 +1297,9 @@
     </ClInclude>
     <ClInclude Include="..\DXUT\Optional\DXUTcamera.h">
       <Filter>DXUT_Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\ColDlg.h">
+      <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

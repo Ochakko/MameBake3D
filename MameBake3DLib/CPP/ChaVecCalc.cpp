@@ -5686,6 +5686,27 @@ ChaMatrix CalcAxisMatX(ChaVector3 vecx, ChaVector3 srcpos, ChaMatrix srcmat)
 }
 
 
+COLORREF ChaVector3::ColorRef()
+{
+
+	int r255, g255, b255;
+	r255 = (int)(x * 255.0f + 0.0001f);
+	r255 = min(255, r255);
+	r255 = max(0, r255);
+
+	g255 = (int)(y * 255.0f + 0.0001f);
+	g255 = min(255, g255);
+	g255 = max(0, g255);
+
+	b255 = (int)(z * 255.0f + 0.0001f);
+	b255 = min(255, b255);
+	b255 = max(0, b255);
+
+	COLORREF retcol;
+	retcol = RGB(r255, g255, b255);
+
+	return retcol;
+}
 
 #ifdef CONVD3DX11
 DirectX::XMFLOAT2 ChaVector2::D3DX()

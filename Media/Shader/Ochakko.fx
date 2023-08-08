@@ -16,8 +16,8 @@ cbuffer Variable
 	float  g_power;
 	float3 g_emissive;
 
-	float3 g_LightDir[3];               // Light's direction in world space
-	float4 g_LightDiffuse[3];           // Light's diffuse color
+	float3 g_LightDir[4];               // Light's direction in world space
+	float4 g_LightDiffuse[4];           // Light's diffuse color
 
 	matrix g_mWorld;                  // World matrix for object
 	matrix g_mVP;    // View * Projection matrix
@@ -435,6 +435,25 @@ technique10 RenderBoneL3
 
 }
 
+technique10 RenderBoneL4
+{
+    pass P0
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 4 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+    pass P1
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 4 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+
+}
+
 technique10 RenderNoBoneL0
 {
     pass P0
@@ -505,6 +524,25 @@ technique10 RenderNoBoneL3
     pass P1
     {          
 		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 3 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+
+}
+
+technique10 RenderNoBoneL4
+{
+    pass P0
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 4 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+    pass P1
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 4 )));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
 		//SetDepthStencilState(EnableDepth, 0);

@@ -248,7 +248,7 @@ public:
 	DirectX::XMFLOAT3 D3DX();
 	DirectX::XMVECTOR XMVECTOR(float w);
 #endif
-
+	COLORREF ColorRef();
 
 public:
 	float x;

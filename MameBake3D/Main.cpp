@@ -1104,7 +1104,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 //#include <ThreadingUpdateTimeline.h>
 
 #include "SetDlgPos.h"
-
+#include "ColDlg.h"
 
 //#include <uxtheme.h>
 //#pragma ( lib, "UxTheme.lib" )
@@ -1201,6 +1201,10 @@ typedef struct tag_spsw3 //2023/06/04
 #define FPSSAVENUM 120
 
 static HWINEVENTHOOK s_hhook = NULL;
+
+
+static CColDlg s_coldlg;
+
 
 static double s_fps100[FPSSAVENUM];
 static int s_fps100index = 0;
@@ -1677,6 +1681,9 @@ static ANGLELIMIT s_anglelimitcopy;
 static CBone* s_anglelimitbone = 0;
 static bool s_beflimitdegflag = true;
 static bool s_savelimitdegflag = true;
+
+
+static HWND s_lightsforeditdlg = 0;
 
 
 static HWND s_rotaxisdlg = 0;
@@ -2602,8 +2609,13 @@ bool                        g_bEnablePreshader;     // if TRUE, then D3DXSHADER_
 ChaMatrix               g_mCenterWorld;
 
 
-#define MAX_LIGHTS 3
-CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
+//#define MAX_LIGHTS 3
+//CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
+CDXUTDirectionWidget g_LightControl[LIGHTNUMMAX];
+static ChaVector3 s_lightdirforshader[LIGHTNUMMAX];
+static ChaVector4 s_lightdiffuseforshader[LIGHTNUMMAX];
+
+
 
 //--------------------------------------------------------------------------------------
 // UI control IDs
@@ -2855,6 +2867,7 @@ LRESULT CALLBACK SaveImpDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK CheckAxisTypeProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
+LRESULT CALLBACK LightsForEditDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK AboutDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
@@ -2902,7 +2915,14 @@ static int CreateToolWnd();
 static int CreateLayerWnd();
 static int CreatePlaceFolderWnd();
 
+static int CreateLightsWnd();
+static int Lights2Dlg(HWND hDlgWnd);
+static int Dlg2Lights(HWND hDlgWnd, int lightno);
+static int CheckStr_float(const WCHAR* srcstr);
+
+
 static int OnFrameAngleLimit(bool updateonlycheckeul);
+static int OnFrameLightsForEdit();
 static int OnFrameKeyboard();
 static int OnFrameUtCheckBox();
 static int OnFrameProcessTime(double difftime, double* pnextframe, int* pendflag, int* ploopstartflag);
@@ -3709,6 +3729,8 @@ INT WINAPI wWinMain(
 	CreateSideMenuWnd();
 	CreateMainMenuAimBarWnd();
 
+	CreateLightsWnd();
+
 	CreateCameraDollyWnd();
 	CreateMaterialRateWnd();
 	CreateModelWorldMatWnd();
@@ -3967,16 +3989,20 @@ void InitApp()
 
 	CBone::InitColDisp();
 
+	s_coldlg.InitParams();
+
 
 	{
 		g_hRenderBoneL0 = 0;
 		g_hRenderBoneL1 = 0;
 		g_hRenderBoneL2 = 0;
 		g_hRenderBoneL3 = 0;
+		g_hRenderBoneL4 = 0;
 		g_hRenderNoBoneL0 = 0;
 		g_hRenderNoBoneL1 = 0;
 		g_hRenderNoBoneL2 = 0;
 		g_hRenderNoBoneL3 = 0;
+		g_hRenderNoBoneL4 = 0;
 		g_hRenderLine = 0;
 		g_hRenderSprite = 0;
 
@@ -4531,6 +4557,8 @@ void InitApp()
 	InitAngleLimit(&s_anglelimit);
 	InitAngleLimit(&s_anglelimitcopy);
 
+	s_lightsforeditdlg = 0;
+
 	s_rotaxisdlg = 0;
 
 	g_motionbrush_method = 0;
@@ -4720,16 +4748,37 @@ void InitApp()
 
 	g_bEnablePreshader = true;
 
-	for (int i = 0; i < MAX_LIGHTS; i++) {
-		g_LightControl[i].SetLightDirection(
-			ChaVector3((float)sin(PI * 2 * (MAX_LIGHTS - i - 1) / MAX_LIGHTS - PI / 6),
-				0.0f,
-				(float)-cos(PI * 2 * (MAX_LIGHTS - i - 1) / MAX_LIGHTS - PI / 6)).D3DX());
-	}
 
-	g_nActiveLight = 0;
+	//for (int i = 0; i < MAX_LIGHTS; i++) {
+	//	g_LightControl[i].SetLightDirection(
+	//		ChaVector3((float)sin(PI * 2 * (MAX_LIGHTS - i - 1) / MAX_LIGHTS - PI / 6),
+	//			0.0f,
+	//			(float)-cos(PI * 2 * (MAX_LIGHTS - i - 1) / MAX_LIGHTS - PI / 6)).D3DX());
+	//}
+	//g_nActiveLight = 0;
 	g_nNumActiveLights = 1;
 	g_fLightScale = 1.0f;
+	int lno;
+	for (lno = 0; lno < LIGHTNUMMAX; lno++) {
+		double initrad = PI * 2 * (LIGHTNUMMAX - lno - 1) / LIGHTNUMMAX;// -PI / 6;
+		g_lightdir[lno] = ChaVector3((float)sin(initrad), 0.0f, (float)-cos(initrad));
+		s_lightdirforshader[lno] = g_lightdir[lno];
+
+		g_lightdiffuse[lno] = ChaVector3(1.0f, 1.0f, 1.0f);
+		s_lightdiffuseforshader[lno] = ChaVector4(g_lightdiffuse[lno].x, g_lightdiffuse[lno].y, g_lightdiffuse[lno].z, 1.0f);
+
+		if (lno == 1) {//初期状態では lno == 1のときキャラの正面を照らす向き
+			g_lightenable[lno] = true;
+		}
+		else {
+			g_lightenable[lno] = false;
+		}
+		g_lightdirwithview[lno] = true;
+
+		g_LightControl[lno].SetLightDirection(g_lightdir[lno].D3DX());
+
+	}
+
 
 	//CreateUtDialog();
 
@@ -6482,6 +6531,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		DestroyWindow(s_anglelimitdlg);
 		s_anglelimitdlg = 0;
 	}
+	if (s_lightsforeditdlg) {
+		DestroyWindow(s_lightsforeditdlg);
+		s_lightsforeditdlg = 0;
+	}
 	if (s_rotaxisdlg) {
 		DestroyWindow(s_rotaxisdlg);
 		s_rotaxisdlg = 0;
@@ -7693,7 +7746,9 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 			bool updateonlycheckeul = true;
 			OnFrameAngleLimit(updateonlycheckeul);//2022/12/30 AngleLimitDlgのcheck値のリアルタイム更新のため
 		}
-
+		if (s_spdispsw[SPDISPSW_LIGHTS].state == true) {
+			OnFrameLightsForEdit();
+		}
 
 		OnDSMouseHereApeal();
 
@@ -7986,8 +8041,8 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 
 
 	ChaMatrix mWorldViewProjection;
-	ChaVector3 vLightDir[MAX_LIGHTS];
-	ChaVector4 vLightDiffuse[MAX_LIGHTS];
+	//ChaVector3 vLightDir[MAX_LIGHTS];
+	//ChaVector4 vLightDiffuse[MAX_LIGHTS];
 	ChaMatrix mWorld;
 	ChaMatrix mView;
 	ChaMatrix mProj;
@@ -8000,45 +8055,45 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 
 	mWorldViewProjection = mWorld * mView * mProj;
 
-	// Render the light arrow so the user can visually see the light dir
-	for (int i = 0; i < g_nNumActiveLights; i++)
-	{
-		DirectX::XMFLOAT4 arrowColor = (i == g_nActiveLight) ? DirectX::XMFLOAT4(1, 1, 0, 1) : DirectX::XMFLOAT4(1, 1, 1, 1);
-		//V(g_LightControl[i].OnRender10(arrowColor, &mView, &mProj, g_Camera->GetEyePt()));
-		vLightDir[i] = ChaVector3(g_LightControl[i].GetLightDirection());
-		vLightDiffuse[i] = ChaVector4(1, 1, 1, 1) * g_fLightScale;
-	}
-
-	//V(g_pLightDir->SetRawValue(vLightDir, 0, sizeof(ChaVector3) * MAX_LIGHTS));
-	//V(g_pLightDiffuse->SetFloatVectorArray((float*)vLightDiffuse, 0, MAX_LIGHTS));
-	//V(g_pmWorldViewProjection->SetMatrix((float*)&mWorldViewProjection));
-	//V(g_pmWorld->SetMatrix((float*)&mWorld));
-	//V(g_pfTime->SetFloat((float)fTime));
-	//V(g_pnNumLights->SetInt(g_nNumActiveLights));
-
-	//// Render the scene with this technique as defined in the .fx file
-	//ID3D11EffectTechnique* pRenderTechnique;
-	//switch (g_nNumActiveLights)
+	//// Render the light arrow so the user can visually see the light dir
+	//for (int i = 0; i < g_nNumActiveLights; i++)
 	//{
-	//case 1:
-	//	pRenderTechnique = g_pTechRenderSceneWithTexture1Light;
-	//	break;
-	//case 2:
-	//	pRenderTechnique = g_pTechRenderSceneWithTexture2Light;
-	//	break;
-	//case 3:
-	//	pRenderTechnique = g_pTechRenderSceneWithTexture3Light;
-	//	break;
-	//default:
-	//	pRenderTechnique = g_pTechRenderSceneWithTexture1Light;
-	//	break;
+	//	DirectX::XMFLOAT4 arrowColor = (i == g_nActiveLight) ? DirectX::XMFLOAT4(1, 1, 0, 1) : DirectX::XMFLOAT4(1, 1, 1, 1);
+	//	//V(g_LightControl[i].OnRender10(arrowColor, &mView, &mProj, g_Camera->GetEyePt()));
+	//	vLightDir[i] = ChaVector3(g_LightControl[i].GetLightDirection());
+	//	vLightDiffuse[i] = ChaVector4(1, 1, 1, 1) * g_fLightScale;
 	//}
 
+	////V(g_pLightDir->SetRawValue(vLightDir, 0, sizeof(ChaVector3) * MAX_LIGHTS));
+	////V(g_pLightDiffuse->SetFloatVectorArray((float*)vLightDiffuse, 0, MAX_LIGHTS));
+	////V(g_pmWorldViewProjection->SetMatrix((float*)&mWorldViewProjection));
+	////V(g_pmWorld->SetMatrix((float*)&mWorld));
+	////V(g_pfTime->SetFloat((float)fTime));
+	////V(g_pnNumLights->SetInt(g_nNumActiveLights));
+
+	////// Render the scene with this technique as defined in the .fx file
+	////ID3D11EffectTechnique* pRenderTechnique;
+	////switch (g_nNumActiveLights)
+	////{
+	////case 1:
+	////	pRenderTechnique = g_pTechRenderSceneWithTexture1Light;
+	////	break;
+	////case 2:
+	////	pRenderTechnique = g_pTechRenderSceneWithTexture2Light;
+	////	break;
+	////case 3:
+	////	pRenderTechnique = g_pTechRenderSceneWithTexture3Light;
+	////	break;
+	////default:
+	////	pRenderTechnique = g_pTechRenderSceneWithTexture1Light;
+	////	break;
+	////}
 
 
-	//s_pdev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
-	//s_pdev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-	//s_pdev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+
+	////s_pdev->SetRenderState( D3DRS_ALPHABLENDENABLE, TRUE );
+	////s_pdev->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+	////s_pdev->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
 
 
 	OnRenderSetShaderConst();
@@ -10739,6 +10794,8 @@ int GetShaderHandle()
 	_ASSERT(g_hRenderBoneL2);
 	g_hRenderBoneL3 = g_pEffect->GetTechniqueByName("RenderBoneL3");
 	_ASSERT(g_hRenderBoneL3);
+	g_hRenderBoneL4 = g_pEffect->GetTechniqueByName("RenderBoneL4");
+	_ASSERT(g_hRenderBoneL4);
 
 	g_hRenderNoBoneL0 = g_pEffect->GetTechniqueByName("RenderNoBoneL0");
 	_ASSERT(g_hRenderNoBoneL0);
@@ -10748,6 +10805,8 @@ int GetShaderHandle()
 	_ASSERT(g_hRenderNoBoneL2);
 	g_hRenderNoBoneL3 = g_pEffect->GetTechniqueByName("RenderNoBoneL3");
 	_ASSERT(g_hRenderNoBoneL3);
+	g_hRenderNoBoneL4 = g_pEffect->GetTechniqueByName("RenderNoBoneL4");
+	_ASSERT(g_hRenderNoBoneL4);
 
 	g_hRenderLine = g_pEffect->GetTechniqueByName("RenderLine");
 	_ASSERT(g_hRenderLine);
@@ -12150,7 +12209,7 @@ void CalcTotalBound()
 	DbgOut(L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
 		s_totalmb.r, s_totalmb.center.x, s_totalmb.center.y, s_totalmb.center.z);
 
-	for (int i = 0; i < MAX_LIGHTS; i++)
+	for (int i = 0; i < LIGHTNUMMAX; i++)
 		g_LightControl[i].SetRadius(fObjectRadius);
 
 
@@ -23613,6 +23672,66 @@ int RollBackEditRange(int prevrangeFlag, int nextrangeFlag)
 	return 0;
 }
 
+int CreateLightsWnd()
+{
+
+	if (s_lightsforeditdlg) {
+		//already opened
+		return 0;
+	}
+
+
+	//s_dseullimitctrls.clear();
+
+
+	s_lightsforeditdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_LIGHTSFOREDITDLG), s_mainhwnd, (DLGPROC)LightsForEditDlgProc);
+	if (!s_lightsforeditdlg) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
+
+	SetParent(s_lightsforeditdlg, s_mainhwnd);
+	SetWindowPos(
+		s_lightsforeditdlg,
+		HWND_TOP,
+		windowposx,
+		s_sidemenuheight,
+		s_sidewidth,
+		s_sideheight,
+		SWP_SHOWWINDOW
+	);
+
+	////s_dseullimitctrls.push_back(IDD_ANGLELIMITDLG);
+	//s_dseullimitctrls.push_back(IDC_BONEAXIS);
+	//s_dseullimitctrls.push_back(IDC_EDIT_XL);
+	//s_dseullimitctrls.push_back(IDC_EDIT_XU);
+	//s_dseullimitctrls.push_back(IDC_EDIT_YL);
+	//s_dseullimitctrls.push_back(IDC_EDIT_YU);
+	//s_dseullimitctrls.push_back(IDC_EDIT_ZL);
+	//s_dseullimitctrls.push_back(IDC_EDIT_ZU);
+	//s_dseullimitctrls.push_back(IDOK);
+
+
+	//ShowWindow(s_lightsforeditdlg, SW_SHOW);
+	//UpdateWindow(s_lightsforeditdlg);
+
+	ShowWindow(s_lightsforeditdlg, SW_HIDE);
+	//UpdateWindow(s_lightsforeditdlg);
+
+
+	//AngleLimit2Bone();
+
+
+	return 0;
+}
 
 
 int DispAngleLimitDlg()
@@ -23653,7 +23772,7 @@ int DispAngleLimitDlg()
 	*/
 	//s_anglelimitdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ANGLELIMITDLG), s_3dwnd, (DLGPROC)AngleLimitDlgProc);
 	//s_anglelimitdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ANGLELIMITDLG), s_mainhwnd, (DLGPROC)AngleLimitDlgProc);
-	s_anglelimitdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ANGLELIMITDLG2), s_mainhwnd, (DLGPROC)AngleLimitDlgProc2);
+	s_anglelimitdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_ANGLELIMITDLG3), s_mainhwnd, (DLGPROC)AngleLimitDlgProc2);
 	if (!s_anglelimitdlg) {
 		_ASSERT(0);
 		return 1;
@@ -23938,7 +24057,7 @@ int CheckStr_SInt(const WCHAR* srcstr)
 	size_t strindex;
 	for (strindex = 0; strindex < strleng; strindex++) {
 		WCHAR curwc = *(srcstr + strindex);
-		if (((curwc >= '0') && (curwc <= '9')) || (curwc == '+') || (curwc == '-')) {
+		if (((curwc >= TEXT('0')) && (curwc <= TEXT('9'))) || (curwc == TEXT('+')) || (curwc == TEXT('-'))) {
 
 		}
 		else {
@@ -23956,6 +24075,44 @@ int CheckStr_SInt(const WCHAR* srcstr)
 		return 1;
 	}
 }
+
+int CheckStr_float(const WCHAR* srcstr)
+{
+	if (!srcstr) {
+		return 1;
+	}
+	size_t strleng = wcslen(srcstr);
+	if ((strleng <= 0) || (strleng >= 256)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	bool errorflag = false;
+	size_t strindex;
+	for (strindex = 0; strindex < strleng; strindex++) {
+		WCHAR curwc = *(srcstr + strindex);
+		if ((curwc >= TEXT('0')) && (curwc <= TEXT('9')) || (curwc == TEXT('+')) || (curwc == TEXT('-')) ||
+			(curwc == TEXT('.'))
+			) {
+
+		}
+		else {
+			errorflag = true;
+			break;
+		}
+	}
+
+
+
+	if (errorflag == false) {
+		return 0;
+	}
+	else {
+		return 1;
+	}
+}
+
+
 
 int GetAngleLimitEditInt(HWND hDlgWnd, int editresid, int* dstlimit)
 {
@@ -23989,11 +24146,305 @@ int GetAngleLimitEditInt(HWND hDlgWnd, int editresid, int* dstlimit)
 	}
 }
 
+int Lights2Dlg(HWND hDlgWnd)
+{
+	if (hDlgWnd != 0) {
+		{
+			if (g_lightenable[0] == true) {
+				CheckDlgButton(hDlgWnd, IDC_ENABLE1, true);
+			}
+			else {
+				CheckDlgButton(hDlgWnd, IDC_ENABLE1, false);
+			}
+			if (g_lightdirwithview[0] == true) {
+				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT1, true);
+			}
+			else {
+				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT1, false);
+			}
+			WCHAR strdirx[256] = { 0L };
+			swprintf_s(strdirx, 256, L"%.3f", g_lightdir[0].x);
+			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRX1, strdirx);
+			WCHAR strdiry[256] = { 0L };
+			swprintf_s(strdiry, 256, L"%.3f", g_lightdir[0].y);
+			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRY1, strdiry);
+			WCHAR strdirz[256] = { 0L };
+			swprintf_s(strdirz, 256, L"%.3f", g_lightdir[0].z);
+			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ1, strdirz);
+		}
+		{
+			if (g_lightenable[1] == true) {
+				CheckDlgButton(hDlgWnd, IDC_ENABLE2, true);
+			}
+			else {
+				CheckDlgButton(hDlgWnd, IDC_ENABLE2, false);
+			}
+			if (g_lightdirwithview[1] == true) {
+				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT2, true);
+			}
+			else {
+				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT2, false);
+			}
+			WCHAR strdirx[256] = { 0L };
+			swprintf_s(strdirx, 256, L"%.3f", g_lightdir[1].x);
+			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRX2, strdirx);
+			WCHAR strdiry[256] = { 0L };
+			swprintf_s(strdiry, 256, L"%.3f", g_lightdir[1].y);
+			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRY2, strdiry);
+			WCHAR strdirz[256] = { 0L };
+			swprintf_s(strdirz, 256, L"%.3f", g_lightdir[1].z);
+			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ2, strdirz);
+		}
+		{
+			if (g_lightenable[2] == true) {
+				CheckDlgButton(hDlgWnd, IDC_ENABLE3, true);
+			}
+			else {
+				CheckDlgButton(hDlgWnd, IDC_ENABLE3, false);
+			}
+			if (g_lightdirwithview[2] == true) {
+				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT3, true);
+			}
+			else {
+				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT3, false);
+			}
+			WCHAR strdirx[256] = { 0L };
+			swprintf_s(strdirx, 256, L"%.3f", g_lightdir[2].x);
+			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRX3, strdirx);
+			WCHAR strdiry[256] = { 0L };
+			swprintf_s(strdiry, 256, L"%.3f", g_lightdir[2].y);
+			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRY3, strdiry);
+			WCHAR strdirz[256] = { 0L };
+			swprintf_s(strdirz, 256, L"%.3f", g_lightdir[2].z);
+			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ3, strdirz);
+		}
+		{
+			if (g_lightenable[3] == true) {
+				CheckDlgButton(hDlgWnd, IDC_ENABLE4, true);
+			}
+			else {
+				CheckDlgButton(hDlgWnd, IDC_ENABLE4, false);
+			}
+			if (g_lightdirwithview[3] == true) {
+				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT4, true);
+			}
+			else {
+				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT4, false);
+			}
+			WCHAR strdirx[256] = { 0L };
+			swprintf_s(strdirx, 256, L"%.3f", g_lightdir[3].x);
+			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRX4, strdirx);
+			WCHAR strdiry[256] = { 0L };
+			swprintf_s(strdiry, 256, L"%.3f", g_lightdir[3].y);
+			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRY4, strdiry);
+			WCHAR strdirz[256] = { 0L };
+			swprintf_s(strdirz, 256, L"%.3f", g_lightdir[3].z);
+			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ4, strdirz);
+		}
+	}
+	return 0;
+}
+
+int Dlg2Lights(HWND hDlgWnd, int lightno)
+{
+	int errorlightno = 0;
+
+	if (hDlgWnd != 0) {
+
+		switch (lightno)
+		{
+		case 1:
+		{
+			WCHAR strdirx[256] = { 0L };
+			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRX1, strdirx, 256);
+			WCHAR strdiry[256] = { 0L };
+			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRY1, strdiry, 256);
+			WCHAR strdirz[256] = { 0L };
+			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ1, strdirz, 256);
+			int chkx, chky, chkz;
+			chkx = CheckStr_float(strdirx);
+			chky = CheckStr_float(strdiry);
+			chkz = CheckStr_float(strdirz);
+			if ((chkx != 0) || (chky != 0) || (chkz != 0)) {
+				_ASSERT(0);
+				errorlightno = 1;
+				break;
+			}
+			float dirx, diry, dirz;
+			dirx = (float)_wtof(strdirx);
+			diry = (float)_wtof(strdiry);
+			dirz = (float)_wtof(strdirz);
+			g_lightdir[0] = ChaVector3(dirx, diry, dirz);
+
+			UINT chkenable = IsDlgButtonChecked(hDlgWnd, IDC_ENABLE1);
+			if (chkenable == BST_CHECKED) {
+				g_lightenable[0] = true;
+			}
+			else {
+				g_lightenable[0] = false;
+			}
+			UINT chkwithview = IsDlgButtonChecked(hDlgWnd, IDC_WITHVIEWROT1);
+			if (chkwithview == BST_CHECKED) {
+				g_lightdirwithview[0] = true;
+			}
+			else {
+				g_lightdirwithview[0] = false;
+			}
+		}
+		break;
+		case 2:
+		{
+			WCHAR strdirx[256] = { 0L };
+			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRX2, strdirx, 256);
+			WCHAR strdiry[256] = { 0L };
+			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRY2, strdiry, 256);
+			WCHAR strdirz[256] = { 0L };
+			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ2, strdirz, 256);
+			int chkx, chky, chkz;
+			chkx = CheckStr_float(strdirx);
+			chky = CheckStr_float(strdiry);
+			chkz = CheckStr_float(strdirz);
+			if ((chkx != 0) || (chky != 0) || (chkz != 0)) {
+				_ASSERT(0);
+				errorlightno = 2;
+				break;
+			}
+			float dirx, diry, dirz;
+			dirx = (float)_wtof(strdirx);
+			diry = (float)_wtof(strdiry);
+			dirz = (float)_wtof(strdirz);
+			g_lightdir[1] = ChaVector3(dirx, diry, dirz);
+
+			UINT chkenable = IsDlgButtonChecked(hDlgWnd, IDC_ENABLE2);
+			if (chkenable == BST_CHECKED) {
+				g_lightenable[1] = true;
+			}
+			else {
+				g_lightenable[1] = false;
+			}
+			UINT chkwithview = IsDlgButtonChecked(hDlgWnd, IDC_WITHVIEWROT2);
+			if (chkwithview == BST_CHECKED) {
+				g_lightdirwithview[1] = true;
+			}
+			else {
+				g_lightdirwithview[1] = false;
+			}
+		}
+			break;
+		case 3:
+		{
+			WCHAR strdirx[256] = { 0L };
+			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRX3, strdirx, 256);
+			WCHAR strdiry[256] = { 0L };
+			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRY3, strdiry, 256);
+			WCHAR strdirz[256] = { 0L };
+			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ3, strdirz, 256);
+			int chkx, chky, chkz;
+			chkx = CheckStr_float(strdirx);
+			chky = CheckStr_float(strdiry);
+			chkz = CheckStr_float(strdirz);
+			if ((chkx != 0) || (chky != 0) || (chkz != 0)) {
+				_ASSERT(0);
+				errorlightno = 3;
+				break;
+			}
+			float dirx, diry, dirz;
+			dirx = (float)_wtof(strdirx);
+			diry = (float)_wtof(strdiry);
+			dirz = (float)_wtof(strdirz);
+			g_lightdir[2] = ChaVector3(dirx, diry, dirz);
+
+			UINT chkenable = IsDlgButtonChecked(hDlgWnd, IDC_ENABLE3);
+			if (chkenable == BST_CHECKED) {
+				g_lightenable[2] = true;
+			}
+			else {
+				g_lightenable[2] = false;
+			}
+			UINT chkwithview = IsDlgButtonChecked(hDlgWnd, IDC_WITHVIEWROT3);
+			if (chkwithview == BST_CHECKED) {
+				g_lightdirwithview[2] = true;
+			}
+			else {
+				g_lightdirwithview[2] = false;
+			}
+		}
+			break;
+		case 4:
+		{
+			WCHAR strdirx[256] = { 0L };
+			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRX4, strdirx, 256);
+			WCHAR strdiry[256] = { 0L };
+			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRY4, strdiry, 256);
+			WCHAR strdirz[256] = { 0L };
+			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ4, strdirz, 256);
+			int chkx, chky, chkz;
+			chkx = CheckStr_float(strdirx);
+			chky = CheckStr_float(strdiry);
+			chkz = CheckStr_float(strdirz);
+			if ((chkx != 0) || (chky != 0) || (chkz != 0)) {
+				_ASSERT(0);
+				errorlightno = 4;
+				break;
+			}
+			float dirx, diry, dirz;
+			dirx = (float)_wtof(strdirx);
+			diry = (float)_wtof(strdiry);
+			dirz = (float)_wtof(strdirz);
+			g_lightdir[2] = ChaVector3(dirx, diry, dirz);
+
+			UINT chkenable = IsDlgButtonChecked(hDlgWnd, IDC_ENABLE4);
+			if (chkenable == BST_CHECKED) {
+				g_lightenable[3] = true;
+			}
+			else {
+				g_lightenable[3] = false;
+			}
+			UINT chkwithview = IsDlgButtonChecked(hDlgWnd, IDC_WITHVIEWROT4);
+			if (chkwithview == BST_CHECKED) {
+				g_lightdirwithview[3] = true;
+			}
+			else {
+				g_lightdirwithview[3] = false;
+			}
+		}
+			break;
+		default:
+			break;
+		}
+	}
+
+
+
+	if (errorlightno == 1) {
+		::MessageBoxW(hDlgWnd, L"ライト１の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
+		return 1;
+	}
+	else if (errorlightno == 2) {
+		::MessageBoxW(hDlgWnd, L"ライト２の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
+		return 1;
+	}
+	else if (errorlightno == 3) {
+		::MessageBoxW(hDlgWnd, L"ライト３の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
+		return 1;
+	}
+	else if (errorlightno == 4) {
+		::MessageBoxW(hDlgWnd, L"ライト４の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
+		return 1;
+	}
+	else {
+		return 0;
+	}
+
+
+	return 0;
+}
+
 
 
 int AngleLimit2Dlg(HWND hDlgWnd, bool updateonlycheckeul)
 {
-	if (s_anglelimitbone) {
+	if (s_anglelimitbone && (hDlgWnd != 0)) {
 
 		if (updateonlycheckeul == false) {
 
@@ -24584,6 +25035,232 @@ LRESULT CALLBACK MaterialRateDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM l
 		break;
 	case WM_CLOSE:
 		ShowWindow(hDlgWnd, SW_HIDE);
+		break;
+	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
+		return FALSE;
+	}
+	return TRUE;
+
+}
+
+
+LRESULT CALLBACK LightsForEditDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+
+	//static int s_lightstimerid = 2121;
+
+	switch (msg) {
+	case WM_INITDIALOG:
+	{
+		Lights2Dlg(hDlgWnd);
+
+		//EnableWindow(GetDlgItem(hDlgWnd, IDC_RESETLIM_CURRENT), FALSE);
+		//EnableWindow(GetDlgItem(hDlgWnd, IDC_RESET0_CURRENT), FALSE);
+		//EnableWindow(GetDlgItem(hDlgWnd, IDC_REPLACE180TO170_CURRENT), FALSE);
+		//EnableWindow(GetDlgItem(hDlgWnd, IDC_LIMITFROMMOTION_CURRENT), FALSE);
+
+		//SetTimer(hDlgWnd, s_lightstimerid, 20, NULL);
+
+		return FALSE;
+	}
+	break;
+
+	case WM_DRAWITEM://オーナードローコントロールの描画
+	{
+		{
+			COLORREF col = g_lightdiffuse[0].ColorRef();
+			HBRUSH hBrush = CreateSolidBrush(col);
+			HWND hwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR11);
+			HDC hdc = GetDC(hwnd);
+			RECT rect;
+			GetClientRect(hwnd, &rect);
+			FillRect(hdc, &rect, hBrush);
+			ReleaseDC(hwnd, hdc);
+			DeleteObject(hBrush);
+		}
+		{
+			COLORREF col = g_lightdiffuse[1].ColorRef();
+			HBRUSH hBrush = CreateSolidBrush(col);
+			HWND hwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR12);
+			HDC hdc = GetDC(hwnd);
+			RECT rect;
+			GetClientRect(hwnd, &rect);
+			FillRect(hdc, &rect, hBrush);
+			ReleaseDC(hwnd, hdc);
+			DeleteObject(hBrush);
+		}
+		{
+			COLORREF col = g_lightdiffuse[2].ColorRef();
+			HBRUSH hBrush = CreateSolidBrush(col);
+			HWND hwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR13);
+			HDC hdc = GetDC(hwnd);
+			RECT rect;
+			GetClientRect(hwnd, &rect);
+			FillRect(hdc, &rect, hBrush);
+			ReleaseDC(hwnd, hdc);
+			DeleteObject(hBrush);
+		}
+		{
+			COLORREF col = g_lightdiffuse[3].ColorRef();
+			HBRUSH hBrush = CreateSolidBrush(col);
+			HWND hwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR14);
+			HDC hdc = GetDC(hwnd);
+			RECT rect;
+			GetClientRect(hwnd, &rect);
+			FillRect(hdc, &rect, hBrush);
+			ReleaseDC(hwnd, hdc);
+			DeleteObject(hBrush);
+		}
+	}
+		//DefWindowProc(hDlgWnd, msg, wp, lp);
+		break;
+
+	case WM_COMMAND:
+		switch (LOWORD(wp)) {
+		case IDC_SETLIGHT1:
+			Dlg2Lights(hDlgWnd, 1);
+			SetLightDirection();
+			break;
+		case IDC_SETLIGHT2:
+			Dlg2Lights(hDlgWnd, 2);
+			SetLightDirection();
+			break;
+		case IDC_SETLIGHT3:
+			Dlg2Lights(hDlgWnd, 3);
+			SetLightDirection();
+			break;
+		case IDC_SETLIGHT4:
+			Dlg2Lights(hDlgWnd, 4);
+			SetLightDirection();
+			break;
+
+
+		case IDC_COLORBAR11:
+		{
+			COLORREF colrgb = g_lightdiffuse[0].ColorRef();
+			int dlgret = s_coldlg.Choose(hDlgWnd, &colrgb);
+			if (dlgret == 1) {
+				float fr, fg, fb;
+				fr = (float)((double)GetRValue(colrgb) / 255.0);
+				fr = min(1.0f, fr);
+				fr = max(0.0f, fr);
+				fg = (float)((double)GetGValue(colrgb) / 255.0);
+				fg = min(1.0f, fg);
+				fg = max(0.0f, fg);
+				fb = (float)((double)GetBValue(colrgb) / 255.0);
+				fb = min(1.0f, fb);
+				fb = max(0.0f, fb);
+
+				g_lightdiffuse[0] = ChaVector3(fr, fg, fb);
+				SetLightDirection();
+
+				HWND ctrlwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR11);
+				RECT rect;
+				GetClientRect(ctrlwnd, &rect);
+				InvalidateRect(ctrlwnd, &rect, true);
+			}
+		}
+			break;
+		case IDC_COLORBAR12:
+		{
+			COLORREF colrgb = g_lightdiffuse[1].ColorRef();
+			int dlgret = s_coldlg.Choose(hDlgWnd, &colrgb);
+			if (dlgret == 1) {
+				float fr, fg, fb;
+				fr = (float)((double)GetRValue(colrgb) / 255.0);
+				fr = min(1.0f, fr);
+				fr = max(0.0f, fr);
+				fg = (float)((double)GetGValue(colrgb) / 255.0);
+				fg = min(1.0f, fg);
+				fg = max(0.0f, fg);
+				fb = (float)((double)GetBValue(colrgb) / 255.0);
+				fb = min(1.0f, fb);
+				fb = max(0.0f, fb);
+
+				g_lightdiffuse[1] = ChaVector3(fr, fg, fb);
+				SetLightDirection();
+
+				HWND ctrlwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR12);
+				RECT rect;
+				GetClientRect(ctrlwnd, &rect);
+				InvalidateRect(ctrlwnd, &rect, true);
+			}
+		}
+			break;
+		case IDC_COLORBAR13:
+		{
+			COLORREF colrgb = g_lightdiffuse[2].ColorRef();
+			int dlgret = s_coldlg.Choose(hDlgWnd, &colrgb);
+			if (dlgret == 1) {
+				float fr, fg, fb;
+				fr = (float)((double)GetRValue(colrgb) / 255.0);
+				fr = min(1.0f, fr);
+				fr = max(0.0f, fr);
+				fg = (float)((double)GetGValue(colrgb) / 255.0);
+				fg = min(1.0f, fg);
+				fg = max(0.0f, fg);
+				fb = (float)((double)GetBValue(colrgb) / 255.0);
+				fb = min(1.0f, fb);
+				fb = max(0.0f, fb);
+
+				g_lightdiffuse[2] = ChaVector3(fr, fg, fb);
+				SetLightDirection();
+
+				HWND ctrlwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR13);
+				RECT rect;
+				GetClientRect(ctrlwnd, &rect);
+				InvalidateRect(ctrlwnd, &rect, true);
+			}
+		}
+			break;
+		case IDC_COLORBAR14:
+		{
+			COLORREF colrgb = g_lightdiffuse[3].ColorRef();
+			int dlgret = s_coldlg.Choose(hDlgWnd, &colrgb);
+			if (dlgret == 1) {
+				float fr, fg, fb;
+				fr = (float)((double)GetRValue(colrgb) / 255.0);
+				fr = min(1.0f, fr);
+				fr = max(0.0f, fr);
+				fg = (float)((double)GetGValue(colrgb) / 255.0);
+				fg = min(1.0f, fg);
+				fg = max(0.0f, fg);
+				fb = (float)((double)GetBValue(colrgb) / 255.0);
+				fb = min(1.0f, fb);
+				fb = max(0.0f, fb);
+
+				g_lightdiffuse[3] = ChaVector3(fr, fg, fb);
+				SetLightDirection();
+
+				HWND ctrlwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR14);
+				RECT rect;
+				GetClientRect(ctrlwnd, &rect);
+				InvalidateRect(ctrlwnd, &rect, true);
+			}
+		}
+			break;
+
+
+		case IDCANCEL:
+			//EndDialog(hDlgWnd, IDCANCEL);
+			break;
+		default:
+			return FALSE;
+			break;
+		}
+		break;
+	case WM_CLOSE:
+		if (s_lightsforeditdlg) {
+
+			//if (s_lightstimerid > 0) {
+			//	KillTimer(hDlgWnd, s_lightstimerid);
+			//	s_lightstimerid = 0;
+			//}
+			
+			DestroyWindow(s_lightsforeditdlg);
+			s_lightsforeditdlg = 0;
+		}
 		break;
 	default:
 		DefWindowProc(hDlgWnd, msg, wp, lp);
@@ -25859,6 +26536,18 @@ int OnFrameUtCheckBox()
 
 	return 0;
 }
+
+int OnFrameLightsForEdit()
+{
+
+	//毎フレームコントロールを更新すると　手で入力できなくなる
+	//if (s_lightsforeditdlg) {
+	//	Lights2Dlg(s_lightsforeditdlg);
+	//}
+
+	return 0;
+}
+
 
 int OnFrameAngleLimit(bool updateonlycheckeul)
 {
@@ -32467,11 +33156,43 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 
 int SetLightDirection()
 {
+	ChaVector3 dirz = ChaVector3(0.0f, 0.0f, 1.0f);
 	ChaVector3 lightdir0, nlightdir0;
-	//lightdir0 = g_camEye;
 	lightdir0 = g_camEye - g_camtargetpos;//2022/10/31
 	ChaVector3Normalize(&nlightdir0, &lightdir0);
-	g_LightControl[0].SetLightDirection(nlightdir0.D3DX());
+	//g_LightControl[0].SetLightDirection(nlightdir0.D3DX());
+
+	CQuaternion camrotq;
+	camrotq.RotationArc(dirz, nlightdir0);
+
+	int lno;
+	int activenum = 0;
+	for (lno = 0; lno < LIGHTNUMMAX; lno++) {
+		if (g_lightenable[lno] == true) {
+			if (g_lightdirwithview[lno] == true) {
+				ChaVector3 nlightdir;
+				ChaVector3Normalize(&nlightdir, &g_lightdir[lno]);
+
+				ChaVector3 rotdir, nrotdir;
+				camrotq.Rotate(&rotdir, nlightdir);
+				ChaVector3Normalize(&nrotdir, &rotdir);
+				s_lightdirforshader[activenum] = nrotdir;
+			}
+			else {
+				ChaVector3 nrotdir;
+				ChaVector3Normalize(&nrotdir, &(g_lightdir[lno]));
+				s_lightdirforshader[activenum] = nrotdir;
+			}
+
+			ChaVector3 scaleddiffuse;
+			scaleddiffuse = g_lightdiffuse[lno] * g_fLightScale;
+			s_lightdiffuseforshader[activenum] = ChaVector4(scaleddiffuse.x, scaleddiffuse.y, scaleddiffuse.z, 1.0f);
+
+			activenum++;
+		}
+	}
+
+	g_nNumActiveLights = activenum;
 
 	return 0;
 }
@@ -32479,10 +33200,9 @@ int SetLightDirection()
 
 int OnRenderSetShaderConst()
 {
-	//HRESULT hr;
-
-	ChaVector3 vLightDir[MAX_LIGHTS];
-	ChaVector4 vLightDiffuse[MAX_LIGHTS];
+	////HRESULT hr;
+	//ChaVector3 vLightDir[MAX_LIGHTS];
+	//ChaVector4 vLightDiffuse[MAX_LIGHTS];
 
 	// Get the projection & view matrix from the camera class
 	g_hmVP->SetMatrix(s_matVP.GetDataPtr());
@@ -32492,23 +33212,9 @@ int OnRenderSetShaderConst()
 
 	SetLightDirection();
 
-	// Render the light arrow so the user can visually see the light dir
-	for (int i = 0; i < g_nNumActiveLights; i++)
-	{
-		//if( s_displightarrow ){
-		//	D3DXCOLOR arrowColor = ( i == g_nActiveLight ) ? D3DXCOLOR( 1, 1, 0, 1 ) : D3DXCOLOR( 1, 1, 1, 1 );
-		//	V( g_LightControl[i].OnRender10( arrowColor, &mView, &mProj, &g_camEye ) );
-		//}
-		vLightDir[i] = ChaVector3(g_LightControl[i].GetLightDirection());
-		vLightDiffuse[i] = ChaVector4(g_fLightScale, g_fLightScale, g_fLightScale, g_fLightScale);
-	}
-	ChaVector3 lightamb(1.0f, 1.0f, 1.0f);
+	g_hLightDir->SetRawValue(s_lightdirforshader, 0, sizeof(ChaVector3) * LIGHTNUMMAX);
+	g_hLightDiffuse->SetRawValue(s_lightdiffuseforshader, 0, sizeof(ChaVector4) * LIGHTNUMMAX);
 
-
-	g_hLightDir->SetRawValue(vLightDir, 0, sizeof(ChaVector3) * MAX_LIGHTS);
-	//V(g_pEffect->SetValue(g_hLightDir, vLightDir, sizeof(ChaVector3) * MAX_LIGHTS));
-	g_hLightDiffuse->SetRawValue(vLightDiffuse, 0, sizeof(ChaVector4) * MAX_LIGHTS);
-	//V(g_pEffect->SetValue(g_hLightDiffuse, vLightDiffuse, sizeof(ChaVector4) * MAX_LIGHTS));
 	ChaVector3 eyept = g_camEye;
 	g_hEyePos->SetRawValue(&eyept, 0, sizeof(ChaVector3));
 	//V(g_pEffect->SetValue(g_hEyePos, &eyept, sizeof(ChaVector3)));
@@ -35998,12 +36704,19 @@ void ShowLimitEulerWnd(bool srcflag)
 
 void ShowLightsWnd(bool srcflag)
 {
-	if (s_model) {
-		//s_rigidWnd->setVisible(srcflag);
-
-		s_spdispsw[SPDISPSW_LIGHTS].state = srcflag;
-		s_spdispsw[SPDISPSW_DISPGROUP].state = !srcflag;
+	if (s_lightsforeditdlg != 0) {
+		if (srcflag == true) {
+			ShowWindow(s_lightsforeditdlg, SW_SHOW);
+			UpdateWindow(s_lightsforeditdlg);
+		}
+		else {
+			ShowWindow(s_lightsforeditdlg, SW_HIDE);
+			UpdateWindow(s_lightsforeditdlg);
+		}
 	}
+
+	s_spdispsw[SPDISPSW_LIGHTS].state = srcflag;
+	s_spdispsw[SPDISPSW_DISPGROUP].state = !srcflag;
 }
 
 void ShowDispGroupWnd(bool srcflag)
@@ -36142,16 +36855,26 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 			s_customrigdlg = 0;
 		}
 
+		//#####################################
+		//まず変更前のプレートメニューを閉じる
+		//#####################################
+		GUIRigidSetVisible(-2);
+		GUIRetargetSetVisible(-2);
+		GUIDispSetVisible(-2);
 
-		//プレート
+
+		//#####################
+		//プレートメニュー更新
+		//#####################
 		s_platemenukind = srcmenukind;
 
+
+		//###########################
+		//新しいプレートメニュー表示
+		//###########################
 		switch (s_platemenukind) {
 		case SPPLATEMENUKIND_GUI:
 			if ((srcplateno >= 1) && (srcplateno < (SPGUISWNUM + 2))) {
-				GUIRigidSetVisible(-2);
-				GUIRetargetSetVisible(-2);
-				GUIDispSetVisible(-2);
 				GUISetVisible(srcplateno);//((spgno == 0) && (spgno < SPGUISWNUM))でGUISetVisible(spgno + 2)でGUISetVisible(1)はPlaceFolderWindow用
 				if (s_placefolderWnd) {
 					s_placefolderWnd->setVisible(true);
@@ -36159,10 +36882,6 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 				SelectNextWindow(MB3D_WND_3D);
 			}
 			else {
-				GUIRigidSetVisible(-2);
-				GUIRetargetSetVisible(-2);
-				GUIDispSetVisible(-2);
-				//GUISetVisible(-2);
 				if (s_placefolderWnd) {
 					s_placefolderWnd->setVisible(true);
 				}
@@ -36171,7 +36890,6 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 			break;
 		case SPPLATEMENUKIND_DISP:
 			if ((srcplateno >= 1) && (srcplateno <= SPDISPSWNUM)) {
-				GUIDispSetVisible(-2);
 				if (s_customrigdlg) {
 					DestroyWindow(s_customrigdlg);
 					s_customrigdlg = 0;
@@ -36188,7 +36906,6 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 			break;
 		case SPPLATEMENUKIND_RIGID:
 			if ((srcplateno >= 1) && (srcplateno <= SPRIGIDSWNUM)) {
-				GUIRetargetSetVisible(-2);
 				if (s_customrigdlg) {
 					DestroyWindow(s_customrigdlg);
 					s_customrigdlg = 0;
@@ -36205,7 +36922,6 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 			break;
 		case SPPLATEMENUKIND_RETARGET:
 			if ((srcplateno >= 1) && (srcplateno <= SPRETARGETSWNUM)) {
-				GUIRigidSetVisible(-2);
 				if (s_customrigdlg) {
 					DestroyWindow(s_customrigdlg);
 					s_customrigdlg = 0;
@@ -36225,9 +36941,6 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 		if (s_placefolderWnd) {
 			s_placefolderWnd->setVisible(false);
 		}
-		GUIRetargetSetVisible(-2);
-		GUIRigidSetVisible(-2);
-		GUIDispSetVisible(-2);
 		SelectNextWindow(MB3D_WND_3D);
 	}
 	else {

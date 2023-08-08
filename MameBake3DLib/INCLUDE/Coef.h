@@ -33,6 +33,10 @@ class CMQOMaterial;
 #define MAXRENUM		100
 
 
+//lightnumの最大数はシェーダー(Media/Shader/Ochakko.fx)の変更も必要とするので注意
+#define LIGHTNUMMAX		4
+
+
 //配列長が256　名前は255文字まで
 #define JOINTNAMELENG	256	
 

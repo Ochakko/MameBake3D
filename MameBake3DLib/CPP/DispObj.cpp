@@ -113,10 +113,12 @@ int CDispObj::InitParams()
 	m_layoutBoneL1 = 0;
 	m_layoutBoneL2 = 0;
 	m_layoutBoneL3 = 0;
+	m_layoutBoneL4 = 0;
 	m_layoutNoBoneL0 = 0;
 	m_layoutNoBoneL1 = 0;
 	m_layoutNoBoneL2 = 0;
 	m_layoutNoBoneL3 = 0;
+	m_layoutNoBoneL4 = 0;
 	m_layoutLine = 0;
 
     m_VB = 0;
@@ -148,6 +150,10 @@ int CDispObj::DestroyObjs()
 		m_layoutBoneL3->Release();
 		m_layoutBoneL3 = 0;
 	}
+	if (m_layoutBoneL4) {
+		m_layoutBoneL4->Release();
+		m_layoutBoneL4 = 0;
+	}
 
 	if (m_layoutNoBoneL0) {
 		m_layoutNoBoneL0->Release();
@@ -164,6 +170,10 @@ int CDispObj::DestroyObjs()
 	if (m_layoutNoBoneL3) {
 		m_layoutNoBoneL3->Release();
 		m_layoutNoBoneL3 = 0;
+	}
+	if (m_layoutNoBoneL4) {
+		m_layoutNoBoneL4->Release();
+		m_layoutNoBoneL4 = 0;
 	}
 
 
@@ -302,6 +312,15 @@ int CDispObj::CreateDecl()
 	ID3D11InputLayout* m_layoutLine;
 	*/
 
+
+	if (!m_pdev ||
+		!g_hRenderBoneL0 || !g_hRenderBoneL1 || !g_hRenderBoneL2 || !g_hRenderBoneL3 || !g_hRenderBoneL4 ||
+		!g_hRenderNoBoneL0 || !g_hRenderNoBoneL1 || !g_hRenderNoBoneL2 || !g_hRenderNoBoneL3 || !g_hRenderNoBoneL4) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
 	// テクニックからパス情報を取得
 	D3DX11_PASS_DESC PassDescBoneL0;
 	g_hRenderBoneL0->GetPassByIndex(0)->GetDesc(&PassDescBoneL0);
@@ -311,6 +330,8 @@ int CDispObj::CreateDecl()
 	g_hRenderBoneL2->GetPassByIndex(0)->GetDesc(&PassDescBoneL2);
 	D3DX11_PASS_DESC PassDescBoneL3;
 	g_hRenderBoneL3->GetPassByIndex(0)->GetDesc(&PassDescBoneL3);
+	D3DX11_PASS_DESC PassDescBoneL4;
+	g_hRenderBoneL4->GetPassByIndex(0)->GetDesc(&PassDescBoneL4);
 
 	D3DX11_PASS_DESC PassDescNoBoneL0;
 	g_hRenderNoBoneL0->GetPassByIndex(0)->GetDesc(&PassDescNoBoneL0);
@@ -320,6 +341,8 @@ int CDispObj::CreateDecl()
 	g_hRenderNoBoneL2->GetPassByIndex(0)->GetDesc(&PassDescNoBoneL2);
 	D3DX11_PASS_DESC PassDescNoBoneL3;
 	g_hRenderNoBoneL3->GetPassByIndex(0)->GetDesc(&PassDescNoBoneL3);
+	D3DX11_PASS_DESC PassDescNoBoneL4;
+	g_hRenderNoBoneL4->GetPassByIndex(0)->GetDesc(&PassDescNoBoneL4);
 
 	D3DX11_PASS_DESC PassDescLine;
 	g_hRenderLine->GetPassByIndex(0)->GetDesc(&PassDescLine);
@@ -355,6 +378,13 @@ int CDispObj::CreateDecl()
 		_ASSERT(0);
 		return 1;
 	}
+	hr = m_pdev->CreateInputLayout(
+		declbone, sizeof(declbone) / sizeof(D3D11_INPUT_ELEMENT_DESC),
+		PassDescBoneL4.pIAInputSignature, PassDescBoneL4.IAInputSignatureSize, &m_layoutBoneL4);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return 1;
+	}
 
 	hr = m_pdev->CreateInputLayout(
 		declnobone, sizeof(declnobone) / sizeof(D3D11_INPUT_ELEMENT_DESC),
@@ -380,6 +410,13 @@ int CDispObj::CreateDecl()
 	hr = m_pdev->CreateInputLayout(
 		declnobone, sizeof(declnobone) / sizeof(D3D11_INPUT_ELEMENT_DESC),
 		PassDescNoBoneL3.pIAInputSignature, PassDescNoBoneL3.IAInputSignatureSize, &m_layoutNoBoneL3);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return 1;
+	}
+	hr = m_pdev->CreateInputLayout(
+		declnobone, sizeof(declnobone) / sizeof(D3D11_INPUT_ELEMENT_DESC),
+		PassDescNoBoneL4.pIAInputSignature, PassDescNoBoneL4.IAInputSignatureSize, &m_layoutNoBoneL4);
 	if (FAILED(hr)) {
 		_ASSERT(0);
 		return 1;
@@ -724,6 +761,16 @@ int CDispObj::RenderNormal(bool withalpha,
 						curtech = g_hRenderBoneL3;
 						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL3);
 						break;
+					case 4:
+						curtech = g_hRenderBoneL4;
+						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL4);
+						break;
+
+					case 0:
+						curtech = g_hRenderBoneL0;
+						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL0);
+						break;
+
 					default:
 						_ASSERT(0);
 						curtech = g_hRenderBoneL1;
@@ -764,6 +811,16 @@ int CDispObj::RenderNormal(bool withalpha,
 						curtech = g_hRenderNoBoneL3;
 						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL3);
 						break;
+					case 4:
+						curtech = g_hRenderNoBoneL4;
+						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL4);
+						break;
+
+					case 0:
+						curtech = g_hRenderNoBoneL0;
+						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL0);
+						break;
+
 					default:
 						_ASSERT(0);
 						curtech = g_hRenderNoBoneL1;
@@ -1244,6 +1301,16 @@ int CDispObj::RenderNormalPM3(bool withalpha,
 				curtech = g_hRenderNoBoneL3;
 				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL3);
 				break;
+			case 4:
+				curtech = g_hRenderNoBoneL4;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL4);
+				break;
+
+			case 0:
+				curtech = g_hRenderNoBoneL0;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL0);
+				break;
+
 			default:
 				_ASSERT(0);
 				curtech = g_hRenderNoBoneL1;
