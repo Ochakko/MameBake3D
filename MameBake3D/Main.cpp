@@ -1604,6 +1604,7 @@ static bool s_underdelmotion = false;
 static bool s_underselectmodel = false;
 static bool s_underselectcamera = false;
 static bool s_underselectmotion = false;
+static bool s_underfilteringbymenu = false;
 static int s_opeselectmodelcnt = -1;
 static int s_opeselectcameracnt = -1;
 static int s_opeselectmotioncnt = -1;
@@ -4226,7 +4227,7 @@ void InitApp()
 	s_underselectmodel = false;
 	s_underselectcamera = false;
 	s_underselectmotion = false;
-
+	s_underfilteringbymenu = false;
 	s_underanglelimithscroll = 0;
 
 	s_dispanglelimit = false;
@@ -8533,10 +8534,12 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		}
 		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_FILTERFROMTOOL)) &&
 			(menuid < (ID_RMENU_0 + MENUOFFSET_FILTERFROMTOOL + 3))) {
-			if (s_model && s_model->GetTopBone() && curbone) {
+			if (s_model && s_model->GetTopBone() && curbone && (s_underfilteringbymenu == false)) {
+				s_underfilteringbymenu = true;
 				s_filterState = (menuid - ID_RMENU_0 - MENUOFFSET_FILTERFROMTOOL + 1);
 				FilterFuncDlg();
-				s_filterState = 0;
+				//s_filterState = 0;//2023/08/09コメントアウト:前回の値を保持
+				s_underfilteringbymenu = false;
 			}
 		}
 		//else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_INITMPFROMTOOL)) && (menuid <= (ID_RMENU_0 + 3 * 3 + MENUOFFSET_INITMPFROMTOOL))) {
@@ -9535,6 +9538,12 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 
 
+		int ikframenum = 0;
+		if (s_editmotionflag >= 0) {
+			//s_editrangeがクリアされないうちにフレーム数を保存
+			ikframenum = s_editrange.GetKeyNum();
+		}
+
 		//マウスによるIKとFKの後処理　applyframe以外のフレームの処理
 		g_fpsforce30 = false;
 		if (s_oprigflag == 0) {
@@ -9644,18 +9653,22 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 
+		//2023/08/09
+		//自動フィルターは選択フレーム数が少ないときに動かなくなる　また　他の制限を満たしているジョイントの角度まで小さくなる
+		//よって　自動フィルターは止めてみる　手動でSmoothボタンを押すことに
+		//
 		//2023/02/13
 		//IKRot終了時　LimitEulオンで　編集ボーンがあった場合
 		//グラフが波打つことは分かっているので(XYZどれか１つでも制限に掛かると　XYZ全て動かなくなるため)
 		//自動で　フィルターを掛けて　滑らかにする
-		if ((((s_ikkind == 0) || (s_ikkind == 1)) || ((s_oprigflag != 0) && s_customrigbone)) &&
-			(g_limitdegflag == true) && 
-			(s_editmotionflag >= 0)) {
-
-			//ギザギザを平滑化
-			bool copylw2w = false;
-			FilterNoDlg(copylw2w);
-		}
+		//if ((((s_ikkind == 0) || (s_ikkind == 1)) || ((s_oprigflag != 0) && s_customrigbone)) &&
+		//	(g_limitdegflag == true) && 
+		//	(s_editmotionflag >= 0) &&
+		//	(ikframenum >= 14)) {
+		//	//ギザギザを平滑化
+		//	bool copylw2w = false;
+		//	FilterNoDlg(copylw2w);
+		//}
 
 
 		if ((s_undoFlag == false) && (s_redoFlag == false)) {
@@ -45835,13 +45848,54 @@ int FilterNoDlg(bool copylw2w)
 	}
 
 	//s_filternodlg = true;
-	s_filterState = 3;//deeper
-	motfilter.FilterNoDlg(edgesmp, g_limitdegflag, s_model, s_model->GetTopBone(false),
+
+
+	//s_filterState = 3;//deeper//2023/08/09コメントアウト：前回の値を使用
+
+
+	CBone* opebone = 0;
+	if (s_filterState == 1) {
+		//All
+		opebone = s_model->GetTopBone(false);
+	}
+	else if ((s_filterState == 2) || (s_filterState == 3)) {
+		//2:selectedOne, 3:Deeper
+		CBone* curbone = s_model->GetBoneByID(s_curboneno);
+		if (curbone) {
+			if (curbone->GetParent(false)) {
+				opebone = curbone->GetParent(false);
+			}
+			else {
+				opebone = curbone;
+			}
+		}
+		else {
+			opebone = s_model->GetTopBone(false);
+		}
+	}
+	else {
+		//first time : default value
+		s_filterState = 3;
+		CBone* curbone = s_model->GetBoneByID(s_curboneno);
+		if (curbone) {
+			if (curbone->GetParent(false)) {
+				opebone = curbone->GetParent(false);
+			}
+			else {
+				opebone = curbone;
+			}
+		}
+		else {
+			opebone = s_model->GetTopBone(false);
+		}
+	}
+
+	motfilter.FilterNoDlg(edgesmp, g_limitdegflag, s_model, opebone,
 		s_filterState,
 		s_model->GetCurMotInfo()->motid,
 		(int)(s_buttonselectstart + 0.0001), (int)(s_buttonselectend + 0.0001));
 
-	s_filterState = 0;
+	//s_filterState = 0;//2023/08/09コメントアウト：前回の値を保持
 
 	if (copylw2w) {
 		if (g_limitdegflag == true) {

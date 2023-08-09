@@ -161,11 +161,15 @@ int CMotFilter::FilterNoDlg(bool edgesmp, bool limitdegflag,
 	//m_filtersize = 9;
 
 
+	//2023/08/09 NoDlgの場合は　m_filtertype, m_filtersizeは前回実行時の値を使用する
 	//m_filtertype = AVGF_WEIGHTED_MOVING;
-	m_filtertype = AVGF_GAUSSIAN;
-	m_filtersize = 5;
-
-
+	if (m_filtertype == 0) {
+		m_filtertype = AVGF_GAUSSIAN;
+	}
+	if (m_filtersize == 0) {
+		m_filtersize = 5;
+	}
+	
 	CallFilterFunc(edgesmp, limitdegflag, 
 		srcmodel, srcbone, srcopekind, srcmotid, srcstartframe, srcendframe);
 
