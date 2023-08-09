@@ -2224,7 +2224,8 @@ static CEditRange s_previewrange;
 #define MENUOFFSET_SETCONVBONEMODEL		(100)
 #define MENUOFFSET_SETCONVBONEBVH		(MENUOFFSET_SETCONVBONEMODEL + 100)
 #define MENUOFFSET_SETCONVBONE			(MENUOFFSET_SETCONVBONEBVH + 100)
-#define MENUOFFSET_INITMPFROMTOOL		(MENUOFFSET_SETCONVBONE + 500)
+//#define MENUOFFSET_SETCONVBONE			(MENUOFFSET_SETCONVBONEBVH + 500)
+#define MENUOFFSET_INITMPFROMTOOL		(MENUOFFSET_SETCONVBONE + CONVBONEMAX)
 #define MENUOFFSET_BONERCLICK			(MENUOFFSET_INITMPFROMTOOL + 100)
 #define MENUOFFSET_GETSYMROOTMODE		(MENUOFFSET_BONERCLICK + 100)
 #define MENUOFFSET_INTERPOLATEFROMTOOL		(MENUOFFSET_GETSYMROOTMODE + 30)
@@ -8435,40 +8436,31 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 		if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONEBVH)) && (menuid < (ID_RMENU_0 + modelnum + MENUOFFSET_SETCONVBONEBVH))) {
 			int modelindex = menuid - ID_RMENU_0 - MENUOFFSET_SETCONVBONEBVH;
-			s_convbone_bvh = s_modelindex[modelindex].modelptr;
-			WCHAR strmes[1024];
-			if (!s_convbone_bvh) {
-				swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
-				::DSMessageBox(NULL, strmes, L"check!!!", MB_OK);
-				s_maxboneno = 0;
-			}
-			else {
-				swprintf_s(strmes, 1024, L"%s", s_convbone_bvh->GetFileName());
-				s_cbselbvh->setName(strmes);
-				COLORREF importantcol = RGB(168, 129, 129);
-				s_cbselbvh->setTextColor(importantcol);
-				//s_maxboneno = s_convbone_bvh->GetBoneListSize();
-				s_maxboneno = s_convbone_bvh->GetBoneForMotionSize();
+			if ((modelindex >= 0) && (modelindex < s_modelindex.size())) {
+				s_convbone_bvh = s_modelindex[modelindex].modelptr;
+				WCHAR strmes[1024];
+				if (!s_convbone_bvh) {
+					swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
+					::DSMessageBox(NULL, strmes, L"check!!!", MB_OK);
+					s_maxboneno = 0;
+				}
+				else {
+					swprintf_s(strmes, 1024, L"%s", s_convbone_bvh->GetFileName());
+					s_cbselbvh->setName(strmes);
+					COLORREF importantcol = RGB(168, 129, 129);
+					s_cbselbvh->setTextColor(importantcol);
+					//s_maxboneno = s_convbone_bvh->GetBoneListSize();
+					//s_maxboneno = s_convbone_bvh->GetBoneForMotionSize();
+					s_maxboneno = s_convbone_bvh->GetMaxBoneNo();
+				}
 			}
 		}
 
-		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONE)) && (menuid <= (ID_RMENU_0 + s_maxboneno + 1 + MENUOFFSET_SETCONVBONE))) {
-			if (menuid == (ID_RMENU_0 + 0 + MENUOFFSET_SETCONVBONE)) {
-				//未設定
-				s_bvhbone_bone[s_bvhbone_cbno] = 0;
-				CBone* modelbone = s_modelbone_bone[s_bvhbone_cbno];
-				_ASSERT(modelbone);
-				if (modelbone) {
-					s_convbonemap[modelbone] = 0;
-				}
-				s_bvhbone[s_bvhbone_cbno]->setName(L"NotSet");
-				s_bvhbone[s_bvhbone_cbno]->callRewrite();
-			}
-			else {
-				int boneno = menuid - ID_RMENU_0 - 1 - MENUOFFSET_SETCONVBONE;
-				curbone = s_convbone_bvh->GetBoneByID(boneno);
-				WCHAR strmes[1024];
-				if (!curbone) {
+		//else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONE)) && (menuid <= (ID_RMENU_0 + s_maxboneno + 1 + MENUOFFSET_SETCONVBONE))) {
+		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONE)) && (menuid < (ID_RMENU_0 + CONVBONEMAX + MENUOFFSET_SETCONVBONE))) {
+			if ((s_bvhbone_cbno >= 0) && (s_bvhbone_cbno < CONVBONEMAX)) {
+				if (menuid == (ID_RMENU_0 + 0 + MENUOFFSET_SETCONVBONE)) {
+					//未設定
 					s_bvhbone_bone[s_bvhbone_cbno] = 0;
 					CBone* modelbone = s_modelbone_bone[s_bvhbone_cbno];
 					_ASSERT(modelbone);
@@ -8477,19 +8469,34 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 					}
 					s_bvhbone[s_bvhbone_cbno]->setName(L"NotSet");
 					s_bvhbone[s_bvhbone_cbno]->callRewrite();
-
-					swprintf_s(strmes, 1024, L"convbone : sel bvh bone : curbone NULL !!!");
-					::DSMessageBox(NULL, strmes, L"check!!!", MB_OK);
 				}
 				else {
-					swprintf_s(strmes, 1024, L"%s", curbone->GetWBoneName());
-					s_bvhbone[s_bvhbone_cbno]->setName(strmes);
-					s_bvhbone[s_bvhbone_cbno]->callRewrite();
-					s_bvhbone_bone[s_bvhbone_cbno] = curbone;
+					int boneno = menuid - ID_RMENU_0 - 1 - MENUOFFSET_SETCONVBONE;
+					curbone = s_convbone_bvh->GetBoneByID(boneno);
+					WCHAR strmes[1024];
+					if (!curbone) {
+						s_bvhbone_bone[s_bvhbone_cbno] = 0;
+						CBone* modelbone = s_modelbone_bone[s_bvhbone_cbno];
+						_ASSERT(modelbone);
+						if (modelbone) {
+							s_convbonemap[modelbone] = 0;
+						}
+						s_bvhbone[s_bvhbone_cbno]->setName(L"NotSet");
+						s_bvhbone[s_bvhbone_cbno]->callRewrite();
 
-					CBone* modelbone = s_modelbone_bone[s_bvhbone_cbno];
-					if (modelbone) {
-						s_convbonemap[modelbone] = curbone;
+						swprintf_s(strmes, 1024, L"convbone : sel bvh bone : curbone NULL !!!");
+						::DSMessageBox(NULL, strmes, L"check!!!", MB_OK);
+					}
+					else {
+						swprintf_s(strmes, 1024, L"%s", curbone->GetWBoneName());
+						s_bvhbone[s_bvhbone_cbno]->setName(strmes);
+						s_bvhbone[s_bvhbone_cbno]->callRewrite();
+						s_bvhbone_bone[s_bvhbone_cbno] = curbone;
+
+						CBone* modelbone = s_modelbone_bone[s_bvhbone_cbno];
+						if (modelbone) {
+							s_convbonemap[modelbone] = curbone;
+						}
 					}
 				}
 			}
@@ -11292,7 +11299,8 @@ int RetargetFile(char* fbxpath)
 			s_convbone_model = s_convbone_model_batch;
 			s_convbone_bvh = newmodel;
 			//s_maxboneno = s_convbone_bvh->GetBoneListSize();
-			s_maxboneno = s_convbone_bvh->GetBoneForMotionSize();
+			//s_maxboneno = s_convbone_bvh->GetBoneForMotionSize();
+			s_maxboneno = s_convbone_bvh->GetMaxBoneNo();
 
 			WCHAR wretargetfilename[MAX_PATH] = { 0L };
 			char retargetfilename[MAX_PATH] = { 0 };
@@ -19233,7 +19241,8 @@ int SetConvBone(int cbno)
 		}
 	}
 	//s_maxboneno = s_convbone_bvh->GetBoneListSize();
-	s_maxboneno = s_convbone_bvh->GetBoneForMotionSize();
+	//s_maxboneno = s_convbone_bvh->GetBoneForMotionSize();
+	s_maxboneno = s_convbone_bvh->GetMaxBoneNo();
 
 	POINT pt;
 	GetCursorPos(&pt);

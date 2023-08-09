@@ -6494,7 +6494,8 @@ int CModel::GetFBXSkin( FbxNodeAttribute *pAttrib, FbxNode* pNode )
 							}
 
 
-							if ((lClusterMode == FbxCluster::eAdditive) || (weight >= 0.05f)) {
+							//if ((lClusterMode == FbxCluster::eAdditive) || (weight >= 0.05f)) {
+							if ((lClusterMode == FbxCluster::eAdditive) || (weight >= 0.001f)) {
 								//if ((lClusterMode == FbxCluster::eAdditive)){
 								newobj->AddInfBone(curclusterno, index, weight, isadditive);
 							}
@@ -17621,6 +17622,23 @@ int CModel::GetBoneForMotionSize() {//eNull含まない
 	}
 	return retsize;
 };
+
+int CModel::GetMaxBoneNo()
+{
+	int retno = 0;
+	std::map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+		CBone* curbone = itrbone->second;
+		if (curbone && (curbone->IsSkeleton())) {
+			int cmpno = curbone->GetBoneNo();
+			if (cmpno > retno) {
+				retno = cmpno;
+			}
+		}
+	}
+	return retno;
+}
+
 
 CBone* CModel::GetRootBone()
 {

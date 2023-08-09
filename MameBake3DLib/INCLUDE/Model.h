@@ -1195,6 +1195,7 @@ public: //accesser
 		return (int)m_bonelist.size();
 	};
 	int GetBoneForMotionSize();//eNull含まない
+	int GetMaxBoneNo();
 
 	std::map<int,CBone*>::iterator GetBoneListBegin(){
 		return m_bonelist.begin();
