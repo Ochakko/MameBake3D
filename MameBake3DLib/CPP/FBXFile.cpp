@@ -5536,7 +5536,8 @@ int IsValidFbxCluster(FbxCluster* cluster)
 		index = pointAry[i2];
 		weight = weightAry[i2];
 
-		if ((lClusterMode == FbxCluster::eAdditive) || (weight >= 0.05)) {
+		//if ((lClusterMode == FbxCluster::eAdditive) || (weight >= 0.05)) {
+		if ((lClusterMode == FbxCluster::eAdditive) || (weight >= 0.001)) {
 			//if ((lClusterMode == FbxCluster::eAdditive)){
 			findflag = 1;
 			break;
