@@ -2878,6 +2878,12 @@ LRESULT CALLBACK RetargetBatchDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM 
 LRESULT CALLBACK ProgressDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 
 
+static int OwnerDrawLightColorBar(HWND hDlgWnd, int lightindex, int idcolorbar);
+static int ChooseLightColorBar(HWND hDlgWnd, int lightindex, int idcolorbar);
+
+
+
+
 void InitApp();
 int CheckResolution();
 
@@ -2919,7 +2925,13 @@ static int CreatePlaceFolderWnd();
 
 static int CreateLightsWnd();
 static int Lights2Dlg(HWND hDlgWnd);
+static int Lights2DlgEach(HWND hDlgWnd, int lightindex,
+	int iddirx, int iddiry, int iddirz,
+	int idenable, int idwithviewrot);
 static int Dlg2Lights(HWND hDlgWnd, int lightno);
+static int Dlg2LightsEach(HWND hDlgWnd, int lightno,
+	int iddirx, int iddiry, int iddirz,
+	int idenable, int idwithviewrot);
 static int CheckStr_float(const WCHAR* srcstr);
 
 
@@ -4762,14 +4774,14 @@ void InitApp()
 	g_fLightScale = 1.0f;
 	int lno;
 	for (lno = 0; lno < LIGHTNUMMAX; lno++) {
-		double initrad = PI * 2 * (LIGHTNUMMAX - lno - 1) / LIGHTNUMMAX;// -PI / 6;
+		double initrad = PI * 2.0 * (double)lno / (double)LIGHTNUMMAX;// -PI / 6;
 		g_lightdir[lno] = ChaVector3((float)sin(initrad), 0.0f, (float)-cos(initrad));
 		s_lightdirforshader[lno] = g_lightdir[lno];
 
 		g_lightdiffuse[lno] = ChaVector3(1.0f, 1.0f, 1.0f);
 		s_lightdiffuseforshader[lno] = ChaVector4(g_lightdiffuse[lno].x, g_lightdiffuse[lno].y, g_lightdiffuse[lno].z, 1.0f);
 
-		if (lno == 1) {//初期状態では lno == 1のときキャラの正面を照らす向き
+		if (lno == 2) {//初期状態では lno == 2のときキャラの正面を照らす向き
 			g_lightenable[lno] = true;
 		}
 		else {
@@ -24181,296 +24193,252 @@ int GetAngleLimitEditInt(HWND hDlgWnd, int editresid, int* dstlimit)
 	}
 }
 
+int Lights2DlgEach(HWND hDlgWnd, int lightindex,
+	int iddirx, int iddiry, int iddirz,
+	int idenable, int idwithviewrot)
+{
+	if (!hDlgWnd) {
+		_ASSERT(0);
+		return 1;
+	}
+	if ((lightindex < 0) || (lightindex >= LIGHTNUMMAX)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	if (g_lightenable[lightindex] == true) {
+		CheckDlgButton(hDlgWnd, idenable, true);
+	}
+	else {
+		CheckDlgButton(hDlgWnd, idenable, false);
+	}
+	if (g_lightdirwithview[lightindex] == true) {
+		CheckDlgButton(hDlgWnd, idwithviewrot, true);
+	}
+	else {
+		CheckDlgButton(hDlgWnd, idwithviewrot, false);
+	}
+	WCHAR strdirx[256] = { 0L };
+	swprintf_s(strdirx, 256, L"%.3f", g_lightdir[lightindex].x);
+	SetDlgItemText(hDlgWnd, iddirx, strdirx);
+	WCHAR strdiry[256] = { 0L };
+	swprintf_s(strdiry, 256, L"%.3f", g_lightdir[lightindex].y);
+	SetDlgItemText(hDlgWnd, iddiry, strdiry);
+	WCHAR strdirz[256] = { 0L };
+	swprintf_s(strdirz, 256, L"%.3f", g_lightdir[lightindex].z);
+	SetDlgItemText(hDlgWnd, iddirz, strdirz);
+
+	return 0;
+}
+
 int Lights2Dlg(HWND hDlgWnd)
 {
 	if (hDlgWnd != 0) {
-		{
-			if (g_lightenable[0] == true) {
-				CheckDlgButton(hDlgWnd, IDC_ENABLE1, true);
-			}
-			else {
-				CheckDlgButton(hDlgWnd, IDC_ENABLE1, false);
-			}
-			if (g_lightdirwithview[0] == true) {
-				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT1, true);
-			}
-			else {
-				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT1, false);
-			}
-			WCHAR strdirx[256] = { 0L };
-			swprintf_s(strdirx, 256, L"%.3f", g_lightdir[0].x);
-			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRX1, strdirx);
-			WCHAR strdiry[256] = { 0L };
-			swprintf_s(strdiry, 256, L"%.3f", g_lightdir[0].y);
-			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRY1, strdiry);
-			WCHAR strdirz[256] = { 0L };
-			swprintf_s(strdirz, 256, L"%.3f", g_lightdir[0].z);
-			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ1, strdirz);
+		int result1 = Lights2DlgEach(hDlgWnd, 0,
+			IDC_LIGHTDIRX1, IDC_LIGHTDIRY1, IDC_LIGHTDIRZ1,
+			IDC_ENABLE1, IDC_WITHVIEWROT1);
+		if (result1 != 0) {
+			_ASSERT(0);
+			return 1;
 		}
-		{
-			if (g_lightenable[1] == true) {
-				CheckDlgButton(hDlgWnd, IDC_ENABLE2, true);
-			}
-			else {
-				CheckDlgButton(hDlgWnd, IDC_ENABLE2, false);
-			}
-			if (g_lightdirwithview[1] == true) {
-				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT2, true);
-			}
-			else {
-				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT2, false);
-			}
-			WCHAR strdirx[256] = { 0L };
-			swprintf_s(strdirx, 256, L"%.3f", g_lightdir[1].x);
-			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRX2, strdirx);
-			WCHAR strdiry[256] = { 0L };
-			swprintf_s(strdiry, 256, L"%.3f", g_lightdir[1].y);
-			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRY2, strdiry);
-			WCHAR strdirz[256] = { 0L };
-			swprintf_s(strdirz, 256, L"%.3f", g_lightdir[1].z);
-			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ2, strdirz);
+
+		int result2 = Lights2DlgEach(hDlgWnd, 1,
+			IDC_LIGHTDIRX2, IDC_LIGHTDIRY2, IDC_LIGHTDIRZ2,
+			IDC_ENABLE2, IDC_WITHVIEWROT2);
+		if (result2 != 0) {
+			_ASSERT(0);
+			return 1;
 		}
-		{
-			if (g_lightenable[2] == true) {
-				CheckDlgButton(hDlgWnd, IDC_ENABLE3, true);
-			}
-			else {
-				CheckDlgButton(hDlgWnd, IDC_ENABLE3, false);
-			}
-			if (g_lightdirwithview[2] == true) {
-				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT3, true);
-			}
-			else {
-				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT3, false);
-			}
-			WCHAR strdirx[256] = { 0L };
-			swprintf_s(strdirx, 256, L"%.3f", g_lightdir[2].x);
-			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRX3, strdirx);
-			WCHAR strdiry[256] = { 0L };
-			swprintf_s(strdiry, 256, L"%.3f", g_lightdir[2].y);
-			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRY3, strdiry);
-			WCHAR strdirz[256] = { 0L };
-			swprintf_s(strdirz, 256, L"%.3f", g_lightdir[2].z);
-			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ3, strdirz);
+
+		int result3 = Lights2DlgEach(hDlgWnd, 2,
+			IDC_LIGHTDIRX3, IDC_LIGHTDIRY3, IDC_LIGHTDIRZ3,
+			IDC_ENABLE3, IDC_WITHVIEWROT3);
+		if (result3 != 0) {
+			_ASSERT(0);
+			return 1;
 		}
-		{
-			if (g_lightenable[3] == true) {
-				CheckDlgButton(hDlgWnd, IDC_ENABLE4, true);
-			}
-			else {
-				CheckDlgButton(hDlgWnd, IDC_ENABLE4, false);
-			}
-			if (g_lightdirwithview[3] == true) {
-				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT4, true);
-			}
-			else {
-				CheckDlgButton(hDlgWnd, IDC_WITHVIEWROT4, false);
-			}
-			WCHAR strdirx[256] = { 0L };
-			swprintf_s(strdirx, 256, L"%.3f", g_lightdir[3].x);
-			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRX4, strdirx);
-			WCHAR strdiry[256] = { 0L };
-			swprintf_s(strdiry, 256, L"%.3f", g_lightdir[3].y);
-			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRY4, strdiry);
-			WCHAR strdirz[256] = { 0L };
-			swprintf_s(strdirz, 256, L"%.3f", g_lightdir[3].z);
-			SetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ4, strdirz);
+
+		int result4 = Lights2DlgEach(hDlgWnd, 3,
+			IDC_LIGHTDIRX4, IDC_LIGHTDIRY4, IDC_LIGHTDIRZ4,
+			IDC_ENABLE4, IDC_WITHVIEWROT4);
+		if (result4 != 0) {
+			_ASSERT(0);
+			return 1;
 		}
 	}
 	return 0;
 }
 
+int Dlg2LightsEach(HWND hDlgWnd, int lightno,
+	int iddirx, int iddiry, int iddirz,
+	int idenable, int idwithviewrot)
+{
+	if (!hDlgWnd) {
+		_ASSERT(0);
+		return 1;
+	}
+	if ((lightno < 1) || (lightno > LIGHTNUMMAX)) {
+		_ASSERT(0);
+		return 1;
+	}
+	int lightindex = lightno - 1;
+	if ((lightindex < 0) || (lightindex >= LIGHTNUMMAX)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+
+	WCHAR strdirx[256] = { 0L };
+	GetDlgItemText(hDlgWnd, iddirx, strdirx, 256);
+	WCHAR strdiry[256] = { 0L };
+	GetDlgItemText(hDlgWnd, iddiry, strdiry, 256);
+	WCHAR strdirz[256] = { 0L };
+	GetDlgItemText(hDlgWnd, iddirz, strdirz, 256);
+	int chkx, chky, chkz;
+	chkx = CheckStr_float(strdirx);
+	chky = CheckStr_float(strdiry);
+	chkz = CheckStr_float(strdirz);
+	if ((chkx != 0) || (chky != 0) || (chkz != 0)) {
+		_ASSERT(0);
+		return 2;//!!!!!! input error
+	}
+	float dirx, diry, dirz;
+	dirx = (float)_wtof(strdirx);
+	diry = (float)_wtof(strdiry);
+	dirz = (float)_wtof(strdirz);
+	g_lightdir[lightindex] = ChaVector3(dirx, diry, dirz);
+
+	UINT chkenable = IsDlgButtonChecked(hDlgWnd, idenable);
+	if (chkenable == BST_CHECKED) {
+		g_lightenable[lightindex] = true;
+	}
+	else {
+		g_lightenable[lightindex] = false;
+	}
+	UINT chkwithview = IsDlgButtonChecked(hDlgWnd, idwithviewrot);
+	if (chkwithview == BST_CHECKED) {
+		g_lightdirwithview[lightindex] = true;
+	}
+	else {
+		g_lightdirwithview[lightindex] = false;
+	}
+
+	return 0;
+}
+
 int Dlg2Lights(HWND hDlgWnd, int lightno)
 {
-	int errorlightno = 0;
-
 	if (hDlgWnd != 0) {
 
 		switch (lightno)
 		{
 		case 1:
 		{
-			WCHAR strdirx[256] = { 0L };
-			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRX1, strdirx, 256);
-			WCHAR strdiry[256] = { 0L };
-			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRY1, strdiry, 256);
-			WCHAR strdirz[256] = { 0L };
-			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ1, strdirz, 256);
-			int chkx, chky, chkz;
-			chkx = CheckStr_float(strdirx);
-			chky = CheckStr_float(strdiry);
-			chkz = CheckStr_float(strdirz);
-			if ((chkx != 0) || (chky != 0) || (chkz != 0)) {
+			int result = Dlg2LightsEach(hDlgWnd, lightno,
+				IDC_LIGHTDIRX1, IDC_LIGHTDIRY1, IDC_LIGHTDIRZ1,
+				IDC_ENABLE1, IDC_WITHVIEWROT1);
+			if (result == 0) {
+				//そのまま
+			}
+			else if (result == 1) {
+				//プログラム的エラー
 				_ASSERT(0);
-				errorlightno = 1;
-				break;
+				return 1;
 			}
-			float dirx, diry, dirz;
-			dirx = (float)_wtof(strdirx);
-			diry = (float)_wtof(strdiry);
-			dirz = (float)_wtof(strdirz);
-			g_lightdir[0] = ChaVector3(dirx, diry, dirz);
-
-			UINT chkenable = IsDlgButtonChecked(hDlgWnd, IDC_ENABLE1);
-			if (chkenable == BST_CHECKED) {
-				g_lightenable[0] = true;
+			else if (result == 2) {
+				//ユーザー入力エラー
+				::MessageBoxW(hDlgWnd, L"ライト１の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
+				return 1;
 			}
-			else {
-				g_lightenable[0] = false;
-			}
-			UINT chkwithview = IsDlgButtonChecked(hDlgWnd, IDC_WITHVIEWROT1);
-			if (chkwithview == BST_CHECKED) {
-				g_lightdirwithview[0] = true;
-			}
-			else {
-				g_lightdirwithview[0] = false;
+			else { 
+				//その他エラー
+				_ASSERT(0);
+				return 1;
 			}
 		}
 		break;
 		case 2:
 		{
-			WCHAR strdirx[256] = { 0L };
-			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRX2, strdirx, 256);
-			WCHAR strdiry[256] = { 0L };
-			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRY2, strdiry, 256);
-			WCHAR strdirz[256] = { 0L };
-			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ2, strdirz, 256);
-			int chkx, chky, chkz;
-			chkx = CheckStr_float(strdirx);
-			chky = CheckStr_float(strdiry);
-			chkz = CheckStr_float(strdirz);
-			if ((chkx != 0) || (chky != 0) || (chkz != 0)) {
+			int result = Dlg2LightsEach(hDlgWnd, lightno,
+				IDC_LIGHTDIRX2, IDC_LIGHTDIRY2, IDC_LIGHTDIRZ2,
+				IDC_ENABLE2, IDC_WITHVIEWROT2);
+			if (result == 0) {
+				//そのまま
+			}
+			else if (result == 1) {
+				//プログラム的エラー
 				_ASSERT(0);
-				errorlightno = 2;
-				break;
+				return 1;
 			}
-			float dirx, diry, dirz;
-			dirx = (float)_wtof(strdirx);
-			diry = (float)_wtof(strdiry);
-			dirz = (float)_wtof(strdirz);
-			g_lightdir[1] = ChaVector3(dirx, diry, dirz);
-
-			UINT chkenable = IsDlgButtonChecked(hDlgWnd, IDC_ENABLE2);
-			if (chkenable == BST_CHECKED) {
-				g_lightenable[1] = true;
+			else if (result == 2) {
+				//ユーザー入力エラー
+				::MessageBoxW(hDlgWnd, L"ライト２の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
+				return 1;
 			}
 			else {
-				g_lightenable[1] = false;
-			}
-			UINT chkwithview = IsDlgButtonChecked(hDlgWnd, IDC_WITHVIEWROT2);
-			if (chkwithview == BST_CHECKED) {
-				g_lightdirwithview[1] = true;
-			}
-			else {
-				g_lightdirwithview[1] = false;
+				//その他エラー
+				_ASSERT(0);
+				return 1;
 			}
 		}
 			break;
 		case 3:
 		{
-			WCHAR strdirx[256] = { 0L };
-			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRX3, strdirx, 256);
-			WCHAR strdiry[256] = { 0L };
-			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRY3, strdiry, 256);
-			WCHAR strdirz[256] = { 0L };
-			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ3, strdirz, 256);
-			int chkx, chky, chkz;
-			chkx = CheckStr_float(strdirx);
-			chky = CheckStr_float(strdiry);
-			chkz = CheckStr_float(strdirz);
-			if ((chkx != 0) || (chky != 0) || (chkz != 0)) {
+			int result = Dlg2LightsEach(hDlgWnd, lightno,
+				IDC_LIGHTDIRX3, IDC_LIGHTDIRY3, IDC_LIGHTDIRZ3,
+				IDC_ENABLE3, IDC_WITHVIEWROT3);
+			if (result == 0) {
+				//そのまま
+			}
+			else if (result == 1) {
+				//プログラム的エラー
 				_ASSERT(0);
-				errorlightno = 3;
-				break;
+				return 1;
 			}
-			float dirx, diry, dirz;
-			dirx = (float)_wtof(strdirx);
-			diry = (float)_wtof(strdiry);
-			dirz = (float)_wtof(strdirz);
-			g_lightdir[2] = ChaVector3(dirx, diry, dirz);
-
-			UINT chkenable = IsDlgButtonChecked(hDlgWnd, IDC_ENABLE3);
-			if (chkenable == BST_CHECKED) {
-				g_lightenable[2] = true;
+			else if (result == 2) {
+				//ユーザー入力エラー
+				::MessageBoxW(hDlgWnd, L"ライト３の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
+				return 1;
 			}
 			else {
-				g_lightenable[2] = false;
-			}
-			UINT chkwithview = IsDlgButtonChecked(hDlgWnd, IDC_WITHVIEWROT3);
-			if (chkwithview == BST_CHECKED) {
-				g_lightdirwithview[2] = true;
-			}
-			else {
-				g_lightdirwithview[2] = false;
+				//その他エラー
+				_ASSERT(0);
+				return 1;
 			}
 		}
 			break;
 		case 4:
 		{
-			WCHAR strdirx[256] = { 0L };
-			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRX4, strdirx, 256);
-			WCHAR strdiry[256] = { 0L };
-			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRY4, strdiry, 256);
-			WCHAR strdirz[256] = { 0L };
-			GetDlgItemText(hDlgWnd, IDC_LIGHTDIRZ4, strdirz, 256);
-			int chkx, chky, chkz;
-			chkx = CheckStr_float(strdirx);
-			chky = CheckStr_float(strdiry);
-			chkz = CheckStr_float(strdirz);
-			if ((chkx != 0) || (chky != 0) || (chkz != 0)) {
+			int result = Dlg2LightsEach(hDlgWnd, lightno,
+				IDC_LIGHTDIRX4, IDC_LIGHTDIRY4, IDC_LIGHTDIRZ4,
+				IDC_ENABLE4, IDC_WITHVIEWROT4);
+			if (result == 0) {
+				//そのまま
+			}
+			else if (result == 1) {
+				//プログラム的エラー
 				_ASSERT(0);
-				errorlightno = 4;
-				break;
+				return 1;
 			}
-			float dirx, diry, dirz;
-			dirx = (float)_wtof(strdirx);
-			diry = (float)_wtof(strdiry);
-			dirz = (float)_wtof(strdirz);
-			g_lightdir[2] = ChaVector3(dirx, diry, dirz);
-
-			UINT chkenable = IsDlgButtonChecked(hDlgWnd, IDC_ENABLE4);
-			if (chkenable == BST_CHECKED) {
-				g_lightenable[3] = true;
+			else if (result == 2) {
+				//ユーザー入力エラー
+				::MessageBoxW(hDlgWnd, L"ライト４の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
+				return 1;
 			}
 			else {
-				g_lightenable[3] = false;
-			}
-			UINT chkwithview = IsDlgButtonChecked(hDlgWnd, IDC_WITHVIEWROT4);
-			if (chkwithview == BST_CHECKED) {
-				g_lightdirwithview[3] = true;
-			}
-			else {
-				g_lightdirwithview[3] = false;
+				//その他エラー
+				_ASSERT(0);
+				return 1;
 			}
 		}
 			break;
 		default:
+			_ASSERT(0);
+			return 1;
 			break;
 		}
 	}
-
-
-
-	if (errorlightno == 1) {
-		::MessageBoxW(hDlgWnd, L"ライト１の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
-		return 1;
-	}
-	else if (errorlightno == 2) {
-		::MessageBoxW(hDlgWnd, L"ライト２の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
-		return 1;
-	}
-	else if (errorlightno == 3) {
-		::MessageBoxW(hDlgWnd, L"ライト３の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
-		return 1;
-	}
-	else if (errorlightno == 4) {
-		::MessageBoxW(hDlgWnd, L"ライト４の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
-		return 1;
-	}
-	else {
-		return 0;
-	}
-
 
 	return 0;
 }
@@ -25079,6 +25047,68 @@ LRESULT CALLBACK MaterialRateDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM l
 
 }
 
+int OwnerDrawLightColorBar(HWND hDlgWnd, int lightindex, int idcolorbar)
+{
+	if (!hDlgWnd) {
+		_ASSERT(0);
+		return 1;
+	}
+	if ((lightindex < 0) || (lightindex >= LIGHTNUMMAX)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	COLORREF col = g_lightdiffuse[lightindex].ColorRef();
+	HBRUSH hBrush = CreateSolidBrush(col);
+	HWND hwnd = GetDlgItem(hDlgWnd, idcolorbar);
+	HDC hdc = GetDC(hwnd);
+	RECT rect;
+	GetClientRect(hwnd, &rect);
+	FillRect(hdc, &rect, hBrush);
+	ReleaseDC(hwnd, hdc);
+	DeleteObject(hBrush);
+
+	return 0;
+}
+
+int ChooseLightColorBar(HWND hDlgWnd, int lightindex, int idcolorbar)
+{
+	if (!hDlgWnd) {
+		_ASSERT(0);
+		return 1;
+	}
+	if ((lightindex < 0) || (lightindex >= LIGHTNUMMAX)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	COLORREF colrgb = g_lightdiffuse[lightindex].ColorRef();
+	int dlgret = s_coldlg.Choose(hDlgWnd, &colrgb);
+	if (dlgret == 1) {
+		float fr, fg, fb;
+		fr = (float)((double)GetRValue(colrgb) / 255.0);
+		fr = min(1.0f, fr);
+		fr = max(0.0f, fr);
+		fg = (float)((double)GetGValue(colrgb) / 255.0);
+		fg = min(1.0f, fg);
+		fg = max(0.0f, fg);
+		fb = (float)((double)GetBValue(colrgb) / 255.0);
+		fb = min(1.0f, fb);
+		fb = max(0.0f, fb);
+
+		g_lightdiffuse[lightindex] = ChaVector3(fr, fg, fb);
+		SetLightDirection();
+
+		HWND ctrlwnd = GetDlgItem(hDlgWnd, idcolorbar);
+		RECT rect;
+		GetClientRect(ctrlwnd, &rect);
+		InvalidateRect(ctrlwnd, &rect, true);
+	}
+
+	return 0;
+}
+
 
 LRESULT CALLBACK LightsForEditDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 {
@@ -25101,53 +25131,25 @@ LRESULT CALLBACK LightsForEditDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM 
 	}
 	break;
 
-	case WM_DRAWITEM://オーナードローコントロールの描画
-	{
+	case WM_DRAWITEM://オーナードローコントロールの描画 : リソースでカラーバーボタンにオーナードロー属性を設定してある
 		{
-			COLORREF col = g_lightdiffuse[0].ColorRef();
-			HBRUSH hBrush = CreateSolidBrush(col);
-			HWND hwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR11);
-			HDC hdc = GetDC(hwnd);
-			RECT rect;
-			GetClientRect(hwnd, &rect);
-			FillRect(hdc, &rect, hBrush);
-			ReleaseDC(hwnd, hdc);
-			DeleteObject(hBrush);
+			int result1 = OwnerDrawLightColorBar(hDlgWnd, 0, IDC_COLORBAR11);
+			if (result1 != 0) {
+				_ASSERT(0);
+			}
+			int result2 = OwnerDrawLightColorBar(hDlgWnd, 1, IDC_COLORBAR12);
+			if (result2 != 0) {
+				_ASSERT(0);
+			}
+			int result3 = OwnerDrawLightColorBar(hDlgWnd, 2, IDC_COLORBAR13);
+			if (result3 != 0) {
+				_ASSERT(0);
+			}
+			int result4 = OwnerDrawLightColorBar(hDlgWnd, 3, IDC_COLORBAR14);
+			if (result4 != 0) {
+				_ASSERT(0);
+			}
 		}
-		{
-			COLORREF col = g_lightdiffuse[1].ColorRef();
-			HBRUSH hBrush = CreateSolidBrush(col);
-			HWND hwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR12);
-			HDC hdc = GetDC(hwnd);
-			RECT rect;
-			GetClientRect(hwnd, &rect);
-			FillRect(hdc, &rect, hBrush);
-			ReleaseDC(hwnd, hdc);
-			DeleteObject(hBrush);
-		}
-		{
-			COLORREF col = g_lightdiffuse[2].ColorRef();
-			HBRUSH hBrush = CreateSolidBrush(col);
-			HWND hwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR13);
-			HDC hdc = GetDC(hwnd);
-			RECT rect;
-			GetClientRect(hwnd, &rect);
-			FillRect(hdc, &rect, hBrush);
-			ReleaseDC(hwnd, hdc);
-			DeleteObject(hBrush);
-		}
-		{
-			COLORREF col = g_lightdiffuse[3].ColorRef();
-			HBRUSH hBrush = CreateSolidBrush(col);
-			HWND hwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR14);
-			HDC hdc = GetDC(hwnd);
-			RECT rect;
-			GetClientRect(hwnd, &rect);
-			FillRect(hdc, &rect, hBrush);
-			ReleaseDC(hwnd, hdc);
-			DeleteObject(hBrush);
-		}
-	}
 		//DefWindowProc(hDlgWnd, msg, wp, lp);
 		break;
 
@@ -25173,105 +25175,33 @@ LRESULT CALLBACK LightsForEditDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM 
 
 		case IDC_COLORBAR11:
 		{
-			COLORREF colrgb = g_lightdiffuse[0].ColorRef();
-			int dlgret = s_coldlg.Choose(hDlgWnd, &colrgb);
-			if (dlgret == 1) {
-				float fr, fg, fb;
-				fr = (float)((double)GetRValue(colrgb) / 255.0);
-				fr = min(1.0f, fr);
-				fr = max(0.0f, fr);
-				fg = (float)((double)GetGValue(colrgb) / 255.0);
-				fg = min(1.0f, fg);
-				fg = max(0.0f, fg);
-				fb = (float)((double)GetBValue(colrgb) / 255.0);
-				fb = min(1.0f, fb);
-				fb = max(0.0f, fb);
-
-				g_lightdiffuse[0] = ChaVector3(fr, fg, fb);
-				SetLightDirection();
-
-				HWND ctrlwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR11);
-				RECT rect;
-				GetClientRect(ctrlwnd, &rect);
-				InvalidateRect(ctrlwnd, &rect, true);
+			int result = ChooseLightColorBar(hDlgWnd, 0, IDC_COLORBAR11);
+			if (result != 0) {
+				_ASSERT(0);
 			}
 		}
 			break;
 		case IDC_COLORBAR12:
 		{
-			COLORREF colrgb = g_lightdiffuse[1].ColorRef();
-			int dlgret = s_coldlg.Choose(hDlgWnd, &colrgb);
-			if (dlgret == 1) {
-				float fr, fg, fb;
-				fr = (float)((double)GetRValue(colrgb) / 255.0);
-				fr = min(1.0f, fr);
-				fr = max(0.0f, fr);
-				fg = (float)((double)GetGValue(colrgb) / 255.0);
-				fg = min(1.0f, fg);
-				fg = max(0.0f, fg);
-				fb = (float)((double)GetBValue(colrgb) / 255.0);
-				fb = min(1.0f, fb);
-				fb = max(0.0f, fb);
-
-				g_lightdiffuse[1] = ChaVector3(fr, fg, fb);
-				SetLightDirection();
-
-				HWND ctrlwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR12);
-				RECT rect;
-				GetClientRect(ctrlwnd, &rect);
-				InvalidateRect(ctrlwnd, &rect, true);
+			int result = ChooseLightColorBar(hDlgWnd, 1, IDC_COLORBAR12);
+			if (result != 0) {
+				_ASSERT(0);
 			}
 		}
 			break;
 		case IDC_COLORBAR13:
 		{
-			COLORREF colrgb = g_lightdiffuse[2].ColorRef();
-			int dlgret = s_coldlg.Choose(hDlgWnd, &colrgb);
-			if (dlgret == 1) {
-				float fr, fg, fb;
-				fr = (float)((double)GetRValue(colrgb) / 255.0);
-				fr = min(1.0f, fr);
-				fr = max(0.0f, fr);
-				fg = (float)((double)GetGValue(colrgb) / 255.0);
-				fg = min(1.0f, fg);
-				fg = max(0.0f, fg);
-				fb = (float)((double)GetBValue(colrgb) / 255.0);
-				fb = min(1.0f, fb);
-				fb = max(0.0f, fb);
-
-				g_lightdiffuse[2] = ChaVector3(fr, fg, fb);
-				SetLightDirection();
-
-				HWND ctrlwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR13);
-				RECT rect;
-				GetClientRect(ctrlwnd, &rect);
-				InvalidateRect(ctrlwnd, &rect, true);
+			int result = ChooseLightColorBar(hDlgWnd, 2, IDC_COLORBAR13);
+			if (result != 0) {
+				_ASSERT(0);
 			}
 		}
 			break;
 		case IDC_COLORBAR14:
 		{
-			COLORREF colrgb = g_lightdiffuse[3].ColorRef();
-			int dlgret = s_coldlg.Choose(hDlgWnd, &colrgb);
-			if (dlgret == 1) {
-				float fr, fg, fb;
-				fr = (float)((double)GetRValue(colrgb) / 255.0);
-				fr = min(1.0f, fr);
-				fr = max(0.0f, fr);
-				fg = (float)((double)GetGValue(colrgb) / 255.0);
-				fg = min(1.0f, fg);
-				fg = max(0.0f, fg);
-				fb = (float)((double)GetBValue(colrgb) / 255.0);
-				fb = min(1.0f, fb);
-				fb = max(0.0f, fb);
-
-				g_lightdiffuse[3] = ChaVector3(fr, fg, fb);
-				SetLightDirection();
-
-				HWND ctrlwnd = GetDlgItem(hDlgWnd, IDC_COLORBAR14);
-				RECT rect;
-				GetClientRect(ctrlwnd, &rect);
-				InvalidateRect(ctrlwnd, &rect, true);
+			int result = ChooseLightColorBar(hDlgWnd, 3, IDC_COLORBAR14);
+			if (result != 0) {
+				_ASSERT(0);
 			}
 		}
 			break;
@@ -33206,7 +33136,7 @@ int SetLightDirection()
 		if (g_lightenable[lno] == true) {
 			if (g_lightdirwithview[lno] == true) {
 				ChaVector3 nlightdir;
-				ChaVector3Normalize(&nlightdir, &g_lightdir[lno]);
+				ChaVector3Normalize(&nlightdir, &(g_lightdir[lno]));
 
 				ChaVector3 rotdir, nrotdir;
 				camrotq.Rotate(&rotdir, nlightdir);

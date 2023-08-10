@@ -66,6 +66,10 @@
 		Documants/TroubleShooting/AboutDifferentSmoothSpriteBtnFromSmoothToolBtn.docx
 
 
+    2023/08/10_2
+	LightsForEditDlgリファクタリングと不具合修正
+
+
 2023/08/02
     EditMot 1.2.0.23 release
 
