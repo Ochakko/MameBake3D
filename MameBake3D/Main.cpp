@@ -2928,8 +2928,8 @@ static int Lights2Dlg(HWND hDlgWnd);
 static int Lights2DlgEach(HWND hDlgWnd, int lightindex,
 	int iddirx, int iddiry, int iddirz,
 	int idenable, int idwithviewrot);
-static int Dlg2Lights(HWND hDlgWnd, int lightno);
-static int Dlg2LightsEach(HWND hDlgWnd, int lightno,
+static int Dlg2Lights(HWND hDlgWnd, int lightindex);
+static int Dlg2LightsEach(HWND hDlgWnd, int lightindex,
 	int iddirx, int iddiry, int iddirz,
 	int idenable, int idwithviewrot);
 static int CheckStr_float(const WCHAR* srcstr);
@@ -4012,11 +4012,19 @@ void InitApp()
 		g_hRenderBoneL2 = 0;
 		g_hRenderBoneL3 = 0;
 		g_hRenderBoneL4 = 0;
+		g_hRenderBoneL5 = 0;
+		g_hRenderBoneL6 = 0;
+		g_hRenderBoneL7 = 0;
+		g_hRenderBoneL8 = 0;
 		g_hRenderNoBoneL0 = 0;
 		g_hRenderNoBoneL1 = 0;
 		g_hRenderNoBoneL2 = 0;
 		g_hRenderNoBoneL3 = 0;
 		g_hRenderNoBoneL4 = 0;
+		g_hRenderNoBoneL5 = 0;
+		g_hRenderNoBoneL6 = 0;
+		g_hRenderNoBoneL7 = 0;
+		g_hRenderNoBoneL8 = 0;
 		g_hRenderLine = 0;
 		g_hRenderSprite = 0;
 
@@ -4772,24 +4780,29 @@ void InitApp()
 	//g_nActiveLight = 0;
 	g_nNumActiveLights = 1;
 	g_fLightScale = 1.0f;
-	int lno;
-	for (lno = 0; lno < LIGHTNUMMAX; lno++) {
-		double initrad = PI * 2.0 * (double)lno / (double)LIGHTNUMMAX;// -PI / 6;
-		g_lightdir[lno] = ChaVector3((float)sin(initrad), 0.0f, (float)-cos(initrad));
-		s_lightdirforshader[lno] = g_lightdir[lno];
+	int lightindex;
+	for (lightindex = 0; lightindex < LIGHTNUMMAX; lightindex++) {
+		double initrad = PI * 2.0 * (double)lightindex / (double)LIGHTNUMMAX;// -PI / 6;
+		ChaVector3 dir0, ndir;
+		dir0 = ChaVector3((float)sin(initrad), 
+			-0.5f, 
+			(float)-cos(initrad));
+		ChaVector3Normalize(&ndir, &dir0);
+		g_lightdir[lightindex] = ndir;
+		s_lightdirforshader[lightindex] = -g_lightdir[lightindex];//-lightdir
 
-		g_lightdiffuse[lno] = ChaVector3(1.0f, 1.0f, 1.0f);
-		s_lightdiffuseforshader[lno] = ChaVector4(g_lightdiffuse[lno].x, g_lightdiffuse[lno].y, g_lightdiffuse[lno].z, 1.0f);
+		g_lightdiffuse[lightindex] = ChaVector3(1.0f, 1.0f, 1.0f);
+		s_lightdiffuseforshader[lightindex] = ChaVector4(g_lightdiffuse[lightindex].x, g_lightdiffuse[lightindex].y, g_lightdiffuse[lightindex].z, 1.0f);
 
-		if (lno == 2) {//初期状態では lno == 2のときキャラの正面を照らす向き
-			g_lightenable[lno] = true;
+		if (lightindex == 0) {//初期状態では lightindex == 0のときキャラの正面を照らす向き
+			g_lightenable[lightindex] = true;
 		}
 		else {
-			g_lightenable[lno] = false;
+			g_lightenable[lightindex] = false;
 		}
-		g_lightdirwithview[lno] = true;
+		g_lightdirwithview[lightindex] = true;
 
-		g_LightControl[lno].SetLightDirection(g_lightdir[lno].D3DX());
+		g_LightControl[lightindex].SetLightDirection(g_lightdir[lightindex].D3DX());
 
 	}
 
@@ -10841,6 +10854,14 @@ int GetShaderHandle()
 	_ASSERT(g_hRenderBoneL3);
 	g_hRenderBoneL4 = g_pEffect->GetTechniqueByName("RenderBoneL4");
 	_ASSERT(g_hRenderBoneL4);
+	g_hRenderBoneL5 = g_pEffect->GetTechniqueByName("RenderBoneL5");
+	_ASSERT(g_hRenderBoneL5);
+	g_hRenderBoneL6 = g_pEffect->GetTechniqueByName("RenderBoneL6");
+	_ASSERT(g_hRenderBoneL6);
+	g_hRenderBoneL7 = g_pEffect->GetTechniqueByName("RenderBoneL7");
+	_ASSERT(g_hRenderBoneL7);
+	g_hRenderBoneL8 = g_pEffect->GetTechniqueByName("RenderBoneL8");
+	_ASSERT(g_hRenderBoneL8);
 
 	g_hRenderNoBoneL0 = g_pEffect->GetTechniqueByName("RenderNoBoneL0");
 	_ASSERT(g_hRenderNoBoneL0);
@@ -10852,6 +10873,14 @@ int GetShaderHandle()
 	_ASSERT(g_hRenderNoBoneL3);
 	g_hRenderNoBoneL4 = g_pEffect->GetTechniqueByName("RenderNoBoneL4");
 	_ASSERT(g_hRenderNoBoneL4);
+	g_hRenderNoBoneL5 = g_pEffect->GetTechniqueByName("RenderNoBoneL5");
+	_ASSERT(g_hRenderNoBoneL5);
+	g_hRenderNoBoneL6 = g_pEffect->GetTechniqueByName("RenderNoBoneL6");
+	_ASSERT(g_hRenderNoBoneL6);
+	g_hRenderNoBoneL7 = g_pEffect->GetTechniqueByName("RenderNoBoneL7");
+	_ASSERT(g_hRenderNoBoneL7);
+	g_hRenderNoBoneL8 = g_pEffect->GetTechniqueByName("RenderNoBoneL8");
+	_ASSERT(g_hRenderNoBoneL8);
 
 	g_hRenderLine = g_pEffect->GetTechniqueByName("RenderLine");
 	_ASSERT(g_hRenderLine);
@@ -24265,11 +24294,44 @@ int Lights2Dlg(HWND hDlgWnd)
 			_ASSERT(0);
 			return 1;
 		}
+
+		int result5 = Lights2DlgEach(hDlgWnd, 4,
+			IDC_LIGHTDIRX5, IDC_LIGHTDIRY5, IDC_LIGHTDIRZ5,
+			IDC_ENABLE5, IDC_WITHVIEWROT5);
+		if (result5 != 0) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		int result6 = Lights2DlgEach(hDlgWnd, 5,
+			IDC_LIGHTDIRX6, IDC_LIGHTDIRY6, IDC_LIGHTDIRZ6,
+			IDC_ENABLE6, IDC_WITHVIEWROT6);
+		if (result6 != 0) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		int result7 = Lights2DlgEach(hDlgWnd, 6,
+			IDC_LIGHTDIRX7, IDC_LIGHTDIRY7, IDC_LIGHTDIRZ7,
+			IDC_ENABLE7, IDC_WITHVIEWROT7);
+		if (result7 != 0) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		int result8 = Lights2DlgEach(hDlgWnd, 7,
+			IDC_LIGHTDIRX8, IDC_LIGHTDIRY8, IDC_LIGHTDIRZ8,
+			IDC_ENABLE8, IDC_WITHVIEWROT8);
+		if (result8 != 0) {
+			_ASSERT(0);
+			return 1;
+		}
+
 	}
 	return 0;
 }
 
-int Dlg2LightsEach(HWND hDlgWnd, int lightno,
+int Dlg2LightsEach(HWND hDlgWnd, int lightindex,
 	int iddirx, int iddiry, int iddirz,
 	int idenable, int idwithviewrot)
 {
@@ -24277,11 +24339,6 @@ int Dlg2LightsEach(HWND hDlgWnd, int lightno,
 		_ASSERT(0);
 		return 1;
 	}
-	if ((lightno < 1) || (lightno > LIGHTNUMMAX)) {
-		_ASSERT(0);
-		return 1;
-	}
-	int lightindex = lightno - 1;
 	if ((lightindex < 0) || (lightindex >= LIGHTNUMMAX)) {
 		_ASSERT(0);
 		return 1;
@@ -24327,15 +24384,15 @@ int Dlg2LightsEach(HWND hDlgWnd, int lightno,
 	return 0;
 }
 
-int Dlg2Lights(HWND hDlgWnd, int lightno)
+int Dlg2Lights(HWND hDlgWnd, int lightindex)
 {
 	if (hDlgWnd != 0) {
 
-		switch (lightno)
+		switch (lightindex)
 		{
-		case 1:
+		case 0:
 		{
-			int result = Dlg2LightsEach(hDlgWnd, lightno,
+			int result = Dlg2LightsEach(hDlgWnd, lightindex,
 				IDC_LIGHTDIRX1, IDC_LIGHTDIRY1, IDC_LIGHTDIRZ1,
 				IDC_ENABLE1, IDC_WITHVIEWROT1);
 			if (result == 0) {
@@ -24358,9 +24415,9 @@ int Dlg2Lights(HWND hDlgWnd, int lightno)
 			}
 		}
 		break;
-		case 2:
+		case 1:
 		{
-			int result = Dlg2LightsEach(hDlgWnd, lightno,
+			int result = Dlg2LightsEach(hDlgWnd, lightindex,
 				IDC_LIGHTDIRX2, IDC_LIGHTDIRY2, IDC_LIGHTDIRZ2,
 				IDC_ENABLE2, IDC_WITHVIEWROT2);
 			if (result == 0) {
@@ -24383,9 +24440,9 @@ int Dlg2Lights(HWND hDlgWnd, int lightno)
 			}
 		}
 			break;
-		case 3:
+		case 2:
 		{
-			int result = Dlg2LightsEach(hDlgWnd, lightno,
+			int result = Dlg2LightsEach(hDlgWnd, lightindex,
 				IDC_LIGHTDIRX3, IDC_LIGHTDIRY3, IDC_LIGHTDIRZ3,
 				IDC_ENABLE3, IDC_WITHVIEWROT3);
 			if (result == 0) {
@@ -24408,9 +24465,9 @@ int Dlg2Lights(HWND hDlgWnd, int lightno)
 			}
 		}
 			break;
-		case 4:
+		case 3:
 		{
-			int result = Dlg2LightsEach(hDlgWnd, lightno,
+			int result = Dlg2LightsEach(hDlgWnd, lightindex,
 				IDC_LIGHTDIRX4, IDC_LIGHTDIRY4, IDC_LIGHTDIRZ4,
 				IDC_ENABLE4, IDC_WITHVIEWROT4);
 			if (result == 0) {
@@ -24433,6 +24490,107 @@ int Dlg2Lights(HWND hDlgWnd, int lightno)
 			}
 		}
 			break;
+		case 4:
+		{
+			int result = Dlg2LightsEach(hDlgWnd, lightindex,
+				IDC_LIGHTDIRX5, IDC_LIGHTDIRY5, IDC_LIGHTDIRZ5,
+				IDC_ENABLE5, IDC_WITHVIEWROT5);
+			if (result == 0) {
+				//そのまま
+			}
+			else if (result == 1) {
+				//プログラム的エラー
+				_ASSERT(0);
+				return 1;
+			}
+			else if (result == 2) {
+				//ユーザー入力エラー
+				::MessageBoxW(hDlgWnd, L"ライト５の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
+				return 1;
+			}
+			else {
+				//その他エラー
+				_ASSERT(0);
+				return 1;
+			}
+		}
+			break;
+		case 5:
+		{
+			int result = Dlg2LightsEach(hDlgWnd, lightindex,
+				IDC_LIGHTDIRX6, IDC_LIGHTDIRY6, IDC_LIGHTDIRZ6,
+				IDC_ENABLE6, IDC_WITHVIEWROT6);
+			if (result == 0) {
+				//そのまま
+			}
+			else if (result == 1) {
+				//プログラム的エラー
+				_ASSERT(0);
+				return 1;
+			}
+			else if (result == 2) {
+				//ユーザー入力エラー
+				::MessageBoxW(hDlgWnd, L"ライト６の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
+				return 1;
+			}
+			else {
+				//その他エラー
+				_ASSERT(0);
+				return 1;
+			}
+		}
+			break;
+		case 6:
+		{
+			int result = Dlg2LightsEach(hDlgWnd, lightindex,
+				IDC_LIGHTDIRX7, IDC_LIGHTDIRY7, IDC_LIGHTDIRZ7,
+				IDC_ENABLE7, IDC_WITHVIEWROT7);
+			if (result == 0) {
+				//そのまま
+			}
+			else if (result == 1) {
+				//プログラム的エラー
+				_ASSERT(0);
+				return 1;
+			}
+			else if (result == 2) {
+				//ユーザー入力エラー
+				::MessageBoxW(hDlgWnd, L"ライト７の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
+				return 1;
+			}
+			else {
+				//その他エラー
+				_ASSERT(0);
+				return 1;
+			}
+		}
+			break;
+		case 7:
+		{
+			int result = Dlg2LightsEach(hDlgWnd, lightindex,
+				IDC_LIGHTDIRX8, IDC_LIGHTDIRY8, IDC_LIGHTDIRZ8,
+				IDC_ENABLE8, IDC_WITHVIEWROT8);
+			if (result == 0) {
+				//そのまま
+			}
+			else if (result == 1) {
+				//プログラム的エラー
+				_ASSERT(0);
+				return 1;
+			}
+			else if (result == 2) {
+				//ユーザー入力エラー
+				::MessageBoxW(hDlgWnd, L"ライト８の向きの数値が不正です。半角小数で指定してください。", L"Lights For Edit Dlg : Error !!!", MB_OK);
+				return 1;
+			}
+			else {
+				//その他エラー
+				_ASSERT(0);
+				return 1;
+			}
+		}
+			break;
+
 		default:
 			_ASSERT(0);
 			return 1;
@@ -25149,26 +25307,58 @@ LRESULT CALLBACK LightsForEditDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM 
 			if (result4 != 0) {
 				_ASSERT(0);
 			}
-		}
+			int result5 = OwnerDrawLightColorBar(hDlgWnd, 4, IDC_COLORBAR15);
+			if (result5 != 0) {
+				_ASSERT(0);
+			}
+			int result6 = OwnerDrawLightColorBar(hDlgWnd, 5, IDC_COLORBAR16);
+			if (result6 != 0) {
+				_ASSERT(0);
+			}
+			int result7 = OwnerDrawLightColorBar(hDlgWnd, 6, IDC_COLORBAR17);
+			if (result7 != 0) {
+				_ASSERT(0);
+			}
+			int result8 = OwnerDrawLightColorBar(hDlgWnd, 7, IDC_COLORBAR18);
+			if (result8 != 0) {
+				_ASSERT(0);
+			}
+	}
 		//DefWindowProc(hDlgWnd, msg, wp, lp);
 		break;
 
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
 		case IDC_SETLIGHT1:
-			Dlg2Lights(hDlgWnd, 1);
+			Dlg2Lights(hDlgWnd, 0);
 			SetLightDirection();
 			break;
 		case IDC_SETLIGHT2:
-			Dlg2Lights(hDlgWnd, 2);
+			Dlg2Lights(hDlgWnd, 1);
 			SetLightDirection();
 			break;
 		case IDC_SETLIGHT3:
-			Dlg2Lights(hDlgWnd, 3);
+			Dlg2Lights(hDlgWnd, 2);
 			SetLightDirection();
 			break;
 		case IDC_SETLIGHT4:
+			Dlg2Lights(hDlgWnd, 3);
+			SetLightDirection();
+			break;
+		case IDC_SETLIGHT5:
 			Dlg2Lights(hDlgWnd, 4);
+			SetLightDirection();
+			break;
+		case IDC_SETLIGHT6:
+			Dlg2Lights(hDlgWnd, 5);
+			SetLightDirection();
+			break;
+		case IDC_SETLIGHT7:
+			Dlg2Lights(hDlgWnd, 6);
+			SetLightDirection();
+			break;
+		case IDC_SETLIGHT8:
+			Dlg2Lights(hDlgWnd, 7);
 			SetLightDirection();
 			break;
 
@@ -25200,6 +25390,38 @@ LRESULT CALLBACK LightsForEditDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM 
 		case IDC_COLORBAR14:
 		{
 			int result = ChooseLightColorBar(hDlgWnd, 3, IDC_COLORBAR14);
+			if (result != 0) {
+				_ASSERT(0);
+			}
+		}
+			break;
+		case IDC_COLORBAR15:
+		{
+			int result = ChooseLightColorBar(hDlgWnd, 4, IDC_COLORBAR15);
+			if (result != 0) {
+				_ASSERT(0);
+			}
+		}
+			break;
+		case IDC_COLORBAR16:
+		{
+			int result = ChooseLightColorBar(hDlgWnd, 5, IDC_COLORBAR16);
+			if (result != 0) {
+				_ASSERT(0);
+			}
+		}
+			break;
+		case IDC_COLORBAR17:
+		{
+			int result = ChooseLightColorBar(hDlgWnd, 6, IDC_COLORBAR17);
+			if (result != 0) {
+				_ASSERT(0);
+			}
+		}
+			break;
+		case IDC_COLORBAR18:
+		{
+			int result = ChooseLightColorBar(hDlgWnd, 7, IDC_COLORBAR18);
 			if (result != 0) {
 				_ASSERT(0);
 			}
@@ -33130,27 +33352,27 @@ int SetLightDirection()
 	CQuaternion camrotq;
 	camrotq.RotationArc(dirz, nlightdir0);
 
-	int lno;
+	int lightindex;
 	int activenum = 0;
-	for (lno = 0; lno < LIGHTNUMMAX; lno++) {
-		if (g_lightenable[lno] == true) {
-			if (g_lightdirwithview[lno] == true) {
+	for (lightindex = 0; lightindex < LIGHTNUMMAX; lightindex++) {
+		if (g_lightenable[lightindex] == true) {
+			if (g_lightdirwithview[lightindex] == true) {
 				ChaVector3 nlightdir;
-				ChaVector3Normalize(&nlightdir, &(g_lightdir[lno]));
+				ChaVector3Normalize(&nlightdir, &(g_lightdir[lightindex]));
 
 				ChaVector3 rotdir, nrotdir;
 				camrotq.Rotate(&rotdir, nlightdir);
 				ChaVector3Normalize(&nrotdir, &rotdir);
-				s_lightdirforshader[activenum] = nrotdir;
+				s_lightdirforshader[activenum] = -nrotdir;//-lightdir
 			}
 			else {
 				ChaVector3 nrotdir;
-				ChaVector3Normalize(&nrotdir, &(g_lightdir[lno]));
-				s_lightdirforshader[activenum] = nrotdir;
+				ChaVector3Normalize(&nrotdir, &(g_lightdir[lightindex]));
+				s_lightdirforshader[activenum] = -nrotdir;//-lightdir
 			}
 
 			ChaVector3 scaleddiffuse;
-			scaleddiffuse = g_lightdiffuse[lno] * g_fLightScale;
+			scaleddiffuse = g_lightdiffuse[lightindex] * g_fLightScale;
 			s_lightdiffuseforshader[activenum] = ChaVector4(scaleddiffuse.x, scaleddiffuse.y, scaleddiffuse.z, 1.0f);
 
 			activenum++;

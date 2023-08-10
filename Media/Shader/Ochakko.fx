@@ -16,8 +16,8 @@ cbuffer Variable
 	float  g_power;
 	float3 g_emissive;
 
-	float3 g_LightDir[4];               // Light's direction in world space
-	float4 g_LightDiffuse[4];           // Light's diffuse color
+	float3 g_LightDir[8];               // Light's direction in world space
+	float4 g_LightDiffuse[8];           // Light's diffuse color
 
 	matrix g_mWorld;                  // World matrix for object
 	matrix g_mVP;    // View * Projection matrix
@@ -454,6 +454,84 @@ technique10 RenderBoneL4
 
 }
 
+technique10 RenderBoneL5
+{
+    pass P0
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 5 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+    pass P1
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 5 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+
+}
+
+technique10 RenderBoneL6
+{
+    pass P0
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 6 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+    pass P1
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 6 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+
+}
+
+technique10 RenderBoneL7
+{
+    pass P0
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 7 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+    pass P1
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 7 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+
+}
+
+technique10 RenderBoneL8
+{
+    pass P0
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 8 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+    pass P1
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneBoneVS( 8 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+
+}
+
+
+
 technique10 RenderNoBoneL0
 {
     pass P0
@@ -543,6 +621,82 @@ technique10 RenderNoBoneL4
     pass P1
     {          
 		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 4 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+
+}
+
+technique10 RenderNoBoneL5
+{
+    pass P0
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 5 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+    pass P1
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 5 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+
+}
+
+technique10 RenderNoBoneL6
+{
+    pass P0
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 6 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+    pass P1
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 6 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+
+}
+
+technique10 RenderNoBoneL7
+{
+    pass P0
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 7 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+    pass P1
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 7 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+
+}
+
+technique10 RenderNoBoneL8
+{
+    pass P0
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 8 )));
+		SetGeometryShader(NULL);
+		SetPixelShader(CompileShader(ps_4_0, RenderScenePSTex()));
+		//SetDepthStencilState(EnableDepth, 0);
+    }
+    pass P1
+    {          
+		SetVertexShader(CompileShader(vs_4_0, RenderSceneNoBoneVS( 8 )));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_4_0, RenderScenePSNotex()));
 		//SetDepthStencilState(EnableDepth, 0);

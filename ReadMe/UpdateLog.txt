@@ -65,10 +65,14 @@
 	ドキュメント更新
 		Documants/TroubleShooting/AboutDifferentSmoothSpriteBtnFromSmoothToolBtn.docx
 
-
     2023/08/10_2
 	LightsForEditDlgリファクタリングと不具合修正
 
+    2023/08/10_3
+	LightsForEditDlg
+		編集用ライト最大数を最大８個に変更
+		シェーダーに渡すライトの向きはGUI設定の向きにマイナスを掛けたもの(計算の都合)
+		ライトの初期値に少し下向き成分を加えた
 
 2023/08/02
     EditMot 1.2.0.23 release

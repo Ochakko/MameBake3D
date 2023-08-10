@@ -114,11 +114,19 @@ int CDispObj::InitParams()
 	m_layoutBoneL2 = 0;
 	m_layoutBoneL3 = 0;
 	m_layoutBoneL4 = 0;
+	m_layoutBoneL5 = 0;
+	m_layoutBoneL6 = 0;
+	m_layoutBoneL7 = 0;
+	m_layoutBoneL8 = 0;
 	m_layoutNoBoneL0 = 0;
 	m_layoutNoBoneL1 = 0;
 	m_layoutNoBoneL2 = 0;
 	m_layoutNoBoneL3 = 0;
 	m_layoutNoBoneL4 = 0;
+	m_layoutNoBoneL5 = 0;
+	m_layoutNoBoneL6 = 0;
+	m_layoutNoBoneL7 = 0;
+	m_layoutNoBoneL8 = 0;
 	m_layoutLine = 0;
 
     m_VB = 0;
@@ -154,6 +162,22 @@ int CDispObj::DestroyObjs()
 		m_layoutBoneL4->Release();
 		m_layoutBoneL4 = 0;
 	}
+	if (m_layoutBoneL5) {
+		m_layoutBoneL5->Release();
+		m_layoutBoneL5 = 0;
+	}
+	if (m_layoutBoneL6) {
+		m_layoutBoneL6->Release();
+		m_layoutBoneL6 = 0;
+	}
+	if (m_layoutBoneL7) {
+		m_layoutBoneL7->Release();
+		m_layoutBoneL7 = 0;
+	}
+	if (m_layoutBoneL8) {
+		m_layoutBoneL8->Release();
+		m_layoutBoneL8 = 0;
+	}
 
 	if (m_layoutNoBoneL0) {
 		m_layoutNoBoneL0->Release();
@@ -174,6 +198,22 @@ int CDispObj::DestroyObjs()
 	if (m_layoutNoBoneL4) {
 		m_layoutNoBoneL4->Release();
 		m_layoutNoBoneL4 = 0;
+	}
+	if (m_layoutNoBoneL5) {
+		m_layoutNoBoneL5->Release();
+		m_layoutNoBoneL5 = 0;
+	}
+	if (m_layoutNoBoneL6) {
+		m_layoutNoBoneL6->Release();
+		m_layoutNoBoneL6 = 0;
+	}
+	if (m_layoutNoBoneL7) {
+		m_layoutNoBoneL7->Release();
+		m_layoutNoBoneL7 = 0;
+	}
+	if (m_layoutNoBoneL8) {
+		m_layoutNoBoneL8->Release();
+		m_layoutNoBoneL8 = 0;
 	}
 
 
@@ -314,8 +354,13 @@ int CDispObj::CreateDecl()
 
 
 	if (!m_pdev ||
-		!g_hRenderBoneL0 || !g_hRenderBoneL1 || !g_hRenderBoneL2 || !g_hRenderBoneL3 || !g_hRenderBoneL4 ||
-		!g_hRenderNoBoneL0 || !g_hRenderNoBoneL1 || !g_hRenderNoBoneL2 || !g_hRenderNoBoneL3 || !g_hRenderNoBoneL4) {
+		!g_hRenderBoneL0 || 
+		!g_hRenderBoneL1 || !g_hRenderBoneL2 || !g_hRenderBoneL3 || !g_hRenderBoneL4 ||
+		!g_hRenderBoneL5 || !g_hRenderBoneL6 || !g_hRenderBoneL7 || !g_hRenderBoneL8 ||
+		!g_hRenderNoBoneL0 || 
+		!g_hRenderNoBoneL1 || !g_hRenderNoBoneL2 || !g_hRenderNoBoneL3 || !g_hRenderNoBoneL4 ||
+		!g_hRenderNoBoneL5 || !g_hRenderNoBoneL6 || !g_hRenderNoBoneL7 || !g_hRenderNoBoneL8
+		) {
 		_ASSERT(0);
 		return 1;
 	}
@@ -332,6 +377,14 @@ int CDispObj::CreateDecl()
 	g_hRenderBoneL3->GetPassByIndex(0)->GetDesc(&PassDescBoneL3);
 	D3DX11_PASS_DESC PassDescBoneL4;
 	g_hRenderBoneL4->GetPassByIndex(0)->GetDesc(&PassDescBoneL4);
+	D3DX11_PASS_DESC PassDescBoneL5;
+	g_hRenderBoneL5->GetPassByIndex(0)->GetDesc(&PassDescBoneL5);
+	D3DX11_PASS_DESC PassDescBoneL6;
+	g_hRenderBoneL6->GetPassByIndex(0)->GetDesc(&PassDescBoneL6);
+	D3DX11_PASS_DESC PassDescBoneL7;
+	g_hRenderBoneL7->GetPassByIndex(0)->GetDesc(&PassDescBoneL7);
+	D3DX11_PASS_DESC PassDescBoneL8;
+	g_hRenderBoneL8->GetPassByIndex(0)->GetDesc(&PassDescBoneL8);
 
 	D3DX11_PASS_DESC PassDescNoBoneL0;
 	g_hRenderNoBoneL0->GetPassByIndex(0)->GetDesc(&PassDescNoBoneL0);
@@ -343,6 +396,14 @@ int CDispObj::CreateDecl()
 	g_hRenderNoBoneL3->GetPassByIndex(0)->GetDesc(&PassDescNoBoneL3);
 	D3DX11_PASS_DESC PassDescNoBoneL4;
 	g_hRenderNoBoneL4->GetPassByIndex(0)->GetDesc(&PassDescNoBoneL4);
+	D3DX11_PASS_DESC PassDescNoBoneL5;
+	g_hRenderNoBoneL5->GetPassByIndex(0)->GetDesc(&PassDescNoBoneL5);
+	D3DX11_PASS_DESC PassDescNoBoneL6;
+	g_hRenderNoBoneL6->GetPassByIndex(0)->GetDesc(&PassDescNoBoneL6);
+	D3DX11_PASS_DESC PassDescNoBoneL7;
+	g_hRenderNoBoneL7->GetPassByIndex(0)->GetDesc(&PassDescNoBoneL7);
+	D3DX11_PASS_DESC PassDescNoBoneL8;
+	g_hRenderNoBoneL8->GetPassByIndex(0)->GetDesc(&PassDescNoBoneL8);
 
 	D3DX11_PASS_DESC PassDescLine;
 	g_hRenderLine->GetPassByIndex(0)->GetDesc(&PassDescLine);
@@ -385,6 +446,34 @@ int CDispObj::CreateDecl()
 		_ASSERT(0);
 		return 1;
 	}
+	hr = m_pdev->CreateInputLayout(
+		declbone, sizeof(declbone) / sizeof(D3D11_INPUT_ELEMENT_DESC),
+		PassDescBoneL5.pIAInputSignature, PassDescBoneL5.IAInputSignatureSize, &m_layoutBoneL5);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return 1;
+	}
+	hr = m_pdev->CreateInputLayout(
+		declbone, sizeof(declbone) / sizeof(D3D11_INPUT_ELEMENT_DESC),
+		PassDescBoneL6.pIAInputSignature, PassDescBoneL6.IAInputSignatureSize, &m_layoutBoneL6);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return 1;
+	}
+	hr = m_pdev->CreateInputLayout(
+		declbone, sizeof(declbone) / sizeof(D3D11_INPUT_ELEMENT_DESC),
+		PassDescBoneL7.pIAInputSignature, PassDescBoneL7.IAInputSignatureSize, &m_layoutBoneL7);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return 1;
+	}
+	hr = m_pdev->CreateInputLayout(
+		declbone, sizeof(declbone) / sizeof(D3D11_INPUT_ELEMENT_DESC),
+		PassDescBoneL8.pIAInputSignature, PassDescBoneL8.IAInputSignatureSize, &m_layoutBoneL8);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return 1;
+	}
 
 	hr = m_pdev->CreateInputLayout(
 		declnobone, sizeof(declnobone) / sizeof(D3D11_INPUT_ELEMENT_DESC),
@@ -417,6 +506,34 @@ int CDispObj::CreateDecl()
 	hr = m_pdev->CreateInputLayout(
 		declnobone, sizeof(declnobone) / sizeof(D3D11_INPUT_ELEMENT_DESC),
 		PassDescNoBoneL4.pIAInputSignature, PassDescNoBoneL4.IAInputSignatureSize, &m_layoutNoBoneL4);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return 1;
+	}
+	hr = m_pdev->CreateInputLayout(
+		declnobone, sizeof(declnobone) / sizeof(D3D11_INPUT_ELEMENT_DESC),
+		PassDescNoBoneL5.pIAInputSignature, PassDescNoBoneL5.IAInputSignatureSize, &m_layoutNoBoneL5);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return 1;
+	}
+	hr = m_pdev->CreateInputLayout(
+		declnobone, sizeof(declnobone) / sizeof(D3D11_INPUT_ELEMENT_DESC),
+		PassDescNoBoneL6.pIAInputSignature, PassDescNoBoneL6.IAInputSignatureSize, &m_layoutNoBoneL6);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return 1;
+	}
+	hr = m_pdev->CreateInputLayout(
+		declnobone, sizeof(declnobone) / sizeof(D3D11_INPUT_ELEMENT_DESC),
+		PassDescNoBoneL7.pIAInputSignature, PassDescNoBoneL7.IAInputSignatureSize, &m_layoutNoBoneL7);
+	if (FAILED(hr)) {
+		_ASSERT(0);
+		return 1;
+	}
+	hr = m_pdev->CreateInputLayout(
+		declnobone, sizeof(declnobone) / sizeof(D3D11_INPUT_ELEMENT_DESC),
+		PassDescNoBoneL8.pIAInputSignature, PassDescNoBoneL8.IAInputSignatureSize, &m_layoutNoBoneL8);
 	if (FAILED(hr)) {
 		_ASSERT(0);
 		return 1;
@@ -765,6 +882,22 @@ int CDispObj::RenderNormal(bool withalpha,
 						curtech = g_hRenderBoneL4;
 						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL4);
 						break;
+					case 5:
+						curtech = g_hRenderBoneL5;
+						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL5);
+						break;
+					case 6:
+						curtech = g_hRenderBoneL6;
+						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL6);
+						break;
+					case 7:
+						curtech = g_hRenderBoneL7;
+						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL7);
+						break;
+					case 8:
+						curtech = g_hRenderBoneL8;
+						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL8);
+						break;
 
 					case 0:
 						curtech = g_hRenderBoneL0;
@@ -814,6 +947,22 @@ int CDispObj::RenderNormal(bool withalpha,
 					case 4:
 						curtech = g_hRenderNoBoneL4;
 						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL4);
+						break;
+					case 5:
+						curtech = g_hRenderNoBoneL5;
+						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL5);
+						break;
+					case 6:
+						curtech = g_hRenderNoBoneL6;
+						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL6);
+						break;
+					case 7:
+						curtech = g_hRenderNoBoneL7;
+						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL7);
+						break;
+					case 8:
+						curtech = g_hRenderNoBoneL8;
+						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL8);
 						break;
 
 					case 0:
@@ -1304,6 +1453,22 @@ int CDispObj::RenderNormalPM3(bool withalpha,
 			case 4:
 				curtech = g_hRenderNoBoneL4;
 				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL4);
+				break;
+			case 5:
+				curtech = g_hRenderNoBoneL5;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL5);
+				break;
+			case 6:
+				curtech = g_hRenderNoBoneL6;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL6);
+				break;
+			case 7:
+				curtech = g_hRenderNoBoneL7;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL7);
+				break;
+			case 8:
+				curtech = g_hRenderNoBoneL8;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL8);
 				break;
 
 			case 0:

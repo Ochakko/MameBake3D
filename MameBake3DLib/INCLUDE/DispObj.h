@@ -199,11 +199,19 @@ private:
 	ID3D11InputLayout* m_layoutBoneL2;
 	ID3D11InputLayout* m_layoutBoneL3;
 	ID3D11InputLayout* m_layoutBoneL4;
+	ID3D11InputLayout* m_layoutBoneL5;
+	ID3D11InputLayout* m_layoutBoneL6;
+	ID3D11InputLayout* m_layoutBoneL7;
+	ID3D11InputLayout* m_layoutBoneL8;
 	ID3D11InputLayout* m_layoutNoBoneL0;
 	ID3D11InputLayout* m_layoutNoBoneL1;
 	ID3D11InputLayout* m_layoutNoBoneL2;
 	ID3D11InputLayout* m_layoutNoBoneL3;
 	ID3D11InputLayout* m_layoutNoBoneL4;
+	ID3D11InputLayout* m_layoutNoBoneL5;
+	ID3D11InputLayout* m_layoutNoBoneL6;
+	ID3D11InputLayout* m_layoutNoBoneL7;
+	ID3D11InputLayout* m_layoutNoBoneL8;
 	ID3D11InputLayout* m_layoutLine;
 
     ID3D11Buffer* m_VB;//表示用頂点バッファ。
