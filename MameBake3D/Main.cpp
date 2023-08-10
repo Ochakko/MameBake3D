@@ -9715,9 +9715,22 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 	}
 	else if (uMsg == WM_RBUTTONDOWN) {
-
-		BoneRClick(-1);
-
+		if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
+			POINT ptCursor;
+			GetCursorPos(&ptCursor);
+			::ScreenToClient(s_3dwnd, &ptCursor);
+			if (PickSpSmooth(ptCursor) != 0) {
+				//SmoothSpriteButton上で右クリックした場合は　Smooth用のメニューを出す
+				//SmoothSpriteButton上で左クリックした場合には　前回のSmooth設定にてSmoothをすぐに実行
+				FilterFromTool();
+			}
+			else {
+				BoneRClick(-1);
+			}
+		}
+		else {
+			BoneRClick(-1);
+		}
 	}
 	else if (uMsg == WM_RBUTTONUP) {
 		//ReleaseCapture();
@@ -45855,11 +45868,15 @@ int FilterNoDlg(bool copylw2w)
 
 	CBone* opebone = 0;
 	if (s_filterState == 1) {
-		//All
+		//######
+		//1:All
+		//######
 		opebone = s_model->GetTopBone(false);
 	}
 	else if ((s_filterState == 2) || (s_filterState == 3)) {
+		//########################
 		//2:selectedOne, 3:Deeper
+		//########################
 		CBone* curbone = s_model->GetBoneByID(s_curboneno);
 		if (curbone) {
 			if (curbone->GetParent(false)) {
@@ -45874,7 +45891,9 @@ int FilterNoDlg(bool copylw2w)
 		}
 	}
 	else {
-		//first time : default value
+		//################################
+		//the first time : default value
+		//################################
 		s_filterState = 3;
 		CBone* curbone = s_model->GetBoneByID(s_curboneno);
 		if (curbone) {

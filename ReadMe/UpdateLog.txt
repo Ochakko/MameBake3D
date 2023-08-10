@@ -59,6 +59,13 @@
 	平滑化の設定を毎回するのが手間なので　Smoothスプライトボタンにて前回実行した設定で平滑化
 
 
+    2023/08/10_1
+	Smoothスプライトボタン　左クリックで前回設定で即時実行　右クリックでメニューとダイアログを出してから実行
+
+	ドキュメント更新
+		Documants/TroubleShooting/AboutDifferentSmoothSpriteBtnFromSmoothToolBtn.docx
+
+
 2023/08/02
     EditMot 1.2.0.23 release
 
