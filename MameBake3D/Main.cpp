@@ -5968,7 +5968,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 		PostQuitMessage(1);
 		return S_FALSE;
 	}
-	CallF(s_spsymcopy.sprite->Create(pd3dImmediateContext, mpath, L"SymCopyButton.png", 0, 0), return S_FALSE);
+	CallF(s_spsymcopy.sprite->Create(pd3dImmediateContext, mpath, L"SymCopyButton3.png", 0, 0), return S_FALSE);
 	s_sppaste.sprite = new CMySprite(s_pdev);
 	if (!s_sppaste.sprite) {
 		_ASSERT(0);
