@@ -33,6 +33,16 @@ public:
 
 	enum { IDD = IDD_COPYHISTORYDLG };
 
+	int SetNames(std::vector<HISTORYELEM>& copyhistory);
+	int GetSelectedFileName(WCHAR* dstfilename);
+
+	bool GetCreatedFlag()
+	{
+		return m_createdflag;
+	};
+
+private:
+
 BEGIN_MSG_MAP(CCopyHistoryDlg)
 	//MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 	MESSAGE_HANDLER(WM_CREATE, OnCreate)
@@ -107,33 +117,6 @@ END_MSG_MAP()
 	LRESULT OnPrevPage(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnNextPage(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
-
-	int SetNames(std::vector<HISTORYELEM>& copyhistory);
-
-	bool IsCheckedMostRecent()
-	{
-		return m_ischeckedmostrecent;
-	};
-
-	int GetSelectedFileName(WCHAR* dstfilename) {
-		*dstfilename = 0L;
-		m_selectname[MAX_PATH - 1] = 0L;
-
-		if (m_selectname[0] != 0L) {
-			wcscpy_s(dstfilename, MAX_PATH, m_selectname);
-			return 0;
-		}
-		else {
-			return 1;
-		}
-	};
-
-	bool GetCreatedFlag()
-	{
-		return m_createdflag;
-	};
-
-private:
 	void InitParams();
 	int DestroyObjs();
 	int ParamsToDlg();
@@ -141,6 +124,14 @@ private:
 	LRESULT OnDelete(size_t delid);
 	LRESULT OnRadio(size_t radioid);
 	void SetEnableCtrls();
+
+	bool IsCheckedMostRecent()
+	{
+		return m_ischeckedmostrecent;
+	};
+
+	HISTORYELEM GetFirstValidElem();
+	HISTORYELEM GetCheckedElem();
 
 private:
 

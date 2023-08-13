@@ -4161,60 +4161,95 @@ int CBone::CalcLocalInfo(bool limitdegflag, int motid, double frameno, CMotionPo
 	}
 
 
-
-	CMotionPoint* pcurmp = 0;
-	//CMotionPoint* pparmp = 0;
-	pcurmp = GetMotionPoint(motid, roundingframe);//current mp
-	if(GetParent(false)){
-		if( pcurmp ){
-			CMotionPoint setmp;
-			ChaMatrix invpar = ChaMatrixInv(GetParent(false)->GetWorldMat(limitdegflag, motid, roundingframe, 0));
-			ChaMatrix localmat = GetWorldMat(limitdegflag, motid, roundingframe, pcurmp) * invpar;
-			//pcurmp->CalcQandTra(localmat, this);
-			setmp.CalcQandTra(localmat, this);
-
-			int inirotcur, inirotpar;
-			inirotcur = IsInitRot(GetWorldMat(limitdegflag, motid, roundingframe, pcurmp));
-			inirotpar = IsInitRot(GetParent(false)->GetWorldMat(limitdegflag, motid, roundingframe, 0));
-			if (inirotcur && inirotpar){
-				CQuaternion iniq;
-				iniq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-				//pcurmp->SetQ(iniq);
-				setmp.SetQ(iniq);
+	CQuaternion eulq;
+	CMotionPoint* curmp = 0;
+	curmp = GetMotionPoint(motid, roundingframe);
+	if (curmp) {
+		ChaMatrix curwm;
+		curwm = GetWorldMat(limitdegflag, motid, roundingframe, curmp);
+		if (GetParent(false)) {
+			ChaMatrix parentwm, eulmat;
+			//parentがeNullの場合はある
+			if (GetParent(false)->IsSkeleton()) {
+				parentwm = GetParent(false)->GetWorldMat(limitdegflag, motid, roundingframe, 0);
+				eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
 			}
-
-			*pdstmp = setmp;
-		}else{
-			CMotionPoint inimp;
-			*pdstmp = inimp;
-
-			//_ASSERT( 0 );
-			return 0;
+			else if (GetParent(false)->IsNull() || GetParent(false)->IsCamera()) {
+				parentwm = GetParent(false)->GetWorldMat(limitdegflag, motid, roundingframe, 0);
+				eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
+			}
+			else {
+				eulq = ChaMatrix2Q(curwm);
+			}
 		}
-	}else{
-		if( pcurmp ){
-			CMotionPoint setmp;
-			ChaMatrix localmat = GetWorldMat(limitdegflag, motid, roundingframe, pcurmp);
-			setmp.CalcQandTra( localmat, this );
-
-			int inirotcur;
-			inirotcur = IsInitRot(GetWorldMat(limitdegflag, motid, roundingframe, pcurmp));
-			if (inirotcur ){
-				CQuaternion iniq;
-				iniq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-				setmp.SetQ(iniq);
-			}
-
-			*pdstmp = setmp;
-
-		}else{
-			CMotionPoint inimp;
-			*pdstmp = inimp;
-
-			//_ASSERT( 0 );
-			return 0;
+		else {
+			eulq = ChaMatrix2Q(curwm);
 		}
 	}
+	else {
+		//_ASSERT(0);
+		eulq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	}
+
+	CMotionPoint setmp;
+	setmp.CalcQandTra(eulq.MakeRotMatX(), this);
+	*pdstmp = setmp;
+
+
+
+	//CMotionPoint* pcurmp = 0;
+	////CMotionPoint* pparmp = 0;
+	//pcurmp = GetMotionPoint(motid, roundingframe);//current mp
+	//if(GetParent(false)){
+	//	if( pcurmp ){
+	//		CMotionPoint setmp;
+	//		ChaMatrix invpar = ChaMatrixInv(GetParent(false)->GetWorldMat(limitdegflag, motid, roundingframe, 0));
+	//		ChaMatrix localmat = GetWorldMat(limitdegflag, motid, roundingframe, pcurmp) * invpar;
+	//		//pcurmp->CalcQandTra(localmat, this);
+	//		setmp.CalcQandTra(localmat, this);
+
+	//		int inirotcur, inirotpar;
+	//		inirotcur = IsInitRot(GetWorldMat(limitdegflag, motid, roundingframe, pcurmp));
+	//		inirotpar = IsInitRot(GetParent(false)->GetWorldMat(limitdegflag, motid, roundingframe, 0));
+	//		if (inirotcur && inirotpar){
+	//			CQuaternion iniq;
+	//			iniq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	//			//pcurmp->SetQ(iniq);
+	//			setmp.SetQ(iniq);
+	//		}
+
+	//		*pdstmp = setmp;
+	//	}else{
+	//		CMotionPoint inimp;
+	//		*pdstmp = inimp;
+
+	//		//_ASSERT( 0 );
+	//		return 0;
+	//	}
+	//}else{
+	//	if( pcurmp ){
+	//		CMotionPoint setmp;
+	//		ChaMatrix localmat = GetWorldMat(limitdegflag, motid, roundingframe, pcurmp);
+	//		setmp.CalcQandTra( localmat, this );
+
+	//		int inirotcur;
+	//		inirotcur = IsInitRot(GetWorldMat(limitdegflag, motid, roundingframe, pcurmp));
+	//		if (inirotcur ){
+	//			CQuaternion iniq;
+	//			iniq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+	//			setmp.SetQ(iniq);
+	//		}
+
+	//		*pdstmp = setmp;
+
+	//	}else{
+	//		CMotionPoint inimp;
+	//		*pdstmp = inimp;
+
+	//		//_ASSERT( 0 );
+	//		return 0;
+	//	}
+	//}
 
 	return 0;
 }
@@ -7111,30 +7146,30 @@ ChaVector3 CBone::CalcLocalSymTraAnim(bool limitdegflag, int srcmotid, double sr
 	}
 
 
-	//int symboneno = 0;
-	//int existflag = 0;
-	//m_parmodel->GetSymBoneNo(GetBoneNo(), &symboneno, &existflag);
-	//if (symboneno >= 0) {
-	//	CBone* symbone = m_parmodel->GetBoneByID(symboneno);
-	//	_ASSERT(symbone);
-	//	if (symbone) {
-	//		//if (symbone == this){
-	//		//	WCHAR dbgmes[1024];
-	//		//	swprintf_s(dbgmes, 1024, L"CalcLocalSymRotMat : frame %lf : samebone : this[%s]--sym[%s]", srcframe, GetWBoneName(), symbone->GetWBoneName());
-	//		//	::MessageBox(NULL, dbgmes, L"check", MB_OK);
-	//		//}
-	//		rettra = symbone->CalcLocalTraAnim(srcmotid, srcframe);
-	//		rettra.x *= -1.0f;
-	//	}
-	//	else {
-	//		rettra = CalcLocalScaleAnim(srcmotid, srcframe);
-	//		_ASSERT(0);
-	//	}
-	//}
-	//else {
-	//	rettra = CalcLocalScaleAnim(srcmotid, srcframe);
-	//	_ASSERT(0);
-	//}
+	int symboneno = 0;
+	int existflag = 0;
+	m_parmodel->GetSymBoneNo(GetBoneNo(), &symboneno, &existflag);
+	if (symboneno >= 0) {
+		CBone* symbone = m_parmodel->GetBoneByID(symboneno);
+		_ASSERT(symbone);
+		if (symbone) {
+			//if (symbone == this){
+			//	WCHAR dbgmes[1024];
+			//	swprintf_s(dbgmes, 1024, L"CalcLocalSymRotMat : frame %lf : samebone : this[%s]--sym[%s]", srcframe, GetWBoneName(), symbone->GetWBoneName());
+			//	::MessageBox(NULL, dbgmes, L"check", MB_OK);
+			//}
+			rettra = symbone->CalcLocalTraAnim(limitdegflag, srcmotid, srcframe);
+			//rettra.x *= -1.0f;//この関数の外で必要に応じて-Xするので　ここではしない
+		}
+		else {
+			rettra = CalcLocalScaleAnim(limitdegflag, srcmotid, srcframe);
+			_ASSERT(0);
+		}
+	}
+	else {
+		rettra = CalcLocalScaleAnim(limitdegflag, srcmotid, srcframe);
+		_ASSERT(0);
+	}
 
 	return rettra;
 

@@ -197,20 +197,20 @@ LRESULT CCopyHistoryDlg::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 
 LRESULT CCopyHistoryDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
-	size_t selectedno = 0;//チェックされていない場合(あり得ないが)、一番最初
-	size_t nameno;
-	for (nameno = 0; nameno < m_namenum; nameno++) {
-		if (m_dlg_wnd.IsDlgButtonChecked(m_ctrlid[nameno]) && (m_copyhistory[m_startno + nameno].hascpinfo == 1)) {
-			selectedno = nameno;
-			break;
-		}
-	}
+	//size_t selectedno = 0;//チェックされていない場合(あり得ないが)、一番最初
+	//size_t nameno;
+	//for (nameno = 0; nameno < m_namenum; nameno++) {
+	//	if (m_dlg_wnd.IsDlgButtonChecked(m_ctrlid[nameno]) && (m_copyhistory[m_startno + nameno].hascpinfo == 1)) {
+	//		selectedno = nameno;
+	//		break;
+	//	}
+	//}
 
-	if ((selectedno >= 0) && (selectedno < m_namenum)) {
-		m_selectname[MAX_PATH - 1] = 0L;
-		wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[m_startno + selectedno].wfilename);
-		m_selectname[MAX_PATH - 1] = 0L;
-	}
+	//if ((selectedno >= 0) && (selectedno < m_namenum)) {
+	//	m_selectname[MAX_PATH - 1] = 0L;
+	//	wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[m_startno + selectedno].wfilename);
+	//	m_selectname[MAX_PATH - 1] = 0L;
+	//}
 
 	m_ischeckedmostrecent = m_dlg_wnd.IsDlgButtonChecked(IDC_CHECK1);
 
@@ -1090,5 +1090,124 @@ LRESULT CCopyHistoryDlg::OnNextPage(WORD wNotifyCode, WORD wID, HWND hWndCtl, BO
 
 }
 
+HISTORYELEM CCopyHistoryDlg::GetFirstValidElem()
+{
+	int elemnum = (int)m_copyhistory.size();
+	int elemno;
+	for (elemno = 0; elemno < elemnum; elemno++) {
+		HISTORYELEM helem = m_copyhistory[elemno];
+		if (helem.hascpinfo == 1) {
+			return helem;
+		}
+		else {
+			//有効な履歴が見つかるまでループを続ける
+		}
+	}
 
+	//有効な履歴がみつからなかった場合
+	HISTORYELEM inielem;
+	inielem.Init();
+	return inielem;
+}
+
+HISTORYELEM CCopyHistoryDlg::GetCheckedElem()
+{
+	size_t selectedno = 0;//チェックされていない場合(あり得ないが)、一番最初
+	size_t nameno;
+	for (nameno = 0; nameno < m_namenum; nameno++) {
+		if (m_dlg_wnd.IsDlgButtonChecked(m_ctrlid[nameno])) {
+			selectedno = nameno;
+			break;
+		}
+	}
+
+	if ((selectedno >= 0) && (selectedno < m_namenum) &&
+		(m_startno + selectedno >= 0) && (m_startno + selectedno < m_copyhistory.size())) {
+		HISTORYELEM checkedelem = m_copyhistory[m_startno + selectedno];
+		if (checkedelem.hascpinfo == 1) {
+			return checkedelem;
+		}
+	}
+
+	//有効な履歴がみつからなかった場合
+	HISTORYELEM inielem;
+	inielem.Init();
+	return inielem;
+
+}
+
+int CCopyHistoryDlg::GetSelectedFileName(WCHAR* dstfilename) 
+{
+	if (!dstfilename) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	*dstfilename = 0L;
+	m_selectname[MAX_PATH - 1] = 0L;
+
+	if (GetCreatedFlag() == false) {
+
+		//まだウインドウが作成されていない場合
+
+		//最新の有効なコピーを選択
+		HISTORYELEM firstelem = GetFirstValidElem();
+		if (firstelem.hascpinfo == 1) {
+			m_selectname[MAX_PATH - 1] = 0L;
+			wcscpy_s(m_selectname, MAX_PATH, firstelem.wfilename);
+			m_selectname[MAX_PATH - 1] = 0L;
+
+			wcscpy_s(dstfilename, MAX_PATH, m_selectname);
+			return 0;
+		}
+		else {
+			return 1;//有効な履歴無しの場合
+		}
+	}
+	else {
+
+		//ウインドウが作成された後
+
+		m_ischeckedmostrecent = m_dlg_wnd.IsDlgButtonChecked(IDC_CHECK1);
+
+		if (m_ischeckedmostrecent == true) {
+			//最新の有効なコピーを選択
+			HISTORYELEM firstelem = GetFirstValidElem();
+			if (firstelem.hascpinfo == 1) {
+				m_selectname[MAX_PATH - 1] = 0L;
+				wcscpy_s(m_selectname, MAX_PATH, firstelem.wfilename);
+				m_selectname[MAX_PATH - 1] = 0L;
+
+				wcscpy_s(dstfilename, MAX_PATH, m_selectname);
+				return 0;
+			}
+			else {
+				return 1;//有効な履歴無しの場合
+			}
+		}
+		else {
+			//チェックした履歴を選択
+			HISTORYELEM checkedelem = GetCheckedElem();
+			if (checkedelem.hascpinfo == 1) {
+				m_selectname[MAX_PATH - 1] = 0L;
+				wcscpy_s(m_selectname, MAX_PATH, checkedelem.wfilename);
+				m_selectname[MAX_PATH - 1] = 0L;
+
+				wcscpy_s(dstfilename, MAX_PATH, m_selectname);
+				return 0;
+			}
+			else {
+				return 1;//有効な履歴無しの場合
+			}
+
+			//if (m_selectname[0] != 0L) {
+			//	wcscpy_s(dstfilename, MAX_PATH, m_selectname);
+			//	return 0;
+			//}
+			//else {
+			//	return 1;
+			//}
+		}
+	}
+};
 

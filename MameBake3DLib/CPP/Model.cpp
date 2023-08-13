@@ -3220,7 +3220,7 @@ int CModel::GetSymBoneNo( int srcboneno, int* dstboneno, int* existptr )
 	//	//}
 	//}
 
-	int setflag = 0;
+	bool setflag = false;
 	{
 		string strcurbonename = srcbone->GetBoneName();
 		string strLeft = "Left";
@@ -3261,7 +3261,7 @@ int CModel::GetSymBoneNo( int srcboneno, int* dstboneno, int* existptr )
 		}
 	}
 
-	if(setflag == 0)
+	if(setflag == false)
 	{
 		string strcurbonename = srcbone->GetBoneName();
 		string strLeft = "_L_";
@@ -3303,7 +3303,7 @@ int CModel::GetSymBoneNo( int srcboneno, int* dstboneno, int* existptr )
 	}
 
 
-	if (setflag == 0){
+	if (setflag == false) {
 		CBone* symposbone = GetSymPosBone(srcbone);
 		if (symposbone){
 			*dstboneno = symposbone->GetBoneNo();
@@ -3321,6 +3321,7 @@ int CModel::GetSymBoneNo( int srcboneno, int* dstboneno, int* existptr )
 
 CBone* CModel::GetSymPosBone(CBone* srcbone)
 {
+
 	if (!srcbone){
 		return 0;
 	}

@@ -2110,6 +2110,7 @@ static bool s_zeroFrameFlag = false;
 //static bool s_oneFrameFlag = false;
 static bool s_selCopyHisotryFlag = false;
 static bool s_symcopyFlag = false;
+static bool s_symcopyFlag2 = false;
 static bool s_undersymcopyFlag = false;
 static bool s_cutFlag = false;			// カットフラグ
 static bool s_pasteFlag = false;			// ペーストフラグ
@@ -2928,6 +2929,9 @@ static int CreateGPlaneWnd();
 static int CreateToolWnd();
 static int CreateLayerWnd();
 static int CreatePlaceFolderWnd();
+
+static int CreateCopyHistoryDlg();
+
 
 static int CreateLightsWnd();
 static int Lights2Dlg(HWND hDlgWnd);
@@ -3764,6 +3768,7 @@ INT WINAPI wWinMain(
 	CreateMaterialRateWnd();
 	CreateModelWorldMatWnd();
 
+	CreateCopyHistoryDlg();
 
 	//CallF( InitializeSdkObjects(), return 1 );
 
@@ -4305,6 +4310,7 @@ void InitApp()
 	//s_oneFrameFlag = false;
 	s_selCopyHisotryFlag = false;
 	s_symcopyFlag = false;
+	s_symcopyFlag2 = false;
 	s_undersymcopyFlag = false;
 	s_cutFlag = false;			// カットフラグ
 	s_pasteFlag = false;			// ペーストフラグ
@@ -28595,31 +28601,6 @@ int OnFrameToolWnd()
 		GUIMenuSetVisible(-1, -1);
 
 		GetCPTFileName(s_cptfilename);
-		//s_copyhistorydlg.SetNames(s_cptfilename);
-		//s_copyhistorydlg.DoModal();
-		if (s_copyhistorydlg.GetCreatedFlag() == false) {
-			s_copyhistorydlg.Create(s_mainhwnd);
-		}
-		SetParent(s_copyhistorydlg.m_hWnd, s_mainhwnd);
-
-		int windowposx;
-		if (g_4kresolution) {
-			windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
-		}
-		else {
-			windowposx = s_timelinewidth + s_mainwidth + 16;
-		}
-
-
-		SetWindowPos(
-			s_copyhistorydlg.m_hWnd,
-			HWND_TOP,
-			windowposx,
-			s_sidemenuheight,
-			s_sidewidth,
-			s_sideheight,
-			SWP_SHOWWINDOW
-		);
 
 		s_copyhistorydlg.ShowWindow(SW_SHOW);
 		s_copyhistorydlg.SetNames(s_cptfilename);
@@ -28659,24 +28640,35 @@ int OnFrameToolWnd()
 				InsertCopyMPReq(g_limitdegflag, s_model->GetTopBone(false), curframe);
 			}
 
+
+			//変更時は　s_symCopyFlagでの処理も合わせて変更
+			int result1 = 0;
+			int result2 = 0;
 			if (!s_copymotvec.empty()) {
 				//添付フォルダのファイルに記録
 				WCHAR retcptfilename[MAX_PATH] = { 0L };
-				int result = WriteCPTFile(retcptfilename);
-				_ASSERT(result == 0);
-				int result2 = WriteCPIFile(retcptfilename);//cp info
-				//_ASSERT(result2 == 0);//DoModal cancel時にはresult2 == 1
+				result1 = WriteCPTFile(retcptfilename);
+				if (result1 == 0) {
+					result2 = WriteCPIFile(retcptfilename);//cp info
+					if ((result2 != 0) && (retcptfilename[0] != 0)) {
+						//ダイアログでコピーをCancelした場合含む
+						//invalidな履歴はその場で削除
+						BOOL bexist;
+						bexist = PathFileExists(retcptfilename);
+						if (bexist) {
+							DeleteFileW(retcptfilename);
+						}
+					}
+				}
 			}
-
-			//s_model->SaveUndoMotion(s_curboneno, s_curbaseno, &s_editrange, (double)g_applyrate);
-			if (s_model) {
-				PrepairUndo();
-			}
-
-
-			if (s_copyhistorydlg.GetCreatedFlag() == true) {
-				GetCPTFileName(s_cptfilename);
-				s_copyhistorydlg.SetNames(s_cptfilename);
+			if ((result1 == 0) && (result2 == 0)) {
+				if (s_model) {
+					PrepairUndo();
+				}
+				if (s_copyhistorydlg.GetCreatedFlag() == true) {
+					GetCPTFileName(s_cptfilename);
+					s_copyhistorydlg.SetNames(s_cptfilename);
+				}
 			}
 		}
 
@@ -28684,11 +28676,11 @@ int OnFrameToolWnd()
 		s_undersymcopyFlag = false;
 	}
 
+	if (s_symcopyFlag2) {
 
-	if (s_symcopyFlag) {
+		//s_symcopyFlagでメニューを出し　１周回ってからのコンテクストメニュー実行後の　s_symcopyFlag2
 
 		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()) {
-			int symrootmode = GetSymRootMode();
 
 			s_copymotvec.clear();
 			s_copyKeyInfoList.clear();
@@ -28697,26 +28689,59 @@ int OnFrameToolWnd()
 			list<KeyInfo>::iterator itrcp;
 			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
 				double curframe = (double)((int)(itrcp->time + 0.0001));
-				InsertSymMPReq(g_limitdegflag, s_model->GetTopBone(false), curframe, symrootmode);
+				InsertSymMPReq(g_limitdegflag, s_model->GetTopBone(false), curframe, s_getsym_retmode);//s_getsym_retmode!!!
 			}
 
+			//変更時は　s_copyFlagでの処理も合わせて変更
+			int result1 = 0;
+			int result2 = 0;
 			if (!s_copymotvec.empty()) {
 				//添付フォルダのファイルに記録
 				WCHAR retcptfilename[MAX_PATH] = { 0L };
-				int result = WriteCPTFile(retcptfilename);
-				_ASSERT(result == 0);
-				int result2 = WriteCPIFile(retcptfilename);//cp info
-				//_ASSERT(result2 == 0);//DoModal cancel時にはresult2 == 1
+				result1 = WriteCPTFile(retcptfilename);
+				if (result1 == 0) {
+					result2 = WriteCPIFile(retcptfilename);//cp info
+					if ((result2 != 0) && (retcptfilename[0] != 0)) {
+						//ダイアログでコピーをCancelした場合含む
+						//invalidな履歴はその場で削除
+						BOOL bexist;
+						bexist = PathFileExists(retcptfilename);
+						if (bexist) {
+							DeleteFileW(retcptfilename);
+						}
+					}
+				}
 			}
-
-			if (s_copyhistorydlg.GetCreatedFlag() == true) {
-				GetCPTFileName(s_cptfilename);
-				s_copyhistorydlg.SetNames(s_cptfilename);
+			if ((result1 == 0) && (result2 == 0)) {
+				if (s_model) {
+					PrepairUndo();
+				}
+				if (s_copyhistorydlg.GetCreatedFlag() == true) {
+					GetCPTFileName(s_cptfilename);
+					s_copyhistorydlg.SetNames(s_cptfilename);
+				}
 			}
 		}
 
+
+		s_symcopyFlag2 = false;
 		s_symcopyFlag = false;
 		s_undersymcopyFlag = true;
+	}
+
+	if (s_symcopyFlag) {
+		if (s_model && s_owpTimeline && s_owpLTimeline && s_model->GetCurMotInfo()) {
+			
+			GetSymRootMode();//この関数が返った時点では　まだMsgProcでs_getsym_retmodeがセットされていない
+
+			if (s_symcopyFlag2 == false) {
+
+				//Flag2をセットして１周回す
+				s_symcopyFlag2 = true;
+			}
+		}
+		//s_symcopyFlag = false;
+		//s_undersymcopyFlag = true;
 	}
 
 
@@ -28940,6 +28965,43 @@ int OnFrameToolWnd()
 
 	return 0;
 }
+
+int CreateCopyHistoryDlg()
+{
+	if (s_copyhistorydlg.GetCreatedFlag() == false) {
+		s_copyhistorydlg.Create(s_mainhwnd);
+	}
+	SetParent(s_copyhistorydlg.m_hWnd, s_mainhwnd);
+
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
+
+
+	SetWindowPos(
+		s_copyhistorydlg.m_hWnd,
+		HWND_TOP,
+		windowposx,
+		s_sidemenuheight,
+		s_sidewidth,
+		s_sideheight,
+		SWP_SHOWWINDOW
+	);
+
+	s_copyhistorydlg.ShowWindow(SW_HIDE);
+
+
+	GetCPTFileName(s_cptfilename);
+	s_copyhistorydlg.SetNames(s_cptfilename);
+
+
+	return 0;
+}
+
 
 int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 {
@@ -35505,7 +35567,8 @@ int GetSymRootMode()
 	delete rmenu;
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 
-	return s_getsym_retmode;
+	//return s_getsym_retmode;//この時点では s_getsym_retmodeは0のまま
+	return 0;
 }
 
 void AutoCameraTarget()
@@ -45686,18 +45749,12 @@ bool LoadCPTFile()
 	}
 
 	WCHAR infilename[MAX_PATH] = { 0L };
-
-	if (s_copyhistorydlg.IsCheckedMostRecent()) {
-		wcscpy_s(infilename, MAX_PATH, s_cptfilename[0].wfilename);
-	}
-	else {
-		int result = s_copyhistorydlg.GetSelectedFileName(infilename);
-		infilename[MAX_PATH - 1] = 0L;
-
-		if (result || (infilename[0] == 0L)) {
-			_ASSERT(0);
-			return false;
-		}
+	int result = s_copyhistorydlg.GetSelectedFileName(infilename);
+	infilename[MAX_PATH - 1] = 0L;
+	if (result || (infilename[0] == 0L)) {
+		//_ASSERT(0);
+		//有効ではない履歴を選択時にはfalseをリターンしてペーストしない
+		return false;
 	}
 
 
