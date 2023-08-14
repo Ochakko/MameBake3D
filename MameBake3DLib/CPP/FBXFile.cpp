@@ -5103,7 +5103,7 @@ FbxAMatrix FbxGetGlobalPosition(bool usecache, CModel* srcmodel, FbxScene* pScen
 	//strcpy_s(bonename2, 256, clusterlink->GetName());
 	strcpy_s(bonename2, 256, pNode->GetName());
 	//srcmodel->TermJointRepeats(bonename2);
-	CBone* curbone = srcmodel->GetBoneByName(bonename2);
+	CBone* curbone = srcmodel->FindBoneByName(bonename2);
 
 	if (pPose)
 	{

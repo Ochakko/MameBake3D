@@ -12787,10 +12787,7 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 	{
 		//2022/11/23
 		//VRoidの髪の毛ジョイントが多く　顔がみえなくなるので　読み込み時に自動的に　頭のジョイントマークをスキップ設定
-		CBone* vroidheadjoint = s_model->GetBoneByName("J_Bip_C_Head");
-		if (!vroidheadjoint) {
-			vroidheadjoint = s_model->GetBoneByName("J_Bip_C_Head_Joint");
-		}
+		CBone* vroidheadjoint = s_model->FindBoneByName("J_Bip_C_Head");
 		if (vroidheadjoint) {
 			SkipJointMarkReq(1, vroidheadjoint, false);
 		}
@@ -38943,7 +38940,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 									if (leftpos != std::string::npos) {
 										//Leftの部分をRightに変えてボーンが存在すればそのボーンに移動
 										chkLeft.replace(leftpos, strLeft.length(), strRight);
-										CBone* rightbone = s_model->GetBoneByName(chkLeft.c_str());
+										CBone* rightbone = s_model->FindBoneByName(chkLeft.c_str());
 										if (rightbone) {
 											int nextboneno = rightbone->GetBoneNo();
 											if (nextboneno >= 0) {
@@ -38957,7 +38954,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 										if (rightpos != std::string::npos) {
 											//Rightの部分をLeftに変えてボーンが存在すればそのボーンに移動
 											chkRight.replace(rightpos, strRight.length(), strLeft);
-											CBone* leftbone = s_model->GetBoneByName(chkRight.c_str());
+											CBone* leftbone = s_model->FindBoneByName(chkRight.c_str());
 											if (leftbone) {
 												int nextboneno = leftbone->GetBoneNo();
 												if (nextboneno >= 0) {
@@ -39036,7 +39033,7 @@ void DSCrossButtonSelectTree(bool firstctrlselect)
 								if (leftpos != std::string::npos) {
 									//Leftの部分をRightに変えてボーンが存在すればそのボーンに移動
 									chkLeft.replace(leftpos, strLeft.length(), strRight);
-									CBone* rightbone = s_model->GetBoneByName(chkLeft.c_str());
+									CBone* rightbone = s_model->FindBoneByName(chkLeft.c_str());
 									if (rightbone) {
 										int nextboneno = rightbone->GetBoneNo();
 										if (nextboneno >= 0) {
@@ -45880,7 +45877,8 @@ bool LoadCPTFile()
 
 
 		CBone* curbone;
-		curbone = s_model->GetBoneByName(curbonename);
+		//curbone = s_model->GetBoneByName(curbonename);
+		curbone = s_model->FindBoneByName(curbonename);//2023/08/14 _Joint有無対応
 		if (curbone) {
 			CPELEM2 curcpelem;
 			ZeroMemory(&curcpelem, sizeof(CPELEM2));

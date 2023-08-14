@@ -3233,7 +3233,7 @@ int CModel::GetSymBoneNo( int srcboneno, int* dstboneno, int* existptr )
 		if (leftpos != std::string::npos) {
 			//Leftの部分をRightに変えてボーンが存在すればそのボーンに移動
 			chkLeft.replace(leftpos, strLeft.length(), strRight);
-			CBone* rightbone = GetBoneByName(chkLeft.c_str());
+			CBone* rightbone = FindBoneByName(chkLeft.c_str());
 			if (rightbone) {
 				int nextboneno = rightbone->GetBoneNo();
 				if (nextboneno >= 0) {
@@ -3248,7 +3248,7 @@ int CModel::GetSymBoneNo( int srcboneno, int* dstboneno, int* existptr )
 			if (rightpos != std::string::npos) {
 				//Rightの部分をLeftに変えてボーンが存在すればそのボーンに移動
 				chkRight.replace(rightpos, strRight.length(), strLeft);
-				CBone* leftbone = GetBoneByName(chkRight.c_str());
+				CBone* leftbone = FindBoneByName(chkRight.c_str());
 				if (leftbone) {
 					int nextboneno = leftbone->GetBoneNo();
 					if (nextboneno >= 0) {
@@ -3274,7 +3274,7 @@ int CModel::GetSymBoneNo( int srcboneno, int* dstboneno, int* existptr )
 		if (leftpos != std::string::npos) {
 			//_L_の部分を_R_に変えてボーンが存在すればそのボーンに移動
 			chkLeft.replace(leftpos, strLeft.length(), strRight);
-			CBone* rightbone = GetBoneByName(chkLeft.c_str());
+			CBone* rightbone = FindBoneByName(chkLeft.c_str());
 			if (rightbone) {
 				int nextboneno = rightbone->GetBoneNo();
 				if (nextboneno >= 0) {
@@ -3289,7 +3289,7 @@ int CModel::GetSymBoneNo( int srcboneno, int* dstboneno, int* existptr )
 			if (rightpos != std::string::npos) {
 				//_R_の部分を_L_に変えてボーンが存在すればそのボーンに移動
 				chkRight.replace(rightpos, strRight.length(), strLeft);
-				CBone* leftbone = GetBoneByName(chkRight.c_str());
+				CBone* leftbone = FindBoneByName(chkRight.c_str());
 				if (leftbone) {
 					int nextboneno = leftbone->GetBoneNo();
 					if (nextboneno >= 0) {

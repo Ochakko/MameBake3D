@@ -426,7 +426,7 @@ bool LoadLIMFile(CModel* pmodel, WCHAR* pfilename, char* fbxdate, int animno, in
 			return false;
 		}
 		CBone* curbone = 0;
-		curbone = pmodel->GetBoneByName(jointheader.jointname);
+		curbone = pmodel->FindBoneByName(jointheader.jointname);
 		if (!curbone) {
 			CloseHandle(hfile);
 			free(newbuf);

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <math.h>
@@ -18,6 +18,8 @@
 #include <Bone.h>
 //#include <ChaVecCalc.h>
 
+#include <vector>
+
 #define DBGH
 #include <dbg.h>
 
@@ -36,7 +38,7 @@ namespace MameBake3DLibRetarget {
 		int (*srcAddMotionFunc)(const WCHAR* wfilename, double srcmotleng), int (*srcInitCurMotionFunc)(int selectflag, double expandmotion))
 	{
 
-		//retarget‚Í@unlimited‚É‘Î‚µ‚Äs‚¢@unlimited‚ÉƒZƒbƒg‚·‚é
+		//retargetã¯ã€€unlimitedã«å¯¾ã—ã¦è¡Œã„ã€€unlimitedã«ã‚»ãƒƒãƒˆã™ã‚‹
 		bool limitdegflag = false;
 
 		if (!srcmodel || !srcbvhmodel || !srcAddMotionFunc || !srcInitCurMotionFunc) {
@@ -45,119 +47,142 @@ namespace MameBake3DLibRetarget {
 
 		g_underRetargetFlag = true;//!!!!!!!!!!!!
 
-		MOTINFO* bvhmi = srcbvhmodel->GetMotInfoBegin()->second;
-		if (!bvhmi) {
-			::MessageBox(NULL, L"motion of bvh is not found error.", L"error!!!", MB_OK);
-			g_underRetargetFlag = false;
-			return 1;
-		}
-		double motleng = bvhmi->frameleng;//2022/11/01
-		//double motleng = bvhmi->frameleng - 1.0;//2021/10/13
-		(srcAddMotionFunc)(0, motleng);
-		//(srcInitCurMotionFunc)(0, 0);//CModel::AddMotion‚Å‰Šú‰»‚·‚é‚±‚Æ‚É‚µ‚½‚Ì‚ÅƒRƒƒ“ƒgƒAƒEƒg@2022/08/28
+		//MOTINFO* bvhmi = srcbvhmodel->GetMotInfoBegin()->second;
+		//if (!bvhmi) {
+		//	::MessageBox(NULL, L"motion of bvh is not found error.", L"error!!!", MB_OK);
+		//	g_underRetargetFlag = false;
+		//	return 1;
+		//}
+
+		//############################################################
+		//2023/08/14 : bvhå´ã®å…¨ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã«é–¢ã—ã¦ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆãƒ«ãƒ¼ãƒ—
+		//############################################################
+		std::map<int, MOTINFO*>::iterator itrbvhmi;
+		for (itrbvhmi = srcbvhmodel->GetMotInfoBegin(); itrbvhmi != srcbvhmodel->GetMotInfoEnd(); itrbvhmi++) {
+			MOTINFO* bvhmi = itrbvhmi->second;
+			if (!bvhmi) {
+				//::MessageBox(NULL, L"motion of bvh is not found error.", L"error!!!", MB_OK);
+				//g_underRetargetFlag = false;
+				//return 1;
+				continue;
+			}
+
+			double motleng = bvhmi->frameleng;//2022/11/01
+			//double motleng = bvhmi->frameleng - 1.0;//2021/10/13
+			int bvhmotid = bvhmi->motid;//motionå´ã®motid
+			srcbvhmodel->SetCurrentMotion(bvhmotid);
 
 
-		MOTINFO* modelmi = srcmodel->GetCurMotInfo();
-		CBone* modelbone;
-		if (modelmi) {
-			CBone* modeltopbone = srcmodel->GetTopBone();
-			CBone* modelhipsbone = 0;
-			if (!modeltopbone) {
-				::MessageBox(NULL, L"modelside bone is not found error.", L"error!!!", MB_OK);
+			//AddMotionå†…éƒ¨ã§SetCurrentMotionã•ã‚Œã‚‹
+			(srcAddMotionFunc)(0, motleng);//modelå´ã®addmotionã€€modelå´ã®SetCurrentMotionã‚‚ã•ã‚Œã‚‹
+
+			//(srcInitCurMotionFunc)(0, 0);//CModel::AddMotionã§åˆæœŸåŒ–ã™ã‚‹ã“ã¨ã«ã—ãŸã®ã§ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆã€€2022/08/28
+
+
+			MOTINFO* modelmi = srcmodel->GetCurMotInfo();
+			CBone* modelbone;
+			if (modelmi) {
+				CBone* modeltopbone = srcmodel->GetTopBone();
+				CBone* modelhipsbone = 0;
+				if (!modeltopbone) {
+					::MessageBox(NULL, L"modelside bone is not found error.", L"error!!!", MB_OK);
+					g_underRetargetFlag = false;
+					return 1;
+				}
+				else {
+					srcmodel->GetHipsBoneReq(modeltopbone, &modelhipsbone);
+					if (modelhipsbone) {
+						modelbone = modelhipsbone;
+					}
+					else {
+						modelbone = modeltopbone;
+					}
+				}
+				//modelbone = srcmodel->GetTopBone();
+			}
+			else {
+				::MessageBox(NULL, L"modelside motion is not found error.", L"error!!!", MB_OK);
 				g_underRetargetFlag = false;
 				return 1;
 			}
-			else {
-				srcmodel->GetHipsBoneReq(modeltopbone, &modelhipsbone);
-				if (modelhipsbone) {
-					modelbone = modelhipsbone;
+
+
+			CBone* bvhtopbone = 0;
+			CBone* bvhhipsbone = 0;
+			CBone* befbvhbone = 0;
+			bvhtopbone = srcbvhmodel->GetTopBone();
+			if (bvhtopbone) {
+				srcbvhmodel->GetHipsBoneReq(bvhtopbone, &bvhhipsbone);
+				if (bvhhipsbone) {
+					befbvhbone = bvhhipsbone;
 				}
 				else {
-					modelbone = modeltopbone;
+					befbvhbone = bvhtopbone;
 				}
-			}
-			//modelbone = srcmodel->GetTopBone();
-		}
-		else {
-			::MessageBox(NULL, L"modelside motion is not found error.", L"error!!!", MB_OK);
-			g_underRetargetFlag = false;
-			return 1;
-		}
-
-
-		CBone* bvhtopbone = 0;
-		CBone* bvhhipsbone = 0;
-		CBone* befbvhbone = 0;
-		bvhtopbone = srcbvhmodel->GetTopBone();
-		if (bvhtopbone) {
-			srcbvhmodel->GetHipsBoneReq(bvhtopbone, &bvhhipsbone);
-			if (bvhhipsbone) {
-				befbvhbone = bvhhipsbone;
 			}
 			else {
-				befbvhbone = bvhtopbone;
+				::MessageBox(NULL, L"bvhside motion is not found error.", L"error!!!", MB_OK);
+				g_underRetargetFlag = false;
+				return 1;
 			}
-		}
-		else {
-			::MessageBox(NULL, L"bvhside motion is not found error.", L"error!!!", MB_OK);
-			g_underRetargetFlag = false;
-			return 1;
-		}
 
 
-		HINFO bvhhi;
-		bvhhi.minh = 1e7;
-		bvhhi.maxh = -1e7;
-		bvhhi.height = 0.0f;
-		srcbvhmodel->SetFirstFrameBonePos(&bvhhi, befbvhbone);//hipsw’è
+			HINFO bvhhi;
+			bvhhi.minh = 1e7;
+			bvhhi.maxh = -1e7;
+			bvhhi.height = 0.0f;
+			srcbvhmodel->SetFirstFrameBonePos(&bvhhi, befbvhbone);//hipsæŒ‡å®š
 
-		HINFO modelhi;
-		modelhi.minh = 1e7;
-		modelhi.maxh = -1e7;
-		modelhi.height = 0.0f;
-		srcmodel->SetFirstFrameBonePos(&modelhi, modelbone);//hipsw’è
+			HINFO modelhi;
+			modelhi.minh = 1e7;
+			modelhi.maxh = -1e7;
+			modelhi.height = 0.0f;
+			srcmodel->SetFirstFrameBonePos(&modelhi, modelbone);//hipsæŒ‡å®š
 
-		float hrate;
-		if (bvhhi.height != 0.0f) {
-			hrate = modelhi.height / bvhhi.height;
-		}
-		else {
-			//hrate = 0.0f;
-			hrate = 1.0f;
-			_ASSERT(0);
-		}
+			float hrate;
+			if (bvhhi.height != 0.0f) {
+				hrate = modelhi.height / bvhhi.height;
+			}
+			else {
+				//hrate = 0.0f;
+				hrate = 1.0f;
+				_ASSERT(0);
+			}
 
-		//2023/02/08
-		if (fabs(hrate) <= 0.0001f) {
-			hrate = 1.0f;
-		}
+			//2023/02/08
+			if (fabs(hrate) <= 0.0001f) {
+				hrate = 1.0f;
+			}
 
 
-		double frame;
-		//for (frame = 0.0; frame < motleng; frame += 1.0) {
-		for (frame = 1.0; frame < motleng; frame += 1.0) {//2023/03/27 : 0ƒtƒŒ[ƒ€‚ÍInitMP‚Ìp¨‚Ì‚Ü‚Ü‚É‚·‚é
-			//s_sethipstra = 0;
+			double frame;
+			//for (frame = 0.0; frame < motleng; frame += 1.0) {
+			for (frame = 1.0; frame < motleng; frame += 1.0) {//2023/03/27 : 0ãƒ•ãƒ¬ãƒ¼ãƒ ã¯InitMPã®å§¿å‹¢ã®ã¾ã¾ã«ã™ã‚‹
+				//s_sethipstra = 0;
 
-			if (modelbone) {
-				ChaMatrix dummyvpmat;
-				ChaMatrixIdentity(&dummyvpmat);
+				if (modelbone) {
+					ChaMatrix dummyvpmat;
+					ChaMatrixIdentity(&dummyvpmat);
 
-				ChaMatrix tmpbvhwm = srcbvhmodel->GetWorldMat();
-				srcbvhmodel->SetMotionFrame(frame);
-				srcbvhmodel->UpdateMatrix(limitdegflag, &tmpbvhwm, &dummyvpmat);
+					ChaMatrix tmpbvhwm = srcbvhmodel->GetWorldMat();
+					srcbvhmodel->SetMotionFrame(frame);
+					srcbvhmodel->UpdateMatrix(limitdegflag, &tmpbvhwm, &dummyvpmat);
 
-				ChaMatrix tmpwm = srcmodel->GetWorldMat();
-				srcmodel->SetMotionFrame(frame);
-				srcmodel->UpdateMatrix(limitdegflag, &tmpwm, &dummyvpmat);
+					ChaMatrix tmpwm = srcmodel->GetWorldMat();
+					srcmodel->SetMotionFrame(frame);
+					srcmodel->UpdateMatrix(limitdegflag, &tmpwm, &dummyvpmat);
 
-				if (bvhtopbone) {
-					RetargetReq(srcmodel, srcbvhmodel, modelbone, frame, bvhtopbone, hrate, sconvbonemap);
+					if (bvhtopbone) {
+						RetargetReq(srcmodel, srcbvhmodel, modelbone, frame, bvhtopbone, hrate, sconvbonemap);
+					}
 				}
 			}
+
+			ChaMatrix tmpwm = srcmodel->GetWorldMat();
+			srcmodel->UpdateMatrix(limitdegflag, &tmpwm, &smatVP);
+
 		}
 
-		ChaMatrix tmpwm = srcmodel->GetWorldMat();
-		srcmodel->UpdateMatrix(limitdegflag, &tmpwm, &smatVP);
 
 		g_underRetargetFlag = false;//!!!!!!!!!!!!
 
@@ -167,6 +192,7 @@ namespace MameBake3DLibRetarget {
 		}
 
 		return 0;
+		
 	}
 
 
@@ -189,7 +215,7 @@ namespace MameBake3DLibRetarget {
 			ConvBoneRotation(srcmodel, srcbvhmodel, 1, modelbone, bvhbone, srcframe, befbvhbone, hrate);
 		}
 
-		//2023/03/27 ƒRƒƒ“ƒgƒAƒEƒg : ‘Î‰bvhbone‚ª–³‚¢ê‡‚Í@InitMP‚Ìp¨‚Ì‚Ü‚Ü‚É‚·‚é
+		//2023/03/27 ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ : å¯¾å¿œbvhboneãŒç„¡ã„å ´åˆã¯ã€€InitMPã®å§¿å‹¢ã®ã¾ã¾ã«ã™ã‚‹
 		//else {
 		//	ConvBoneRotation(srcmodel, srcbvhmodel, 0, modelbone, 0, srcframe, befbvhbone, hrate);
 		//}
@@ -219,11 +245,11 @@ namespace MameBake3DLibRetarget {
 		CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate)
 	{
 
-		//retarget‚Í@unlimited‚É‘Î‚µ‚Äs‚¢@unlimited‚ÉƒZƒbƒg‚·‚é
+		//retargetã¯ã€€unlimitedã«å¯¾ã—ã¦è¡Œã„ã€€unlimitedã«ã‚»ãƒƒãƒˆã™ã‚‹
 		bool limitdegflag = false;
 
 
-		//2023/03/27 : ‘Î‰bvhbone‚ª–³‚¢ê‡‚É‚Í@InitMP‚Ìp¨‚Ì‚Ü‚Ü‚É‚·‚é
+		//2023/03/27 : å¯¾å¿œbvhboneãŒç„¡ã„å ´åˆã«ã¯ã€€InitMPã®å§¿å‹¢ã®ã¾ã¾ã«ã™ã‚‹
 		if (!bvhbone) {
 			return 0;
 		}
@@ -247,8 +273,8 @@ namespace MameBake3DLibRetarget {
 
 		//###################################################################
 		//2023/02/02
-		//GetCurMp().GetWorldMat‚É‚Í@—áŠO“I‚Éƒ‚ƒfƒ‹‚Ìworldmat‚ªŠ|‚©‚Á‚Ä‚¢‚é
-		//ƒAƒjƒp¨‚ÌŒvZ‚É‚Í@GetCurMp().GetAnimMat()‚ğg—p
+		//GetCurMp().GetWorldMatã«ã¯ã€€ä¾‹å¤–çš„ã«ãƒ¢ãƒ‡ãƒ«ã®worldmatãŒæ›ã‹ã£ã¦ã„ã‚‹
+		//ã‚¢ãƒ‹ãƒ¡å§¿å‹¢ã®è¨ˆç®—ã«ã¯ã€€GetCurMp().GetAnimMat()ã‚’ä½¿ç”¨
 		//###################################################################
 
 
@@ -256,21 +282,12 @@ namespace MameBake3DLibRetarget {
 
 		MOTINFO* bvhmi;
 		int bvhmotid;
-
-		if (srcbvhmodel->GetMotInfoBegin() != srcbvhmodel->GetMotInfoEnd()) {
-			bvhmi = srcbvhmodel->GetMotInfoBegin()->second;
-			if (bvhmi) {
-				bvhmotid = bvhmi->motid;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			}
-			else {
-				_ASSERT(0);
-				return 1;
-			}
-		}
-		else {
+		bvhmi = srcbvhmodel->GetCurMotInfo();
+		if (!bvhmi) {
 			_ASSERT(0);
 			return 1;
 		}
+		bvhmotid = bvhmi->motid;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 		bool onaddmotion = true;//for getbychain
@@ -350,15 +367,15 @@ namespace MameBake3DLibRetarget {
 				}
 
 
-				//if (srcbone == srcmodel->GetTopBone()) {//ƒ‚ƒfƒ‹‘¤‚ÌÅ‰‚Ìƒ{[ƒ“‚Ìˆ—
-				//if (modelfirstbone && (srcbone == modelfirstbone)) {//ƒ‚ƒfƒ‹‘¤‚ÌÅ‰‚Ìƒ{[ƒ“‚Ìˆ—
+				//if (srcbone == srcmodel->GetTopBone()) {//ãƒ¢ãƒ‡ãƒ«å´ã®æœ€åˆã®ãƒœãƒ¼ãƒ³ã®å‡¦ç†æ™‚
+				//if (modelfirstbone && (srcbone == modelfirstbone)) {//ãƒ¢ãƒ‡ãƒ«å´ã®æœ€åˆã®ãƒœãƒ¼ãƒ³ã®å‡¦ç†æ™‚
 
-				//	//firsthipbvhmat‚Æfirsthipmodelmat‚Í@‚±‚ÌŠÖ”‚ÌQÆˆø”@ˆê“xƒZƒbƒg‚µ‚Äg‚¢‚Ü‚í‚·
+				//	//firsthipbvhmatã¨firsthipmodelmatã¯ã€€ã“ã®é–¢æ•°ã®å‚ç…§å¼•æ•°ã€€ä¸€åº¦ã‚»ãƒƒãƒˆã—ã¦ä½¿ã„ã¾ã‚ã™
 				//	
 				//	//#######################################################################################
-				//	//2022/12/21 ver1.1.0.10‚ÖŒü‚¯‚Ä
-				//	//®10033‚Æ‘O’ñğŒ‚ğ‡‚í‚¹‚é
-				//	//bvh‘¤‚Ì0ƒtƒŒ[ƒ€p¨‚ªIdentity‚É‚È‚é‚æ‚¤‚É@InvFirstMat * NodeMat ‚ğŠ|‚¯‚é
+				//	//2022/12/21 ver1.1.0.10ã¸å‘ã‘ã¦
+				//	//å¼10033ã¨å‰ææ¡ä»¶ã‚’åˆã‚ã›ã‚‹
+				//	//bvhå´ã®0ãƒ•ãƒ¬ãƒ¼ãƒ å§¿å‹¢ãŒIdentityã«ãªã‚‹ã‚ˆã†ã«ã€€InvFirstMat * NodeMat ã‚’æ›ã‘ã‚‹
 				//	//#######################################################################################
 				//	firsthipbvhmat = ChaMatrixInv(bvhbone->GetFirstMat()) * bvhbone->GetNodeMat() * bvhmp.GetAnimMat();
 				//	firsthipbvhmat.data[MATI_41] = 0.0f;
@@ -373,8 +390,8 @@ namespace MameBake3DLibRetarget {
 
 
 				//#########################################################################################
-				//2023/03/26 ver1.2.0.18‚ÖŒü‚¯‚Ä
-				//bvh‘¤model‘¤@—¼•û‚Æ‚à‚OƒtƒŒ[ƒ€‚ÉƒAƒjƒ‚ªİ‚Á‚Ä‚à@ƒŠƒ^[ƒQƒbƒg‚ª‚¤‚Ü‚­‚¢‚­‚æ‚¤‚É@C³
+				//2023/03/26 ver1.2.0.18ã¸å‘ã‘ã¦
+				//bvhå´modelå´ã€€ä¸¡æ–¹ã¨ã‚‚ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«ã‚¢ãƒ‹ãƒ¡ãŒåœ¨ã£ã¦ã‚‚ã€€ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆãŒã†ã¾ãã„ãã‚ˆã†ã«ã€€ä¿®æ­£
 				//#########################################################################################
 				ChaMatrix bvhparentmat, modelparentmat;
 				bvhparentmat.SetIdentity();
@@ -397,55 +414,55 @@ namespace MameBake3DLibRetarget {
 
 				//curbvhmat = bvhbone->GetInvFirstMat() * invmodelinit * bvhmat;
 				//curbvhmat = bvhbone->GetInvFirstMat() * sinvfirsthipmat * invmodelinit * bvhmat;
-				//curbvhmat = sinvfirsthipmat * bvhbone->GetInvFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//1.0.0.26‚É‚È‚é‘O‚Ü‚Å‚Ì®B‰Šúp¨‚Ì•ÏŠ·‚Ébvh‚Ì‘S‘Ì‰ñ“]sfirsthipmat‚ğl—¶‚·‚éB
+				//curbvhmat = sinvfirsthipmat * bvhbone->GetInvFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//1.0.0.26ã«ãªã‚‹å‰ã¾ã§ã®å¼ã€‚åˆæœŸå§¿å‹¢ã®å¤‰æ›ã«bvhã®å…¨ä½“å›è»¢sfirsthipmatã‚’è€ƒæ…®ã™ã‚‹ã€‚
 
 				//#############################################################################################################################
-				//1.0.0.26‚©‚ç‚Í
-				//bvh‚Í“Ç‚İ‚İ‚É‚OƒtƒŒ[ƒ€ƒAƒjƒ‚ªIdentity‚É‚È‚é‚æ‚¤‚É“Ç‚İ‚ŞBmodel‘¤‚ÍInvJonitPos * AnimMat‚Ì‚æ‚¤‚É“Ç‚İ‚Ş‚æ‚¤‚É‚µ‚½B
-				//model‘¤‚Í‚OƒtƒŒ[ƒ€•ÒW‚É‘Î‰‚µ‚½B
-				//ˆÈã‚Ì•ÏX‚É‘Î‰‚·‚é‚½‚ß‚Éretarget‚Ì”®‚àC³B
+				//1.0.0.26ã‹ã‚‰ã¯
+				//bvhã¯èª­ã¿è¾¼ã¿æ™‚ã«ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚¢ãƒ‹ãƒ¡ãŒIdentityã«ãªã‚‹ã‚ˆã†ã«èª­ã¿è¾¼ã‚€ã€‚modelå´ã¯InvJonitPos * AnimMatã®ã‚ˆã†ã«èª­ã¿è¾¼ã‚€ã‚ˆã†ã«ã—ãŸã€‚
+				//modelå´ã¯ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ç·¨é›†ã«å¯¾å¿œã—ãŸã€‚
+				//ä»¥ä¸Šã®å¤‰æ›´ã«å¯¾å¿œã™ã‚‹ãŸã‚ã«retargetã®æ•°å¼ã‚‚ä¿®æ­£ã€‚
 				//#############################################################################################################################
 
 				//###################################################################################################################
-				//1.0.0.27‚©‚ç‚Í‚OƒtƒŒ[ƒ€ƒAƒjƒ‚Ì•ÒW‚É‘Î‰B
-				//‚OƒtƒŒ[ƒ€‚É‘Î‰‰Â”\‚È‚Ì‚Í”ñbvh‚Ìƒ‚ƒfƒ‹B”ñbvh‚Ìê‡A‚OƒtƒŒ[ƒ€ƒAƒjƒ‚ªIdentity‚É‚È‚é‚æ‚¤‚É‚Í“Ç‚Ü‚È‚¢B
-				//”ñbvh‚Ìê‡‚É‚ÍBindPose‚Æ0ƒtƒŒ[ƒ€ƒAƒjƒ‚Ì—¼•û‚ª‘¶İ‚·‚éB‚æ‚Á‚Ä‚OƒtƒŒ[ƒ€ƒAƒjƒ‚Ì•ÒW‚ğ‚µ‚Ä‘‚«o‚µ‚Ä‚à³íB
-				//ˆê•ûAbvh‚Ìê‡A‚OƒtƒŒ[ƒ€ƒAƒjƒ‚ªIdentity‚É‚È‚é‚æ‚¤‚É“Ç‚İ‚ŞB‚»‚Ì‚½‚ßƒŠƒ^[ƒQƒbƒg‚Ì”®‚ªŠÈ—ª‰»‚³‚ê‚éB
+				//1.0.0.27ã‹ã‚‰ã¯ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚¢ãƒ‹ãƒ¡ã®ç·¨é›†ã«å¯¾å¿œã€‚
+				//ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«å¯¾å¿œå¯èƒ½ãªã®ã¯ébvhã®ãƒ¢ãƒ‡ãƒ«ã€‚ébvhã®å ´åˆã€ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚¢ãƒ‹ãƒ¡ãŒIdentityã«ãªã‚‹ã‚ˆã†ã«ã¯èª­ã¾ãªã„ã€‚
+				//ébvhã®å ´åˆã«ã¯BindPoseã¨0ãƒ•ãƒ¬ãƒ¼ãƒ ã‚¢ãƒ‹ãƒ¡ã®ä¸¡æ–¹ãŒå­˜åœ¨ã™ã‚‹ã€‚ã‚ˆã£ã¦ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚¢ãƒ‹ãƒ¡ã®ç·¨é›†ã‚’ã—ã¦æ›¸ãå‡ºã—ã¦ã‚‚æ­£å¸¸ã€‚
+				//ä¸€æ–¹ã€bvhã®å ´åˆã€ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚¢ãƒ‹ãƒ¡ãŒIdentityã«ãªã‚‹ã‚ˆã†ã«èª­ã¿è¾¼ã‚€ã€‚ãã®ãŸã‚ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆã®æ•°å¼ãŒç°¡ç•¥åŒ–ã•ã‚Œã‚‹ã€‚
 				//###################################################################################################################
-				//curbvhmat = sinvfirsthipmat * srcbone->GetFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//®10027_1 ‚¤‚Ü‚­s‚­
+				//curbvhmat = sinvfirsthipmat * srcbone->GetFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//å¼10027_1 ã†ã¾ãè¡Œã
 
 				////####################################################################################
-				////®10027_1‚Ìs—ñŠ|‚¯Z•”•ª‚ğƒNƒH[ƒ^ƒjƒIƒ“‚É‚µ‚ÄƒWƒ“ƒoƒ‹ƒƒbƒN‚ª‹N‚±‚è‚É‚­‚­‚µ‚Ä‚İ‚é
+				////å¼10027_1ã®è¡Œåˆ—æ›ã‘ç®—éƒ¨åˆ†ã‚’ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã«ã—ã¦ã‚¸ãƒ³ãƒãƒ«ãƒ­ãƒƒã‚¯ãŒèµ·ã“ã‚Šã«ããã—ã¦ã¿ã‚‹
 				////####################################################################################
 
 
-				//FirstMat‚É‚Â‚¢‚Ä
-				//SetFirstMat‚Í@CBone::InitMP@‚Ås‚¤BInitMP‚ÍCModel::AddMotion‚©‚çŒÄ‚Î‚ê‚éB
-				//InitMP‚ÍÅ‰‚Ìƒ‚[ƒVƒ‡ƒ“‚Ì‚OƒtƒŒ[ƒ€ƒAƒjƒ‚ÅV‹Kƒ‚[ƒVƒ‡ƒ“‚Ì‘SƒtƒŒ[ƒ€‚ğ‰Šú‰»‚·‚éB
+				//FirstMatã«ã¤ã„ã¦
+				//SetFirstMatã¯ã€€CBone::InitMPã€€ã§è¡Œã†ã€‚InitMPã¯CModel::AddMotionã‹ã‚‰å‘¼ã°ã‚Œã‚‹ã€‚
+				//InitMPã¯æœ€åˆã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‚¢ãƒ‹ãƒ¡ã§æ–°è¦ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®å…¨ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’åˆæœŸåŒ–ã™ã‚‹ã€‚
 
 
 				////##############################################################################################################################
-				////®10032(1033‚à)  bvh‘¤‚Ì‚OƒtƒŒ[ƒ€‘Î‰‚Æmodel‘¤‚Ì‚OƒtƒŒ[ƒ€‘Î‰‚ğC³‚µ‚Ä@‡‘ÌII
-				//// ‘O’ñ‚PFƒŠƒ^[ƒQƒbƒgğŒ‚Í bvh‘¤‚Æmodel‘¤‚ÌŒ©‚©‚¯ã‚Ìƒ|[ƒY‚ª“¯‚¶‚Å‚ ‚é‚±‚Æ
-				//// ‘O’ñ‚QFbvh‘¤‚Í‚OƒtƒŒ[ƒ€p¨‚ªidentity(‚OƒtƒŒ[ƒ€‚ÉƒAƒjƒ‚ª•t‚¢‚éê‡‚ÍƒWƒ‡ƒCƒ“ƒgˆÊ’u‚É—‚Æ‚µ‚İp¨‚Íidentity). 
-				//// ‘O’ñ‚RFmodel‘¤‚Í‚OƒtƒŒ[ƒ€‚ÉƒAƒjƒ¬•ª‚ğc‚µ‚Ä‚¢‚é
-				//// ‘O’ñ‚Q‚Æ‘O’ñ‚R‚É‚Â‚¢‚Ä‚Í@fbx‚Ì“Ç‚İ‚İ•û‚ğ‚»‚Ì‚æ‚¤‚É‚µ‚Ä‚ ‚é(bvh‘¤‚É‚ÍƒoƒCƒ“ƒhƒ|[ƒY‚ª–³‚¢‚±‚Æ‚ª‘½‚¢‚©‚ç‚±‚Ì‚æ‚¤‚É‚µ‚Ä‚ ‚é)
+				////å¼10032(1033ã‚‚)  bvhå´ã®ï¼ãƒ•ãƒ¬ãƒ¼ãƒ å¯¾å¿œã¨modelå´ã®ï¼ãƒ•ãƒ¬ãƒ¼ãƒ å¯¾å¿œã‚’ä¿®æ­£ã—ã¦ã€€åˆä½“ï¼ï¼
+				//// å‰æï¼‘ï¼šãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆæ¡ä»¶ã¯ bvhå´ã¨modelå´ã®è¦‹ã‹ã‘ä¸Šã®ãƒãƒ¼ã‚ºãŒåŒã˜ã§ã‚ã‚‹ã“ã¨
+				//// å‰æï¼’ï¼šbvhå´ã¯ï¼ãƒ•ãƒ¬ãƒ¼ãƒ å§¿å‹¢ãŒidentity(ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«ã‚¢ãƒ‹ãƒ¡ãŒä»˜ã„ã‚‹å ´åˆã¯ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆä½ç½®ã«è½ã¨ã—è¾¼ã¿å§¿å‹¢ã¯identity). 
+				//// å‰æï¼“ï¼šmodelå´ã¯ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«ã‚¢ãƒ‹ãƒ¡æˆåˆ†ã‚’æ®‹ã—ã¦ã„ã‚‹
+				//// å‰æï¼’ã¨å‰æï¼“ã«ã¤ã„ã¦ã¯ã€€fbxã®èª­ã¿è¾¼ã¿æ–¹ã‚’ãã®ã‚ˆã†ã«ã—ã¦ã‚ã‚‹(bvhå´ã«ã¯ãƒã‚¤ãƒ³ãƒ‰ãƒãƒ¼ã‚ºãŒç„¡ã„ã“ã¨ãŒå¤šã„ã‹ã‚‰ã“ã®ã‚ˆã†ã«ã—ã¦ã‚ã‚‹)
 				////##############################################################################################################################
 
 				if (modelfirstbone && bvhfirstbone) {
 
 					//#######################################################################################
-					//2022/12/21 ver1.1.0.10‚ÖŒü‚¯‚Ä
-					//®10033‚Æ‘O’ñğŒ‚ğ‡‚í‚¹‚é
-					//bvh‘¤‚Ì0ƒtƒŒ[ƒ€p¨‚ªIdentity‚É‚È‚é‚æ‚¤‚É@InvFirstMat * NodeMat ‚ğŠ|‚¯‚é
+					//2022/12/21 ver1.1.0.10ã¸å‘ã‘ã¦
+					//å¼10033ã¨å‰ææ¡ä»¶ã‚’åˆã‚ã›ã‚‹
+					//bvhå´ã®0ãƒ•ãƒ¬ãƒ¼ãƒ å§¿å‹¢ãŒIdentityã«ãªã‚‹ã‚ˆã†ã«ã€€InvFirstMat * NodeMat ã‚’æ›ã‘ã‚‹
 					//#######################################################################################
 					ChaMatrix offsetforbvhmat, offsetformodelmat;
 					//offsetforbvhmat = ChaMatrixInv(bvhbone->GetFirstMat()) * bvhbone->GetNodeMat();
 					//offsetformodelmat.SetIdentity();
 					
 					//#########################################################################################
-					//2023/03/26 ver1.2.0.18‚ÖŒü‚¯‚Ä
-					//bvh‘¤model‘¤@—¼•û‚Æ‚à‚OƒtƒŒ[ƒ€‚ÉƒAƒjƒ‚ªİ‚Á‚Ä‚à@ƒŠƒ^[ƒQƒbƒg‚ª‚¤‚Ü‚­‚¢‚­‚æ‚¤‚É@C³
+					//2023/03/26 ver1.2.0.18ã¸å‘ã‘ã¦
+					//bvhå´modelå´ã€€ä¸¡æ–¹ã¨ã‚‚ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã«ã‚¢ãƒ‹ãƒ¡ãŒåœ¨ã£ã¦ã‚‚ã€€ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆãŒã†ã¾ãã„ãã‚ˆã†ã«ã€€ä¿®æ­£
 					//#########################################################################################
 					offsetforbvhmat = ChaMatrixInv(bvhbone->GetWorldMat(false, bvhmotid, 0.0, 0));
 					offsetformodelmat = ChaMatrixInv(srcbone->GetWorldMat(false, modelmotid, 0.0, 0));
@@ -494,47 +511,47 @@ namespace MameBake3DLibRetarget {
 					invzeroframebvhQ.RotationMatrix(ChaMatrixInv(zeroframebvhmat));
 
 
-				//10033€”õ‚Ì®
+				//10033æº–å‚™ã®å¼
 					//ChaMatrix curbvhmat;
 					//curbvhmat =
 					//	(ChaMatrixInv(firsthipbvhmat) * ChaMatrixInv(bvhbone->GetCurrentZeroFrameMat(1)) * firsthipbvhmat) *
 					//	(ChaMatrixInv(firsthipmodelmat) * (ChaMatrixInv(modelmp.GetWorldMat()) * zeroframemodelmat) * firsthipmodelmat) *
-					//	bvhmp.GetWorldMat();//2022/10/30 ƒeƒXƒg(bvh120, bvh121, Rokoko)Ï@OK
+					//	bvhmp.GetWorldMat();//2022/10/30 ãƒ†ã‚¹ãƒˆ(bvh120, bvh121, Rokoko)æ¸ˆã€€OK
 					//
-					//•â‘«Finvhips * (inv)zeroframemat * hips‚Í@modelÀ•WŒn‚Æ‚¢‚¤‚©hipsÀ•WŒn‚Ìzeroframep¨‚ÌŒvZ
+					//è£œè¶³ï¼šinvhips * (inv)zeroframemat * hipsã¯ã€€modelåº§æ¨™ç³»ã¨ã„ã†ã‹hipsåº§æ¨™ç³»ã®zeroframeå§¿å‹¢ã®è¨ˆç®—
 					// 
 					// 
 
 
 				//###############################################################################################
-				//2023/03/27 C³F@firsthipbvhmat‚Íbvhparentmat‚É@firsthipmodelmat‚Ímodelparentmat‚É’u‚«Š·‚¦
-				//hipsÀ•WŒn‚Å‚Í‚È‚­@parentÀ•WŒn‚ÅŒvZ
+				//2023/03/27 ä¿®æ­£ï¼šã€€firsthipbvhmatã¯bvhparentmatã«ã€€firsthipmodelmatã¯modelparentmatã«ç½®ãæ›ãˆ
+				//hipsåº§æ¨™ç³»ã§ã¯ãªãã€€parentåº§æ¨™ç³»ã§è¨ˆç®—
 				//###############################################################################################
 
-				//®10033 ˆÈ‰º‚Us
+				//å¼10033 ä»¥ä¸‹ï¼–è¡Œ
 					ChaMatrix curbvhmat;
 					CQuaternion convQ;
 					convQ = bvhQ *
 						(invmodelparentQ * (zeroframemodelQ * invmodelQ) * modelparentQ) *
 						(invbvhparentQ * invzeroframebvhQ * bvhparentQ);
 					curbvhmat = convQ.MakeRotMatX();
-					//®10033
-					//2022/10/30ƒeƒXƒg‚Ì®‚ğƒNƒH[ƒ^ƒjƒIƒ“(‹y‚ÑƒNƒH[ƒ^ƒjƒIƒ“‚ÌŠ|‚¯Z‚Ì‡”Ô)‚É‚µ‚Ä@ƒWƒ“ƒoƒ‹ƒƒbƒN‚ª‹N‚±‚è“ï‚¢‚æ‚¤‚É
+					//å¼10033
+					//2022/10/30ãƒ†ã‚¹ãƒˆã®å¼ã‚’ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³(åŠã³ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã®æ›ã‘ç®—ã®é †ç•ª)ã«ã—ã¦ã€€ã‚¸ãƒ³ãƒãƒ«ãƒ­ãƒƒã‚¯ãŒèµ·ã“ã‚Šé›£ã„ã‚ˆã†ã«
 
 
-					rotq.RotationMatrix(curbvhmat);//‰ñ“]‚¾‚¯Ì—p‚·‚é
+					rotq.RotationMatrix(curbvhmat);//å›è»¢ã ã‘æ¡ç”¨ã™ã‚‹
 
-					//2023/03/26@•â‘«
-					//FKRotate-->RotBoneQReq‚É‰ñ“]‚ğ“n‚µ‚Ä@Šù‘¶‚Ìp¨‚Érotq‚ğŠ|‚¯‚é‚±‚Æ‚É‚È‚é
-					//ƒŠƒ^[ƒQƒbƒgŒ‹‰Ê‚Ì‘¤(model‘¤)‚Ìƒ‚[ƒVƒ‡ƒ“‚Í
-					//Identity‚Å‚Í‚È‚­@Å‰‚Ìƒ‚[ƒVƒ‡ƒ“‚Ì‚OƒtƒŒ[ƒ€‚Ìp¨‚Å‰Šú‰»‚µ‚Ä‚¨‚­
-					//bvh‘¤‚Æmodel‘¤‚Ì‚OƒtƒŒ[ƒ€‚ÌŒ©‚©‚¯ã‚Ìp¨‚ª“¯‚¶‚Å‚ ‚é‚±‚Æ‚ª@ƒŠƒ^[ƒQƒbƒgğŒ
-					//‚OƒtƒŒ[ƒ€p¨‚©‚ç‚Ì•Ï‰»•ª‚ğ—˜—p‚µ‚Ä@²‚Ìˆá‚¢‚È‚Ç‚ğ‹zû‚µ‚ÄŒvZ‚·‚é
-
-
+					//2023/03/26ã€€è£œè¶³
+					//FKRotate-->RotBoneQReqã«å›è»¢ã‚’æ¸¡ã—ã¦ã€€æ—¢å­˜ã®å§¿å‹¢ã«rotqã‚’æ›ã‘ã‚‹ã“ã¨ã«ãªã‚‹
+					//ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆçµæœã®å´(modelå´)ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã¯
+					//Identityã§ã¯ãªãã€€æœ€åˆã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®å§¿å‹¢ã§åˆæœŸåŒ–ã—ã¦ãŠã
+					//bvhå´ã¨modelå´ã®ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®è¦‹ã‹ã‘ä¸Šã®å§¿å‹¢ãŒåŒã˜ã§ã‚ã‚‹ã“ã¨ãŒã€€ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆæ¡ä»¶
+					//ï¼ãƒ•ãƒ¬ãƒ¼ãƒ å§¿å‹¢ã‹ã‚‰ã®å¤‰åŒ–åˆ†ã‚’åˆ©ç”¨ã—ã¦ã€€è»¸ã®é•ã„ãªã©ã‚’å¸åã—ã¦è¨ˆç®—ã™ã‚‹
 
 
-					//traanim = bvhbone->CalcLocalTraAnim(bvhmotid, roundingframe);//ˆÚ“®‚Í‚±‚¿‚ç‚©‚çæ“¾
+
+
+					//traanim = bvhbone->CalcLocalTraAnim(bvhmotid, roundingframe);//ç§»å‹•ã¯ã“ã¡ã‚‰ã‹ã‚‰å–å¾—
 					//if (!bvhbone->GetParent(true)) {
 					//	ChaVector3 bvhbonepos = bvhbone->GetJointFPos();
 					//	ChaVector3 firstframebonepos = bvhbone->GetFirstFrameBonePos();
@@ -546,16 +563,16 @@ namespace MameBake3DLibRetarget {
 
 					//################################################################################
 					//2023/01/08
-					//HipsƒWƒ‡ƒCƒ“ƒgˆÈŠO‚ÌTraAnim‚à—LŒø‚É
+					//Hipsã‚¸ãƒ§ã‚¤ãƒ³ãƒˆä»¥å¤–ã®TraAnimã‚‚æœ‰åŠ¹ã«
 					// 
-					//ƒŠƒ^[ƒQƒbƒgğŒ‚Í@model‚Æbvh‚Ì‚OƒtƒŒ[ƒ€‚ÌŒ©‚©‚¯ã‚Ìp¨‚ª“¯‚¶‚±‚Æ‚Å‚ ‚é‚©‚ç
-					//ƒŠƒ^[ƒQƒbƒg‚ÉTraAnim‚Æ‚µ‚ÄŒvZ‚·‚×‚«‚Í@‚OƒtƒŒ[ƒ€‚©‚ç‚Ì•Ï‰»•ª‚Å‚ ‚é
+					//ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆæ¡ä»¶ã¯ã€€modelã¨bvhã®ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã®è¦‹ã‹ã‘ä¸Šã®å§¿å‹¢ãŒåŒã˜ã“ã¨ã§ã‚ã‚‹ã‹ã‚‰
+					//ãƒªã‚¿ãƒ¼ã‚²ãƒƒãƒˆæ™‚ã«TraAnimã¨ã—ã¦è¨ˆç®—ã™ã¹ãã¯ã€€ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‹ã‚‰ã®å¤‰åŒ–åˆ†ã§ã‚ã‚‹
 					//################################################################################
 
 					ChaMatrix bvhsmat, bvhrmat, bvhtmat, bvhtanimmat;
 					ChaMatrix bvhsmat0, bvhrmat0, bvhtmat0, bvhtanimmat0;
 
-					//GetWorldMat() : limitedflag‚ğƒ[ƒ‚É‚µ‚Ä‚¨‚­•K—v—L !!!!
+					//GetWorldMat() : limitedflagã‚’ã‚¼ãƒ­ã«ã—ã¦ãŠãå¿…è¦æœ‰ !!!!
 					if (bvhbone->GetParent(true)) {
 						ChaMatrix parentwm = bvhbone->GetParent(true)->GetWorldMat(limitdegflag, bvhmotid, roundingframe, 0);
 						GetSRTandTraAnim(bvhmp.GetAnimMat() * ChaMatrixInv(parentwm), bvhbone->GetNodeMat(), 
@@ -592,7 +609,7 @@ namespace MameBake3DLibRetarget {
 
 			bool onretarget = true;
 			if (bvhbone) {
-				int reqflag = 1;//!!!!!!!!! •ÒWŒ‹‰Ê‚ğÄ‹A“I‚Éq‹Ÿ‚É“`‚¦‚é‚Ì‚Å@bvhbone‚ª–³‚¢ê‡‚É‚Íˆ—‚ğ‚µ‚È‚¢‚Å—Ç‚¢
+				int reqflag = 1;//!!!!!!!!! ç·¨é›†çµæœã‚’å†å¸°çš„ã«å­ä¾›ã«ä¼ãˆã‚‹ã®ã§ã€€bvhboneãŒç„¡ã„å ´åˆã«ã¯å‡¦ç†ã‚’ã—ãªã„ã§è‰¯ã„
 				int traanimflag = 1;
 				srcmodel->FKRotate(limitdegflag, onretarget, reqflag, bvhbone, 
 					traanimflag, traanim, roundingframe, curboneno, rotq);
