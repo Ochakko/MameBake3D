@@ -1270,8 +1270,12 @@ HWND g_filterdlghwnd = 0;
 
 CRITICAL_SECTION g_CritSection_GetGP;
 
-static int CreateTipRig(CBone* currigbone, int currigno, POINT ptCursor, bool remakeflag);
-static int DispTipRig();
+static int DispToolTip();
+static int CreateToolTip(POINT ptCursor, WCHAR* srctext);
+
+
+static int CreateTipRig(CBone* currigbone, int currigno, POINT ptCursor);
+static bool DispTipRig();
 static int ClearLimitedWM(CModel* srcmodel);
 
 static float CalcSelectScale(CBone* curboneptr);
@@ -1697,7 +1701,8 @@ static CUSTOMRIG s_customrig;
 static CUSTOMRIG s_ikcustomrig;
 static CBone* s_customrigbone = 0;
 static int s_customrigno = 0;
-static int s_tiprigdispcount = 0;
+static int s_tooltipdispcount = 0;
+static size_t s_tooltiplen = 0;
 static map<int, int> s_customrigmenuindex;
 
 static int s_forcenewaxis = 0;
@@ -2473,6 +2478,7 @@ CDXUTCheckBox* s_TPoseCheckBox = 0;
 
 
 CDXUTStatic* s_TipText = 0;
+
 
 //Left
 static CDXUTControl* s_ui_fpskind = 0;
@@ -4091,7 +4097,8 @@ void InitApp()
 
 	s_tiprigboneno = -1;
 	s_tiprigno = -1;
-	s_tiprigdispcount = 0;
+	s_tooltipdispcount = 0;
+	s_tooltiplen = 0;
 
 	//g_edgesmp = false;
 
@@ -7722,12 +7729,11 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	}
 	else {
 
-		if (s_oprigflag != 0) {
-			if ((s_tiprigdispcount % 20) == 0) {
-				DispTipRig();
-			}
-			s_tiprigdispcount++;
+		if ((s_tooltipdispcount % 20) == 0) {
+			DispToolTip();
 		}
+		s_tooltipdispcount++;
+
 
 		WCHAR sz[100];
 		//swprintf_s(sz, 100, L"ThreadNum:%d(%d)", g_numthread, gNumIslands);
@@ -46746,22 +46752,64 @@ int FilterFuncDlg()
 //	return 0;
 //}
 
-int CreateTipRig(CBone* currigbone, int currigno, POINT ptCursor, bool remakeflag)
+
+int CreateToolTip(POINT ptCursor, WCHAR* srctext)
 {
-	if (!currigbone || (currigno < 0)) {
+	if (!srctext) {
+		_ASSERT(0);
+		return 1;
+	}
+	size_t textlen = wcslen(srctext);
+	if ((textlen == 0) || (textlen >= 512)) {
 		_ASSERT(0);
 		return 1;
 	}
 
-	if (remakeflag) {
-		if (s_TipText) {
+	int tipposx = ptCursor.x + 10;
+	int tipposy = ptCursor.y + 18;
+
+	if (s_TipText) {
+		const WCHAR* prevtext = s_TipText->GetText();
+		if (prevtext && (wcscmp(prevtext, srctext) == 0)) {
+			//既に同じテキストを表示中なので位置だけ変更
+
+
+			tipposx = min((s_mainwidth - (int)s_tooltiplen), tipposx);
+			tipposy = min((s_mainheight - 18), tipposy);
+			s_TipText->SetLocation(tipposx, tipposy);
+		}
+		else {
+			//違うテキストを表示中　ToolTipの作り直し
 			g_SampleUI.RemoveControl(IDC_TIPRIG);
 			s_TipText = 0;
+
+
+			WCHAR sz512[512] = { 0L };
+			swprintf_s(sz512, 512, L"%s", srctext);
+			size_t szlen = wcslen(sz512);
+			int displen;
+			if (szlen <= 511) {
+				displen = (int)szlen * 10;
+			}
+			else {
+				sz512[511] = 0L;
+				displen = 511 * 10;
+			}
+			s_tooltiplen = (size_t)displen;
+
+			tipposx = min((s_mainwidth - (int)s_tooltiplen), tipposx);
+			tipposy = min((s_mainheight - 18), tipposy);
+			g_SampleUI.AddStatic(IDC_TIPRIG, sz512, tipposx, tipposy, displen, 18);
+			s_TipText = g_SampleUI.GetStatic(IDC_TIPRIG);
+
+
 		}
-		CUSTOMRIG curcustomrig = currigbone->GetCustomRig(currigno);
+	}
+	else {
+		//新規ToolTip作成
 
 		WCHAR sz512[512] = { 0L };
-		swprintf_s(sz512, 512, L"%s : %s", currigbone->GetWBoneName(), curcustomrig.rigname);
+		swprintf_s(sz512, 512, L"%s", srctext);
 		size_t szlen = wcslen(sz512);
 		int displen;
 		if (szlen <= 511) {
@@ -46771,22 +46819,345 @@ int CreateTipRig(CBone* currigbone, int currigno, POINT ptCursor, bool remakefla
 			sz512[511] = 0L;
 			displen = 511 * 10;
 		}
-		g_SampleUI.AddStatic(IDC_TIPRIG, sz512, ptCursor.x, ptCursor.y, displen, 18);
+		s_tooltiplen = (size_t)displen;
+
+		tipposx = min((s_mainwidth - (int)s_tooltiplen), tipposx);
+		tipposy = min((s_mainheight - 18), tipposy);
+		g_SampleUI.AddStatic(IDC_TIPRIG, sz512, tipposx, tipposy, displen, 18);
 		s_TipText = g_SampleUI.GetStatic(IDC_TIPRIG);
-	}
-	else {
-		if (s_TipText) {
-			s_TipText->SetLocation(ptCursor.x, ptCursor.y);
-		}
 	}
 
 	return 0;
 }
 
-int DispTipRig()
+
+int CreateTipRig(CBone* currigbone, int currigno, POINT ptCursor)
+{
+	if (!currigbone || (currigno < 0)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	CUSTOMRIG curcustomrig = currigbone->GetCustomRig(currigno);
+	WCHAR sz512[512] = { 0L };
+	swprintf_s(sz512, 512, L"Rig %s : %s", currigbone->GetWBoneName(), curcustomrig.rigname);
+	CreateToolTip(ptCursor, sz512);
+
+	return 0;
+}
+
+
+int DispToolTip()
 {
 	if (!s_model) {
 		return 0;
+	}
+
+	if (g_previewFlag != 0) {
+		return 0;
+	}
+
+
+
+	UIPICKINFO tmppickinfo;
+	ZeroMemory(&tmppickinfo, sizeof(UIPICKINFO));
+	tmppickinfo.mousebefpos = s_pickinfo.mousepos;
+	POINT ptCursor;
+	GetCursorPos(&ptCursor);
+	::ScreenToClient(s_3dwnd, &ptCursor);
+	tmppickinfo.mousepos = ptCursor;
+
+	tmppickinfo.clickpos = ptCursor;
+	tmppickinfo.diffmouse = ChaVector2(0.0f, 0.0f);
+	tmppickinfo.firstdiff = ChaVector2(0.0f, 0.0f);
+	tmppickinfo.winx = (int)DXUTGetWindowWidth();
+	tmppickinfo.winy = (int)DXUTGetWindowHeight();
+	tmppickinfo.pickrange = PICKRANGE;
+
+
+	WCHAR sz512[512] = { 0L };
+	bool doneflag = false;
+
+	if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
+
+
+		int cameramode;
+		cameramode = PickSpCam(ptCursor);
+		switch (cameramode) {
+		case PICK_CAMROT:
+			doneflag = true;
+			wcscpy_s(sz512, 512, L"Drag Camera : Rot");
+			CreateToolTip(ptCursor, sz512);
+			break;
+		case PICK_CAMMOVE:
+			doneflag = true;
+			wcscpy_s(sz512, 512, L"Drag Camera : Pan");
+			CreateToolTip(ptCursor, sz512);
+			break;
+		case PICK_CAMDIST:
+			doneflag = true;
+			wcscpy_s(sz512, 512, L"Drag Camera : Dolly");
+			CreateToolTip(ptCursor, sz512);
+			break;
+		default:
+			break;
+		}
+
+		if (doneflag == false) {
+			//IK Mode
+			int pickikmodeflag = 0;
+			pickikmodeflag = PickSpIkModeSW(ptCursor);
+			if (pickikmodeflag == 1) {
+				doneflag = true;
+				wcscpy_s(sz512, 512, L"IKMode : Rot");
+				CreateToolTip(ptCursor, sz512);
+			}
+			else if (pickikmodeflag == 2) {
+				doneflag = true;
+				wcscpy_s(sz512, 512, L"IKMode : Move");
+				CreateToolTip(ptCursor, sz512);
+			}
+			else if (pickikmodeflag == 3) {
+				doneflag = true;
+				wcscpy_s(sz512, 512, L"IKMode : Scale");
+				CreateToolTip(ptCursor, sz512);
+			}
+		}
+
+		if (doneflag == false) {
+			int pickundo = 0;
+			pickundo = PickSpUndo(ptCursor);
+			if (pickundo == PICK_UNDO) {
+				doneflag = true;
+				wcscpy_s(sz512, 512, L"Undo operation");
+				CreateToolTip(ptCursor, sz512);
+			}
+			else if (pickundo == PICK_REDO) {
+				doneflag = true;
+				wcscpy_s(sz512, 512, L"Redo operation");
+				CreateToolTip(ptCursor, sz512);
+			}
+		}
+
+		if (doneflag == false) {
+			//RefPos switch
+			int pickrefposflag = 0;
+			pickrefposflag = PickSpRefPosSW(ptCursor);
+			if (pickrefposflag == 1) {
+				doneflag = true;
+				wcscpy_s(sz512, 512, L"Disp ReferencePose");
+				CreateToolTip(ptCursor, sz512);
+			}
+		}
+
+		if (doneflag == false) {
+			//limiteul switch
+			int picklimiteulflag = 0;
+			picklimiteulflag = PickSpLimitEulSW(ptCursor);
+			if (picklimiteulflag == 1) {
+				doneflag = true;
+				wcscpy_s(sz512, 512, L"Angle Limit on IK Rot");
+				CreateToolTip(ptCursor, sz512);
+			}
+		}
+
+		if (doneflag == false) {
+			//cameramode switch
+			int pickcameramodeflag = 0;
+			pickcameramodeflag = PickSpCameraModeSW(ptCursor);
+			if (pickcameramodeflag == 1) {
+				doneflag = true;
+				wcscpy_s(sz512, 512, L"With or Without CameraAnim");
+				CreateToolTip(ptCursor, sz512);
+			}
+		}
+
+		if (doneflag == false) {
+			//camerainherit switch
+			int pickcamerainheritflag = 0;
+			pickcamerainheritflag = PickSpCameraInheritSW(ptCursor);
+			if (pickcamerainheritflag == 1) {
+				doneflag = true;
+				wcscpy_s(sz512, 512, L"CameraAnim InheritMode");
+				CreateToolTip(ptCursor, sz512);
+			}
+		}
+
+		if (doneflag == false) {
+			//wallscraping switch
+			int pickscrapingflag = 0;
+			pickscrapingflag = PickSpScrapingSW(ptCursor);
+			if (pickscrapingflag == 1) {
+				doneflag = true;
+				wcscpy_s(sz512, 512, L"WallScraping on Limited IK Rot");
+				CreateToolTip(ptCursor, sz512);
+			}
+		}
+
+		if (doneflag == false) {
+			if (PickSpCpLW2W(ptCursor) != 0) {
+				if (s_copyLW2WFlag == false) {
+					doneflag = true;
+					wcscpy_s(sz512, 512, L"Copy LimitedAngleMotion to UnLimitedAngleMotion");
+					CreateToolTip(ptCursor, sz512);
+				}
+			}
+		}
+
+		if (doneflag == false) {
+			if (PickSpSmooth(ptCursor) != 0) {
+				if (s_smoothFlag == false) {
+					doneflag = true;
+					wcscpy_s(sz512, 512, L"LBtn:Smooth, RBtn:SettingsAndSmooth");
+					CreateToolTip(ptCursor, sz512);
+				}
+			}
+		}
+
+		if (doneflag == false) {
+			if (PickSpConstExe(ptCursor) != 0) {
+				if (s_constexeFlag == false) {
+					doneflag = true;
+					wcscpy_s(sz512, 512, L"Execute Position Constraint");
+					CreateToolTip(ptCursor, sz512);
+				}
+			}
+		}
+		if (doneflag == false) {
+			if (PickSpConstRefresh(ptCursor) != 0) {
+				if (s_constrefreshFlag == false) {
+					doneflag = true;
+					wcscpy_s(sz512, 512, L"Update TargetPosition of Constraint");
+					CreateToolTip(ptCursor, sz512);
+				}
+			}
+		}
+
+		if (doneflag == false) {
+			if (PickSpCopy(ptCursor) != 0) {
+				if (s_model) {
+					if (s_copyFlag == false) {
+						doneflag = true;
+						wcscpy_s(sz512, 512, L"Copy Motion");
+						CreateToolTip(ptCursor, sz512);
+					}
+				}
+			}
+		}
+
+		if (doneflag == false) {
+			if (PickSpSymCopy(ptCursor) != 0) {
+				if (s_model) {
+					if (s_symcopyFlag == false) {
+						doneflag = true;
+						wcscpy_s(sz512, 512, L"SymCopy Motion");
+						CreateToolTip(ptCursor, sz512);
+					}
+				}
+			}
+		}
+
+		if (doneflag == false) {
+			if (PickSpPaste(ptCursor) != 0) {
+				if (s_model) {
+					if (s_pasteFlag == false) {
+						doneflag = true;
+						wcscpy_s(sz512, 512, L"Paste Motion");
+						CreateToolTip(ptCursor, sz512);
+					}
+				}
+			}
+		}
+
+		if (doneflag == false) {
+			if (PickSpCopyHistory(ptCursor) != 0) {
+				if (s_model) {
+					if (s_selCopyHisotryFlag == false) {
+						doneflag = true;
+						wcscpy_s(sz512, 512, L"Disp CopyHistory at Right Pain");
+						CreateToolTip(ptCursor, sz512);
+					}
+				}
+			}
+		}
+
+		if (doneflag == false) {
+			int oprigdoneflag = 0;
+			int pickrigflag = 0;
+			pickrigflag = PickSpRig(ptCursor);
+			if (pickrigflag == 1) {
+				doneflag = true;
+				wcscpy_s(sz512, 512, L"Rig On or Off");
+				CreateToolTip(ptCursor, sz512);
+			}
+		}
+
+		if (doneflag == false) {
+			if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
+				int spakind = PickSpAxis(ptCursor);
+				if (spakind == PICK_SPA_X) {
+					doneflag = true;
+					wcscpy_s(sz512, 512, L"Drag X Axis IK");
+					CreateToolTip(ptCursor, sz512);
+				}
+				else if (spakind == PICK_SPA_Y) {
+					doneflag = true;
+					wcscpy_s(sz512, 512, L"Drag Y Axis IK");
+					CreateToolTip(ptCursor, sz512);
+				}
+				else if (spakind == PICK_SPA_Z) {
+					doneflag = true;
+					wcscpy_s(sz512, 512, L"Drag Z Axis IK");
+					CreateToolTip(ptCursor, sz512);
+				}
+			}
+		}
+
+	}
+
+	
+	if (doneflag == false) {
+		if (s_oprigflag == 0) {
+			if (g_shiftkey == false) {
+				s_model->PickBone(&tmppickinfo);
+			}
+			if (tmppickinfo.pickobjno >= 0) {
+				int curboneno = tmppickinfo.pickobjno;
+				CBone* curbone = s_model->GetBoneByID(curboneno);
+				if (curbone) {
+					doneflag = true;
+					swprintf_s(sz512, 512, L"Joint : %s", curbone->GetWBoneName());
+					CreateToolTip(ptCursor, sz512);
+				}
+			}
+		}
+	}
+
+
+	if (doneflag == false) {
+		//s_customrigのツールチップ表示
+		if ((s_oprigflag != 0) && (g_previewFlag == 0)) {
+			doneflag = DispTipRig();
+		}
+	}
+
+
+	if (doneflag == false) {
+		//チップ削除
+		if (s_TipText) {
+			g_SampleUI.RemoveControl(IDC_TIPRIG);
+			s_TipText = 0;
+		}
+	}
+
+
+	return 0;
+}
+
+bool DispTipRig()
+{
+	if (!s_model) {
+		return false;
 	}
 
 	UIPICKINFO tmppickinfo;
@@ -46812,40 +47183,22 @@ int DispTipRig()
 		if ((pickrigboneno >= 0) && (currigno >= 0)) {
 			CBone* currigbone = s_model->GetBoneByID(pickrigboneno);
 			if (currigbone) {
-				if (s_tiprigboneno != pickrigboneno) {
-					//チップ作り直し
-					s_tiprigboneno = pickrigboneno;
-					s_tiprigno = currigno;
-					bool remakeflag = true;
-					CreateTipRig(currigbone, currigno, ptCursor, remakeflag);
-				}
-				else {
-					if (s_tiprigno != s_customrig.rigno) {
-						//チップ作り直し
-						s_tiprigboneno = pickrigboneno;
-						s_tiprigno = currigno;
-						bool remakeflag = true;
-						CreateTipRig(currigbone, currigno, ptCursor, remakeflag);
-					}
-					else {
-						//チップ位置移動
-						s_tiprigboneno = pickrigboneno;
-						s_tiprigno = currigno;
-						bool remakeflag = false;
-						CreateTipRig(currigbone, currigno, ptCursor, remakeflag);
-					}
-				}
+
+				s_tiprigboneno = pickrigboneno;
+				s_tiprigno = currigno;
+				CreateTipRig(currigbone, currigno, ptCursor);
+				return true;//!!!!!!
 			}
 		}
-		else {
-			//チップ削除
-			if (s_TipText) {
-				g_SampleUI.RemoveControl(IDC_TIPRIG);
-				s_TipText = 0;
-			}
-		}
+		//else {
+		//	//チップ削除
+		//	if (s_TipText) {
+		//		g_SampleUI.RemoveControl(IDC_TIPRIG);
+		//		s_TipText = 0;
+		//	}
+		//}
 	}
-	return 0;
+	return false;
 }
 
 int CreateCameraDollyWnd()
