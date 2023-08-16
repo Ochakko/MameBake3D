@@ -2477,7 +2477,11 @@ CDXUTCheckBox* s_TPoseCheckBox = 0;
 //CDXUTCheckBox* s_EdgeSmpCheckBox = 0;
 
 
-CDXUTStatic* s_TipText = 0;
+CDXUTStatic* s_TipText1 = 0;
+CDXUTStatic* s_TipText2 = 0;
+CDXUTStatic* s_TipText3 = 0;
+CDXUTStatic* s_TipText4 = 0;
+CDXUTStatic* s_TipText5 = 0;
 
 
 //Left
@@ -2764,7 +2768,12 @@ static ChaVector4 s_lightdiffuseforshader[LIGHTNUMMAX];
 #define IDC_TRAROT					84
 #define IDC_COMBO_FPS				85
 #define IDC_X180					86
-#define IDC_TIPRIG					87
+
+#define IDC_TIPRIG1					87
+#define IDC_TIPRIG2					88
+#define IDC_TIPRIG3					89
+#define IDC_TIPRIG4					90
+#define IDC_TIPRIG5					91
 //#define IDC_EDGESMP					88
 
 
@@ -4503,7 +4512,11 @@ void InitApp()
 	s_PreciseCheckBox = 0;
 	s_X180CheckBox = 0;
 	s_TPoseCheckBox = 0;
-	s_TipText = 0;
+	s_TipText1 = 0;
+	s_TipText2 = 0;
+	s_TipText3 = 0;
+	s_TipText4 = 0;
+	s_TipText5 = 0;
 
 	//Left
 	s_ui_fpskind = 0;
@@ -46768,20 +46781,33 @@ int CreateToolTip(POINT ptCursor, WCHAR* srctext)
 	int tipposx = ptCursor.x + 10;
 	int tipposy = ptCursor.y + 18;
 
-	if (s_TipText) {
-		const WCHAR* prevtext = s_TipText->GetText();
+	if (s_TipText1 && s_TipText2 && s_TipText3 && s_TipText4 && s_TipText5) {
+		const WCHAR* prevtext = s_TipText1->GetText();
 		if (prevtext && (wcscmp(prevtext, srctext) == 0)) {
 			//既に同じテキストを表示中なので位置だけ変更
 
 
 			tipposx = min((s_mainwidth - (int)s_tooltiplen), tipposx);
 			tipposy = min((s_mainheight - 18), tipposy);
-			s_TipText->SetLocation(tipposx, tipposy);
+			//s_TipText->SetLocation(tipposx, tipposy);
+			s_TipText1->SetLocation(tipposx - 1, tipposy);
+			s_TipText2->SetLocation(tipposx + 1, tipposy);
+			s_TipText3->SetLocation(tipposx, tipposy - 1);
+			s_TipText4->SetLocation(tipposx, tipposy + 1);
+			s_TipText5->SetLocation(tipposx, tipposy);
 		}
 		else {
 			//違うテキストを表示中　ToolTipの作り直し
-			g_SampleUI.RemoveControl(IDC_TIPRIG);
-			s_TipText = 0;
+			g_SampleUI.RemoveControl(IDC_TIPRIG1);
+			g_SampleUI.RemoveControl(IDC_TIPRIG2);
+			g_SampleUI.RemoveControl(IDC_TIPRIG3);
+			g_SampleUI.RemoveControl(IDC_TIPRIG4);
+			g_SampleUI.RemoveControl(IDC_TIPRIG5);
+			s_TipText1 = 0;
+			s_TipText2 = 0;
+			s_TipText3 = 0;
+			s_TipText4 = 0;
+			s_TipText5 = 0;
 
 
 			WCHAR sz512[512] = { 0L };
@@ -46799,10 +46825,23 @@ int CreateToolTip(POINT ptCursor, WCHAR* srctext)
 
 			tipposx = min((s_mainwidth - (int)s_tooltiplen), tipposx);
 			tipposy = min((s_mainheight - 18), tipposy);
-			g_SampleUI.AddStatic(IDC_TIPRIG, sz512, tipposx, tipposy, displen, 18);
-			s_TipText = g_SampleUI.GetStatic(IDC_TIPRIG);
-
-
+			//g_SampleUI.AddStatic(IDC_TIPRIG, sz512, tipposx, tipposy, displen, 18);
+			//s_TipText = g_SampleUI.GetStatic(IDC_TIPRIG);
+			g_SampleUI.AddStatic(IDC_TIPRIG1, sz512, tipposx - 1, tipposy, displen, 18);
+			g_SampleUI.AddStatic(IDC_TIPRIG2, sz512, tipposx + 1, tipposy, displen, 18);
+			g_SampleUI.AddStatic(IDC_TIPRIG3, sz512, tipposx, tipposy - 1, displen, 18);
+			g_SampleUI.AddStatic(IDC_TIPRIG4, sz512, tipposx, tipposy + 1, displen, 18);
+			g_SampleUI.AddStatic(IDC_TIPRIG5, sz512, tipposx, tipposy, displen, 18);
+			s_TipText1 = g_SampleUI.GetStatic(IDC_TIPRIG1);
+			s_TipText2 = g_SampleUI.GetStatic(IDC_TIPRIG2);
+			s_TipText3 = g_SampleUI.GetStatic(IDC_TIPRIG3);
+			s_TipText4 = g_SampleUI.GetStatic(IDC_TIPRIG4);
+			s_TipText5 = g_SampleUI.GetStatic(IDC_TIPRIG5);
+			s_TipText1->SetTextColor(0xFF000F00);
+			s_TipText2->SetTextColor(0xFF000F00);
+			s_TipText3->SetTextColor(0xFF000F00);
+			s_TipText4->SetTextColor(0xFF000F00);
+			s_TipText5->SetTextColor(0xFFFFFFFF);
 		}
 	}
 	else {
@@ -46823,8 +46862,23 @@ int CreateToolTip(POINT ptCursor, WCHAR* srctext)
 
 		tipposx = min((s_mainwidth - (int)s_tooltiplen), tipposx);
 		tipposy = min((s_mainheight - 18), tipposy);
-		g_SampleUI.AddStatic(IDC_TIPRIG, sz512, tipposx, tipposy, displen, 18);
-		s_TipText = g_SampleUI.GetStatic(IDC_TIPRIG);
+		//g_SampleUI.AddStatic(IDC_TIPRIG, sz512, tipposx, tipposy, displen, 18);
+		//s_TipText = g_SampleUI.GetStatic(IDC_TIPRIG);
+		g_SampleUI.AddStatic(IDC_TIPRIG1, sz512, tipposx - 1, tipposy, displen, 18);
+		g_SampleUI.AddStatic(IDC_TIPRIG2, sz512, tipposx + 1, tipposy, displen, 18);
+		g_SampleUI.AddStatic(IDC_TIPRIG3, sz512, tipposx, tipposy - 1, displen, 18);
+		g_SampleUI.AddStatic(IDC_TIPRIG4, sz512, tipposx, tipposy + 1, displen, 18);
+		g_SampleUI.AddStatic(IDC_TIPRIG5, sz512, tipposx, tipposy, displen, 18);
+		s_TipText1 = g_SampleUI.GetStatic(IDC_TIPRIG1);
+		s_TipText2 = g_SampleUI.GetStatic(IDC_TIPRIG2);
+		s_TipText3 = g_SampleUI.GetStatic(IDC_TIPRIG3);
+		s_TipText4 = g_SampleUI.GetStatic(IDC_TIPRIG4);
+		s_TipText5 = g_SampleUI.GetStatic(IDC_TIPRIG5);
+		s_TipText1->SetTextColor(0xFF000F00);
+		s_TipText2->SetTextColor(0xFF000F00);
+		s_TipText3->SetTextColor(0xFF000F00);
+		s_TipText4->SetTextColor(0xFF000F00);
+		s_TipText5->SetTextColor(0xFFFFFFFF);
 	}
 
 	return 0;
@@ -47144,9 +47198,25 @@ int DispToolTip()
 
 	if (doneflag == false) {
 		//チップ削除
-		if (s_TipText) {
-			g_SampleUI.RemoveControl(IDC_TIPRIG);
-			s_TipText = 0;
+		if (s_TipText1) {
+			g_SampleUI.RemoveControl(IDC_TIPRIG1);
+			s_TipText1 = 0;
+		}
+		if (s_TipText2) {
+			g_SampleUI.RemoveControl(IDC_TIPRIG2);
+			s_TipText2 = 0;
+		}
+		if (s_TipText3) {
+			g_SampleUI.RemoveControl(IDC_TIPRIG3);
+			s_TipText3 = 0;
+		}
+		if (s_TipText4) {
+			g_SampleUI.RemoveControl(IDC_TIPRIG4);
+			s_TipText4 = 0;
+		}
+		if (s_TipText5) {
+			g_SampleUI.RemoveControl(IDC_TIPRIG5);
+			s_TipText5 = 0;
 		}
 	}
 
