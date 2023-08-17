@@ -13,6 +13,7 @@ public:
 	int Choose( HWND srchwnd, COLORREF* dstcol );
 
 	int SetCustomColor( COLORREF* srccol );
+	int GetCustomColor(int colornum, COLORREF* dstcolref);
 
 //private:
 	int InitParams();

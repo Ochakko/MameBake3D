@@ -30,7 +30,7 @@ int CColDlg::InitParams()
 	ZeroMemory( &m_cc, sizeof( CHOOSECOLOR ) );
 
 	m_cc.lStructSize = sizeof( CHOOSECOLOR );
-	m_cc.lpCustColors = m_custom;
+	m_cc.lpCustColors = m_custom;//!!!!!! custom color !!!!!!
 	m_cc.Flags = CC_FULLOPEN | CC_RGBINIT;
 
 	int cusno;
@@ -44,11 +44,27 @@ int CColDlg::InitParams()
 
 int CColDlg::SetCustomColor( COLORREF* srccol )
 {
+	if (!srccol) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	int cusno;
 	for( cusno = 0; cusno < 16; cusno++ ){
 		m_custom[cusno] = *(srccol + cusno);
 	}
 
+	return 0;
+}
+
+int CColDlg::GetCustomColor(int colornum, COLORREF* dstcolref)
+{
+	if (!dstcolref || (colornum != 16)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	MoveMemory(dstcolref, &(m_custom[0]), sizeof(COLORREF) * 16);
 	return 0;
 }
 

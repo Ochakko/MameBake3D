@@ -183,6 +183,7 @@
     <ClCompile Include="..\CPP\CameraFbx.cpp" />
     <ClCompile Include="..\CPP\ChaFile.cpp" />
     <ClCompile Include="..\CPP\ChaVecCalc.cpp" />
+    <ClCompile Include="..\CPP\ChooseColorFile.cpp" />
     <ClCompile Include="..\CPP\ColDlg.cpp" />
     <ClCompile Include="..\CPP\Collision.cpp" />
     <ClCompile Include="..\CPP\dbg.cpp" />
@@ -197,6 +198,7 @@
     <ClCompile Include="..\CPP\ImpFile.cpp" />
     <ClCompile Include="..\CPP\InfBone.cpp" />
     <ClCompile Include="..\CPP\InfoWindow.cpp" />
+    <ClCompile Include="..\CPP\LightsForEditFile.cpp" />
     <ClCompile Include="..\CPP\LIMFile.cpp" />
     <ClCompile Include="..\CPP\lmtFile.cpp" />
     <ClCompile Include="..\CPP\MNLFile.cpp" />
@@ -552,6 +554,7 @@
     <ClInclude Include="..\INCLUDE\CameraFbx.h" />
     <ClInclude Include="..\INCLUDE\ChaFile.h" />
     <ClInclude Include="..\INCLUDE\ChaVecCalc.h" />
+    <ClInclude Include="..\INCLUDE\ChooseColorFile.h" />
     <ClInclude Include="..\INCLUDE\Coef.h" />
     <ClInclude Include="..\INCLUDE\coef_r.h" />
     <ClInclude Include="..\INCLUDE\ColDlg.h" />
@@ -571,6 +574,7 @@
     <ClInclude Include="..\INCLUDE\ImpFile.h" />
     <ClInclude Include="..\INCLUDE\InfBone.h" />
     <ClInclude Include="..\INCLUDE\InfoWindow.h" />
+    <ClInclude Include="..\INCLUDE\LightsForEditFile.h" />
     <ClInclude Include="..\INCLUDE\LIMFile.h" />
     <ClInclude Include="..\INCLUDE\lmtFile.h" />
     <ClInclude Include="..\INCLUDE\MNLFile.h" />

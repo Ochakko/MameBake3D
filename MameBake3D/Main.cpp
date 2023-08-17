@@ -1048,6 +1048,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 #include <RigidElemFile.h>
 #include <RigidElem.h>
 #include <MNLFile.h>
+#include <ChooseColorFile.h>
+#include <LightsForEditFile.h>
 #include "IniFile.h"
 
 
@@ -3029,7 +3031,10 @@ static int GetShaderHandle();
 static int SetBaseDir();
 static int LoadIniFile();
 static int SaveIniFile();
-
+static int LoadChooseColor();
+static int SaveChooseColor();
+static int LoadLightsForEdit();
+static int SaveLightsForEdit();
 
 static int OpenFile();
 static int BVH2FBX();
@@ -4042,6 +4047,7 @@ void InitApp()
 	CBone::InitColDisp();
 
 	s_coldlg.InitParams();
+	
 
 
 	{
@@ -4383,6 +4389,9 @@ void InitApp()
 	_ASSERT(s_temppath[0]);
 	s_cptfilename.clear();
 	GetCPTFileName(s_cptfilename);//s_temppathセットより後。初回。
+
+
+	LoadChooseColor();//s_temppathのセットよりも後
 
 
 	InitDSValues();
@@ -4838,10 +4847,10 @@ void InitApp()
 			(float)-cos(initrad));
 		ChaVector3Normalize(&ndir, &dir0);
 		g_lightdir[lightindex] = ndir;
-		s_lightdirforshader[lightindex] = -g_lightdir[lightindex];//-lightdir
+		//s_lightdirforshader[lightindex] = -g_lightdir[lightindex];//-lightdir
 
 		g_lightdiffuse[lightindex] = ChaVector3(1.0f, 1.0f, 1.0f);
-		s_lightdiffuseforshader[lightindex] = ChaVector4(g_lightdiffuse[lightindex].x, g_lightdiffuse[lightindex].y, g_lightdiffuse[lightindex].z, 1.0f);
+		//s_lightdiffuseforshader[lightindex] = ChaVector4(g_lightdiffuse[lightindex].x, g_lightdiffuse[lightindex].y, g_lightdiffuse[lightindex].z, 1.0f);
 
 		if (lightindex == 0) {//初期状態では lightindex == 0のときキャラの正面を照らす向き
 			g_lightenable[lightindex] = true;
@@ -4851,9 +4860,21 @@ void InitApp()
 		}
 		g_lightdirwithview[lightindex] = true;
 
+		//g_LightControl[lightindex].SetLightDirection(g_lightdir[lightindex].D3DX());
+
+	}
+
+	LoadLightsForEdit();//ファイルに保存してあるLight情報を g_lightdirとg_ligthdiffuseとg_lightenableとg_lightdirwithviewに読込
+	
+	for (lightindex = 0; lightindex < LIGHTNUMMAX; lightindex++) {
+		s_lightdirforshader[lightindex] = -g_lightdir[lightindex];//-lightdir
+		s_lightdiffuseforshader[lightindex] = ChaVector4(g_lightdiffuse[lightindex].x, g_lightdiffuse[lightindex].y, g_lightdiffuse[lightindex].z, 1.0f);
+
 		g_LightControl[lightindex].SetLightDirection(g_lightdir[lightindex].D3DX());
 
 	}
+
+
 
 
 	//CreateUtDialog();
@@ -6337,6 +6358,9 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	OrgWindowListenMouse(false);
 
 	SaveIniFile();
+	SaveChooseColor();
+	SaveLightsForEdit();
+
 
 	//if (s_updatetimeline) {
 	//	delete s_updatetimeline;
@@ -25806,39 +25830,31 @@ LRESULT CALLBACK LightsForEditDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM 
 
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
-		case IDC_SETLIGHT1:
-			Dlg2Lights(hDlgWnd, 0);
-			SetLightDirection();
-			break;
-		case IDC_SETLIGHT2:
-			Dlg2Lights(hDlgWnd, 1);
-			SetLightDirection();
-			break;
-		case IDC_SETLIGHT3:
-			Dlg2Lights(hDlgWnd, 2);
-			SetLightDirection();
-			break;
-		case IDC_SETLIGHT4:
-			Dlg2Lights(hDlgWnd, 3);
-			SetLightDirection();
-			break;
-		case IDC_SETLIGHT5:
-			Dlg2Lights(hDlgWnd, 4);
-			SetLightDirection();
-			break;
-		case IDC_SETLIGHT6:
-			Dlg2Lights(hDlgWnd, 5);
-			SetLightDirection();
-			break;
-		case IDC_SETLIGHT7:
-			Dlg2Lights(hDlgWnd, 6);
-			SetLightDirection();
-			break;
-		case IDC_SETLIGHT8:
-			Dlg2Lights(hDlgWnd, 7);
-			SetLightDirection();
-			break;
 
+		case IDC_SETLIGHT1:
+		case IDC_SETLIGHT2:
+		case IDC_SETLIGHT3:
+		case IDC_SETLIGHT4:
+		case IDC_SETLIGHT5:
+		case IDC_SETLIGHT6:
+		case IDC_SETLIGHT7:
+		case IDC_SETLIGHT8:
+		{
+			//適用ボタンはどれを押しても全適用
+			int result1 = Dlg2Lights(hDlgWnd, 0);
+			int result2 = Dlg2Lights(hDlgWnd, 1);
+			int result3 = Dlg2Lights(hDlgWnd, 2);
+			int result4 = Dlg2Lights(hDlgWnd, 3);
+			int result5 = Dlg2Lights(hDlgWnd, 4);
+			int result6 = Dlg2Lights(hDlgWnd, 5);
+			int result7 = Dlg2Lights(hDlgWnd, 6);
+			int result8 = Dlg2Lights(hDlgWnd, 7);
+			//if ((result1 == 0) && (result2 == 0) && (result3 == 0) && (result4 == 0) &&
+			//	(result5 == 0) && (result6 == 0) && (result7 == 0) && (result8 == 0)) {
+				SetLightDirection();
+			//}
+		}
+			break;
 
 		case IDC_COLORBAR11:
 		{
@@ -46318,6 +46334,36 @@ int PickRigBone(UIPICKINFO* ppickinfo, bool forrigtip, int* dstrigno)//default:f
 
 }
 
+int LoadLightsForEdit()
+{
+	WCHAR lightfilepath[MAX_PATH] = { 0L };
+	swprintf_s(lightfilepath, MAX_PATH, L"%s\\MB3DOpenProjLightsForEdit_0.txt", s_temppath);
+
+	CLightsForEditFile lightfile;
+	int result = lightfile.LoadLightsForEditFile(lightfilepath);
+	//_ASSERT(result == 0);
+
+	return result;
+}
+
+int LoadChooseColor()
+{
+	//s_temppathのセットよりも後
+
+	COLORREF savedcolorref[16];
+	ZeroMemory(&savedcolorref, sizeof(COLORREF) * 16);
+	WCHAR colorfilepath[MAX_PATH] = { 0L };
+	swprintf_s(colorfilepath, MAX_PATH, L"%s\\MB3DOpenProjChooseColor_0.txt", s_temppath);
+	CChooseColorFile colorfile;
+	int resultcolfile = colorfile.LoadChooseColorFile(colorfilepath, &(savedcolorref[0]));
+	if (resultcolfile == 0) {
+		s_coldlg.SetCustomColor(&(savedcolorref[0]));
+	}
+
+	return 0;
+}
+
+
 int LoadIniFile()
 {
 	WCHAR path[MAX_PATH] = { 0L };
@@ -46342,6 +46388,35 @@ int LoadIniFile()
 
 	CIniFile inifile;
 	inifile.LoadIniFile(inifilepath);
+
+	return 0;
+}
+
+int SaveLightsForEdit()
+{
+	WCHAR lightfilepath[MAX_PATH] = { 0L };
+	swprintf_s(lightfilepath, MAX_PATH, L"%s\\MB3DOpenProjLightsForEdit_0.txt", s_temppath);
+
+	CLightsForEditFile lightfile;
+	int result = lightfile.WriteLightsForEditFile(lightfilepath);
+	_ASSERT(result == 0);
+
+	return result;
+}
+
+int SaveChooseColor()
+{
+	COLORREF colforsave[16];
+	ZeroMemory(colforsave, sizeof(COLORREF) * 16);
+	int resultgetcol = s_coldlg.GetCustomColor(16, &(colforsave[0]));
+	if (resultgetcol == 0) {
+		WCHAR colorfilepath[MAX_PATH] = { 0L };
+		swprintf_s(colorfilepath, MAX_PATH, L"%s\\MB3DOpenProjChooseColor_0.txt", s_temppath);
+		CChooseColorFile colorfile;
+		int resultcolfile = colorfile.WriteChooseColorFile(colorfilepath, colforsave);
+		_ASSERT(resultcolfile == 0);
+		return resultcolfile;
+	}
 
 	return 0;
 }

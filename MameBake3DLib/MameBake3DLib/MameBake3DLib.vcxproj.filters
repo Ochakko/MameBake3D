@@ -219,6 +219,12 @@
     <ClCompile Include="..\CPP\ColDlg.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
+    <ClCompile Include="..\CPP\ChooseColorFile.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CPP\LightsForEditFile.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h">
@@ -1299,6 +1305,12 @@
       <Filter>DXUT_Camera</Filter>
     </ClInclude>
     <ClInclude Include="..\INCLUDE\ColDlg.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\ChooseColorFile.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\LightsForEditFile.h">
       <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>
