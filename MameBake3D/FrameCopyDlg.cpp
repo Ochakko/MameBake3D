@@ -189,6 +189,44 @@ LRESULT CFrameCopyDlg::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 	return 1;  // システムにフォーカスを設定させます
 }
 
+
+int CFrameCopyDlg::ExecuteOnOK()
+{
+
+	m_validelemmap.clear();
+	m_invalidelemmap.clear();
+	m_cpvec.clear();
+
+	int i, validno;
+	for (i = 0; i < m_influencenum[m_slotno]; i++) {
+		validno = m_influencelist[m_slotno][i];
+		SetTree2ListReq(0, validno, 0);
+	}
+
+	int j, invalidno;
+	for (j = 0; j < m_ignorenum[m_slotno]; j++) {
+		invalidno = m_ignorelist[m_slotno][j];
+		SetTree2ListReq(1, invalidno, 0);
+	}
+
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_model->GetBoneListBegin(); itrbone != m_model->GetBoneListEnd(); itrbone++) {
+		int chkboneno = itrbone->first;
+		CBone* chkbone = itrbone->second;
+		if (chkbone && (chkbone->IsSkeleton())) {
+			CBone* valbone = m_validelemmap[chkboneno];
+			CBone* invalbone = m_invalidelemmap[chkboneno];
+
+			if (valbone && !invalbone) {
+				m_cpvec.push_back(chkbone);
+			}
+		}
+	}
+
+	return 0;
+}
+
+
 LRESULT CFrameCopyDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
 	//外部クラスから、wNotifyCode = 999 で呼び出されることがある。（ダイアログは表示されていない状態）
@@ -197,37 +235,9 @@ LRESULT CFrameCopyDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHan
 
 	GetDlgItemTextW( IDC_SLOTNAME, &(m_slotname[m_slotno][0]), SLOTNAMELEN );
 
-	//int bonenum = m_model->GetBoneListSize();//eNull含む
 
-	m_validelemmap.clear();
-	m_invalidelemmap.clear();
-	m_cpvec.clear();
+	ExecuteOnOK();
 
-	int i, validno;
-	for( i = 0; i < m_influencenum[m_slotno]; i++ ){
-		validno = m_influencelist[m_slotno][ i ];
-		SetTree2ListReq( 0, validno, 0 );
-	}
-
-	int j, invalidno;
-	for( j = 0; j < m_ignorenum[m_slotno]; j++ ){
-		invalidno = m_ignorelist[m_slotno][ j ];
-		SetTree2ListReq( 1, invalidno, 0 );
-	}
-
-	map<int, CBone*>::iterator itrbone;
-	for( itrbone = m_model->GetBoneListBegin(); itrbone != m_model->GetBoneListEnd(); itrbone++ ){
-		int chkboneno = itrbone->first;
-		CBone* chkbone = itrbone->second;
-		if (chkbone && (chkbone->IsSkeleton())){
-			CBone* valbone = m_validelemmap[chkboneno];
-			CBone* invalbone = m_invalidelemmap[chkboneno];
-
-			if (valbone && !invalbone){
-				m_cpvec.push_back(chkbone);
-			}
-		}
-	}
 
 	EndDialog(wID);
 

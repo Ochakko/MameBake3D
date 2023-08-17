@@ -1718,7 +1718,9 @@ static int s_buttonselecttothelast = 0;
 
 static float s_selectscale = 1.0f;
 //static int s_sethipstra = 0;
-static CFrameCopyDlg s_selbonedlg;
+//static CFrameCopyDlg s_selbonedlg;
+static map<CModel*, CFrameCopyDlg*> s_selbonedlgmap;
+
 static bool s_allmodelbone = false;
 
 static std::vector<HISTORYELEM> s_cptfilename;
@@ -2129,6 +2131,7 @@ static bool s_motpropFlag = false;
 static bool s_markFlag = false;
 static bool s_selboneFlag = false;
 static bool s_selboneAndPasteFlag = false;
+static bool s_RboneAndPasteFlag = false;
 static bool s_initmpFlag = false;
 static bool s_filterFlag = false;
 static int  s_filterState = 0;
@@ -2214,6 +2217,10 @@ static int WriteCPTFile(WCHAR* dstfilename);
 static int WriteCPIFile(WCHAR* cptfilename);
 static bool LoadCPTFile();
 static int LoadCPIFile(HISTORYELEM* srcdstelem);
+
+static vector<CBone*> s_pasteRJoint;
+static int SetRJoint(int srcboneno);
+static void AddRJointReq(CBone* srcbone);
 
 //static int WriteTBOFile();
 //static bool LoadTBOFile();
@@ -2662,6 +2669,10 @@ static ChaVector4 s_lightdiffuseforshader[LIGHTNUMMAX];
 
 #define ID_RMENU_IKTARGET (ID_RMENU_PHYSICSCONSTRAINT + 15)
 #define ID_RMENU_IKSTOP (ID_RMENU_PHYSICSCONSTRAINT + 16)
+#define ID_RMENU_COPY (ID_RMENU_PHYSICSCONSTRAINT + 17)
+#define ID_RMENU_PASTE (ID_RMENU_PHYSICSCONSTRAINT + 18)
+
+
 
 #define IDC_TOGGLEFULLSCREEN    1
 #define IDC_TOGGLEREF           3
@@ -3139,7 +3150,10 @@ static int RenderSelectFunc(ID3D11DeviceContext* pd3dImmediateContext);
 static int RenderSelectPostureFunc(ID3D11DeviceContext* pd3dImmediateContext);
 static int RenderRigMarkFunc(ID3D11DeviceContext* pd3dImmediateContext);
 //static int SetSelectState(ID3D11DeviceContext* pd3dImmediateContext);
+
+
 static CModel* GetCurRigModel(CUSTOMRIG currig);
+static CFrameCopyDlg* GetCurrentFrameCopyDlg();
 
 
 static int CreateModelPanel();
@@ -3622,6 +3636,8 @@ INT WINAPI wWinMain(
 	s_deletedKeyInfoList.clear();	// 削除されたキー情報リスト
 	s_selectKeyInfoList.clear();	// コピーされたキー情報リスト
 
+	s_pasteRJoint.clear();
+
 
 	//DXUTSetCallbackDeviceChanging(ModifyDeviceSettings);
 	DXUTSetCallbackMsgProc(MsgProc);
@@ -4047,7 +4063,7 @@ void InitApp()
 	CBone::InitColDisp();
 
 	s_coldlg.InitParams();
-	
+	s_selbonedlgmap.clear();
 
 
 	{
@@ -4345,6 +4361,7 @@ void InitApp()
 	s_markFlag = false;
 	s_selboneFlag = false;
 	s_selboneAndPasteFlag = false;
+	s_RboneAndPasteFlag = false;
 	s_initmpFlag = false;
 	s_filterFlag = false;
 	s_filterState = 0;
@@ -6708,6 +6725,14 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	s_customrigbone = 0;
 
 
+	map<CModel*, CFrameCopyDlg*>::iterator itrcpdlg;
+	for (itrcpdlg = s_selbonedlgmap.begin(); itrcpdlg != s_selbonedlgmap.end(); itrcpdlg++) {
+		CFrameCopyDlg* curcpdlg = itrcpdlg->second;
+		if (curcpdlg) {
+			delete curcpdlg;
+		}
+	}
+	s_selbonedlgmap.clear();
 
 
 	vector<MODELELEM>::iterator itrmodel;
@@ -8763,7 +8788,16 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		}
 
 
-
+		else if (menuid == (ID_RMENU_COPY + MENUOFFSET_BONERCLICK)) {
+			if (s_copyFlag == false) {
+				s_copyFlag = true;
+			}
+		}
+		else if (menuid == (ID_RMENU_PASTE + MENUOFFSET_BONERCLICK)) {
+			if ((s_pasteFlag == false) && (s_RboneAndPasteFlag == false)) {
+				s_RboneAndPasteFlag = true;
+			}
+		}
 
 		else if (menuid == (ID_RMENU_IKTARGET + MENUOFFSET_BONERCLICK)) {
 			//toggle
@@ -14645,6 +14679,20 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 	//}
 
 
+	CFrameCopyDlg* curcpdlg = GetCurrentFrameCopyDlg();
+	if (!curcpdlg) {
+		curcpdlg = new CFrameCopyDlg();
+		if (!curcpdlg) {
+			_ASSERT(0);
+			s_underselectmodel = false;
+			return 0;//!!!!!!!!!
+		}
+		s_selbonedlgmap[s_model] = curcpdlg;
+		curcpdlg->SetModel(s_model);
+	}
+
+
+
 	if (s_model) {
 		if (s_model->GetRigidElemInfoSize() > 0) {
 			int result1 = OnREMenu(0, 0);
@@ -15351,6 +15399,25 @@ int RenderSelectPostureFunc(ID3D11DeviceContext* pd3dImmediateContext)
 	return 0;
 
 }
+
+CFrameCopyDlg* GetCurrentFrameCopyDlg()
+{
+	if (!s_model) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	CFrameCopyDlg* curcpdlg = 0;
+	map<CModel*, CFrameCopyDlg*>::iterator itrfinddlg;
+	itrfinddlg = s_selbonedlgmap.find(s_model);
+	if (itrfinddlg == s_selbonedlgmap.end()) {
+		return 0;
+	}
+	else {
+		return itrfinddlg->second;
+	}
+}
+
 
 CModel* GetCurRigModel(CUSTOMRIG currig)
 {
@@ -28468,10 +28535,13 @@ int OnFrameToolWnd()
 
 	if (s_selboneFlag) {
 		if (s_model && s_owpTimeline && s_owpLTimeline) {
-			s_selbonedlg.SetModel(s_model);
-			s_underframecopydlg = true;
-			s_selbonedlg.DoModal();
-			s_underframecopydlg = false;
+			CFrameCopyDlg* curcpdlg = GetCurrentFrameCopyDlg();
+			if (curcpdlg) {
+				curcpdlg->SetModel(s_model);
+				s_underframecopydlg = true;
+				curcpdlg->DoModal();
+				s_underframecopydlg = false;
+			}
 		}
 
 		s_selboneFlag = false;
@@ -28801,6 +28871,15 @@ int OnFrameToolWnd()
 	}
 
 
+	if (s_RboneAndPasteFlag) {
+		if (s_curboneno >= 0) {
+			SetRJoint(s_curboneno);
+			//s_RboneAndPasteFlag = false;//if(s_pasteFlag)ブロックの終わりで初期化する
+			s_pasteFlag = true;
+		}
+	}
+
+
 	if (s_pasteFlag) {
 
 		//添付ファイルを読み取ってs_pastemotvecに格納する
@@ -28810,7 +28889,21 @@ int OnFrameToolWnd()
 
 		if (result && s_model && s_owpTimeline && s_model->GetCurMotInfo() && !s_pastemotvec.empty())
 		{
-			int cpnum = (int)s_selbonedlg.m_cpvec.size();
+			vector<CBone*> vecopebone;
+			if (s_RboneAndPasteFlag == true) {
+				vecopebone = s_pasteRJoint;
+			}
+			else {
+				CFrameCopyDlg* curcpdlg = GetCurrentFrameCopyDlg();
+				if (curcpdlg) {
+					vecopebone = curcpdlg->m_cpvec;
+				}
+				else {
+					vecopebone.clear();
+				}				
+			}
+
+			int cpnum = (int)vecopebone.size();
 			int keynum = 0;
 			double startframe, endframe, applyframe;
 
@@ -28869,6 +28962,7 @@ int OnFrameToolWnd()
 			}
 		}
 
+		s_RboneAndPasteFlag = false;
 		s_pasteFlag = false;
 	}
 
@@ -29022,6 +29116,40 @@ int OnFrameToolWnd()
 	return 0;
 }
 
+int SetRJoint(int srcboneno)
+{
+	s_pasteRJoint.clear();
+
+	if (!s_model) {
+		return 0;
+	}
+
+	CBone* startbone = s_model->GetBoneByID(srcboneno);
+	if (startbone) {
+		AddRJointReq(startbone);
+	}
+	return 0;
+
+}
+void AddRJointReq(CBone* srcbone)
+{
+	if (!s_model) {
+		return;
+	}
+
+	if (srcbone) {
+		s_pasteRJoint.push_back(srcbone);
+
+		if (srcbone->GetChild(false)) {
+			AddRJointReq(srcbone->GetChild(false));
+		}
+		if (srcbone->GetBrother(false)) {
+			AddRJointReq(srcbone->GetBrother(false));
+		}
+	}
+
+}
+
 int CreateCopyHistoryDlg()
 {
 	if (s_copyhistorydlg.GetCreatedFlag() == false) {
@@ -29066,7 +29194,21 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 		return 1;
 	}
 
-	int cpnum = (int)s_selbonedlg.m_cpvec.size();
+	vector<CBone*> vecopebone;
+	if (s_RboneAndPasteFlag == true) {
+		vecopebone = s_pasteRJoint;
+	}
+	else {
+		CFrameCopyDlg* curcpdlg = GetCurrentFrameCopyDlg();
+		if (curcpdlg) {
+			vecopebone = curcpdlg->m_cpvec;
+		}
+		else {
+			vecopebone.clear();
+		}
+	}
+
+	int cpnum = (int)vecopebone.size();
 
 	int docopyflag = 0;
 	int hasNotMvParFlag = 1;
@@ -29076,7 +29218,7 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 		//selected bone at selbonedlg
 		int cpno;
 		for (cpno = 0; cpno < cpnum; cpno++) {
-			CBone* chkbone = s_selbonedlg.m_cpvec[cpno];
+			CBone* chkbone = vecopebone[cpno];
 			if (chkbone == srcbone) {
 				docopyflag = 1;
 
@@ -29084,7 +29226,7 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 				if (parentbone && parentbone->IsSkeleton()) {
 					int cpno2;
 					for (cpno2 = 0; cpno2 < cpnum; cpno2++) {
-						CBone* chkparentbone = s_selbonedlg.m_cpvec[cpno2];
+						CBone* chkparentbone = vecopebone[cpno2];
 						if (chkparentbone == parentbone) {
 							hasNotMvParFlag = 0;
 						}
@@ -29128,8 +29270,21 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 		return operatingjointno;
 	}
 
+	vector<CBone*> vecopebone;
+	if (s_RboneAndPasteFlag == true) {
+		vecopebone = s_pasteRJoint;
+	}
+	else {
+		CFrameCopyDlg* curcpdlg = GetCurrentFrameCopyDlg();
+		if (curcpdlg) {
+			vecopebone = curcpdlg->m_cpvec;
+		}
+		else {
+			vecopebone.clear();
+		}
+	}
 
-	int cpnum = (int)s_selbonedlg.m_cpvec.size();
+	int cpnum = (int)vecopebone.size();
 
 
 	int docopyflag = 0;
@@ -29141,7 +29296,7 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 		//selected bone at selbonedlg
 		int cpno;
 		for (cpno = 0; cpno < cpnum; cpno++) {
-			CBone* chkbone = s_selbonedlg.m_cpvec[cpno];
+			CBone* chkbone = vecopebone[cpno];
 			if (chkbone == srcbone) {
 				docopyflag = 1;
 
@@ -29149,7 +29304,7 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 				if (parentbone && parentbone->IsSkeleton()) {
 					int cpno2;
 					for (cpno2 = 0; cpno2 < cpnum; cpno2++) {
-						CBone* chkparentbone = s_selbonedlg.m_cpvec[cpno2];
+						CBone* chkparentbone = vecopebone[cpno2];
 						if (chkparentbone == parentbone) {
 							hasNotMvParFlag = 0;
 						}
@@ -29209,8 +29364,21 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 		return 1;
 	}
 
+	vector<CBone*> vecopebone;
+	if (s_RboneAndPasteFlag == true) {
+		vecopebone = s_pasteRJoint;
+	}
+	else {
+		CFrameCopyDlg* curcpdlg = GetCurrentFrameCopyDlg();
+		if (curcpdlg) {
+			vecopebone = curcpdlg->m_cpvec;
+		}
+		else {
+			vecopebone.clear();
+		}
+	}
 
-	int cpnum = (int)s_selbonedlg.m_cpvec.size();
+	int cpnum = (int)vecopebone.size();
 
 	double srcleng;
 	double dstleng;
@@ -35143,6 +35311,14 @@ int BoneRClick(int srcboneno)
 					RemoveMenu(submenu, 0, MF_BYPOSITION);
 				}
 				s_customrigmenuindex.clear();
+
+
+				AppendMenu(submenu, MF_STRING,
+					(ID_RMENU_COPY + MENUOFFSET_BONERCLICK),
+					L"Copy Motion");
+				AppendMenu(submenu, MF_STRING,
+					(ID_RMENU_PASTE + MENUOFFSET_BONERCLICK),
+					L"Paste Deeper");
 
 
 				if (curbone->GetIKTargetFlag() == false){
@@ -43172,6 +43348,9 @@ HWND GetOFWnd(POINT srcpoint)
 	s_ofhwnd = 0;
 	s_enumdist.clear();
 
+	CFrameCopyDlg* curcpdlg = GetCurrentFrameCopyDlg();
+
+
 	if (!retctrlwnd && s_getfilenamehwnd) {
 		::EnumChildWindows(s_getfilenamehwnd, EnumChildProc, (LPARAM)&retctrlwnd);
 		retctrlwnd = GetNearestEnumDist();
@@ -43188,11 +43367,11 @@ HWND GetOFWnd(POINT srcpoint)
 			return retctrlwnd;
 		}
 	}
-	else if (!retctrlwnd && s_underframecopydlg && s_selbonedlg.m_hWnd) {
-		::EnumChildWindows(s_selbonedlg.m_hWnd, EnumChildProc, (LPARAM)&retctrlwnd);
+	else if (!retctrlwnd && s_underframecopydlg && curcpdlg && curcpdlg->m_hWnd) {
+		::EnumChildWindows(curcpdlg->m_hWnd, EnumChildProc, (LPARAM)&retctrlwnd);
 		retctrlwnd = GetNearestEnumDist();
 		if (retctrlwnd) {
-			s_ofhwnd = s_selbonedlg.m_hWnd;
+			s_ofhwnd = curcpdlg->m_hWnd;
 			return retctrlwnd;
 		}
 	}
@@ -46973,11 +47152,21 @@ int CreateToolTip(POINT ptCursor, WCHAR* srctext)
 		s_TipText3 = g_SampleUI.GetStatic(IDC_TIPRIG3);
 		s_TipText4 = g_SampleUI.GetStatic(IDC_TIPRIG4);
 		s_TipText5 = g_SampleUI.GetStatic(IDC_TIPRIG5);
-		s_TipText1->SetTextColor(0xFF000F00);
-		s_TipText2->SetTextColor(0xFF000F00);
-		s_TipText3->SetTextColor(0xFF000F00);
-		s_TipText4->SetTextColor(0xFF000F00);
-		s_TipText5->SetTextColor(0xFFFFFFFF);
+		if (s_TipText1) {
+			s_TipText1->SetTextColor(0xFF000F00);
+		}
+		if (s_TipText2) {
+			s_TipText2->SetTextColor(0xFF000F00);
+		}
+		if (s_TipText3) {
+			s_TipText3->SetTextColor(0xFF000F00);
+		}
+		if (s_TipText4) {
+			s_TipText4->SetTextColor(0xFF000F00);
+		}
+		if (s_TipText5) {
+			s_TipText5->SetTextColor(0xFFFFFFFF);
+		}
 	}
 
 	return 0;

@@ -30,6 +30,7 @@ public:
 	~CFrameCopyDlg();
 
 	int SetModel( CModel* srcmodel );
+	int ExecuteOnOK();//OnOK
 
 	enum { IDD = IDD_FRAMECOPYDLG };
 
@@ -97,6 +98,7 @@ private:
 	int WriteTBOFile();
 	bool ValidateTBOFile(char* dstTBOheader, char* srcbuf, DWORD bufleng);
 	bool LoadTBOFile();
+
 public:
 	int ParamsToDlg();
 
