@@ -2126,6 +2126,7 @@ static bool s_deleteFlag = false;		// キー削除フラグ
 static bool s_motpropFlag = false;
 static bool s_markFlag = false;
 static bool s_selboneFlag = false;
+static bool s_selboneAndPasteFlag = false;
 static bool s_initmpFlag = false;
 static bool s_filterFlag = false;
 static int  s_filterState = 0;
@@ -4337,6 +4338,7 @@ void InitApp()
 	s_motpropFlag = false;
 	s_markFlag = false;
 	s_selboneFlag = false;
+	s_selboneAndPasteFlag = false;
 	s_initmpFlag = false;
 	s_filterFlag = false;
 	s_filterState = 0;
@@ -9873,12 +9875,30 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			POINT ptCursor;
 			GetCursorPos(&ptCursor);
 			::ScreenToClient(s_3dwnd, &ptCursor);
+
+			bool doneflag = false;
+
 			if (PickSpSmooth(ptCursor) != 0) {
 				//SmoothSpriteButton上で右クリックした場合は　Smooth用のメニューを出す
 				//SmoothSpriteButton上で左クリックした場合には　前回のSmooth設定にてSmoothをすぐに実行
 				FilterFromTool();
+				doneflag = true;
 			}
-			else {
+
+			if (doneflag == false) {
+				//ペーストスプライトボタン右クリック：操作対象ボーン設定ダイアログを出した後にペースト処理
+				if (PickSpPaste(ptCursor) != 0) {
+					if (s_model) {
+						if ((s_selboneFlag == false) && (s_selboneAndPasteFlag == false)) {
+							s_selboneFlag = true;
+							s_selboneAndPasteFlag = true;
+							doneflag = true;
+						}
+					}
+				}
+			}
+
+			if (doneflag == false) {
 				BoneRClick(-1);
 			}
 		}
@@ -28439,6 +28459,10 @@ int OnFrameToolWnd()
 		}
 
 		s_selboneFlag = false;
+		if ((s_selboneAndPasteFlag == true) && (s_pasteFlag == false)) {
+			s_selboneAndPasteFlag = false;
+			s_pasteFlag = true;
+		}
 	}
 
 	//if (s_180DegFlag) {
@@ -46963,7 +46987,7 @@ int DispToolTip()
 			pickikmodeflag = PickSpIkModeSW(ptCursor);
 			if (pickikmodeflag == 1) {
 				doneflag = true;
-				wcscpy_s(sz512, 512, L"IKMode : Rot");
+				wcscpy_s(sz512, 512, L"IKMode : Rotation");
 				CreateToolTip(ptCursor, sz512);
 			}
 			else if (pickikmodeflag == 2) {
@@ -47116,7 +47140,7 @@ int DispToolTip()
 				if (s_model) {
 					if (s_pasteFlag == false) {
 						doneflag = true;
-						wcscpy_s(sz512, 512, L"Paste Motion");
+						wcscpy_s(sz512, 512, L"LBtn:Paste Motion, RBtn;Settings And Paste Motion");
 						CreateToolTip(ptCursor, sz512);
 					}
 				}
