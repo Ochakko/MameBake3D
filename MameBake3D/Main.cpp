@@ -2494,6 +2494,7 @@ CDXUTStatic* s_TipText4 = 0;
 CDXUTStatic* s_TipText5 = 0;
 
 
+static bool s_utcontrolvisible = true;
 //Left
 static CDXUTControl* s_ui_fpskind = 0;
 static CDXUTControl* s_ui_lightscale = 0;
@@ -2947,6 +2948,8 @@ static void SetButtonStartEndFromPlaying();
 static void AutoCameraTarget();
 
 static int CreateUtDialog();
+static int VisibleUtDialog();
+static bool UnderDragOperation();
 static int CreateTimelineWnd();
 static int CreateLongTimelineWnd();
 static int CreateDmpAnimWnd();
@@ -4065,6 +4068,7 @@ void InitApp()
 	s_coldlg.InitParams();
 	s_selbonedlgmap.clear();
 
+	s_utcontrolvisible = true;
 
 	{
 		g_hRenderBoneL0 = 0;
@@ -7787,13 +7791,19 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 
 	SetCameraModel();
 
+
+	//マウスがUtDialogのコントロールの上を通るとSetCaptureが生じるのでIK中は非表示にする
+	VisibleUtDialog();
+
+
 	if (s_underdelmotion || s_underdelmodel || s_underselectmotion || s_underselectcamera || s_underselectmodel) {
 		OnFrameCloseFlag();
 		OnFrameToolWnd();
 	}
 	else {
 
-		if ((s_tooltipdispcount % 20) == 0) {
+		if ((UnderDragOperation() == false) && ((s_tooltipdispcount % 20) == 0)) {
+			//マウスがUtDialogのコントロールの上を通るとSetCaptureが生じるのでIK中は非表示にする
 			DispToolTip();
 		}
 		s_tooltipdispcount++;
@@ -9250,6 +9260,11 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 
 	}
+	else if(uMsg == WM_CAPTURECHANGED){
+		if ((HWND)lParam != hWnd) {
+			::SendMessage(hWnd, WM_LBUTTONUP, 0, 0);
+		}
+	}
 	else if ((uMsg == WM_LBUTTONDOWN) || (uMsg == WM_LBUTTONDBLCLK)) {
 
 		if (s_curboneno >= 0) {
@@ -9273,9 +9288,10 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 		//if (!g_enableDS || (s_dsdeviceid < 0) || (s_dsdeviceid >= 3)) {
 			//DS deviceが無い場合
-		SetCapture(s_3dwnd);
+		//SetCapture(s_3dwnd);
 		//}
 		//SetCapture( s_3dwnd );
+		SetCapture(DXUTGetHWND());
 
 
 		POINT ptCursor;
@@ -9760,8 +9776,9 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 		//マウスによるIKとFKの後処理　applyframe以外のフレームの処理
 		g_fpsforce30 = false;
+		int editmotionflag = s_editmotionflag;
 		if (s_oprigflag == 0) {
-			if ((s_ikkind == 0) && (s_editmotionflag >= 0)) {
+			if ((s_ikkind == 0) && (editmotionflag >= 0)) {
 				if (s_pickinfo.buttonflag == PICK_CENTER) {
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 					s_editmotionflag = s_model->IKRotatePostIK(g_limitdegflag,
@@ -9790,7 +9807,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 					}
 				}
 			}
-			else if ((s_ikkind == 1) && (s_editmotionflag >= 0)) {
+			else if ((s_ikkind == 1) && (editmotionflag >= 0)) {
 				if (s_pickinfo.buttonflag == PICK_CENTER) {
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
@@ -9823,7 +9840,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 		}
 		else {
-			if (s_customrigbone && (s_customrigno >= 0) && (s_editmotionflag >= 0)) {
+			if (s_customrigbone && (s_customrigno >= 0) && (editmotionflag >= 0)) {
 
 				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
@@ -28534,21 +28551,23 @@ int OnFrameToolWnd()
 	//操作対象ボーンはs_selbonedlg::GetCpVec()にて取得。
 
 	if (s_selboneFlag) {
+		int result = -1;
+
 		if (s_model && s_owpTimeline && s_owpLTimeline) {
 			CFrameCopyDlg* curcpdlg = GetCurrentFrameCopyDlg();
 			if (curcpdlg) {
 				curcpdlg->SetModel(s_model);
 				s_underframecopydlg = true;
-				curcpdlg->DoModal();
+				result = (int)curcpdlg->DoModal();
 				s_underframecopydlg = false;
 			}
 		}
 
 		s_selboneFlag = false;
-		if ((s_selboneAndPasteFlag == true) && (s_pasteFlag == false)) {
-			s_selboneAndPasteFlag = false;
+		if ((result == IDOK) && (s_selboneAndPasteFlag == true) && (s_pasteFlag == false)) {
 			s_pasteFlag = true;
 		}
+		s_selboneAndPasteFlag = false;
 	}
 
 	//if (s_180DegFlag) {
@@ -30087,6 +30106,81 @@ int InitPluginMenu()
 		}
 	}
 	pComboBox5->SetSelectedByData(ULongToPtr(firstmenuno));
+
+	return 0;
+}
+
+
+bool UnderDragOperation()
+{
+	if (s_oprigflag == 0) {
+		if ((s_ikkind == 0) && (s_editmotionflag >= 0)) {
+			if (s_pickinfo.buttonflag == PICK_CENTER) {
+				return true;
+			}
+			else if ((s_pickinfo.buttonflag == PICK_X) ||
+				(s_pickinfo.buttonflag == PICK_Y) ||
+				(s_pickinfo.buttonflag == PICK_Z) ||
+				(s_pickinfo.buttonflag == PICK_SPA_X) ||
+				(s_pickinfo.buttonflag == PICK_SPA_Y) ||
+				(s_pickinfo.buttonflag == PICK_SPA_Z)) {
+				return true;
+			}
+		}
+		else if ((s_ikkind == 1) && (s_editmotionflag >= 0)) {
+			if (s_pickinfo.buttonflag == PICK_CENTER) {
+				return true;
+			}
+			else if ((s_pickinfo.buttonflag == PICK_X) ||
+				(s_pickinfo.buttonflag == PICK_Y) ||
+				(s_pickinfo.buttonflag == PICK_Z) ||
+				(s_pickinfo.buttonflag == PICK_SPA_X) ||
+				(s_pickinfo.buttonflag == PICK_SPA_Y) ||
+				(s_pickinfo.buttonflag == PICK_SPA_Z)) {
+				return true;
+			}
+		}
+		else if ((s_ikkind == 2) && (s_editmotionflag >= 0)) {
+			if (s_pickinfo.buttonflag == PICK_CENTER) {
+				return true;
+			}
+			else if ((s_pickinfo.buttonflag == PICK_X) ||
+				(s_pickinfo.buttonflag == PICK_Y) ||
+				(s_pickinfo.buttonflag == PICK_Z) ||
+				(s_pickinfo.buttonflag == PICK_SPA_X) ||
+				(s_pickinfo.buttonflag == PICK_SPA_Y) ||
+				(s_pickinfo.buttonflag == PICK_SPA_Z)) {
+				return true;
+			}
+		}
+
+	}
+	else {
+		if (s_customrigbone && (s_customrigno >= 0) && (s_editmotionflag >= 0)) {
+			return true;
+		}
+	}
+
+	//camera
+	if ((s_pickinfo.buttonflag == PICK_CAMROT) ||
+		(s_pickinfo.buttonflag == PICK_CAMMOVE) ||
+		(s_pickinfo.buttonflag == PICK_CAMDIST)) {
+		return true;
+	}
+
+	return false;
+}
+
+int VisibleUtDialog()
+{
+	bool visibleflag = !(UnderDragOperation());
+
+	if (visibleflag != s_utcontrolvisible) {
+
+		g_SampleUI.SetVisible(visibleflag);
+
+		s_utcontrolvisible = visibleflag;
+	}
 
 	return 0;
 }
