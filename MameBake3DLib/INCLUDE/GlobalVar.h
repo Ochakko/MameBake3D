@@ -247,7 +247,7 @@ ChaVector3 g_lightdir[LIGHTNUMMAX];
 ChaVector3 g_lightdiffuse[LIGHTNUMMAX];
 bool g_lightenable[LIGHTNUMMAX];
 bool g_lightdirwithview[LIGHTNUMMAX];
-
+float g_lightscale[LIGHTNUMMAX];
 
 int g_motionbrush_method = 0;
 double g_motionbrush_startframe = 0.0;
@@ -438,7 +438,7 @@ extern ChaVector3 g_lightdir[LIGHTNUMMAX];
 extern ChaVector3 g_lightdiffuse[LIGHTNUMMAX];
 extern bool g_lightenable[LIGHTNUMMAX];
 extern bool g_lightdirwithview[LIGHTNUMMAX];
-
+extern float g_lightscale[LIGHTNUMMAX];
 
 extern int g_motionbrush_method;
 extern double g_motionbrush_startframe;

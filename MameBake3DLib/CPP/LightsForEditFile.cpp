@@ -65,6 +65,8 @@ int CLightsForEditFile::WriteLightsForEditFile(const WCHAR* srcfilepath)
 	CallF( Write2File( "<?xml version=\"1.0\" encoding=\"Shift_JIS\"?>\r\n<LIGHTSFOREDIT>\r\n" ), return 1 );  
 	CallF( WriteFileInfo(), return 1 );
 
+	CallF(Write2File("  <TotalScale>%.3f</TotalScale>\r\n", g_fLightScale), return 1);
+
 	int lightcnt;
 	for(lightcnt = 0; lightcnt < LIGHTNUMMAX; lightcnt++ ){
 		CallF(WriteLight(lightcnt), return 1 );
@@ -78,13 +80,11 @@ int CLightsForEditFile::WriteLightsForEditFile(const WCHAR* srcfilepath)
 int CLightsForEditFile::WriteFileInfo()
 {
 
-	//CallF( Write2File( "  <FileInfo>\r\n    <kind>ChatCats3D_ProjectFile</kind>\r\n    <version>1001</version>\r\n    <type>0</type>\r\n  </FileInfo>\r\n" ), return 1 );
-	//version 1002 : 2023/03/24 1.2.0.17 RC2
-	//CallF(Write2File("  <FileInfo>\r\n    <kind>ChatCats3D_ProjectFile</kind>\r\n    <version>1002</version>\r\n    <type>0</type>\r\n  </FileInfo>\r\n"), return 1);
-	//version 1003 : 2023/03/24 1.2.0.17 RC3
-	//CallF(Write2File("  <FileInfo>\r\n    <kind>ChatCats3D_ProjectFile</kind>\r\n    <version>1003</version>\r\n    <type>0</type>\r\n  </FileInfo>\r\n"), return 1);
-	//version 1004 : 2023/07/21 1.2.0.23Ç÷å¸ÇØÇƒ
-	CallF(Write2File("  <FileInfo>\r\n    <kind>LightsForEditFile</kind>\r\n    <version>1001</version>\r\n    <type>0</type>\r\n  </FileInfo>\r\n"), return 1);
+	//CallF(Write2File("  <FileInfo>\r\n    <kind>LightsForEditFile</kind>\r\n    <version>1001</version>\r\n    <type>0</type>\r\n  </FileInfo>\r\n"), return 1);
+	//2023/08/18 To12024 : Add <TotalScale>%.3f</TotalScale> and <Scale>%.3f</Scale>
+	CallF(Write2File("  <FileInfo>\r\n    <kind>LightsForEditFile</kind>\r\n    <version>1002</version>\r\n    <type>0</type>\r\n  </FileInfo>\r\n"), return 1);
+
+
 	CallF(Write2File("  <LightsNum>%d</LightsNum>\r\n", LIGHTNUMMAX), return 1);
 
 	return 0;
@@ -124,6 +124,8 @@ int CLightsForEditFile::WriteLight(int lightindex)
 	CallF(Write2File("    <G255>%d</G255>\r\n", g255), return 1);
 	CallF(Write2File("    <B255>%d</B255>\r\n", b255), return 1);
 
+	CallF(Write2File("    <Scale>%.3f</Scale>\r\n", g_lightscale[lightindex]), return 1);
+
 	CallF(Write2File("  </Light>\r\n"), return 1);
 
 	return 0;
@@ -158,6 +160,14 @@ int CLightsForEditFile::LoadLightsForEditFile(const WCHAR* srcfilepath)
 	//m_xmliobuf.pos = 0;
 	//m_motspeed = 1.0f;
 	//Read_Float( &m_xmliobuf, "<MotSpeed>", "</MotSpeed>", &m_motspeed );
+
+
+	//ë∂ç›Ç∑ÇÈÇ∆Ç´ÇæÇØ
+	float totalscale = 1.0f;
+	int result0 = Read_Float( &m_xmliobuf, "<TotalScale>", "</TotalScale>", &totalscale);
+	if (result0 == 0) {
+		g_fLightScale = totalscale;
+	}
 
 
 	m_xmliobuf.pos = 0;
@@ -256,6 +266,14 @@ int CLightsForEditFile::ReadLight(int lightcnt, XMLIOBUF* xmlbuf)
 	b01 = max(0.0f, b01);
 	b01 = min(1.0f, b01);
 
+	float tmpscale = 1.0f;
+	int result2 = Read_Float(xmlbuf, "<Scale>", "</Scale>", &tmpscale);
+	if (result2 == 0) {
+		g_lightscale[lightcnt] = tmpscale;
+	}
+	else {
+		g_lightscale[lightcnt] = 1.0f;
+	}
 
 	g_lightenable[lightcnt] = (tmpenable != 0);
 	g_lightdirwithview[lightcnt] = (tmpdirwithview != 0);

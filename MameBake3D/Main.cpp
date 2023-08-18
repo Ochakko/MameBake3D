@@ -2973,11 +2973,11 @@ static int CreateLightsWnd();
 static int Lights2Dlg(HWND hDlgWnd);
 static int Lights2DlgEach(HWND hDlgWnd, int lightindex,
 	int iddirx, int iddiry, int iddirz,
-	int idenable, int idwithviewrot);
+	int idenable, int idwithviewrot, int idslider);
 static int Dlg2Lights(HWND hDlgWnd, int lightindex);
 static int Dlg2LightsEach(HWND hDlgWnd, int lightindex,
 	int iddirx, int iddiry, int iddirz,
-	int idenable, int idwithviewrot);
+	int idenable, int idwithviewrot, int idslider);
 static int CheckStr_float(const WCHAR* srcstr);
 
 
@@ -4888,6 +4888,8 @@ void InitApp()
 		}
 		g_lightdirwithview[lightindex] = true;
 
+		g_lightscale[lightindex] = 1.0f;
+
 		//g_LightControl[lightindex].SetLightDirection(g_lightdir[lightindex].D3DX());
 
 	}
@@ -4896,10 +4898,12 @@ void InitApp()
 	
 	for (lightindex = 0; lightindex < LIGHTNUMMAX; lightindex++) {
 		s_lightdirforshader[lightindex] = -g_lightdir[lightindex];//-lightdir
-		s_lightdiffuseforshader[lightindex] = ChaVector4(g_lightdiffuse[lightindex].x, g_lightdiffuse[lightindex].y, g_lightdiffuse[lightindex].z, 1.0f);
+
+		ChaVector3 scaleddiffuse;
+		scaleddiffuse = g_lightdiffuse[lightindex] * g_lightscale[lightindex] * g_fLightScale;
+		s_lightdiffuseforshader[lightindex] = ChaVector4(scaleddiffuse.x, scaleddiffuse.y, scaleddiffuse.z, 1.0f);
 
 		g_LightControl[lightindex].SetLightDirection(g_lightdir[lightindex].D3DX());
-
 	}
 
 
@@ -24814,7 +24818,7 @@ int GetAngleLimitEditInt(HWND hDlgWnd, int editresid, int* dstlimit)
 
 int Lights2DlgEach(HWND hDlgWnd, int lightindex,
 	int iddirx, int iddiry, int iddirz,
-	int idenable, int idwithviewrot)
+	int idenable, int idwithviewrot, int idslider)
 {
 	if (!hDlgWnd) {
 		_ASSERT(0);
@@ -24847,6 +24851,13 @@ int Lights2DlgEach(HWND hDlgWnd, int lightindex,
 	swprintf_s(strdirz, 256, L"%.3f", g_lightdir[lightindex].z);
 	SetDlgItemText(hDlgWnd, iddirz, strdirz);
 
+
+	int sliderpos = (int)(g_lightscale[lightindex] * 100.0f + 0.0001f);
+	SendMessage(GetDlgItem(hDlgWnd, idslider), TBM_SETRANGEMIN, (WPARAM)TRUE, (LPARAM)0);
+	SendMessage(GetDlgItem(hDlgWnd, idslider), TBM_SETRANGEMAX, (WPARAM)TRUE, (LPARAM)100);
+	SendMessage(GetDlgItem(hDlgWnd, idslider), TBM_SETPOS, (WPARAM)TRUE, (LPARAM)sliderpos);
+
+	
 	return 0;
 }
 
@@ -24855,7 +24866,7 @@ int Lights2Dlg(HWND hDlgWnd)
 	if (hDlgWnd != 0) {
 		int result1 = Lights2DlgEach(hDlgWnd, 0,
 			IDC_LIGHTDIRX1, IDC_LIGHTDIRY1, IDC_LIGHTDIRZ1,
-			IDC_ENABLE1, IDC_WITHVIEWROT1);
+			IDC_ENABLE1, IDC_WITHVIEWROT1, IDC_SLIDER1);
 		if (result1 != 0) {
 			_ASSERT(0);
 			return 1;
@@ -24863,7 +24874,7 @@ int Lights2Dlg(HWND hDlgWnd)
 
 		int result2 = Lights2DlgEach(hDlgWnd, 1,
 			IDC_LIGHTDIRX2, IDC_LIGHTDIRY2, IDC_LIGHTDIRZ2,
-			IDC_ENABLE2, IDC_WITHVIEWROT2);
+			IDC_ENABLE2, IDC_WITHVIEWROT2, IDC_SLIDER2);
 		if (result2 != 0) {
 			_ASSERT(0);
 			return 1;
@@ -24871,7 +24882,7 @@ int Lights2Dlg(HWND hDlgWnd)
 
 		int result3 = Lights2DlgEach(hDlgWnd, 2,
 			IDC_LIGHTDIRX3, IDC_LIGHTDIRY3, IDC_LIGHTDIRZ3,
-			IDC_ENABLE3, IDC_WITHVIEWROT3);
+			IDC_ENABLE3, IDC_WITHVIEWROT3, IDC_SLIDER3);
 		if (result3 != 0) {
 			_ASSERT(0);
 			return 1;
@@ -24879,7 +24890,7 @@ int Lights2Dlg(HWND hDlgWnd)
 
 		int result4 = Lights2DlgEach(hDlgWnd, 3,
 			IDC_LIGHTDIRX4, IDC_LIGHTDIRY4, IDC_LIGHTDIRZ4,
-			IDC_ENABLE4, IDC_WITHVIEWROT4);
+			IDC_ENABLE4, IDC_WITHVIEWROT4, IDC_SLIDER4);
 		if (result4 != 0) {
 			_ASSERT(0);
 			return 1;
@@ -24887,7 +24898,7 @@ int Lights2Dlg(HWND hDlgWnd)
 
 		int result5 = Lights2DlgEach(hDlgWnd, 4,
 			IDC_LIGHTDIRX5, IDC_LIGHTDIRY5, IDC_LIGHTDIRZ5,
-			IDC_ENABLE5, IDC_WITHVIEWROT5);
+			IDC_ENABLE5, IDC_WITHVIEWROT5, IDC_SLIDER5);
 		if (result5 != 0) {
 			_ASSERT(0);
 			return 1;
@@ -24895,7 +24906,7 @@ int Lights2Dlg(HWND hDlgWnd)
 
 		int result6 = Lights2DlgEach(hDlgWnd, 5,
 			IDC_LIGHTDIRX6, IDC_LIGHTDIRY6, IDC_LIGHTDIRZ6,
-			IDC_ENABLE6, IDC_WITHVIEWROT6);
+			IDC_ENABLE6, IDC_WITHVIEWROT6, IDC_SLIDER6);
 		if (result6 != 0) {
 			_ASSERT(0);
 			return 1;
@@ -24903,7 +24914,7 @@ int Lights2Dlg(HWND hDlgWnd)
 
 		int result7 = Lights2DlgEach(hDlgWnd, 6,
 			IDC_LIGHTDIRX7, IDC_LIGHTDIRY7, IDC_LIGHTDIRZ7,
-			IDC_ENABLE7, IDC_WITHVIEWROT7);
+			IDC_ENABLE7, IDC_WITHVIEWROT7, IDC_SLIDER7);
 		if (result7 != 0) {
 			_ASSERT(0);
 			return 1;
@@ -24911,7 +24922,7 @@ int Lights2Dlg(HWND hDlgWnd)
 
 		int result8 = Lights2DlgEach(hDlgWnd, 7,
 			IDC_LIGHTDIRX8, IDC_LIGHTDIRY8, IDC_LIGHTDIRZ8,
-			IDC_ENABLE8, IDC_WITHVIEWROT8);
+			IDC_ENABLE8, IDC_WITHVIEWROT8, IDC_SLIDER8);
 		if (result8 != 0) {
 			_ASSERT(0);
 			return 1;
@@ -24923,7 +24934,7 @@ int Lights2Dlg(HWND hDlgWnd)
 
 int Dlg2LightsEach(HWND hDlgWnd, int lightindex,
 	int iddirx, int iddiry, int iddirz,
-	int idenable, int idwithviewrot)
+	int idenable, int idwithviewrot, int idslider)
 {
 	if (!hDlgWnd) {
 		_ASSERT(0);
@@ -24971,6 +24982,10 @@ int Dlg2LightsEach(HWND hDlgWnd, int lightindex,
 		g_lightdirwithview[lightindex] = false;
 	}
 
+
+	int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, idslider), TBM_GETPOS, 0, 0);
+	g_lightscale[lightindex] = (float)((double)cursliderpos / 100.0);
+
 	return 0;
 }
 
@@ -24984,7 +24999,7 @@ int Dlg2Lights(HWND hDlgWnd, int lightindex)
 		{
 			int result = Dlg2LightsEach(hDlgWnd, lightindex,
 				IDC_LIGHTDIRX1, IDC_LIGHTDIRY1, IDC_LIGHTDIRZ1,
-				IDC_ENABLE1, IDC_WITHVIEWROT1);
+				IDC_ENABLE1, IDC_WITHVIEWROT1, IDC_SLIDER1);
 			if (result == 0) {
 				//そのまま
 			}
@@ -25009,7 +25024,7 @@ int Dlg2Lights(HWND hDlgWnd, int lightindex)
 		{
 			int result = Dlg2LightsEach(hDlgWnd, lightindex,
 				IDC_LIGHTDIRX2, IDC_LIGHTDIRY2, IDC_LIGHTDIRZ2,
-				IDC_ENABLE2, IDC_WITHVIEWROT2);
+				IDC_ENABLE2, IDC_WITHVIEWROT2, IDC_SLIDER2);
 			if (result == 0) {
 				//そのまま
 			}
@@ -25034,7 +25049,7 @@ int Dlg2Lights(HWND hDlgWnd, int lightindex)
 		{
 			int result = Dlg2LightsEach(hDlgWnd, lightindex,
 				IDC_LIGHTDIRX3, IDC_LIGHTDIRY3, IDC_LIGHTDIRZ3,
-				IDC_ENABLE3, IDC_WITHVIEWROT3);
+				IDC_ENABLE3, IDC_WITHVIEWROT3, IDC_SLIDER3);
 			if (result == 0) {
 				//そのまま
 			}
@@ -25059,7 +25074,7 @@ int Dlg2Lights(HWND hDlgWnd, int lightindex)
 		{
 			int result = Dlg2LightsEach(hDlgWnd, lightindex,
 				IDC_LIGHTDIRX4, IDC_LIGHTDIRY4, IDC_LIGHTDIRZ4,
-				IDC_ENABLE4, IDC_WITHVIEWROT4);
+				IDC_ENABLE4, IDC_WITHVIEWROT4, IDC_SLIDER4);
 			if (result == 0) {
 				//そのまま
 			}
@@ -25084,7 +25099,7 @@ int Dlg2Lights(HWND hDlgWnd, int lightindex)
 		{
 			int result = Dlg2LightsEach(hDlgWnd, lightindex,
 				IDC_LIGHTDIRX5, IDC_LIGHTDIRY5, IDC_LIGHTDIRZ5,
-				IDC_ENABLE5, IDC_WITHVIEWROT5);
+				IDC_ENABLE5, IDC_WITHVIEWROT5, IDC_SLIDER5);
 			if (result == 0) {
 				//そのまま
 			}
@@ -25109,7 +25124,7 @@ int Dlg2Lights(HWND hDlgWnd, int lightindex)
 		{
 			int result = Dlg2LightsEach(hDlgWnd, lightindex,
 				IDC_LIGHTDIRX6, IDC_LIGHTDIRY6, IDC_LIGHTDIRZ6,
-				IDC_ENABLE6, IDC_WITHVIEWROT6);
+				IDC_ENABLE6, IDC_WITHVIEWROT6, IDC_SLIDER6);
 			if (result == 0) {
 				//そのまま
 			}
@@ -25134,7 +25149,7 @@ int Dlg2Lights(HWND hDlgWnd, int lightindex)
 		{
 			int result = Dlg2LightsEach(hDlgWnd, lightindex,
 				IDC_LIGHTDIRX7, IDC_LIGHTDIRY7, IDC_LIGHTDIRZ7,
-				IDC_ENABLE7, IDC_WITHVIEWROT7);
+				IDC_ENABLE7, IDC_WITHVIEWROT7, IDC_SLIDER7);
 			if (result == 0) {
 				//そのまま
 			}
@@ -25159,7 +25174,7 @@ int Dlg2Lights(HWND hDlgWnd, int lightindex)
 		{
 			int result = Dlg2LightsEach(hDlgWnd, lightindex,
 				IDC_LIGHTDIRX8, IDC_LIGHTDIRY8, IDC_LIGHTDIRZ8,
-				IDC_ENABLE8, IDC_WITHVIEWROT8);
+				IDC_ENABLE8, IDC_WITHVIEWROT8, IDC_SLIDER8);
 			if (result == 0) {
 				//そのまま
 			}
@@ -25917,19 +25932,126 @@ LRESULT CALLBACK LightsForEditDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM 
 		//DefWindowProc(hDlgWnd, msg, wp, lp);
 		break;
 
+	case WM_HSCROLL:
+		if (GetDlgItem(hDlgWnd, IDC_SLIDER1) == (HWND)lp)
+		{
+			int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER1), TBM_GETPOS, 0, 0);
+			g_lightscale[0] = (float)((double)cursliderpos / 100.0);
+			SetLightDirection();
+		}
+		else if (GetDlgItem(hDlgWnd, IDC_SLIDER2) == (HWND)lp)
+		{
+			int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER2), TBM_GETPOS, 0, 0);
+			g_lightscale[1] = (float)((double)cursliderpos / 100.0);
+			SetLightDirection();
+		}
+		else if (GetDlgItem(hDlgWnd, IDC_SLIDER3) == (HWND)lp)
+		{
+			int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER3), TBM_GETPOS, 0, 0);
+			g_lightscale[2] = (float)((double)cursliderpos / 100.0);
+			SetLightDirection();
+		}
+		else if (GetDlgItem(hDlgWnd, IDC_SLIDER4) == (HWND)lp)
+		{
+			int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER4), TBM_GETPOS, 0, 0);
+			g_lightscale[3] = (float)((double)cursliderpos / 100.0);
+			SetLightDirection();
+		}
+		else if (GetDlgItem(hDlgWnd, IDC_SLIDER5) == (HWND)lp)
+		{
+			int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER5), TBM_GETPOS, 0, 0);
+			g_lightscale[4] = (float)((double)cursliderpos / 100.0);
+			SetLightDirection();
+		}
+		else if (GetDlgItem(hDlgWnd, IDC_SLIDER6) == (HWND)lp)
+		{
+			int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER6), TBM_GETPOS, 0, 0);
+			g_lightscale[5] = (float)((double)cursliderpos / 100.0);
+			SetLightDirection();
+		}
+		else if (GetDlgItem(hDlgWnd, IDC_SLIDER7) == (HWND)lp)
+		{
+			int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER7), TBM_GETPOS, 0, 0);
+			g_lightscale[6] = (float)((double)cursliderpos / 100.0);
+			SetLightDirection();
+		}
+		else if (GetDlgItem(hDlgWnd, IDC_SLIDER8) == (HWND)lp)
+		{
+			int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER8), TBM_GETPOS, 0, 0);
+			g_lightscale[7] = (float)((double)cursliderpos / 100.0);
+			SetLightDirection();
+		}
+		break;
+
+	case WM_NOTIFY:
+		{
+			LPNMHDR nmhdr = reinterpret_cast<LPNMHDR>(lp);
+			if (nmhdr->code == TRBN_THUMBPOSCHANGING) //&& (nmhdr->hwndFrom == hSlider))
+			{
+				NMTRBTHUMBPOSCHANGING* nmtrb = reinterpret_cast<NMTRBTHUMBPOSCHANGING*>(lp);
+				switch (nmtrb->nReason)
+				{
+				case TB_ENDTRACK:
+					if (GetDlgItem(hDlgWnd, IDC_SLIDER1) == nmhdr->hwndFrom)
+					{
+						int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER1), TBM_GETPOS, 0, 0);
+						g_lightscale[0] = (float)((double)cursliderpos / 100.0);
+						SetLightDirection();
+					}
+					else if (GetDlgItem(hDlgWnd, IDC_SLIDER2) == nmhdr->hwndFrom)
+					{
+						int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER2), TBM_GETPOS, 0, 0);
+						g_lightscale[1] = (float)((double)cursliderpos / 100.0);
+						SetLightDirection();
+					}
+					else if (GetDlgItem(hDlgWnd, IDC_SLIDER3) == nmhdr->hwndFrom)
+					{
+						int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER3), TBM_GETPOS, 0, 0);
+						g_lightscale[2] = (float)((double)cursliderpos / 100.0);
+						SetLightDirection();
+					}
+					else if (GetDlgItem(hDlgWnd, IDC_SLIDER4) == nmhdr->hwndFrom)
+					{
+						int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER4), TBM_GETPOS, 0, 0);
+						g_lightscale[3] = (float)((double)cursliderpos / 100.0);
+						SetLightDirection();
+					}
+					else if (GetDlgItem(hDlgWnd, IDC_SLIDER5) == nmhdr->hwndFrom)
+					{
+						int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER5), TBM_GETPOS, 0, 0);
+						g_lightscale[4] = (float)((double)cursliderpos / 100.0);
+						SetLightDirection();
+					}
+					else if (GetDlgItem(hDlgWnd, IDC_SLIDER6) == nmhdr->hwndFrom)
+					{
+						int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER6), TBM_GETPOS, 0, 0);
+						g_lightscale[5] = (float)((double)cursliderpos / 100.0);
+						SetLightDirection();
+					}
+					else if (GetDlgItem(hDlgWnd, IDC_SLIDER7) == nmhdr->hwndFrom)
+					{
+						int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER7), TBM_GETPOS, 0, 0);
+						g_lightscale[6] = (float)((double)cursliderpos / 100.0);
+						SetLightDirection();
+					}
+					else if (GetDlgItem(hDlgWnd, IDC_SLIDER8) == nmhdr->hwndFrom)
+					{
+						int cursliderpos = (int)SendMessage(GetDlgItem(hDlgWnd, IDC_SLIDER8), TBM_GETPOS, 0, 0);
+						g_lightscale[7] = (float)((double)cursliderpos / 100.0);
+						SetLightDirection();
+					}
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		break;
 	case WM_COMMAND:
 		switch (LOWORD(wp)) {
 
 		case IDC_SETLIGHT1:
-		case IDC_SETLIGHT2:
-		case IDC_SETLIGHT3:
-		case IDC_SETLIGHT4:
-		case IDC_SETLIGHT5:
-		case IDC_SETLIGHT6:
-		case IDC_SETLIGHT7:
-		case IDC_SETLIGHT8:
 		{
-			//適用ボタンはどれを押しても全適用
 			int result1 = Dlg2Lights(hDlgWnd, 0);
 			int result2 = Dlg2Lights(hDlgWnd, 1);
 			int result3 = Dlg2Lights(hDlgWnd, 2);
@@ -34258,7 +34380,7 @@ int SetLightDirection()
 			}
 
 			ChaVector3 scaleddiffuse;
-			scaleddiffuse = g_lightdiffuse[lightindex] * g_fLightScale;
+			scaleddiffuse = g_lightdiffuse[lightindex] * g_lightscale[lightindex] * g_fLightScale;
 			s_lightdiffuseforshader[activenum] = ChaVector4(scaleddiffuse.x, scaleddiffuse.y, scaleddiffuse.z, 1.0f);
 
 			activenum++;
