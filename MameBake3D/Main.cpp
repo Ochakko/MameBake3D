@@ -2112,6 +2112,8 @@ static bool s_GcloseFlag = false;
 static bool s_undoFlag = false;
 static bool s_redoFlag = false;
 static bool s_undoredoFromPlayerButton = false;
+static bool s_frogFlag = false;
+static bool s_plateFlag = false;
 static bool s_copyFlag = false;			// コピーフラグ
 static bool s_copyLW2WFlag = false;			//Limited2World ベイクフラグ
 static bool s_changelimitangleFlag = false;
@@ -2569,6 +2571,8 @@ static CDXUTControl* s_ui_physikstop = 0;
 
 static void GUIGetNextMenu(POINT ptCursor, int srcmenukind, int* dstmenukind, int* dstplateno);
 static void GUIMenuSetVisible(int srcmenukind, int srcplateno);
+static void ChangeToNextPlateMenuKind(int srcmenukind, int srcmenuno);
+static void ChangeToNextPlateMenuPlate(int srcmenukind, int srcmenuno);
 
 
 static void GUISetVisible(int srcplateno);
@@ -3204,6 +3208,7 @@ static int SetSpMenuAimBarParams();
 static int SetSpAxisParams();
 static int SetSpUndoParams();
 static int SetSpMouseCenterParams();
+static bool PickSpFrog(POINT srcpos);
 static int PickSpAxis(POINT srcpos);
 static int PickSpUndo(POINT srcpos);
 static int SetSpGUISWParams();
@@ -4346,6 +4351,8 @@ void InitApp()
 	s_undoFlag = false;
 	s_redoFlag = false;
 	s_undoredoFromPlayerButton = false;
+	s_frogFlag = false;
+	s_plateFlag = false;
 	s_copyFlag = false;			// コピーフラグ
 	s_copyLW2WFlag = false;
 	s_changelimitangleFlag = false;
@@ -22604,15 +22611,11 @@ int PickSpDispSW(POINT srcpos)
 
 
 	//ret2prev
-	int starty0 = s_spret2prev.dispcenter.y - 16;
-	int endy0 = starty0 + 32;
-	if ((srcpos.y >= starty0) && (srcpos.y <= endy0)) {
-		int startx0 = s_spret2prev.dispcenter.x - 16;
-		int endx0 = startx0 + 32;
-		if ((srcpos.x >= startx0) && (srcpos.x <= endx0)) {
-			kind = -2;
-		}
+	bool pickfrog = PickSpFrog(srcpos);
+	if (pickfrog == true) {
+		kind = -2;
 	}
+
 
 	//spguisw
 	if (kind == 0) {//カエルボタンを押していないとき
@@ -22665,15 +22668,11 @@ int PickSpRigidSW(POINT srcpos)
 
 
 	//ret2prev
-	int starty0 = s_spret2prev.dispcenter.y - 16;
-	int endy0 = starty0 + 32;
-	if ((srcpos.y >= starty0) && (srcpos.y <= endy0)) {
-		int startx0 = s_spret2prev.dispcenter.x - 16;
-		int endx0 = startx0 + 32;
-		if ((srcpos.x >= startx0) && (srcpos.x <= endx0)) {
-			kind = -2;
-		}
+	bool pickfrog = PickSpFrog(srcpos);
+	if (pickfrog == true) {
+		kind = -2;
 	}
+
 
 	//spguisw
 	if (kind == 0) {//カエルボタンを押していないとき
@@ -22731,15 +22730,11 @@ int PickSpRetargetSW(POINT srcpos)
 
 
 	//ret2prev
-	int starty0 = s_spret2prev.dispcenter.y - 16;
-	int endy0 = starty0 + 32;
-	if ((srcpos.y >= starty0) && (srcpos.y <= endy0)) {
-		int startx0 = s_spret2prev.dispcenter.x - 16;
-		int endx0 = startx0 + 32;
-		if ((srcpos.x >= startx0) && (srcpos.x <= endx0)) {
-			kind = -2;
-		}
+	bool pickfrog = PickSpFrog(srcpos);
+	if (pickfrog == true) {
+		kind = -2;
 	}
+
 
 	//spretargetsw
 	if (kind == 0) {
@@ -22932,6 +22927,20 @@ int PickSpScrapingSW(POINT srcpos)
 	return ispick;
 }
 
+bool PickSpFrog(POINT srcpos)
+{
+	int starty0 = s_spret2prev.dispcenter.y - 16;
+	int endy0 = starty0 + 32;
+	if ((srcpos.y >= starty0) && (srcpos.y <= endy0)) {
+		int startx0 = s_spret2prev.dispcenter.x - 16;
+		int endx0 = startx0 + 32;
+		if ((srcpos.x >= startx0) && (srcpos.x <= endx0)) {
+			return true;
+		}
+	}
+
+	return false;
+}
 
 int PickSpGUISW(POINT srcpos)
 {
@@ -22943,15 +22952,11 @@ int PickSpGUISW(POINT srcpos)
 
 
 	//ret2prev
-	int starty0 = s_spret2prev.dispcenter.y - 16;
-	int endy0 = starty0 + 32;
-	if ((srcpos.y >= starty0) && (srcpos.y <= endy0)) {
-		int startx0 = s_spret2prev.dispcenter.x - 16;
-		int endx0 = startx0 + 32;
-		if ((srcpos.x >= startx0) && (srcpos.x <= endx0)) {
-			kind = -2;
-		}
+	bool pickfrog = PickSpFrog(srcpos);
+	if (pickfrog == true) {
+		kind = -2;
 	}
+
 
 	//spguisw
 	if (kind == 0) {
@@ -27041,23 +27046,43 @@ int OnFrameKeyboard()
 		ZeroMemory(g_keybuf, sizeof(BYTE) * 256);
 	}
 
+
+
+	//プレートメニュー：スペースキーを押すたびにkind変更. Cキーを押し続けながらスペースキーを押すたびにplate変更.
+	if ((g_keybuf[VK_SPACE] & 0x80) && ((g_savekeybuf[VK_SPACE] & 0x80) == 0)) {
+		if (g_keybuf['C'] & 0x80) {
+			if (s_plateFlag == false) {
+				s_plateFlag = true;
+			}
+		}
+		else {
+			if (s_frogFlag == false) {
+				s_frogFlag = true;
+			}
+		}
+	}
+
+
+	//マニピュレータ：SHIFTを押している間は非表示
 	if (g_keybuf[VK_SHIFT] & 0x80) {
 		s_dispselect = false;
 	}
 	else {
 		s_dispselect = true;
 	}
-	if ((g_keybuf[VK_F9] & 0x80) && ((g_savekeybuf[VK_F9] & 0x80) == 0)) {
-		StartBt(s_model, TRUE, 0, 1);
-	}
-	if ((g_keybuf[VK_F10] & 0x80) && ((g_savekeybuf[VK_F10] & 0x80) == 0)) {
-		StartBt(s_model, TRUE, 1, 1);
-	}
-	if ((g_keybuf[' '] & 0x80) && ((g_savekeybuf[' '] & 0x80) == 0)) {
-		if (s_bpWorld && s_model) {
-			StartBt(s_model, TRUE, 2, 1);
-		}
-	}
+
+
+	//if ((g_keybuf[VK_F9] & 0x80) && ((g_savekeybuf[VK_F9] & 0x80) == 0)) {
+	//	StartBt(s_model, TRUE, 0, 1);
+	//}
+	//if ((g_keybuf[VK_F10] & 0x80) && ((g_savekeybuf[VK_F10] & 0x80) == 0)) {
+	//	StartBt(s_model, TRUE, 1, 1);
+	//}
+	//if ((g_keybuf[' '] & 0x80) && ((g_savekeybuf[' '] & 0x80) == 0)) {
+	//	if (s_bpWorld && s_model) {
+	//		StartBt(s_model, TRUE, 2, 1);
+	//	}
+	//}
 	if (g_keybuf[VK_CONTROL] & 0x80) {
 		g_controlkey = true;
 	}
@@ -27122,7 +27147,9 @@ int OnFrameKeyboard()
 	//}
 
 
-
+	//##################
+	//OnTimeLineWheel()
+	//##################
 	if (g_keybuf['A'] & 0x80) {
 		s_akeycnt++;
 	}
@@ -27136,12 +27163,12 @@ int OnFrameKeyboard()
 		s_dkeycnt = 0;
 	}
 
-	if (g_keybuf['1'] & 0x80) {//num
-		s_1keycnt++;
-	}
-	else {
-		s_1keycnt = 0;
-	}
+	//if (g_keybuf['1'] & 0x80) {//num
+	//	s_1keycnt++;
+	//}
+	//else {
+	//	s_1keycnt = 0;
+	//}
 
 
 
@@ -27150,9 +27177,9 @@ int OnFrameKeyboard()
 		s_allmodelbone = !s_allmodelbone;
 	}
 
-	if (g_controlkey && (s_1keycnt == 1)) {
-		s_dispsampleui = !s_dispsampleui;
-	}
+	//if (g_controlkey && (s_1keycnt == 1)) {
+	//	s_dispsampleui = !s_dispsampleui;
+	//}
 
 	return 0;
 }
@@ -28546,6 +28573,17 @@ int OnFrameMouseButton()
 
 int OnFrameToolWnd()
 {
+
+
+
+	if (s_frogFlag) {
+		ChangeToNextPlateMenuKind(s_platemenukind, s_platemenuno);
+		s_frogFlag = false;
+	}
+	if (s_plateFlag) {
+		ChangeToNextPlateMenuPlate(s_platemenukind, s_platemenuno);
+		s_plateFlag = false;
+	}
 
 
 	//操作対象ボーンはs_selbonedlg::GetCpVec()にて取得。
@@ -30805,32 +30843,35 @@ int CreateTimelineWnd()
 		s_timelineWnd->setKeyboardEventListener([](const KeyboardEvent& e) {
 			if (s_model) {
 				if (e.ctrlKey && !e.repeat && e.onDown) {
-					switch (e.keyCode) {
-					case 'C':
-						s_copyFlag = true;
-						break;
-					case 'B':
-						s_symcopyFlag = true;
-						break;
-					case 'X':
-						s_cutFlag = true;
-						break;
-					case 'V':
-						s_pasteFlag = true;
-						break;
-					case 'P':
-						//g_previewFlag = 1;
-						s_calclimitedwmState = 1;
-						break;
-					case 'S':
-						g_previewFlag = 0;
-						break;
-					case 'D':
-						s_deleteFlag = true;
-						break;
-					default:
-						break;
-					}
+					//switch (e.keyCode) {
+					//###############################################################################################################
+					//2023/08/18 : Ctrl + C, Vのコピーペーストは　ダイアログのEditCtrlとのバッティング対策が出来るまでコメントアウト
+					//###############################################################################################################
+					//case 'C':
+					//	s_copyFlag = true;
+					//	break;
+					//case 'B':
+					//	s_symcopyFlag = true;
+					//	break;
+					//case 'X':
+					//	s_cutFlag = true;
+					//	break;
+					//case 'V':
+					//	s_pasteFlag = true;
+					//	break;
+					//case 'P':
+					//	//g_previewFlag = 1;
+					//	s_calclimitedwmState = 1;
+					//	break;
+					//case 'S':
+					//	g_previewFlag = 0;
+					//	break;
+					//case 'D':
+					//	s_deleteFlag = true;
+					//	break;
+					//default:
+					//	break;
+					//}
 				}
 			}
 		});
@@ -37988,6 +38029,115 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 		_ASSERT(0);
 		return;
 	}
+
+}
+
+void ChangeToNextPlateMenuKind(int srcmenukind, int srcmenuno)
+{
+	//###############################################################
+	//カエルボタンが押された場合　または　スペースキーが押された場合
+	//###############################################################
+
+	if (!s_model) {
+		return;
+	}
+
+
+	int nextmenukind = -1;
+	int nextplateno = 0;
+
+	if ((srcmenukind >= 0) && (srcmenukind < SPPLATEMENUKINDNUM)) {
+		if (srcmenukind == SPPLATEMENUKIND_GUI) {
+			nextmenukind = SPPLATEMENUKIND_DISP;
+			nextplateno = 1;//最初のプレート
+		}
+		else if (srcmenukind == SPPLATEMENUKIND_DISP) {
+			nextmenukind = SPPLATEMENUKIND_RIGID;
+			nextplateno = 1;//最初のプレート
+		}
+		else if (srcmenukind == SPPLATEMENUKIND_RIGID) {
+			nextmenukind = SPPLATEMENUKIND_RETARGET;
+			nextplateno = 1;//最初のプレート
+		}
+		else if (srcmenukind == SPPLATEMENUKIND_RETARGET) {
+			nextmenukind = SPPLATEMENUKIND_GUI;
+			nextplateno = 1;//最初のプレート
+		}
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	if ((nextmenukind >= 0) && (nextplateno != 0)) {
+		s_platemenukind = nextmenukind;
+		s_platemenuno = nextplateno;
+		GUIMenuSetVisible(s_platemenukind, nextplateno);
+	}
+
+}
+
+void ChangeToNextPlateMenuPlate(int srcmenukind, int srcmenuno)
+{
+	//Cキーを押し続けながらスペースキーが押された場合
+
+	if (!s_model) {
+		return;
+	}
+
+
+
+
+
+	//########################################################
+	//nextplateno は　実際の値に+1したもの(最初のプレートは1)
+	//########################################################
+	int nextmenukind = -1;
+	int nextplateno = 0;
+
+	int currentkind = srcmenukind;
+	int currentplate = srcmenuno;
+
+	if ((currentkind >= 0) && (currentkind < SPPLATEMENUKINDNUM)) {
+		if (currentkind == SPPLATEMENUKIND_GUI) {
+			nextmenukind = SPPLATEMENUKIND_GUI;
+			nextplateno = currentplate + 1;//次のプレート
+			if (nextplateno > (SPGUISWNUM + 1)) {//このkindだけplate == 1でplacefolderwnd表示するので１大きいところまで可
+				nextplateno = 2;//最初のプレート
+			}
+		}
+		else if (currentkind == SPPLATEMENUKIND_DISP) {
+			nextmenukind = SPPLATEMENUKIND_DISP;
+			nextplateno = currentplate + 1;//次のプレート
+			if (nextplateno > SPDISPSWNUM) {
+				nextplateno = 1;//最初のプレート
+			}
+		}
+		else if (currentkind == SPPLATEMENUKIND_RIGID) {
+			nextmenukind = SPPLATEMENUKIND_RIGID;
+			nextplateno = currentplate + 1;//次のプレート
+			if (nextplateno > SPRIGIDSWNUM) {
+				nextplateno = 1;//最初のプレート
+			}
+		}
+		else if (currentkind == SPPLATEMENUKIND_RETARGET) {
+			nextmenukind = SPPLATEMENUKIND_RETARGET;
+			nextplateno = currentplate + 1;//次のプレート
+			if (nextplateno > SPRETARGETSWNUM) {
+				nextplateno = 1;//最初のプレート
+			}
+		}
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	if ((nextmenukind >= 0) && (nextplateno != 0)) {
+		s_platemenukind = nextmenukind;
+		s_platemenuno = nextplateno;
+		GUIMenuSetVisible(s_platemenukind, nextplateno);
+	}
+
+
 
 }
 
@@ -47549,6 +47699,16 @@ int DispToolTip()
 			}
 		}
 
+	}
+
+	if (doneflag == false) {
+		//ret2prev
+		bool pickfrog = PickSpFrog(ptCursor);
+		if (pickfrog == true) {
+			doneflag = true;
+			wcscpy_s(sz512, 512, L"Click or SpaceKey and then Change Plate Menu");
+			CreateToolTip(ptCursor, sz512);
+		}
 	}
 
 	
