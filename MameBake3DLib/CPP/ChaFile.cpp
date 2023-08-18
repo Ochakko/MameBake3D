@@ -27,6 +27,8 @@
 #include <RigFile.h>
 #include <LIMFIle.h>
 
+#include "..\\..\\MameBake3D\\FrameCopyDlg.h"
+
 #define DBGH
 #include <dbg.h>
 
@@ -69,7 +71,7 @@ int CChaFile::DestroyObjs()
 }
 
 int CChaFile::WriteChaFile(bool limitdegflag, BPWorld* srcbpw, WCHAR* projdir, WCHAR* projname, 
-	std::vector<MODELELEM>& srcmodelindex, float srcmotspeed )
+	std::vector<MODELELEM>& srcmodelindex, float srcmotspeed, map<CModel*, CFrameCopyDlg*> srcselbonedlgmap)
 {
 	m_modelindex = srcmodelindex;
 	m_mode = XMLIO_WRITE;
@@ -126,7 +128,7 @@ int CChaFile::WriteChaFile(bool limitdegflag, BPWorld* srcbpw, WCHAR* projdir, W
 	int modelcnt;
 	for( modelcnt = 0; modelcnt < modelnum; modelcnt++ ){
 		MODELELEM curme = m_modelindex[ modelcnt ];
-		CallF(WriteChara(limitdegflag, &curme, projname), return 1 );
+		CallF(WriteChara(limitdegflag, &curme, projname, srcselbonedlgmap), return 1 );
 	}
 
 	CallF( Write2File( "</CHA>\r\n" ), return 1 );
@@ -153,12 +155,22 @@ int CChaFile::WriteFileInfo()
 	return 0;
 }
 
-int CChaFile::WriteChara(bool limitdegflag, MODELELEM* srcme, WCHAR* projname)
+int CChaFile::WriteChara(bool limitdegflag, MODELELEM* srcme, WCHAR* projname, map<CModel*, CFrameCopyDlg*> srcselbonedlgmap)
 {
+	if (!srcme || !projname) {
+		_ASSERT(0);
+		return 1;
+	}
+
 	char filename[MAX_PATH] = {0};
 	char modelfolder[MAX_PATH] = {0};
 
 	CModel* curmodel = srcme->modelptr;
+	if (!curmodel) {
+		_ASSERT(0);
+		return 1;
+	}
+
 
 	WideCharToMultiByte( CP_ACP, 0, curmodel->GetFileName(), -1, filename, MAX_PATH, NULL, NULL );
 	WideCharToMultiByte( CP_ACP, 0, curmodel->GetModelFolder(), -1, modelfolder, MAX_PATH, NULL, NULL );
@@ -262,6 +274,18 @@ int CChaFile::WriteChara(bool limitdegflag, MODELELEM* srcme, WCHAR* projname)
 		return 1;
 	}
 	
+	map<CModel*, CFrameCopyDlg*>::iterator itrselbonedlg;
+	itrselbonedlg = srcselbonedlgmap.find(curmodel);
+	if (itrselbonedlg != srcselbonedlgmap.end()) {
+		CFrameCopyDlg* framecopydlg = itrselbonedlg->second;
+		if (framecopydlg) {
+			WCHAR tboname[MAX_PATH] = { 0L };
+			swprintf_s(tboname, MAX_PATH, L"%s\\%s.tbo", charafolder, curmodel->GetFileName());
+			int result = framecopydlg->SaveWithProjectFile(tboname);
+			_ASSERT(result == 0);
+		}
+	}
+
 
 	if (curmodel->GetOldAxisFlagAtLoading() == 0){
 		WCHAR lmtname[MAX_PATH] = { 0L };

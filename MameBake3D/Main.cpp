@@ -12605,6 +12605,10 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 	modelcnt++;
 
 
+	WCHAR tbofilename[MAX_PATH] = { 0L };
+	swprintf_s(tbofilename, MAX_PATH, L"%s.tbo", g_tmpmqopath);
+
+
 	if (!g_texbank) {
 		g_texbank = new CTexBank(s_pdev);
 		if (!g_texbank) {
@@ -12728,6 +12732,14 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
+	}
+
+
+	//FrameCopyDlgはOnModelMenu()にてまだ無いときに作成される
+	//tboファイルのLoadはOnModelMenu()よりも後で
+	CFrameCopyDlg* curcpdlg = GetCurrentFrameCopyDlg();
+	if (curcpdlg) {
+		bool result = curcpdlg->LoadWithProjectFile(tbofilename);
 	}
 
 
@@ -20883,7 +20895,7 @@ int SaveProject()
 
 	CChaFile chafile;
 	int result = chafile.WriteChaFile(g_bakelimiteulonsave, s_bpWorld, s_projectdir, s_projectname,
-		s_modelindex, (float)g_dspeed);
+		s_modelindex, (float)g_dspeed, s_selbonedlgmap);
 	if (result) {
 		::MessageBox(s_mainhwnd, L"保存に失敗しました。", L"Error", MB_OK);
 		if (oldcursor) {
@@ -47828,7 +47840,7 @@ int DispToolTip()
 		bool pickfrog = PickSpFrog(ptCursor);
 		if (pickfrog == true) {
 			doneflag = true;
-			wcscpy_s(sz512, 512, L"Click or SpaceKey and then Change Plate Menu");
+			wcscpy_s(sz512, 512, L"SpaceKey:Change MenuKind. C+SpaceKey:Change Plate.");
 			CreateToolTip(ptCursor, sz512);
 		}
 	}

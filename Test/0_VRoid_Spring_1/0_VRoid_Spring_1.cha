@@ -2,7 +2,7 @@
 <CHA>
   <FileInfo>
     <kind>ChatCats3D_ProjectFile</kind>
-    <version>1001</version>
+    <version>1004</version>
     <type>0</type>
   </FileInfo>
   <ProjectInfo>
@@ -16,6 +16,16 @@
     <ModelPositionX>0.000000</ModelPositionX>
     <ModelPositionY>0.000000</ModelPositionY>
     <ModelPositionZ>0.000000</ModelPositionZ>
+    <ModelRotationX>0.000000</ModelRotationX>
+    <ModelRotationY>0.000000</ModelRotationY>
+    <ModelRotationZ>0.000000</ModelRotationZ>
+    <DiffuseDispRate>1.000000</DiffuseDispRate>
+    <SpecularDispRate>1.000000</SpecularDispRate>
+    <EmissiveDispRate>1.000000</EmissiveDispRate>
+    <AmbientDispRate>1.000000</AmbientDispRate>
+    <CustomIKStopName>1</CustomIKStopName>
+    <IKStopName>Shoulder</IKStopName>
+    <IKStopName>UpperLeg</IKStopName>
     <RGDMORPH>0</RGDMORPH>
     <CURRE>0</CURRE>
     <RGD>0</RGD>

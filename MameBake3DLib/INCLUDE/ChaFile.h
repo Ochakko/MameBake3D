@@ -12,6 +12,7 @@
 
 class CModel;
 class BPWorld;
+class CFrameCopyDlg;
 
 class CChaFile : public CXMLIO
 {
@@ -20,7 +21,7 @@ public:
 	virtual ~CChaFile();
 
 	int WriteChaFile(bool limitdegflag, BPWorld* srcbpw, WCHAR* projdir, WCHAR* projname, 
-		std::vector<MODELELEM>& srcmodelindex, float srcmotspeed );
+		std::vector<MODELELEM>& srcmodelindex, float srcmotspeed, std::map<CModel*, CFrameCopyDlg*> srcselbonedlgmap);
 	int LoadChaFile(bool limitdegflag, WCHAR* strpath, 
 		CModel* (*srcfbxfunc)( bool callfromcha, bool dorefreshtl, int skipdefref, int inittimelineflag, std::vector<std::string> ikstopname ),
 		int (*srcReffunc)(), int (*srcImpFunc)(), int (*srcGcoFunc)(),
@@ -33,7 +34,7 @@ private:
 	virtual int DestroyObjs();
 
 	int WriteFileInfo();
-	int WriteChara(bool limitdegflag, MODELELEM* srcme, WCHAR* projname);
+	int WriteChara(bool limitdegflag, MODELELEM* srcme, WCHAR* projname, std::map<CModel*, CFrameCopyDlg*> srcselbonedlgmap);
 
 	//int CheckFileVersion( XMLIOBUF* xmliobuf );
 	int ReadProjectInfo( XMLIOBUF* xmliobuf, int* charanumptr );

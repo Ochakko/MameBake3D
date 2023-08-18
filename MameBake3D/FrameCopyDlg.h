@@ -29,8 +29,11 @@ public:
 	CFrameCopyDlg();
 	~CFrameCopyDlg();
 
-	int SetModel( CModel* srcmodel );
+	int SetModel(CModel* srcmodel);
 	int ExecuteOnOK();//OnOK
+
+	int SaveWithProjectFile(WCHAR* srcfilename);
+	bool LoadWithProjectFile(WCHAR* srcfilename);
 
 	enum { IDD = IDD_FRAMECOPYDLG };
 
@@ -83,7 +86,8 @@ END_MSG_MAP()
 private:
 	int InitParams();
 	int DestroyObjs();
-	int SetupDlg( CModel* srcmodel );
+	int SetupDlg(CModel* srcmodel);
+
 
 	int FillTree();
 	void AddBoneToTree( CBone* srcbone, int addbroflag, int addtolast );
@@ -96,8 +100,12 @@ private:
 	int CreateCombo();
 
 	int WriteTBOFile();
+	int WriteTBOFile(WCHAR* srcfilename);
 	bool ValidateTBOFile(char* dstTBOheader, char* srcbuf, DWORD bufleng);
 	bool LoadTBOFile();
+	bool LoadTBOFile(WCHAR* srcfilename);
+
+
 
 public:
 	int ParamsToDlg();
@@ -124,6 +132,7 @@ private:
 	int m_samemodelflag;
 	bool m_inittimerflag;
 	int m_timerid;
+	bool m_tboloadedflag;
 
 	WCHAR m_tmpmqopath[MAX_PATH];
 
