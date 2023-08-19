@@ -3813,7 +3813,7 @@ INT WINAPI wWinMain(
 	CreateMaterialRateWnd();
 	CreateModelWorldMatWnd();
 
-	CreateCopyHistoryDlg();
+	//CreateCopyHistoryDlg();//s_modelが出来てから呼ぶ　OnModelMenu()に移動
 
 	//CallF( InitializeSdkObjects(), return 1 );
 
@@ -14725,12 +14725,25 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 		if (!curcpdlg) {
 			_ASSERT(0);
 			s_underselectmodel = false;
-			return 0;//!!!!!!!!!
+			return 1;//!!!!!!!!!
 		}
 		s_selbonedlgmap[s_model] = curcpdlg;
 		curcpdlg->SetModel(s_model);
 	}
 
+
+	{
+		if (s_copyhistorydlg.GetCreatedFlag() == false) {
+			int result = CreateCopyHistoryDlg();
+			if (result != 0) {
+				_ASSERT(0);
+				return 1;
+			}
+		}
+			
+		GetCPTFileName(s_cptfilename);
+		s_copyhistorydlg.SetNames(s_model, s_cptfilename);
+	}
 
 
 	if (s_model) {
@@ -28918,9 +28931,8 @@ int OnFrameToolWnd()
 		GUIMenuSetVisible(-1, -1);
 
 		GetCPTFileName(s_cptfilename);
-
+		s_copyhistorydlg.SetNames(s_model, s_cptfilename);
 		s_copyhistorydlg.ShowWindow(SW_SHOW);
-		s_copyhistorydlg.SetNames(s_cptfilename);
 
 		s_selCopyHisotryFlag = false;
 	}
@@ -28984,7 +28996,7 @@ int OnFrameToolWnd()
 				}
 				if (s_copyhistorydlg.GetCreatedFlag() == true) {
 					GetCPTFileName(s_cptfilename);
-					s_copyhistorydlg.SetNames(s_cptfilename);
+					s_copyhistorydlg.SetNames(s_model, s_cptfilename);
 				}
 			}
 		}
@@ -29035,7 +29047,7 @@ int OnFrameToolWnd()
 				}
 				if (s_copyhistorydlg.GetCreatedFlag() == true) {
 					GetCPTFileName(s_cptfilename);
-					s_copyhistorydlg.SetNames(s_cptfilename);
+					s_copyhistorydlg.SetNames(s_model, s_cptfilename);
 				}
 			}
 		}
@@ -29369,10 +29381,9 @@ int CreateCopyHistoryDlg()
 
 	s_copyhistorydlg.ShowWindow(SW_HIDE);
 
-
+	s_copyhistorydlg.ParamsToDlg(s_model);
 	GetCPTFileName(s_cptfilename);
-	s_copyhistorydlg.SetNames(s_cptfilename);
-
+	s_copyhistorydlg.SetNames(s_model, s_cptfilename);
 
 	return 0;
 }
@@ -46349,6 +46360,13 @@ bool LoadCPTFile()
 		return false;
 	}
 
+	if (s_copyhistorydlg.GetCreatedFlag() == false) {
+		int result = CreateCopyHistoryDlg();
+		if (result != 0) {
+			_ASSERT(0);
+			return false;
+		}
+	}
 
 	s_pastemotvec.clear();
 
@@ -46362,7 +46380,7 @@ bool LoadCPTFile()
 	}
 
 	WCHAR infilename[MAX_PATH] = { 0L };
-	int result = s_copyhistorydlg.GetSelectedFileName(infilename);
+	int result = s_copyhistorydlg.GetSelectedFileName(s_model, infilename);
 	infilename[MAX_PATH - 1] = 0L;
 	if (result || (infilename[0] == 0L)) {
 		//_ASSERT(0);

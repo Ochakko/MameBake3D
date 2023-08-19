@@ -1,4 +1,4 @@
-// InfluenceDlg.h : CCopyHistoryDlg ÇÃêÈåæ
+Ôªø// InfluenceDlg.h : CCopyHistoryDlg „ÅÆÂÆ£Ë®Ä
 
 #ifndef __CCopyHistoryDlg_H_
 #define __CCopyHistoryDlg_H_
@@ -10,7 +10,7 @@
 #include <atlbase.h>
 #include <atlhost.h>
 
-#include "resource.h"       // ÉÅÉCÉì ÉVÉìÉ{Éã
+#include "resource.h"       // „É°„Ç§„É≥ „Ç∑„É≥„Éú„É´
 
 #include <vector>
 #include <string>
@@ -33,13 +33,14 @@ public:
 
 	enum { IDD = IDD_COPYHISTORYDLG };
 
-	int SetNames(std::vector<HISTORYELEM>& copyhistory);
-	int GetSelectedFileName(WCHAR* dstfilename);
+	int SetNames(CModel* srcmodel, std::vector<HISTORYELEM>& copyhistory);
+	int GetSelectedFileName(CModel* srcmodel, WCHAR* dstfilename);
 
 	bool GetCreatedFlag()
 	{
 		return m_createdflag;
 	};
+	int ParamsToDlg(CModel* srcmodel);
 
 private:
 
@@ -75,7 +76,7 @@ BEGIN_MSG_MAP(CCopyHistoryDlg)
 	COMMAND_ID_HANDLER(IDC_PREVPAGE, OnPrevPage)
 	COMMAND_ID_HANDLER(IDC_NEXTPAGE, OnNextPage)
 END_MSG_MAP()
-// ÉnÉìÉhÉâÇÃÉvÉçÉgÉ^ÉCÉv:
+// „Éè„É≥„Éâ„É©„ÅÆ„Éó„É≠„Éà„Çø„Ç§„Éó:
 //  LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 //  LRESULT CommandHandler(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 //  LRESULT NotifyHandler(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
@@ -119,7 +120,6 @@ END_MSG_MAP()
 
 	void InitParams();
 	int DestroyObjs();
-	int ParamsToDlg();
 
 	LRESULT OnDelete(size_t delid);
 	LRESULT OnRadio(size_t radioid);
@@ -144,9 +144,13 @@ private:
 	bool m_createdflag;
 	CWindow m_dlg_wnd;
 
+	CModel* m_model;
+
 	size_t m_namenum;
 	bool m_ischeckedmostrecent;
-	WCHAR m_selectname[MAX_PATH];
+	//WCHAR m_selectname[MAX_PATH];
+	std::map<CModel*, std::wstring> m_selectnamemap;
+
 
 	int m_pagenum;
 	int m_currentpage;

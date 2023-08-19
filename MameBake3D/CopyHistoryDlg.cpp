@@ -1,8 +1,9 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "CopyHistoryDlg.h"
 #include "GetDlgParams.h"
 #include "SetDlgPos.h"
 
+#include <Model.h>
 
 #include <GlobalVar.h>
 
@@ -35,8 +36,11 @@ void CCopyHistoryDlg::InitParams()
 {
 	m_createdflag = false;
 
+	m_model = 0;
+
 	m_ischeckedmostrecent = true;
-	ZeroMemory(m_selectname, sizeof(WCHAR) * MAX_PATH);
+	//ZeroMemory(m_selectname, sizeof(WCHAR) * MAX_PATH);
+	m_selectnamemap.clear();
 
 	m_pagenum = 0;
 	m_currentpage = 0;
@@ -164,7 +168,7 @@ void CCopyHistoryDlg::InitParams()
 //	_ASSERT( !ret );
 //
 //
-//	return 1;  // ƒVƒXƒeƒ€‚ÉƒtƒH[ƒJƒX‚ğİ’è‚³‚¹‚Ü‚·
+//	return 1;  // ã‚·ã‚¹ãƒ†ãƒ ã«ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ã‚’è¨­å®šã•ã›ã¾ã™
 //}
 
 LRESULT CCopyHistoryDlg::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
@@ -174,7 +178,7 @@ LRESULT CCopyHistoryDlg::OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 	InitCommonControls();
 	
 
-	//‚±‚Ìƒ_ƒCƒAƒƒO‚Í@‰EƒyƒCƒ“–„‚ß‚İ‚È‚Ì‚Å@ƒfƒXƒNƒgƒbƒv’†‰›‚É‚Í“®‚©‚³‚È‚¢
+	//ã“ã®ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã¯ã€€å³ãƒšã‚¤ãƒ³åŸ‹ã‚è¾¼ã¿ãªã®ã§ã€€ãƒ‡ã‚¹ã‚¯ãƒˆãƒƒãƒ—ä¸­å¤®ã«ã¯å‹•ã‹ã•ãªã„
 	//SetDlgPosDesktopCenter(m_hWnd, HWND_TOPMOST);
 	//RECT dlgrect;
 	//::GetWindowRect(m_hWnd, &dlgrect);
@@ -197,7 +201,7 @@ LRESULT CCopyHistoryDlg::OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 
 LRESULT CCopyHistoryDlg::OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
-	//size_t selectedno = 0;//ƒ`ƒFƒbƒN‚³‚ê‚Ä‚¢‚È‚¢ê‡(‚ ‚è“¾‚È‚¢‚ª)Aˆê”ÔÅ‰
+	//size_t selectedno = 0;//ãƒã‚§ãƒƒã‚¯ã•ã‚Œã¦ã„ãªã„å ´åˆ(ã‚ã‚Šå¾—ãªã„ãŒ)ã€ä¸€ç•ªæœ€åˆ
 	//size_t nameno;
 	//for (nameno = 0; nameno < m_namenum; nameno++) {
 	//	if (m_dlg_wnd.IsDlgButtonChecked(m_ctrlid[nameno]) && (m_copyhistory[m_startno + nameno].hascpinfo == 1)) {
@@ -231,11 +235,19 @@ LRESULT CCopyHistoryDlg::OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 	return 0;
 }
 
-int CCopyHistoryDlg::ParamsToDlg()
+int CCopyHistoryDlg::ParamsToDlg(CModel* srcmodel)
 {
 	//m_dlg_wnd.CheckRadioButton(IDC_RADIO1, IDC_RADIO5, (g_ClearColorIndex + IDC_RADIO1));
 
 	m_dlg_wnd = m_hWnd;
+
+	if (!srcmodel) {
+		_ASSERT(0);
+		return 1;
+	}
+	WCHAR currentname[MAX_PATH] = { 0L };
+	int result = GetSelectedFileName(srcmodel, currentname);
+
 
 	bool ischeck = false;
 	size_t nameno;
@@ -282,7 +294,7 @@ int CCopyHistoryDlg::ParamsToDlg()
 			m_dlg_wnd.SetDlgItemTextW(m_commentid[nameno], m_copyhistory[m_startno + nameno].cpinfo.comment);
 
 
-			if ((m_selectname[0] != 0L) && (wcscmp(m_selectname, m_copyhistory[m_startno + nameno].wfilename) == 0)) {
+			if ((currentname[0] != 0L) && (wcscmp(currentname, m_copyhistory[m_startno + nameno].wfilename) == 0)) {
 				m_dlg_wnd.CheckRadioButton(IDC_RADIO1, IDC_RADIO10, m_ctrlid[nameno]);
 				ischeck = true;
 			}
@@ -343,22 +355,22 @@ int CCopyHistoryDlg::ParamsToDlg()
 		m_strcombo_motionname.clear();
 		m_strcombo_bvhtype.clear();
 
-		size_t srcnum = m_savecopyhistory.size();//ŒŸõŒó•â‚Ísavecopyhistory‚©‚çæ“¾‚·‚é
+		size_t srcnum = m_savecopyhistory.size();//æ¤œç´¢å€™è£œã¯savecopyhistoryã‹ã‚‰å–å¾—ã™ã‚‹
 		size_t srcno;
 		for (srcno = 0; srcno < srcnum; srcno++) {
 			if (m_savecopyhistory[srcno].hascpinfo == 1) {
-				wstring curfbxname = m_savecopyhistory[srcno].cpinfo.fbxname;
-				bool foundfbxname = false;
-				std::vector<std::wstring>::iterator itrfbxname;
-				for (itrfbxname = m_strcombo_fbxname.begin(); itrfbxname != m_strcombo_fbxname.end(); itrfbxname++) {
-					if (curfbxname == *itrfbxname) {
-						foundfbxname = true;
-						break;
-					}
-				}
-				if (foundfbxname == false) {
-					m_strcombo_fbxname.push_back(curfbxname);
-				}
+				//wstring curfbxname = m_savecopyhistory[srcno].cpinfo.fbxname;
+				//bool foundfbxname = false;
+				//std::vector<std::wstring>::iterator itrfbxname;
+				//for (itrfbxname = m_strcombo_fbxname.begin(); itrfbxname != m_strcombo_fbxname.end(); itrfbxname++) {
+				//	if (curfbxname == *itrfbxname) {
+				//		foundfbxname = true;
+				//		break;
+				//	}
+				//}
+				//if (foundfbxname == false) {
+				//	m_strcombo_fbxname.push_back(curfbxname);
+				//}
 
 
 				wstring curmotionname = m_savecopyhistory[srcno].cpinfo.motionname;
@@ -391,43 +403,46 @@ int CCopyHistoryDlg::ParamsToDlg()
 		}
 
 
-		//2022/11/10
-		//m_selectname@‘ã“ü‰Šú‰»
-		//—š—ğƒEƒCƒ“ƒhƒE•\¦’¼Œã‚É@ÅV‚ÌƒRƒs[‚ğ“K—pƒ`ƒFƒbƒN‚ğŠO‚µ‚½‚Æ‚«@m_selectname‚É‰½‚à“ü‚Á‚Ä‚¢‚È‚¢‚Æƒy[ƒXƒg‚³‚ê‚È‚¢Œ‚ğC³
-		if (!m_copyhistory.empty()) {//2023/07/22
-			if (m_copyhistory[m_startno + 0].wfilename[0] != 0L) {
-				m_selectname[MAX_PATH - 1] = 0L;
-				wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[m_startno + 0].wfilename);
-				m_selectname[MAX_PATH - 1] = 0L;
-			}
-		}
-		else {
-			m_selectname[0] = 0L;
-		}
+		////2022/11/10
+		////m_selectnameã€€ä»£å…¥åˆæœŸåŒ–
+		////å±¥æ­´ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦è¡¨ç¤ºç›´å¾Œã«ã€€æœ€æ–°ã®ã‚³ãƒ”ãƒ¼ã‚’é©ç”¨ãƒã‚§ãƒƒã‚¯ã‚’å¤–ã—ãŸã¨ãã€€m_selectnameã«ä½•ã‚‚å…¥ã£ã¦ã„ãªã„ã¨ãƒšãƒ¼ã‚¹ãƒˆã•ã‚Œãªã„ä»¶ã‚’ä¿®æ­£
+		//if (!m_copyhistory.empty()) {//2023/07/22
+		//	if (m_copyhistory[m_startno + 0].wfilename[0] != 0L) {
+		//		m_selectname[MAX_PATH - 1] = 0L;
+		//		wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[m_startno + 0].wfilename);
+		//		m_selectname[MAX_PATH - 1] = 0L;
+		//	}
+		//}
+		//else {
+		//	m_selectname[0] = 0L;
+		//}
 
 
 		//###############
-		//ŒŸõ—pƒ{ƒ^ƒ“
+		//æ¤œç´¢ç”¨ãƒœã‚¿ãƒ³
 		//###############
 
-		CWindow combofbxnamewnd = m_dlg_wnd.GetDlgItem(IDC_COMBO1);
-		if (combofbxnamewnd.IsWindow()) {
-			combofbxnamewnd.SendMessage(CB_RESETCONTENT, 0, 0);
-			combofbxnamewnd.SendMessage(CB_ADDSTRING, 0, (LPARAM)L"----");
-			combofbxnamewnd.SendMessage(CB_SETITEMDATA, 0, (LPARAM)0);
+		//################################################
+		//combofbxnamewndã«ã¤ã„ã¦ã¯ã€€SetNamesã§åˆæœŸåŒ–ã™ã‚‹
+		//################################################
+		//CWindow combofbxnamewnd = m_dlg_wnd.GetDlgItem(IDC_COMBO1);
+		//if (combofbxnamewnd.IsWindow()) {
+		//	combofbxnamewnd.SendMessage(CB_RESETCONTENT, 0, 0);
+		//	combofbxnamewnd.SendMessage(CB_ADDSTRING, 0, (LPARAM)L"----");
+		//	combofbxnamewnd.SendMessage(CB_SETITEMDATA, 0, (LPARAM)0);
 
-			size_t fbxnamenum = m_strcombo_fbxname.size();
-			size_t fbxnameno;
-			for (fbxnameno = 0; fbxnameno < fbxnamenum; fbxnameno++) {
-				WCHAR tempchar[MAX_PATH];
-				ZeroMemory(tempchar, sizeof(WCHAR) * MAX_PATH);
-				wcscpy_s(tempchar, MAX_PATH, m_strcombo_fbxname[fbxnameno].c_str());
+		//	size_t fbxnamenum = m_strcombo_fbxname.size();
+		//	size_t fbxnameno;
+		//	for (fbxnameno = 0; fbxnameno < fbxnamenum; fbxnameno++) {
+		//		WCHAR tempchar[MAX_PATH];
+		//		ZeroMemory(tempchar, sizeof(WCHAR) * MAX_PATH);
+		//		wcscpy_s(tempchar, MAX_PATH, m_strcombo_fbxname[fbxnameno].c_str());
 
-				combofbxnamewnd.SendMessage(CB_ADDSTRING, 0, (LPARAM)tempchar);
-				combofbxnamewnd.SendMessage(CB_SETITEMDATA, (fbxnameno + 1), (LPARAM)(fbxnameno + 1));
-			}
-			combofbxnamewnd.SendMessage(CB_SETCURSEL, 0, 0);
-		}
+		//		combofbxnamewnd.SendMessage(CB_ADDSTRING, 0, (LPARAM)tempchar);
+		//		combofbxnamewnd.SendMessage(CB_SETITEMDATA, (fbxnameno + 1), (LPARAM)(fbxnameno + 1));
+		//	}
+		//	combofbxnamewnd.SendMessage(CB_SETCURSEL, 0, 0);
+		//}
 
 		CWindow combomotionnamewnd = m_dlg_wnd.GetDlgItem(IDC_COMBO2);
 		if (combomotionnamewnd.IsWindow()) {
@@ -617,16 +632,52 @@ LRESULT CCopyHistoryDlg::OnCheckMostRecent(WORD wNotifyCode, WORD wID, HWND hWnd
 }
 
 
-int CCopyHistoryDlg::SetNames(std::vector<HISTORYELEM>& copyhistory)
+int CCopyHistoryDlg::SetNames(CModel* srcmodel, std::vector<HISTORYELEM>& copyhistory)
 {
+	if (!srcmodel) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	m_model = srcmodel;
 	m_copyhistory = copyhistory;
 	m_savecopyhistory = copyhistory;
 
 
+	WCHAR modelname[MAX_PATH] = { 0L };
+	const WCHAR* pname = srcmodel->GetFileName();
+	if (!pname) {
+		_ASSERT(0);
+		return 1;
+	}
+	wcscpy_s(modelname, MAX_PATH, pname);
+
+
 	{
+		//srcmodelã§æ¤œç´¢ã—ã¦ã€€çµæœã‚’m_copyhisotryã«ã‚»ãƒƒãƒˆ
+		//search fbxname
+		std::vector<HISTORYELEM> copyhistory1 = m_savecopyhistory;
+		std::vector<HISTORYELEM> copyhistory2;
+		copyhistory2.clear();
+		{
+			size_t namenum1 = copyhistory1.size();
+			int nameno1;
+			for (nameno1 = 0; nameno1 < namenum1; nameno1++) {
+				if (copyhistory1[nameno1].hascpinfo == 1) {
+					if (wcscmp(copyhistory1[nameno1].cpinfo.fbxname, modelname) == 0) {
+						copyhistory2.push_back(copyhistory1[nameno1]);
+					}
+				}
+			}
+		}
+
+
+		m_copyhistory = copyhistory2;
+
+
 		int numhistory2 = (int)m_copyhistory.size();
-		int fullpagenum = numhistory2 / COPYNUMFORDISP;//–‚½‚³‚ê‚Ä‚¢‚éƒy[ƒW‚Ì”
-		m_pagenum = fullpagenum;//’[”‚İ‚Ìƒy[ƒW”
+		int fullpagenum = numhistory2 / COPYNUMFORDISP;//æº€ãŸã•ã‚Œã¦ã„ã‚‹ãƒšãƒ¼ã‚¸ã®æ•°
+		m_pagenum = fullpagenum;//ç«¯æ•°è¾¼ã¿ã®ãƒšãƒ¼ã‚¸æ•°
 		if ((numhistory2 - fullpagenum * COPYNUMFORDISP) > 0) {
 			m_pagenum++;
 		}
@@ -637,8 +688,107 @@ int CCopyHistoryDlg::SetNames(std::vector<HISTORYELEM>& copyhistory)
 		m_namenum = min(restnum, COPYNUMFORDISP);//!!!!!!!!!!!!!!!!!!!
 	}
 
-	
-	ParamsToDlg();//•\¦‚³‚ê‚Ä‚¢‚È‚¢‚Æ‚«‚É‚Ím_hWnd‚ªNULL‚Ìê‡‚ª‚ ‚é‚Ì‚ÅShowWindow‚ÌŒã‚ÅSetNames‚ğŒÄ‚Ô
+
+	{
+		size_t srcnum = m_savecopyhistory.size();//æ¤œç´¢å€™è£œã¯savecopyhistoryã‹ã‚‰å–å¾—ã™ã‚‹
+		size_t srcno;
+		for (srcno = 0; srcno < srcnum; srcno++) {
+			if (m_savecopyhistory[srcno].hascpinfo == 1) {
+
+				wstring curfbxname = m_savecopyhistory[srcno].cpinfo.fbxname;
+				bool foundfbxname = false;
+				std::vector<std::wstring>::iterator itrfbxname;
+				for (itrfbxname = m_strcombo_fbxname.begin(); itrfbxname != m_strcombo_fbxname.end(); itrfbxname++) {
+					if (curfbxname == *itrfbxname) {
+						foundfbxname = true;
+						break;
+					}
+				}
+				if (foundfbxname == false) {
+					m_strcombo_fbxname.push_back(curfbxname);
+				}
+			}
+		}
+	}
+
+	{
+		//ãƒ¢ãƒ‡ãƒ«åæ¤œç´¢ã‚³ãƒ³ãƒœãƒœãƒƒã‚¯ã‚¹ã«ã€€ãƒ¢ãƒ‡ãƒ«åã‚’ç™»éŒ²ã—ã€€ã‚«ãƒ¬ãƒ³ãƒˆãƒ¢ãƒ‡ãƒ«ã‚’é¸æŠã™ã‚‹
+		CWindow combofbxnamewnd = m_dlg_wnd.GetDlgItem(IDC_COMBO1);
+		if (combofbxnamewnd.IsWindow()) {
+			combofbxnamewnd.SendMessage(CB_RESETCONTENT, 0, 0);
+			combofbxnamewnd.SendMessage(CB_ADDSTRING, 0, (LPARAM)L"----");
+			combofbxnamewnd.SendMessage(CB_SETITEMDATA, 0, (LPARAM)0);
+
+			size_t fbxnamenum = m_strcombo_fbxname.size();
+			size_t fbxnameno;
+			size_t curmodelindex = 0;
+			for (fbxnameno = 0; fbxnameno < fbxnamenum; fbxnameno++) {
+				WCHAR tempchar[MAX_PATH];
+				ZeroMemory(tempchar, sizeof(WCHAR) * MAX_PATH);
+				wcscpy_s(tempchar, MAX_PATH, m_strcombo_fbxname[fbxnameno].c_str());
+
+				combofbxnamewnd.SendMessage(CB_ADDSTRING, 0, (LPARAM)tempchar);
+				combofbxnamewnd.SendMessage(CB_SETITEMDATA, (fbxnameno + 1), (LPARAM)(fbxnameno + 1));
+
+				if (wcscmp(tempchar, modelname) == 0) {
+					curmodelindex = fbxnameno;//!!!!!!!!!!!!!!!!
+				}
+			}
+			combofbxnamewnd.SendMessage(CB_SETCURSEL, (WPARAM)(curmodelindex + 1), 0);//index == 0 ã¯ã€€"----"
+		}
+	}
+
+
+	{
+		//selectã•ã‚ŒãŸå±¥æ­´ãŒã‚ã‚‹ãƒšãƒ¼ã‚¸ã¾ã§ã€€ãƒšãƒ¼ã‚¸ã‚’ã‚ãã‚‹
+
+		int numhistory2 = (int)m_copyhistory.size();
+		int fullpagenum = numhistory2 / COPYNUMFORDISP;//æº€ãŸã•ã‚Œã¦ã„ã‚‹ãƒšãƒ¼ã‚¸ã®æ•°
+		m_pagenum = fullpagenum;//ç«¯æ•°è¾¼ã¿ã®ãƒšãƒ¼ã‚¸æ•°
+		if ((numhistory2 - fullpagenum * COPYNUMFORDISP) > 0) {
+			m_pagenum++;
+		}
+
+		int selectindex = -1;
+
+		WCHAR selname[MAX_PATH] = { 0L };
+		int result = GetSelectedFileName(srcmodel, selname);
+		if ((result == 0) && (selname[0] != 0L)) {
+			size_t srcnum = m_copyhistory.size();
+			size_t srcno;
+			for (srcno = 0; srcno < srcnum; srcno++) {
+				if (m_copyhistory[srcno].hascpinfo == 1) {
+					wstring curfilename = m_copyhistory[srcno].wfilename;
+					if (wcscmp(selname, curfilename.c_str()) == 0) {
+						selectindex = (int)srcno;//ã‚»ãƒ¬ã‚¯ãƒˆã•ã‚ŒãŸå±¥æ­´ã®index
+						break;
+					}
+				}
+			}
+
+			if (selectindex >= 0) {
+				m_currentpage = selectindex / COPYNUMFORDISP;//!!!!!!!!!!!!!!!!!!!
+				m_startno = m_currentpage * COPYNUMFORDISP;
+				int restnum = numhistory2 - m_startno;
+				m_namenum = min(restnum, COPYNUMFORDISP);
+			}
+			else {
+				m_currentpage = 0;//!!!!!!!!!!!!!!!!!!!
+				m_startno = m_currentpage * COPYNUMFORDISP;
+				int restnum = numhistory2 - m_startno;
+				m_namenum = min(restnum, COPYNUMFORDISP);
+			}
+		}
+		else {
+			m_currentpage = 0;//!!!!!!!!!!!!!!!!!!!
+			m_startno = m_currentpage * COPYNUMFORDISP;
+			int restnum = numhistory2 - m_startno;
+			m_namenum = min(restnum, COPYNUMFORDISP);
+		}
+	}
+
+
+	ParamsToDlg(srcmodel);//è¡¨ç¤ºã•ã‚Œã¦ã„ãªã„ã¨ãã«ã¯m_hWndãŒNULLã®å ´åˆãŒã‚ã‚‹ã®ã§ShowWindowã®å¾Œã§SetNamesã‚’å‘¼ã¶
 
 
 	m_createdflag = true;
@@ -835,8 +985,8 @@ LRESULT CCopyHistoryDlg::OnSearch(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 
 	{
 		int numhistory2 = (int)m_copyhistory.size();
-		int fullpagenum = numhistory2 / COPYNUMFORDISP;//–‚½‚³‚ê‚Ä‚¢‚éƒy[ƒW‚Ì”
-		m_pagenum = fullpagenum;//’[”‚İ‚Ìƒy[ƒW”
+		int fullpagenum = numhistory2 / COPYNUMFORDISP;//æº€ãŸã•ã‚Œã¦ã„ã‚‹ãƒšãƒ¼ã‚¸ã®æ•°
+		m_pagenum = fullpagenum;//ç«¯æ•°è¾¼ã¿ã®ãƒšãƒ¼ã‚¸æ•°
 		if ((numhistory2 - fullpagenum * COPYNUMFORDISP) > 0) {
 			m_pagenum++;
 		}
@@ -847,7 +997,7 @@ LRESULT CCopyHistoryDlg::OnSearch(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 		m_namenum = min(restnum, COPYNUMFORDISP);//!!!!!!!!!!!!!!!!!!!
 	}
 
-	ParamsToDlg();
+	ParamsToDlg(m_model);
 
 	return 0;
 }
@@ -932,12 +1082,12 @@ LRESULT CCopyHistoryDlg::OnDelete(size_t delid)
 	wcscpy_s(m_copyhistory[m_startno + delid].cpinfo.motionname, MAX_PATH, L"deleted.");
 
 	//#######################
-	//íœ’†‚Í@page‚»‚Ì‚Ü‚Ü
+	//å‰Šé™¤ä¸­ã¯ã€€pageãã®ã¾ã¾
 	//#######################
 	//{
 	//	int numhistory2 = (int)m_copyhistory.size();
-	//	int fullpagenum = numhistory2 / COPYNUMFORDISP;//–‚½‚³‚ê‚Ä‚¢‚éƒy[ƒW‚Ì”
-	//	m_pagenum = fullpagenum;//’[”‚İ‚Ìƒy[ƒW”
+	//	int fullpagenum = numhistory2 / COPYNUMFORDISP;//æº€ãŸã•ã‚Œã¦ã„ã‚‹ãƒšãƒ¼ã‚¸ã®æ•°
+	//	m_pagenum = fullpagenum;//ç«¯æ•°è¾¼ã¿ã®ãƒšãƒ¼ã‚¸æ•°
 	//	if ((numhistory2 - fullpagenum * COPYNUMFORDISP) > 0) {
 	//		m_pagenum++;
 	//	}
@@ -949,7 +1099,7 @@ LRESULT CCopyHistoryDlg::OnDelete(size_t delid)
 	//	m_namenum = min(restnum, COPYNUMFORDISP);//!!!!!!!!!!!!!!!!!!!
 	//}
 
-	ParamsToDlg();
+	ParamsToDlg(m_model);
 
 	return 0;
 }
@@ -1009,10 +1159,11 @@ LRESULT CCopyHistoryDlg::OnRadio(size_t radioid)
 		return 0;
 	}
 
-	//OKƒ{ƒ^ƒ“‚ğ‰Ÿ‚³‚È‚¢‚Å‚à”½‰f‚³‚ê‚é‚æ‚¤‚É
-	m_selectname[MAX_PATH - 1] = 0L;
-	wcscpy_s(m_selectname, MAX_PATH, m_copyhistory[m_startno + radioid].wfilename);
-	m_selectname[MAX_PATH - 1] = 0L;
+	//OKãƒœã‚¿ãƒ³ã‚’æŠ¼ã•ãªã„ã§ã‚‚åæ˜ ã•ã‚Œã‚‹ã‚ˆã†ã«
+	if (!m_copyhistory.empty()) {
+		m_selectnamemap[m_model] = m_copyhistory[m_startno + radioid].wfilename;
+	}
+
 
 	m_ischeckedmostrecent = m_dlg_wnd.IsDlgButtonChecked(IDC_CHECK1);
 
@@ -1022,6 +1173,11 @@ LRESULT CCopyHistoryDlg::OnRadio(size_t radioid)
 LRESULT CCopyHistoryDlg::OnChkRecent(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
 	m_ischeckedmostrecent = m_dlg_wnd.IsDlgButtonChecked(IDC_CHECK1);
+
+	if (m_ischeckedmostrecent && !m_copyhistory.empty()) {
+		m_selectnamemap[m_model] = m_copyhistory[m_startno + 0].wfilename;
+	}
+	
 	return 0;
 }
 
@@ -1029,8 +1185,8 @@ LRESULT CCopyHistoryDlg::OnPrevPage(WORD wNotifyCode, WORD wID, HWND hWndCtl, BO
 {
 	{
 		int numhistory2 = (int)m_copyhistory.size();
-		int fullpagenum = numhistory2 / COPYNUMFORDISP;//–‚½‚³‚ê‚Ä‚¢‚éƒy[ƒW‚Ì”
-		m_pagenum = fullpagenum;//’[”‚İ‚Ìƒy[ƒW”
+		int fullpagenum = numhistory2 / COPYNUMFORDISP;//æº€ãŸã•ã‚Œã¦ã„ã‚‹ãƒšãƒ¼ã‚¸ã®æ•°
+		m_pagenum = fullpagenum;//ç«¯æ•°è¾¼ã¿ã®ãƒšãƒ¼ã‚¸æ•°
 		if ((numhistory2 - fullpagenum * COPYNUMFORDISP) > 0) {
 			m_pagenum++;
 		}
@@ -1052,7 +1208,7 @@ LRESULT CCopyHistoryDlg::OnPrevPage(WORD wNotifyCode, WORD wID, HWND hWndCtl, BO
 		m_namenum = min(restnum, COPYNUMFORDISP);//!!!!!!!!!!!!!!!!!!!
 	}
 
-	ParamsToDlg();
+	ParamsToDlg(m_model);
 
 	return 0;
 
@@ -1061,8 +1217,8 @@ LRESULT CCopyHistoryDlg::OnNextPage(WORD wNotifyCode, WORD wID, HWND hWndCtl, BO
 {
 	{
 		int numhistory2 = (int)m_copyhistory.size();
-		int fullpagenum = numhistory2 / COPYNUMFORDISP;//–‚½‚³‚ê‚Ä‚¢‚éƒy[ƒW‚Ì”
-		m_pagenum = fullpagenum;//’[”‚İ‚Ìƒy[ƒW”
+		int fullpagenum = numhistory2 / COPYNUMFORDISP;//æº€ãŸã•ã‚Œã¦ã„ã‚‹ãƒšãƒ¼ã‚¸ã®æ•°
+		m_pagenum = fullpagenum;//ç«¯æ•°è¾¼ã¿ã®ãƒšãƒ¼ã‚¸æ•°
 		if ((numhistory2 - fullpagenum * COPYNUMFORDISP) > 0) {
 			m_pagenum++;
 		}
@@ -1084,7 +1240,7 @@ LRESULT CCopyHistoryDlg::OnNextPage(WORD wNotifyCode, WORD wID, HWND hWndCtl, BO
 		m_namenum = min(restnum, COPYNUMFORDISP);//!!!!!!!!!!!!!!!!!!!
 	}
 
-	ParamsToDlg();
+	ParamsToDlg(m_model);
 
 	return 0;
 
@@ -1100,11 +1256,11 @@ HISTORYELEM CCopyHistoryDlg::GetFirstValidElem()
 			return helem;
 		}
 		else {
-			//—LŒø‚È—š—ğ‚ªŒ©‚Â‚©‚é‚Ü‚Åƒ‹[ƒv‚ğ‘±‚¯‚é
+			//æœ‰åŠ¹ãªå±¥æ­´ãŒè¦‹ã¤ã‹ã‚‹ã¾ã§ãƒ«ãƒ¼ãƒ—ã‚’ç¶šã‘ã‚‹
 		}
 	}
 
-	//—LŒø‚È—š—ğ‚ª‚İ‚Â‚©‚ç‚È‚©‚Á‚½ê‡
+	//æœ‰åŠ¹ãªå±¥æ­´ãŒã¿ã¤ã‹ã‚‰ãªã‹ã£ãŸå ´åˆ
 	HISTORYELEM inielem;
 	inielem.Init();
 	return inielem;
@@ -1112,7 +1268,7 @@ HISTORYELEM CCopyHistoryDlg::GetFirstValidElem()
 
 HISTORYELEM CCopyHistoryDlg::GetCheckedElem()
 {
-	size_t selectedno = 0;//ƒ`ƒFƒbƒN‚³‚ê‚Ä‚¢‚È‚¢ê‡(‚ ‚è“¾‚È‚¢‚ª)Aˆê”ÔÅ‰
+	size_t selectedno = 0;//ãƒã‚§ãƒƒã‚¯ã•ã‚Œã¦ã„ãªã„å ´åˆ(ã‚ã‚Šå¾—ãªã„ãŒ)ã€ä¸€ç•ªæœ€åˆ
 	size_t nameno;
 	for (nameno = 0; nameno < m_namenum; nameno++) {
 		if (m_dlg_wnd.IsDlgButtonChecked(m_ctrlid[nameno])) {
@@ -1129,84 +1285,87 @@ HISTORYELEM CCopyHistoryDlg::GetCheckedElem()
 		}
 	}
 
-	//—LŒø‚È—š—ğ‚ª‚İ‚Â‚©‚ç‚È‚©‚Á‚½ê‡
+	//æœ‰åŠ¹ãªå±¥æ­´ãŒã¿ã¤ã‹ã‚‰ãªã‹ã£ãŸå ´åˆ
 	HISTORYELEM inielem;
 	inielem.Init();
 	return inielem;
 
 }
 
-int CCopyHistoryDlg::GetSelectedFileName(WCHAR* dstfilename) 
+int CCopyHistoryDlg::GetSelectedFileName(CModel* srcmodel, WCHAR* dstfilename) 
 {
-	if (!dstfilename) {
+	if (!srcmodel || !dstfilename) {
 		_ASSERT(0);
 		return 1;
 	}
 
 	*dstfilename = 0L;
-	m_selectname[MAX_PATH - 1] = 0L;
+	//m_selectname[MAX_PATH - 1] = 0L;
+
+
 
 	if (GetCreatedFlag() == false) {
 
-		//‚Ü‚¾ƒEƒCƒ“ƒhƒE‚ªì¬‚³‚ê‚Ä‚¢‚È‚¢ê‡
+		//ã¾ã ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ãŒä½œæˆã•ã‚Œã¦ã„ãªã„å ´åˆ
 
-		//ÅV‚Ì—LŒø‚ÈƒRƒs[‚ğ‘I‘ğ
+		//æœ€æ–°ã®æœ‰åŠ¹ãªã‚³ãƒ”ãƒ¼ã‚’é¸æŠ
 		HISTORYELEM firstelem = GetFirstValidElem();
 		if (firstelem.hascpinfo == 1) {
-			m_selectname[MAX_PATH - 1] = 0L;
-			wcscpy_s(m_selectname, MAX_PATH, firstelem.wfilename);
-			m_selectname[MAX_PATH - 1] = 0L;
-
-			wcscpy_s(dstfilename, MAX_PATH, m_selectname);
+			m_selectnamemap[srcmodel] = firstelem.wfilename;
+			wcscpy_s(dstfilename, MAX_PATH, firstelem.wfilename);
 			return 0;
 		}
 		else {
-			return 1;//—LŒø‚È—š—ğ–³‚µ‚Ìê‡
+			return 1;//æœ‰åŠ¹ãªå±¥æ­´ç„¡ã—ã®å ´åˆ
 		}
 	}
 	else {
 
-		//ƒEƒCƒ“ƒhƒE‚ªì¬‚³‚ê‚½Œã
+		//ã‚¦ã‚¤ãƒ³ãƒ‰ã‚¦ãŒä½œæˆã•ã‚ŒãŸå¾Œ
 
 		m_ischeckedmostrecent = m_dlg_wnd.IsDlgButtonChecked(IDC_CHECK1);
 
 		if (m_ischeckedmostrecent == true) {
-			//ÅV‚Ì—LŒø‚ÈƒRƒs[‚ğ‘I‘ğ
+			//æœ€æ–°ã®æœ‰åŠ¹ãªã‚³ãƒ”ãƒ¼ã‚’é¸æŠ
 			HISTORYELEM firstelem = GetFirstValidElem();
 			if (firstelem.hascpinfo == 1) {
-				m_selectname[MAX_PATH - 1] = 0L;
-				wcscpy_s(m_selectname, MAX_PATH, firstelem.wfilename);
-				m_selectname[MAX_PATH - 1] = 0L;
-
-				wcscpy_s(dstfilename, MAX_PATH, m_selectname);
+				m_selectnamemap[srcmodel] = firstelem.wfilename;
+				wcscpy_s(dstfilename, MAX_PATH, firstelem.wfilename);
 				return 0;
 			}
 			else {
-				return 1;//—LŒø‚È—š—ğ–³‚µ‚Ìê‡
+				return 1;//æœ‰åŠ¹ãªå±¥æ­´ç„¡ã—ã®å ´åˆ
 			}
 		}
 		else {
-			//ƒ`ƒFƒbƒN‚µ‚½—š—ğ‚ğ‘I‘ğ
-			HISTORYELEM checkedelem = GetCheckedElem();
-			if (checkedelem.hascpinfo == 1) {
-				m_selectname[MAX_PATH - 1] = 0L;
-				wcscpy_s(m_selectname, MAX_PATH, checkedelem.wfilename);
-				m_selectname[MAX_PATH - 1] = 0L;
-
-				wcscpy_s(dstfilename, MAX_PATH, m_selectname);
-				return 0;
-			}
-			else {
-				return 1;//—LŒø‚È—š—ğ–³‚µ‚Ìê‡
-			}
-
-			//if (m_selectname[0] != 0L) {
-			//	wcscpy_s(dstfilename, MAX_PATH, m_selectname);
+			////ãƒã‚§ãƒƒã‚¯ã—ãŸå±¥æ­´ã‚’é¸æŠ
+			//HISTORYELEM checkedelem = GetCheckedElem();
+			//if (checkedelem.hascpinfo == 1) {
+			//	m_selectnamemap[srcmodel] = checkedelem.wfilename;
+			//	wcscpy_s(dstfilename, MAX_PATH, checkedelem.wfilename);
 			//	return 0;
 			//}
 			//else {
-			//	return 1;
+			//	return 1;//æœ‰åŠ¹ãªå±¥æ­´ç„¡ã—ã®å ´åˆ
 			//}
+
+			map<CModel*, wstring>::iterator itrfindname;
+			itrfindname = m_selectnamemap.find(srcmodel);
+			if (itrfindname != m_selectnamemap.end()) {
+				wcscpy_s(dstfilename, MAX_PATH, itrfindname->second.c_str());
+				return 0;
+			}
+			else {
+				HISTORYELEM firstelem = GetFirstValidElem();
+				if (firstelem.hascpinfo == 1) {
+					m_selectnamemap[srcmodel] = firstelem.wfilename;
+					wcscpy_s(dstfilename, MAX_PATH, firstelem.wfilename);
+					return 0;
+				}
+				else {
+					return 1;//æœ‰åŠ¹ãªå±¥æ­´ç„¡ã—ã®å ´åˆ
+				}
+			}
 		}
 	}
 };
