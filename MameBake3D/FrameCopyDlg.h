@@ -86,6 +86,7 @@ END_MSG_MAP()
 private:
 	int InitParams();
 	int DestroyObjs();
+	int DestroyDlgCtrls();
 	int SetupDlg(CModel* srcmodel);
 
 

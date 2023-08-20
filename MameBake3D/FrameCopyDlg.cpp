@@ -120,11 +120,7 @@ int CFrameCopyDlg::DestroyObjs()
 {
 	//KillTimer(m_timerid);
 
-	if( m_hImageList ){
-		ImageList_Destroy( m_hImageList );
-	}
-
-	m_timap.clear();
+	DestroyDlgCtrls();
 
 	m_validelemmap.clear();
 	m_invalidelemmap.clear();
@@ -133,16 +129,30 @@ int CFrameCopyDlg::DestroyObjs()
 	return 0;
 }
 
+int CFrameCopyDlg::DestroyDlgCtrls()
+{
+	if (m_hImageList) {
+		ImageList_Destroy(m_hImageList);
+	}
+	m_timap.clear();
+
+	return 0;
+}
+
 int CFrameCopyDlg::SetupDlg( CModel* srcmodel )
 {
 	int ret;
-
 
 	//tboloadedflag == trueの場合には　ウインドウコントロール以外は設定済
 	if (m_tboloadedflag == false) {
 		DestroyObjs();
 		InitParams();
 	}
+	else {
+		DestroyDlgCtrls();
+	}
+
+	int saveslotno = m_slotno;
 
 	m_model = srcmodel;
 
@@ -162,17 +172,19 @@ int CFrameCopyDlg::SetupDlg( CModel* srcmodel )
 
 	//SetTimer(m_timerid, 20);
 
-	if( m_model->GetTopBone() ){
+	if (m_model->GetTopBone()) {
 		ret = FillTree();
-		if( ret ){
-			_ASSERT( 0 );
+		if (ret) {
+			_ASSERT(0);
 			return 1;
 		}
 
 		CreateCombo();
 
+
+		m_slotno = saveslotno;
 		ret = ParamsToDlg();
-		_ASSERT( !ret );
+		_ASSERT(!ret);
 	}
 
 	return 0;
@@ -423,6 +435,9 @@ void CFrameCopyDlg::CreateImageList()
 
 int CFrameCopyDlg::ParamsToDlg()
 {
+
+	m_combo_wnd.SendMessage(CB_SETCURSEL, (WPARAM)m_slotno, 0);
+
 	m_slotname_wnd.SetWindowTextW( &(m_slotname[ m_slotno ][0]) );
 
 	m_list_wnd.SendMessage( LB_RESETCONTENT, 0, 0 );
@@ -634,11 +649,15 @@ LRESULT CFrameCopyDlg::OnAllDelete(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOO
 {
 	m_list_wnd.SendMessage( LB_RESETCONTENT, 0, 0 );
 	m_influencenum[m_slotno] = 0;
-	//ZeroMemory( &(m_influencelist[0][0]), sizeof( int ) * FCSLOTNUM * FRAMECOPYLISTLENG );
-	int fcslotno;
-	for (fcslotno = 0; fcslotno < FCSLOTNUM; fcslotno++) {
-		::ZeroMemory(&(m_influencelist[fcslotno][0]), sizeof(int) * FRAMECOPYLISTLENG);
-	}
+	////ZeroMemory( &(m_influencelist[0][0]), sizeof( int ) * FCSLOTNUM * FRAMECOPYLISTLENG );
+	//int fcslotno;
+	//for (fcslotno = 0; fcslotno < FCSLOTNUM; fcslotno++) {
+	//	::ZeroMemory(&(m_influencelist[fcslotno][0]), sizeof(int) * FRAMECOPYLISTLENG);
+	//}
+
+
+	//カレントスロットだけ
+	::ZeroMemory(&(m_influencelist[m_slotno][0]), sizeof(int) * FRAMECOPYLISTLENG);
 
 
 	return 0;
@@ -648,11 +667,16 @@ LRESULT CFrameCopyDlg::OnAllDelete2(WORD wNotifyCode, WORD wID, HWND hWndCtl, BO
 {
 	m_list2_wnd.SendMessage( LB_RESETCONTENT, 0, 0 );
 	m_ignorenum[m_slotno] = 0;
-	//ZeroMemory( &(m_ignorelist[0][0]), sizeof( int ) * FCSLOTNUM * FRAMECOPYLISTLENG );
-	int fcslotno;
-	for (fcslotno = 0; fcslotno < FCSLOTNUM; fcslotno++) {
-		::ZeroMemory(&(m_ignorelist[fcslotno][0]), sizeof(int) * FRAMECOPYLISTLENG);
-	}
+	////ZeroMemory( &(m_ignorelist[0][0]), sizeof( int ) * FCSLOTNUM * FRAMECOPYLISTLENG );
+	//int fcslotno;
+	//for (fcslotno = 0; fcslotno < FCSLOTNUM; fcslotno++) {
+	//	::ZeroMemory(&(m_ignorelist[fcslotno][0]), sizeof(int) * FRAMECOPYLISTLENG);
+	//}
+
+
+	//カレントスロットだけ
+	::ZeroMemory(&(m_ignorelist[m_slotno][0]), sizeof(int) * FRAMECOPYLISTLENG);
+
 
 	return 0;
 }
