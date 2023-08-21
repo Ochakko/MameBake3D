@@ -1,9 +1,9 @@
-// InfluenceDlg.h : CFrameCopyDlg ‚ÌéŒ¾
+ï»¿// InfluenceDlg.h : CFrameCopyDlg ã®å®£è¨€
 
 #ifndef __FRAMECOPYDLG_H_
 #define __FRAMECOPYDLG_H_
 
-#include "resource.h"       // ƒƒCƒ“ ƒVƒ“ƒ{ƒ‹
+#include "resource.h"       // ãƒ¡ã‚¤ãƒ³ ã‚·ãƒ³ãƒœãƒ«
 #include <atlbase.h>
 #include <atlhost.h>
 
@@ -13,7 +13,11 @@
 #include <vector>
 
 #define FRAMECOPYLISTLENG	1024
+
 #define FCSLOTNUM			10
+//2023/08/21 To12024 FCSLOTNUM2
+#define FCSLOTNUM2			20
+
 #define SLOTNAMELEN			32
 
 class CModel;
@@ -58,7 +62,7 @@ BEGIN_MSG_MAP(CFrameCopyDlg)
 	COMMAND_ID_HANDLER(IDC_SAVETBO, OnSave)
 
 END_MSG_MAP()
-// ƒnƒ“ƒhƒ‰‚Ìƒvƒƒgƒ^ƒCƒv:
+// ãƒãƒ³ãƒ‰ãƒ©ã®ãƒ—ãƒ­ãƒˆã‚¿ã‚¤ãƒ—:
 //  LRESULT MessageHandler(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 //  LRESULT CommandHandler(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 //  LRESULT NotifyHandler(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
@@ -102,7 +106,7 @@ private:
 
 	int WriteTBOFile();
 	int WriteTBOFile(WCHAR* srcfilename);
-	bool ValidateTBOFile(char* dstTBOheader, char* srcbuf, DWORD bufleng);
+	int ValidateTBOFile(char* dstTBOheader, char* srcbuf, DWORD bufleng);
 	bool LoadTBOFile();
 	bool LoadTBOFile(WCHAR* srcfilename);
 
@@ -158,18 +162,18 @@ private:
 	HTREEITEM m_hrootti;
 
 public:
-// ƒ†[ƒU[‚ªw’è‚µ‚½Atree‚Ìæ“ª”Ô†‚ğŠi”[‚·‚éB
+// ãƒ¦ãƒ¼ã‚¶ãƒ¼ãŒæŒ‡å®šã—ãŸtreeã®å…ˆé ­ç•ªå·ã‚’æ ¼ç´ã™ã‚‹ã€‚
 	int m_slotno;
 
-	WCHAR m_slotname[FCSLOTNUM][SLOTNAMELEN];
+	WCHAR m_slotname[FCSLOTNUM2][SLOTNAMELEN];
 
-	int m_influencenum[FCSLOTNUM];
-	int m_influencelist[FCSLOTNUM][FRAMECOPYLISTLENG];
+	int m_influencenum[FCSLOTNUM2];
+	int m_influencelist[FCSLOTNUM2][FRAMECOPYLISTLENG];
 
-	int m_ignorenum[FCSLOTNUM];
-	int m_ignorelist[FCSLOTNUM][FRAMECOPYLISTLENG];
+	int m_ignorenum[FCSLOTNUM2];
+	int m_ignorelist[FCSLOTNUM2][FRAMECOPYLISTLENG];
 
-// ƒ†[ƒU[‚ªw’è‚µ‚½tree‘S‘Ì‚ğŠi”[iq‹Ÿ‚ğŠÜ‚ŞBj	’·‚³‚ÍAs2shd_leng, ŠY“–‚·‚éê‡‚ÍA‚P‚»‚êˆÈŠO‚Í‚O
+// ãƒ¦ãƒ¼ã‚¶ãƒ¼ãŒæŒ‡å®šã—ãŸtreeå…¨ä½“ã‚’æ ¼ç´ï¼ˆå­ä¾›ã‚’å«ã‚€ã€‚ï¼‰
 	std::map<int, CBone*> m_validelemmap;
 	std::map<int, CBone*> m_invalidelemmap;
 	std::vector<CBone*> m_cpvec;
