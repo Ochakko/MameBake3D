@@ -16,19 +16,19 @@ public:
 	CLightsForEditFile();
 	virtual ~CLightsForEditFile();
 
-	int WriteLightsForEditFile(const WCHAR* srcfilepath);
-	int LoadLightsForEditFile(const WCHAR* srcfilepath);
+	int WriteLightsForEditFile(const WCHAR* srcfilepath, int slotindex);
+	int LoadLightsForEditFile(const WCHAR* srcfilepath, int slotindex);
 
 private:
 	virtual int InitParams();
 	virtual int DestroyObjs();
 
 	int WriteFileInfo();
-	int WriteLight(int colorindex);
+	int WriteLight(int slotindex, int lightindex);
 
 	//int CheckFileVersion( XMLIOBUF* xmliobuf );
 	//int ReadFileInfo( XMLIOBUF* xmliobuf, int* charanumptr );
-	int ReadLight(int lightcnt, XMLIOBUF* xmlbuf);
+	int ReadLight(int slotindex, int lightcnt, XMLIOBUF* xmlbuf);
 
 };
 

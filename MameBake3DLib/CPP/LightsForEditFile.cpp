@@ -48,10 +48,19 @@ int CLightsForEditFile::DestroyObjs()
 	return 0;
 }
 
-int CLightsForEditFile::WriteLightsForEditFile(const WCHAR* srcfilepath)
+int CLightsForEditFile::WriteLightsForEditFile(const WCHAR* srcfilepath, int slotindex)
 {
-	m_mode = XMLIO_WRITE;
+	if (!srcfilepath) {
+		_ASSERT(0);
+		return 1;
+	}
+	if ((slotindex < 0) || (slotindex >= LIGHTSLOTNUM)) {
+		_ASSERT(0);
+		return 1;
+	}
 
+
+	m_mode = XMLIO_WRITE;
 
 	m_hfile = CreateFile(srcfilepath, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL );
@@ -69,7 +78,7 @@ int CLightsForEditFile::WriteLightsForEditFile(const WCHAR* srcfilepath)
 
 	int lightcnt;
 	for(lightcnt = 0; lightcnt < LIGHTNUMMAX; lightcnt++ ){
-		CallF(WriteLight(lightcnt), return 1 );
+		CallF(WriteLight(slotindex, lightcnt), return 1 );
 	}
 
 	CallF( Write2File( "</LIGHTSFOREDIT>\r\n" ), return 1 );
@@ -90,33 +99,37 @@ int CLightsForEditFile::WriteFileInfo()
 	return 0;
 }
 
-int CLightsForEditFile::WriteLight(int lightindex)
+int CLightsForEditFile::WriteLight(int slotindex, int lightindex)
 {
 	if ((lightindex < 0) || (lightindex >= LIGHTNUMMAX)) {
+		_ASSERT(0);
+		return 1;
+	}
+	if ((slotindex < 0) || (slotindex >= LIGHTSLOTNUM)) {
 		_ASSERT(0);
 		return 1;
 	}
 
 	CallF(Write2File("  <Light>\r\n"), return 1);
 
-	CallF(Write2File("    <Enable>%d</Enable>\r\n", (int)g_lightenable[lightindex]), return 1);
-	CallF(Write2File("    <DirWithView>%d</DirWithView>\r\n", (int)g_lightdirwithview[lightindex]), return 1);
+	CallF(Write2File("    <Enable>%d</Enable>\r\n", (int)g_lightEnable[slotindex][lightindex]), return 1);
+	CallF(Write2File("    <DirWithView>%d</DirWithView>\r\n", (int)g_lightDirWithView[slotindex][lightindex]), return 1);
 
-	CallF(Write2File("    <DirX>%.3f</DirX>\r\n", g_lightdir[lightindex].x), return 1);
-	CallF(Write2File("    <DirY>%.3f</DirY>\r\n", g_lightdir[lightindex].y), return 1);
-	CallF(Write2File("    <DirZ>%.3f</DirZ>\r\n", g_lightdir[lightindex].z), return 1);
+	CallF(Write2File("    <DirX>%.3f</DirX>\r\n", g_lightDir[slotindex][lightindex].x), return 1);
+	CallF(Write2File("    <DirY>%.3f</DirY>\r\n", g_lightDir[slotindex][lightindex].y), return 1);
+	CallF(Write2File("    <DirZ>%.3f</DirZ>\r\n", g_lightDir[slotindex][lightindex].z), return 1);
 
 
 	int r255, g255, b255;
-	r255 = (int)(g_lightdiffuse[lightindex].x * 255.0f + 0.0001f);
+	r255 = (int)(g_lightDiffuse[slotindex][lightindex].x * 255.0f + 0.0001f);
 	r255 = max(0, r255);
 	r255 = min(255, r255);
 
-	g255 = (int)(g_lightdiffuse[lightindex].y * 255.0f + 0.0001f);
+	g255 = (int)(g_lightDiffuse[slotindex][lightindex].y * 255.0f + 0.0001f);
 	g255 = max(0, g255);
 	g255 = min(255, g255);
 
-	b255 = (int)(g_lightdiffuse[lightindex].z * 255.0f + 0.0001f);
+	b255 = (int)(g_lightDiffuse[slotindex][lightindex].z * 255.0f + 0.0001f);
 	b255 = max(0, b255);
 	b255 = min(255, b255);
 
@@ -124,22 +137,27 @@ int CLightsForEditFile::WriteLight(int lightindex)
 	CallF(Write2File("    <G255>%d</G255>\r\n", g255), return 1);
 	CallF(Write2File("    <B255>%d</B255>\r\n", b255), return 1);
 
-	CallF(Write2File("    <Scale>%.3f</Scale>\r\n", g_lightscale[lightindex]), return 1);
+	CallF(Write2File("    <Scale>%.3f</Scale>\r\n", g_lightScale[slotindex][lightindex]), return 1);
 
 	CallF(Write2File("  </Light>\r\n"), return 1);
 
 	return 0;
 }
 
-int CLightsForEditFile::LoadLightsForEditFile(const WCHAR* srcfilepath)
+int CLightsForEditFile::LoadLightsForEditFile(const WCHAR* srcfilepath, int slotindex)
 {
 	if (!srcfilepath) {
 		_ASSERT(0);
 		return 1;
 	}
-
+	if ((slotindex < 0) || (slotindex >= LIGHTSLOTNUM)) {
+		_ASSERT(0);
+		return 1;
+	}
 
 	m_mode = XMLIO_LOAD;
+
+
 
 	m_hfile = CreateFile( srcfilepath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL );
@@ -180,7 +198,7 @@ int CLightsForEditFile::LoadLightsForEditFile(const WCHAR* srcfilepath)
 			_ASSERT(0);
 			break;
 		}
-		CallF(ReadLight(lightcnt, &lightbuf), return 1);
+		CallF(ReadLight(slotindex, lightcnt, &lightbuf), return 1);
 	}
 
 
@@ -222,9 +240,13 @@ int CLightsForEditFile::CheckFileVersion( XMLIOBUF* xmlbuf )
 //
 //	return 0;
 //}
-int CLightsForEditFile::ReadLight(int lightcnt, XMLIOBUF* xmlbuf)
+int CLightsForEditFile::ReadLight(int slotindex, int lightcnt, XMLIOBUF* xmlbuf)
 {
 	if ((lightcnt < 0) || (lightcnt >= LIGHTNUMMAX)) {
+		_ASSERT(0);
+		return 1;
+	}
+	if ((slotindex < 0) || (slotindex >= LIGHTSLOTNUM)) {
 		_ASSERT(0);
 		return 1;
 	}
@@ -269,23 +291,23 @@ int CLightsForEditFile::ReadLight(int lightcnt, XMLIOBUF* xmlbuf)
 	float tmpscale = 1.0f;
 	int result2 = Read_Float(xmlbuf, "<Scale>", "</Scale>", &tmpscale);
 	if (result2 == 0) {
-		g_lightscale[lightcnt] = tmpscale;
+		g_lightScale[slotindex][lightcnt] = tmpscale;
 	}
 	else {
-		g_lightscale[lightcnt] = 1.0f;
+		g_lightScale[slotindex][lightcnt] = 1.0f;
 	}
 
-	g_lightenable[lightcnt] = (tmpenable != 0);
-	g_lightdirwithview[lightcnt] = (tmpdirwithview != 0);
+	g_lightEnable[slotindex][lightcnt] = (tmpenable != 0);
+	g_lightDirWithView[slotindex][lightcnt] = (tmpdirwithview != 0);
 
 
 	ChaVector3 loadeddir, ndir;
 	ndir = ChaVector3(0.0f, 0.0f, -1.0f);
 	loadeddir = ChaVector3(tmpdirx, tmpdiry, tmpdirz);
 	ChaVector3Normalize(&ndir, &loadeddir);
-	g_lightdir[lightcnt] = ndir;
+	g_lightDir[slotindex][lightcnt] = ndir;
 
-	g_lightdiffuse[lightcnt] = ChaVector3(r01, g01, b01);
+	g_lightDiffuse[slotindex][lightcnt] = ChaVector3(r01, g01, b01);
 
 	return 0;
 }
