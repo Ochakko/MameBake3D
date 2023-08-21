@@ -2466,6 +2466,7 @@ static WCHAR s_Impname[MAX_PATH] = { 0L };
 static WCHAR s_Gconame[MAX_PATH] = { 0L };
 
 static int s_camtargetflag = 0;
+static bool s_twistcameraFlag = false;
 CDXUTCheckBox* s_CamTargetCheckBox = 0;
 //CDXUTCheckBox* s_LightCheckBox = 0;
 CDXUTCheckBox* s_ApplyEndCheckBox = 0;
@@ -4152,6 +4153,7 @@ void InitApp()
 	s_saveCameraInheritMode = g_cameraInheritMode;
 
 	{
+		s_twistcameraFlag = false;
 		s_cameraframe = 0.0;
 		s_cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
 
@@ -9957,10 +9959,23 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 	}
 	else if (uMsg == WM_RBUTTONDOWN) {
+		POINT ptCursor;
+		GetCursorPos(&ptCursor);
+		::ScreenToClient(s_3dwnd, &ptCursor);
+
+		s_pickinfo.clickpos = ptCursor;
+		s_pickinfo.mousepos = ptCursor;
+		s_pickinfo.mousebefpos = ptCursor;
+		s_pickinfo.diffmouse = ChaVector2(0.0f, 0.0f);
+		s_pickinfo.firstdiff = ChaVector2(0.0f, 0.0f);
+
+		s_pickinfo.winx = (int)DXUTGetWindowWidth();
+		s_pickinfo.winy = (int)DXUTGetWindowHeight();
+		s_pickinfo.pickrange = PICKRANGE;
+
+		s_pickinfo.pickobjno = -1;
+
 		if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
-			POINT ptCursor;
-			GetCursorPos(&ptCursor);
-			::ScreenToClient(s_3dwnd, &ptCursor);
 
 			bool doneflag = false;
 
@@ -9985,6 +10000,17 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			}
 
 			if (doneflag == false) {
+				//カメラの回転を右ドラッグした場合は　OnMouseMoveFunc()にて　カメラのupvecをツイストする
+				if (PickSpCam(ptCursor) == PICK_CAMROT) {
+					if (s_twistcameraFlag == false) {
+						s_twistcameraFlag = true;
+					}
+					doneflag = true;
+				}
+			}
+
+
+			if (doneflag == false) {
 				BoneRClick(-1);
 			}
 		}
@@ -9992,9 +10018,30 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			BoneRClick(-1);
 		}
 	}
+	else if (uMsg == WM_RBUTTONDBLCLK) {
+		//右ボタン　ダブルクリック
+
+		POINT ptCursor;
+		GetCursorPos(&ptCursor);
+		::ScreenToClient(s_3dwnd, &ptCursor);
+
+		//カメラの回転を　右ダブルクリックした場合は　カメラのupvecを初期化する
+		if (PickSpCam(ptCursor) == PICK_CAMROT) {
+			s_cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
+
+			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+			s_matView = g_Camera->GetViewMatrix();
+			s_matProj = g_Camera->GetProjMatrix();
+			g_befcamEye = g_camEye;
+			ChaVector3 diffv;
+			diffv = g_camEye - g_camtargetpos;
+			s_camdist = (float)ChaVector3LengthDbl(&diffv);
+		}
+	}
 	else if (uMsg == WM_RBUTTONUP) {
 		//ReleaseCapture();
 		s_pickinfo.buttonflag = 0;
+		s_twistcameraFlag = false;
 	}
 	else if (uMsg == WM_MBUTTONUP) {
 		//ReleaseCapture();
@@ -37480,9 +37527,41 @@ int OnMouseMoveFunc()
 
 
 	}
+	else if (s_twistcameraFlag) {
+		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
+		POINT ptCursor;
+		GetCursorPos(&ptCursor);
+		::ScreenToClient(s_3dwnd, &ptCursor);
+		s_pickinfo.mousepos = ptCursor;
+
+		float deltax;
+		deltax = -((float)s_pickinfo.mousepos.x - (float)s_pickinfo.mousebefpos.x) / (float)s_pickinfo.winx * 250.0f * (float)DEG2PAI;
+		if (g_controlkey == true) {
+			deltax *= 0.250f;
+		}
+
+
+		ChaVector3 twistaxis;
+		CQuaternion twistq;
+		twistaxis = g_camtargetpos - g_camEye;
+		ChaVector3Normalize(&twistaxis, &twistaxis);
+		twistq.SetAxisAndRot(twistaxis, deltax);
+		ChaVector3 newupvec;
+		twistq.Rotate(&newupvec, s_cameraupdir);
+		ChaVector3Normalize(&newupvec, &newupvec);
+		s_cameraupdir = newupvec;
+
+		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+		s_matView = g_Camera->GetViewMatrix();
+		s_matProj = g_Camera->GetProjMatrix();
+		g_befcamEye = g_camEye;
+		ChaVector3 diffv;
+		diffv = g_camEye - g_camtargetpos;
+		s_camdist = (float)ChaVector3LengthDbl(&diffv);
+	}
 	else if (s_pickinfo.buttonflag == PICK_CAMROT) {
 
-		//not use quaternion yet int this part, so ジンバルロック未回避.
+		//not use quaternion yet in this part, so ジンバルロック未回避.
 
 		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
 		POINT ptCursor;
@@ -47624,7 +47703,7 @@ int DispToolTip()
 		switch (cameramode) {
 		case PICK_CAMROT:
 			doneflag = true;
-			wcscpy_s(sz512, 512, L"Drag Camera : Rot");
+			wcscpy_s(sz512, 512, L"LDrag:CameraRot, RDrag:CameraTwist, RDBLCLK:TwistInit.");
 			CreateToolTip(ptCursor, sz512);
 			break;
 		case PICK_CAMMOVE:
