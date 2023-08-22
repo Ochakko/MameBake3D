@@ -3023,32 +3023,32 @@ bool CDXUTButton::HandleKeyboard( UINT uMsg, WPARAM wParam, LPARAM lParam )
     if( !m_bEnabled || !m_bVisible )
         return false;
 
-    switch( uMsg )
-    {
-        case WM_KEYDOWN:
-        {
-            switch( wParam )
-            {
-                case VK_SPACE:
-                    m_bPressed = true;
-                    return true;
-            }
-        }
+    //switch( uMsg )
+    //{
+    //    case WM_KEYDOWN:
+    //    {
+    //        switch( wParam )
+    //        {
+    //            case VK_SPACE:
+    //                m_bPressed = true;
+    //                return true;
+    //        }
+    //    }
 
-        case WM_KEYUP:
-        {
-            switch( wParam )
-            {
-                case VK_SPACE:
-                    if( m_bPressed == true )
-                    {
-                        m_bPressed = false;
-                        m_pDialog->SendEvent( EVENT_BUTTON_CLICKED, true, this );
-                    }
-                    return true;
-            }
-        }
-    }
+    //    case WM_KEYUP:
+    //    {
+    //        switch( wParam )
+    //        {
+    //            case VK_SPACE:
+    //                if( m_bPressed == true )
+    //                {
+    //                    m_bPressed = false;
+    //                    m_pDialog->SendEvent( EVENT_BUTTON_CLICKED, true, this );
+    //                }
+    //                return true;
+    //        }
+    //    }
+    //}
     return false;
 }
 
@@ -3194,32 +3194,32 @@ bool CDXUTCheckBox::HandleKeyboard( UINT uMsg, WPARAM wParam, LPARAM lParam )
     if( !m_bEnabled || !m_bVisible )
         return false;
 
-    switch( uMsg )
-    {
-        case WM_KEYDOWN:
-        {
-            switch( wParam )
-            {
-                case VK_SPACE:
-                    m_bPressed = true;
-                    return true;
-            }
-        }
+    //switch( uMsg )
+    //{
+    //    case WM_KEYDOWN:
+    //    {
+    //        switch( wParam )
+    //        {
+    //            case VK_SPACE:
+    //                m_bPressed = true;
+    //                return true;
+    //        }
+    //    }
 
-        case WM_KEYUP:
-        {
-            switch( wParam )
-            {
-                case VK_SPACE:
-                    if( m_bPressed == true )
-                    {
-                        m_bPressed = false;
-                        SetCheckedInternal( !m_bChecked, true );
-                    }
-                    return true;
-            }
-        }
-    }
+    //    case WM_KEYUP:
+    //    {
+    //        switch( wParam )
+    //        {
+    //            case VK_SPACE:
+    //                if( m_bPressed == true )
+    //                {
+    //                    m_bPressed = false;
+    //                    SetCheckedInternal( !m_bChecked, true );
+    //                }
+    //                return true;
+    //        }
+    //    }
+    //}
     return false;
 }
 
@@ -3367,36 +3367,36 @@ bool CDXUTRadioButton::HandleKeyboard( UINT uMsg, WPARAM wParam, LPARAM lParam )
     if( !m_bEnabled || !m_bVisible )
         return false;
 
-    switch( uMsg )
-    {
-        case WM_KEYDOWN:
-        {
-            switch( wParam )
-            {
-                case VK_SPACE:
-                    m_bPressed = true;
-                    return true;
-            }
-        }
+    //switch( uMsg )
+    //{
+    //    case WM_KEYDOWN:
+    //    {
+    //        switch( wParam )
+    //        {
+    //            case VK_SPACE:
+    //                m_bPressed = true;
+    //                return true;
+    //        }
+    //    }
 
-        case WM_KEYUP:
-        {
-            switch( wParam )
-            {
-                case VK_SPACE:
-                    if( m_bPressed == true )
-                    {
-                        m_bPressed = false;
+    //    case WM_KEYUP:
+    //    {
+    //        switch( wParam )
+    //        {
+    //            case VK_SPACE:
+    //                if( m_bPressed == true )
+    //                {
+    //                    m_bPressed = false;
 
-                        m_pDialog->ClearRadioButtonGroup( m_nButtonGroup );
-                        m_bChecked = !m_bChecked;
+    //                    m_pDialog->ClearRadioButtonGroup( m_nButtonGroup );
+    //                    m_bChecked = !m_bChecked;
 
-                        m_pDialog->SendEvent( EVENT_RADIOBUTTON_CHANGED, true, this );
-                    }
-                    return true;
-            }
-        }
-    }
+    //                    m_pDialog->SendEvent( EVENT_RADIOBUTTON_CHANGED, true, this );
+    //                }
+    //                return true;
+    //        }
+    //    }
+    //}
     return false;
 }
 
@@ -5120,9 +5120,9 @@ bool CDXUTListBox::HandleKeyboard( UINT uMsg, WPARAM wParam, LPARAM lParam )
 
                     // Space is the hotkey for double-clicking an item.
                     //
-                case VK_SPACE:
-                    m_pDialog->SendEvent( EVENT_LISTBOX_ITEM_DBLCLK, true, this );
-                    return true;
+                //case VK_SPACE:
+                //    m_pDialog->SendEvent( EVENT_LISTBOX_ITEM_DBLCLK, true, this );
+                //    return true;
             }
             break;
     }
