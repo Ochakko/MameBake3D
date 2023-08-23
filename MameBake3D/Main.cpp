@@ -1018,6 +1018,8 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 
 
 #include <Coef.h>
+#include "StructHistory.h"
+
 #include <Model.h>
 #include <TexBank.h>
 #include <Bone.h>
@@ -1067,6 +1069,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 #include <GColiFile.h>
 #include "SettingsDlg.h"
 #include "CopyHistoryDlg.h"
+#include "DollyHistoryDlg.h"
 #include "CpInfoDlg.h"
 
 #include <math.h>
@@ -1590,7 +1593,7 @@ static bool s_undercolidlg = false;
 static CGColiIDDlg* s_pgcolidlg = 0;
 static bool s_undergcolidlg = false;
 static HWND s_motpropdlghwnd = 0;
-static HWND s_cameradollydlgwnd = 0;
+//static HWND s_cameradollydlgwnd = 0;
 static HWND s_materialratedlgwnd = 0;
 static HWND s_modelworldmatdlgwnd = 0;
 static HWND s_savechadlghwnd = 0;
@@ -1725,15 +1728,16 @@ static bool s_allmodelbone = false;
 
 static std::vector<HISTORYELEM> s_cptfilename;
 static CCopyHistoryDlg s_copyhistorydlg;
+static CDollyHistoryDlg s_dollyhistorydlg;
 
 //float g_initcamdist = 10.0f;
 //static float s_projnear = 0.01f;
 float g_initcamdist = 50.0f;
 //static float s_projnear = 0.001f;
 //static float s_projnear = 1.0f;
-static ChaVector3 s_cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
+//static ChaVector3 g_cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
 static double s_cameraframe = 0.0;
-static float s_camdist = g_initcamdist;
+//static float g_camdist = g_initcamdist;
 static float s_projnear = 0.01f;
 static float s_projfar = g_initcamdist * 100.0f;
 static float s_fAspectRatio = 1.0f;
@@ -2808,7 +2812,7 @@ int InitializeMainWindow(CREATESTRUCT* createWindowArgs);
 static HWND CreateMainWindow();
 static HWND Create3DWnd();
 static CInfoWindow* CreateInfoWnd();
-static int CreateCameraDollyWnd();
+//static int CreateCameraDollyWnd();//2023/08/23 CreateDollyHistoryDlg()に移行
 static int ShowCameraDollyDlg();
 static int CreateMaterialRateWnd();
 static int ShowMaterialRateDlg();
@@ -2973,6 +2977,7 @@ static int CreateLayerWnd();
 static int CreatePlaceFolderWnd();
 
 static int CreateCopyHistoryDlg();
+static int CreateDollyHistoryDlg();
 
 
 static int CreateLightsWnd();
@@ -2985,6 +2990,8 @@ static int Dlg2LightsEach(HWND hDlgWnd, int lightindex,
 	int iddirx, int iddiry, int iddirz,
 	int idenable, int idwithviewrot, int idslider);
 static int CheckStr_float(const WCHAR* srcstr);
+
+static int UpdateCameraPosAndTarget();
 
 
 static int OnFrameAngleLimit(bool updateonlycheckeul);
@@ -3823,7 +3830,12 @@ INT WINAPI wWinMain(
 
 	CreateLightsWnd();
 
-	CreateCameraDollyWnd();
+	if (s_dollyhistorydlg.GetCreatedFlag() == false) {
+		int result = CreateDollyHistoryDlg();
+		if (result != 0) {
+			_ASSERT(0);
+		}
+	}
 	CreateMaterialRateWnd();
 	CreateModelWorldMatWnd();
 
@@ -4168,10 +4180,10 @@ void InitApp()
 	{
 		s_twistcameraFlag = false;
 		s_cameraframe = 0.0;
-		s_cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
+		g_cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
 
 		g_initcamdist = 50.0f;
-		s_camdist = g_initcamdist;
+		g_camdist = g_initcamdist;
 		s_projnear = 0.01f;
 		s_projfar = g_initcamdist * 100.0f;
 		s_fAspectRatio = 1.0f;
@@ -4933,6 +4945,7 @@ void InitApp()
 
 
 
+
 	//CreateUtDialog();
 
 
@@ -4972,7 +4985,7 @@ void InitApp()
 	s_camerapanel.modelindex = -1;
 
 
-	s_cameradollydlgwnd = 0;
+	//s_cameradollydlgwnd = 0;
 	s_materialratedlgwnd = 0;
 	s_modelworldmatdlgwnd = 0;
 
@@ -6774,11 +6787,16 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 			s_copyhistorydlg.DestroyWindow();
 		}
 	}
-
-	if (s_cameradollydlgwnd) {
-		DestroyWindow(s_cameradollydlgwnd);
-		s_cameradollydlgwnd = 0;
+	if (s_dollyhistorydlg.GetCreatedFlag() == true) {
+		if (::IsWindow(s_dollyhistorydlg.m_hWnd)) {
+			s_dollyhistorydlg.DestroyWindow();
+		}
 	}
+
+	//if (s_cameradollydlgwnd) {
+	//	DestroyWindow(s_cameradollydlgwnd);
+	//	s_cameradollydlgwnd = 0;
+	//}
 	if (s_materialratedlgwnd) {
 		DestroyWindow(s_materialratedlgwnd);
 		s_materialratedlgwnd = 0;
@@ -9836,10 +9854,10 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		}
 
 
-		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));//!!!!!!!!!!
-		//g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));//!!!!!!!!!!
+		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));//!!!!!!!!!!
+		//g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));//!!!!!!!!!!
 		ChaVector3 diffv = g_camEye - g_camtargetpos;
-		s_camdist = (float)ChaVector3LengthDbl(&diffv);
+		g_camdist = (float)ChaVector3LengthDbl(&diffv);
 
 
 		//if (s_model && (s_pickinfo.pickobjno >= 0) && (g_previewFlag == 5)){
@@ -10139,15 +10157,15 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 		//カメラの回転を　右ダブルクリックした場合は　カメラのupvecを初期化する
 		if (PickSpCam(ptCursor) == PICK_CAMROT) {
-			s_cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
+			g_cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
 
-			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 			s_matView = g_Camera->GetViewMatrix();
 			s_matProj = g_Camera->GetProjMatrix();
 			g_befcamEye = g_camEye;
 			ChaVector3 diffv;
 			diffv = g_camEye - g_camtargetpos;
-			s_camdist = (float)ChaVector3LengthDbl(&diffv);
+			g_camdist = (float)ChaVector3LengthDbl(&diffv);
 		}
 	}
 	else if (uMsg == WM_RBUTTONUP) {
@@ -10181,17 +10199,17 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 	}else if( uMsg == WM_MOUSEWHEEL ){
 		//if( (g_keybuf[VK_CONTROL] & 0x80) == 0 ){
 		//	float mdelta = (float)GET_WHEEL_DELTA_WPARAM(wParam);
-		//	//deltadist = mdelta * s_camdist * 0.00010f;
-		//	deltadist = mdelta * s_camdist * 0.0010f;
+		//	//deltadist = mdelta * g_camdist * 0.00010f;
+		//	deltadist = mdelta * g_camdist * 0.0010f;
 		//
-		//	s_camdist += deltadist;
-		//	if( s_camdist < 0.0001f ){
-		//		s_camdist = 0.0001f;
+		//	g_camdist += deltadist;
+		//	if( g_camdist < 0.0001f ){
+		//		g_camdist = 0.0001f;
 		//	}
 		//
 		//	ChaVector3 camvec = g_camEye - g_camtargetpos;
 		//	ChaVector3Normalize( &camvec, &camvec );
-		//	g_camEye = g_camtargetpos + s_camdist * camvec;
+		//	g_camEye = g_camtargetpos + g_camdist * camvec;
 		//	ChaMatrixLookAtRH( &s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec );
 		//}
 	}else{
@@ -12693,7 +12711,7 @@ void CalcTotalBound()
 	//ChangeCameraMode(1);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2.  この関数の上の方のSetCameraModel()で制御するので　ここはコメントアウト
 
 
-	s_camdist = g_initcamdist;
+	g_camdist = g_initcamdist;
 
 	g_befcamEye = g_camEye;
 	g_befcamtargetpos = g_camtargetpos;
@@ -12702,7 +12720,7 @@ void CalcTotalBound()
 	//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
 	g_Camera->SetProjParams(s_fovy, s_fAspectRatio, s_projnear, s_projfar);
-	g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+	g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 	g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
 
 	s_matView = g_Camera->GetViewMatrix();
@@ -14496,20 +14514,20 @@ int OnCameraMenu(bool dorefreshflag, int selindex, int saveundoflag)
 	if (s_cameramodel->IsCameraLoaded()) {
 		//fbxにカメラが在る場合
 		ChaVector3 camdir = ChaVector3(0.0f, 0.0f, 1.0f);
-		s_cameramodel->GetCameraProjParams(cameramotid, &s_projnear, &s_projfar, &s_fovy, &g_camEye, &camdir, &s_cameraupdir);
+		s_cameramodel->GetCameraProjParams(cameramotid, &s_projnear, &s_projfar, &s_fovy, &g_camEye, &camdir, &g_cameraupdir);
 
 		g_initcamdist = max(0.1f, min(1000.0f, s_projfar));
 		g_camtargetpos = g_camEye + camdir * g_initcamdist;
 
 		ChangeCameraMode(2);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
 
-		s_camdist = g_initcamdist;
+		g_camdist = g_initcamdist;
 
 		g_befcamEye = g_camEye;
 		g_befcamtargetpos = g_camtargetpos;
 
 		g_Camera->SetProjParams(s_fovy, s_fAspectRatio, s_projnear, s_projfar);
-		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 		//g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
 
 		s_matView = g_Camera->GetViewMatrix();
@@ -15475,7 +15493,7 @@ float CalcSelectScale(CBone* curboneptr)
 	//	lineleng = sqrt(lineleng);
 	//	//s_selectscale = 0.0020f / lineleng;
 	//	//s_selectscale = (modelr * 0.015f * 0.75f) / (lineleng * 100.0f);
-	//	s_selectscale = (float)((modelr * 0.40) / lineleng);// *(s_camdist / g_initcamdist);
+	//	s_selectscale = (float)((modelr * 0.40) / lineleng);// *(g_camdist / g_initcamdist);
 	//	if (s_oprigflag == 1) {
 	//		s_selectscale *= 0.25f;
 	//		//s_selectscale *= 0.50f;
@@ -17215,153 +17233,156 @@ LRESULT CALLBACK MotPropDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 }
 
-LRESULT CALLBACK CameraDollyDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
-{
-	float posvalue = 0.0f;
-	WCHAR strpos[256] = { 0L };
-
-	switch (msg) {
-	case WM_INITDIALOG:
-	{
-		SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
-
-		swprintf_s(strpos, 256, L"%.3f", g_camEye.x);
-		SetDlgItemTextW(hDlgWnd, IDC_DOLLYX, strpos);
-		swprintf_s(strpos, 256, L"%.3f", g_camEye.y);
-		SetDlgItemTextW(hDlgWnd, IDC_DOLLYY, strpos);
-		swprintf_s(strpos, 256, L"%.3f", g_camEye.z);
-		SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ, strpos);
-
-		swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.x);
-		SetDlgItemTextW(hDlgWnd, IDC_DOLLYX2, strpos);
-		swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.y);
-		SetDlgItemTextW(hDlgWnd, IDC_DOLLYY2, strpos);
-		swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.z);
-		SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ2, strpos);
-
-
-		//RECT dlgrect;
-		//GetWindowRect(hDlgWnd, &dlgrect);
-		//SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
-
-		s_cameradollydlgwnd = hDlgWnd;
-	}
-	//SetDlgItemText( hDlgWnd, IDC_MULT, strmult );
-	return FALSE;
-
-	case WM_COMMAND:
-		switch (LOWORD(wp)) {
-		case IDOK:
-			ShowWindow(hDlgWnd, SW_HIDE);
-			break;
-		case IDCANCEL:
-			ShowWindow(hDlgWnd, SW_HIDE);
-			break;
-		case IDC_GETDOLLY:
-		{
-			swprintf_s(strpos, 256, L"%.3f", g_camEye.x);
-			SetDlgItemTextW(hDlgWnd, IDC_DOLLYX, strpos);
-			swprintf_s(strpos, 256, L"%.3f", g_camEye.y);
-			SetDlgItemTextW(hDlgWnd, IDC_DOLLYY, strpos);
-			swprintf_s(strpos, 256, L"%.3f", g_camEye.z);
-			SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ, strpos);
-
-			swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.x);
-			SetDlgItemTextW(hDlgWnd, IDC_DOLLYX2, strpos);
-			swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.y);
-			SetDlgItemTextW(hDlgWnd, IDC_DOLLYY2, strpos);
-			swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.z);
-			SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ2, strpos);
-		}
-			break;
-
-		case IDC_APPLYDOLLY:
-		{
-			ChaVector3 savecameye = g_camEye;
-			ChaVector3 savetarget = g_camtargetpos;
-			g_befcamtargetpos = g_camtargetpos;
-
-			GetDlgItemTextW(hDlgWnd, IDC_DOLLYX, strpos, 256);
-			posvalue = (float)_wtof(strpos);
-			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
-				g_camEye.x = posvalue;
-			}
-			GetDlgItemTextW(hDlgWnd, IDC_DOLLYY, strpos, 256);
-			posvalue = (float)_wtof(strpos);
-			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
-				g_camEye.y = posvalue;
-			}
-			GetDlgItemTextW(hDlgWnd, IDC_DOLLYZ, strpos, 256);
-			posvalue = (float)_wtof(strpos);
-			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
-				g_camEye.z = posvalue;
-			}
-
-
-			GetDlgItemTextW(hDlgWnd, IDC_DOLLYX2, strpos, 256);
-			posvalue = (float)_wtof(strpos);
-			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
-				g_camtargetpos.x = posvalue;
-			}
-			GetDlgItemTextW(hDlgWnd, IDC_DOLLYY2, strpos, 256);
-			posvalue = (float)_wtof(strpos);
-			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
-				g_camtargetpos.y = posvalue;
-			}
-			GetDlgItemTextW(hDlgWnd, IDC_DOLLYZ2, strpos, 256);
-			posvalue = (float)_wtof(strpos);
-			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
-				g_camtargetpos.z = posvalue;
-			}
-
-			
-			ChaVector3 diffv;
-			diffv = g_camEye - g_camtargetpos;
-			s_camdist = (float)ChaVector3LengthDbl(&diffv);
-			if (s_camdist <= 1e-4) {
-				//rollback
-
-				g_camEye = savecameye;
-				g_camtargetpos = savetarget;
-				ChaVector3 diffv2;
-				diffv2 = g_camEye - g_camtargetpos;
-				s_camdist = (float)ChaVector3LengthDbl(&diffv2);
-
-				swprintf_s(strpos, 256, L"%.3f", g_camEye.x);
-				SetDlgItemTextW(hDlgWnd, IDC_DOLLYX, strpos);
-				swprintf_s(strpos, 256, L"%.3f", g_camEye.y);
-				SetDlgItemTextW(hDlgWnd, IDC_DOLLYY, strpos);
-				swprintf_s(strpos, 256, L"%.3f", g_camEye.z);
-				SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ, strpos);
-
-				swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.x);
-				SetDlgItemTextW(hDlgWnd, IDC_DOLLYX2, strpos);
-				swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.y);
-				SetDlgItemTextW(hDlgWnd, IDC_DOLLYY2, strpos);
-				swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.z);
-				SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ2, strpos);
-			}
-
-			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
-			s_matView = g_Camera->GetViewMatrix();
-			s_matProj = g_Camera->GetProjMatrix();
-
-		}
-			break;
-		default:
-			return FALSE;
-		}
-		break;
-	case WM_CLOSE:
-		ShowWindow(hDlgWnd, SW_HIDE);
-		break;
-	default:
-		DefWindowProc(hDlgWnd, msg, wp, lp);
-		return FALSE;
-	}
-	return TRUE;
-
-}
+//########################################################
+//2023/08/23 DollyHistoryDlg.h, DollyHistoryDlg.cppに移行
+//########################################################
+//LRESULT CALLBACK CameraDollyDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+//{
+//	float posvalue = 0.0f;
+//	WCHAR strpos[256] = { 0L };
+//
+//	switch (msg) {
+//	case WM_INITDIALOG:
+//	{
+//		SetDlgPosDesktopCenter(hDlgWnd, HWND_TOPMOST);
+//
+//		swprintf_s(strpos, 256, L"%.3f", g_camEye.x);
+//		SetDlgItemTextW(hDlgWnd, IDC_DOLLYX, strpos);
+//		swprintf_s(strpos, 256, L"%.3f", g_camEye.y);
+//		SetDlgItemTextW(hDlgWnd, IDC_DOLLYY, strpos);
+//		swprintf_s(strpos, 256, L"%.3f", g_camEye.z);
+//		SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ, strpos);
+//
+//		swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.x);
+//		SetDlgItemTextW(hDlgWnd, IDC_DOLLYX2, strpos);
+//		swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.y);
+//		SetDlgItemTextW(hDlgWnd, IDC_DOLLYY2, strpos);
+//		swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.z);
+//		SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ2, strpos);
+//
+//
+//		//RECT dlgrect;
+//		//GetWindowRect(hDlgWnd, &dlgrect);
+//		//SetCursorPos(dlgrect.left + 25, dlgrect.top + 10);
+//
+//		s_cameradollydlgwnd = hDlgWnd;
+//	}
+//	//SetDlgItemText( hDlgWnd, IDC_MULT, strmult );
+//	return FALSE;
+//
+//	case WM_COMMAND:
+//		switch (LOWORD(wp)) {
+//		case IDOK:
+//			ShowWindow(hDlgWnd, SW_HIDE);
+//			break;
+//		case IDCANCEL:
+//			ShowWindow(hDlgWnd, SW_HIDE);
+//			break;
+//		case IDC_GETDOLLY:
+//		{
+//			swprintf_s(strpos, 256, L"%.3f", g_camEye.x);
+//			SetDlgItemTextW(hDlgWnd, IDC_DOLLYX, strpos);
+//			swprintf_s(strpos, 256, L"%.3f", g_camEye.y);
+//			SetDlgItemTextW(hDlgWnd, IDC_DOLLYY, strpos);
+//			swprintf_s(strpos, 256, L"%.3f", g_camEye.z);
+//			SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ, strpos);
+//
+//			swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.x);
+//			SetDlgItemTextW(hDlgWnd, IDC_DOLLYX2, strpos);
+//			swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.y);
+//			SetDlgItemTextW(hDlgWnd, IDC_DOLLYY2, strpos);
+//			swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.z);
+//			SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ2, strpos);
+//		}
+//			break;
+//
+//		case IDC_APPLYDOLLY:
+//		{
+//			ChaVector3 savecameye = g_camEye;
+//			ChaVector3 savetarget = g_camtargetpos;
+//			g_befcamtargetpos = g_camtargetpos;
+//
+//			GetDlgItemTextW(hDlgWnd, IDC_DOLLYX, strpos, 256);
+//			posvalue = (float)_wtof(strpos);
+//			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
+//				g_camEye.x = posvalue;
+//			}
+//			GetDlgItemTextW(hDlgWnd, IDC_DOLLYY, strpos, 256);
+//			posvalue = (float)_wtof(strpos);
+//			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
+//				g_camEye.y = posvalue;
+//			}
+//			GetDlgItemTextW(hDlgWnd, IDC_DOLLYZ, strpos, 256);
+//			posvalue = (float)_wtof(strpos);
+//			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
+//				g_camEye.z = posvalue;
+//			}
+//
+//
+//			GetDlgItemTextW(hDlgWnd, IDC_DOLLYX2, strpos, 256);
+//			posvalue = (float)_wtof(strpos);
+//			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
+//				g_camtargetpos.x = posvalue;
+//			}
+//			GetDlgItemTextW(hDlgWnd, IDC_DOLLYY2, strpos, 256);
+//			posvalue = (float)_wtof(strpos);
+//			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
+//				g_camtargetpos.y = posvalue;
+//			}
+//			GetDlgItemTextW(hDlgWnd, IDC_DOLLYZ2, strpos, 256);
+//			posvalue = (float)_wtof(strpos);
+//			if ((posvalue >= -FLT_MAX) && (posvalue <= FLT_MAX)) {
+//				g_camtargetpos.z = posvalue;
+//			}
+//
+//			
+//			ChaVector3 diffv;
+//			diffv = g_camEye - g_camtargetpos;
+//			g_camdist = (float)ChaVector3LengthDbl(&diffv);
+//			if (g_camdist <= 1e-4) {
+//				//rollback
+//
+//				g_camEye = savecameye;
+//				g_camtargetpos = savetarget;
+//				ChaVector3 diffv2;
+//				diffv2 = g_camEye - g_camtargetpos;
+//				g_camdist = (float)ChaVector3LengthDbl(&diffv2);
+//
+//				swprintf_s(strpos, 256, L"%.3f", g_camEye.x);
+//				SetDlgItemTextW(hDlgWnd, IDC_DOLLYX, strpos);
+//				swprintf_s(strpos, 256, L"%.3f", g_camEye.y);
+//				SetDlgItemTextW(hDlgWnd, IDC_DOLLYY, strpos);
+//				swprintf_s(strpos, 256, L"%.3f", g_camEye.z);
+//				SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ, strpos);
+//
+//				swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.x);
+//				SetDlgItemTextW(hDlgWnd, IDC_DOLLYX2, strpos);
+//				swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.y);
+//				SetDlgItemTextW(hDlgWnd, IDC_DOLLYY2, strpos);
+//				swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.z);
+//				SetDlgItemTextW(hDlgWnd, IDC_DOLLYZ2, strpos);
+//			}
+//
+//			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
+//			s_matView = g_Camera->GetViewMatrix();
+//			s_matProj = g_Camera->GetProjMatrix();
+//
+//		}
+//			break;
+//		default:
+//			return FALSE;
+//		}
+//		break;
+//	case WM_CLOSE:
+//		ShowWindow(hDlgWnd, SW_HIDE);
+//		break;
+//	default:
+//		DefWindowProc(hDlgWnd, msg, wp, lp);
+//		return FALSE;
+//	}
+//	return TRUE;
+//
+//}
 
 
 
@@ -20213,7 +20234,7 @@ int SetCamera6Angle()
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z - camdist;
 
-		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
@@ -20228,7 +20249,7 @@ int SetCamera6Angle()
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z + camdist;
 
-		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
@@ -20242,7 +20263,7 @@ int SetCamera6Angle()
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z;
 
-		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
@@ -20256,7 +20277,7 @@ int SetCamera6Angle()
 		neweye.y = g_camtargetpos.y;
 		neweye.z = g_camtargetpos.z;
 
-		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
@@ -20270,7 +20291,7 @@ int SetCamera6Angle()
 		neweye.y = g_camtargetpos.y + camdist;
 		neweye.z = g_camtargetpos.z + delta;
 
-		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
@@ -20284,7 +20305,7 @@ int SetCamera6Angle()
 		neweye.y = g_camtargetpos.y - camdist;
 		neweye.z = g_camtargetpos.z - delta;
 
-		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
@@ -20296,7 +20317,7 @@ int SetCamera6Angle()
 
 	ChaVector3 diffv;
 	diffv = g_camEye - g_camtargetpos;
-	s_camdist = (float)ChaVector3LengthDbl(&diffv);
+	g_camdist = (float)ChaVector3LengthDbl(&diffv);
 
 	return 0;
 }
@@ -28240,8 +28261,8 @@ int OnFramePreviewCamera(double srcnextframe)
 
 			double roundingframe = (double)((int)(nextcameraframe + 0.0001));
 
-			s_cameramodel->GetCameraAnimParams(roundingframe, s_camdist, &g_camEye, &g_camtargetpos, &s_cameraupdir, 0, g_cameraInheritMode);//s_camdist
-			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+			s_cameramodel->GetCameraAnimParams(roundingframe, g_camdist, &g_camEye, &g_camtargetpos, &g_cameraupdir, 0, g_cameraInheritMode);//g_camdist
+			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 			s_cameraframe = roundingframe;
 
 		}
@@ -28250,7 +28271,7 @@ int OnFramePreviewCamera(double srcnextframe)
 			//カメラモデルが無い場合
 			//GUIによるカメラ操作可能に
 			//######################################
-			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 		}
 	}
 	else {
@@ -28262,10 +28283,10 @@ int OnFramePreviewCamera(double srcnextframe)
 		//######################################
 		//GUIによるカメラ操作可能に
 		//######################################
-		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 	}
 	ChaVector3 cameradiff = g_camtargetpos - g_camEye;
-	s_camdist = (float)ChaVector3LengthDbl(&cameradiff);
+	g_camdist = (float)ChaVector3LengthDbl(&cameradiff);
 
 
 	//###################################
@@ -29985,6 +30006,42 @@ int CreateCopyHistoryDlg()
 	s_copyhistorydlg.ParamsToDlg(s_model);
 	GetCPTFileName(s_cptfilename);
 	s_copyhistorydlg.SetNames(s_model, s_cptfilename);
+
+	return 0;
+}
+int CreateDollyHistoryDlg()
+{
+	if (s_dollyhistorydlg.GetCreatedFlag() == false) {
+		s_dollyhistorydlg.Create(s_mainhwnd);
+		s_dollyhistorydlg.SetUpdateFunc(UpdateCameraPosAndTarget);
+	}
+	SetParent(s_dollyhistorydlg.m_hWnd, s_mainhwnd);
+
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
+
+
+	SetWindowPos(
+		s_dollyhistorydlg.m_hWnd,
+		HWND_TOP,
+		windowposx,
+		s_sidemenuheight,
+		s_sidewidth,
+		s_sideheight,
+		SWP_SHOWWINDOW
+	);
+
+	s_dollyhistorydlg.ShowWindow(SW_HIDE);
+	s_dollyhistorydlg.ParamsToDlg();
+	vector<DOLLYELEM> vechistory;
+	vechistory.clear();
+	s_dollyhistorydlg.LoadDollyHistory(vechistory);
+	s_dollyhistorydlg.SetNames(vechistory);
 
 	return 0;
 }
@@ -36734,14 +36791,14 @@ void AutoCameraTarget()
 			g_befcamtargetpos = g_camtargetpos;
 			g_camtargetpos = curbone->GetChildWorld();
 
-			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));//!!!!!!!!!!!
-			//g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));//!!!!!!!!!!!
+			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));//!!!!!!!!!!!
+			//g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));//!!!!!!!!!!!
 
 			//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 			//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 			ChaVector3 diffv;
 			diffv = g_camEye - g_camtargetpos;
-			s_camdist = (float)ChaVector3LengthDbl(&diffv);
+			g_camdist = (float)ChaVector3LengthDbl(&diffv);
 
 			s_matView = g_Camera->GetViewMatrix();
 			s_matProj = g_Camera->GetProjMatrix();
@@ -38105,7 +38162,7 @@ int OnMouseMoveFunc()
 		ChaVector3TransformCoord(&neweye, &aftcameye, &invmatview);
 		ChaVector3TransformCoord(&newat, &aftcamat, &invmatview);
 
-		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), newat.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+		g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), newat.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
@@ -38117,7 +38174,7 @@ int OnMouseMoveFunc()
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		ChaVector3 diffv;
 		diffv = neweye - newat;
-		s_camdist = (float)ChaVector3LengthDbl(&diffv);
+		g_camdist = (float)ChaVector3LengthDbl(&diffv);
 
 
 	}
@@ -38141,17 +38198,17 @@ int OnMouseMoveFunc()
 		ChaVector3Normalize(&twistaxis, &twistaxis);
 		twistq.SetAxisAndRot(twistaxis, deltax);
 		ChaVector3 newupvec;
-		twistq.Rotate(&newupvec, s_cameraupdir);
+		twistq.Rotate(&newupvec, g_cameraupdir);
 		ChaVector3Normalize(&newupvec, &newupvec);
-		s_cameraupdir = newupvec;
+		g_cameraupdir = newupvec;
 
-		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 		g_befcamEye = g_camEye;
 		ChaVector3 diffv;
 		diffv = g_camEye - g_camtargetpos;
-		s_camdist = (float)ChaVector3LengthDbl(&diffv);
+		g_camdist = (float)ChaVector3LengthDbl(&diffv);
 	}
 	else if (s_pickinfo.buttonflag == PICK_CAMROT) {
 
@@ -38262,7 +38319,7 @@ int OnMouseMoveFunc()
 			//mat = befrotmat * rotmatxz * rotmaty * aftrotmat;
 			//ChaVector3TransformCoord(&neweye, &weye, &mat);
 
-			g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+			g_Camera->SetViewParamsWithUpVec(neweye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 			s_matView = g_Camera->GetViewMatrix();
 			s_matProj = g_Camera->GetProjMatrix();
 
@@ -38273,7 +38330,7 @@ int OnMouseMoveFunc()
 
 			ChaVector3 diffv;
 			diffv = neweye - g_camtargetpos;
-			s_camdist = (float)ChaVector3LengthDbl(&diffv);
+			g_camdist = (float)ChaVector3LengthDbl(&diffv);
 
 		}
 		else {
@@ -38290,22 +38347,22 @@ int OnMouseMoveFunc()
 
 		float deltadist = (float)(s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y) * 0.5f;
 		//float mdelta = (float)GET_WHEEL_DELTA_WPARAM(wParam);
-		//float deltadist = mdelta * s_camdist * 0.0010f;
+		//float deltadist = mdelta * g_camdist * 0.0010f;
 		if (g_controlkey == true) {
 			deltadist *= 0.250f;
 		}
 
-		float savecamdist = s_camdist;
+		float savecamdist = g_camdist;
 
-		s_camdist += deltadist;
-		//if (s_camdist < 0.0001f) {
-		//	s_camdist = 0.0001f;
+		g_camdist += deltadist;
+		//if (g_camdist < 0.0001f) {
+		//	g_camdist = 0.0001f;
 		//}
-		if (s_camdist >= 0.01f) {//2022/10/29 0.0001では近づきすぎたときに固まるので0.01に変更
+		if (g_camdist >= 0.01f) {//2022/10/29 0.0001では近づきすぎたときに固まるので0.01に変更
 			ChaVector3 camvec = g_camEye - g_camtargetpos;
 			ChaVector3Normalize(&camvec, &camvec);
 			g_befcamEye = g_camEye;
-			g_camEye = g_camtargetpos + camvec * s_camdist;
+			g_camEye = g_camtargetpos + camvec * g_camdist;
 		}
 		else {
 
@@ -38318,13 +38375,13 @@ int OnMouseMoveFunc()
 			g_befcamEye = g_camEye;
 			g_camEye = g_camtargetpos - camvec2 * savecamdist * 3.0f;
 
-			s_camdist = savecamdist * 3.0f;
+			g_camdist = savecamdist * 3.0f;
 		}
 
 		//!!!!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 		//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
-		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), s_cameraupdir.XMVECTOR(0.0f));
+		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 		s_matView = g_Camera->GetViewMatrix();
 		s_matProj = g_Camera->GetProjMatrix();
 
@@ -38741,6 +38798,9 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 		if (s_copyhistorydlg.GetCreatedFlag() == true) {
 			s_copyhistorydlg.ShowWindow(SW_HIDE);
 		}
+		if (s_dollyhistorydlg.GetCreatedFlag() == true) {
+			s_dollyhistorydlg.ShowWindow(SW_HIDE);
+		}
 		if (s_anglelimitdlg) {
 			s_underanglelimithscroll = 0;
 			DestroyWindow(s_anglelimitdlg);
@@ -39081,7 +39141,7 @@ void InitDSValues()
 	s_pgcolidlg = 0;
 	s_undergcolidlg = false;
 	s_motpropdlghwnd = 0;
-	s_cameradollydlgwnd = 0;
+	//s_cameradollydlgwnd = 0;
 	s_savechadlghwnd = 0;
 	s_bvhdlghwnd = 0;
 	s_saveredlghwnd = 0;
@@ -48685,23 +48745,23 @@ bool DispTipRig()
 	return false;
 }
 
-int CreateCameraDollyWnd()
-{
-
-	//CCameraDollyDlg dlg(g_camEye);
-	//dlg.DoModal();
-	//g_camEye = dlg.GetCameraPos();
-
-	HWND hDlgWnd = CreateDialogW((HMODULE)GetModuleHandle(NULL), 
-		MAKEINTRESOURCE(IDD_DOLLYDLG), s_mainhwnd, (DLGPROC)CameraDollyDlgProc);
-	if (hDlgWnd == NULL) {
-		return 1;
-	}
-	s_cameradollydlgwnd = hDlgWnd;
-	ShowWindow(s_cameradollydlgwnd, SW_HIDE);
-
-	return 0;
-}
+//int CreateCameraDollyWnd()
+//{
+//
+//	//CCameraDollyDlg dlg(g_camEye);
+//	//dlg.DoModal();
+//	//g_camEye = dlg.GetCameraPos();
+//
+//	HWND hDlgWnd = CreateDialogW((HMODULE)GetModuleHandle(NULL), 
+//		MAKEINTRESOURCE(IDD_DOLLYDLG), s_mainhwnd, (DLGPROC)CameraDollyDlgProc);
+//	if (hDlgWnd == NULL) {
+//		return 1;
+//	}
+//	s_cameradollydlgwnd = hDlgWnd;
+//	ShowWindow(s_cameradollydlgwnd, SW_HIDE);
+//
+//	return 0;
+//}
 
 int CreateModelWorldMatWnd()
 {
@@ -48828,27 +48888,32 @@ int ShowMaterialRateDlg()
 
 int ShowCameraDollyDlg()
 {
-	if (s_cameradollydlgwnd) {
-		WCHAR strpos[256] = { 0L };
 
-		swprintf_s(strpos, 256, L"%.3f", g_camEye.x);
-		SetDlgItemTextW(s_cameradollydlgwnd, IDC_DOLLYX, strpos);
-		swprintf_s(strpos, 256, L"%.3f", g_camEye.y);
-		SetDlgItemTextW(s_cameradollydlgwnd, IDC_DOLLYY, strpos);
-		swprintf_s(strpos, 256, L"%.3f", g_camEye.z);
-		SetDlgItemTextW(s_cameradollydlgwnd, IDC_DOLLYZ, strpos);
+	GUIMenuSetVisible(-1, -1);
 
-		swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.x);
-		SetDlgItemTextW(s_cameradollydlgwnd, IDC_DOLLYX2, strpos);
-		swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.y);
-		SetDlgItemTextW(s_cameradollydlgwnd, IDC_DOLLYY2, strpos);
-		swprintf_s(strpos, 256, L"%.3f", g_camtargetpos.z);
-		SetDlgItemTextW(s_cameradollydlgwnd, IDC_DOLLYZ2, strpos);
-
-
-		ShowWindow(s_cameradollydlgwnd, SW_SHOW);
-		UpdateWindow(s_cameradollydlgwnd);
-	}
+	std::vector<DOLLYELEM> vecdolly;
+	vecdolly.clear();
+	s_dollyhistorydlg.LoadDollyHistory(vecdolly);
+	s_dollyhistorydlg.SetNames(vecdolly);
+	s_dollyhistorydlg.ShowWindow(SW_SHOW);
 
 	return 0;
+}
+
+int UpdateCameraPosAndTarget()
+{
+	g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
+	s_matView = g_Camera->GetViewMatrix();
+	s_matProj = g_Camera->GetProjMatrix();
+
+	ChaVector3 diffv;
+	diffv = g_camEye - g_camtargetpos;
+	g_camdist = (float)ChaVector3LengthDbl(&diffv);
+	if (g_camdist >= 1e-4) {
+		return 0;
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
 }

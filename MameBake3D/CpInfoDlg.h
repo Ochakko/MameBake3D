@@ -6,6 +6,7 @@
 //#include "usealt.h"
 
 #include <coef.h>
+#include "StructHistory.h"
 
 #include <atlbase.h>
 #include <atlhost.h>

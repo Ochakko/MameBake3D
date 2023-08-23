@@ -58,6 +58,20 @@ int CChaFile::InitParams()
 	ZeroMemory( m_wloaddir, sizeof( WCHAR ) * MAX_PATH );
 	ZeroMemory( m_mloaddir, sizeof( char ) * MAX_PATH );
 
+	m_motinfo.clear();
+	m_FbxFunc = nullptr;
+	m_RefFunc = nullptr;
+	m_ImpFunc = nullptr;
+	m_GcoFunc = nullptr;
+	m_ReMenu = nullptr;
+	m_RgdMenu = nullptr;
+	m_MorphMenu = nullptr;
+	m_ImpMenu = nullptr;
+
+	m_motspeed = 1.0f;
+
+
+
 	return 0;
 }
 

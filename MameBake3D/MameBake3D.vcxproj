@@ -249,6 +249,7 @@
     <ClCompile Include="ColiIDDlg.cpp" />
     <ClCompile Include="CopyHistoryDlg.cpp" />
     <ClCompile Include="CpInfoDlg.cpp" />
+    <ClCompile Include="DollyHistoryDlg.cpp" />
     <ClCompile Include="DSUpdateUnderTracking.cpp" />
     <ClCompile Include="FilterDlg.cpp" />
     <ClCompile Include="FpsSprite.cpp" />
@@ -329,6 +330,7 @@
     <ClInclude Include="CopyHistoryDlg.h" />
     <ClInclude Include="CpInfoDlg.h" />
     <ClInclude Include="dlgid.h" />
+    <ClInclude Include="DollyHistoryDlg.h" />
     <ClInclude Include="DSUpdateUnderTracking.h" />
     <ClInclude Include="FilterDlg.h" />
     <ClInclude Include="FilterType.h" />
@@ -347,6 +349,7 @@
     <ClInclude Include="SetDlgPos.h" />
     <ClInclude Include="SettingsDlg.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StructHistory.h" />
     <ClInclude Include="UndoSprite.h" />
     <ClInclude Include="useatl.h" />
   </ItemGroup>

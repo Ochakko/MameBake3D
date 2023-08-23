@@ -138,14 +138,14 @@ void CCopyHistoryDlg::InitParams()
 	m_text2[9] = IDC_STATIC1_19;
 
 
-	ZeroMemory(m_strimportance, sizeof(WCHAR) * 32 * 6);
-	wcscpy_s(m_strimportance[0], 32, L"Undef.");
-	wcscpy_s(m_strimportance[1], 32, L"Tiny.");
-	wcscpy_s(m_strimportance[2], 32, L"ALittle.");
-	wcscpy_s(m_strimportance[3], 32, L"Normal.");
-	wcscpy_s(m_strimportance[4], 32, L"Noticed.");
-	wcscpy_s(m_strimportance[5], 32, L"Important.");
-	wcscpy_s(m_strimportance[6], 32, L"VeryImportant.");
+	ZeroMemory(m_strimportance, sizeof(WCHAR) * INPORTANCESTRLEN * 7);
+	wcscpy_s(m_strimportance[0], INPORTANCESTRLEN, L"Undef.");
+	wcscpy_s(m_strimportance[1], INPORTANCESTRLEN, L"Tiny.");
+	wcscpy_s(m_strimportance[2], INPORTANCESTRLEN, L"ALittle.");
+	wcscpy_s(m_strimportance[3], INPORTANCESTRLEN, L"Normal.");
+	wcscpy_s(m_strimportance[4], INPORTANCESTRLEN, L"Noticed.");
+	wcscpy_s(m_strimportance[5], INPORTANCESTRLEN, L"Important.");
+	wcscpy_s(m_strimportance[6], INPORTANCESTRLEN, L"VeryImportant.");
 
 
 	m_strcombo_fbxname.clear();
@@ -627,6 +627,12 @@ void CCopyHistoryDlg::SetEnableCtrls()
 
 LRESULT CCopyHistoryDlg::OnCheckMostRecent(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
+	m_ischeckedmostrecent = m_dlg_wnd.IsDlgButtonChecked(IDC_CHECK1);
+
+	if (m_ischeckedmostrecent && !m_copyhistory.empty()) {
+		m_selectnamemap[m_model] = m_copyhistory[m_startno + 0].wfilename;
+	}
+
 	SetEnableCtrls();
 	return 0;
 }
@@ -1170,16 +1176,6 @@ LRESULT CCopyHistoryDlg::OnRadio(size_t radioid)
 	return 0;
 }
 
-LRESULT CCopyHistoryDlg::OnChkRecent(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
-{
-	m_ischeckedmostrecent = m_dlg_wnd.IsDlgButtonChecked(IDC_CHECK1);
-
-	if (m_ischeckedmostrecent && !m_copyhistory.empty()) {
-		m_selectnamemap[m_model] = m_copyhistory[m_startno + 0].wfilename;
-	}
-	
-	return 0;
-}
 
 LRESULT CCopyHistoryDlg::OnPrevPage(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {

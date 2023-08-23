@@ -1,7 +1,5 @@
-﻿// InfluenceDlg.h : CCopyHistoryDlg の宣言
-
-#ifndef __CCopyHistoryDlg_H_
-#define __CCopyHistoryDlg_H_
+﻿#ifndef __CDollyHistoryDlg_H_
+#define __CDollyHistoryDlg_H_
 
 //#include "usealt.h"
 
@@ -11,48 +9,54 @@
 #include <atlbase.h>
 #include <atlhost.h>
 
+
+
 #include "resource.h"       // メイン シンボル
 
 #include <vector>
 #include <string>
 
 
-#define COPYNUMFORDISP	10
-#define IMPORTANCEKINDNUM	7
-#define INPORTANCESTRLEN	32
+#define DOLLYNUMFORDISP	10
+//#define IMPORTANCEKINDNUM	7
+//#define INPORTANCESTRLEN	32
 
 
 
 /////////////////////////////////////////////////////////////////////////////
-// CCopyHistoryDlg
-class CCopyHistoryDlg : 
-	public CAxDialogImpl<CCopyHistoryDlg>
+// CDollyHistoryDlg
+class CDollyHistoryDlg : 
+	public CAxDialogImpl<CDollyHistoryDlg>
 {
 public:
-	CCopyHistoryDlg();
-	~CCopyHistoryDlg();
+	CDollyHistoryDlg();
+	~CDollyHistoryDlg();
 
-	enum { IDD = IDD_COPYHISTORYDLG };
+	enum { IDD = IDD_DOLLYHISTORYDLG };
 
-	int SetNames(CModel* srcmodel, std::vector<HISTORYELEM>& copyhistory);
-	int GetSelectedFileName(CModel* srcmodel, WCHAR* dstfilename);
+	void SetUpdateFunc(int (*UpdateFunc)());
 
 	bool GetCreatedFlag()
 	{
 		return m_createdflag;
 	};
-	int ParamsToDlg(CModel* srcmodel);
+
+	int LoadDollyHistory(std::vector<DOLLYELEM>& vecdolly);
+
 
 private:
 
-BEGIN_MSG_MAP(CCopyHistoryDlg)
+BEGIN_MSG_MAP(CDollyHistoryDlg)
 	//MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 	MESSAGE_HANDLER(WM_CREATE, OnCreate)
 	MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
-	COMMAND_ID_HANDLER(IDOK, OnOK)
-	COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
-	COMMAND_ID_HANDLER(IDC_CHECK1, OnCheckMostRecent)
-	COMMAND_ID_HANDLER(IDC_BUTTON3, OnSearch)
+	//COMMAND_ID_HANDLER(IDOK, OnOK)
+	//COMMAND_ID_HANDLER(IDCANCEL, OnCancel)
+	//COMMAND_ID_HANDLER(IDC_CHECK1, OnCheckMostRecent)
+	//COMMAND_ID_HANDLER(IDC_BUTTON3, OnSearch)
+	COMMAND_ID_HANDLER(IDC_GETDOLLY, OnGetDolly)
+	COMMAND_ID_HANDLER(IDC_SETDOLLY, OnSetDolly)
+	COMMAND_ID_HANDLER(IDC_SAVEDOLLY, OnSaveDolly)
 	COMMAND_ID_HANDLER(IDC_BUTTON6, OnDelete1)
 	COMMAND_ID_HANDLER(IDC_BUTTON16, OnDelete2)
 	COMMAND_ID_HANDLER(IDC_BUTTON17, OnDelete3)
@@ -73,7 +77,7 @@ BEGIN_MSG_MAP(CCopyHistoryDlg)
 	COMMAND_ID_HANDLER(IDC_RADIO8, OnRadio8)
 	COMMAND_ID_HANDLER(IDC_RADIO9, OnRadio9)
 	COMMAND_ID_HANDLER(IDC_RADIO10, OnRadio10)
-//	COMMAND_ID_HANDLER(IDC_CHECK1, OnChkRecent)
+	//COMMAND_ID_HANDLER(IDC_CHECK1, OnChkRecent)
 	COMMAND_ID_HANDLER(IDC_PREVPAGE, OnPrevPage)
 	COMMAND_ID_HANDLER(IDC_NEXTPAGE, OnNextPage)
 END_MSG_MAP()
@@ -85,12 +89,12 @@ END_MSG_MAP()
 	//LRESULT OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnDestroy(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-	LRESULT OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	LRESULT OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	//LRESULT OnOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	//LRESULT OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
-	LRESULT OnCheckMostRecent(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-
-	LRESULT OnSearch(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnGetDolly(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnSetDolly(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnSaveDolly(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
 	LRESULT OnDelete1(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnDelete2(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
@@ -114,7 +118,6 @@ END_MSG_MAP()
 	LRESULT OnRadio9(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnRadio10(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
-	LRESULT OnChkRecent(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
 	LRESULT OnPrevPage(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnNextPage(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
@@ -122,22 +125,23 @@ END_MSG_MAP()
 	void InitParams();
 	int DestroyObjs();
 
+	int SetNames(std::vector<DOLLYELEM>& copyhistory);
+	//int GetSelectedFileName(WCHAR* dstfilename);
+	int ParamsToDlg();
+	int EditParamsToDlg();
+
 	LRESULT OnDelete(size_t delid);
 	LRESULT OnRadio(size_t radioid);
-	void SetEnableCtrls();
 
-	bool IsCheckedMostRecent()
-	{
-		return m_ischeckedmostrecent;
-	};
+	DOLLYELEM GetFirstValidElem();
+	DOLLYELEM GetCheckedElem();
 
-	HISTORYELEM GetFirstValidElem();
-	HISTORYELEM GetCheckedElem();
+	int SetDollyElem2Camera(DOLLYELEM srcelem);
 
 private:
 
 /*
-#define COPYNUMFORDISP	10
+#define DOLLYNUMFORDISP	10
 #define IMPORTANCEKINDNUM	7
 #define INPORTANCESTRLEN	32
 */
@@ -145,38 +149,23 @@ private:
 	bool m_createdflag;
 	CWindow m_dlg_wnd;
 
-	CModel* m_model;
-
 	size_t m_namenum;
-	bool m_ischeckedmostrecent;
-	//WCHAR m_selectname[MAX_PATH];
-	std::map<CModel*, std::wstring> m_selectnamemap;
-
 
 	int m_pagenum;
 	int m_currentpage;
 	int m_startno;
-	std::vector<HISTORYELEM> m_copyhistory;
-	std::vector<HISTORYELEM> m_savecopyhistory;
+	std::vector<DOLLYELEM> m_dollyhistory;
 
-	UINT m_ctrlid[COPYNUMFORDISP];
-	UINT m_startframeid[COPYNUMFORDISP];
-	UINT m_framenumid[COPYNUMFORDISP];
-	UINT m_bvhtypeid[COPYNUMFORDISP];
-	UINT m_importanceid[COPYNUMFORDISP];
-	UINT m_commentid[COPYNUMFORDISP];
+	UINT m_ctrlid[DOLLYNUMFORDISP];
+	UINT m_targetid[DOLLYNUMFORDISP];
+	UINT m_commentid[DOLLYNUMFORDISP];
 
-	UINT m_text1[COPYNUMFORDISP];
-	UINT m_text2[COPYNUMFORDISP];
-
-	WCHAR m_strimportance[IMPORTANCEKINDNUM][INPORTANCESTRLEN];
-
-	std::vector<std::wstring> m_strcombo_fbxname;
-	std::vector<std::wstring> m_strcombo_motionname;
-	std::vector<int> m_strcombo_bvhtype;
+	ChaVector3 m_camerapos;
+	ChaVector3 m_targetpos;
+	WCHAR m_comment[HISTORYCOMMENTLEN];
 
 
-	bool m_initsearchcomboflag;
+	int (*m_UpdateFunc)();
 
 };
 
