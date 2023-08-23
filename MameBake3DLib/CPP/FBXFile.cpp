@@ -3328,11 +3328,6 @@ int WriteBindPose(FbxScene* pScene, CModel* pmodel, int bvhflag)
 		return 1;
 	}
 
-
-	FbxPose* lPose = FbxPose::Create(pScene,"BindPose1");
-	lPose->SetIsBindPose(true);
-
-
 	if( s_firstoutmot >= 0 ){
 		FbxAnimStack * lCurrentAnimationStack;
 		//lCurrentAnimationStack = pScene->GetMember(FBX_TYPE(FbxAnimStack), s_ai->motid);
@@ -3368,18 +3363,14 @@ int WriteBindPose(FbxScene* pScene, CModel* pmodel, int bvhflag)
 			//pScene->SetCurrentAnimStack(s_ai->motid);
 			pScene->SetCurrentAnimationStack(lCurrentAnimationStack);
 		}
+
 	}else{
-		_ASSERT( 0 );
+		//_ASSERT( 0 );
 	}
 
-	//CFBXBone* hipsfbxbone = 0;
-	//FindHipsFbxBoneReq(s_fbxbone, &hipsfbxbone);
-	//if (hipsfbxbone) {
-	//	WriteBindPoseReq(hipsfbxbone, lPose);
-	//}
-	//else {
-	//	WriteBindPoseReq(s_fbxbone, lPose);
-	//}
+	FbxPose* lPose = FbxPose::Create(pScene, "BindPose1");
+	lPose->SetIsBindPose(true);
+
 	WriteBindPoseReq(pmodel, pScene->GetRootNode(), lPose);
 
 	pScene->AddPose(lPose);
@@ -5562,7 +5553,7 @@ int SaveCurrentMotionID(CModel* curmodel)
 		s_zeroframemotid = curmi->motid;
 	}
 	else {
-		_ASSERT(0);
+		//_ASSERT(0);
 		return 0;
 	}
 

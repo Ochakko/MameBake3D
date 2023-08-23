@@ -1420,7 +1420,18 @@ public: //accesser
 		return (int)m_rigideleminfo.size();
 	};
 	REINFO GetRigidElemInfo( int srcindex ){
-		return m_rigideleminfo[ srcindex ];
+		if ((srcindex >= 0) && (srcindex < m_rigideleminfo.size())) {
+			return m_rigideleminfo[srcindex];
+		}
+		else {
+			_ASSERT(0);
+
+			REINFO errorinfo;
+			errorinfo.Init();
+			strcpy_s(errorinfo.filename, MAX_PATH, "error");
+			return errorinfo;
+		}
+		
 	};
 	void PushBackRigidElemInfo( REINFO srcinfo ){
 		m_rigideleminfo.push_back( srcinfo );
@@ -1436,8 +1447,15 @@ public: //accesser
 		return m_impinfo[ srcindex ];
 	};
 	std::string GetCurImpName(){
-		std::string curimpname = m_impinfo[m_curimpindex];
-		return curimpname;
+		if ((m_curimpindex >= 0) && (m_curimpindex < m_impinfo.size())) {
+			std::string curimpname = m_impinfo[m_curimpindex];
+			return curimpname;
+		}
+		else {
+			_ASSERT(0);
+			std::string strerror = "error";
+			return strerror;
+		}
 	};
 	void PushBackImpInfo( std::string srcname )
 	{
@@ -1483,7 +1501,15 @@ public: //accesser
 		return (int)m_material.size();
 	};
 	CMQOMaterial* GetMQOMaterial( int srcindex ){
-		return m_material[ srcindex ];
+		std::map<int, CMQOMaterial*>::iterator itrmaterial;
+		itrmaterial = m_material.find(srcindex);
+		if (itrmaterial != m_material.end()) {
+			return itrmaterial->second;
+		}
+		else {
+			_ASSERT(0);
+			return 0;
+		}
 	};
 	std::map<int,CMQOMaterial*>::iterator GetMQOMaterialBegin(){
 		return m_material.begin();
@@ -1495,7 +1521,15 @@ public: //accesser
 		m_material[ srcindex ] = srcmat;
 	};
 	CMQOMaterial* GetMQOMaterialByName(std::string srcname ){
-		return m_materialname[ srcname ];
+		std::map<std::string, CMQOMaterial*>::iterator itrmaterial;
+		itrmaterial = m_materialname.find(srcname);
+		if (itrmaterial != m_materialname.end()) {
+			return itrmaterial->second;
+		}
+		else {
+			_ASSERT(0);
+			return 0;
+		}
 	};
 	std::map<std::string,CMQOMaterial*>::iterator GetMQOMaterialNameBegin(){
 		return m_materialname.begin();
@@ -1510,7 +1544,13 @@ public: //accesser
 	};
 
 	FbxString* GetAnimStackName( int srcindex ){
-		return mAnimStackNameArray[ srcindex ];
+		if ((srcindex >= 0) && (srcindex < mAnimStackNameArray.Size())) {
+			return mAnimStackNameArray[srcindex];
+		}
+		else {
+			_ASSERT(0);
+			return 0;
+		}
 	};
 
 	int GetBtCnt(){

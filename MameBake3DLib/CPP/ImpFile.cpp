@@ -64,6 +64,9 @@ int CImpFile::WriteImpFile( WCHAR* strpath, CModel* srcmodel )
 	if( !m_model->GetTopBone() ){
 		return 0;
 	}
+	if (m_model->GetImpInfoSize() <= 0) {
+		return 0;
+	}
 
 	WCHAR wfilename[MAX_PATH] = {0L};
 	WCHAR* lasten;

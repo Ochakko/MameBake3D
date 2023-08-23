@@ -359,10 +359,12 @@ typedef struct tag_reinfo
 {
 	char filename[MAX_PATH];
 	float btgscale;
-
-	tag_reinfo() {
+	void Init() {
 		ZeroMemory(filename, sizeof(char) * MAX_PATH);
 		btgscale = 1.0f;
+	};
+	tag_reinfo() {
+		Init();
 	};
 }REINFO;
 
