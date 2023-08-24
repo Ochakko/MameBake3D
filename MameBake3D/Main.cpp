@@ -2347,6 +2347,7 @@ static SPCAM s_spcam[SPR_CAM_MAX];
 static SPELEM s_sprig[SPRIGMAX];//inactive, active
 //static SPELEM s_spbt;
 static SPELEM s_spret2prev;
+static SPELEM s_spret2prev2;
 static SPELEM s_spcplw2w;
 static SPELEM s_spsmooth;
 static SPELEM s_spconstexe;
@@ -2999,6 +3000,7 @@ static int OnFrameAngleLimit(bool updateonlycheckeul);
 static int OnFrameLightsForEdit();
 static int OnFrameKeyboard();
 static bool FocusEditWnd();
+static int ChangeToolSpriteMode();
 static int OnFrameUtCheckBox();
 static int OnFrameProcessTime(double difftime, double* pnextframe, int* pendflag, int* ploopstartflag);
 static int OnFrameProcessCameraTime(double difftime, double* pnextframe, int* pendflag, int* ploopstartflag);
@@ -3223,9 +3225,9 @@ static int SetSpMenuAimBarParams();
 static int SetSpAxisParams();
 static int SetSpUndoParams();
 static int SetSpMouseCenterParams();
-static bool PickSpFrog(POINT srcpos);
 static int PickSpAxis(POINT srcpos);
 static int PickSpUndo(POINT srcpos);
+
 static int SetSpGUISWParams();
 static int PickSpGUISW(POINT srcpos);
 static int SetSpDispSWParams();
@@ -3254,6 +3256,11 @@ static int SetSpCameraModeSWParams();
 static int PickSpCameraModeSW(POINT srcpos);
 static int SetSpCameraInheritSWParams();
 static int PickSpCameraInheritSW(POINT srcpos);
+
+static int SetSpRet2PrevParams();
+static bool PickSpFrog(POINT srcpos);
+static bool PickSpFrog2(POINT srcpos);
+
 static int SetSpCopyParams();
 static int PickSpCopy(POINT srcpos);
 static int SetSpSymCopyParams();
@@ -3593,7 +3600,6 @@ INT WINAPI wWinMain(
 
 //_CrtSetBreakAlloc(65234);
 //_CrtSetBreakAlloc(1526483);
-
 
 	SetBaseDir();
 
@@ -4793,6 +4799,7 @@ void InitApp()
 		//::ZeroMemory(&s_spbt, sizeof(SPELEM));
 		::ZeroMemory(&s_spmousehere, sizeof(SPELEM));
 		::ZeroMemory(&s_spret2prev, sizeof(SPELEM));
+		::ZeroMemory(&s_spret2prev2, sizeof(SPELEM));
 		::ZeroMemory(&s_spcplw2w, sizeof(SPELEM));
 		::ZeroMemory(&s_spsmooth, sizeof(SPELEM));
 		::ZeroMemory(&s_spconstexe, sizeof(SPELEM));
@@ -6042,7 +6049,16 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 		PostQuitMessage(1);
 		return S_FALSE;
 	}
-	CallF(s_spret2prev.sprite->Create(pd3dImmediateContext, mpath, L"img_ret2prev.gif", 0, 0), return S_FALSE);
+	CallF(s_spret2prev.sprite->Create(pd3dImmediateContext, mpath, L"img_ret2prev.png", 0, 0), return S_FALSE);
+
+	s_spret2prev2.sprite = new CMySprite(s_pdev);
+	if (!s_spret2prev2.sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
+	CallF(s_spret2prev2.sprite->Create(pd3dImmediateContext, mpath, L"img_ret2prev2.png", 0, 0), return S_FALSE);
+
 
 	s_spcplw2w.sprite = new CMySprite(s_pdev);
 	if (!s_spcplw2w.sprite) {
@@ -6383,10 +6399,14 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpMouseCenterParams();//SetSpCamParamsよりも後で呼ぶ　位置を参照しているから
 	SetSpCameraModeSWParams();
 	SetSpCameraInheritSWParams();
+
+	SetSpRet2PrevParams();
+
 	SetSpCopyParams();//SetSpCameraInheritSWParams()よりも後で呼ぶ
 	SetSpSymCopyParams();
 	SetSpPasteParams();
 	SetSpCopyHistoryParams();
+
 	SetSpInterpolateParams();
 	SetSpInitParams();
 	SetSpScaleInitParams();
@@ -7759,6 +7779,13 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete curspret;
 	}
 	s_spret2prev.sprite = 0;
+
+	CMySprite* curspret2 = s_spret2prev2.sprite;
+	if (curspret2) {
+		delete curspret2;
+	}
+	s_spret2prev2.sprite = 0;
+
 
 	CMySprite* curspcplw2w = s_spcplw2w.sprite;
 	if (curspcplw2w) {
@@ -9564,6 +9591,12 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			}
 		}
 
+
+		if (PickSpFrog2(ptCursor) != 0) {
+			if (s_model) {
+				ChangeToolSpriteMode();
+			}
+		}
 		if (PickSpCopy(ptCursor) != 0) {
 			if (s_model) {
 				if (s_copyFlag == false) {
@@ -22137,14 +22170,13 @@ int SetSpScrapingSWParams()
 	return 0;
 }
 
-
-int SetSpGUISWParams()
+int SetSpRet2PrevParams()
 {
-	if (!(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON) || !(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF)) {
+	if (!(s_spret2prev.sprite)) {
 		_ASSERT(0);
 		return 0;
 	}
-	if (!(s_spret2prev.sprite)) {
+	if (!(s_spret2prev2.sprite)) {
 		_ASSERT(0);
 		return 0;
 	}
@@ -22178,7 +22210,41 @@ int SetSpGUISWParams()
 		}
 	}
 
+	{
+		float spretwidth = 32.0f;
+		float spretheight = 32.0f;
+		int spretshift = 0;
 
+		int spgshift = 6;
+		s_spret2prev2.dispcenter.x = s_spcam[2].dispcenter.x - ((int)s_spsizeSmall + 6) * 4;
+		s_spret2prev2.dispcenter.y = s_spcameramode.dispcenter.y + (int)s_spsize + 6;
+
+
+		ChaVector3 disppos;
+		disppos.x = (float)(s_spret2prev2.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+		disppos.y = -((float)(s_spret2prev2.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+		disppos.z = 0.0f;
+		ChaVector2 dispsize = ChaVector2(spretwidth / (float)s_mainwidth * 2.0f, spretheight / (float)s_mainheight * 2.0f);
+
+		if (s_spret2prev2.sprite) {
+			CallF(s_spret2prev2.sprite->SetPos(disppos), return 1);
+			CallF(s_spret2prev2.sprite->SetSize(dispsize), return 1);
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
+
+	return 0;
+}
+
+
+int SetSpGUISWParams()
+{
+	if (!(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON) || !(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF)) {
+		_ASSERT(0);
+		return 0;
+	}
 
 	//float spgwidth = 140.0f;
 	float spgwidth = 124.0f;
@@ -22327,10 +22393,9 @@ int SetSpCameraInheritSWParams()
 		return 0;
 	}
 
-
 	int spgshift = 6;
-	s_spcamerainherit.dispcenter.x = s_mainwidth - (int)s_spsize - 10 - (int)s_spsize - 6 - ((int)s_spsize + 6) * 5;
-	s_spcamerainherit.dispcenter.y = (int)(s_spsize / 2) + 6 + (int)s_spsize / 2 + 10;
+	s_spcamerainherit.dispcenter.x = s_mainwidth - (int)s_spsize - 10 - (int)s_spsize - 6 - ((int)s_spsize + 6) * 5 - (int)s_spsize / 2;
+	s_spcamerainherit.dispcenter.y = (int)s_spsize / 2 + 10;
 
 	ChaVector3 disppos;
 	disppos.x = (float)(s_spcamerainherit.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
@@ -23261,6 +23326,10 @@ int PickSpScrapingSW(POINT srcpos)
 
 bool PickSpFrog(POINT srcpos)
 {
+	if (s_spret2prev.sprite == 0) {
+		return 0;
+	}
+
 	int starty0 = s_spret2prev.dispcenter.y - 16;
 	int endy0 = starty0 + 32;
 	if ((srcpos.y >= starty0) && (srcpos.y <= endy0)) {
@@ -23273,6 +23342,35 @@ bool PickSpFrog(POINT srcpos)
 
 	return false;
 }
+
+bool PickSpFrog2(POINT srcpos)
+{
+	if (s_spret2prev2.sprite == 0) {
+		return 0;
+	}
+	if (s_spguisw[SPGUISW_CAMERA_AND_IK].state == false) {
+		//非表示中
+		return 0;
+	}
+	if (g_previewFlag != 0) {
+		//preview中は　押さない
+		return 0;
+	}
+
+
+	int starty0 = s_spret2prev2.dispcenter.y - 16;
+	int endy0 = starty0 + 32;
+	if ((srcpos.y >= starty0) && (srcpos.y <= endy0)) {
+		int startx0 = s_spret2prev2.dispcenter.x - 16;
+		int endx0 = startx0 + 32;
+		if ((srcpos.x >= startx0) && (srcpos.x <= endx0)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 
 int PickSpGUISW(POINT srcpos)
 {
@@ -23446,7 +23544,10 @@ int PickSpCameraInheritSW(POINT srcpos)
 
 	//sprefpos
 	int startx = s_spcamerainherit.dispcenter.x - (int)s_spsize / 2;
-	int endx = startx + (int)s_spsize;
+
+	//int endx = startx + (int)s_spsize;
+	int endx = startx + (int)s_spsize / 2;//inheritスプライトは半分重ねて表示する　当たり判定をその分狭くする
+
 
 	if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
 		//int starty = s_spcamerainherit.dispcenter.y - (int)s_spsize / 2;
@@ -27832,6 +27933,16 @@ bool FocusEditWnd()
 }
 
 
+int ChangeToolSpriteMode()
+{
+	s_toolspritemode++;
+	if (s_toolspritemode >= 2) {
+		s_toolspritemode = 0;
+	}
+
+	return 0;
+}
+
 int OnFrameKeyboard()
 {
 	MoveMemory(g_savekeybuf, g_keybuf, sizeof(BYTE) * 256);
@@ -27855,10 +27966,7 @@ int OnFrameKeyboard()
 				}
 			}
 			else if (g_keybuf['V'] & 0x80) {
-				s_toolspritemode++;
-				if (s_toolspritemode >= 2) {
-					s_toolspritemode = 0;
-				}
+				ChangeToolSpriteMode();
 			}
 			else {
 				if (s_frogFlag == false) {
@@ -34963,6 +35071,15 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 			else {
 				_ASSERT(0);
 			}
+
+
+			if (s_spret2prev2.sprite) {
+				s_spret2prev2.sprite->OnRender(pd3dImmediateContext);
+			}
+			else {
+				_ASSERT(0);
+			}
+
 
 			if (s_toolspritemode == 0) {
 				//Copy
@@ -48706,6 +48823,15 @@ int DispToolTip()
 		if (pickfrog == true) {
 			doneflag = true;
 			wcscpy_s(sz512, 512, L"SpaceKey:Change MenuKind. C+SpaceKey:Change Plate.");
+			CreateToolTip(ptCursor, sz512);
+		}
+	}
+	if (doneflag == false) {
+		//ret2prev2
+		bool pickfrog = PickSpFrog2(ptCursor);
+		if (pickfrog == true) {
+			doneflag = true;
+			wcscpy_s(sz512, 512, L"V + SpaceKey: Change ToolShortCutMenu.");
 			CreateToolTip(ptCursor, sz512);
 		}
 	}

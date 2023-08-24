@@ -87,6 +87,8 @@ class CCameraFbx
 public:
 	CCameraFbx();
 	~CCameraFbx();
+	
+	int DestroyObjs();
 	int Clear();
 
 	int AddFbxCamera(FbxNode* pnode, CBone* pbone);
@@ -129,7 +131,6 @@ public:
 
 private:
 	int InitParams();
-	int DestroyObjs();
 
 
 	CAMERANODE* FindCameraNodeByNode(FbxNode* srcnode);

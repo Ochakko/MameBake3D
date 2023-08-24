@@ -492,6 +492,8 @@ int CModel::InitParams()
 	m_phyikrectime = 0.0;
 
 	m_bonelist.clear();
+	m_bonename.clear();
+
 	m_boneupdatematrix = 0;
 	m_LoadFbxAnim = 0;
 	m_creatednum_boneupdatematrix = 0;//スレッド数の変化に対応。作成済の数。処理用。
@@ -609,6 +611,12 @@ int CModel::DestroyObjs()
 	m_nodeonload = 0;
 
 
+	//2023/08/24 ポインタではないメンバの後処理　必要
+	//この後処理を忘れると　カメラアニメ(CAMERANODE)１つ当り240バイトメモリリーク
+	m_camerafbx.DestroyObjs();
+
+
+
 	InitParams();
 
 	return 0;
@@ -696,6 +704,9 @@ int CModel::DestroyAncObj()
 		}
 	}
 	m_bonelist.clear();
+
+
+	m_bonename.clear();
 
 
 	map<CMQOObject*, FBXOBJ*>::iterator itrobjindex;
