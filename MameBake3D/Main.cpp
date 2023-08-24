@@ -2816,6 +2816,7 @@ static CInfoWindow* CreateInfoWnd();
 static int ShowCameraDollyDlg();
 static int CreateMaterialRateWnd();
 static int ShowMaterialRateDlg();
+static int SetModel2MaterialRateDlg(CModel* srcmodel);
 static int CreateModelWorldMatWnd();
 static int ShowModelWorldMatDlg();
 
@@ -2997,6 +2998,7 @@ static int UpdateCameraPosAndTarget();
 static int OnFrameAngleLimit(bool updateonlycheckeul);
 static int OnFrameLightsForEdit();
 static int OnFrameKeyboard();
+static bool FocusEditWnd();
 static int OnFrameUtCheckBox();
 static int OnFrameProcessTime(double difftime, double* pnextframe, int* pendflag, int* ploopstartflag);
 static int OnFrameProcessCameraTime(double difftime, double* pnextframe, int* pendflag, int* ploopstartflag);
@@ -14921,6 +14923,15 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 		GetCPTFileName(s_cptfilename);
 		s_copyhistorydlg.SetNames(s_model, s_cptfilename);
 	}
+
+	{
+		if (s_materialratedlgwnd) {
+			if (s_model) {
+				SetModel2MaterialRateDlg(s_model);
+			}
+		}
+	}
+
 
 
 	if (s_model) {
@@ -27797,6 +27808,29 @@ int ChangeCameraInherit()
 }
 
 
+bool FocusEditWnd()
+{
+	HWND focuswnd = GetFocus();
+	if (focuswnd == NULL) {
+		return false;
+	}
+	else {
+		WCHAR strclassname[MAX_PATH] = { 0 };
+		int result = GetClassName(focuswnd, strclassname, MAX_PATH);
+		if (result != 0) {
+			if ((wcscmp(strclassname, L"EDIT") == 0) || (wcscmp(strclassname, L"Edit") == 0)) {
+				return true;//!!!!!!!!!!!!!!!
+			}
+			else {
+				return false;
+			}
+		}
+		else {
+			return false;
+		}
+	}
+}
+
 
 int OnFrameKeyboard()
 {
@@ -27808,147 +27842,151 @@ int OnFrameKeyboard()
 		ZeroMemory(g_keybuf, sizeof(BYTE) * 256);
 	}
 
-
-
-	//プレートメニュー：スペースキーを押すたびにkind変更. Cキーを押し続けながらスペースキーを押すたびにplate変更.
-	//2023/08/22 以下のメニュー変更にスペースキーを使うので　DXUTの　スペースキーのホットキー機能をコメントアウト
-	if ((g_keybuf[VK_SPACE] & 0x80) && ((g_savekeybuf[VK_SPACE] & 0x80) == 0)) {
-		if (g_keybuf['C'] & 0x80) {
-			if (s_plateFlag == false) {
-				s_plateFlag = true;
+	//################################################################################
+	//2023/08/24 Editコントロールに入力中は　キーボードショートカット機能は実行しない
+	//################################################################################
+	if (!FocusEditWnd()) {
+		//プレートメニュー：スペースキーを押すたびにkind変更. Cキーを押し続けながらスペースキーを押すたびにplate変更.
+		//2023/08/22 以下のメニュー変更にスペースキーを使うので　DXUTの　スペースキーのホットキー機能をコメントアウト
+		if ((g_keybuf[VK_SPACE] & 0x80) && ((g_savekeybuf[VK_SPACE] & 0x80) == 0)) {
+			if (g_keybuf['C'] & 0x80) {
+				if (s_plateFlag == false) {
+					s_plateFlag = true;
+				}
+			}
+			else if (g_keybuf['V'] & 0x80) {
+				s_toolspritemode++;
+				if (s_toolspritemode >= 2) {
+					s_toolspritemode = 0;
+				}
+			}
+			else {
+				if (s_frogFlag == false) {
+					s_frogFlag = true;
+				}
 			}
 		}
-		else if (g_keybuf['V'] & 0x80) {
-			s_toolspritemode++;
-			if (s_toolspritemode >= 2) {
-				s_toolspritemode = 0;
-			}
+
+
+		//マニピュレータ：SHIFTを押している間は非表示
+		if (g_keybuf[VK_SHIFT] & 0x80) {
+			s_dispselect = false;
 		}
 		else {
-			if (s_frogFlag == false) {
-				s_frogFlag = true;
-			}
+			s_dispselect = true;
 		}
-	}
 
 
-	//マニピュレータ：SHIFTを押している間は非表示
-	if (g_keybuf[VK_SHIFT] & 0x80) {
-		s_dispselect = false;
-	}
-	else {
-		s_dispselect = true;
-	}
-
-
-	//if ((g_keybuf[VK_F9] & 0x80) && ((g_savekeybuf[VK_F9] & 0x80) == 0)) {
-	//	StartBt(s_model, TRUE, 0, 1);
-	//}
-	//if ((g_keybuf[VK_F10] & 0x80) && ((g_savekeybuf[VK_F10] & 0x80) == 0)) {
-	//	StartBt(s_model, TRUE, 1, 1);
-	//}
-	//if ((g_keybuf[' '] & 0x80) && ((g_savekeybuf[' '] & 0x80) == 0)) {
-	//	if (s_bpWorld && s_model) {
-	//		StartBt(s_model, TRUE, 2, 1);
-	//	}
-	//}
-	if (g_keybuf[VK_CONTROL] & 0x80) {
-		g_controlkey = true;
-	}
-	else {
-		g_controlkey = false;
-	}
-	if (g_keybuf[VK_SHIFT] & 0x80) {
-		g_shiftkey = true;
-	}
-	else {
-		g_shiftkey = false;
-	}
-
-
-	//end of BoneTwist on MouseWheel 
-	if ((s_tkeyflag != 0) && (s_editmotionflag >= 0) && ((g_keybuf['T'] & 0x80) == 0)) {
-		s_tkeyflag = 0;
-		PrepairUndo();//ツイスト保存
-	}
-
-	/*
-	if (g_controlkey == false){
-		if (g_keybuf[VK_ADD] & 0x80){
-			g_btcalccnt += 1.0;
-			Sleep(200);
+		//if ((g_keybuf[VK_F9] & 0x80) && ((g_savekeybuf[VK_F9] & 0x80) == 0)) {
+		//	StartBt(s_model, TRUE, 0, 1);
+		//}
+		//if ((g_keybuf[VK_F10] & 0x80) && ((g_savekeybuf[VK_F10] & 0x80) == 0)) {
+		//	StartBt(s_model, TRUE, 1, 1);
+		//}
+		//if ((g_keybuf[' '] & 0x80) && ((g_savekeybuf[' '] & 0x80) == 0)) {
+		//	if (s_bpWorld && s_model) {
+		//		StartBt(s_model, TRUE, 2, 1);
+		//	}
+		//}
+		if (g_keybuf[VK_CONTROL] & 0x80) {
+			g_controlkey = true;
 		}
-		else if (g_keybuf[VK_SUBTRACT] & 0x80){
-			if (g_btcalccnt >= 2.0){
-				g_btcalccnt -= 1.0;
+		else {
+			g_controlkey = false;
+		}
+		if (g_keybuf[VK_SHIFT] & 0x80) {
+			g_shiftkey = true;
+		}
+		else {
+			g_shiftkey = false;
+		}
+
+
+		//end of BoneTwist on MouseWheel 
+		if ((s_tkeyflag != 0) && (s_editmotionflag >= 0) && ((g_keybuf['T'] & 0x80) == 0)) {
+			s_tkeyflag = 0;
+			PrepairUndo();//ツイスト保存
+		}
+
+		/*
+		if (g_controlkey == false){
+			if (g_keybuf[VK_ADD] & 0x80){
+				g_btcalccnt += 1.0;
 				Sleep(200);
 			}
-		}
-	}
-	else{
-		if (g_keybuf[VK_ADD] & 0x80){
-			if (g_erp <= 0.9){
-				g_erp += 0.1;
-				Sleep(200);
+			else if (g_keybuf[VK_SUBTRACT] & 0x80){
+				if (g_btcalccnt >= 2.0){
+					g_btcalccnt -= 1.0;
+					Sleep(200);
+				}
 			}
 		}
-		else if (g_keybuf[VK_SUBTRACT] & 0x80){
-			if (g_erp >= 0.1){
-				g_erp -= 0.1;
-				Sleep(200);
+		else{
+			if (g_keybuf[VK_ADD] & 0x80){
+				if (g_erp <= 0.9){
+					g_erp += 0.1;
+					Sleep(200);
+				}
+			}
+			else if (g_keybuf[VK_SUBTRACT] & 0x80){
+				if (g_erp >= 0.1){
+					g_erp -= 0.1;
+					Sleep(200);
+				}
 			}
 		}
+		*/
+
+
+
+		//####################################################################################################################
+		//Undo,RedoのRedoのコマンドキーがCtrl + Shift + Zなので,　MButton用のキーとしてCtrl + Shiftは使えない。コメントアウト　2022/01/11
+		//####################################################################################################################
+		//if (g_ctrlshiftkeyformb == false) {
+		//	if ((g_keybuf[VK_CONTROL] & 0x80) && (g_keybuf[VK_SHIFT] & 0x80)) {
+		//		if (((g_savekeybuf[VK_CONTROL] & 0x80) == 0) || ((g_savekeybuf[VK_SHIFT] & 0x80) == 0)) {
+		//			g_ctrlshiftkeyformb = true;
+		//			//reset g_ctrlshiftkeyformb at the place of calling OnTimelineMButtonDown
+		//		}
+		//	}
+		//}
+
+
+		//##################
+		//OnTimeLineWheel()
+		//##################
+		if (g_keybuf['A'] & 0x80) {
+			s_akeycnt++;
+		}
+		else {
+			s_akeycnt = 0;
+		}
+		if (g_keybuf['D'] & 0x80) {
+			s_dkeycnt++;
+		}
+		else {
+			s_dkeycnt = 0;
+		}
+
+		//if (g_keybuf['1'] & 0x80) {//num
+		//	s_1keycnt++;
+		//}
+		//else {
+		//	s_1keycnt = 0;
+		//}
+
+
+
+		/////// all model bone
+		if (s_model && g_controlkey && (g_keybuf['A'] & 0x80) && !(g_savekeybuf['A'] & 0x80)) {
+			s_allmodelbone = !s_allmodelbone;
+		}
+
+		//if (g_controlkey && (s_1keycnt == 1)) {
+		//	s_dispsampleui = !s_dispsampleui;
+		//}
+
 	}
-	*/
-
-
-
-	//####################################################################################################################
-	//Undo,RedoのRedoのコマンドキーがCtrl + Shift + Zなので,　MButton用のキーとしてCtrl + Shiftは使えない。コメントアウト　2022/01/11
-	//####################################################################################################################
-	//if (g_ctrlshiftkeyformb == false) {
-	//	if ((g_keybuf[VK_CONTROL] & 0x80) && (g_keybuf[VK_SHIFT] & 0x80)) {
-	//		if (((g_savekeybuf[VK_CONTROL] & 0x80) == 0) || ((g_savekeybuf[VK_SHIFT] & 0x80) == 0)) {
-	//			g_ctrlshiftkeyformb = true;
-	//			//reset g_ctrlshiftkeyformb at the place of calling OnTimelineMButtonDown
-	//		}
-	//	}
-	//}
-
-
-	//##################
-	//OnTimeLineWheel()
-	//##################
-	if (g_keybuf['A'] & 0x80) {
-		s_akeycnt++;
-	}
-	else {
-		s_akeycnt = 0;
-	}
-	if (g_keybuf['D'] & 0x80) {
-		s_dkeycnt++;
-	}
-	else {
-		s_dkeycnt = 0;
-	}
-
-	//if (g_keybuf['1'] & 0x80) {//num
-	//	s_1keycnt++;
-	//}
-	//else {
-	//	s_1keycnt = 0;
-	//}
-
-
-
-	/////// all model bone
-	if (s_model && g_controlkey && (g_keybuf['A'] & 0x80) && !(g_savekeybuf['A'] & 0x80)) {
-		s_allmodelbone = !s_allmodelbone;
-	}
-
-	//if (g_controlkey && (s_1keycnt == 1)) {
-	//	s_dispsampleui = !s_dispsampleui;
-	//}
 
 	return 0;
 }
@@ -38901,7 +38939,36 @@ void GUIMenuSetVisible(int srcmenukind, int srcplateno)
 		if (s_placefolderWnd) {
 			s_placefolderWnd->setVisible(false);
 		}
-		SelectNextWindow(MB3D_WND_3D);
+
+		//platemenu用のウインドウ以外を閉じるまたは破棄する
+		if (s_copyhistorydlg.GetCreatedFlag() == true) {
+			s_copyhistorydlg.ShowWindow(SW_HIDE);
+		}
+		if (s_dollyhistorydlg.GetCreatedFlag() == true) {
+			s_dollyhistorydlg.ShowWindow(SW_HIDE);
+		}
+		if (s_anglelimitdlg) {
+			s_underanglelimithscroll = 0;
+			DestroyWindow(s_anglelimitdlg);
+			s_anglelimitdlg = 0;
+		}
+		if (s_rotaxisdlg) {
+			DestroyWindow(s_rotaxisdlg);
+			s_rotaxisdlg = 0;
+		}
+		if (s_customrigdlg) {
+			DestroyWindow(s_customrigdlg);
+			s_customrigdlg = 0;
+		}
+
+		//#####################################
+		//まず変更前のプレートメニューを閉じる
+		//#####################################
+		GUIRigidSetVisible(-2);
+		GUIRetargetSetVisible(-2);
+		GUIDispSetVisible(-2);
+
+		//SelectNextWindow(MB3D_WND_3D);
 	}
 	else {
 		_ASSERT(0);
@@ -48846,39 +48913,46 @@ int CreateMaterialRateWnd()
 	return 0;
 }
 
+int SetModel2MaterialRateDlg(CModel* srcmodel)
+{
+	if (srcmodel) {
+		WCHAR strname[256] = { 0L };
+		ZeroMemory(strname, sizeof(WCHAR) * 256);
+		size_t namelen = wcslen(srcmodel->GetFileName());
+		if (namelen <= 255) {
+			wcscpy_s(strname, 256, srcmodel->GetFileName());
+		}
+		else {
+			wcsncpy_s(strname, 256, srcmodel->GetFileName(), 255);
+		}
+		SetDlgItemTextW(s_materialratedlgwnd, IDC_STATICMODELNAME, strname);
+
+
+		WCHAR strval[256] = { 0L };
+		ChaVector4 materialdisprate = srcmodel->GetMaterialDispRate();
+
+		swprintf_s(strval, 256, L"%.3f", materialdisprate.x);
+		SetDlgItemTextW(s_materialratedlgwnd, IDC_EDIT_DIFFUSERATE, strval);
+		swprintf_s(strval, 256, L"%.3f", materialdisprate.y);
+		SetDlgItemTextW(s_materialratedlgwnd, IDC_EDIT_SPECULARRATE, strval);
+		swprintf_s(strval, 256, L"%.3f", materialdisprate.z);
+		SetDlgItemTextW(s_materialratedlgwnd, IDC_EDIT_EMISSIVERATE, strval);
+		swprintf_s(strval, 256, L"%.3f", materialdisprate.w);
+		SetDlgItemTextW(s_materialratedlgwnd, IDC_EDIT_AMBIENTRATE, strval);
+	}
+
+	return 0;
+
+}
 
 int ShowMaterialRateDlg()
 {
-
 	if (s_materialratedlgwnd) {
 		if (s_model) {
-			WCHAR strname[256] = { 0L };
-			ZeroMemory(strname, sizeof(WCHAR) * 256);
-			size_t namelen = wcslen(s_model->GetFileName());
-			if (namelen <= 255) {
-				wcscpy_s(strname, 256, s_model->GetFileName());
-			}
-			else {
-				wcsncpy_s(strname, 256, s_model->GetFileName(), 255);
-			}
-			SetDlgItemTextW(s_materialratedlgwnd, IDC_STATICMODELNAME, strname);
-
-
-			WCHAR strval[256] = { 0L };
-			ChaVector4 materialdisprate = s_model->GetMaterialDispRate();
-
-			swprintf_s(strval, 256, L"%.3f", materialdisprate.x);
-			SetDlgItemTextW(s_materialratedlgwnd, IDC_EDIT_DIFFUSERATE, strval);
-			swprintf_s(strval, 256, L"%.3f", materialdisprate.y);
-			SetDlgItemTextW(s_materialratedlgwnd, IDC_EDIT_SPECULARRATE, strval);
-			swprintf_s(strval, 256, L"%.3f", materialdisprate.z);
-			SetDlgItemTextW(s_materialratedlgwnd, IDC_EDIT_EMISSIVERATE, strval);
-			swprintf_s(strval, 256, L"%.3f", materialdisprate.w);
-			SetDlgItemTextW(s_materialratedlgwnd, IDC_EDIT_AMBIENTRATE, strval);
+			SetModel2MaterialRateDlg(s_model);
 
 			ShowWindow(s_materialratedlgwnd, SW_SHOW);
 			UpdateWindow(s_materialratedlgwnd);
-
 		}
 
 	}
