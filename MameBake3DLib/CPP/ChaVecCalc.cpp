@@ -14,7 +14,7 @@
 
 #define CHACALCCPP
 #include <ChaVecCalc.h>
-
+#include <GlobalVar.h>
 
 #include "../Examples/CommonInterfaces/CommonExampleInterface.h"
 #include "../Examples/CommonInterfaces/CommonGUIHelperInterface.h"
@@ -1334,6 +1334,68 @@ void ChaVector4::Clamp(float srcmin, float srcmax)
 	y = tmpy;
 	z = tmpz;
 }
+
+
+
+
+
+
+ChaPlane::ChaPlane()
+{
+	a = 0.0f;
+	b = 0.0f;
+	c = 1.0f;
+	d = 0.0f;
+}
+
+ChaPlane::ChaPlane(float srca, float srcb, float srcc, float srcd)
+{
+	a = srca;
+	b = srcb;
+	c = srcc;
+	c = srcd;
+}
+
+ChaPlane::~ChaPlane()
+{
+}
+
+ChaPlane ChaPlane::operator= (ChaPlane v) { this->a = v.a; this->b = v.b; this->c = v.c; this->d = v.d; return *this; };
+
+int ChaPlane::FromPoints(ChaVector3 point1, ChaVector3 point2, ChaVector3 point3)
+{
+	ChaVector3 n;
+	float d;
+
+	//ChaVector3 v21 = point1 - point2;
+	//ChaVector3 v31 = point1 - point3;
+	//ChaVector3Cross(&n, &v21, &v31);
+
+	//ChaVector3 v21 = point1 - point2;
+	//ChaVector3 v32 = point3 - point2;
+	//ChaVector3Cross(&n, &v21, &v32);
+	
+	
+	ChaVector3 v12 = point2 - point1;
+	ChaVector3 v13 = point3 - point1;
+	ChaVector3Cross(&n, &v12, &v13);
+	ChaVector3Normalize(&n, &n);
+
+	d = ChaVector3Dot(&n, &point1) * -1.0f;
+
+	a = n.x;
+	b = n.y;
+	c = n.z;
+
+	//Result.x = N.x;
+	//Result.y = N.y;
+	//Result.z = N.z;
+	//Result.w = -D.w;
+
+	return 0;
+}
+
+
 
 ChaMatrix::ChaMatrix()
 {
@@ -5882,6 +5944,564 @@ void N3SM::InitParams()
 	smfacenum = 0;
 	ppsmface = 0;
 }
+
+
+
+ChaFrustumInfo::ChaFrustumInfo()
+{
+	InitParams();
+}
+ChaFrustumInfo::~ChaFrustumInfo()
+{
+}
+
+int ChaFrustumInfo::UpdateFrustum(ChaMatrix matVP)
+{
+	m_matVP = matVP;
+	ChaMatrix matInvViewProj = ChaMatrixInv(matVP);
+
+	//m_vecFrustum[0] = ChaVector3(-1.0f, -1.0f, 0.0f); // xyz
+	//m_vecFrustum[1] = ChaVector3(1.0f, -1.0f, 0.0f); // Xyz
+	//m_vecFrustum[2] = ChaVector3(-1.0f, 1.0f, 0.0f); // xYz
+	//m_vecFrustum[3] = ChaVector3(1.0f, 1.0f, 0.0f); // XYz
+	//m_vecFrustum[4] = ChaVector3(-1.0f, -1.0f, 1.0f); // xyZ
+	//m_vecFrustum[5] = ChaVector3(1.0f, -1.0f, 1.0f); // XyZ
+	//m_vecFrustum[6] = ChaVector3(-1.0f, 1.0f, 1.0f); // xYZ
+	//m_vecFrustum[7] = ChaVector3(1.0f, 1.0f, 1.0f); // XYZ
+
+	//float minx = -1.0f;
+	//float maxx = 1.0f;
+	//float miny = -1.0f;
+	//float maxy = 1.0f;
+	float minx = -1.0f;
+	float maxx = 1.0f;
+	float miny = -1.0f;
+	float maxy = 1.0f;
+	//float minz = 0.25f;
+	//float minz = 0.50f;
+	//float minz = 0.50f;
+
+	//########################################################################################
+	//パースがきついほど　視錐の面に角度がついて　内積での判定がうまくいかない
+	//適正なminz, maxzを探したが　アセットのプロジェクションに依存するので　固定値では無理
+	//Frustumでの判定は正射影用？
+	//今回は　Frustum判定をやめて　２次元的にfovyの内積比較で判定することにした
+	//########################################################################################
+	float minz = 0.9990f;
+	float maxz = 0.9997f;
+	//float maxz = 0.70f;
+	m_vecFrustum[0] = ChaVector3(minx, miny, minz); // xyz
+	m_vecFrustum[1] = ChaVector3(maxx, miny, minz); // Xyz
+	m_vecFrustum[2] = ChaVector3(minx, maxy, minz); // xYz
+	m_vecFrustum[3] = ChaVector3(maxx, maxy, minz); // XYz
+	m_vecFrustum[4] = ChaVector3(minx, miny, maxz); // xyZ
+	m_vecFrustum[5] = ChaVector3(maxx, miny, maxz); // XyZ
+	m_vecFrustum[6] = ChaVector3(minx, maxy, maxz); // xYZ
+	m_vecFrustum[7] = ChaVector3(maxx, maxy, maxz); // XYZ
+
+
+
+	for (INT i = 0; i < 8; i++) {
+		ChaVector3TransformCoord(&(m_vecTraFrustum[i]), &(m_vecFrustum[i]), &matInvViewProj);
+	}
+
+	//m_planeFrustum[0].FromPoints(m_vecTraFrustum[0], m_vecTraFrustum[1], m_vecTraFrustum[2]); // Near
+	//m_planeFrustum[1].FromPoints(m_vecTraFrustum[6], m_vecTraFrustum[7], m_vecTraFrustum[5]); // Far
+	//m_planeFrustum[2].FromPoints(m_vecTraFrustum[2], m_vecTraFrustum[6], m_vecTraFrustum[4]); // Left
+	//m_planeFrustum[3].FromPoints(m_vecTraFrustum[7], m_vecTraFrustum[3], m_vecTraFrustum[5]); // Right
+	//m_planeFrustum[4].FromPoints(m_vecTraFrustum[2], m_vecTraFrustum[3], m_vecTraFrustum[6]); // Top
+	//m_planeFrustum[5].FromPoints(m_vecTraFrustum[1], m_vecTraFrustum[0], m_vecTraFrustum[4]); // Bottom
+
+	//m_planeFrustum[0].FromPoints(m_vecTraFrustum[2], m_vecTraFrustum[1], m_vecTraFrustum[0]); // Near
+	//m_planeFrustum[1].FromPoints(m_vecTraFrustum[5], m_vecTraFrustum[7], m_vecTraFrustum[6]); // Far
+	//m_planeFrustum[2].FromPoints(m_vecTraFrustum[4], m_vecTraFrustum[6], m_vecTraFrustum[2]); // Left
+	//m_planeFrustum[3].FromPoints(m_vecTraFrustum[5], m_vecTraFrustum[3], m_vecTraFrustum[7]); // Right
+	//m_planeFrustum[4].FromPoints(m_vecTraFrustum[6], m_vecTraFrustum[3], m_vecTraFrustum[2]); // Top
+	//m_planeFrustum[5].FromPoints(m_vecTraFrustum[4], m_vecTraFrustum[0], m_vecTraFrustum[1]); // Bottom
+
+	m_planeFrustum[0].FromPoints(m_vecTraFrustum[0], m_vecTraFrustum[2], m_vecTraFrustum[1]); // Near
+	m_planeFrustum[1].FromPoints(m_vecTraFrustum[5], m_vecTraFrustum[7], m_vecTraFrustum[6]); // Far !!!
+	m_planeFrustum[2].FromPoints(m_vecTraFrustum[4], m_vecTraFrustum[6], m_vecTraFrustum[0]); // Left
+	m_planeFrustum[3].FromPoints(m_vecTraFrustum[1], m_vecTraFrustum[3], m_vecTraFrustum[5]); // Right
+	m_planeFrustum[4].FromPoints(m_vecTraFrustum[2], m_vecTraFrustum[6], m_vecTraFrustum[3]); // Top !!!
+	m_planeFrustum[5].FromPoints(m_vecTraFrustum[1], m_vecTraFrustum[5], m_vecTraFrustum[4]); // Bottom
+
+	//m_planeFrustum[0].FromPoints(m_vecTraFrustum[0], m_vecTraFrustum[2], m_vecTraFrustum[1]); // Near
+	//m_planeFrustum[1].FromPoints(m_vecTraFrustum[6], m_vecTraFrustum[7], m_vecTraFrustum[5]); // Far !!!
+	//m_planeFrustum[2].FromPoints(m_vecTraFrustum[4], m_vecTraFrustum[6], m_vecTraFrustum[0]); // Left
+	//m_planeFrustum[3].FromPoints(m_vecTraFrustum[1], m_vecTraFrustum[3], m_vecTraFrustum[5]); // Right
+	//m_planeFrustum[4].FromPoints(m_vecTraFrustum[3], m_vecTraFrustum[6], m_vecTraFrustum[2]); // Top !!!
+	//m_planeFrustum[5].FromPoints(m_vecTraFrustum[1], m_vecTraFrustum[5], m_vecTraFrustum[4]); // Bottom
+
+	return 0;
+}
+
+//int ChaFrustumInfo::ChkInView(MODELBOUND srcmb, ChaMatrix matWorld)
+//{
+//	ChaVector3 tracenter;
+//	ChaVector3TransformCoord(&tracenter, &(srcmb.center), &matWorld);
+//	//tracenter = srcmb.center;
+//
+//	int planeno;
+//	//int visiblecnt = 0;
+//	int pluscount = 0;
+//	int minuscount = 0;
+//	int zerocount = 0;
+//	for (planeno = 0; planeno < 6; planeno++) {
+//
+//		//float distance = m_planeFrustum[planeno].a * tracenter.x +
+//		//	m_planeFrustum[planeno].b * tracenter.y +
+//		//	m_planeFrustum[planeno].c * tracenter.z +
+//		//	m_planeFrustum[planeno].d;
+//		//if (distance > 0.0f) {
+//		//	pluscount++;
+//		//}
+//		//else if (distance < 0.0f) {
+//		//	minuscount++;
+//		//}
+//		//else {
+//		//	zerocount++;
+//		//}
+//
+//		//int result = GetFootOnPlane(planeno, tracenter);//m_footpos[planeno]に計算値をセット
+//		//if (result) {
+//		//	_ASSERT(0);
+//		//	return 1;
+//		//}
+//
+//		//ChaVector3 foot2center = tracenter - m_footpos[planeno];
+//		//ChaVector3Normalize(&foot2center, &foot2center);
+//		////ChaVector3 center2foot = m_footpos[planeno] - tracenter;
+//		////ChaVector3Normalize(&center2foot, &center2foot);
+//		//
+//		ChaVector3 n;
+//		n.x = m_planeFrustum[planeno].a;
+//		n.y = m_planeFrustum[planeno].b;
+//		n.z = m_planeFrustum[planeno].c;
+//
+//		float dot;
+//		dot = ChaVector3Dot(&n, &foot2center);
+//
+//
+//
+//
+//
+//		////float dot2;
+//		////dot2 = ChaVector3Dot(&n, &center2foot);
+//
+//		////距離チェック
+//		//float tmpa0, a0, tmpa1, a1;
+//		//tmpa0 = n.x * tracenter.x + n.y * tracenter.y + n.z * tracenter.z + m_planeFrustum[planeno].d;
+//		//if (tmpa0 != 0.0f) {
+//		//	a0 = (float)fabs(tmpa0);
+//		//}
+//		//else {
+//		//	a0 = 0.0f;
+//		//}
+//		//
+//		//tmpa1 = n.x * n.x + n.y * n.y + n.z * n.z;
+//		//if (tmpa1 != 0.0f) {
+//		//	a1 = sqrtf(tmpa1);
+//		//}
+//		//else {
+//		//	a1 = 0.0f;
+//		//}
+//		//
+//		//float dist;
+//		//if (a1 != 0.0f) {
+//		//	dist = a0 / a1;
+//		//}
+//		//else {
+//		//	dist = 0.0f;
+//		//}
+//
+//		////if ((dot < 0.0f) && (dist > (srcmb.r * srcmb.r))) {
+//		////if ((dot < 0.0f) && (dist > srcmb.r)) {
+//		////if (dist > srcmb.r) {
+//		////	//視野外
+//		////	break;//!!!!!!!!!
+//		////}
+//		////else {
+//		////	visiblecnt++;
+//		////}
+//
+//		if (dot > 0.0f) {
+//			pluscount++;
+//		}
+//		else if (dot < 0.0f) {
+//			minuscount++;
+//		}
+//		else {
+//			zerocount++;
+//		}
+//
+//
+//	}
+//	//if (visiblecnt == 6) {
+//	//	SetVisible(true);
+//	//}
+//	//else {
+//	//	SetVisible(false);
+//	//}
+//
+//	if ((pluscount == 0) || (minuscount == 0)) {
+//		SetVisible(true);
+//	}
+//	else {
+//		SetVisible(false);
+//	}
+//
+//
+//	return 0;
+//}
+
+
+//int ChaFrustumInfo::ChkInView(MODELBOUND srcmb, ChaMatrix matWorld)
+//{
+//	ChaVector3 tracenter;
+//	ChaVector3TransformCoord(&tracenter, &(srcmb.center), &matWorld);
+//	//tracenter = srcmb.center;
+//
+//	int chk1, chk2, chk3, chk4, chk5, chk6;
+//
+//	//near
+//	{
+//		ChaVector3 n;
+//		n.x = m_planeFrustum[0].a;
+//		n.y = m_planeFrustum[0].b;
+//		n.z = m_planeFrustum[0].c;
+//
+//		ChaVector3 vec1, vec2, vec3, vec4;
+//		float dot1, dot2, dot3, dot4;
+//		
+//		vec1 = tracenter - m_vecTraFrustum[0];
+//		ChaVector3Normalize(&vec1, &vec1);
+//		dot1 = ChaVector3Dot(&n, &vec1);
+//
+//		vec2 = tracenter - m_vecTraFrustum[1];
+//		ChaVector3Normalize(&vec2, &vec2);
+//		dot2 = ChaVector3Dot(&n, &vec2);
+//
+//		vec3 = tracenter - m_vecTraFrustum[2];
+//		ChaVector3Normalize(&vec3, &vec3);
+//		dot3 = ChaVector3Dot(&n, &vec3);
+//
+//		vec4 = tracenter - m_vecTraFrustum[3];
+//		ChaVector3Normalize(&vec4, &vec4);
+//		dot4 = ChaVector3Dot(&n, &vec4);
+//
+//		if ((dot1 >= 0.0f) && (dot2 >= 0.0f) && (dot3 >= 0.0f) && (dot4 >= 0.0f)) {
+//			chk1 = 1;
+//		}
+//		else if ((dot1 <= 0.0f) && (dot2 <= 0.0f) && (dot3 <= 0.0f) && (dot4 <= 0.0f)) {
+//			chk1 = -1;
+//		}
+//		else {
+//			chk1 = 0;
+//		}
+//	}
+//
+//	//far
+//	{
+//		ChaVector3 n;
+//		//n.x = m_planeFrustum[1].a;
+//		//n.y = m_planeFrustum[1].b;
+//		//n.z = m_planeFrustum[1].c;
+//		n.x = m_planeFrustum[0].a;
+//		n.y = m_planeFrustum[0].b;
+//		n.z = m_planeFrustum[0].c;
+//
+//		ChaVector3 vec1, vec2, vec3, vec4;
+//		float dot1, dot2, dot3, dot4;
+//
+//		vec1 = tracenter - m_vecTraFrustum[4];
+//		ChaVector3Normalize(&vec1, &vec1);
+//		dot1 = ChaVector3Dot(&n, &vec1);
+//
+//		vec2 = tracenter - m_vecTraFrustum[5];
+//		ChaVector3Normalize(&vec2, &vec2);
+//		dot2 = ChaVector3Dot(&n, &vec2);
+//
+//		vec3 = tracenter - m_vecTraFrustum[6];
+//		ChaVector3Normalize(&vec3, &vec3);
+//		dot3 = ChaVector3Dot(&n, &vec3);
+//
+//		vec4 = tracenter - m_vecTraFrustum[7];
+//		ChaVector3Normalize(&vec4, &vec4);
+//		dot4 = ChaVector3Dot(&n, &vec4);
+//
+//		if ((dot1 >= 0.0f) && (dot2 >= 0.0f) && (dot3 >= 0.0f) && (dot4 >= 0.0f)) {
+//			chk2 = 1;
+//		}
+//		else if ((dot1 <= 0.0f) && (dot2 <= 0.0f) && (dot3 <= 0.0f) && (dot4 <= 0.0f)) {
+//			chk2 = -1;
+//		}
+//		else {
+//			chk2 = 0;
+//		}
+//	}
+//
+//	//left
+//	{
+//		ChaVector3 n;
+//		n.x = m_planeFrustum[2].a;
+//		n.y = m_planeFrustum[2].b;
+//		n.z = m_planeFrustum[2].c;
+//
+//		ChaVector3 vec1, vec2, vec3, vec4;
+//		float dot1, dot2, dot3, dot4;
+//
+//		vec1 = tracenter - m_vecTraFrustum[0];
+//		ChaVector3Normalize(&vec1, &vec1);
+//		dot1 = ChaVector3Dot(&n, &vec1);
+//
+//		vec2 = tracenter - m_vecTraFrustum[2];
+//		ChaVector3Normalize(&vec2, &vec2);
+//		dot2 = ChaVector3Dot(&n, &vec2);
+//
+//		vec3 = tracenter - m_vecTraFrustum[4];
+//		ChaVector3Normalize(&vec3, &vec3);
+//		dot3 = ChaVector3Dot(&n, &vec3);
+//
+//		vec4 = tracenter - m_vecTraFrustum[6];
+//		ChaVector3Normalize(&vec4, &vec4);
+//		dot4 = ChaVector3Dot(&n, &vec4);
+//
+//		if ((dot1 >= 0.0f) && (dot2 >= 0.0f) && (dot3 >= 0.0f) && (dot4 >= 0.0f)) {
+//			chk3 = 1;
+//		}
+//		else if ((dot1 <= 0.0f) && (dot2 <= 0.0f) && (dot3 <= 0.0f) && (dot4 <= 0.0f)) {
+//			chk3 = -1;
+//		}
+//		else {
+//			chk3 = 0;
+//		}
+//	}
+//
+//	//right
+//	{
+//		ChaVector3 n;
+//		//n.x = m_planeFrustum[3].a;
+//		//n.y = m_planeFrustum[3].b;
+//		//n.z = m_planeFrustum[3].c;
+//		n.x = m_planeFrustum[2].a;
+//		n.y = m_planeFrustum[2].b;
+//		n.z = m_planeFrustum[2].c;
+//
+//		ChaVector3 vec1, vec2, vec3, vec4;
+//		float dot1, dot2, dot3, dot4;
+//
+//		vec1 = tracenter - m_vecTraFrustum[1];
+//		ChaVector3Normalize(&vec1, &vec1);
+//		dot1 = ChaVector3Dot(&n, &vec1);
+//
+//		vec2 = tracenter - m_vecTraFrustum[3];
+//		ChaVector3Normalize(&vec2, &vec2);
+//		dot2 = ChaVector3Dot(&n, &vec2);
+//
+//		vec3 = tracenter - m_vecTraFrustum[5];
+//		ChaVector3Normalize(&vec3, &vec3);
+//		dot3 = ChaVector3Dot(&n, &vec3);
+//
+//		vec4 = tracenter - m_vecTraFrustum[7];
+//		ChaVector3Normalize(&vec4, &vec4);
+//		dot4 = ChaVector3Dot(&n, &vec4);
+//
+//		if ((dot1 >= 0.0f) && (dot2 >= 0.0f) && (dot3 >= 0.0f) && (dot4 >= 0.0f)) {
+//			chk4 = 1;
+//		}
+//		else if ((dot1 <= 0.0f) && (dot2 <= 0.0f) && (dot3 <= 0.0f) && (dot4 <= 0.0f)) {
+//			chk4 = -1;
+//		}
+//		else {
+//			chk4 = 0;
+//		}
+//	}
+//
+//	//top
+//	{
+//		ChaVector3 n;
+//		n.x = m_planeFrustum[4].a;
+//		n.y = m_planeFrustum[4].b;
+//		n.z = m_planeFrustum[4].c;
+//
+//		ChaVector3 vec1, vec2, vec3, vec4;
+//		float dot1, dot2, dot3, dot4;
+//
+//		vec1 = tracenter - m_vecTraFrustum[2];
+//		ChaVector3Normalize(&vec1, &vec1);
+//		dot1 = ChaVector3Dot(&n, &vec1);
+//
+//		vec2 = tracenter - m_vecTraFrustum[3];
+//		ChaVector3Normalize(&vec2, &vec2);
+//		dot2 = ChaVector3Dot(&n, &vec2);
+//
+//		vec3 = tracenter - m_vecTraFrustum[6];
+//		ChaVector3Normalize(&vec3, &vec3);
+//		dot3 = ChaVector3Dot(&n, &vec3);
+//
+//		vec4 = tracenter - m_vecTraFrustum[7];
+//		ChaVector3Normalize(&vec4, &vec4);
+//		dot4 = ChaVector3Dot(&n, &vec4);
+//
+//		if ((dot1 >= 0.0f) && (dot2 >= 0.0f) && (dot3 >= 0.0f) && (dot4 >= 0.0f)) {
+//			chk5 = 1;
+//		}
+//		else if ((dot1 <= 0.0f) && (dot2 <= 0.0f) && (dot3 <= 0.0f) && (dot4 <= 0.0f)) {
+//			chk5 = -1;
+//		}
+//		else {
+//			chk5 = 0;
+//		}
+//	}
+//
+//	//bottom
+//	{
+//		ChaVector3 n;
+//		//n.x = m_planeFrustum[5].a;
+//		//n.y = m_planeFrustum[5].b;
+//		//n.z = m_planeFrustum[5].c;
+//		n.x = m_planeFrustum[4].a;
+//		n.y = m_planeFrustum[4].b;
+//		n.z = m_planeFrustum[4].c;
+//
+//		ChaVector3 vec1, vec2, vec3, vec4;
+//		float dot1, dot2, dot3, dot4;
+//
+//		vec1 = tracenter - m_vecTraFrustum[0];
+//		ChaVector3Normalize(&vec1, &vec1);
+//		dot1 = ChaVector3Dot(&n, &vec1);
+//
+//		vec2 = tracenter - m_vecTraFrustum[1];
+//		ChaVector3Normalize(&vec2, &vec2);
+//		dot2 = ChaVector3Dot(&n, &vec2);
+//
+//		vec3 = tracenter - m_vecTraFrustum[4];
+//		ChaVector3Normalize(&vec3, &vec3);
+//		dot3 = ChaVector3Dot(&n, &vec3);
+//
+//		vec4 = tracenter - m_vecTraFrustum[5];
+//		ChaVector3Normalize(&vec4, &vec4);
+//		dot4 = ChaVector3Dot(&n, &vec4);
+//
+//		if ((dot1 >= 0.0f) && (dot2 >= 0.0f) && (dot3 >= 0.0f) && (dot4 >= 0.0f)) {
+//			chk6 = 1;
+//		}
+//		else if ((dot1 <= 0.0f) && (dot2 <= 0.0f) && (dot3 <= 0.0f) && (dot4 <= 0.0f)) {
+//			chk6 = -1;
+//		}
+//		else {
+//			chk6 = 0;
+//		}
+//	}
+//
+//	//if ((pluscount == 0) || (minuscount == 0)) {
+//	//	SetVisible(true);
+//	//}
+//	//else {
+//	//	SetVisible(false);
+//	//}
+//
+//	//if (((chk1 * chk2) == -1) && ((chk3 * chk4) == -1) && ((chk5 * chk6) == -1)) {
+//	//if (((chk3 * chk4) == -1) && ((chk5 * chk6) == -1)) {
+//	if ((chk3 * chk4) == -1) {
+//		SetVisible(true);
+//	}
+//	else {
+//		SetVisible(false);
+//	}
+//
+//
+//
+//	return 0;
+//}
+
+
+int ChaFrustumInfo::ChkInView(MODELBOUND srcmb, ChaMatrix matWorld)
+{
+	//###########################################################################
+	//2023/08/26
+	//大きい地面の中心が　カメラの後ろ側にある場合などにうまくいかないが　大体OK
+	//###########################################################################
+
+	ChaVector3 tracenter;
+	ChaVector3TransformCoord(&tracenter, &(srcmb.center), &matWorld);
+	//tracenter = srcmb.center;
+
+	ChaVector3 camdir = g_camtargetpos - g_camEye;
+	ChaVector3Normalize(&camdir, &camdir);
+
+
+	ChaVector3 backpos = g_camEye - camdir * srcmb.r;
+	ChaVector3 cam2obj = tracenter - backpos;
+	float distobj = (float)ChaVector3LengthDbl(&cam2obj);
+	ChaVector3Normalize(&cam2obj, &cam2obj);
+
+
+	float dot = ChaVector3Dot(&camdir, &cam2obj);
+	float dotfov = (float)cos(g_fovy);
+	
+	if ((dot >= dotfov) && (distobj <= (g_projfar + srcmb.r))) {
+		SetVisible(true);
+	}
+	else {
+		SetVisible(false);
+	}
+
+	return 0;
+}
+
+
+void ChaFrustumInfo::InitParams()
+{
+	int pointno;
+	for (pointno = 0; pointno < 8; pointno++) {
+		m_vecFrustum[pointno].SetZeroVec3();
+		m_vecTraFrustum[pointno].SetZeroVec3();
+	}
+	int planeno;
+	for (planeno = 0; planeno < 6; planeno++) {
+		m_planeFrustum[planeno] = ChaPlane(0.0f, 0.0f, -1.0f, 0.0f);
+		m_footpos[planeno].SetZeroVec3();
+	}
+
+	m_matVP.SetIdentity();
+
+	SetVisible(true);
+}
+int ChaFrustumInfo::GetFootOnPlane(int srcplaneindex, ChaVector3 srcpos)
+{
+	if ((srcplaneindex < 0) || (srcplaneindex >= 6)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	ChaPlane curplane = m_planeFrustum[srcplaneindex];
+
+	double t0, tmpt1, t1, t;
+	t0 = curplane.a * srcpos.x + curplane.b * srcpos.y + curplane.c * srcpos.z + curplane.d;
+	tmpt1 = curplane.a * curplane.a + curplane.b * curplane.b + curplane.c * curplane.c;
+	if (tmpt1 != 0.0f) {
+		t1 = sqrt(tmpt1);
+	}
+	else {
+		t1 = 0.0f;
+	}
+	
+	if (t1 != 0.0f) {
+		t = -(t0 / t1);
+	}
+	else {
+		t = 0.0f;
+	}
+
+	m_footpos[srcplaneindex].x = (float)((double)srcpos.x + t * (double)curplane.a);
+	m_footpos[srcplaneindex].y = (float)((double)srcpos.y + t * (double)curplane.b);
+	m_footpos[srcplaneindex].z = (float)((double)srcpos.z + t * (double)curplane.c);
+
+	return 0;
+}
+
 
 
 

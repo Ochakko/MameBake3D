@@ -104,6 +104,9 @@ public:
 
 	void DestroySystemDispObj();
 
+	int ChkInView(ChaMatrix matWorld, ChaMatrix matVP);
+
+
 private:
 	void InitParams();
 
@@ -130,6 +133,9 @@ private:
 
 public:
 	//accesser
+	bool GetVisible();
+	void SetInView(bool srcflag);
+
 	int GetObjFrom(){
 		return m_objfrom;
 	};
@@ -373,6 +379,8 @@ private:
 	std::map<std::string,ChaVector3*> m_shapevert;
 
 	FbxNode* m_pnode;
+
+	ChaFrustumInfo m_frustum;
 
 //以下、クラス外から参照しないのでアクセッサー無し
 	int m_patch;

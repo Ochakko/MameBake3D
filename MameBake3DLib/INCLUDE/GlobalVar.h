@@ -132,6 +132,10 @@ ChaVector3 g_befcamEye = ChaVector3(0.0f, 0.0f, 0.0f);
 ChaVector3 g_befcamtargetpos = ChaVector3(0.0f, 0.0f, 0.0f);
 ChaVector3 g_cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
 float g_camdist = 50.0f;
+float g_initcamdist = 50.0f;
+float g_fovy = (float)(PI / 4.0);
+float g_projnear = 0.01f;
+float g_projfar = g_initcamdist * 100.0f;
 
 
 float g_l_kval[3] = { 1.0f, powf(10.0f, 2.61f), 2000.0f };//
@@ -334,6 +338,10 @@ extern ChaVector3 g_befcamEye;
 extern ChaVector3 g_befcamtargetpos;
 extern ChaVector3 g_cameraupdir;
 extern float g_camdist;
+extern float g_initcamdist;
+extern float g_fovy;
+extern float g_projnear;
+extern float g_projfar;
 
 
 extern float g_l_kval[3];//

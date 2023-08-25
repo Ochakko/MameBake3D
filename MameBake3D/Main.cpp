@@ -1731,17 +1731,17 @@ static CCopyHistoryDlg s_copyhistorydlg;
 static CDollyHistoryDlg s_dollyhistorydlg;
 
 //float g_initcamdist = 10.0f;
-//static float s_projnear = 0.01f;
-float g_initcamdist = 50.0f;
-//static float s_projnear = 0.001f;
-//static float s_projnear = 1.0f;
+//static float g_projnear = 0.01f;
+//float g_initcamdist = 50.0f;
+//static float g_projnear = 0.001f;
+//static float g_projnear = 1.0f;
 //static ChaVector3 g_cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
 static double s_cameraframe = 0.0;
 //static float g_camdist = g_initcamdist;
-static float s_projnear = 0.01f;
-static float s_projfar = g_initcamdist * 100.0f;
+//static float g_projnear = 0.01f;
+//static float g_projfar = g_initcamdist * 100.0f;
 static float s_fAspectRatio = 1.0f;
-static float s_fovy = (float)(PI / 4.0);
+//static float g_fovy = (float)(PI / 4.0);
 static float s_cammvstep = 100.0f;
 static int s_editmotionflag = -1;
 static int s_tkeyflag = 0;
@@ -4206,10 +4206,10 @@ void InitApp()
 
 		g_initcamdist = 50.0f;
 		g_camdist = g_initcamdist;
-		s_projnear = 0.01f;
-		s_projfar = g_initcamdist * 100.0f;
+		g_projnear = 0.01f;
+		g_projfar = g_initcamdist * 100.0f;
 		s_fAspectRatio = 1.0f;
-		s_fovy = (float)(PI / 4.0);
+		g_fovy = (float)(PI / 4.0);
 		s_cammvstep = 100.0f;
 	}
 
@@ -6362,7 +6362,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 //    // Setup the camera's projection parameters
 //    s_fAspectRatio = pBackBufferSurfaceDesc->Width / ( FLOAT )pBackBufferSurfaceDesc->Height;
 ////    g_Camera->SetProjParams( D3DX_PI / 4, fAspectRatio, g_initnear, 4.0f * g_initcamdist );
-//	g_Camera->SetProjParams( D3DX_PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
+//	g_Camera->SetProjParams( D3DX_PI / 4, s_fAspectRatio, g_projnear, 5.0f * g_initcamdist );
 //
 //    g_Camera->SetWindow( pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height );
 //	g_Camera->SetButtonMasks( MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON );
@@ -6399,10 +6399,10 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	// Setup the camera's projection parameters
 	s_fAspectRatio = pBackBufferSurfaceDesc->Width / (FLOAT)pBackBufferSurfaceDesc->Height;
 	//    g_Camera->SetProjParams( D3DX_PI / 4, fAspectRatio, g_initnear, 4.0f * g_initcamdist );
-		//g_Camera->SetProjParams( PI / 4, s_fAspectRatio, s_projnear, 5.0f * g_initcamdist );
-		//g_Camera->SetProjParams(PI / 4, s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
-	//g_Camera->SetProjParams((float)(PI / 4), s_fAspectRatio, s_projnear, 100.0f * g_initcamdist);
-	g_Camera->SetProjParams(s_fovy, s_fAspectRatio, s_projnear, s_projfar);
+		//g_Camera->SetProjParams( PI / 4, s_fAspectRatio, g_projnear, 5.0f * g_initcamdist );
+		//g_Camera->SetProjParams(PI / 4, s_fAspectRatio, g_projnear, 100.0f * g_initcamdist);
+	//g_Camera->SetProjParams((float)(PI / 4), s_fAspectRatio, g_projnear, 100.0f * g_initcamdist);
+	g_Camera->SetProjParams(g_fovy, s_fAspectRatio, g_projnear, g_projfar);
 
 	g_Camera->SetWindow(pBackBufferSurfaceDesc->Width, pBackBufferSurfaceDesc->Height);
 	g_Camera->SetButtonMasks(MOUSE_LEFT_BUTTON, MOUSE_WHEEL, MOUSE_MIDDLE_BUTTON);
@@ -12844,11 +12844,11 @@ void CalcTotalBound()
 		g_LightControl[i].SetRadius(fObjectRadius);
 
 
-	s_projnear = max(0.01f, min(10.0f, fObjectRadius * 0.01f));
+	g_projnear = max(0.01f, min(10.0f, fObjectRadius * 0.01f));
 	g_initcamdist = max(0.1f, min(1000.0f, fObjectRadius * 3.0f));
-	s_projfar = g_initcamdist * 100.0f;
+	g_projfar = g_initcamdist * 100.0f;
 	//s_fAspectRatio = 1.0f;//ここでは更新しない
-	s_fovy = (float)(PI / 4);
+	g_fovy = (float)(PI / 4);
 	g_camtargetpos = g_vCenter;
 	ChaVector3 dirz = ChaVector3(0.0f, 0.0f, 1.0);
 	g_camEye = g_vCenter + dirz * g_initcamdist;
@@ -12863,7 +12863,7 @@ void CalcTotalBound()
 	//!!!!!!ChaMatrixLookAtRH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 	//ChaMatrixLookAtLH(&s_matView, &g_camEye, &g_camtargetpos, &s_camUpVec);
 
-	g_Camera->SetProjParams(s_fovy, s_fAspectRatio, s_projnear, s_projfar);
+	g_Camera->SetProjParams(g_fovy, s_fAspectRatio, g_projnear, g_projfar);
 	g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 	g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
 
@@ -14661,9 +14661,9 @@ int OnCameraMenu(bool dorefreshflag, int selindex, int saveundoflag)
 	if (s_cameramodel->IsCameraLoaded()) {
 		//fbxにカメラが在る場合
 		ChaVector3 camdir = ChaVector3(0.0f, 0.0f, 1.0f);
-		s_cameramodel->GetCameraProjParams(cameramotid, &s_projnear, &s_projfar, &s_fovy, &g_camEye, &camdir, &g_cameraupdir);
+		s_cameramodel->GetCameraProjParams(cameramotid, &g_projnear, &g_projfar, &g_fovy, &g_camEye, &camdir, &g_cameraupdir);
 
-		g_initcamdist = max(0.1f, min(1000.0f, s_projfar));
+		g_initcamdist = max(0.1f, min(1000.0f, g_projfar));
 		g_camtargetpos = g_camEye + camdir * g_initcamdist;
 
 		ChangeCameraMode(2);//forcemode 反転をセット:0 強制オフ時:1 強制オン時:2
@@ -14673,7 +14673,7 @@ int OnCameraMenu(bool dorefreshflag, int selindex, int saveundoflag)
 		g_befcamEye = g_camEye;
 		g_befcamtargetpos = g_camtargetpos;
 
-		g_Camera->SetProjParams(s_fovy, s_fAspectRatio, s_projnear, s_projfar);
+		g_Camera->SetProjParams(g_fovy, s_fAspectRatio, g_projnear, g_projfar);
 		g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
 		//g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
 

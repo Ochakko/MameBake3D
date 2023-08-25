@@ -837,20 +837,27 @@ typedef struct tag_modelbaund
 	float		r;
 }MODELBAUND;
 ***/
+
+	m_bound.min = ChaVector3(FLT_MAX, FLT_MAX, FLT_MAX);
+	m_bound.max = ChaVector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+	m_bound.center = ChaVector3(0.0f, 0.0f, 0.0f);
+	m_bound.r = 1.0f;
+
+
 	if( (m_orgpointnum == 0) || (m_facenum == 0) ){
-		m_bound.min = ChaVector3( 0.0f, 0.0f, 0.0f );
-		m_bound.max = ChaVector3( 0.0f, 0.0f, 0.0f );
-		m_bound.center = ChaVector3( 0.0f, 0.0f, 0.0f );
-		m_bound.r = 0.0f;
+		m_bound.min = ChaVector3(0.0f, 0.0f, 0.0f);
+		m_bound.max = ChaVector3(0.0f, 0.0f, 0.0f);
+		m_bound.center = ChaVector3(0.0f, 0.0f, 0.0f);
+		m_bound.r = 1.0f;
 		return 0;
 	}
 
 
-	m_bound.min = *m_pointbuf;
-	m_bound.max = *m_pointbuf;
+	//m_bound.min = *m_pointbuf;
+	//m_bound.max = *m_pointbuf;
 
 	int vno;
-	for( vno = 1; vno < m_orgpointnum; vno++ ){
+	for( vno = 0; vno < m_orgpointnum; vno++ ){
 		ChaVector3 curv = *( m_pointbuf + vno );
 
 		if( m_bound.min.x > curv.x ){
@@ -878,7 +885,7 @@ typedef struct tag_modelbaund
 
 	ChaVector3 diff;
 	diff = m_bound.center - m_bound.min;
-	m_bound.r = (float)ChaVector3LengthDbl( &diff );
+	m_bound.r = (float)ChaVector3LengthDbl(&diff);
 
 	return 0;
 }

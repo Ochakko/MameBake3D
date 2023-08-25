@@ -450,7 +450,7 @@ void FbxAMatrix2ChaMatrix(ChaMatrix& retmat, FbxAMatrix srcmat)
 static int s_setrigidflag = 0;
 static DWORD s_rigidflag = 0;
 
-CModel::CModel() : m_camerafbx()
+CModel::CModel() : m_camerafbx(), m_frustum()
 {
 	InitializeCriticalSection(&m_CritSection_Node);
 
@@ -467,6 +467,9 @@ CModel::~CModel()
 }
 int CModel::InitParams()
 {
+	m_inview = true;
+	m_bound.Init();
+
 	m_iktargetbonevec.clear();
 	m_nodeonload = 0;
 	m_node2mqoobj.clear();
@@ -1302,12 +1305,18 @@ int CModel::CreateMaterialTexture(ID3D11DeviceContext* pd3dImmediateContext)
 int CModel::OnRender(bool withalpha, 
 	ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int btflag )
 {
+
+	if (GetInView() == false) {
+		return 0;
+	}
+
+
 	ChaVector4 materialdisprate = GetMaterialDispRate();
 
 	map<int,CMQOObject*>::iterator itr;
 	for( itr = m_object.begin(); itr != m_object.end(); itr++ ){
 		CMQOObject* curobj = itr->second;
-		if( curobj && curobj->GetDispFlag() ){
+		if( curobj && curobj->GetVisible() ){
 			if( curobj->GetDispObj() ){
 
 				CMQOMaterial* rmaterial = 0;
@@ -1440,6 +1449,7 @@ int CModel::GetModelBound( MODELBOUND* dstb )
 
 
 	*dstb = mb;
+	m_bound = mb;
 
 	return 0;
 }
@@ -2043,8 +2053,19 @@ int CModel::UpdateMatrix(bool limitdegflag, ChaMatrix* wmat, ChaMatrix* vpmat, b
 	m_matWorld = *wmat;
 	m_matVP = *vpmat;
 
+	
+	ChkInView();//2023/08/25
+	if (GetInView() == false) {
+		return 0;
+	}
+
+
 	if( !m_curmotinfo ){
 		return 0;//!!!!!!!!!!!!
+	}
+
+	if (GetBoneForMotionSize() <= 0) {
+		return 0;
 	}
 
 
@@ -18072,6 +18093,62 @@ int CModel::SetIKStopFlag()
 		}
 	}
 
+	return 0;
+}
+
+int CModel::ChkInView()
+{
+
+	if (wcsstr(GetFileName(), L".mqo") != 0) {
+
+		//このアプリにおいては　mqoファイルはクリッピングしない用途に使用しているので　常に描画するように
+
+		m_inview = true;
+
+		map<int, CMQOObject*>::iterator itr;
+		for (itr = m_object.begin(); itr != m_object.end(); itr++) {
+			CMQOObject* curobj = itr->second;
+			if (curobj) {
+				curobj->SetInView(true);
+			}
+		}
+	}
+	else {
+
+		//m_frustum.UpdateFrustum(m_matVP);
+		//m_frustum.ChkInView(m_bound, m_matWorld);
+		//if (m_frustum.GetVisible() == false) {
+		//####################################################################################
+		//2023/08/26
+		//大きい地面の中心が　カメラの後ろ側にある場合などに CModel単位の判定がうまくいかない
+		//####################################################################################
+		//	SetInView(false);//!!!!!!!!!!!!!!!!!!
+		//	return 0;
+		//}
+
+
+		int objnum = 0;
+		int inviewnum = 0;
+
+		map<int, CMQOObject*>::iterator itr;
+		for (itr = m_object.begin(); itr != m_object.end(); itr++) {
+			CMQOObject* curobj = itr->second;
+			if (curobj) {
+				curobj->ChkInView(m_matWorld, m_matVP);
+				if (curobj->GetVisible()) {
+					inviewnum++;
+				}
+				objnum++;
+			}
+		}
+
+		if (inviewnum != 0) {
+			SetInView(true);
+		}
+		else {
+			SetInView(false);
+		}
+	}
 	return 0;
 }
 

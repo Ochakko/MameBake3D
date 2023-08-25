@@ -53,7 +53,7 @@ typedef struct tag_latheelem
 } LATHEELEM;
 
 
-CMQOObject::CMQOObject()
+CMQOObject::CMQOObject() : m_frustum()
 {
 	InitParams();
 	s_alloccnt++;
@@ -2383,4 +2383,38 @@ int CMQOObject::SetShapeVert( char* nameptr, int vno, ChaVector3 srcv )
 	return 0;
 }
 
+int CMQOObject::ChkInView(ChaMatrix matWorld, ChaMatrix matVP)
+{
+	MODELBOUND srcmb;
+	srcmb.Init();
+	if (m_pm3) {
+		srcmb = m_pm3->GetBound();
+	}
+	else if (m_pm4) {
+		srcmb = m_pm4->GetBound();
+	}
+	else {
+		return 2;
+	}
+
+	m_frustum.UpdateFrustum(matVP);
+	m_frustum.ChkInView(srcmb, matWorld);
+
+	return 0;
+}
+
+bool CMQOObject::GetVisible()
+{
+	bool userflag = GetDispFlag();
+	if (userflag == false) {
+		return false;//ユーザーが非表示と指定している場合　非表示
+	}
+	else {
+		return m_frustum.GetVisible();//ChkInView()による視錐体判定結果
+	}
+}
+
+void CMQOObject::SetInView(bool srcflag) {
+	m_frustum.SetVisible(srcflag);
+}
 

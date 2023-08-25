@@ -297,6 +297,7 @@ public:
  */
 	int UpdateMatrix(bool limitdegflag, ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinished = false );
 	void UpdateMatrixReq(bool limitdegflag, CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
+	int ChkInView();
 	int SwapCurrentMotionPoint();
 	int HierarchyRouteUpdateMatrix(bool limitdegflag, CBone* srcbone, ChaMatrix* wmat, ChaMatrix* vpmat);
 	//int UpdateLimitedWM(int srcmotid, double srcframe);
@@ -1103,6 +1104,13 @@ public: //accesser
 	float GetLoadMult(){ return m_loadmult; };
 	void SetLoadMult( float srcmult ){ m_loadmult = srcmult; };
 
+	bool GetInView() {
+		return m_inview;
+	};
+	void SetInView(bool srcflag) {
+		m_inview = srcflag;
+	};
+
 	const WCHAR* GetFileName(){ return m_filename; };
 	const WCHAR* GetDirName(){ return m_dirname; };
 	const WCHAR* GetModelFolder(){ return m_modelfolder; };
@@ -1873,7 +1881,10 @@ public:
 	CRITICAL_SECTION m_CritSection_Node;
 
 private:
-	
+	bool m_inview;
+	ChaFrustumInfo m_frustum;
+	MODELBOUND m_bound;
+
 	int m_physicsikcnt;
 	int m_initaxismatx;
 	int m_modelno;//モデルのID

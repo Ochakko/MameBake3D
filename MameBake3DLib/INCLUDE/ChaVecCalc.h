@@ -303,6 +303,29 @@ public:
 
 };
 
+
+class ChaPlane
+{
+public:
+	ChaPlane();
+	ChaPlane(float srca, float srcb, float srcc, float srcd);
+	~ChaPlane();
+
+	int FromPoints(ChaVector3 point1, ChaVector3 point2, ChaVector3 point3);
+
+	ChaPlane operator= (ChaPlane v);
+	bool operator== (const ChaPlane& v) const { return a == v.a && b == v.b && c == v.c && d == v.d; };
+	bool operator!= (const ChaPlane& v) const { return !(*this == v); };
+
+public:
+	float a;
+	float b;
+	float c;
+	float d;
+};
+
+
+
 class CQuaternion
 {
 public:
@@ -812,11 +835,15 @@ typedef  struct tag_modelbound
 	ChaVector3 center;
 	float		r;
 
-	tag_modelbound() {
-		min.SetZeroVec3();
-		max.SetZeroVec3();
+	void Init()
+	{
+		min = ChaVector3(FLT_MAX, FLT_MAX, FLT_MAX);
+		max = ChaVector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 		center.SetZeroVec3();
-		r = 0.0f;
+		r = 1.0f;
+	};
+	tag_modelbound() {
+		Init();
 	};
 }MODELBOUND;
 
@@ -844,6 +871,39 @@ public:
 	//void** ppsmface;//N3Pのポインタの配列
 	N3P** ppsmface;//*(ppsmface + smfaceno) --> pointer which is allocateed(malloc) at other place
 };
+
+
+
+class ChaFrustumInfo
+{
+public:
+	ChaFrustumInfo();
+	~ChaFrustumInfo();
+
+	int UpdateFrustum(ChaMatrix matVP);
+	int ChkInView(MODELBOUND srcmb, ChaMatrix matWorld);
+
+	bool GetVisible() {
+		return m_visible;
+	};
+	void SetVisible(bool srcflag) {
+		m_visible = srcflag;
+	};
+private:
+	void InitParams();
+	int GetFootOnPlane(int srcplaneindex, ChaVector3 srcpos);
+
+private:
+	bool m_visible;
+
+	ChaVector3 m_vecFrustum[8];
+	ChaVector3 m_vecTraFrustum[8];
+	ChaPlane m_planeFrustum[6];
+	ChaVector3 m_footpos[6];
+
+	ChaMatrix m_matVP;
+};
+
 
 #endif
 

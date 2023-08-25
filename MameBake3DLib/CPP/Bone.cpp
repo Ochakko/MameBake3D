@@ -655,6 +655,12 @@ int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMat
 	}
 
 
+	//2023/08/26
+	if (GetParModel() && (GetParModel()->GetInView() == false)) {
+		return 0;
+	}
+
+
 	//2023/01/18 注意書修正
 	//UpdateMatrixのsrcframeは経過時間計算を考慮した　浮動小数有りの時間が渡される
 	//GetMotionPoint, GetWorldMatは intに丸めてからdoubleにして検索する justでtimeが一致しないとMotionPointが返らない
