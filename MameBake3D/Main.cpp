@@ -2360,6 +2360,10 @@ static SPELEM s_spinterpolate;
 static SPELEM s_spinit;
 static SPELEM s_spscaleinit;
 static SPELEM s_spproperty;
+static SPELEM s_spzeroframe;
+static SPELEM s_spcameradolly;
+static SPELEM s_spmodelposdir;
+static SPELEM s_spmaterialrate;
 static SPGUISW s_spguisw[SPGUISWNUM];
 static SPGUISW s_spdispsw[SPDISPSWNUM];
 static SPGUISW s_sprigidsw[SPRIGIDSWNUM];
@@ -2819,6 +2823,7 @@ static int CreateMaterialRateWnd();
 static int ShowMaterialRateDlg();
 static int SetModel2MaterialRateDlg(CModel* srcmodel);
 static int CreateModelWorldMatWnd();
+static int SetModel2ModelWorldMatDlg(CModel* srcmodel);
 static int ShowModelWorldMatDlg();
 
 //--------------------------------------------------------------------------------------
@@ -3278,6 +3283,15 @@ static int SetSpScaleInitParams();
 static int PickSpScaleInit(POINT srcpos);
 static int SetSpPropertyParams();
 static int PickSpProperty(POINT srcpos);
+
+static int SetSpZeroFrameParams();
+static int PickSpZeroFrame(POINT srcpos);
+static int SetSpCameraDollyParams();
+static int PickSpCameraDolly(POINT srcpos);
+static int SetSpModelPosDirParams();
+static int PickSpModelPosDir(POINT srcpos);
+static int SetSpMaterialRateParams();
+static int PickSpMaterialRate(POINT srcpos);
 
 
 static int PickRigBone(UIPICKINFO* ppickinfo, bool forrigtip = false, int* dstrigno = 0);
@@ -4812,6 +4826,10 @@ void InitApp()
 		::ZeroMemory(&s_spinit, sizeof(SPELEM));
 		::ZeroMemory(&s_spscaleinit, sizeof(SPELEM));
 		::ZeroMemory(&s_spproperty, sizeof(SPELEM));
+		::ZeroMemory(&s_spzeroframe, sizeof(SPELEM));
+		::ZeroMemory(&s_spcameradolly, sizeof(SPELEM));
+		::ZeroMemory(&s_spmodelposdir, sizeof(SPELEM));
+		::ZeroMemory(&s_spmaterialrate, sizeof(SPELEM));
 		::ZeroMemory(&s_mousecenteron, sizeof(SPELEM));
 	}
 	{
@@ -6150,6 +6168,34 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	}
 	CallF(s_spproperty.sprite->Create(pd3dImmediateContext, mpath, L"PropertyButton.png", 0, 0), return S_FALSE);
 
+	s_spzeroframe.sprite = new CMySprite(s_pdev);
+	if (!s_spzeroframe.sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
+	CallF(s_spzeroframe.sprite->Create(pd3dImmediateContext, mpath, L"Edit0FrameButton.png", 0, 0), return S_FALSE);
+	s_spcameradolly.sprite = new CMySprite(s_pdev);
+	if (!s_spcameradolly.sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
+	CallF(s_spcameradolly.sprite->Create(pd3dImmediateContext, mpath, L"CameraDollyButton.png", 0, 0), return S_FALSE);
+	s_spmodelposdir.sprite = new CMySprite(s_pdev);
+	if (!s_spmodelposdir.sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
+	CallF(s_spmodelposdir.sprite->Create(pd3dImmediateContext, mpath, L"ModelPosDirButton.png", 0, 0), return S_FALSE);
+	s_spmaterialrate.sprite = new CMySprite(s_pdev);
+	if (!s_spmaterialrate.sprite) {
+		_ASSERT(0);
+		PostQuitMessage(1);
+		return S_FALSE;
+	}
+	CallF(s_spmaterialrate.sprite->Create(pd3dImmediateContext, mpath, L"MaterialRateButton.png", 0, 0), return S_FALSE);
 
 
 
@@ -6411,6 +6457,12 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	SetSpInitParams();
 	SetSpScaleInitParams();
 	SetSpPropertyParams();
+
+	SetSpZeroFrameParams();
+	SetSpCameraDollyParams();
+	SetSpModelPosDirParams();
+	SetSpMaterialRateParams();
+
 
 	//g_HUD.SetLocation(pBackBufferSurfaceDesc->Width - 170, 0);
 	//g_HUD.SetSize(170, 170);
@@ -7857,6 +7909,30 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete curspproperty;
 	}
 	s_spproperty.sprite = 0;
+
+	CMySprite* curspzeroframe = s_spzeroframe.sprite;
+	if (curspzeroframe) {
+		delete curspzeroframe;
+	}
+	s_spzeroframe.sprite = 0;
+
+	CMySprite* curspcameradolly = s_spcameradolly.sprite;
+	if (curspcameradolly) {
+		delete curspcameradolly;
+	}
+	s_spcameradolly.sprite = 0;
+
+	CMySprite* curspmodelposdir = s_spmodelposdir.sprite;
+	if (curspmodelposdir) {
+		delete curspmodelposdir;
+	}
+	s_spmodelposdir.sprite = 0;
+
+	CMySprite* curspmaterialrate = s_spmaterialrate.sprite;
+	if (curspmaterialrate) {
+		delete curspmaterialrate;
+	}
+	s_spmaterialrate.sprite = 0;
 
 
 	CMySprite* curspm = s_mousecenteron.sprite;
@@ -9651,6 +9727,39 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			if (s_model) {
 				if (s_motpropFlag == false) {
 					s_motpropFlag = true;
+				}
+			}
+		}
+
+
+		if (PickSpZeroFrame(ptCursor) != 0) {
+			if (s_model) {
+				if (s_zeroFrameFlag == false) {
+					s_LstopFlag = true;
+					g_previewFlag = 0;
+					s_LcursorFlag = true;
+					s_zeroFrameFlag = true;
+				}
+			}
+		}
+		if (PickSpCameraDolly(ptCursor) != 0) {
+			if (s_model) {
+				if (s_cameradollyFlag == false) {
+					s_cameradollyFlag = true;
+				}
+			}
+		}
+		if (PickSpModelPosDir(ptCursor) != 0) {
+			if (s_model) {
+				if (s_modelworldmatFlag == false) {
+					s_modelworldmatFlag = true;
+				}
+			}
+		}
+		if (PickSpMaterialRate(ptCursor) != 0) {
+			if (s_model) {
+				if (s_materialrateFlag == false) {
+					s_materialrateFlag = true;
 				}
 			}
 		}
@@ -14179,7 +14288,10 @@ int DispObjPanel()
 
 	bool savedispobj = s_dispobj;
 	CreateLayerWnd();
-	if (!s_layerWnd || !(s_layerWnd->getHWnd())) {
+	if (!s_layerWnd) {
+		return 0;
+	}
+	if (!(s_layerWnd->getHWnd())) {
 		return 0;
 	}
 
@@ -14784,7 +14896,7 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 
 
 	DispModelPanel();
-	refreshModelPanel();
+	//refreshModelPanel();
 	DispMotionPanel();
 	DispCameraPanel();
 
@@ -14868,6 +14980,9 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 			refreshTimeline(*s_owpTimeline);
 		}
 		//refreshModelPanel();
+		s_dispobj = false;
+		DispObjPanel();
+		refreshModelPanel();
 		DispModelPanel();
 		DispMotionPanel();
 		DispCameraPanel();
@@ -14886,7 +15001,9 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 		if (s_owpTimeline && dorefreshtl) {
 			refreshTimeline(*s_owpTimeline);
 		}
-		//refreshModelPanel();
+		s_dispobj = false;
+		DispObjPanel();
+		refreshModelPanel();
 		DispModelPanel();
 		DispMotionPanel();
 		DispCameraPanel();
@@ -14920,7 +15037,9 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 			s_lineno2boneno = s_modelindex[selindex].lineno2boneno;
 			s_boneno2lineno = s_modelindex[selindex].boneno2lineno;
 
-			//refreshModelPanel();
+			//s_dispobj = false;
+			DispObjPanel();
+			refreshModelPanel();
 
 			OnAnimMenu(dorefreshtl, s_motmenuindexmap[s_model]);
 		}
@@ -14965,6 +15084,13 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 		}
 	}
 
+	{
+		if (s_modelworldmatdlgwnd) {
+			if (s_model) {
+				SetModel2ModelWorldMatDlg(s_model);
+			}
+		}
+	}
 
 
 	if (s_model) {
@@ -15454,6 +15580,10 @@ int AddModelBound(MODELBOUND* mb, MODELBOUND* addmb)
 
 int refreshModelPanel()
 {
+	if (!s_layerWnd || !s_owpLayerTable) {
+		return 0;
+	}
+
 	//すべての行をクリア
 	s_owpLayerTable->deleteLine();
 
@@ -22663,6 +22793,117 @@ int SetSpPropertyParams()
 }
 
 
+int SetSpZeroFrameParams()
+{
+	if (!s_spzeroframe.sprite) {
+		return 0;
+	}
+
+	int spgshift = 6;
+	s_spzeroframe.dispcenter.x = s_spcam[2].dispcenter.x - ((int)s_spsizeSmall + 6) * 3;
+	s_spzeroframe.dispcenter.y = s_spcameramode.dispcenter.y + (int)s_spsize + 6;
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_spzeroframe.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_spzeroframe.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(s_spsizeSmall / (float)s_mainwidth * 2.0f, s_spsizeSmall / (float)s_mainheight * 2.0f);
+	if (s_spzeroframe.sprite) {
+		CallF(s_spzeroframe.sprite->SetPos(disppos), return 1);
+		CallF(s_spzeroframe.sprite->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+
+}
+
+int SetSpCameraDollyParams()
+{
+	if (!s_spcameradolly.sprite) {
+		return 0;
+	}
+
+	int spgshift = 6;
+	s_spcameradolly.dispcenter.x = s_spcam[2].dispcenter.x - ((int)s_spsizeSmall + 6) * 2;
+	s_spcameradolly.dispcenter.y = s_spcameramode.dispcenter.y + (int)s_spsize + 6;
+
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_spcameradolly.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_spcameradolly.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(s_spsizeSmall / (float)s_mainwidth * 2.0f, s_spsizeSmall / (float)s_mainheight * 2.0f);
+	if (s_spcameradolly.sprite) {
+		CallF(s_spcameradolly.sprite->SetPos(disppos), return 1);
+		CallF(s_spcameradolly.sprite->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+
+}
+
+int SetSpModelPosDirParams()
+{
+	if (!s_spmodelposdir.sprite) {
+		return 0;
+	}
+
+	int spgshift = 6;
+	s_spmodelposdir.dispcenter.x = s_spcam[2].dispcenter.x - ((int)s_spsizeSmall + 6) * 1;
+	s_spmodelposdir.dispcenter.y = s_spcameramode.dispcenter.y + (int)s_spsize + 6;
+
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_spmodelposdir.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_spmodelposdir.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(s_spsizeSmall / (float)s_mainwidth * 2.0f, s_spsizeSmall / (float)s_mainheight * 2.0f);
+	if (s_spscaleinit.sprite) {
+		CallF(s_spmodelposdir.sprite->SetPos(disppos), return 1);
+		CallF(s_spmodelposdir.sprite->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+
+}
+
+int SetSpMaterialRateParams()
+{
+	if (!s_spmaterialrate.sprite) {
+		return 0;
+	}
+
+	int spgshift = 6;
+	s_spmaterialrate.dispcenter.x = s_spcam[2].dispcenter.x - ((int)s_spsizeSmall + 6) * 0;
+	s_spmaterialrate.dispcenter.y = s_spcameramode.dispcenter.y + (int)s_spsize + 6;
+
+
+	ChaVector3 disppos;
+	disppos.x = (float)(s_spmaterialrate.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
+	disppos.y = -((float)(s_spmaterialrate.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
+	disppos.z = 0.0f;
+	ChaVector2 dispsize = ChaVector2(s_spsizeSmall / (float)s_mainwidth * 2.0f, s_spsizeSmall / (float)s_mainheight * 2.0f);
+	if (s_spmaterialrate.sprite) {
+		CallF(s_spmaterialrate.sprite->SetPos(disppos), return 1);
+		CallF(s_spmaterialrate.sprite->SetSize(dispsize), return 1);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+	return 0;
+
+}
+
 
 int SetSpRigParams()
 {
@@ -23550,14 +23791,8 @@ int PickSpCameraInheritSW(POINT srcpos)
 
 
 	if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
-		//int starty = s_spcamerainherit.dispcenter.y - (int)s_spsize / 2;
-		//int endy = starty + (int)s_spsize + 6;
-
-
-		//上のカメラオンオフスプライトに半分重ねているので　下半分が当り
-		int starty = s_spcamerainherit.dispcenter.y;// -(int)s_spsize / 2;
-		int endy = starty + (int)(s_spsize / 2) + 6;
-
+		int starty = s_spcamerainherit.dispcenter.y - (int)s_spsize / 2;
+		int endy = starty + (int)s_spsize + 6;
 
 		if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
 			ispick = 1;
@@ -24007,6 +24242,149 @@ int PickSpProperty(POINT srcpos)
 	//SPRIG_INACTIVEとSPRIG_ACTIVEは同じ位置なので当たり判定は１回で良い
 	if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
 		int startx = s_spproperty.dispcenter.x - (int)s_spsizeSmall / 2;
+		int endx = startx + (int)s_spsizeSmall;
+
+		if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+			pickflag = 1;
+		}
+	}
+
+	return pickflag;
+}
+
+
+
+int PickSpZeroFrame(POINT srcpos)
+{
+	int pickflag = 0;
+
+	if (s_spzeroframe.sprite == 0) {
+		return 0;
+	}
+	if (s_spguisw[SPGUISW_CAMERA_AND_IK].state == false) {
+		//非表示中
+		return 0;
+	}
+	if (g_previewFlag != 0) {
+		//preview中は　押さない
+		return 0;
+	}
+
+	if (s_toolspritemode != 2) {
+		return 0;
+	}
+
+	int starty = s_spzeroframe.dispcenter.y - (int)s_spsizeSmall / 2;
+	int endy = starty + (int)s_spsizeSmall;
+
+	//SPRIG_INACTIVEとSPRIG_ACTIVEは同じ位置なので当たり判定は１回で良い
+	if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+		int startx = s_spzeroframe.dispcenter.x - (int)s_spsizeSmall / 2;
+		int endx = startx + (int)s_spsizeSmall;
+
+		if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+			pickflag = 1;
+		}
+	}
+
+	return pickflag;
+}
+int PickSpCameraDolly(POINT srcpos)
+{
+	int pickflag = 0;
+
+	if (s_spcameradolly.sprite == 0) {
+		return 0;
+	}
+	if (s_spguisw[SPGUISW_CAMERA_AND_IK].state == false) {
+		//非表示中
+		return 0;
+	}
+	if (g_previewFlag != 0) {
+		//preview中は　押さない
+		return 0;
+	}
+
+	if (s_toolspritemode != 2) {
+		return 0;
+	}
+
+	int starty = s_spcameradolly.dispcenter.y - (int)s_spsizeSmall / 2;
+	int endy = starty + (int)s_spsizeSmall;
+
+	//SPRIG_INACTIVEとSPRIG_ACTIVEは同じ位置なので当たり判定は１回で良い
+	if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+		int startx = s_spcameradolly.dispcenter.x - (int)s_spsizeSmall / 2;
+		int endx = startx + (int)s_spsizeSmall;
+
+		if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+			pickflag = 1;
+		}
+	}
+
+	return pickflag;
+}
+int PickSpModelPosDir(POINT srcpos)
+{
+	int pickflag = 0;
+
+	if (s_spmodelposdir.sprite == 0) {
+		return 0;
+	}
+	if (s_spguisw[SPGUISW_CAMERA_AND_IK].state == false) {
+		//非表示中
+		return 0;
+	}
+	if (g_previewFlag != 0) {
+		//preview中は　押さない
+		return 0;
+	}
+
+	if (s_toolspritemode != 2) {
+		return 0;
+	}
+
+	int starty = s_spmodelposdir.dispcenter.y - (int)s_spsizeSmall / 2;
+	int endy = starty + (int)s_spsizeSmall;
+
+	//SPRIG_INACTIVEとSPRIG_ACTIVEは同じ位置なので当たり判定は１回で良い
+	if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+		int startx = s_spmodelposdir.dispcenter.x - (int)s_spsizeSmall / 2;
+		int endx = startx + (int)s_spsizeSmall;
+
+		if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
+			pickflag = 1;
+		}
+	}
+
+	return pickflag;
+}
+int PickSpMaterialRate(POINT srcpos)
+{
+	int pickflag = 0;
+
+	if (s_spmaterialrate.sprite == 0) {
+		return 0;
+	}
+	if (s_spguisw[SPGUISW_CAMERA_AND_IK].state == false) {
+		//非表示中
+		return 0;
+	}
+	if (g_previewFlag != 0) {
+		//preview中は　押さない
+		return 0;
+	}
+
+	if (s_toolspritemode != 2) {
+		return 0;
+	}
+
+	int starty = s_spmaterialrate.dispcenter.y - (int)s_spsizeSmall / 2;
+	int endy = starty + (int)s_spsizeSmall;
+
+	//SPRIG_INACTIVEとSPRIG_ACTIVEは同じ位置なので当たり判定は１回で良い
+	if ((srcpos.y >= starty) && (srcpos.y <= endy)) {
+		int startx = s_spmaterialrate.dispcenter.x - (int)s_spsizeSmall / 2;
 		int endx = startx + (int)s_spsizeSmall;
 
 		if ((srcpos.x >= startx) && (srcpos.x <= endx)) {
@@ -27936,7 +28314,7 @@ bool FocusEditWnd()
 int ChangeToolSpriteMode()
 {
 	s_toolspritemode++;
-	if (s_toolspritemode >= 2) {
+	if (s_toolspritemode >= 3) {
 		s_toolspritemode = 0;
 	}
 
@@ -35136,6 +35514,36 @@ int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext)
 				//Property
 				if (s_spproperty.sprite) {//プレビュー時は非表示
 					s_spproperty.sprite->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+			else if (s_toolspritemode == 2) {
+				//Edit0Frame
+				if (s_spzeroframe.sprite) {//プレビュー時は非表示
+					s_spzeroframe.sprite->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+				//CameraDolly
+				if (s_spcameradolly.sprite) {//プレビュー時は非表示
+					s_spcameradolly.sprite->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+				//ModelPosDir
+				if (s_spmodelposdir.sprite) {//プレビュー時は非表示
+					s_spmodelposdir.sprite->OnRender(pd3dImmediateContext);
+				}
+				else {
+					_ASSERT(0);
+				}
+				//MaterialRate
+				if (s_spmaterialrate.sprite) {//プレビュー時は非表示
+					s_spmaterialrate.sprite->OnRender(pd3dImmediateContext);
 				}
 				else {
 					_ASSERT(0);
@@ -48697,7 +49105,9 @@ int DispToolTip()
 			}
 		}
 
-		if (s_toolspritemode == 0) {
+
+
+		if (s_toolspritemode == 0) {//ToolShortCut : 0
 			if (doneflag == false) {
 				if (PickSpCopy(ptCursor) != 0) {
 					if (s_model) {
@@ -48738,7 +49148,7 @@ int DispToolTip()
 				}
 			}
 		}
-		else if (s_toolspritemode == 1) {
+		else if (s_toolspritemode == 1) {//ToolShortCut : 1
 			if (doneflag == false) {
 				if (PickSpInterpolate(ptCursor) != 0) {
 					if (s_model) {
@@ -48774,6 +49184,47 @@ int DispToolTip()
 					if (s_model) {
 						doneflag = true;
 						wcscpy_s(sz512, 512, L"Property of Motion");
+						CreateToolTip(ptCursor, sz512);
+					}
+				}
+			}
+		}
+		else if (s_toolspritemode == 2) {//ToolShortCut : 2
+			if (doneflag == false) {
+				if (PickSpZeroFrame(ptCursor) != 0) {
+					if (s_model) {
+						doneflag = true;
+						wcscpy_s(sz512, 512, L"Edit 0 Frame");
+						CreateToolTip(ptCursor, sz512);
+					}
+				}
+			}
+
+			if (doneflag == false) {
+				if (PickSpCameraDolly(ptCursor) != 0) {
+					if (s_model) {
+						doneflag = true;
+						wcscpy_s(sz512, 512, L"Camera Dolly History");
+						CreateToolTip(ptCursor, sz512);
+					}
+				}
+			}
+
+			if (doneflag == false) {
+				if (PickSpModelPosDir(ptCursor) != 0) {
+					if (s_model) {
+						doneflag = true;
+						wcscpy_s(sz512, 512, L"Model's Pos and Dir");
+						CreateToolTip(ptCursor, sz512);
+					}
+				}
+			}
+
+			if (doneflag == false) {
+				if (PickSpMaterialRate(ptCursor) != 0) {
+					if (s_model) {
+						doneflag = true;
+						wcscpy_s(sz512, 512, L"Material Rate");
 						CreateToolTip(ptCursor, sz512);
 					}
 				}
@@ -48974,47 +49425,56 @@ int CreateModelWorldMatWnd()
 	return 0;
 }
 
+int SetModel2ModelWorldMatDlg(CModel* srcmodel)
+{
+	if (srcmodel) {
+		WCHAR strname[256] = { 0L };
+		ZeroMemory(strname, sizeof(WCHAR) * 256);
+		size_t namelen = wcslen(srcmodel->GetFileName());
+		if (namelen <= 255) {
+			wcscpy_s(strname, 256, srcmodel->GetFileName());
+		}
+		else {
+			wcsncpy_s(strname, 256, srcmodel->GetFileName(), 255);
+		}
+		SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_STATICMODELNAME, strname);
+
+
+		ChaVector3 tmppos = srcmodel->GetModelPosition();
+		ChaVector3 tmprot = srcmodel->GetModelRotation();
+
+		WCHAR strval[256] = { 0L };
+		swprintf_s(strval, 256, L"%.3f", tmppos.x);
+		SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_POSITIONX, strval);
+		swprintf_s(strval, 256, L"%.3f", tmppos.y);
+		SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_POSITIONY, strval);
+		swprintf_s(strval, 256, L"%.3f", tmppos.z);
+		SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_POSITIONZ, strval);
+
+		swprintf_s(strval, 256, L"%.3f", tmprot.x);
+		SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_ROTATIONX, strval);
+		swprintf_s(strval, 256, L"%.3f", tmprot.y);
+		SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_ROTATIONY, strval);
+		swprintf_s(strval, 256, L"%.3f", tmprot.z);
+		SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_ROTATIONZ, strval);
+
+	}
+
+	return 0;
+}
+
+
 int ShowModelWorldMatDlg()
 {
 
 	if (s_modelworldmatdlgwnd) {
 		if (s_model) {
-			WCHAR strname[256] = { 0L };
-			ZeroMemory(strname, sizeof(WCHAR) * 256);
-			size_t namelen = wcslen(s_model->GetFileName());
-			if (namelen <= 255) {
-				wcscpy_s(strname, 256, s_model->GetFileName());
-			}
-			else {
-				wcsncpy_s(strname, 256, s_model->GetFileName(), 255);
-			}
-			SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_STATICMODELNAME, strname);
-
-
-			ChaVector3 tmppos = s_model->GetModelPosition();
-			ChaVector3 tmprot = s_model->GetModelRotation();
-
-			WCHAR strval[256] = { 0L };
-			swprintf_s(strval, 256, L"%.3f", tmppos.x);
-			SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_POSITIONX, strval);
-			swprintf_s(strval, 256, L"%.3f", tmppos.y);
-			SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_POSITIONY, strval);
-			swprintf_s(strval, 256, L"%.3f", tmppos.z);
-			SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_POSITIONZ, strval);
-
-			swprintf_s(strval, 256, L"%.3f", tmprot.x);
-			SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_ROTATIONX, strval);
-			swprintf_s(strval, 256, L"%.3f", tmprot.y);
-			SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_ROTATIONY, strval);
-			swprintf_s(strval, 256, L"%.3f", tmprot.z);
-			SetDlgItemTextW(s_modelworldmatdlgwnd, IDC_EDIT_ROTATIONZ, strval);
-
+			SetModel2ModelWorldMatDlg(s_model);
 
 			ShowWindow(s_modelworldmatdlgwnd, SW_SHOW);
 			UpdateWindow(s_modelworldmatdlgwnd);
 
 		}
-
 	}
 
 	return 0;
