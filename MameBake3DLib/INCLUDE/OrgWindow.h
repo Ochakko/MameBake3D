@@ -17,7 +17,6 @@
 #include <ChaVecCalc.h>
 
 
-
 //#define EULPOOLBLKLEN	2048
 //#define EULPOOLBLKLEN	65536
 //#define KEYPOOLBLKLEN	65536
@@ -72,6 +71,10 @@ extern int g_underselectingframe;
 extern bool g_preciseOnPreviewToo;
 
 static double TIME_ERROR_WIDTH = 0.0001;
+
+
+class CModel;
+
 
 namespace OrgWinGUI{
 
@@ -6322,6 +6325,7 @@ void s_dummyfunc()
 			//lineData.push_back(new EulLineData(0, 0, _T("Y"), 0, 1));
 			//lineData.push_back(new EulLineData(0, 0, _T("Z"), 0, 2));
 			//lineData.push_back(new EulLineData(0, 0, _T("S"), 0, 3));
+			currentmodel = 0;
 
 			maxTime = _maxTime;
 			timeSize = _timeSize;
@@ -7397,6 +7401,14 @@ void s_dummyfunc()
 
 		/////////////////////////// Accessor /////////////////////////////
 		//	Accessor : maxTime
+		void SetCurrentModel(CModel* srcmodel) {
+			currentmodel = srcmodel;
+		}
+		CModel* GetCurrentModel()
+		{
+			return currentmodel;
+		}
+
 		void ResetScaleAndOffset()
 		{
 			dispscale = 1.0;
@@ -7635,6 +7647,7 @@ void s_dummyfunc()
 		int ikkind;
 		double dispscale;
 		double dispoffset;
+		CModel* currentmodel;
 
 		//行データクラス-------------
 		public : class EulLineData {

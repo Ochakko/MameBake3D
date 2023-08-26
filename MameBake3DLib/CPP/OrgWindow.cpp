@@ -8,7 +8,7 @@
 #include <map>
 
 #include "GlobalVar.h"
-
+#include <Model.h>
 
 using namespace std;
 
@@ -615,21 +615,28 @@ namespace OrgWinGUI{
 		showPos_time = calcShowPosTime(currentTime);//2022/10/22
 
 
-		if (lineData.size() >= 4) {//X, Y, Z, Brush
+		if (GetCurrentModel() && 
+			(GetCurrentModel()->GetNoBoneFlag() == false) && (GetCurrentModel()->GetInView() == true)) {
 
-			int drawnum = min((int)lineData.size(), showLineNum);
+			if (lineData.size() >= 4) {//X, Y, Z, Brush
 
-			for (int i = 0; i < drawnum; i++) {
-				bool highLight = false;
-				////if (i == currentLine) highLight = true;
-				lineData[i]->draw(hdcM,
-					pos.x + MARGIN,
-					//pos.y + MARGIN + AXIS_SIZE_Y + j*(LABEL_SIZE_Y - 1),
-					//pos.y + MARGIN + AXIS_SIZE_Y,
-					pos.y,
-					size.x - SCROLL_BAR_WIDTH - MARGIN * 2,
-					timeSize, showPos_time, highLight);
+				int drawnum = min((int)lineData.size(), showLineNum);
+
+				for (int i = 0; i < drawnum; i++) {
+					bool highLight = false;
+					////if (i == currentLine) highLight = true;
+					lineData[i]->draw(hdcM,
+						pos.x + MARGIN,
+						//pos.y + MARGIN + AXIS_SIZE_Y + j*(LABEL_SIZE_Y - 1),
+						//pos.y + MARGIN + AXIS_SIZE_Y,
+						pos.y,
+						size.x - SCROLL_BAR_WIDTH - MARGIN * 2,
+						timeSize, showPos_time, highLight);
+				}
 			}
+		}
+		else {
+			//2023/08/26 カレントモデルにモーションが無い場合と　視野外の場合には　オイラーグラフ更新はお休み
 		}
 
 

@@ -13805,7 +13805,6 @@ int UpdateEditedEuler()
 
 int refreshEulerGraph()
 {
-
 	//オイラーグラフのキーを作成しなおさない場合はUpdateEditedEuler()
 
 	if (!s_model || !s_owpLTimeline || !s_owpEulerGraph) {
@@ -13815,6 +13814,7 @@ int refreshEulerGraph()
 	//if (s_model && (s_model->GetLoadedFlag() == false)) {
 	//	return;
 	//}
+
 
 	MOTINFO* curmotinfo = 0;
 	if (s_model && ((curmotinfo = s_model->GetCurMotInfo()) != 0)) {
@@ -14989,6 +14989,10 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 
 		SetMainWindowTitle();
 
+		if (s_owpEulerGraph) {
+			s_owpEulerGraph->SetCurrentModel(s_model);
+		}
+
 		s_underselectmodel = false;
 		return 0;//!!!!!!!!!
 	}
@@ -15010,24 +15014,25 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 
 		SetMainWindowTitle();
 
+		if (s_owpEulerGraph) {
+			s_owpEulerGraph->SetCurrentModel(s_model);
+		}
+
 		s_underselectmodel = false;
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
+	else {
+		WCHAR* wname;
+		for (iMdlSet = 0; iMdlSet < cMdlSets; iMdlSet++)
+		{
+			wname = (WCHAR*)s_modelindex[iMdlSet].modelptr->GetFileName();
 
-	WCHAR* wname;
-	for (iMdlSet = 0; iMdlSet < cMdlSets; iMdlSet++)
-	{
-		wname = (WCHAR*)s_modelindex[iMdlSet].modelptr->GetFileName();
+			if (*wname != 0)
+				AppendMenu(s_modelmenu, MF_STRING, 61000 + iMdlSet, wname);
+			else
+				AppendMenu(s_modelmenu, MF_STRING, 61000 + iMdlSet, L"<No Model Name>");
+		}
 
-		if (*wname != 0)
-			AppendMenu(s_modelmenu, MF_STRING, 61000 + iMdlSet, wname);
-		else
-			AppendMenu(s_modelmenu, MF_STRING, 61000 + iMdlSet, L"<No Model Name>");
-	}
-
-
-
-	if (cMdlSets > 0) {
 		CheckMenuItem(s_mainmenu, 61000 + selindex, MF_CHECKED);
 
 		s_model = s_modelindex[selindex].modelptr;
@@ -15041,9 +15046,14 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 			DispObjPanel();
 			refreshModelPanel();
 
+			if (s_owpEulerGraph) {
+				s_owpEulerGraph->SetCurrentModel(s_model);
+			}
+
 			OnAnimMenu(dorefreshtl, s_motmenuindexmap[s_model]);
 		}
 	}
+
 	//else {
 		//大きいフレーム位置のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
 	InitTimelineSelection();
@@ -28836,12 +28846,17 @@ int OnFramePreviewStop()
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
 		if (curmodel) {
-
-			if (curmodel && curmodel->GetCurMotInfo()) {
+			if (curmodel->GetCurMotInfo()) {
 				curmodel->SetMotionFrame(currenttime);
+
+				ChaMatrix tmpwm = curmodel->GetWorldMat();
+				curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 			}
-			ChaMatrix tmpwm = curmodel->GetWorldMat();
-			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
+			else {
+				//モーションが無い場合にもChkInViewを呼ぶためにUpdateMatrix呼び出しは必要
+				ChaMatrix tmpwm = curmodel->GetWorldMat();
+				curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
+			}
 		}
 	}
 
@@ -28879,11 +28894,18 @@ int OnFramePreviewNormal(double nextframe, double difftime, int endflag, int loo
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel && curmodel->GetCurMotInfo()) {
-			curmodel->SetMotionFrame(nextframe);
+		if (curmodel){
+			if (curmodel->GetCurMotInfo()) {
+				curmodel->SetMotionFrame(nextframe);
 
-			ChaMatrix tmpwm = curmodel->GetWorldMat();
-			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
+				ChaMatrix tmpwm = curmodel->GetWorldMat();
+				curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
+			}
+			else {
+				//2023/08/26 モーションが無い場合にもChkInViewを呼ぶためにUpdateMatrix呼び出しは必要
+				ChaMatrix tmpwm = curmodel->GetWorldMat();
+				curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
+			}
 		}
 	}
 
@@ -29078,16 +29100,23 @@ int OnFramePreviewBt(double nextframe, double difftime, int endflag, int loopsta
 			CModel* curmodel = itrmodel->modelptr;
 			//if (curmodel) {
 			if (curmodel && (curmodel->GetBtCnt() != 0)) {
-				if (curmodel && curmodel->GetCurMotInfo()) {
-					//curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
-					ChaMatrix tmpwm = curmodel->GetWorldMat();
-					curmodel->SetBtMotion(g_limitdegflag, 0, 0, nextframe, &tmpwm, &s_matVP);//第一引数は物理IK用
+				if (curmodel){
+					if (curmodel->GetCurMotInfo()) {
+						//curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
+						ChaMatrix tmpwm = curmodel->GetWorldMat();
+						curmodel->SetBtMotion(g_limitdegflag, 0, 0, nextframe, &tmpwm, &s_matVP);//第一引数は物理IK用
 
-					//60 x 60 frames limit : 60 sec limit
-					if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
-						s_rectime = (double)((int)s_reccnt);
-						s_model->PhysIKRec(g_limitdegflag, s_rectime);
-						s_reccnt++;
+						//60 x 60 frames limit : 60 sec limit
+						if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
+							s_rectime = (double)((int)s_reccnt);
+							s_model->PhysIKRec(g_limitdegflag, s_rectime);
+							s_reccnt++;
+						}
+					}
+					else {
+						//モーションが無い場合にもChkInViewを呼ぶためにUpdateMatrix呼び出しは必要
+						ChaMatrix tmpwm = curmodel->GetWorldMat();
+						curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 					}
 				}
 			}
