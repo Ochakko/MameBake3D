@@ -18116,15 +18116,11 @@ int CModel::ChkInView()
 	else {
 
 		//m_frustum.UpdateFrustum(m_matVP);
-		//m_frustum.ChkInView(m_bound, m_matWorld);
-		//if (m_frustum.GetVisible() == false) {
-		//####################################################################################
-		//2023/08/26
-		//大きい地面の中心が　カメラの後ろ側にある場合などに CModel単位の判定がうまくいかない
-		//####################################################################################
-		//	SetInView(false);//!!!!!!!!!!!!!!!!!!
-		//	return 0;
-		//}
+		m_frustum.ChkInView(m_bound, m_matWorld);
+		if (m_frustum.GetVisible() == false) {
+			SetInView(false);//!!!!!!!!!!!!!!!!!!
+			return 0;
+		}
 
 
 		int objnum = 0;

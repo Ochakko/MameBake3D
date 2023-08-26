@@ -312,6 +312,7 @@ public:
 	~ChaPlane();
 
 	int FromPoints(ChaVector3 point1, ChaVector3 point2, ChaVector3 point3);
+	int GetFootOnPlane(ChaVector3 srcpos, ChaVector3* dstpos);
 
 	ChaPlane operator= (ChaPlane v);
 	bool operator== (const ChaPlane& v) const { return a == v.a && b == v.b && c == v.c && d == v.d; };
@@ -880,7 +881,7 @@ public:
 	ChaFrustumInfo();
 	~ChaFrustumInfo();
 
-	int UpdateFrustum(ChaMatrix matVP);
+	//int UpdateFrustum(ChaMatrix matVP);
 	int ChkInView(MODELBOUND srcmb, ChaMatrix matWorld);
 
 	bool GetVisible() {
@@ -891,7 +892,7 @@ public:
 	};
 private:
 	void InitParams();
-	int GetFootOnPlane(int srcplaneindex, ChaVector3 srcpos);
+	//int GetFootOnPlane(int srcplaneindex, ChaVector3 srcpos);
 
 private:
 	bool m_visible;

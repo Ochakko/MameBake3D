@@ -2397,7 +2397,7 @@ int CMQOObject::ChkInView(ChaMatrix matWorld, ChaMatrix matVP)
 		return 2;
 	}
 
-	m_frustum.UpdateFrustum(matVP);
+	//m_frustum.UpdateFrustum(matVP);
 	m_frustum.ChkInView(srcmb, matWorld);
 
 	return 0;

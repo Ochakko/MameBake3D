@@ -1395,6 +1395,36 @@ int ChaPlane::FromPoints(ChaVector3 point1, ChaVector3 point2, ChaVector3 point3
 	return 0;
 }
 
+int ChaPlane::GetFootOnPlane(ChaVector3 srcpos, ChaVector3* dstpos)
+{
+	if (!dstpos) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	double t0, tmpt1, t1, t;
+	t0 = a * srcpos.x + b * srcpos.y + c * srcpos.z + d;
+	tmpt1 = a * a + b * b + c * c;
+	if (tmpt1 != 0.0f) {
+		t1 = sqrt(tmpt1);
+	}
+	else {
+		t1 = 0.0f;
+	}
+	
+	if (t1 != 0.0f) {
+		t = -(t0 / t1);
+	}
+	else {
+		t = 0.0f;
+	}
+
+	dstpos->x = (float)((double)srcpos.x + t * (double)a);
+	dstpos->y = (float)((double)srcpos.y + t * (double)b);
+	dstpos->z = (float)((double)srcpos.z + t * (double)c);
+
+	return 0;
+}
 
 
 ChaMatrix::ChaMatrix()
@@ -5955,86 +5985,89 @@ ChaFrustumInfo::~ChaFrustumInfo()
 {
 }
 
-int ChaFrustumInfo::UpdateFrustum(ChaMatrix matVP)
-{
-	m_matVP = matVP;
-	ChaMatrix matInvViewProj = ChaMatrixInv(matVP);
-
-	//m_vecFrustum[0] = ChaVector3(-1.0f, -1.0f, 0.0f); // xyz
-	//m_vecFrustum[1] = ChaVector3(1.0f, -1.0f, 0.0f); // Xyz
-	//m_vecFrustum[2] = ChaVector3(-1.0f, 1.0f, 0.0f); // xYz
-	//m_vecFrustum[3] = ChaVector3(1.0f, 1.0f, 0.0f); // XYz
-	//m_vecFrustum[4] = ChaVector3(-1.0f, -1.0f, 1.0f); // xyZ
-	//m_vecFrustum[5] = ChaVector3(1.0f, -1.0f, 1.0f); // XyZ
-	//m_vecFrustum[6] = ChaVector3(-1.0f, 1.0f, 1.0f); // xYZ
-	//m_vecFrustum[7] = ChaVector3(1.0f, 1.0f, 1.0f); // XYZ
-
-	//float minx = -1.0f;
-	//float maxx = 1.0f;
-	//float miny = -1.0f;
-	//float maxy = 1.0f;
-	float minx = -1.0f;
-	float maxx = 1.0f;
-	float miny = -1.0f;
-	float maxy = 1.0f;
-	//float minz = 0.25f;
-	//float minz = 0.50f;
-	//float minz = 0.50f;
-
-	//########################################################################################
-	//パースがきついほど　視錐の面に角度がついて　内積での判定がうまくいかない
-	//適正なminz, maxzを探したが　アセットのプロジェクションに依存するので　固定値では無理
-	//Frustumでの判定は正射影用？
-	//今回は　Frustum判定をやめて　２次元的にfovyの内積比較で判定することにした
-	//########################################################################################
-	float minz = 0.9990f;
-	float maxz = 0.9997f;
-	//float maxz = 0.70f;
-	m_vecFrustum[0] = ChaVector3(minx, miny, minz); // xyz
-	m_vecFrustum[1] = ChaVector3(maxx, miny, minz); // Xyz
-	m_vecFrustum[2] = ChaVector3(minx, maxy, minz); // xYz
-	m_vecFrustum[3] = ChaVector3(maxx, maxy, minz); // XYz
-	m_vecFrustum[4] = ChaVector3(minx, miny, maxz); // xyZ
-	m_vecFrustum[5] = ChaVector3(maxx, miny, maxz); // XyZ
-	m_vecFrustum[6] = ChaVector3(minx, maxy, maxz); // xYZ
-	m_vecFrustum[7] = ChaVector3(maxx, maxy, maxz); // XYZ
-
-
-
-	for (INT i = 0; i < 8; i++) {
-		ChaVector3TransformCoord(&(m_vecTraFrustum[i]), &(m_vecFrustum[i]), &matInvViewProj);
-	}
-
-	//m_planeFrustum[0].FromPoints(m_vecTraFrustum[0], m_vecTraFrustum[1], m_vecTraFrustum[2]); // Near
-	//m_planeFrustum[1].FromPoints(m_vecTraFrustum[6], m_vecTraFrustum[7], m_vecTraFrustum[5]); // Far
-	//m_planeFrustum[2].FromPoints(m_vecTraFrustum[2], m_vecTraFrustum[6], m_vecTraFrustum[4]); // Left
-	//m_planeFrustum[3].FromPoints(m_vecTraFrustum[7], m_vecTraFrustum[3], m_vecTraFrustum[5]); // Right
-	//m_planeFrustum[4].FromPoints(m_vecTraFrustum[2], m_vecTraFrustum[3], m_vecTraFrustum[6]); // Top
-	//m_planeFrustum[5].FromPoints(m_vecTraFrustum[1], m_vecTraFrustum[0], m_vecTraFrustum[4]); // Bottom
-
-	//m_planeFrustum[0].FromPoints(m_vecTraFrustum[2], m_vecTraFrustum[1], m_vecTraFrustum[0]); // Near
-	//m_planeFrustum[1].FromPoints(m_vecTraFrustum[5], m_vecTraFrustum[7], m_vecTraFrustum[6]); // Far
-	//m_planeFrustum[2].FromPoints(m_vecTraFrustum[4], m_vecTraFrustum[6], m_vecTraFrustum[2]); // Left
-	//m_planeFrustum[3].FromPoints(m_vecTraFrustum[5], m_vecTraFrustum[3], m_vecTraFrustum[7]); // Right
-	//m_planeFrustum[4].FromPoints(m_vecTraFrustum[6], m_vecTraFrustum[3], m_vecTraFrustum[2]); // Top
-	//m_planeFrustum[5].FromPoints(m_vecTraFrustum[4], m_vecTraFrustum[0], m_vecTraFrustum[1]); // Bottom
-
-	m_planeFrustum[0].FromPoints(m_vecTraFrustum[0], m_vecTraFrustum[2], m_vecTraFrustum[1]); // Near
-	m_planeFrustum[1].FromPoints(m_vecTraFrustum[5], m_vecTraFrustum[7], m_vecTraFrustum[6]); // Far !!!
-	m_planeFrustum[2].FromPoints(m_vecTraFrustum[4], m_vecTraFrustum[6], m_vecTraFrustum[0]); // Left
-	m_planeFrustum[3].FromPoints(m_vecTraFrustum[1], m_vecTraFrustum[3], m_vecTraFrustum[5]); // Right
-	m_planeFrustum[4].FromPoints(m_vecTraFrustum[2], m_vecTraFrustum[6], m_vecTraFrustum[3]); // Top !!!
-	m_planeFrustum[5].FromPoints(m_vecTraFrustum[1], m_vecTraFrustum[5], m_vecTraFrustum[4]); // Bottom
-
-	//m_planeFrustum[0].FromPoints(m_vecTraFrustum[0], m_vecTraFrustum[2], m_vecTraFrustum[1]); // Near
-	//m_planeFrustum[1].FromPoints(m_vecTraFrustum[6], m_vecTraFrustum[7], m_vecTraFrustum[5]); // Far !!!
-	//m_planeFrustum[2].FromPoints(m_vecTraFrustum[4], m_vecTraFrustum[6], m_vecTraFrustum[0]); // Left
-	//m_planeFrustum[3].FromPoints(m_vecTraFrustum[1], m_vecTraFrustum[3], m_vecTraFrustum[5]); // Right
-	//m_planeFrustum[4].FromPoints(m_vecTraFrustum[3], m_vecTraFrustum[6], m_vecTraFrustum[2]); // Top !!!
-	//m_planeFrustum[5].FromPoints(m_vecTraFrustum[1], m_vecTraFrustum[5], m_vecTraFrustum[4]); // Bottom
-
-	return 0;
-}
+//int ChaFrustumInfo::UpdateFrustum(ChaMatrix matVP)
+//{
+//	m_matVP = matVP;
+//	ChaMatrix matInvViewProj = ChaMatrixInv(matVP);
+//
+//	//m_vecFrustum[0] = ChaVector3(-1.0f, -1.0f, 0.0f); // xyz
+//	//m_vecFrustum[1] = ChaVector3(1.0f, -1.0f, 0.0f); // Xyz
+//	//m_vecFrustum[2] = ChaVector3(-1.0f, 1.0f, 0.0f); // xYz
+//	//m_vecFrustum[3] = ChaVector3(1.0f, 1.0f, 0.0f); // XYz
+//	//m_vecFrustum[4] = ChaVector3(-1.0f, -1.0f, 1.0f); // xyZ
+//	//m_vecFrustum[5] = ChaVector3(1.0f, -1.0f, 1.0f); // XyZ
+//	//m_vecFrustum[6] = ChaVector3(-1.0f, 1.0f, 1.0f); // xYZ
+//	//m_vecFrustum[7] = ChaVector3(1.0f, 1.0f, 1.0f); // XYZ
+//
+//	//float minx = -1.0f;
+//	//float maxx = 1.0f;
+//	//float miny = -1.0f;
+//	//float maxy = 1.0f;
+//	float minx = -1.0f;
+//	float maxx = 1.0f;
+//	float miny = -1.0f;
+//	float maxy = 1.0f;
+//	//float minz = 0.25f;
+//	//float minz = 0.50f;
+//	//float minz = 0.50f;
+//
+//	//##################################################################################################################
+//	//パースがきついほど　視錐の面に角度がついて　内積での判定がうまくいかない
+//	//適正なminz, maxzを探したが　アセットのプロジェクションに依存するので　固定値では無理
+//	//Frustumでの判定は正射影用？
+//	//今回は　Frustum判定をやめて　２次元的にfovyの内積比較で判定することにした
+//	// 
+//	//2023/08/26_3 数学の本をみてみた　視錐体の処理はカメラ座標系でするようだ　ワールド座標系でやっていたから失敗した？
+//	//既に　fovyでの軽い処理で済ませることにしたので　カメラ座標系での処理は　また必要があったらということで
+//	//###################################################################################################################
+//	float minz = 0.9990f;
+//	float maxz = 0.9997f;
+//	//float maxz = 0.70f;
+//	m_vecFrustum[0] = ChaVector3(minx, miny, minz); // xyz
+//	m_vecFrustum[1] = ChaVector3(maxx, miny, minz); // Xyz
+//	m_vecFrustum[2] = ChaVector3(minx, maxy, minz); // xYz
+//	m_vecFrustum[3] = ChaVector3(maxx, maxy, minz); // XYz
+//	m_vecFrustum[4] = ChaVector3(minx, miny, maxz); // xyZ
+//	m_vecFrustum[5] = ChaVector3(maxx, miny, maxz); // XyZ
+//	m_vecFrustum[6] = ChaVector3(minx, maxy, maxz); // xYZ
+//	m_vecFrustum[7] = ChaVector3(maxx, maxy, maxz); // XYZ
+//
+//
+//
+//	for (INT i = 0; i < 8; i++) {
+//		ChaVector3TransformCoord(&(m_vecTraFrustum[i]), &(m_vecFrustum[i]), &matInvViewProj);
+//	}
+//
+//	//m_planeFrustum[0].FromPoints(m_vecTraFrustum[0], m_vecTraFrustum[1], m_vecTraFrustum[2]); // Near
+//	//m_planeFrustum[1].FromPoints(m_vecTraFrustum[6], m_vecTraFrustum[7], m_vecTraFrustum[5]); // Far
+//	//m_planeFrustum[2].FromPoints(m_vecTraFrustum[2], m_vecTraFrustum[6], m_vecTraFrustum[4]); // Left
+//	//m_planeFrustum[3].FromPoints(m_vecTraFrustum[7], m_vecTraFrustum[3], m_vecTraFrustum[5]); // Right
+//	//m_planeFrustum[4].FromPoints(m_vecTraFrustum[2], m_vecTraFrustum[3], m_vecTraFrustum[6]); // Top
+//	//m_planeFrustum[5].FromPoints(m_vecTraFrustum[1], m_vecTraFrustum[0], m_vecTraFrustum[4]); // Bottom
+//
+//	//m_planeFrustum[0].FromPoints(m_vecTraFrustum[2], m_vecTraFrustum[1], m_vecTraFrustum[0]); // Near
+//	//m_planeFrustum[1].FromPoints(m_vecTraFrustum[5], m_vecTraFrustum[7], m_vecTraFrustum[6]); // Far
+//	//m_planeFrustum[2].FromPoints(m_vecTraFrustum[4], m_vecTraFrustum[6], m_vecTraFrustum[2]); // Left
+//	//m_planeFrustum[3].FromPoints(m_vecTraFrustum[5], m_vecTraFrustum[3], m_vecTraFrustum[7]); // Right
+//	//m_planeFrustum[4].FromPoints(m_vecTraFrustum[6], m_vecTraFrustum[3], m_vecTraFrustum[2]); // Top
+//	//m_planeFrustum[5].FromPoints(m_vecTraFrustum[4], m_vecTraFrustum[0], m_vecTraFrustum[1]); // Bottom
+//
+//	m_planeFrustum[0].FromPoints(m_vecTraFrustum[0], m_vecTraFrustum[2], m_vecTraFrustum[1]); // Near
+//	m_planeFrustum[1].FromPoints(m_vecTraFrustum[5], m_vecTraFrustum[7], m_vecTraFrustum[6]); // Far !!!
+//	m_planeFrustum[2].FromPoints(m_vecTraFrustum[4], m_vecTraFrustum[6], m_vecTraFrustum[0]); // Left
+//	m_planeFrustum[3].FromPoints(m_vecTraFrustum[1], m_vecTraFrustum[3], m_vecTraFrustum[5]); // Right
+//	m_planeFrustum[4].FromPoints(m_vecTraFrustum[2], m_vecTraFrustum[6], m_vecTraFrustum[3]); // Top !!!
+//	m_planeFrustum[5].FromPoints(m_vecTraFrustum[1], m_vecTraFrustum[5], m_vecTraFrustum[4]); // Bottom
+//
+//	//m_planeFrustum[0].FromPoints(m_vecTraFrustum[0], m_vecTraFrustum[2], m_vecTraFrustum[1]); // Near
+//	//m_planeFrustum[1].FromPoints(m_vecTraFrustum[6], m_vecTraFrustum[7], m_vecTraFrustum[5]); // Far !!!
+//	//m_planeFrustum[2].FromPoints(m_vecTraFrustum[4], m_vecTraFrustum[6], m_vecTraFrustum[0]); // Left
+//	//m_planeFrustum[3].FromPoints(m_vecTraFrustum[1], m_vecTraFrustum[3], m_vecTraFrustum[5]); // Right
+//	//m_planeFrustum[4].FromPoints(m_vecTraFrustum[3], m_vecTraFrustum[6], m_vecTraFrustum[2]); // Top !!!
+//	//m_planeFrustum[5].FromPoints(m_vecTraFrustum[1], m_vecTraFrustum[5], m_vecTraFrustum[4]); // Bottom
+//
+//	return 0;
+//}
 
 //int ChaFrustumInfo::ChkInView(MODELBOUND srcmb, ChaMatrix matWorld)
 //{
@@ -6419,10 +6452,9 @@ int ChaFrustumInfo::UpdateFrustum(ChaMatrix matVP)
 
 int ChaFrustumInfo::ChkInView(MODELBOUND srcmb, ChaMatrix matWorld)
 {
-	//###########################################################################
-	//2023/08/26
-	//大きい地面の中心が　カメラの後ろ側にある場合などにうまくいかないが　大体OK
-	//###########################################################################
+	//###################################
+	//視錐体より　軽くて　まあまあの精度
+	//###################################
 
 	ChaVector3 tracenter;
 	ChaVector3TransformCoord(&tracenter, &(srcmb.center), &matWorld);
@@ -6432,16 +6464,17 @@ int ChaFrustumInfo::ChkInView(MODELBOUND srcmb, ChaMatrix matWorld)
 	ChaVector3Normalize(&camdir, &camdir);
 
 
+	ChaVector3 cam2obj = tracenter - g_camEye;
+	float dist_cam2obj = (float)ChaVector3LengthDbl(&cam2obj);
+
 	ChaVector3 backpos = g_camEye - camdir * srcmb.r;
-	ChaVector3 cam2obj = tracenter - backpos;
-	float distobj = (float)ChaVector3LengthDbl(&cam2obj);
-	ChaVector3Normalize(&cam2obj, &cam2obj);
+	ChaVector3 back2obj = tracenter - backpos;
+	ChaVector3Normalize(&back2obj, &back2obj);
+	float dot = ChaVector3Dot(&camdir, &back2obj);
 
-
-	float dot = ChaVector3Dot(&camdir, &cam2obj);
-	float dotfov = (float)cos(g_fovy);
+	float dotclip = (float)cos(g_fovy);
 	
-	if ((dot >= dotfov) && (distobj <= (g_projfar + srcmb.r))) {
+	if ((dot >= dotclip) && (dist_cam2obj <= (g_projfar + srcmb.r))) {
 		SetVisible(true);
 	}
 	else {
@@ -6469,38 +6502,42 @@ void ChaFrustumInfo::InitParams()
 
 	SetVisible(true);
 }
-int ChaFrustumInfo::GetFootOnPlane(int srcplaneindex, ChaVector3 srcpos)
-{
-	if ((srcplaneindex < 0) || (srcplaneindex >= 6)) {
-		_ASSERT(0);
-		return 1;
-	}
 
-	ChaPlane curplane = m_planeFrustum[srcplaneindex];
-
-	double t0, tmpt1, t1, t;
-	t0 = curplane.a * srcpos.x + curplane.b * srcpos.y + curplane.c * srcpos.z + curplane.d;
-	tmpt1 = curplane.a * curplane.a + curplane.b * curplane.b + curplane.c * curplane.c;
-	if (tmpt1 != 0.0f) {
-		t1 = sqrt(tmpt1);
-	}
-	else {
-		t1 = 0.0f;
-	}
-	
-	if (t1 != 0.0f) {
-		t = -(t0 / t1);
-	}
-	else {
-		t = 0.0f;
-	}
-
-	m_footpos[srcplaneindex].x = (float)((double)srcpos.x + t * (double)curplane.a);
-	m_footpos[srcplaneindex].y = (float)((double)srcpos.y + t * (double)curplane.b);
-	m_footpos[srcplaneindex].z = (float)((double)srcpos.z + t * (double)curplane.c);
-
-	return 0;
-}
+//################
+//ChaPlaneに移動
+//################
+//int ChaFrustumInfo::GetFootOnPlane(int srcplaneindex, ChaVector3 srcpos)
+//{
+//	if ((srcplaneindex < 0) || (srcplaneindex >= 6)) {
+//		_ASSERT(0);
+//		return 1;
+//	}
+//
+//	ChaPlane curplane = m_planeFrustum[srcplaneindex];
+//
+//	double t0, tmpt1, t1, t;
+//	t0 = curplane.a * srcpos.x + curplane.b * srcpos.y + curplane.c * srcpos.z + curplane.d;
+//	tmpt1 = curplane.a * curplane.a + curplane.b * curplane.b + curplane.c * curplane.c;
+//	if (tmpt1 != 0.0f) {
+//		t1 = sqrt(tmpt1);
+//	}
+//	else {
+//		t1 = 0.0f;
+//	}
+//	
+//	if (t1 != 0.0f) {
+//		t = -(t0 / t1);
+//	}
+//	else {
+//		t = 0.0f;
+//	}
+//
+//	m_footpos[srcplaneindex].x = (float)((double)srcpos.x + t * (double)curplane.a);
+//	m_footpos[srcplaneindex].y = (float)((double)srcpos.y + t * (double)curplane.b);
+//	m_footpos[srcplaneindex].z = (float)((double)srcpos.z + t * (double)curplane.c);
+//
+//	return 0;
+//}
 
 
 
