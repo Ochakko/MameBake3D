@@ -2479,6 +2479,10 @@ static WCHAR s_REname[MAX_PATH] = { 0L };
 static WCHAR s_Impname[MAX_PATH] = { 0L };
 static WCHAR s_Gconame[MAX_PATH] = { 0L };
 
+static bool s_cancelLButtonDown = false;
+static bool s_cancelRButtonDown = false;
+
+
 static int s_camtargetflag = 0;
 static bool s_twistcameraFlag = false;
 CDXUTCheckBox* s_CamTargetCheckBox = 0;
@@ -2970,7 +2974,8 @@ static void AutoCameraTarget();
 
 static int CreateUtDialog();
 static int VisibleUtDialog();
-static bool UnderDragOperation();
+static bool UnderDragOperation_L();
+static bool UnderDragOperation_R();
 static int CreateTimelineWnd();
 static int CreateLongTimelineWnd();
 static int CreateDmpAnimWnd();
@@ -4122,6 +4127,11 @@ void InitApp()
 	s_selbonedlgmap.clear();
 
 	s_utcontrolvisible = true;
+
+	s_cancelLButtonDown = false;
+	s_cancelRButtonDown = false;
+
+
 
 	{
 		g_hRenderBoneL0 = 0;
@@ -8031,7 +8041,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	}
 	else {
 
-		if ((UnderDragOperation() == false) && ((s_tooltipdispcount % 20) == 0)) {
+		if ((UnderDragOperation_R() == false) && (UnderDragOperation_L() == false) && ((s_tooltipdispcount % 20) == 0)) {
 			//マウスがUtDialogのコントロールの上を通るとSetCaptureが生じるのでIK中は非表示にする
 			DispToolTip();
 		}
@@ -9500,11 +9510,16 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 	}
 	else if(uMsg == WM_CAPTURECHANGED){
-		if ((HWND)lParam != hWnd) {
-			::SendMessage(hWnd, WM_LBUTTONUP, 0, 0);
-		}
+		//if ((HWND)lParam != hWnd) {
+		//	::SendMessage(hWnd, WM_LBUTTONUP, 0, 0);
+		//}
 	}
 	else if ((uMsg == WM_LBUTTONDOWN) || (uMsg == WM_LBUTTONDBLCLK)) {
+
+		if (UnderDragOperation_R()) {
+			s_cancelLButtonDown = true;
+			return 0;//!!!!!!!!!!!!!!!!
+		}
 
 		if (s_curboneno >= 0) {
 			s_saveboneno = s_curboneno;
@@ -10051,7 +10066,10 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 	}
 	else if (uMsg == WM_LBUTTONUP) {
-
+		if (s_cancelLButtonDown) {
+			s_cancelLButtonDown = false;
+			return 0;
+		}
 
 
 		//if (s_dispmodel && s_modelpanel.panel && s_modelpanel.separator) {
@@ -10253,6 +10271,15 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 	}
 	else if (uMsg == WM_RBUTTONDOWN) {
+
+		if (UnderDragOperation_L()) {
+			s_cancelRButtonDown = true;
+			return 0;
+		}
+
+
+		SetCapture(DXUTGetHWND());
+
 		POINT ptCursor;
 		GetCursorPos(&ptCursor);
 		::ScreenToClient(s_3dwnd, &ptCursor);
@@ -10333,7 +10360,13 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		}
 	}
 	else if (uMsg == WM_RBUTTONUP) {
-		//ReleaseCapture();
+		if (s_cancelRButtonDown) {
+			s_cancelRButtonDown = false;
+			return 0;
+		}
+
+		ReleaseCapture();
+		
 		s_pickinfo.buttonflag = 0;
 		s_twistcameraFlag = false;
 	}
@@ -31526,7 +31559,7 @@ int InitPluginMenu()
 }
 
 
-bool UnderDragOperation()
+bool UnderDragOperation_L()
 {
 	if (s_oprigflag == 0) {
 		if ((s_ikkind == 0) && (s_editmotionflag >= 0)) {
@@ -31586,9 +31619,22 @@ bool UnderDragOperation()
 	return false;
 }
 
+bool UnderDragOperation_R()
+{
+	if (s_twistcameraFlag == true) {
+		return true;
+	}
+
+
+
+	return false;
+}
+
+
+
 int VisibleUtDialog()
 {
-	bool visibleflag = !(UnderDragOperation());
+	bool visibleflag = !(UnderDragOperation_R() || UnderDragOperation_L());
 
 	if (visibleflag != s_utcontrolvisible) {
 

@@ -39,7 +39,6 @@ public:
 
 	void DestroySystemDispObj();
 
-
 private:
 	void InitParams();
 	void DestroyObjs();

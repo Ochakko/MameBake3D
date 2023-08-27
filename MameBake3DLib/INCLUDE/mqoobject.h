@@ -1,4 +1,4 @@
-#ifndef MQOOBJECTH
+ï»¿#ifndef MQOOBJECTH
 #define MQOOBJECTH
 
 //class ID3D11Device;
@@ -106,6 +106,7 @@ public:
 
 	int ChkInView(ChaMatrix matWorld, ChaMatrix matVP);
 
+	CBone* GetHipsBone();
 
 private:
 	void InitParams();
@@ -373,7 +374,7 @@ private:
 	int m_uvleng;
 	ChaVector2* m_uvbuf;
 	std::map<int, CMQOMaterial*> m_material;
-	std::vector<CBone*> m_cluster;//’†g‚ÌCBone*‚ÍŠO•”ƒƒ‚ƒŠ
+	std::vector<CBone*> m_cluster;//ä¸­èº«ã®CBone*ã¯å¤–éƒ¨ãƒ¡ãƒ¢ãƒª
 
 	std::map<std::string,int> m_findshape;
 	std::map<std::string,ChaVector3*> m_shapevert;
@@ -382,7 +383,7 @@ private:
 
 	ChaFrustumInfo m_frustum;
 
-//ˆÈ‰ºAƒNƒ‰ƒXŠO‚©‚çQÆ‚µ‚È‚¢‚Ì‚ÅƒAƒNƒZƒbƒT[–³‚µ
+//ä»¥ä¸‹ã€ã‚¯ãƒ©ã‚¹å¤–ã‹ã‚‰å‚ç…§ã—ãªã„ã®ã§ã‚¢ã‚¯ã‚»ãƒƒã‚µãƒ¼ç„¡ã—
 	int m_patch;
 	int m_segment;
 

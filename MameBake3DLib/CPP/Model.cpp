@@ -17578,6 +17578,13 @@ void CModel::GetRootOrReferenceReq(FbxNode* srcnode, FbxNode** dstppnode)
 
 void CModel::GetHipsBoneReq(CBone* srcbone, CBone** dstppbone)
 {
+
+	if (GetNoBoneFlag() == true) {
+		*dstppbone = 0;
+		return;
+	}
+
+
 	if (srcbone && dstppbone && !(*dstppbone)) {
 
 		if (srcbone->IsHipsBone()) {
@@ -18109,7 +18116,7 @@ int CModel::ChkInView()
 
 	if (wcsstr(GetFileName(), L".mqo") != 0) {
 
-		//このアプリにおいては　mqoファイルはクリッピングしない用途に使用しているので　常に描画するように
+		//このアプリにおいては　mqoファイル(マニピュレータや地面格子)はクリッピングしない用途に使用しているので　常に描画するように
 
 		SetInView(true);
 
@@ -18123,56 +18130,38 @@ int CModel::ChkInView()
 	}
 	else {
 
-		//##################################################
-		//2023/08/27
-		//hipsが大きく移動すると　視野外になる不具合への対応
-		//hipsのworldmatを考慮する
-		//##################################################
-		ChaMatrix chkmatworld;
-		chkmatworld.SetIdentity();
-		CBone* hipsbone = 0;
-		GetHipsBoneReq(GetTopBone(false), &hipsbone);
-		if (!hipsbone) {
-			hipsbone = GetTopBone(true);
-		}
-		if (hipsbone) {
-			int currentmotid = GetCurrentMotID();
-			if (currentmotid > 0) {
-				double roundingframe = (double)((int)GetCurrentFrame());
-				ChaMatrix hipsworld = hipsbone->GetWorldMat(g_limitdegflag, currentmotid, roundingframe, 0);
-				chkmatworld = hipsworld * m_matWorld;
-			}
-			else {
-				chkmatworld = m_matWorld;
-			}
-		}
-		else {
-			chkmatworld = m_matWorld;
-		}
-
-
-
-		//m_frustum.UpdateFrustum(m_matVP);
+		////###########################################
+		////モデル全体のバウンダリーで　まずは粗く判定
+		////###########################################
+		// モデルには非スキンメッシュとスキンメッシュが混在している
+		// 非スキンメッシュの判定はm_matWorldで行い
+		// スキンメッシュの判定は　hipsworld * m_matWorldで行う
+		// まとめて１回では判定できない
+		// よってコメントアウト
 		//m_frustum.ChkInView(m_bound, m_matWorld);
-		m_frustum.ChkInView(m_bound, chkmatworld);
-		if (m_frustum.GetVisible() == false) {
-			SetInView(false);//!!!!!!!!!!!!!!!!!!
-			return 0;
-		}
+		//if (m_frustum.GetVisible() == false) {
+		//	SetInView(false);//!!!!!!!!!!!!!!!!!!
+		//	return 0;
+		//}
 
 
-
-
-
+		//###############################################################
+		//モデル全体が視野内に掛かっている場合　メッシュごとに判定をする
+		// 
+		// CMQOObject::ChkInView()内で
+		// スキンメッシュ(CPolyMesh4)の場合
+		// clusterの最初のボーンを親方向へさかのぼりhipsを探す
+		// hipsのworldmatをm_matWorldに掛けて判定することにより
+		// モーションでの全体移動に対応
+		//###############################################################
 		int objnum = 0;
 		int inviewnum = 0;
-
 		map<int, CMQOObject*>::iterator itr;
 		for (itr = m_object.begin(); itr != m_object.end(); itr++) {
 			CMQOObject* curobj = itr->second;
 			if (curobj) {
 				//curobj->ChkInView(m_matWorld, m_matVP);
-				curobj->ChkInView(chkmatworld, m_matVP);
+				curobj->ChkInView(m_matWorld, m_matVP);
 				if (curobj->GetVisible()) {
 					inviewnum++;
 				}
@@ -18181,10 +18170,10 @@ int CModel::ChkInView()
 		}
 
 		if (inviewnum != 0) {
-			SetInView(true);
+			SetInView(true);//メッシュ１つでも視野内にある場合には　モデルとして視野内のマークをする
 		}
 		else {
-			SetInView(false);
+			SetInView(false);//全てのメッシュが視野外の場合　モデルとして視野外のマークをする
 		}
 	}
 	return 0;

@@ -770,4 +770,3 @@ int CPolyMesh4::SetLastValidVno()
 
 	return 0;
 }
-

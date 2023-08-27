@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 //#include <stdafx.h>
 
 #include <string.h>
@@ -24,10 +24,13 @@
 #include <mqomaterial.h>
 #include <InfBone.h>
 #include <Bone.h>
+#include <Model.h>
 
 #include <RigidElem.h>
 
 #include <Collision.h>
+
+#include <GlobalVar.h>
 
 #include <algorithm>
 #include <iostream>
@@ -482,7 +485,7 @@ int CMQOObject::GetName( char* dstchar, int dstleng, char* srcchar, int pos, int
 
 int CMQOObject::SetVertex( int* vertnum, char* srcchar, int srcleng )
 {
-	//vertex, ‚Ü‚½‚ÍA@BVertex‚ğŠÜ‚Ş•¶š—ñ‚ğó‚¯æ‚éB
+	//vertex, ã¾ãŸã¯ã€ã€€BVertexã‚’å«ã‚€æ–‡å­—åˆ—ã‚’å—ã‘å–ã‚‹ã€‚
 	if( m_pointbuf ){
 		_ASSERT( 0 );
 		return 1;
@@ -781,7 +784,7 @@ int CMQOObject::MakePolymesh3(bool fbxfileflag, ID3D11Device* pdev, std::map<int
 ////////
 
 
-	// –Ê‚Æ’¸“_‚Ì”‚ğæ“¾
+	// é¢ã¨é ‚ç‚¹ã®æ•°ã‚’å–å¾—
 	int face_count;
 	int vert_count;
 	ChaVector3* pointptr;
@@ -830,14 +833,14 @@ int CMQOObject::MakePolymesh3(bool fbxfileflag, ID3D11Device* pdev, std::map<int
 
 	if (fbxfileflag == false) {
 		//mqofile
-		//material‚ÍCModel‚©‚çˆø”‚Åó‚¯æ‚Á‚½srcmaterial
+		//materialã¯CModelã‹ã‚‰å¼•æ•°ã§å—ã‘å–ã£ãŸsrcmaterial
 		CallF(m_pm3->CreatePM3(fbxfileflag, vert_count, face_count, m_facet, pointptr, faceptr, srcmaterial, m_multmat), return 1);
 	}
 	else {
 		
 		//fbxfile
-		//material‚ÍCMQOObject‚Ìm_material
-		//uv‚ÍCMQOObject‚Ìm_uvbuf
+		//materialã¯CMQOObjectã®m_material
+		//uvã¯CMQOObjectã®m_uvbuf
 
 		if (m_uvbuf ) {
 			int datano1 = 0;
@@ -956,7 +959,7 @@ int CMQOObject::MakeDispObj( ID3D11Device* pdev, int hasbone )
 
 		m_pm3->CalcBound();
 
-		if (m_pm3->GetFbxFileFlag()) {//mqo‚©‚ç“Ç‚İ‚ñ‚¾ê‡‚ÍPickRay()‚Åg‚¤‚Ì‚ÅDestroy‚µ‚È‚¢
+		if (m_pm3->GetFbxFileFlag()) {//mqoã‹ã‚‰èª­ã¿è¾¼ã‚“ã å ´åˆã¯PickRay()ã§ä½¿ã†ã®ã§Destroyã—ãªã„
 			DestroySystemDispObj();
 		}
 		m_pm3->DestroySystemDispObj();
@@ -1329,7 +1332,7 @@ int CMQOObject::MakeMirrorBuf()
 
 
 	if( m_mirror == 2 ){
-		CallF( FindConnectFace( 0 ), return 1 );//connectnum‚ÌƒZƒbƒg
+		CallF( FindConnectFace( 0 ), return 1 );//connectnumã®ã‚»ãƒƒãƒˆ
 		if( m_connectnum > 0 ){
 			_ASSERT( m_connectface == 0 );
 			m_connectface = new CMQOFace[ m_connectnum ];
@@ -1339,7 +1342,7 @@ int CMQOObject::MakeMirrorBuf()
 				return 1;
 			}
 
-			CallF( FindConnectFace( 1 ), return 1 );//connectface‚ÌƒZƒbƒg
+			CallF( FindConnectFace( 1 ), return 1 );//connectfaceã®ã‚»ãƒƒãƒˆ
 		}
 
 	}else{
@@ -1532,7 +1535,7 @@ int CMQOObject::MakeMirrorPointAndFace( int axis, int doconnect )
 			dstface->SetPointNum( 4 );
 			dstface->SetMaterialNo( srcface->GetMaterialNo() );
 			
-			dstface->SetIndex( 0, srcface->GetIndex( 0 ) );//”½‘ÎŒü‚«‚É•`‰æ‚·‚é‚æ‚¤‚ÉƒZƒbƒgB
+			dstface->SetIndex( 0, srcface->GetIndex( 0 ) );//åå¯¾å‘ãã«æç”»ã™ã‚‹ã‚ˆã†ã«ã‚»ãƒƒãƒˆã€‚
 			dstface->SetIndex( 1, srcface->GetIndex( 0 ) + befvertex );
 			dstface->SetIndex( 2, srcface->GetIndex( 1 ) + befvertex );
 			dstface->SetIndex( 3, srcface->GetIndex( 1 ) );
@@ -1607,7 +1610,7 @@ int CMQOObject::FindConnectFace( int issetface )
 		if( findall == 0 ){
 			int i;
 			for( i = 0; i < pointnum; i++ ){
-				if( findflag[i] == 0 ){//‹¤—L‚µ‚Ä‚¢‚È‚¢•Ó
+				if( findflag[i] == 0 ){//å…±æœ‰ã—ã¦ã„ãªã„è¾º
 					int distok = 1;
 					distok = CheckMirrorDis( m_pointbuf, curface, i, pointnum );
 					if( distok ){
@@ -2037,7 +2040,7 @@ int CMQOObject::AddInfBone( int srcboneno, int srcvno, float srcweight, int isad
 {
 	CInfBone* ibptr = 0;
 	//if (m_pm3) {
-	//	//‰½‚à‚µ‚È‚¢
+	//	//ä½•ã‚‚ã—ãªã„
 	//}
 	//if( m_pm3 && m_pm3->GetInfBone() ){
 	//	if( (srcvno < 0) || (srcvno >= m_pm3->GetOrgPointNum()) ){
@@ -2076,7 +2079,7 @@ int CMQOObject::NormalizeInfBone()
 	//if( m_pm3 && m_pm3->GetInfBone() ){
 	//	_ASSERT( 0 );
 	if(m_pm3){
-		//‰½‚à‚µ‚È‚¢
+		//ä½•ã‚‚ã—ãªã„
 	}else if( m_pm4 && m_pm4->GetInfBone() ){
 		int vno;
 		for( vno = 0; vno < m_pm4->GetOrgPointNum(); vno++ ){
@@ -2387,18 +2390,45 @@ int CMQOObject::ChkInView(ChaMatrix matWorld, ChaMatrix matVP)
 {
 	MODELBOUND srcmb;
 	srcmb.Init();
+	ChaMatrix chkmatworld;
+	chkmatworld.SetIdentity();
+
 	if (m_pm3) {
 		srcmb = m_pm3->GetBound();
+		chkmatworld = matWorld;
 	}
 	else if (m_pm4) {
 		srcmb = m_pm4->GetBound();
+
+		//##################################################################
+		//2023/08/27
+		//hipsãŒå¤§ããç§»å‹•ã™ã‚‹ã¨ã€€è¦–é‡å¤–ã«ãªã‚‹ä¸å…·åˆã¸ã®å¯¾å¿œ
+		//hipsã®worldmatã‚’è€ƒæ…®ã™ã‚‹
+		// 
+		//GetHipsBone()ã¯clisterã®æœ€åˆã®ãƒœãƒ¼ãƒ³ã‚’è¦ªæ–¹å‘ã¸ã•ã‹ã®ã¼ã£ã¦æ¢ã™
+		//##################################################################
+
+		CBone* hipsbone = GetHipsBone();
+		if (hipsbone && hipsbone->GetParModel()) {
+			int currentmotid = hipsbone->GetParModel()->GetCurrentMotID();
+			if (currentmotid > 0) {
+				double roundingframe = (double)((int)hipsbone->GetParModel()->GetCurrentFrame());
+				ChaMatrix hipsworld = hipsbone->GetWorldMat(g_limitdegflag, currentmotid, roundingframe, 0);
+				chkmatworld = hipsworld * matWorld;
+			}
+			else {
+				chkmatworld = matWorld;
+			}
+		}
+		else {
+			chkmatworld = matWorld;
+		}
 	}
 	else {
 		return 2;
 	}
 
-	//m_frustum.UpdateFrustum(matVP);
-	m_frustum.ChkInView(srcmb, matWorld);
+	m_frustum.ChkInView(srcmb, chkmatworld);
 
 	return 0;
 }
@@ -2407,10 +2437,10 @@ bool CMQOObject::GetVisible()
 {
 	bool userflag = GetDispFlag();
 	if (userflag == false) {
-		return false;//ƒ†[ƒU[‚ª”ñ•\¦‚Æw’è‚µ‚Ä‚¢‚éê‡@”ñ•\¦
+		return false;//ãƒ¦ãƒ¼ã‚¶ãƒ¼ãŒéè¡¨ç¤ºã¨æŒ‡å®šã—ã¦ã„ã‚‹å ´åˆã€€éè¡¨ç¤º
 	}
 	else {
-		return m_frustum.GetVisible();//ChkInView()‚É‚æ‚é‹‘Ì”»’èŒ‹‰Ê
+		return m_frustum.GetVisible();//ChkInView()ã«ã‚ˆã‚‹è¦–éŒä½“åˆ¤å®šçµæœ
 	}
 }
 
@@ -2418,3 +2448,31 @@ void CMQOObject::SetInView(bool srcflag) {
 	m_frustum.SetVisible(srcflag);
 }
 
+CBone* CMQOObject::GetHipsBone()
+{
+	//################################################
+	//clusterã®æœ€åˆã®ãƒœãƒ¼ãƒ³ã‚’è¦ªæ–¹å‘ã¸ã•ã‹ã®ã¼ã£ã¦æ¢ã™
+	//################################################
+
+	CBone* hipsbone = 0;
+
+	CBone* firstbone = 0;
+	int clusternum = (int)GetClusterSize();
+	if (clusternum > 0) {
+		firstbone = GetCluster(0);
+	}
+	else {
+		firstbone = 0;
+	}
+
+	CBone* chkbone = firstbone;
+	while (chkbone) {
+		if (chkbone->IsHipsBone()) {
+			hipsbone = chkbone;
+			break;
+		}
+		chkbone = chkbone->GetParent(false);
+	}
+
+	return hipsbone;
+}
