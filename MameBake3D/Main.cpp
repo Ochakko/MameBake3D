@@ -34934,7 +34934,7 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 							//ChaMatrix tmpwm = s_model->GetWorldMat();
 							s_model->HierarchyRouteUpdateMatrix(g_limitdegflag, curbone, &modelwm, &s_matVP);//高速化：関係ボーンルート限定アップデート
 							ChaVector3 tmpfpos = curbone->GetJointFPos();
-							ChaMatrix tmpcurwm = curbone->GetCurMp().GetWorldMat();
+							ChaMatrix tmpcurwm = curbone->GetCurMp().GetWorldMat() * s_matWorld;//2023/08/27 s_matWorldを掛ける
 							ChaVector3TransformCoord(&curbonepos, &tmpfpos, &tmpcurwm);
 							vecbonepos.push_back(curbonepos);
 
