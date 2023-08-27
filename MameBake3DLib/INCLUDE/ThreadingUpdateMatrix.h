@@ -11,8 +11,9 @@
 //#define MAXBONEUPDATE	512
 #define MAXBONEUPDATE	1024
 
-
+class CModel;
 class CBone;
+
 class CThreadingUpdateMatrix : public CThreadingBase
 {
 public:
@@ -24,6 +25,7 @@ public:
 	virtual void DestroyObjs();
 
 	int ClearBoneList();
+	int SetModel(CModel* srcmodel);
 	int SetBoneList(int srcindex, CBone* srcbone);
 	void UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
 	//bool IsFinished();
@@ -41,6 +43,7 @@ private:
 	//HANDLE m_hthread;
 	//LONG m_exit_state;
 	//LONG m_start_state;
+	CModel* m_model;
 
 	int m_bonenum;
 	CBone* m_bonelist[MAXBONEUPDATE];

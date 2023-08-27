@@ -1107,9 +1107,17 @@ public: //accesser
 	bool GetInView() {
 		return m_inview;
 	};
+	bool GetBefInView() {
+		return m_befinview;
+	}
 	void SetInView(bool srcflag) {
+		m_befinview = m_inview;
 		m_inview = srcflag;
 	};
+
+
+	int GetCurrentMotID();
+	double GetCurrentFrame();
 
 	const WCHAR* GetFileName(){ return m_filename; };
 	const WCHAR* GetDirName(){ return m_dirname; };
@@ -1882,6 +1890,7 @@ public:
 
 private:
 	bool m_inview;
+	bool m_befinview;
 	ChaFrustumInfo m_frustum;
 	MODELBOUND m_bound;
 

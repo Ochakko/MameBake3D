@@ -49,6 +49,7 @@ int CThreadingUpdateMatrix::InitParams()
 {
 	CThreadingBase::InitParams();
 
+	m_model = 0;
 	ClearBoneList();
 	motid = 0;
 	frame = 0.0;
@@ -91,17 +92,21 @@ int CThreadingUpdateMatrix::ThreadFunc()
 
 			if (InterlockedAdd(&m_start_state, 0) == 1) {//計算開始命令をキャッチ
 				if (InterlockedAdd(&m_exit_state, 0) != 1) {//スレッドが終了していない場合
-					//EnterCriticalSection(&m_CritSection);//再入防止 呼び出し側で処理終了を待つので不要
-					if ((m_bonenum >= 0) || (m_bonenum <= MAXBONEUPDATE)) {
-						int bonecount;
-						for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
-							CBone* curbone = m_bonelist[bonecount];
-							if (curbone) {
-								bool callingbythread = true;
-								curbone->UpdateMatrix(m_limitdegflag, motid, frame, &wmat, &vpmat, callingbythread);
+
+					if (m_model && (m_model->GetInView() == true)) {
+						//EnterCriticalSection(&m_CritSection);//再入防止 呼び出し側で処理終了を待つので不要
+						if ((m_bonenum >= 0) || (m_bonenum <= MAXBONEUPDATE)) {
+							int bonecount;
+							for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
+								CBone* curbone = m_bonelist[bonecount];
+								if (curbone) {
+									bool callingbythread = true;
+									curbone->UpdateMatrix(m_limitdegflag, motid, frame, &wmat, &vpmat, callingbythread);
+								}
 							}
 						}
 					}
+					
 					InterlockedExchange(&m_start_state, 0L);
 					//LeaveCriticalSection(&m_CritSection);
 				}
@@ -137,21 +142,26 @@ int CThreadingUpdateMatrix::ThreadFunc()
 					// Event object was signaled
 				case WAIT_OBJECT_0:
 				{
-					EnterCriticalSection(&m_CritSection);
-					if ((m_bonenum >= 0) || (m_bonenum <= MAXBONEUPDATE)) {
+					if (m_model && (m_model->GetInView() == true)) {
+						EnterCriticalSection(&m_CritSection);
+						if ((m_bonenum >= 0) || (m_bonenum <= MAXBONEUPDATE)) {
 
-						int bonecount;
-						for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
-							CBone* curbone = m_bonelist[bonecount];
-							if (curbone) {
-								bool callingbythread = true;
-								curbone->UpdateMatrix(m_limitdegflag, motid, frame, &wmat, &vpmat, callingbythread);
+							int bonecount;
+							for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
+								CBone* curbone = m_bonelist[bonecount];
+								if (curbone) {
+									bool callingbythread = true;
+									curbone->UpdateMatrix(m_limitdegflag, motid, frame, &wmat, &vpmat, callingbythread);
+								}
 							}
 						}
-					}
 
-					InterlockedExchange(&m_start_state, 0L);
-					LeaveCriticalSection(&m_CritSection);
+						InterlockedExchange(&m_start_state, 0L);
+						LeaveCriticalSection(&m_CritSection);
+					}
+					else {
+						InterlockedExchange(&m_start_state, 0L);
+					}
 
 				}
 				break;
@@ -167,7 +177,6 @@ int CThreadingUpdateMatrix::ThreadFunc()
 				//スレッド終了フラグが立っていた場合
 				InterlockedExchange(&m_start_state, 0L);
 			}
-
 		}
 	}
 
@@ -184,6 +193,11 @@ int CThreadingUpdateMatrix::ClearBoneList()
 	m_bonenum = 0;
 	ZeroMemory(m_bonelist, sizeof(CBone*) * MAXBONEUPDATE);
 
+	return 0;
+}
+int CThreadingUpdateMatrix::SetModel(CModel* srcmodel)
+{
+	m_model = srcmodel;
 	return 0;
 }
 int CThreadingUpdateMatrix::SetBoneList(int srcindex, CBone* srcbone)
@@ -207,6 +221,14 @@ int CThreadingUpdateMatrix::SetBoneList(int srcindex, CBone* srcbone)
 
 void CThreadingUpdateMatrix::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix* srcwmat, ChaMatrix* srcvpmat)
 {
+
+	if (!m_model) {
+		return;
+	}
+	if (m_model && (m_model->GetInView() == false)) {
+		return;
+	}
+
 
 	//####################################################################
 	//## g_limitdegflag == true　の場合にはローカルの計算だけ並列化

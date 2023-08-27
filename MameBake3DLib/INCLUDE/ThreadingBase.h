@@ -10,7 +10,7 @@ public:
 	CThreadingBase();
 	~CThreadingBase();
 
-	int CreateThread();
+	int CreateThread(DWORD affinitymask);
 	virtual int InitParams();
 	virtual void DestroyObjs();
 

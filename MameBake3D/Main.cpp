@@ -8018,6 +8018,16 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	if (s_underdelmotion || s_underdelmodel || s_underselectmotion || s_underselectcamera || s_underselectmodel) {
 		OnFrameCloseFlag();
 		OnFrameToolWnd();
+
+		if (s_model) {
+			if (s_model->GetBefInView() != s_model->GetInView()) {
+				if (s_owpEulerGraph) {
+					//2023/08/27 オイラーグラフの表示非表示の条件が変わった場合には　再描画
+					//オイラーグラフのdraw()は OrgWindow.cppにある
+					s_owpEulerGraph->callRewrite();
+				}
+			}
+		}
 	}
 	else {
 
@@ -8135,7 +8145,17 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		else {
 			OnFramePreviewStop();
 		}
+		
 
+		if (s_model) {
+			if (s_model->GetBefInView() != s_model->GetInView()) {
+				if (s_owpEulerGraph) {
+					//2023/08/27 オイラーグラフの表示非表示の条件が変わった場合には　再描画
+					//オイラーグラフのdraw()は OrgWindow.cppにある
+					s_owpEulerGraph->callRewrite();
+				}
+			}
+		}
 
 
 		//s_difftime = difftime;
@@ -13594,6 +13614,11 @@ int UpdateEditedEuler()
 	//	return 0;
 	//}
 
+
+	if (s_owpEulerGraph) {
+		s_owpEulerGraph->SetCurrentModel(s_model);
+	}
+
 	if (!s_model || !s_owpLTimeline || !s_owpEulerGraph) {
 		return 0;
 	}
@@ -13807,6 +13832,10 @@ int refreshEulerGraph()
 {
 	//オイラーグラフのキーを作成しなおさない場合はUpdateEditedEuler()
 
+	if (s_owpEulerGraph) {
+		s_owpEulerGraph->SetCurrentModel(s_model);
+	}
+
 	if (!s_model || !s_owpLTimeline || !s_owpEulerGraph) {
 		return 0;
 	}
@@ -13992,7 +14021,11 @@ int refreshEulerGraph()
 
 
 //タイムラインにモーションデータのキーを設定する
-void refreshTimeline(OWP_Timeline& timeline) {
+void refreshTimeline(OWP_Timeline& timeline) 
+{
+	if (s_owpEulerGraph) {
+		s_owpEulerGraph->SetCurrentModel(s_model);
+	}
 
 	if (!s_model || !s_owpLTimeline || !s_owpEulerGraph) {
 		return;
@@ -14989,10 +15022,6 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 
 		SetMainWindowTitle();
 
-		if (s_owpEulerGraph) {
-			s_owpEulerGraph->SetCurrentModel(s_model);
-		}
-
 		s_underselectmodel = false;
 		return 0;//!!!!!!!!!
 	}
@@ -15014,9 +15043,6 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 
 		SetMainWindowTitle();
 
-		if (s_owpEulerGraph) {
-			s_owpEulerGraph->SetCurrentModel(s_model);
-		}
 
 		s_underselectmodel = false;
 		return 0;//!!!!!!!!!!!!!!!!!!!
@@ -15046,79 +15072,91 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 			DispObjPanel();
 			refreshModelPanel();
 
-			if (s_owpEulerGraph) {
-				s_owpEulerGraph->SetCurrentModel(s_model);
-			}
-
 			OnAnimMenu(dorefreshtl, s_motmenuindexmap[s_model]);
 		}
-	}
 
-	//else {
+
 		//大きいフレーム位置のまま小さいフレーム長のデータを読み込んだ時にエラーにならないように。
-	InitTimelineSelection();
-	//}
+		InitTimelineSelection();
 
 
-	CFrameCopyDlg* curcpdlg = GetCurrentFrameCopyDlg();
-	if (!curcpdlg) {
-		curcpdlg = new CFrameCopyDlg();
+		CFrameCopyDlg* curcpdlg = GetCurrentFrameCopyDlg();
 		if (!curcpdlg) {
-			_ASSERT(0);
-			s_underselectmodel = false;
-			return 1;//!!!!!!!!!
-		}
-		s_selbonedlgmap[s_model] = curcpdlg;
-		curcpdlg->SetModel(s_model);
-	}
-
-
-	{
-		if (s_copyhistorydlg.GetCreatedFlag() == false) {
-			int result = CreateCopyHistoryDlg();
-			if (result != 0) {
+			curcpdlg = new CFrameCopyDlg();
+			if (!curcpdlg) {
 				_ASSERT(0);
-				return 1;
+				s_underselectmodel = false;
+				return 1;//!!!!!!!!!
+			}
+			s_selbonedlgmap[s_model] = curcpdlg;
+			curcpdlg->SetModel(s_model);
+		}
+
+
+		{
+			if (s_copyhistorydlg.GetCreatedFlag() == false) {
+				int result = CreateCopyHistoryDlg();
+				if (result != 0) {
+					_ASSERT(0);
+					return 1;
+				}
+			}
+
+			GetCPTFileName(s_cptfilename);
+			s_copyhistorydlg.SetNames(s_model, s_cptfilename);
+		}
+
+		{
+			if (s_materialratedlgwnd) {
+				if (s_model) {
+					SetModel2MaterialRateDlg(s_model);
+				}
 			}
 		}
-			
-		GetCPTFileName(s_cptfilename);
-		s_copyhistorydlg.SetNames(s_model, s_cptfilename);
-	}
 
-	{
-		if (s_materialratedlgwnd) {
-			if (s_model) {
-				SetModel2MaterialRateDlg(s_model);
+		{
+			if (s_modelworldmatdlgwnd) {
+				if (s_model) {
+					SetModel2ModelWorldMatDlg(s_model);
+				}
 			}
 		}
-	}
-
-	{
-		if (s_modelworldmatdlgwnd) {
-			if (s_model) {
-				SetModel2ModelWorldMatDlg(s_model);
-			}
-		}
-	}
 
 
-	if (s_model) {
-		if (s_model->GetRigidElemInfoSize() > 0) {
-			int result1 = OnREMenu(0, 0);
-			if (result1) {
-				s_underselectmodel = false;
-				return 0;
+		if (s_model) {
+			if (s_model->GetRigidElemInfoSize() > 0) {
+				int result1 = OnREMenu(0, 0);
+				if (result1) {
+					s_underselectmodel = false;
+					return 0;
+				}
+				int result2 = OnRgdMenu(0, 0);
+				if (result2) {
+					s_underselectmodel = false;
+					return 0;
+				}
+				int result3 = OnImpMenu(0);
+				if (result3) {
+					s_underselectmodel = false;
+					return 0;
+				}
 			}
-			int result2 = OnRgdMenu(0, 0);
-			if (result2) {
-				s_underselectmodel = false;
-				return 0;
-			}
-			int result3 = OnImpMenu(0);
-			if (result3) {
-				s_underselectmodel = false;
-				return 0;
+			else {
+				int result1 = OnREMenu(-1, 0);
+				if (result1) {
+					s_underselectmodel = false;
+					return 0;
+				}
+				int result2 = OnRgdMenu(-1, 0);
+				if (result2) {
+					s_underselectmodel = false;
+					return 0;
+				}
+				int result3 = OnImpMenu(-1);
+				if (result3) {
+					s_underselectmodel = false;
+					return 0;
+				}
 			}
 		}
 		else {
@@ -15138,41 +15176,24 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 				return 0;
 			}
 		}
-	}
-	else {
-		int result1 = OnREMenu(-1, 0);
-		if (result1) {
-			s_underselectmodel = false;
-			return 0;
+
+
+		g_SampleUI.GetSlider(IDC_SPEED)->SetValue((int)(g_dspeed * 100.0f));
+		WCHAR sz[100];
+		swprintf_s(sz, 100, L"Speed: %0.4f", g_dspeed);
+		g_SampleUI.GetStatic(IDC_SPEED_STATIC)->SetText(sz);
+
+		//if (!g_bvh2fbxbatchflag && !g_motioncachebatchflag && !g_retargetbatchflag) {
+		//if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
+		if ((s_dispconvbone == true) &&
+			(InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
+			CreateConvBoneWnd();//!!!!!!!!!!!!! モデル選択変更によりリターゲットウインドウ作り直し
 		}
-		int result2 = OnRgdMenu(-1, 0);
-		if (result2) {
-			s_underselectmodel = false;
-			return 0;
-		}
-		int result3 = OnImpMenu(-1);
-		if (result3) {
-			s_underselectmodel = false;
-			return 0;
-		}
+
+		SetMainWindowTitle();
+
+		SetTimelineHasRigFlag();
 	}
-
-
-	g_SampleUI.GetSlider(IDC_SPEED)->SetValue((int)(g_dspeed * 100.0f));
-	WCHAR sz[100];
-	swprintf_s(sz, 100, L"Speed: %0.4f", g_dspeed);
-	g_SampleUI.GetStatic(IDC_SPEED_STATIC)->SetText(sz);
-
-	//if (!g_bvh2fbxbatchflag && !g_motioncachebatchflag && !g_retargetbatchflag) {
-	//if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
-	if ((s_dispconvbone == true) &&
-		(InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
-		CreateConvBoneWnd();//!!!!!!!!!!!!! モデル選択変更によりリターゲットウインドウ作り直し
-	}
-
-	SetMainWindowTitle();
-
-	SetTimelineHasRigFlag();
 
 	s_underselectmodel = false;
 

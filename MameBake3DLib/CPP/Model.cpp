@@ -467,7 +467,8 @@ CModel::~CModel()
 }
 int CModel::InitParams()
 {
-	m_inview = true;
+	m_inview = false;
+	m_befinview = false;
 	m_bound.Init();
 
 	m_iktargetbonevec.clear();
@@ -6653,6 +6654,11 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 	if( m_bonelist.empty() ){
 		return 0;
 	}
+
+	if (GetInView() == false) {
+		return 0;
+	}
+
 
 	MOTINFO* curmi = 0;
 	int curmotid;
@@ -17267,7 +17273,7 @@ int CModel::CreateLoadFbxAnim(FbxScene* pscene)
 		curload->SetScene(pscene);
 		curload->SetModel(this);
 		curload->ClearBoneList();
-		curload->CreateThread();
+		curload->CreateThread((DWORD)1);
 	}
 
 	m_creatednum_loadfbxanim = LOADFBXANIMTHREAD;
@@ -17374,7 +17380,9 @@ int CModel::CreateBoneUpdateMatrix()
 	for (createno = 0; createno < g_UpdateMatrixThreads; createno++) {
 		CThreadingUpdateMatrix* curupdate = m_boneupdatematrix + createno;
 		curupdate->ClearBoneList();
-		curupdate->CreateThread();
+		curupdate->CreateThread((DWORD)(1 << createno));//2023/08/27
+
+		curupdate->SetModel(this);//2023/08/27
 	}
 
 
@@ -18103,7 +18111,7 @@ int CModel::ChkInView()
 
 		//このアプリにおいては　mqoファイルはクリッピングしない用途に使用しているので　常に描画するように
 
-		m_inview = true;
+		SetInView(true);
 
 		map<int, CMQOObject*>::iterator itr;
 		for (itr = m_object.begin(); itr != m_object.end(); itr++) {
@@ -18115,12 +18123,45 @@ int CModel::ChkInView()
 	}
 	else {
 
+		//##################################################
+		//2023/08/27
+		//hipsが大きく移動すると　視野外になる不具合への対応
+		//hipsのworldmatを考慮する
+		//##################################################
+		ChaMatrix chkmatworld;
+		chkmatworld.SetIdentity();
+		CBone* hipsbone = 0;
+		GetHipsBoneReq(GetTopBone(false), &hipsbone);
+		if (!hipsbone) {
+			hipsbone = GetTopBone(true);
+		}
+		if (hipsbone) {
+			int currentmotid = GetCurrentMotID();
+			if (currentmotid > 0) {
+				double roundingframe = (double)((int)GetCurrentFrame());
+				ChaMatrix hipsworld = hipsbone->GetWorldMat(g_limitdegflag, currentmotid, roundingframe, 0);
+				chkmatworld = hipsworld * m_matWorld;
+			}
+			else {
+				chkmatworld = m_matWorld;
+			}
+		}
+		else {
+			chkmatworld = m_matWorld;
+		}
+
+
+
 		//m_frustum.UpdateFrustum(m_matVP);
-		m_frustum.ChkInView(m_bound, m_matWorld);
+		//m_frustum.ChkInView(m_bound, m_matWorld);
+		m_frustum.ChkInView(m_bound, chkmatworld);
 		if (m_frustum.GetVisible() == false) {
 			SetInView(false);//!!!!!!!!!!!!!!!!!!
 			return 0;
 		}
+
+
+
 
 
 		int objnum = 0;
@@ -18130,7 +18171,8 @@ int CModel::ChkInView()
 		for (itr = m_object.begin(); itr != m_object.end(); itr++) {
 			CMQOObject* curobj = itr->second;
 			if (curobj) {
-				curobj->ChkInView(m_matWorld, m_matVP);
+				//curobj->ChkInView(m_matWorld, m_matVP);
+				curobj->ChkInView(chkmatworld, m_matVP);
 				if (curobj->GetVisible()) {
 					inviewnum++;
 				}
@@ -18148,4 +18190,25 @@ int CModel::ChkInView()
 	return 0;
 }
 
+int CModel::GetCurrentMotID()
+{
+	MOTINFO* curmi = GetCurMotInfo();
+	if (curmi) {
+		return curmi->motid;
+	}
+	else {
+		return 0;
+	}
+}
+
+double CModel::GetCurrentFrame()
+{
+	MOTINFO* curmi = GetCurMotInfo();
+	if (curmi) {
+		return curmi->curframe;
+	}
+	else {
+		return 1.0;
+	}
+}
 

@@ -77,7 +77,7 @@ void CThreadingBase::DestroyObjs()
 		m_hExitEvent = NULL;
 	}
 }
-int CThreadingBase::CreateThread()
+int CThreadingBase::CreateThread(DWORD affinitymask)
 {
 	if (m_hthread != INVALID_HANDLE_VALUE) {
 		//already created error
@@ -97,6 +97,16 @@ int CThreadingBase::CreateThread()
 		NULL, 0, &ThreadFuncCaller,
 		(void*)this,
 		0, &threadaddr1);
+
+
+	//2023/08/27
+	ULONG_PTR  processaffinity = 0;
+	ULONG_PTR  systemaffinity = 0;
+	GetProcessAffinityMask(GetModuleHandle(NULL), &processaffinity, &systemaffinity);
+	if (processaffinity & affinitymask) {
+		SetThreadAffinityMask(m_hthread, affinitymask);
+	}
+
 
 	//WiatForÇµÇ»Ç¢èÍçáÇ…ÇÕêÊÇ…ï¬Ç∂ÇƒÇ‡OK
 	if (m_hthread && (m_hthread != INVALID_HANDLE_VALUE)) {
