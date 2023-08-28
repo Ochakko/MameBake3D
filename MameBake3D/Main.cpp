@@ -48075,33 +48075,35 @@ void OnArrowKey()
 
 
 	bool arrowkeypushed = false;
-	if (((g_savekeybuf[VK_UP] & 0x80) == 0) && ((g_keybuf[VK_UP] & 0x80) != 0)) {
-		s_dsbuttonup[parentbuttonid] = 1;
-		s_dsbuttonup[sisterbuttonid] = 0;
-		s_dsbuttonup[childbuttonid] = 0;
-		s_dsbuttonup[brotherbuttonid] = 0;
-		arrowkeypushed = true;
-	}
-	else if (((g_savekeybuf[VK_DOWN] & 0x80) == 0) && ((g_keybuf[VK_DOWN] & 0x80) != 0)) {
-		s_dsbuttonup[parentbuttonid] = 0;
-		s_dsbuttonup[sisterbuttonid] = 0;
-		s_dsbuttonup[childbuttonid] = 1;
-		s_dsbuttonup[brotherbuttonid] = 0;
-		arrowkeypushed = true;
-	}
-	else if (((g_savekeybuf[VK_LEFT] & 0x80) == 0) && ((g_keybuf[VK_LEFT] & 0x80) != 0)) {
-		s_dsbuttonup[parentbuttonid] = 0;
-		s_dsbuttonup[sisterbuttonid] = 1;
-		s_dsbuttonup[childbuttonid] = 0;
-		s_dsbuttonup[brotherbuttonid] = 0;
-		arrowkeypushed = true;
-	}
-	else if (((g_savekeybuf[VK_RIGHT] & 0x80) == 0) && ((g_keybuf[VK_RIGHT] & 0x80) != 0)) {
-		s_dsbuttonup[parentbuttonid] = 0;
-		s_dsbuttonup[sisterbuttonid] = 0;
-		s_dsbuttonup[childbuttonid] = 0;
-		s_dsbuttonup[brotherbuttonid] = 1;
-		arrowkeypushed = true;
+	if (!FocusEditWnd()) {//2023/08/28 EditCtrl入力中は　矢印キーのショートカット機能を使わない
+		if (((g_savekeybuf[VK_UP] & 0x80) == 0) && ((g_keybuf[VK_UP] & 0x80) != 0)) {
+			s_dsbuttonup[parentbuttonid] = 1;
+			s_dsbuttonup[sisterbuttonid] = 0;
+			s_dsbuttonup[childbuttonid] = 0;
+			s_dsbuttonup[brotherbuttonid] = 0;
+			arrowkeypushed = true;
+		}
+		else if (((g_savekeybuf[VK_DOWN] & 0x80) == 0) && ((g_keybuf[VK_DOWN] & 0x80) != 0)) {
+			s_dsbuttonup[parentbuttonid] = 0;
+			s_dsbuttonup[sisterbuttonid] = 0;
+			s_dsbuttonup[childbuttonid] = 1;
+			s_dsbuttonup[brotherbuttonid] = 0;
+			arrowkeypushed = true;
+		}
+		else if (((g_savekeybuf[VK_LEFT] & 0x80) == 0) && ((g_keybuf[VK_LEFT] & 0x80) != 0)) {
+			s_dsbuttonup[parentbuttonid] = 0;
+			s_dsbuttonup[sisterbuttonid] = 1;
+			s_dsbuttonup[childbuttonid] = 0;
+			s_dsbuttonup[brotherbuttonid] = 0;
+			arrowkeypushed = true;
+		}
+		else if (((g_savekeybuf[VK_RIGHT] & 0x80) == 0) && ((g_keybuf[VK_RIGHT] & 0x80) != 0)) {
+			s_dsbuttonup[parentbuttonid] = 0;
+			s_dsbuttonup[sisterbuttonid] = 0;
+			s_dsbuttonup[childbuttonid] = 0;
+			s_dsbuttonup[brotherbuttonid] = 1;
+			arrowkeypushed = true;
+		}
 	}
 
 	if (arrowkeypushed == true) {
