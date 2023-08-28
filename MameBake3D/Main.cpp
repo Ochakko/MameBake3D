@@ -2976,6 +2976,7 @@ static int CreateUtDialog();
 static int VisibleUtDialog();
 static bool UnderDragOperation_L();
 static bool UnderDragOperation_R();
+static bool IsClickedSpriteButton();
 static int CreateTimelineWnd();
 static int CreateLongTimelineWnd();
 static int CreateDmpAnimWnd();
@@ -10330,10 +10331,17 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				}
 			}
 
+			if (doneflag == false) {
+				//スプライトボタンクリック時には　ボーン右クリック用のメニューを出さないように
+				doneflag = IsClickedSpriteButton();
+			}
+
 
 			if (doneflag == false) {
+				//ボーン右クリック用のメニュー
 				BoneRClick(-1);
 			}
+
 		}
 		else {
 			BoneRClick(-1);
@@ -36895,6 +36903,8 @@ int BoneRClick(int srcboneno)
 
 		s_pickinfo.pickobjno = -1;
 
+		s_curboneno = -1;//2023/08/28 ジョイント以外を右クリックした場合には　メニューを出さない
+
 		if (s_oprigflag == 0) {
 			CallF(s_model->PickBone(&s_pickinfo), return 1);
 			if (s_pickinfo.pickobjno >= 0) {
@@ -49673,3 +49683,147 @@ int UpdateCameraPosAndTarget()
 		return 1;
 	}
 }
+
+bool IsClickedSpriteButton()
+{
+	POINT ptCursor;
+	GetCursorPos(&ptCursor);
+	::ScreenToClient(s_3dwnd, &ptCursor);
+
+
+	//Camera rot, pan, dolly
+	if (PickSpCam(ptCursor) != 0){
+		return true;
+	}
+
+
+	//UndoRedo
+	int pickundo = 0;
+	pickundo = PickSpUndo(ptCursor);
+	if (pickundo == PICK_UNDO) {
+		return true;
+	}
+	else if (pickundo == PICK_REDO)
+	{
+		return true;
+	}
+
+	//IK Mode
+	int pickikmodeflag = 0;
+	pickikmodeflag = PickSpIkModeSW(ptCursor);
+	if (pickikmodeflag == 1) {
+		return true;
+	}
+	else if (pickikmodeflag == 2) {
+		return true;
+	}
+	else if (pickikmodeflag == 3) {
+		return true;
+	}
+	{
+		//RefPos switch
+		int pickrefposflag = 0;
+		pickrefposflag = PickSpRefPosSW(ptCursor);
+		if (pickrefposflag == 1) {
+			return true;
+		}
+	}
+	{
+		//limiteul switch
+		int picklimiteulflag = 0;
+		picklimiteulflag = PickSpLimitEulSW(ptCursor);
+		if (picklimiteulflag == 1) {
+			return true;
+		}
+	}
+	{
+		//cameramode switch
+		int pickcameramodeflag = 0;
+		pickcameramodeflag = PickSpCameraModeSW(ptCursor);
+		if (pickcameramodeflag == 1) {
+			return true;
+		}
+	}
+	{
+		//camerainherit switch
+		int pickcamerainheritflag = 0;
+		pickcamerainheritflag = PickSpCameraInheritSW(ptCursor);
+		if (pickcamerainheritflag == 1) {
+			return true;
+		}
+	}
+	{
+		//wallscraping switch
+		int pickscrapingflag = 0;
+		pickscrapingflag = PickSpScrapingSW(ptCursor);
+		if (pickscrapingflag == 1) {
+			return true;
+		}
+	}
+
+	//2023/02/04
+	//Bake LimitedWorld-->World : currentmotion fullframe
+	if (PickSpCpLW2W(ptCursor) != 0) {
+		return true;
+	}
+
+	if (PickSpSmooth(ptCursor) != 0) {
+		return true;
+	}
+
+	if (PickSpConstExe(ptCursor) != 0) {
+		return true;
+	}
+	if (PickSpConstRefresh(ptCursor) != 0) {
+		return true;
+	}
+
+
+	if (PickSpFrog2(ptCursor) != 0) {
+		return true;
+	}
+	if (PickSpCopy(ptCursor) != 0) {
+		return true;
+	}
+	if (PickSpSymCopy(ptCursor) != 0) {
+		return true;
+	}
+	if (PickSpPaste(ptCursor) != 0) {
+		return true;
+	}
+	if (PickSpCopyHistory(ptCursor) != 0) {
+		return true;
+	}
+
+	if (PickSpInterpolate(ptCursor) != 0) {
+		return true;
+	}
+	if (PickSpInit(ptCursor) != 0) {
+		return true;
+	}
+	if (PickSpScaleInit(ptCursor) != 0) {
+		return true;
+	}
+	if (PickSpProperty(ptCursor) != 0) {
+		return true;
+	}
+
+
+	if (PickSpZeroFrame(ptCursor) != 0) {
+		return true;
+	}
+	if (PickSpCameraDolly(ptCursor) != 0) {
+		return true;
+	}
+	if (PickSpModelPosDir(ptCursor) != 0) {
+		return true;
+	}
+	if (PickSpMaterialRate(ptCursor) != 0) {
+		return true;
+	}
+
+	return false;
+
+}
+
+
