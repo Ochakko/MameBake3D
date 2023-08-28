@@ -1894,6 +1894,8 @@ private:
 	ChaFrustumInfo m_frustum;
 	MODELBOUND m_bound;
 
+	int m_vrmtexcount;
+
 	int m_physicsikcnt;
 	int m_initaxismatx;
 	int m_modelno;//モデルのID

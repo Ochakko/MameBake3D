@@ -471,6 +471,8 @@ int CModel::InitParams()
 	m_befinview = false;
 	m_bound.Init();
 
+	m_vrmtexcount = 0;
+
 	m_iktargetbonevec.clear();
 	m_nodeonload = 0;
 	m_node2mqoobj.clear();
@@ -821,6 +823,9 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 	s_psdk = psdk;
 	*ppimporter = 0;
 	*ppscene = 0;
+
+	m_vrmtexcount = 0;
+
 
 	if( modelfolder ){
 		wcscpy_s( m_modelfolder, MAX_PATH, modelfolder );
@@ -4832,6 +4837,50 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 						if (!lastp) {
 							newmqomat->Add2Tex(".tga");
 						}
+						else if (strcmp(lastp, ".vrm") == 0) {
+							//VRM1.0のテクスチャパスは　vrmファイルの絶対パス(全テクスチャ名が同じvrmパス)
+							// テクスチャとしてUnityでみえるのは　*.texture2Dファイル
+							// .texture2DファイルはUnityスクリプトでpngに変換可能なので　そのようにしたpngをユーザが用意していることを想定
+							// 2023/08/28現在はVRM0.0もサポートされていて　VRM0.0をUnityに読み込むとテクスチャはpngのものが生成される
+
+							m_vrmtexcount++;
+							if (m_vrmtexcount == 5) {
+								//char convname[256] = { 0 };
+								//strcpy_s(convname, 256, "_05.normal.png");
+								//newmqomat->SetTex(convname);
+
+								m_vrmtexcount++;
+
+								char convname[256] = { 0 };
+								sprintf_s(convname, 256, "_%02d.png", m_vrmtexcount);
+								newmqomat->SetTex(convname);
+							}
+							else if (m_vrmtexcount == 8) {
+								
+								m_vrmtexcount++;
+
+								char convname[256] = { 0 };
+								sprintf_s(convname, 256, "_%02d.png", m_vrmtexcount);
+								newmqomat->SetTex(convname);
+							}
+							else if (m_vrmtexcount == 11) {
+								//char convname[256] = { 0 };
+								//strcpy_s(convname, 256, "_11.normal.png");
+								//newmqomat->SetTex(convname);
+
+								m_vrmtexcount++;
+
+								char convname[256] = { 0 };
+								sprintf_s(convname, 256, "_%02d.png", m_vrmtexcount);
+								newmqomat->SetTex(convname);
+							}
+							else {
+								char convname[256] = { 0 };
+								sprintf_s(convname, 256, "_%02d.png", m_vrmtexcount);
+								newmqomat->SetTex(convname);
+							}
+
+						}
 						else {
 							////jpegのテクスチャは現状ありえない？　pngに置き換えると読めるデータがある　TheHunt Character
 							//if (((unsigned long)(lastp - tempname) > (256 - 4)) &&
@@ -4841,6 +4890,7 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 							//	*(lastp + 3) = 'g';
 							//	*(lastp + 4) = 0;
 							//}
+							int dbgflag1 = 1;
 						}
 						WCHAR wname[256];
 						::ZeroMemory(wname, sizeof(WCHAR) * 256);
@@ -4888,6 +4938,50 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 							if (!lastp) {
 								newmqomat->Add2Tex(".tga");
 							}
+							else if (strcmp(lastp, ".vrm") == 0) {
+								//VRM1.0のテクスチャパスは　vrmファイルの絶対パス(全テクスチャ名が同じvrmパス)
+								// テクスチャとしてUnityでみえるのは　*.texture2Dファイル
+								// .texture2DファイルはUnityスクリプトでpngに変換可能なので　そのようにしたpngをユーザが用意していることを想定
+								// 2023/08/28現在はVRM0.0もサポートされていて　VRM0.0をUnityに読み込むとテクスチャはpngのものが生成される
+
+								m_vrmtexcount++;
+								if (m_vrmtexcount == 5) {
+									//char convname[256] = { 0 };
+									//strcpy_s(convname, 256, "_05.normal.png");
+									//newmqomat->SetTex(convname);
+
+									m_vrmtexcount++;
+
+									char convname[256] = { 0 };
+									sprintf_s(convname, 256, "_%02d.png", m_vrmtexcount);
+									newmqomat->SetTex(convname);
+								}
+								else if (m_vrmtexcount == 8) {
+
+									m_vrmtexcount++;
+
+									char convname[256] = { 0 };
+									sprintf_s(convname, 256, "_%02d.png", m_vrmtexcount);
+									newmqomat->SetTex(convname);
+								}
+								else if (m_vrmtexcount == 11) {
+									//char convname[256] = { 0 };
+									//strcpy_s(convname, 256, "_11.normal.png");
+									//newmqomat->SetTex(convname);
+
+									m_vrmtexcount++;
+
+									char convname[256] = { 0 };
+									sprintf_s(convname, 256, "_%02d.png", m_vrmtexcount);
+									newmqomat->SetTex(convname);
+								}
+								else {
+									char convname[256] = { 0 };
+									sprintf_s(convname, 256, "_%02d.png", m_vrmtexcount);
+									newmqomat->SetTex(convname);
+								}
+
+							}
 							else {
 								////jpegのテクスチャは現状ありえない？　pngに置き換えると読めるデータがある　TheHunt Character
 								//if (((unsigned long)(lastp - tempname) > (256 - 4)) &&
@@ -4897,6 +4991,7 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 								//	*(lastp + 3) = 'g';
 								//	*(lastp + 4) = 0;
 								//}
+								int dbgflag2 = 1;
 							}
 
 							WCHAR wname[256];
@@ -18117,6 +18212,20 @@ int CModel::ChkInView()
 	if (wcsstr(GetFileName(), L".mqo") != 0) {
 
 		//このアプリにおいては　mqoファイル(マニピュレータや地面格子)はクリッピングしない用途に使用しているので　常に描画するように
+
+		SetInView(true);
+
+		map<int, CMQOObject*>::iterator itr;
+		for (itr = m_object.begin(); itr != m_object.end(); itr++) {
+			CMQOObject* curobj = itr->second;
+			if (curobj) {
+				curobj->SetInView(true);
+			}
+		}
+	}
+	else if (m_object.empty() || (GetFromBvhFlag())) {
+
+		//bvhにはメッシュが無いが　UpdateMatrixを実行するためにInViewである必要
 
 		SetInView(true);
 
