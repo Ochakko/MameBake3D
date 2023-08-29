@@ -266,6 +266,7 @@ public:
 
 	ChaVector4();
 	ChaVector4(float srcx, float srcy, float srcz, float srcw);
+	ChaVector4(ChaVector3 srcvec3, float srcw);
 	~ChaVector4();
 
 	ChaVector4 operator= (ChaVector4 v);

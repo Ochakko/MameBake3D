@@ -16,7 +16,7 @@ cbuffer Variable
 	float  g_power;
 	float3 g_emissive;
 
-	float3 g_LightDir[8];               // Light's direction in world space
+	float4 g_LightDir[8];               // Light's direction in world space
 	float4 g_LightDiffuse[8];           // Light's diffuse color
 
 	matrix g_mWorld;                  // World matrix for object
@@ -141,6 +141,7 @@ VS_OUTPUT RenderSceneBoneVS( float4 vPos : SV_POSITION,
 		totalspecular +=  ((nl) < 0) || ((nh) < 0) ? 0 : ((nh) * calcpower);
 	}
 
+
     Output.Diffuse.rgb = g_diffuse.rgb * totaldiffuse.rgb + g_ambient + g_emissive;   
     Output.Diffuse.a = g_diffuse.a; 
     
@@ -225,6 +226,7 @@ VS_OUTPUT RenderSceneNoBoneVS( float4 vPos : SV_POSITION,
         totaldiffuse += g_LightDiffuse[i].xyz * max(0,dot(wNormal, g_LightDir[i]));
 		totalspecular +=  ((nl) < 0) || ((nh) < 0) ? 0 : ((nh) * calcpower);
 	}
+
 
     Output.Diffuse.rgb = g_diffuse.rgb * totaldiffuse.rgb + g_ambient + g_emissive;   
     Output.Diffuse.a = g_diffuse.a; 

@@ -1302,6 +1302,14 @@ ChaVector4::ChaVector4(float srcx, float srcy, float srcz, float srcw)
 	w = srcw;
 }
 
+ChaVector4::ChaVector4(ChaVector3 srcvec3, float srcw)
+{
+	x = srcvec3.x;
+	y = srcvec3.y;
+	z = srcvec3.z;
+	w = srcw;
+}
+
 ChaVector4::~ChaVector4()
 {
 

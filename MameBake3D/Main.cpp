@@ -2665,7 +2665,7 @@ ChaMatrix               g_mCenterWorld;
 //#define MAX_LIGHTS 3
 //CDXUTDirectionWidget g_LightControl[MAX_LIGHTS];
 CDXUTDirectionWidget g_LightControl[LIGHTNUMMAX];
-static ChaVector3 s_lightdirforshader[LIGHTNUMMAX];
+static ChaVector4 s_lightdirforshader[LIGHTNUMMAX];
 static ChaVector4 s_lightdiffuseforshader[LIGHTNUMMAX];
 
 
@@ -4969,19 +4969,7 @@ void InitApp()
 	LoadLightsForEdit();//ファイルに保存してあるLight情報を g_lightdirとg_ligthdiffuseとg_lightenableとg_lightdirwithviewに読込
 	
 	g_lightSlot = 0;
-
-	for (lightindex = 0; lightindex < LIGHTNUMMAX; lightindex++) {
-		s_lightdirforshader[lightindex] = -g_lightDir[g_lightSlot][lightindex];//-lightdir
-
-		ChaVector3 scaleddiffuse;
-		scaleddiffuse = g_lightDiffuse[g_lightSlot][lightindex] * g_lightScale[g_lightSlot][lightindex] * g_fLightScale;
-		s_lightdiffuseforshader[lightindex] = ChaVector4(scaleddiffuse.x, scaleddiffuse.y, scaleddiffuse.z, 1.0f);
-
-		g_LightControl[lightindex].SetLightDirection(g_lightDir[g_lightSlot][lightindex].D3DX());
-	}
-
-
-
+	SetLightDirection();
 
 
 	//CreateUtDialog();
@@ -35739,11 +35727,20 @@ int SetLightDirection()
 	}
 
 
-	ChaVector3 dirz = ChaVector3(0.0f, 0.0f, 1.0f);
+	ChaVector3 dirz = ChaVector3(0.0f, 0.0f, -1.0f);
 	ChaVector3 lightdir0, nlightdir0;
 	lightdir0 = g_camEye - g_camtargetpos;//2022/10/31
 	ChaVector3Normalize(&nlightdir0, &lightdir0);
 	//g_LightControl[0].SetLightDirection(nlightdir0.D3DX());
+
+	bool rot180flag = false;
+	float chkdot180 = ChaVector3Dot(&dirz, &nlightdir0);
+	if (chkdot180 <= -0.9999f) {
+		rot180flag = true;
+	}
+	else {
+		rot180flag = false;
+	}
 
 	CQuaternion camrotq;
 	camrotq.RotationArc(dirz, nlightdir0);
@@ -35757,14 +35754,19 @@ int SetLightDirection()
 				ChaVector3Normalize(&nlightdir, &(g_lightDir[g_lightSlot][lightindex]));
 
 				ChaVector3 rotdir, nrotdir;
-				camrotq.Rotate(&rotdir, nlightdir);
+				if (rot180flag == false) {
+					camrotq.Rotate(&rotdir, nlightdir);
+				}
+				else {
+					rotdir = ChaVector3(-nlightdir.x, nlightdir.y, -nlightdir.z);
+				}
 				ChaVector3Normalize(&nrotdir, &rotdir);
-				s_lightdirforshader[activenum] = -nrotdir;//-lightdir
+				s_lightdirforshader[activenum] = ChaVector4(nrotdir, 0.0f);//-lightdir
 			}
 			else {
 				ChaVector3 nrotdir;
 				ChaVector3Normalize(&nrotdir, &(g_lightDir[g_lightSlot][lightindex]));
-				s_lightdirforshader[activenum] = -nrotdir;//-lightdir
+				s_lightdirforshader[activenum] = ChaVector4(nrotdir, 0.0f);//-lightdir
 			}
 
 			ChaVector3 scaleddiffuse;
@@ -35795,7 +35797,7 @@ int OnRenderSetShaderConst()
 
 	SetLightDirection();
 
-	g_hLightDir->SetRawValue(s_lightdirforshader, 0, sizeof(ChaVector3) * LIGHTNUMMAX);
+	g_hLightDir->SetRawValue(s_lightdirforshader, 0, sizeof(ChaVector4) * LIGHTNUMMAX);
 	g_hLightDiffuse->SetRawValue(s_lightdiffuseforshader, 0, sizeof(ChaVector4) * LIGHTNUMMAX);
 
 	ChaVector3 eyept = g_camEye;
