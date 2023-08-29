@@ -153,7 +153,7 @@ static bool CreateScene(bool limitdegflag, FbxManager* pSdkManager, FbxScene* pS
 static bool CreateBVHScene(FbxManager* pSdkManager, FbxScene* pScene, char* fbxdate );
 static FbxNode* CreateFbxMesh(FbxManager* pSdkManager, FbxScene* pScene, CModel* pmodel, CMQOObject* curobj, FbxNode* lNode, FbxNode* srcnode);
 static int CreateFbxMaterial(FbxManager* pSdkManager, FbxScene* pScene, FbxNode* lNode, FbxMesh* lMesh, FbxGeometryElementMaterial* lMaterialElement, CModel* pmodel, CMQOObject* curobj);
-static int CreateFbxMaterialFromMQOMaterial(FbxManager* pSdkManager, FbxScene* pScene, FbxNode* lNode, FbxGeometryElementMaterial* lMaterialElement, CModel* pmodel, CMQOObject* curobj, CMQOMaterial* mqomat, int curtrinum);
+static int CreateFbxMaterialFromMQOMaterial(FbxManager* pSdkManager, FbxScene* pScene, FbxNode* lNode, FbxGeometryElementMaterial* lMaterialElement, CModel* pmodel, CMQOObject* curobj, CMQOMaterial* mqomat);
 
 ////static FbxNode* CreateSkeleton(FbxScene* pScene, CModel* pmodel);
 ////static void CreateSkeletonReq( FbxScene* pScene, CBone* pbone, CBone* pparentbone, FbxNode* pparnode );
@@ -180,7 +180,7 @@ static void AnimateSkeletonOfBVH( FbxScene* pScene );
 static void AnimateBoneOfBVHReq( CFBXBone* fbxbone, FbxAnimLayer* lAnimLayer );
 
 
-static FbxTexture*  CreateTexture( FbxManager* pSdkManager, CMQOMaterial* mqomat );
+static FbxTexture*  CreateTexture( FbxManager* pSdkManager, CModel* srcmodel, CMQOMaterial* mqomat );
 static int ExistBoneInInf( int boneno, CMQOObject* srcobj, int* dstclusterno );
 
 static int MapShapesOnMesh( FbxScene* pScene, FbxNode* pNode, CModel* pmodel, CMQOObject* curobj, BLSINDEX* blsindex );
@@ -1688,11 +1688,11 @@ bool CreateScene(bool limitdegflag, FbxManager* pSdkManager, FbxScene* pScene, C
 
 	FbxNode* lRootNode = pScene->GetRootNode();
 
-	if (!s_model) {
+	if (!pmodel) {
 		_ASSERT(0);
 		return 1;//!!!!!!
 	}
-	SaveCurrentMotionID(s_model);//2022/08/18
+	SaveCurrentMotionID(pmodel);//2022/08/18 2023/08/29 pmodel
 
 
 	//CNodeOnLoad* rootonload = s_model->GetNodeOnLoad();
@@ -2389,20 +2389,29 @@ int CreateFbxMaterial(FbxManager* pSdkManager, FbxScene* pScene, FbxNode* lNode,
 	CPolyMesh3* pm3 = curobj->GetPm3();
 	CPolyMesh4* pm4 = curobj->GetPm4();
 
-	int materialnum;
+	//int materialnum;
 	if (pm4) {
-		materialnum = pm4->GetDispMaterialNum();
-		int materialcnt;
-		for (materialcnt = 0; materialcnt < materialnum; materialcnt++) {
-			CMQOMaterial* curmqomat = 0;
-			int curoffset = 0;
-			int curtrinum = 0;
-			int result1 = pm4->GetDispMaterial(materialcnt, &curmqomat, &curoffset, &curtrinum);
-			if ((result1 == 0) && (curmqomat != NULL) && (curtrinum > 0)) {
-				CreateFbxMaterialFromMQOMaterial(pSdkManager, pScene, lNode, lMaterialElement, pmodel, curobj, curmqomat, curtrinum);
+		//materialnum = pm4->GetDispMaterialNum();
+		//int materialcnt;
+		//for (materialcnt = 0; materialcnt < materialnum; materialcnt++) {
+		//	CMQOMaterial* curmqomat = 0;
+		//	int curoffset = 0;
+		//	int curtrinum = 0;
+		//	int result1 = pm4->GetDispMaterial(materialcnt, &curmqomat, &curoffset, &curtrinum);
+		//	if ((result1 == 0) && (curmqomat != NULL) && (curtrinum > 0)) {
+		//		CreateFbxMaterialFromMQOMaterial(pSdkManager, pScene, lNode, lMaterialElement, pmodel, curobj, curmqomat, curtrinum);
+		//	}
+		//}
+		////lMaterialElement->GetIndexArray().SetCount(lMesh->GetPolygonCount());
+
+		map<int, CMQOMaterial*>::iterator itrmqomat;
+		for (itrmqomat = curobj->GetMaterialBegin(); itrmqomat != curobj->GetMaterialEnd(); itrmqomat++) {
+			CMQOMaterial* curmqomat = itrmqomat->second;
+			if (curmqomat) {
+				CreateFbxMaterialFromMQOMaterial(pSdkManager, pScene, lNode, lMaterialElement, pmodel, curobj, curmqomat);
 			}
 		}
-		//lMaterialElement->GetIndexArray().SetCount(lMesh->GetPolygonCount());
+
 	}
 	else if (pm3) {
 		//materialnum = 1;
@@ -2411,15 +2420,24 @@ int CreateFbxMaterial(FbxManager* pSdkManager, FbxScene* pScene, FbxNode* lNode,
 		//	CreateFbxMaterialFromMQOMaterial(pSdkManager, pScene, lNode, lMaterialElement, pmodel, curobj, curmqomat, lMesh->GetPolygonCount());
 		//}
 
-		int blno;
-		for (blno = 0; blno < pm3->GetOptMatNum(); blno++) {
-			MATERIALBLOCK* currb = pm3->GetMatBlock() + blno;
-			CMQOMaterial* curmqomat = currb->mqomat;
-			int curtrinum = currb->endface - currb->startface + 1;
-			if ((curmqomat != NULL) && (curtrinum > 0)) {
-				CreateFbxMaterialFromMQOMaterial(pSdkManager, pScene, lNode, lMaterialElement, pmodel, curobj, curmqomat, curtrinum);
+		//int blno;
+		//for (blno = 0; blno < pm3->GetOptMatNum(); blno++) {
+		//	MATERIALBLOCK* currb = pm3->GetMatBlock() + blno;
+		//	CMQOMaterial* curmqomat = currb->mqomat;
+		//	int curtrinum = currb->endface - currb->startface + 1;
+		//	if ((curmqomat != NULL) && (curtrinum > 0)) {
+		//		CreateFbxMaterialFromMQOMaterial(pSdkManager, pScene, lNode, lMaterialElement, pmodel, curobj, curmqomat, curtrinum);
+		//	}
+		//}
+
+		map<int, CMQOMaterial*>::iterator itrmqomat;
+		for (itrmqomat = curobj->GetMaterialBegin(); itrmqomat != curobj->GetMaterialEnd(); itrmqomat++) {
+			CMQOMaterial* curmqomat = itrmqomat->second;
+			if (curmqomat) {
+				CreateFbxMaterialFromMQOMaterial(pSdkManager, pScene, lNode, lMaterialElement, pmodel, curobj, curmqomat);
 			}
 		}
+
 	}
 	else {
 		_ASSERT(0);
@@ -2429,7 +2447,7 @@ int CreateFbxMaterial(FbxManager* pSdkManager, FbxScene* pScene, FbxNode* lNode,
 	return 0;
 }
 
-int	CreateFbxMaterialFromMQOMaterial(FbxManager* pSdkManager, FbxScene* pScene, FbxNode* lNode, FbxGeometryElementMaterial* lMaterialElement, CModel* pmodel, CMQOObject* curobj, CMQOMaterial* mqomat, int curtrinum)
+int	CreateFbxMaterialFromMQOMaterial(FbxManager* pSdkManager, FbxScene* pScene, FbxNode* lNode, FbxGeometryElementMaterial* lMaterialElement, CModel* pmodel, CMQOObject* curobj, CMQOMaterial* mqomat)
 {
 	static int s_matcnt = 0;
 	s_matcnt++;
@@ -2465,7 +2483,7 @@ int	CreateFbxMaterialFromMQOMaterial(FbxManager* pSdkManager, FbxScene* pScene, 
 	//lMaterial->AmbientFactor.Set(1.0);
 	//lMaterial->AmbientFactor.Set(0.1);
 	lMaterial->AmbientFactor.Set(g_AmbientFactorAtSaving);
-	FbxTexture* curtex = CreateTexture(pSdkManager, mqomat);
+	FbxTexture* curtex = CreateTexture(pSdkManager, pmodel, mqomat);
 	if (curtex) {
 		lMaterial->Diffuse.ConnectSrcObject(curtex);
 		lNode->SetShadingMode(FbxNode::eTextureShading);
@@ -2500,19 +2518,45 @@ int	CreateFbxMaterialFromMQOMaterial(FbxManager* pSdkManager, FbxScene* pScene, 
 }
 
 
-FbxTexture*  CreateTexture(FbxManager* pSdkManager, CMQOMaterial* mqomat)
+FbxTexture*  CreateTexture(FbxManager* pSdkManager, CModel* srcmodel, CMQOMaterial* mqomat)
 {
 	if( !*(mqomat->GetTex()) ){
 		return NULL;
 	}
 
     FbxFileTexture* lTexture = FbxFileTexture::Create(pSdkManager,"");
-    FbxString lTexPath = mqomat->GetTex();
+
+
+    //FbxString lTexPath = mqomat->GetTex();
+	
+	const char* lasten = strrchr(mqomat->GetTex(), '\\');
+	const char* ptex = 0;
+	if (!lasten) {
+		lasten = strrchr(mqomat->GetTex(), '/');
+	}
+	if (lasten) {
+		ptex = (lasten + 1);
+	}
+	else {
+		ptex = mqomat->GetTex();
+	}
+
+	//2023/08/29
+	//lTexture->SetFileNameに相対パスだけを入れておくと　別フォルダの同名テクスチャへのパスがセットされることがあった
+	//よって　FBXのTexture->SetFileNameにはフルパスを入れる
+	char utf8path[MAX_PATH] = { 0 };
+	::WideCharToMultiByte(CP_UTF8, 0, srcmodel->GetDirName(), -1, utf8path, MAX_PATH, NULL, NULL);
+	strcat_s(utf8path, MAX_PATH, "\\");
+	strcat_s(utf8path, MAX_PATH, ptex);
+	FbxString lTexPath = utf8path;
 
     // Set texture properties.
     lTexture->SetFileName(lTexPath.Buffer());
     //lTexture->SetName("Diffuse Texture");
-	lTexture->SetName(mqomat->GetTex());
+	
+	//lTexture->SetName(mqomat->GetTex());
+	lTexture->SetName(ptex);//2023/08/29 名前はファイル名だけ
+
     lTexture->SetTextureUse(FbxTexture::eStandard);
     lTexture->SetMappingType(FbxTexture::eUV);
     lTexture->SetMaterialUse(FbxFileTexture::eModelMaterial);

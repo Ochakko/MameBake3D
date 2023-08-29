@@ -124,7 +124,8 @@
 	RC4 : エディットボックス入力時には　矢印キーのショートカット(ジョイント階層移動)も機能させないように
 	RC5 : VRM1.0をfbxにして読み書きテスト　VRM1.0のテクスチャ(.texture2Dファイル)をUnityのスクリプトでpngにしてfbxと同じフォルダに置くと表示できるようにしときました
 	　　　メッシュが無いfbx(例えばbvh2fbxで変換したfbx)がChkInViewで非表示に設定されてリターゲットもうまくいかない不具合修正
-
+	RC6 : VRMのテクスチャが異なるモデルを複数入れたプロジェクトを　読->書->読->書してMayaで開くと　違うモデルのテクスチャが表示されることがある不具合修正
+	　　　リターゲット時のトラブルシューティング追加　Documants/TroubleShooting/RetargetFailThoughZeroFrameisMatch.docx
 
 　おちゃっこLAB
 	https://ochakkolab.jp/

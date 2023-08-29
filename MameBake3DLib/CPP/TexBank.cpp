@@ -89,12 +89,27 @@ int CTexBank::AddTex(ID3D11DeviceContext* pd3dImmediateContext,const WCHAR* srcp
 {
 	*dstid = -1;
 
+	const WCHAR* lasten = wcsrchr(srcname, TEXT('\\'));
+	const WCHAR* ptex = 0;
+	if (!lasten) {
+		lasten = wcsrchr(srcname, TEXT('/'));
+	}
+	if (lasten) {
+		ptex = (lasten + 1);
+	}
+	else {
+		ptex = srcname;
+	}
+
+
 	CTexElem* sameelem = 0;
-	sameelem = ExistTex( srcpath, srcname, srctransparent );
+	//sameelem = ExistTex( srcpath, srcname, srctransparent );
+	sameelem = ExistTex(srcpath, ptex, srctransparent);
 	if( sameelem ){
 		*dstid = sameelem->GetID();
 		return 2;
 	}
+
 
 	CTexElem* newelem;
 	newelem = new CTexElem();
@@ -102,7 +117,11 @@ int CTexBank::AddTex(ID3D11DeviceContext* pd3dImmediateContext,const WCHAR* srcp
 		_ASSERT( 0 );
 		return 1;
 	}
-	newelem->SetName( srcname );
+
+
+
+	//newelem->SetName( srcname );
+	newelem->SetName(ptex);//2023/08/29
 	newelem->SetPath( srcpath );
 	newelem->SetTransparent( srctransparent );
 	newelem->SetPool( srcpool );
@@ -110,6 +129,13 @@ int CTexBank::AddTex(ID3D11DeviceContext* pd3dImmediateContext,const WCHAR* srcp
 	//	newelem->SetTransCol(*srccol);
 	//}
 	//CallF( newelem->CreateTexData( m_pdev, pd3dImmediateContext), return 1 );
+
+
+	//if (wcsstr(srcname, L"_14.png")) {
+	//	int dbgflag1 = 1;
+	//}
+
+
 
 	int result1 = newelem->CreateTexData(m_pdev, pd3dImmediateContext);
 	if (result1 == 0) {
