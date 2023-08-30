@@ -35727,7 +35727,7 @@ int SetLightDirection()
 	}
 
 
-	ChaVector3 dirz = ChaVector3(0.0f, 0.0f, -1.0f);
+	ChaVector3 dirz = ChaVector3(0.0f, 0.0f, 1.0f);
 	ChaVector3 lightdir0, nlightdir0;
 	lightdir0 = g_camEye - g_camtargetpos;//2022/10/31
 	ChaVector3Normalize(&nlightdir0, &lightdir0);
@@ -35761,12 +35761,12 @@ int SetLightDirection()
 					rotdir = ChaVector3(-nlightdir.x, nlightdir.y, -nlightdir.z);
 				}
 				ChaVector3Normalize(&nrotdir, &rotdir);
-				s_lightdirforshader[activenum] = ChaVector4(nrotdir, 0.0f);//-lightdir
+				s_lightdirforshader[activenum] = -ChaVector4(nrotdir, 0.0f);//-lightdir
 			}
 			else {
 				ChaVector3 nrotdir;
 				ChaVector3Normalize(&nrotdir, &(g_lightDir[g_lightSlot][lightindex]));
-				s_lightdirforshader[activenum] = ChaVector4(nrotdir, 0.0f);//-lightdir
+				s_lightdirforshader[activenum] = -ChaVector4(nrotdir, 0.0f);//-lightdir
 			}
 
 			ChaVector3 scaleddiffuse;

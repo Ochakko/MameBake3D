@@ -1,4 +1,4 @@
-2023/08/28
+2023/08/30
     EditMot 1.2.0.24 リリース候補 RC1
 
 	メッシュ単位の視野内判定導入
@@ -127,7 +127,8 @@
 	RC6 : VRMのテクスチャが異なるモデルを複数入れたプロジェクトを　読->書->読->書してMayaで開くと　違うモデルのテクスチャが表示されることがある不具合修正
 	　　　リターゲット時のトラブルシューティング追加　Documants/TroubleShooting/RetargetFailThoughZeroFrameisMatch.docx
 	RC7 : メモリアライメントが合っていないことが原因で　複数ライトの向きがずれていた不具合を修正
-
+	release : RC7でライト向き(XとY)の表記が反対向きになってしまっていたので修正
+		VisualStudioセキュリティー更新後　フルビルドして　インストーラmsiをリリース
 
 　おちゃっこLAB
 	https://ochakkolab.jp/
