@@ -10,8 +10,12 @@ FBX Animation Tool.(Load Baked FBX File. Edit Animation. Setting bullet params. 
 元のモーションを潰さずに盛るように編集する方法で  モーションキャプチャがゲーム用モーションになる  
 FBXファイルにしてUnityへ  
 全てのフレームにキーがあるモーションキャプチャの編集には専用ソフトが必要  
-EditMotはそのためのソフトです  
+EditMotはそのためのソフトです<br><br>
 
+
+# Remarks
+OSS Name : MameBake3D<br>
+Built App Name for release : EditMot<br><br>
 
 # ReadMe
 [ReadMe/readme.txt](ReadMe/readme.txt)
@@ -26,8 +30,11 @@ Fig.1 Edit using RefPos.
 ![TopFig](ReadMe/SS_EditMot12014_1_600.png "トップ絵")
 Fig.2 CustomRig ON.  
 
+![SymCopy](ReadMe/EditMot_12024_SymCopyWithPhysicsAndLights.png "SymCopy")
+Fig.3 SymCopy & Lights Settings
+
 ![Brush-1](ReadMe/EditMot_Brushes_1_ROI.png "Brush-1")
-Fig.3 Using Custom Weight Curve For PhysicalMotion.  
+Fig.4 Using Custom Weight Curve For PhysicalMotion.  
 
 コンボボックスでモーションカーブを選択  
 TopPosスライダーでモーションカーブの重みのピーク位置を設定  
@@ -37,7 +44,10 @@ TopPosスライダーでモーションカーブの重みのピーク位置を�
 モーションカーブはプラグインSDKによりカスタマイズ可能  
 
 ![Brush-2](ReadMe/EditMot_Brushes_2_ROI.png "Brush-2")
-Fig.4 PluginSDK of Custom Weight Curve.
+Fig.5 PluginSDK of Custom Weight Curve.<br><br><br>
+
+# Most recent release of Built App (msi)
+[releases/EditMot1.2.0.24.msi](releasesEditMot1.2.0.24.msi)<br><br><br>
 
 # Description
 [Desctiption at OchakoLAB](https://ochakkolab.jp/LABMenu/MameBake3D.html "Desc-1")
