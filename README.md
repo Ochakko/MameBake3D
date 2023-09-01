@@ -46,8 +46,9 @@ TopPosスライダーでモーションカーブの重みのピーク位置を�
 ![Brush-2](ReadMe/EditMot_Brushes_2_ROI.png "Brush-2")
 Fig.5 PluginSDK of Custom Weight Curve.<br><br><br>
 
-# Most recent release of Built App (msi)
-[releases/EditMot1.2.0.24.msi](releases/EditMot1.2.0.24.msi)<br><br><br>
+# Release of Built App (msi)
+See releases link of this repository's page.
+<br><br><br>
 
 # Description
 [Desctiption at OchakoLAB](https://ochakkolab.jp/LABMenu/MameBake3D.html "Desc-1")
