@@ -122,7 +122,11 @@
 //#define MB2VERSION 12023
 
 //2023/08/04
-#define MB2VERSION 12024
+//#define MB2VERSION 12024
+
+//2023/09/04
+#define MB2VERSION 12025
+
 
 CPluginElem::CPluginElem()
 {

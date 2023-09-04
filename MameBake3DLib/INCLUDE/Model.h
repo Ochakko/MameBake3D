@@ -1878,6 +1878,7 @@ public: //accesser
 		return false;
 	}
 
+
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];

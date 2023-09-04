@@ -3048,9 +3048,9 @@ static int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext);
 static int OnRenderUtDialog(ID3D11DeviceContext* pd3dImmediateContext, float fElapsedTime);
 
 static int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe);
-static int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe);
+static int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double copystarttime, double srcframe, double dststartframe, double newframe);
 static int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double startframe, double endframe);
-static int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, double startframe, double endframe);
+//static int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, double startframe, double endframe);
 
 static int ChangeCurrentBone();
 static int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag);
@@ -16983,7 +16983,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				wfilename[0] = 0L;
 				WCHAR waFolderPath[MAX_PATH];
 				//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_PROGRAMS, 0);//これではAppDataのパスになってしまう
-				swprintf_s(waFolderPath, MAX_PATH, L"C:\\Program Files\\OchakkoLAB\\EditMot1.2.0.24\\Test\\");
+				swprintf_s(waFolderPath, MAX_PATH, L"C:\\Program Files\\OchakkoLAB\\EditMot1.2.0.25\\Test\\");
 				ofn.lpstrInitialDir = waFolderPath;
 				ofn.lpstrFile = wfilename;
 
@@ -30360,6 +30360,7 @@ int OnFrameToolWnd()
 				}
 			}
 
+
 			if (keynum >= 0) {
 				if (keynum == 0) {
 					double motleng = s_model->GetCurMotInfo()->frameleng - 1;
@@ -30720,7 +30721,7 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 	return 0;
 }
 
-int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
+int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double copystarttime, double srcframe, double dststartframe, double newframe)
 {
 	//###########################
 	//return operatingjointno
@@ -30804,14 +30805,55 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe
 
 					ChaMatrix parentwm = parentbone->GetWorldMat(g_limitdegflag,
 						curmotid, newframe, 0);
+					ChaMatrix parentwm0 = parentbone->GetWorldMat(g_limitdegflag,
+						curmotid, (double)((int)(dststartframe + 0.0001)), 0);
 
-					//編集ジョイントの内の
-					//一番ルートに近いジョイントの親のジョイントの行列を　子供に掛けるため
-					//再帰を掛ける
-					bool setbroflag = false;
-					srcbone->UpdateParentWMReq(g_limitdegflag, setbroflag,
-						curmotid, newframe, parentwm, parentwm);
 
+					if (parentbone->IsHipsBone()) {
+
+						//####################################################################################
+						//NotMvがhipsの場合
+						//ペースト後の最初のフレームのparentboneの位置が同じで　コピー側のtraanimで動くように
+						//####################################################################################
+
+						ChaMatrix srclocalparent0;
+						srclocalparent0.SetIdentity();
+						ChaMatrix srclocalparent;
+						srclocalparent.SetIdentity();
+
+						vector<CPELEM2>::iterator itrcp;
+						for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
+							CBone* findbone = itrcp->bone;
+							if (findbone && findbone == parentbone) {
+								CMotionPoint findmp = itrcp->mp;
+								if ((double)((int)(findmp.GetFrame() + 0.0001)) == (double)((int)(srcframe + 0.0001))) {
+									srclocalparent = findmp.GetWorldMat();//copy情報としてローカルが格納されているがhipsなので実質global
+								}
+								if ((double)((int)(findmp.GetFrame() + 0.0001)) == (double)((int)(copystarttime + 0.0001))) {
+									srclocalparent0 = findmp.GetWorldMat();//copy情報としてローカルが格納されているがhipsなので実質global
+								}
+							}
+						}
+
+						ChaMatrix smat0, rmat0, tmat0, tanimmat0;
+						GetSRTandTraAnim(parentwm0, parentbone->GetNodeMat(), &smat0, &rmat0, &tmat0, &tanimmat0);
+						ChaMatrix srcsmat0, srcrmat0, srctmat0, srctanimmat0;
+						GetSRTandTraAnim(srclocalparent0, parentbone->GetNodeMat(), &srcsmat0, &srcrmat0, &srctmat0, &srctanimmat0);
+
+						ChaMatrix newparentwm = srclocalparent * ChaMatrixInv(srctanimmat0) * tanimmat0;
+
+						parentbone->UpdateCurrentWM(g_limitdegflag, curmotid, newframe, newparentwm);
+
+					}
+					else {
+						//######################
+						//NotMvがhips以外の場合
+						//######################
+						bool setbroflag = false;
+						srcbone->UpdateParentWMReq(g_limitdegflag, setbroflag,
+							curmotid, newframe, parentwm, parentwm);
+
+					}
 				}
 			}
 		}
@@ -30867,16 +30909,29 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 	////移動しないボーンのための処理
 	int operatingjointno = 0;
 	for (dstframe = (double)((int)(startframe + 0.0001)); dstframe <= (double)((int)(endframe + 0.0001)); dstframe += 1.0) {
+
 		double dstrate = (dstframe - startframe) / dstleng;
 		double srcframe;
 		srcframe = (double)((int)(copyStartTime + dstrate * srcleng + 0.0001));
+
 		vector<CPELEM2>::iterator itrcp;
 		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
 			CBone* srcbone = itrcp->bone;
 			if (srcbone) {
 				CMotionPoint srcmp = itrcp->mp;
 				if ((double)((int)(srcmp.GetFrame() + 0.0001)) == srcframe) {
-					operatingjointno = PasteNotMvParMotionPoint(srcbone, srcmp, dstframe);
+					int resultjointno = PasteNotMvParMotionPoint(srcbone, srcmp, 
+						(double)((int)(copyStartTime + 0.0001)), srcframe, 
+						(double)((int)(startframe + 0.0001)), dstframe);
+
+					if (resultjointno >= 0) {
+						if (operatingjointno > resultjointno) {
+							operatingjointno = resultjointno;//0以上で最小のboneno
+						}
+					}
+					else {
+						_ASSERT(0);
+					}
 				}
 			}
 		}
@@ -30924,38 +30979,38 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 	return 0;
 }
 
-int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, double startframe, double endframe)
-{
-	vector<CPELEM2>::iterator itrcp;
-
-	double newframe;
-	for (newframe = (double)((int)(copyEndTime - copyStartTime + startframe + 0.1)); newframe <= endframe; newframe += 1.0) {
-		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
-			CBone* srcbone = itrcp->bone;
-			if (srcbone) {
-				CMotionPoint srcmp = itrcp->mp;
-				if (itrcp->mp.GetFrame() == copyEndTime) {
-					PasteMotionPoint(srcbone, srcmp, newframe);
-				}
-			}
-		}
-	}
-
-	//移動しないボーンのための処理
-	for (newframe = (double)((int)(copyEndTime - copyStartTime + startframe + 0.1)); newframe <= endframe; newframe += 1.0) {
-		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
-			CBone* srcbone = itrcp->bone;
-			if (srcbone) {
-				CMotionPoint srcmp = itrcp->mp;
-				if (itrcp->mp.GetFrame() == copyEndTime) {
-					PasteNotMvParMotionPoint(srcbone, srcmp, newframe);
-				}
-			}
-		}
-	}
-
-	return 0;
-}
+//int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, double startframe, double endframe)
+//{
+//	vector<CPELEM2>::iterator itrcp;
+//
+//	double newframe;
+//	for (newframe = (double)((int)(copyEndTime - copyStartTime + startframe + 0.1)); newframe <= endframe; newframe += 1.0) {
+//		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
+//			CBone* srcbone = itrcp->bone;
+//			if (srcbone) {
+//				CMotionPoint srcmp = itrcp->mp;
+//				if (itrcp->mp.GetFrame() == copyEndTime) {
+//					PasteMotionPoint(srcbone, srcmp, newframe);
+//				}
+//			}
+//		}
+//	}
+//
+//	//移動しないボーンのための処理
+//	for (newframe = (double)((int)(copyEndTime - copyStartTime + startframe + 0.1)); newframe <= endframe; newframe += 1.0) {
+//		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
+//			CBone* srcbone = itrcp->bone;
+//			if (srcbone) {
+//				CMotionPoint srcmp = itrcp->mp;
+//				if (itrcp->mp.GetFrame() == copyEndTime) {
+//					PasteNotMvParMotionPoint(srcbone, srcmp, newframe);
+//				}
+//			}
+//		}
+//	}
+//
+//	return 0;
+//}
 
 
 void DispProgressCalcLimitedWM()
@@ -38280,7 +38335,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.24 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.25 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -46152,7 +46207,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.24 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.25 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {
