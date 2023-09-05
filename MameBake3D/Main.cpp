@@ -1903,6 +1903,13 @@ static int s_curboneno = -1;
 static int s_saveboneno = -1;
 static int s_curbaseno = -1;
 
+
+//select joint using shortcutkey
+static int s_selecthand = 0;
+static int s_selectfoot = 0;
+
+
+
 static int s_tiprigboneno = -1;
 static int s_tiprigno = -1;
 
@@ -4194,6 +4201,19 @@ void InitApp()
 	::ZeroMemory(s_rigmaterial_ringY, sizeof(CMQOMaterial*) * (RIGMULTINDEXMAX + 1));
 	::ZeroMemory(s_rigmaterial_ringZ, sizeof(CMQOMaterial*) * (RIGMULTINDEXMAX + 1));
 	s_matrigmat = ChaVector4(255.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f, 1.0f);
+
+
+	s_curmotid = -1;
+	s_curboneno = -1;
+	s_saveboneno = -1;
+	s_curbaseno = -1;
+
+
+	//select joint using shortcutkey
+	s_selecthand = 0;
+	s_selectfoot = 0;
+
+
 
 	s_tiprigboneno = -1;
 	s_tiprigno = -1;
@@ -28426,6 +28446,37 @@ int OnFrameKeyboard()
 		}
 
 
+		//Hを押しながら　左右矢印で　左右ハンド(手)を選択
+		if (g_keybuf['H'] & 0x80) {//HandのH
+			if ((g_keybuf[VK_LEFT] & 0x80) && ((g_savekeybuf[VK_LEFT] & 0x80) == 0)) {
+				if (s_selecthand == 0) {
+					s_selecthand = 2;//select RightHandJoint //モデル正面向かって左=右
+				}
+			}
+			else if ((g_keybuf[VK_RIGHT] & 0x80) && ((g_savekeybuf[VK_RIGHT] & 0x80) == 0)) {
+				if (s_selecthand == 0) {
+					s_selecthand = 1;//select LeftHandJoint //モデル正面向かって右=左
+				}
+			}
+		}
+
+
+		//Fを押しながら　左右矢印で　左右フット(足)を選択
+		if (g_keybuf['F'] & 0x80) {//FootのF
+			if ((g_keybuf[VK_LEFT] & 0x80) && ((g_savekeybuf[VK_LEFT] & 0x80) == 0)) {
+				if (s_selectfoot == 0) {
+					s_selectfoot = 2;//select RightFootJoint //モデル正面向かって左=右
+				}
+			}
+			else if ((g_keybuf[VK_RIGHT] & 0x80) && ((g_savekeybuf[VK_RIGHT] & 0x80) == 0)) {
+				if (s_selectfoot == 0) {
+					s_selectfoot = 1;//select LeftFootJoint //モデル正面向かって右=左
+				}
+			}
+		}
+
+
+
 		//if ((g_keybuf[VK_F9] & 0x80) && ((g_savekeybuf[VK_F9] & 0x80) == 0)) {
 		//	StartBt(s_model, TRUE, 0, 1);
 		//}
@@ -29959,6 +30010,67 @@ int OnFrameToolWnd()
 		ChangeToNextPlateMenuPlate(s_platemenukind, s_platemenuno);
 		s_plateFlag = false;
 	}
+
+
+
+	if (s_selecthand == 1) {
+		if (s_model) {
+			CBone* selbone = 0;
+			selbone = s_model->FindBoneByPattern("L_Hand");
+			if (!selbone) {
+				selbone = s_model->FindBoneByPattern("LeftHand");
+			}
+			if (selbone) {
+				s_curboneno = selbone->GetBoneNo();
+				ChangeCurrentBone();
+			}
+		}
+		s_selecthand = 0;
+	}
+	if (s_selecthand == 2) {
+		if (s_model) {
+			CBone* selbone = 0;
+			selbone = s_model->FindBoneByPattern("R_Hand");
+			if (!selbone) {
+				selbone = s_model->FindBoneByPattern("RightHand");
+			}
+			if (selbone) {
+				s_curboneno = selbone->GetBoneNo();
+				ChangeCurrentBone();
+			}
+		}
+		s_selecthand = 0;
+	}
+	if (s_selectfoot == 1) {
+		if (s_model) {
+			CBone* selbone = 0;
+			selbone = s_model->FindBoneByPattern("L_Foot");
+			if (!selbone) {
+				selbone = s_model->FindBoneByPattern("LeftFoot");
+			}
+			if (selbone) {
+				s_curboneno = selbone->GetBoneNo();
+				ChangeCurrentBone();
+			}
+		}
+		s_selectfoot = 0;
+	}
+	if (s_selectfoot == 2) {
+		if (s_model) {
+			CBone* selbone = 0;
+			selbone = s_model->FindBoneByPattern("R_Foot");
+			if (!selbone) {
+				selbone = s_model->FindBoneByPattern("RightFoot");
+			}
+			if (selbone) {
+				s_curboneno = selbone->GetBoneNo();
+				ChangeCurrentBone();
+			}
+		}
+		s_selectfoot = 0;
+	}
+
+
 
 
 	//操作対象ボーンはs_selbonedlg::GetCpVec()にて取得。
@@ -48153,14 +48265,16 @@ void OnArrowKey()
 			s_dsbuttonup[brotherbuttonid] = 0;
 			arrowkeypushed = true;
 		}
-		else if (((g_savekeybuf[VK_LEFT] & 0x80) == 0) && ((g_keybuf[VK_LEFT] & 0x80) != 0)) {
+		else if (((g_keybuf['H'] & 0x80) == 0) && ((g_keybuf['F'] & 0x80) == 0) && 
+			((g_savekeybuf[VK_LEFT] & 0x80) == 0) && ((g_keybuf[VK_LEFT] & 0x80) != 0)) {
 			s_dsbuttonup[parentbuttonid] = 0;
 			s_dsbuttonup[sisterbuttonid] = 1;
 			s_dsbuttonup[childbuttonid] = 0;
 			s_dsbuttonup[brotherbuttonid] = 0;
 			arrowkeypushed = true;
 		}
-		else if (((g_savekeybuf[VK_RIGHT] & 0x80) == 0) && ((g_keybuf[VK_RIGHT] & 0x80) != 0)) {
+		else if (((g_keybuf['H'] & 0x80) == 0) && ((g_keybuf['F'] & 0x80) == 0) && 
+			((g_savekeybuf[VK_RIGHT] & 0x80) == 0) && ((g_keybuf[VK_RIGHT] & 0x80) != 0)) {
 			s_dsbuttonup[parentbuttonid] = 0;
 			s_dsbuttonup[sisterbuttonid] = 0;
 			s_dsbuttonup[childbuttonid] = 0;

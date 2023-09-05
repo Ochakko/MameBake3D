@@ -1152,7 +1152,7 @@ public: //accesser
 	CBone* GetBoneByName(std::string srcname ){
 		std::map<std::string, CBone*>::iterator itrbone;
 		itrbone = m_bonename.find(srcname);
-		if (itrbone != m_bonename.end()){
+		if (itrbone != m_bonename.end()) {
 			return itrbone->second;
 		}
 		else{
@@ -1161,10 +1161,26 @@ public: //accesser
 		//return m_bonename[ srcname ];
 	};
 
+
+	//###############################
+	//名前が部分一致するボーンを返す
+	//###############################
+	CBone* FindBoneByPattern(std::string srcpattern)
+	{
+		std::map<std::string, CBone*>::iterator itrbone;
+		for (itrbone = m_bonename.begin(); itrbone != m_bonename.end(); itrbone++) {
+			if (strstr(itrbone->first.c_str(), srcpattern.c_str()) != 0) {
+				return itrbone->second;
+			}
+		}
+		return 0;
+	};
+
+
 	//#####################################################
 	//_Jointが付いている名前と付いていない名前の両方を検索
 	//#####################################################
-	CBone* FindBoneByName(std::string srcname) {
+	CBone* FindBoneByName(std::string srcname) {//名前完全一致
 		char bonename[256] = { 0 };
 		char bonename1[256];//_Joint有り
 		char bonename2[256];//_Joint無し
@@ -1191,7 +1207,6 @@ public: //accesser
 		return retbone;
 	};
 
-
 	CBone* GetBoneByWName(WCHAR* srcname){
 		if (!srcname){
 			return 0;
@@ -1206,6 +1221,9 @@ public: //accesser
 			return 0;
 		}
 	};
+
+
+
 
 	int GetBoneListSize(){//eNull含む
 		return (int)m_bonelist.size();

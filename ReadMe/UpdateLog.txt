@@ -9,10 +9,19 @@
 
 		部分コピペ設定ファイル(*.tbo)のLLegとRLegの設定修正
 
-    2023/09/05
+    2023/09/05_1
 	時間端数処理についてリファクタリング
 		ChaVecCalcに処理関数　IsEqualJustTime, IsEqualRoundingTime, RoundingTime, IntTime
 		時間に関する+ 0.0001の直書き部分がほとんど無くなるように
+    2023/09/05_2
+	左右の手の選択ショートカットキー　：　Hを押しながら左右矢印キー　(HandのH)
+	左右の足の選択ショートカットキー　：　Fを押しながら左右矢印キー　(FootのF)
+
+	ショートカット一覧
+		Documants/TroubleShooting/0_ShortCutKey.docx
+
+
+
 
 
 2023/08/30
