@@ -2574,7 +2574,7 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 		return 0;
 	}
 	curmotid = curmi->motid;
-	curframe = (double)((int)(curmi->curframe + 0.0001));
+	curframe = RoundingTime(curmi->curframe);
 
 
 	//g_hmWorld->SetMatrix(m_worldmat.GetDataPtr());
@@ -5397,7 +5397,7 @@ FbxAnimLayer* CModel::GetAnimLayer( int motid )
 
 //void CModel::InitMpScaleReq(CBone* curbone, int srcmotid, double srcframe)
 //{
-//	double roundingframe = (double)((int)(srcframe + 0.0001));
+//	double roundingframe = RoundingTime(srcframe);
 //
 //	if (curbone) {
 //		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -6761,7 +6761,7 @@ int CModel::RenderBoneMark(bool limitdegflag, ID3D11DeviceContext* pd3dImmediate
 	curmi = GetCurMotInfo();
 	if (curmi) {
 		curmotid = curmi->motid;
-		roundingframe = (double)((int)(curmi->curframe + 0.0001));
+		roundingframe = RoundingTime(curmi->curframe);
 	}
 	else {
 		return 0;
@@ -7058,7 +7058,7 @@ int CModel::RenderBoneCircleOne(bool limitdegflag, ID3D11DeviceContext* pd3dImme
 	curmi = GetCurMotInfo();
 	if (curmi) {
 		curmotid = curmi->motid;
-		roundingframe = (double)((int)(curmi->curframe + 0.0001));
+		roundingframe = RoundingTime(curmi->curframe);
 	}
 	else {
 		return 0;
@@ -8067,7 +8067,7 @@ void CModel::CreateBtObjectReq(bool limitdegflag, CBtObject* parbt, CBone* notus
 					curmi = GetCurMotInfo();
 					if (curmi) {
 						curmotid = curmi->motid;
-						curframe = (double)((int)(curmi->curframe + 0.0001));
+						curframe = RoundingTime(curmi->curframe);
 						CallF(newbto->CreateObject(limitdegflag, curmotid, curframe, parbt, parentbone->GetParent(false), parentbone, curbone), return);
 					}
 					parentbone->SetBtObject(curbone, newbto);
@@ -8240,7 +8240,7 @@ int CModel::SetBtMotion(bool limitdegflag, CBone* srcbone, int ragdollflag,
 	// SetShaderConstから本関数SetBtMotionに処理を移動。
 	//#########################################################################################
 
-	double roundingframe = (double)((int)(curframe + 0.0001));
+	double roundingframe = RoundingTime(curframe);
 
 	map<int, CBone*>::iterator itrbone2;
 	for (itrbone2 = m_bonelist.begin(); itrbone2 != m_bonelist.end(); itrbone2++) {
@@ -8729,7 +8729,7 @@ void CModel::SetBtMotionReq(bool limitdegflag, CBtObject* curbto, ChaMatrix* wma
 //	}
 //
 //	curmotid = curmi->motid;
-//	curframe = (double)((int)(curmi->curframe + 0.0001));
+//	curframe = RoundingTime(curmi->curframe);
 //
 //
 //	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()) {
@@ -8809,7 +8809,7 @@ void CModel::SetBtMotionReq(bool limitdegflag, CBtObject* curbto, ChaMatrix* wma
 //	}
 //
 //	curmotid = curmi->motid;
-//	curframe = (double)((int)(curmi->curframe + 0.0001));
+//	curframe = RoundingTime(curmi->curframe);
 //
 //	if ((curbto->GetTopFlag() == 0) && curbto->GetBone()) {
 //		CBone* curbone = curbto->GetBone();
@@ -10399,7 +10399,7 @@ int CModel::SetBefEditMat(bool limitdegflag, CEditRange* erptr, CBone* curbone, 
 			double startframe, endframe, applyframe;
 			erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 			double curframe;
-			for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
+			for (curframe = RoundingTime(startframe); curframe <= endframe; curframe += 1.0) {
 				CMotionPoint* editmp = 0;
 				editmp = curbone->GetMotionPoint(m_curmotinfo->motid, curframe);
 				if (editmp) {
@@ -10429,7 +10429,7 @@ int CModel::SetBefEditMatFK(bool limitdegflag, CEditRange* erptr, CBone* curbone
 		double startframe, endframe, applyframe;
 		erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 		double curframe;
-		for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0){
+		for (curframe = RoundingTime(startframe); curframe <= endframe; curframe += 1.0){
 
 			CMotionPoint* editmp = 0;
 			editmp = curbone->GetMotionPoint(m_curmotinfo->motid, curframe);
@@ -10720,11 +10720,11 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 		qForRot.Slerp2(endq, 0.080f, &curqForRot);
 		curqForHipsRot = curqForRot;
 		bool infooutflag = true;
-		ismovable = rotbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+		ismovable = rotbone->RotAndTraBoneQReq(limitdegflag, 0, RoundingTime(startframe),
 			infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForHipsRot, fromiktarget);
 
 		//bool infooutflag = true;
-		//parentbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+		//parentbone->RotAndTraBoneQReq(limitdegflag, 0, RoundingTime(startframe),
 		//	infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, fromiktarget);
 
 	}
@@ -10739,7 +10739,7 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 		//	&qForRot, &qForHipsRot);
 
 		bool infooutflag = true;
-		ismovable = rotbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+		ismovable = rotbone->RotAndTraBoneQReq(limitdegflag, 0, RoundingTime(startframe),
 			infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, fromiktarget);
 
 		if ((fromiktarget != true) && (postflag != true)) {
@@ -10790,17 +10790,17 @@ int CModel::IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
 				qForRot.Slerp2(endq, 1.0 - changerate, &curqForRot);
 				qForHipsRot.Slerp2(endq, 1.0 - changerate, &curqForHipsRot);
 
-				ismovable = rotbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+				ismovable = rotbone->RotAndTraBoneQReq(limitdegflag, 0, RoundingTime(startframe),
 					infooutflag, 0, m_curmotinfo->motid, curframe, curqForRot, curqForHipsRot, fromiktarget);
 			}
 			else {
-				ismovable = rotbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+				ismovable = rotbone->RotAndTraBoneQReq(limitdegflag, 0, RoundingTime(startframe),
 					infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, fromiktarget);
 			}
 		}
 		else {
 			if (keyno == 0) {
-				ismovable = rotbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+				ismovable = rotbone->RotAndTraBoneQReq(limitdegflag, 0, RoundingTime(startframe),
 					infooutflag, 0, m_curmotinfo->motid, curframe, qForRot, qForHipsRot, fromiktarget);
 			}
 			else {
@@ -11169,7 +11169,7 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 							if (keynum >= 2) {
 								int keyno = 0;
 								double curframe;
-								for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
+								for (curframe = RoundingTime(startframe); curframe <= endframe; curframe += 1.0) {
 									if (curframe != applyframe) {
 										bool keynum1flag = false;
 										bool postflag = true;
@@ -11218,7 +11218,7 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 
 
 		double curframe;
-		for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
+		for (curframe = RoundingTime(startframe); curframe <= endframe; curframe += 1.0) {
 			if (curframe != applyframe) {
 				bool postflag = true;
 				IKTargetVec(limitdegflag, erptr, curframe, postflag);
@@ -11371,7 +11371,7 @@ int CModel::IKRotate(bool limitdegflag, CEditRange* erptr,
 					if (keynum >= 2) {
 						int keyno = 0;
 						double curframe;
-						for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
+						for (curframe = RoundingTime(startframe); curframe <= endframe; curframe += 1.0) {
 							
 							bool keynum1flag = false;
 							bool postflag = false;
@@ -12850,7 +12850,7 @@ int CModel::AdjustBoneTra(bool limitdegflag, CEditRange* erptr, CBone* lastpar)
 	if( lastpar && (keynum >= 2) ){
 		int keyno = 0;
 		double curframe;
-		for( curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0 ){
+		for( curframe = RoundingTime(startframe); curframe <= endframe; curframe += 1.0 ){
 			if( keyno >= 1 ){
 				CMotionPoint* pcurmp = 0;
 				int curmotid = m_curmotinfo->motid;
@@ -13129,19 +13129,19 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 											qForRot.Slerp2(endq, 1.0 - changerate, &curqForRot);
 											qForHipsRot.Slerp2(endq, 1.0 - changerate, &curqForHipsRot);
 
-											curbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+											curbone->RotAndTraBoneQReq(limitdegflag, 0, RoundingTime(startframe),
 												infooutflag, 0, m_curmotinfo->motid, curframe, 
 												curqForRot, curqForHipsRot, fromiktarget);
 										}
 										else{
-											curbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+											curbone->RotAndTraBoneQReq(limitdegflag, 0, RoundingTime(startframe),
 												infooutflag, 0, m_curmotinfo->motid, curframe, 
 												qForRot, qForHipsRot, fromiktarget);
 										}
 									}
 									else{
 										if (keyno == 0){
-											curbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+											curbone->RotAndTraBoneQReq(limitdegflag, 0, RoundingTime(startframe),
 												infooutflag, 0, m_curmotinfo->motid, curframe, 
 												qForRot, qForHipsRot, fromiktarget);
 										}
@@ -13157,7 +13157,7 @@ int CModel::RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, int s
 								bool infooutflag = true;
 								qForRot = localq;
 								qForHipsRot = localq;
-								curbone->RotAndTraBoneQReq(limitdegflag, 0, (double)((int)(startframe + 0.0001)),
+								curbone->RotAndTraBoneQReq(limitdegflag, 0, RoundingTime(startframe),
 									infooutflag, 0, m_curmotinfo->motid, m_curmotinfo->curframe, 
 									qForRot, qForHipsRot, fromiktarget);
 							}
@@ -13474,9 +13474,9 @@ int CModel::RigControlPostRig(bool limitdegflag, int depthcnt,
 	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 
 	double roundingstartframe, roundingendframe, roundingapplyframe;
-	roundingstartframe = (double)((int)(startframe + 0.0001));
-	roundingendframe = (double)((int)(endframe + 0.0001));
-	roundingapplyframe = (double)((int)(applyframe + 0.0001));
+	roundingstartframe = RoundingTime(startframe);
+	roundingendframe = RoundingTime(endframe);
+	roundingapplyframe = RoundingTime(applyframe);
 
 	CBone* curbone = m_bonelist[srcboneno];
 	if (!curbone) {
@@ -13698,8 +13698,8 @@ void CModel::InterpolateBetweenSelectionReq(bool limitdegflag, CBone* srcbone,
 		return;
 	}
 
-	double roundingstartframe = (double)((int)(srcstartframe + 0.0001));
-	double roundingendframe = (double)((int)(srcendframe + 0.0001));
+	double roundingstartframe = RoundingTime(srcstartframe);
+	double roundingendframe = RoundingTime(srcendframe);
 
 	if (srcbone){
 		if (srcbone->IsSkeleton()) {
@@ -13718,11 +13718,11 @@ void CModel::InterpolateBetweenSelectionReq(bool limitdegflag, CBone* srcbone,
 			for (frame = roundingstartframe; frame <= roundingendframe; frame += 1.0) {
 				CQuaternion setq;
 				ChaVector3 settra;
-				if (IsTimeEqual(frame, roundingstartframe)) {
+				if (IsEqualRoundingTime(frame, roundingstartframe)) {
 					setq = startq;
 					settra = starttra;
 				}
-				else if (IsTimeEqual(frame, roundingendframe)) {
+				else if (IsEqualRoundingTime(frame, roundingendframe)) {
 					setq = endq;
 					settra = endtra;
 				}
@@ -14075,8 +14075,8 @@ int CModel::CalcQForRot(bool limitdegflag, bool calcaplyflag,
 		return 0;
 	}
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
-	double roundingapplyframe = (double)((int)(srcapplyframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
+	double roundingapplyframe = RoundingTime(srcapplyframe);
 
 	//ChaMatrix curparrotmat = curparmp->GetWorldMat();
 	ChaMatrix curparrotmat = srcrotbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
@@ -14154,8 +14154,8 @@ int CModel::IsMovableRot(bool limitdegflag, int srcmotid, double srcframe, doubl
 
 
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
-	double roundingapplyframe = (double)((int)(srcapplyframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
+	double roundingapplyframe = RoundingTime(srcapplyframe);
 
 	CQuaternion qForRot;
 	CQuaternion qForHipsRot;
@@ -14387,7 +14387,7 @@ int CModel::IKRotateAxisDeltaUnderIK(
 				if (keynum >= 2) {
 					int keyno = 0;
 					double curframe = applyframe;
-					//for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
+					//for (curframe = RoundingTime(startframe); curframe <= endframe; curframe += 1.0) {
 
 					bool keynum1flag = false;
 					bool postflag = false;
@@ -14608,7 +14608,7 @@ int CModel::IKRotateAxisDeltaPostIK(
 						if (keynum >= 2) {
 							int keyno = 0;
 							double curframe;
-							for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
+							for (curframe = RoundingTime(startframe); curframe <= endframe; curframe += 1.0) {
 								if (curframe != applyframe) {
 									bool keynum1flag = false;
 									bool postflag = true;
@@ -14663,7 +14663,7 @@ int CModel::IKRotateAxisDeltaPostIK(
 
 
 		double curframe;
-		for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0) {
+		for (curframe = RoundingTime(startframe); curframe <= endframe; curframe += 1.0) {
 			if (curframe != applyframe) {
 				bool postflag = true;
 				IKTargetVec(limitdegflag, erptr, curframe, postflag);
@@ -14882,7 +14882,7 @@ int CModel::IKRotateAxisDelta(bool limitdegflag, CEditRange* erptr, int axiskind
 			if (keynum >= 2){
 				int keyno = 0;
 				double curframe;
-				for (curframe = (double)((int)(startframe + 0.0001)); curframe <= endframe; curframe += 1.0){
+				for (curframe = RoundingTime(startframe); curframe <= endframe; curframe += 1.0){
 
 					bool keynum1flag = false;
 					bool postflag = false;
@@ -15109,7 +15109,7 @@ int CModel::FKRotate(bool limitdegflag, bool onretarget, int reqflag,
 	}
 
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	bool onaddmotion = true;//for getbychain
 	CBone* parentbone = curbone->GetParent(false);
@@ -15378,8 +15378,8 @@ int CModel::FKBoneTraPostFK(
 			if (keynum >= 2) {
 				int keyno = 0;
 				double curframe;
-				for (curframe = (double)((int)(startframe + 0.0001)); curframe <= (double)((int)(endframe + 0.0001)); curframe += 1.0) {
-					if (curframe != (double)((int)(applyframe + 0.0001))) {
+				for (curframe = RoundingTime(startframe); curframe <= RoundingTime(endframe); curframe += 1.0) {
+					if (curframe != RoundingTime(applyframe)) {
 						if (keyno == 0) {
 							firstframe = curframe;
 						}
@@ -15402,8 +15402,8 @@ int CModel::FKBoneTraPostFK(
 
 
 	double curframe;
-	for (curframe = (double)((int)(startframe + 0.0001)); curframe <= (double)((int)(endframe + 0.0001)); curframe += 1.0) {
-		if (curframe != (double)((int)(applyframe + 0.0001))) {
+	for (curframe = RoundingTime(startframe); curframe <= RoundingTime(endframe); curframe += 1.0) {
+		if (curframe != RoundingTime(applyframe)) {
 			bool postflag = true;
 			IKTargetVec(limitdegflag, erptr, curframe, postflag);
 		}
@@ -15607,7 +15607,7 @@ int CModel::PosConstraintExecuteFromButton(bool limitdegflag, CEditRange* erptr)
 		double startframe, endframe, applyframe;
 		erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 		double curframe;
-		for (curframe = (double)((int)startframe + 0.0001); curframe <= (double)((int)endframe + 0.0001); curframe += 1.0) {
+		for (curframe = RoundingTime(startframe); curframe <= RoundingTime(endframe); curframe += 1.0) {
 			bool postflag = true;
 			int calccount;
 			for (calccount = 0; calccount < 1; calccount++) {//IKTargetVecでも複数回計算している
@@ -15812,7 +15812,7 @@ int CModel::FKBoneScale(bool limitdegflag, int onlyoneflag, CEditRange* erptr, i
 			//}else{
 			//	changerate = 1.0 / (endframe - applyframe + 1);
 			//}
-			changerate = (double)(*(g_motionbrush_value + (int)(curframe + 0.0001)));
+			changerate = (double)(*(g_motionbrush_value + IntTime(curframe)));
 
 
 			if (keyno == 0) {
@@ -15837,24 +15837,24 @@ int CModel::FKBoneScale(bool limitdegflag, int onlyoneflag, CEditRange* erptr, i
 					//curtra = (1.0 - currate2) * addtra;
 
 					curbone->AddBoneScaleReq(limitdegflag, 0, 
-						m_curmotinfo->motid, (double)((int)(curframe + 0.0001)), 
+						m_curmotinfo->motid, RoundingTime(curframe), 
 						curscale, dummyparentwm, dummyparentwm);
 				}
 				else {
 					curbone->AddBoneScaleReq(limitdegflag, 0, 
-						m_curmotinfo->motid, (double)((int)(curframe + 0.0001)), 
+						m_curmotinfo->motid, RoundingTime(curframe),
 						scalevec, dummyparentwm, dummyparentwm);
 				}
 			}
 			else {
 				if (keyno == 0) {
 					curbone->AddBoneScaleReq(limitdegflag, 0, 
-						m_curmotinfo->motid, (double)((int)(curframe + 0.0001)), 
+						m_curmotinfo->motid, RoundingTime(curframe),
 						scalevec, dummyparentwm, dummyparentwm);
 				}
 				else {
 					curbone->SetAbsMatReq(limitdegflag, 0, 
-						m_curmotinfo->motid, (double)((int)(curframe + 0.0001)), firstframe);
+						m_curmotinfo->motid, RoundingTime(curframe), firstframe);
 				}
 			}
 			keyno++;
@@ -15863,7 +15863,7 @@ int CModel::FKBoneScale(bool limitdegflag, int onlyoneflag, CEditRange* erptr, i
 	}
 	else {
 		curbone->AddBoneScaleReq(limitdegflag, 0, 
-			m_curmotinfo->motid, (double)((int)(startframe + 0.0001)), 
+			m_curmotinfo->motid, RoundingTime(startframe), 
 			scalevec, dummyparentwm, dummyparentwm);
 	}
 
@@ -17055,7 +17055,7 @@ void CModel::ApplyPhysIkRecReq(bool limitdegflag, CBone* srcbone, double srcfram
 		return;
 	}
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	if (srcbone->IsSkeleton()) {
 		MOTINFO* curmi = GetCurMotInfo();
@@ -17104,7 +17104,7 @@ void CModel::ApplyPhysIkRecReq(bool limitdegflag, CBone* srcbone, double srcfram
 
 
 			if (foundrecdata0 && foundrecdata) {
-				ChaMatrix worldmat0 = btbone->GetWorldMat(limitdegflag, curmi->motid, (double)((int)(g_motionbrush_applyframe + 0.0001)), 0);//or srcframe
+				ChaMatrix worldmat0 = btbone->GetWorldMat(limitdegflag, curmi->motid, RoundingTime(g_motionbrush_applyframe), 0);//or srcframe
 				ChaMatrix btmat0 = recdata0.btmat;//カレントボーンのApplyFrameにおけるドラッグ時間ゼロの姿勢
 				ChaMatrix btmat = recdata.btmat;//カレントボーンのApplyFrameにおけるドラッグ時間カレントの姿勢
 

@@ -270,7 +270,7 @@ int CMotFilter::FilterFunc(bool edgesmp, bool limitdegflag,
 		int motionleng;
 		MOTINFO* curmi = srcmodel->GetMotInfo(srcmotid);
 		if (curmi) {
-			motionleng = (int)(curmi->frameleng + 0.0001);
+			motionleng = IntTime(curmi->frameleng);
 		}
 		else {
 			motionleng = frameleng;

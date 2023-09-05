@@ -666,7 +666,7 @@ int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMat
 	//GetMotionPoint, GetWorldMatは intに丸めてからdoubleにして検索する justでtimeが一致しないとMotionPointが返らない
 	//一方で　GetBefNextMPには　フレーム間姿勢の補間のために　小数有りの時間を渡す　justが無くても　befとnextを返す
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -766,7 +766,7 @@ int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMat
 
 int CBone::CopyLimitedWorldToWorld(int srcmotid, double srcframe)//制限角度有りの姿勢を制限無しの姿勢にコピーする
 {
-	double roundingframe = (double)((int)srcframe + 0.0001);
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28 2023/05/23
 	if (IsNotSkeleton() && IsNotCamera()) {
@@ -829,7 +829,7 @@ int CBone::CopyLimitedWorldToWorld(int srcmotid, double srcframe)//制限角度�
 
 int CBone::CopyWorldToLimitedWorld(int srcmotid, double srcframe)//制限角度無しの姿勢を制限有りの姿勢にコピーする
 {
-	double roundingframe = (double)((int)srcframe + 0.0001);
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28 2023/05/23
 	if (IsNotSkeleton() && IsNotCamera()) {
@@ -896,7 +896,7 @@ int CBone::ApplyNewLimitsToWM(int srcmotid, double srcframe)
 	//2023/02/03
 	//この関数を実行する前に　limitedworldmatにworldmatをコピーしておく
 
-	double roundingframe = (double)((int)srcframe + 0.0001);
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -945,7 +945,7 @@ int CBone::ClearLimitedWorldMat(int srcmotid, double srcframe0)
 	//ChaMatrixIdentity(&newworldmat);
 
 	//制限角度有り
-	double srcframe = (double)((int)(srcframe0 + 0.0001));
+	double srcframe = RoundingTime(srcframe0);
 	CMotionPoint* orgbefmp = 0;
 	CMotionPoint* orgnextmp = 0;
 	GetBefNextMP(srcmotid, srcframe, &orgbefmp, &orgnextmp, &existflag);
@@ -1302,7 +1302,7 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 	std::map<int, std::vector<CMotionPoint*>>::iterator itrvecmpmap;
 
 
-	int curframeindex = (int)(srcframe + 0.0001);
+	int curframeindex = IntTime(srcframe);
 	int nextframeindex = curframeindex + 1;
 	int mpmapleng = 0;//2022/11/01 STLのsize()は重いらしいので変数に代入して使いまわし
 
@@ -1390,7 +1390,7 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 
 		while (pcur) {
 
-			if ((pcur->GetFrame() >= srcframe - 0.0001) && (pcur->GetFrame() <= srcframe + 0.0001)) {//ジャスト判定　ジャストの場合補間無し
+			if (IsJustEqualTime(pcur->GetFrame(), srcframe)) {//ジャスト判定　ジャストの場合補間無し
 			//if ((pcur->GetFrame() >= ((double)curframeindex - 0.0001)) && (pcur->GetFrame() <= ((double)curframeindex + 0.0001))) {//2022/12/26 これでは補間が効かない
 				*existptr = 1;
 				pbef = pcur;
@@ -1468,7 +1468,7 @@ int CBone::GetBefNextMP(int srcmotid, double srcframe, CMotionPoint** ppbef, CMo
 			//if分を以下のようにしないと　モーションによっては　0.007倍速などでカクカクする　変更前でもモーション時間がたまたまintの場合には滑らかだった
 			//上のは補間計算時の話　モーションのキーの時間はintに揃えてリサンプリングして読み込んでいる
 			//モーションデータをインデックス化していない場合の滑らか処理の修正は　上の方のコードで2022/12/26に修正済　今回の修正はインデックス化されたデータについての修正
-			if ((mpframe >= (srcframe - 0.0001)) && (mpframe <= (srcframe + 0.0001))) {
+			if (IsJustEqualTime(mpframe, srcframe)) {
 				*existptr = 1;
 			}
 			else {
@@ -1531,7 +1531,7 @@ int CBone::CalcFBXFrame(bool limitdegflag, double srcframe, CMotionPoint* befptr
 
 	//GetWorldMat対策(未計算時の取得含む)のため　SetFrameには roundingframeを使用
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28 2023/05/23
 	if (IsNotSkeleton() && IsNotCamera()) {
@@ -2836,7 +2836,7 @@ int CBone::SetCurrentRigidElem( std::string curname )
 
 CMotionPoint* CBone::AddBoneTraReq(bool limitdegflag, CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra, ChaMatrix befparentwm, ChaMatrix newparentwm)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -2906,7 +2906,7 @@ CMotionPoint* CBone::AddBoneScaleReq(bool limitdegflag, CMotionPoint* parmp, int
 {
 
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 
 	//2023/04/28
@@ -3059,7 +3059,7 @@ void CBone::PasteRotReq(bool limitdegflag, int srcmotid, double srcframe, double
 	//src : srcmp srcparmp
 	//dst : curmp parmp
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 	CMotionPoint* curmp = 0;
 
 	if (IsSkeleton()) {
@@ -3107,7 +3107,7 @@ void CBone::PasteRotReq(bool limitdegflag, int srcmotid, double srcframe, double
 
 ChaMatrix CBone::CalcNewLocalRotMatFromQofIK(bool limitdegflag, int srcmotid, double srcframe, CQuaternion qForRot, ChaMatrix* dstsmat, ChaMatrix* dstrmat, ChaMatrix* dsttanimmat)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	ChaMatrix newlocalrotmat;
 	newlocalrotmat.SetIdentity();
@@ -3253,7 +3253,7 @@ void CBone::UpdateCurrentWM(bool limitdegflag, int srcmotid, double srcframe,
 {
 	//directsetで　ツリーの姿勢を更新　再帰
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28 2023/05/23
 	if (IsNotSkeleton() && IsNotCamera()) {
@@ -3306,7 +3306,7 @@ void CBone::UpdateParentWMReq(bool limitdegflag, bool setbroflag, int srcmotid, 
 {
 	//directsetで　parentの姿勢を更新　再帰
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	ChaMatrix currentbefwm;
 	ChaMatrix currentnewwm;
@@ -3369,7 +3369,7 @@ CMotionPoint* CBone::RotBoneQReq(bool limitdegflag, bool infooutflag,
 	//Retarget専用. IK用にはRotAndTraBoneQReq()を使用
 	//##############################################################
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -3457,7 +3457,7 @@ CMotionPoint* CBone::RotBoneQReq(bool limitdegflag, bool infooutflag,
 
 int CBone::SaveSRT(bool limitdegflag, int srcmotid, double srcframe)
 {
-	double curframe = (double)((int)(srcframe + 0.0001));
+	double curframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -3514,7 +3514,7 @@ int CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 	
 	int ismovable = 1;//for return value
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -3561,7 +3561,7 @@ int CBone::RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr,
 	startframetraanimmat.SetIdentity();
 	{
 		//CMotionPoint* zeromp = GetMotionPoint(srcmotid, 0.0);
-		CMotionPoint* startframemp = GetMotionPoint(srcmotid, (double)((int)(srcstartframe + 0.0001)));
+		CMotionPoint* startframemp = GetMotionPoint(srcmotid, RoundingTime(srcstartframe));
 		if (startframemp) {
 			ChaMatrix smat0, rmat0, tmat0, tanimmat0;
 			smat0.SetIdentity();
@@ -3947,7 +3947,7 @@ CMotionPoint* CBone::RotBoneQOne(bool limitdegflag, CBone* srcparentbone, CMotio
 	}
 
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -3991,7 +3991,7 @@ CMotionPoint* CBone::RotBoneQOne(bool limitdegflag, CBone* srcparentbone, CMotio
 CMotionPoint* CBone::SetAbsMatReq(bool limitdegflag, int broflag, 
 	int srcmotid, double srcframe, double firstframe )
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -4157,7 +4157,7 @@ int CBone::CalcLocalInfo(bool limitdegflag, int motid, double frameno, CMotionPo
 		return 1;
 	}
 
-	double roundingframe = (double)((int)(frameno + 0.0001));
+	double roundingframe = RoundingTime(frameno);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -4563,7 +4563,7 @@ void CBone::SetOldJointFPos(ChaVector3 srcpos){
 
 ChaVector3 CBone::GetBefEul(bool limitdegflag, int srcmotid, double srcframe)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 
@@ -4603,7 +4603,7 @@ ChaVector3 CBone::GetBefEul(bool limitdegflag, int srcmotid, double srcframe)
 
 ChaVector3 CBone::GetUnlimitedBefEul(int srcmotid, double srcframe)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
 
@@ -4642,7 +4642,7 @@ ChaVector3 CBone::GetUnlimitedBefEul(int srcmotid, double srcframe)
 
 int CBone::GetNotModify180Flag(int srcmotid, double srcframe)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/02/04
 	//ModifyEuler360()の内容を変えたので　全フレームmodifyする
@@ -4702,7 +4702,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 	//モーション全体のオイラー角計算し直しは　この関数ではなく　UpdateMatrixを使用
 	//###################################################################################################################
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 
 	//for debug
@@ -4898,7 +4898,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 //	//制限角度の制限を受ける姿勢のオイラー角を計算
 //	//計算済のlimitedwmからオイラー角を計算
 //
-//	double roundingframe = (double)((int)(srcframe + 0.0001));
+//	double roundingframe = RoundingTime(srcframe);
 //
 //	ChaVector3 reteul = ChaVector3(0.0f, 0.0f, 0.0f);
 //	//reteul = GetLimitedLocalEul(srcmotid, srcframe);
@@ -4974,7 +4974,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 //{
 //	//制限角度の制限を受けない姿勢のオイラー角を計算
 //	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-//	double roundingframe = (double)((int)(srcframe + 0.0001));
+//	double roundingframe = RoundingTime(srcframe);
 //
 //	CMotionPoint* curmp = GetMotionPoint(srcmotid, roundingframe);
 //	if (curmp) {
@@ -5115,7 +5115,7 @@ ChaMatrix CBone::CalcLocalRotMatFromEul(ChaVector3 srceul, int srcmotid, double 
 //		MOTINFO* curmi = m_parmodel->GetCurMotInfo();
 //		if (curmi) {
 //			curmotid = curmi->motid;
-//			curframe = (double)((int)(curmi->curframe + 0.0001));
+//			curframe = RoundingTime(curmi->curframe);
 //		}
 //	}
 //	else {
@@ -5424,7 +5424,7 @@ int CBone::SetWorldMatFromEul(bool limitdegflag, int inittraflag, int setchildfl
 	//	return 0;
 	//}
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -5631,7 +5631,7 @@ int CBone::SetWorldMatFromEul(bool limitdegflag, int inittraflag, int setchildfl
 
 ChaMatrix CBone::CalcWorldMatFromEul(bool limitdegflag, int inittraflag, int setchildflag, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag)//initscaleflag = 1 : default
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
@@ -5709,7 +5709,7 @@ int CBone::SetWorldMatFromEulAndScaleAndTra(bool limitdegflag, int inittraflag, 
 	//	return 0;
 	//}
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -5795,7 +5795,7 @@ int CBone::SetWorldMatFromQAndTra(bool limitdegflag, int setchildflag,
 		return 0;
 	}
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -5889,7 +5889,7 @@ int CBone::SetWorldMatFromEulAndTra(bool limitdegflag, int setchildflag,
 	//	return 0;
 	//}
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -5971,7 +5971,7 @@ int CBone::SetWorldMatFromEulAndTra(bool limitdegflag, int setchildflag,
 
 int CBone::SetLocalEul(bool limitdegflag, int srcmotid, double srcframe, ChaVector3 srceul, CMotionPoint* srcmp)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -6008,7 +6008,7 @@ int CBone::SetLocalEul(bool limitdegflag, int srcmotid, double srcframe, ChaVect
 
 ChaVector3 CBone::GetLocalEul(bool limitdegflag, int srcmotid, double srcframe, CMotionPoint* srcmp)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	ChaVector3 reteul = ChaVector3(0.0f, 0.0f, 0.0f);
 
@@ -6077,7 +6077,7 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 	bool infooutflag, int setchildflag, 
 	int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -6405,7 +6405,7 @@ ANGLELIMIT CBone::GetAngleLimit(bool limitdegflag, int getchkflag)
 			MOTINFO* curmi = m_parmodel->GetCurMotInfo();
 			if (curmi) {
 				int curmotid = curmi->motid;
-				int curframe = (int)(curmi->curframe + 0.0001);
+				int curframe = IntTime(curmi->curframe);
 
 				ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 				ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -6649,7 +6649,7 @@ ChaMatrix CBone::CalcSymXMat2(bool limitdegflag, int srcmotid, double srcframe, 
 	};
 	*/
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	ChaMatrix directsetmat;
 	ChaMatrixIdentity(&directsetmat);
@@ -6719,7 +6719,7 @@ ChaMatrix CBone::CalcSymXMat2(bool limitdegflag, int srcmotid, double srcframe, 
 ChaMatrix CBone::GetWorldMat(bool limitdegflag, 
 	int srcmotid, double srcframe, CMotionPoint* srcmp, ChaVector3* dsteul)//default : dsteul = 0
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	ChaMatrix curmat;
 	ChaMatrixIdentity(&curmat);
@@ -6862,7 +6862,7 @@ ChaMatrix CBone::GetCurrentWorldMat(bool multmodelwm)
 int CBone::SetWorldMat(bool limitdegflag, 
 	int srcmotid, double srcframe, ChaMatrix srcmat, CMotionPoint* srcmp)//default : srcmp = 0
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -6898,7 +6898,7 @@ int CBone::SetWorldMat(bool limitdegflag,
 
 ChaMatrix CBone::CalcLocalScaleRotMat(bool limitdegflag, int rotcenterflag, int srcmotid, double srcframe)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -7095,7 +7095,7 @@ ChaVector3 CBone::CalcLocalSymScaleVec(bool limitdegflag, int srcmotid, double s
 
 ChaVector3 CBone::CalcLocalTraAnim(bool limitdegflag, int srcmotid, double srcframe)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -7197,7 +7197,7 @@ ChaVector3 CBone::CalcFbxScaleAnim(bool limitdegflag, int srcmotid, double srcfr
 	// NodeMatを掛けた姿勢を書き出す。
 	//############################################################################
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	ChaVector3 svec, tvec;
 	ChaMatrix rmat;
@@ -7251,7 +7251,7 @@ ChaVector3 CBone::CalcFbxScaleAnim(bool limitdegflag, int srcmotid, double srcfr
 
 ChaVector3 CBone::CalcLocalScaleAnim(bool limitdegflag, int srcmotid, double srcframe)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -7298,7 +7298,7 @@ ChaVector3 CBone::CalcLocalScaleAnim(bool limitdegflag, int srcmotid, double src
 
 int CBone::PasteMotionPoint(bool limitdegflag, int srcmotid, double srcframe, CMotionPoint srcmp)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//2023/04/28
 	if (IsNotSkeleton()) {
@@ -7362,7 +7362,7 @@ ChaVector3 CBone::CalcFBXEulXYZ(bool limitdegflag, int srcmotid, double srcframe
 	// ジョイントの向きが設定されていても正しく書き出せる
 	//#####################################################################
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	ChaVector3 cureul;
 	cureul = CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
@@ -7410,7 +7410,7 @@ ChaVector3 CBone::CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe)
 	//############################################################################
 
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	if (IsSkeleton()) {
 
@@ -8357,7 +8357,7 @@ void CBone::OnDelModel(CModel* srcparmodel)
 //		return;
 //	}
 //
-//	double roundingframe = (double)((int)(srcframe + 0.0001));
+//	double roundingframe = RoundingTime(srcframe);
 //
 //	//2023/04/28
 //	if (IsNotSkeleton()) {
@@ -8409,7 +8409,7 @@ void CBone::OnDelModel(CModel* srcparmodel)
 //		return;
 //	}
 //
-//	double roundingframe = (double)((int)(srcframe + 0.0001));
+//	double roundingframe = RoundingTime(srcframe);
 //
 //	//2023/04/28
 //	if (IsNotSkeleton()) {
@@ -8476,7 +8476,7 @@ void CBone::OnDelModel(CModel* srcparmodel)
 
 //int CBone::SetLimitedLocalEul(int srcmotid, double srcframe, ChaVector3 srceul)
 //{
-//	double roundingframe = (double)((int)(srcframe + 0.0001));
+//	double roundingframe = RoundingTime(srcframe);
 //
 //	CMotionPoint* curmp;
 //	curmp = GetMotionPoint(srcmotid, roundingframe);
@@ -8499,7 +8499,7 @@ ChaVector3 CBone::GetLimitedLocalEul(int srcmotid, double srcframe)
 	}
 
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, roundingframe);
@@ -8523,7 +8523,7 @@ ChaVector3 CBone::GetUnlimitedLocalEul(int srcmotid, double srcframe)
 	}
 
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, roundingframe);
@@ -8539,7 +8539,7 @@ ChaVector3 CBone::GetUnlimitedLocalEul(int srcmotid, double srcframe)
 
 //ChaVector3 CBone::CalcLocalEulAndSetLimitedEul(int srcmotid, double srcframe)
 //{
-//	double roundingframe = (double)((int)(srcframe + 0.0001));
+//	double roundingframe = RoundingTime(srcframe);
 //
 //	ChaVector3 orgeul = ChaVector3(0.0f, 0.0f, 0.0f);
 //	ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -8619,7 +8619,7 @@ ChaVector3 CBone::GetUnlimitedLocalEul(int srcmotid, double srcframe)
 //ChaMatrix CBone::CalcLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul)
 //{
 //
-//	double roundingframe = (double)((int)(srcframe + 0.0001));
+//	double roundingframe = RoundingTime(srcframe);
 //	ChaMatrix retmat;
 //	retmat.SetIdentity();
 //	ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -8733,7 +8733,7 @@ ChaVector3 CBone::GetUnlimitedLocalEul(int srcmotid, double srcframe)
 //	//この関数はオイラーグラフ用またはキー位置のモーションポイントに対しての処理用なので、時間に対する補間処理は必要ない
 //	//###################################################################################################################
 //
-//	double roundingframe = (double)((int)(srcframe + 0.0001));
+//	double roundingframe = RoundingTime(srcframe);
 //
 //	ChaMatrix retmat;
 //	ChaMatrixIdentity(&retmat);
@@ -8881,7 +8881,7 @@ ChaVector3 CBone::GetUnlimitedLocalEul(int srcmotid, double srcframe)
 
 ChaVector3 CBone::GetWorldPos(bool limitdegflag, int srcmotid, double srcframe)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 
 	ChaVector3 retpos = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -8970,7 +8970,7 @@ int CBone::CreateIndexedMotionPoint(int srcmotid, double animleng)
 				mpframe = curmp->GetFrame();
 
 				if ((mpframe >= 0.0) && (mpframe < animleng) &&
-					(mpframe >= (frameno - 0.0001)) && (mpframe <= (frameno + 0.0001))) {
+					IsJustEqualTime(mpframe, frameno)) {
 					(itrvecmpmap->second).push_back(curmp);
 				}
 				else {
@@ -9755,7 +9755,7 @@ int CBone::InitMP(bool limitdegflag, int srcmotid, double srcframe)
 
 
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	//この関数は処理に時間が掛かる
 	//CModel読み込み中で　読み込み中のモーション数が０以外の場合には　InitMPする必要は無い(モーションの値で上書きする)ので　リターンする
@@ -10553,7 +10553,7 @@ ChaMatrix CBone::GetTransformMat(double srctime, bool forceanimflag)
 
 ChaMatrix CBone::CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcframe)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	ChaMatrix localfbxmat;
 	localfbxmat.SetIdentity();

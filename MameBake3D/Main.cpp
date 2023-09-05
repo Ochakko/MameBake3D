@@ -8205,7 +8205,7 @@ void InsertCopyMPReq(bool limitdegflag, CBone* curbone, double curframe)
 
 int InsertCopyMP(bool limitdegflag, CBone* curbone, double curframe)
 {
-	double roundingframe = (double)((int)(curframe + 0.0001));
+	double roundingframe = RoundingTime(curframe);
 
 	if (curbone && (curbone->IsSkeleton())) {
 
@@ -13732,8 +13732,8 @@ int UpdateEditedEuler()
 			//	}
 			////}
 
-			frameleng = (int)(s_model->GetCurMotInfo()->frameleng + 0.0001);
-			startframe = (int)(s_owpLTimeline->getShowPosTime() + 0.0001);
+			frameleng = IntTime(s_model->GetCurMotInfo()->frameleng);
+			startframe = IntTime(s_owpLTimeline->getShowPosTime());
 			endframe = (int)(min(frameleng, startframe + s_owpEulerGraph->getShowposWidth()));
 
 			int firstframe;
@@ -26486,12 +26486,12 @@ int CopyLimitedWorldToWorld(CModel* srcmodel, bool allframeflag, bool setcursorf
 							int framenum;
 							double startframe, endframe;
 							s_editrange.GetRange(&framenum, &startframe, &endframe);
-							roundingstartframe = (double)((int)(startframe + 0.0001));
-							roundingendframe = (double)((int)(endframe + 0.0001));
+							roundingstartframe = RoundingTime(startframe);
+							roundingendframe = RoundingTime(endframe);
 						}
 						else {
 							roundingstartframe = 1.0;
-							roundingendframe = (double)((int)(curmi->frameleng + 0.0001) - 1);
+							roundingendframe = RoundingTime(curmi->frameleng) - 1.0;
 						}
 
 						double curframe;
@@ -26512,12 +26512,12 @@ int CopyLimitedWorldToWorld(CModel* srcmodel, bool allframeflag, bool setcursorf
 							int framenum;
 							double startframe, endframe;
 							s_editrange.GetRange(&framenum, &startframe, &endframe);
-							roundingstartframe = (double)((int)(startframe + 0.0001));
-							roundingendframe = (double)((int)(endframe + 0.0001));
+							roundingstartframe = RoundingTime(startframe);
+							roundingendframe = RoundingTime(endframe);
 						}
 						else {
 							roundingstartframe = 1.0;
-							roundingendframe = (double)((int)(curmi->frameleng + 0.0001) - 1);
+							roundingendframe = RoundingTime(curmi->frameleng) - 1.0;
 						}
 
 						double curframe;
@@ -26618,8 +26618,11 @@ int ApplyNewLimitsToWMSelected()
 			double startframe, endframe;
 			s_editrange.GetRange(&selectednum, &startframe, &endframe);
 
+			int  istartframe, iendframe;
+			istartframe = IntTime(startframe);
+			iendframe = IntTime(endframe);
 			int curframe;
-			for (curframe = (int)(startframe + 0.0001); curframe <= (int)(endframe + 0.0001); curframe++) {
+			for (curframe = istartframe; curframe <= iendframe; curframe++) {
 				s_model->SetMotionFrame((double)curframe);
 				s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 			}
@@ -28843,7 +28846,7 @@ int OnFramePreviewCamera(double srcnextframe)
 				}
 			}
 
-			double roundingframe = (double)((int)(nextcameraframe + 0.0001));
+			double roundingframe = RoundingTime(nextcameraframe);
 
 			s_cameramodel->GetCameraAnimParams(roundingframe, g_camdist, &g_camEye, &g_camtargetpos, &g_cameraupdir, 0, g_cameraInheritMode);//g_camdist
 			g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
@@ -30190,7 +30193,7 @@ int OnFrameToolWnd()
 
 			list<KeyInfo>::iterator itrcp;
 			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
-				double curframe = (double)((int)(itrcp->time + 0.0001));
+				double curframe = RoundingTime(itrcp->time);
 				InsertCopyMPReq(g_limitdegflag, s_model->GetTopBone(false), curframe);
 			}
 
@@ -30242,7 +30245,7 @@ int OnFrameToolWnd()
 
 			list<KeyInfo>::iterator itrcp;
 			for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
-				double curframe = (double)((int)(itrcp->time + 0.0001));
+				double curframe = RoundingTime(itrcp->time);
 				InsertSymMPReq(g_limitdegflag, s_model->GetTopBone(false), curframe, s_getsym_retmode);//s_getsym_retmode!!!
 			}
 
@@ -30675,7 +30678,7 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 	int cpnum = (int)vecopebone.size();
 
 	int docopyflag = 0;
-	int hasNotMvParFlag = 1;
+	int hasNotMvParFlag = 1;//ペーストするジョイントの内　親ジョイントがペースト対象ではない場合のフラグ
 	ChaMatrix notmvparmat;
 	ChaMatrixIdentity(&notmvparmat);
 	if (cpnum != 0) {
@@ -30715,7 +30718,7 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 	if (srcbone && (docopyflag == 1)) {
 		_ASSERT(s_model->GetCurMotInfo());
 		int curmotid = s_model->GetCurMotInfo()->motid;
-		srcbone->PasteMotionPoint(g_limitdegflag, curmotid, (double)((int)(newframe + 0.0001)), srcmp);
+		srcbone->PasteMotionPoint(g_limitdegflag, curmotid, RoundingTime(newframe), srcmp);
 	}
 
 	return 0;
@@ -30752,7 +30755,7 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double copystar
 
 
 	int docopyflag = 0;
-	int hasNotMvParFlag = 1;
+	int hasNotMvParFlag = 1;//ペーストするジョイントの内　親ジョイントがペースト対象ではない場合のフラグ
 	ChaMatrix notmvparmat;
 	ChaMatrixIdentity(&notmvparmat);
 
@@ -30806,7 +30809,7 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double copystar
 					ChaMatrix parentwm = parentbone->GetWorldMat(g_limitdegflag,
 						curmotid, newframe, 0);
 					ChaMatrix parentwm0 = parentbone->GetWorldMat(g_limitdegflag,
-						curmotid, (double)((int)(dststartframe + 0.0001)), 0);
+						curmotid, RoundingTime(dststartframe), 0);
 
 
 					if (parentbone->IsHipsBone()) {
@@ -30826,10 +30829,10 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double copystar
 							CBone* findbone = itrcp->bone;
 							if (findbone && findbone == parentbone) {
 								CMotionPoint findmp = itrcp->mp;
-								if ((double)((int)(findmp.GetFrame() + 0.0001)) == (double)((int)(srcframe + 0.0001))) {
+								if (IsEqualRoundingTime(findmp.GetFrame(), srcframe)) {
 									srclocalparent = findmp.GetWorldMat();//copy情報としてローカルが格納されているがhipsなので実質global
 								}
-								if ((double)((int)(findmp.GetFrame() + 0.0001)) == (double)((int)(copystarttime + 0.0001))) {
+								if (IsEqualRoundingTime(findmp.GetFrame(), copystarttime)) {
 									srclocalparent0 = findmp.GetWorldMat();//copy情報としてローカルが格納されているがhipsなので実質global
 								}
 							}
@@ -30889,17 +30892,20 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 	double dstleng;
 	srcleng = copyEndTime - copyStartTime + 1;
 	dstleng = endframe - startframe + 1;
+	double roundingstartframe, roundingendframe;
+	roundingstartframe = RoundingTime(startframe);
+	roundingendframe = RoundingTime(endframe);
 	double dstframe;
-	for (dstframe = (double)((int)(startframe + 0.0001)); dstframe <= (double)((int)(endframe + 0.0001)); dstframe += 1.0) {
-		double dstrate = (dstframe - startframe) / dstleng;
+	for (dstframe = roundingstartframe; dstframe <= roundingendframe; dstframe += 1.0) {
+		double dstrate = (dstframe - roundingstartframe) / dstleng;
 		double srcframe;
-		srcframe = (double)((int)(copyStartTime + dstrate * srcleng));
+		srcframe = RoundingTime(copyStartTime + dstrate * srcleng);
 		vector<CPELEM2>::iterator itrcp;
 		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
 			CBone* srcbone = itrcp->bone;
 			if (srcbone) {
 				CMotionPoint srcmp = itrcp->mp;
-				if ((double)((int)(srcmp.GetFrame() + 0.0001)) == srcframe) {
+				if (IsEqualRoundingTime(srcmp.GetFrame(), srcframe)) {
 					PasteMotionPoint(srcbone, srcmp, dstframe);
 				}
 			}
@@ -30908,21 +30914,21 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 
 	////移動しないボーンのための処理
 	int operatingjointno = 0;
-	for (dstframe = (double)((int)(startframe + 0.0001)); dstframe <= (double)((int)(endframe + 0.0001)); dstframe += 1.0) {
+	for (dstframe = roundingstartframe; dstframe <= roundingendframe; dstframe += 1.0) {
 
 		double dstrate = (dstframe - startframe) / dstleng;
 		double srcframe;
-		srcframe = (double)((int)(copyStartTime + dstrate * srcleng + 0.0001));
+		srcframe = RoundingTime(copyStartTime + dstrate * srcleng);
 
 		vector<CPELEM2>::iterator itrcp;
 		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
 			CBone* srcbone = itrcp->bone;
 			if (srcbone) {
 				CMotionPoint srcmp = itrcp->mp;
-				if ((double)((int)(srcmp.GetFrame() + 0.0001)) == srcframe) {
+				if (IsEqualRoundingTime(srcmp.GetFrame(), srcframe)) {
 					int resultjointno = PasteNotMvParMotionPoint(srcbone, srcmp, 
-						(double)((int)(copyStartTime + 0.0001)), srcframe, 
-						(double)((int)(startframe + 0.0001)), dstframe);
+						RoundingTime(copyStartTime), srcframe, 
+						RoundingTime(startframe), dstframe);
 
 					if (resultjointno >= 0) {
 						if (operatingjointno > resultjointno) {
@@ -34961,9 +34967,9 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 			double startframe, endframe, applyframe;
 			double roundingstartframe, roundingendframe, roundingapplyframe;
 			s_editrange.GetRange(&keynum, &startframe, &endframe, &applyframe);
-			roundingstartframe = (double)((int)(startframe + 0.0001));
-			roundingendframe = (double)((int)(endframe + 0.0001));
-			roundingapplyframe = (double)((int)(applyframe + 0.0001));
+			roundingstartframe = RoundingTime(startframe);
+			roundingendframe = RoundingTime(endframe);
+			roundingapplyframe = RoundingTime(applyframe);
 
 			//if (keynum >= 3) {
 				MOTINFO* curmi = s_model->GetCurMotInfo();
@@ -36184,7 +36190,7 @@ int InitMpFromTool()
 
 int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe)
 {
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 
 	if (curbone && (curbone->IsSkeleton())) {
 		//if (curbone->GetChild()){//2022/11/23 CommentOut なぜこのif文があったのか？ 不具合によりエンドジョイントにモーションポイントが無かったから？
@@ -48776,7 +48782,7 @@ int FilterNoDlg(bool copylw2w)
 	motfilter.FilterNoDlg(edgesmp, g_limitdegflag, s_model, opebone,
 		s_filterState,
 		s_model->GetCurMotInfo()->motid,
-		(int)(s_buttonselectstart + 0.0001), (int)(s_buttonselectend + 0.0001));
+		IntTime(s_buttonselectstart), IntTime(s_buttonselectend));
 
 	//s_filterState = 0;//2023/08/09コメントアウト：前回の値を保持
 
@@ -48857,7 +48863,7 @@ int FilterFuncDlg()
 						motfilter.Filter(edgesmp, g_limitdegflag, s_model, opebone,
 							s_filterState,
 							s_model->GetCurMotInfo()->motid,
-							(int)(startframe + 0.0001), (int)(endframe + 0.0001));
+							IntTime(startframe), IntTime(endframe));
 
 
 						if (g_limitdegflag == true) {

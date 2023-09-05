@@ -278,7 +278,7 @@ namespace MameBake3DLibRetarget {
 		//###################################################################
 
 
-		double roundingframe = (double)((int)(srcframe + 0.0001));
+		double roundingframe = RoundingTime(srcframe);
 
 		MOTINFO* bvhmi;
 		int bvhmotid;

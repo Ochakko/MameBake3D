@@ -8097,11 +8097,11 @@ void s_dummyfunc()
 					int startedge;
 					int endedge;
 					if ((g_previewFlag == 0) || (g_previewFlag == 5)){
-						startedge = (int)(g_motionbrush_startframe + 0.0001);
-						endedge = (int)(g_motionbrush_endframe + 0.0001);
+						startedge = IntTime(g_motionbrush_startframe);
+						endedge = IntTime(g_motionbrush_endframe);
 					}else{
-						startedge = (int)(g_playingstart + 0.0001);
-						endedge = (int)(g_playingend + 0.0001);
+						startedge = IntTime(g_playingstart);
+						endedge = IntTime(g_playingend);
 					}
 
 					//vert startedge

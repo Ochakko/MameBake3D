@@ -519,7 +519,10 @@ void InitAngleLimit(ANGLELIMIT* dstal);
 void SetAngleLimitOff(ANGLELIMIT* dstal);
 
 
-bool IsTimeEqual(double srctime1, double srctime2);
+bool IsJustEqualTime(double srctime1, double srctime2);
+double RoundingTime(double srctime);
+int IntTime(double srctime);
+bool IsEqualRoundingTime(double srctime1, double srctime2);
 
 double VecLength(ChaVector3 srcvec);
 void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, ChaVector3* tvecptr);
@@ -605,7 +608,10 @@ extern void InitAngleLimit(ANGLELIMIT* dstal);
 extern void SetAngleLimitOff(ANGLELIMIT* dstal);
 
 
-extern bool IsTimeEqual(double srctime1, double srctime2);
+extern bool IsJustEqualTime(double srctime1, double srctime2);
+extern double RoundingTime(double srctime);
+extern int IntTime(double srctime);
+extern bool IsEqualRoundingTime(double srctime1, double srctime2);
 
 extern double VecLength(ChaVector3 srcvec);
 extern void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, ChaVector3* tvecptr);

@@ -176,11 +176,11 @@ int CUndoMotion::SaveUndoMotion(bool limitdegflag, CModel* pmodel, int curboneno
 			double roundingstartframe, roundingendframe;
 			if (allframeflag == true) {
 				roundingstartframe = 1.0;
-				roundingendframe = (double)((int)(curmi->frameleng + 0.0001)) - 1.0;
+				roundingendframe = RoundingTime(curmi->frameleng) - 1.0;
 			}
 			else {
-				roundingstartframe = (double)((int)(srcer->GetStartFrame() + 0.0001));
-				roundingendframe = (double)((int)(srcer->GetEndFrame() + 0.0001));
+				roundingstartframe = RoundingTime(srcer->GetStartFrame());
+				roundingendframe = RoundingTime(srcer->GetEndFrame());
 			}
 
 

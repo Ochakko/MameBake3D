@@ -362,7 +362,7 @@ ChaMatrix CCameraFbx::GetCameraTransformMat(int cameramotid, double nextframe, i
 	}
 
 
-	double roundingframe = (double)((int)(nextframe + 0.0001));
+	double roundingframe = RoundingTime(nextframe);
 	m_time = roundingframe;
 	FbxTime fbxtime;
 	fbxtime.SetSecondDouble(m_time / 30.0);
@@ -594,7 +594,7 @@ ChaVector3 CCameraFbx::CalcCameraFbxEulXYZ(int cameramotid, double srcframe, Cha
 	}
 
 
-	double roundingframe = (double)((int)(srcframe + 0.0001));
+	double roundingframe = RoundingTime(srcframe);
 	m_time = roundingframe;
 	FbxTime fbxtime;
 	fbxtime.SetSecondDouble(m_time / 30.0);

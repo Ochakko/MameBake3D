@@ -483,7 +483,7 @@ void InitAngleLimit(ANGLELIMIT* dstal)
 
 
 
-bool IsTimeEqual(double srctime1, double srctime2)
+bool IsJustEqualTime(double srctime1, double srctime2)
 {
 	double difftime = srctime1 - srctime2;
 	if ((difftime >= -0.0001) && (difftime <= 0.0001)) {
@@ -493,6 +493,22 @@ bool IsTimeEqual(double srctime1, double srctime2)
 		return false;
 	}
 }
+
+double RoundingTime(double srctime)
+{
+	return (double)((int)(srctime + 0.0001));
+}
+int IntTime(double srctime)
+{
+	return (int)(srctime + 0.0001);
+}
+
+bool IsEqualRoundingTime(double srctime1, double srctime2)
+{
+	return (RoundingTime(srctime1) == RoundingTime(srctime2));
+}
+
+
 
 double VecLength(ChaVector3 srcvec)
 {
