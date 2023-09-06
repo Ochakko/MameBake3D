@@ -1642,15 +1642,15 @@ extern HANDLE g_hEvent; //手動リセットイベント
 
 
 
-CRITICAL_SECTION s_CritSection_LTimeline;
+static CRITICAL_SECTION s_CritSection_LTimeline;
 
 
 //ChaMatrix s_selectmat;//for display manipulator
 //ChaMatrix s_ikselectmat;//for ik, fk
-ChaMatrix s_selectmat;//for display manipulator
-ChaMatrix s_selectmat_posture;//for display manipulator
-ChaMatrix s_ikselectmat;//for ik, fk
-
+static ChaMatrix s_selectmat;//for display manipulator
+static ChaMatrix s_selectmat_posture;//for display manipulator
+static ChaMatrix s_ikselectmat;//for ik, fk
+static int s_selectuserscale = 100;
 
 static HWND s_mainhwnd = NULL;
 
@@ -1764,6 +1764,7 @@ static WCHAR s_strmark[256] = L"LongTimeLine";
 bool g_controlkey = false;
 bool g_shiftkey = false;
 bool g_ctrlshiftkeyformb = false;//ForMiddleButton
+static bool s_skey = false;
 static int s_akeycnt = 0;
 static int s_dkeycnt = 0;
 static int s_1keycnt = 0;
@@ -1962,6 +1963,9 @@ static OrgWindow* s_placefolderWnd = 0;
 static OWP_Label* s_placefolderlabel_1 = 0;
 static OWP_Label* s_placefolderlabel_2 = 0;
 static OWP_Label* s_placefolderlabel_3 = 0;
+#define SHORTCUTTEXTNUM	35
+static OWP_Label* s_shortcuttext[SHORTCUTTEXTNUM];
+
 
 static OrgWindow* s_rigidWnd = 0;
 static OWP_CheckBoxA* s_groupcheck = 0;
@@ -2492,6 +2496,7 @@ static bool s_cancelRButtonDown = false;
 
 static int s_camtargetflag = 0;
 static bool s_twistcameraFlag = false;
+static bool s_rbuttonSelectFlag = false;
 CDXUTCheckBox* s_CamTargetCheckBox = 0;
 //CDXUTCheckBox* s_LightCheckBox = 0;
 CDXUTCheckBox* s_ApplyEndCheckBox = 0;
@@ -3309,6 +3314,9 @@ static int PickSpMaterialRate(POINT srcpos);
 
 static int PickRigBone(UIPICKINFO* ppickinfo, bool forrigtip = false, int* dstrigno = 0);
 static ChaMatrix CalcRigMat(CBone* curbone, int curmotid, double curframe, int dispaxis, int disporder, bool posinverse);
+
+static int PickManipulator(UIPICKINFO* ppickinfo, bool pickring);
+
 
 
 //static int SetSpBtParams();
@@ -4187,6 +4195,11 @@ void InitApp()
 	}
 
 
+	g_controlkey = false;
+	g_shiftkey = false;
+	g_ctrlshiftkeyformb = false;//ForMiddleButton
+	s_skey = false;
+
 	//////check
 	//WCHAR strchk[256] = { 0L };
 	//swprintf_s(strchk, 256, L"NULL == %p\nINVALID_HANDLE_VALUE == %p", NULL, INVALID_HANDLE_VALUE);
@@ -4232,6 +4245,7 @@ void InitApp()
 
 	{
 		s_twistcameraFlag = false;
+		s_rbuttonSelectFlag = false;
 		s_cameraframe = 0.0;
 		g_cameraupdir = ChaVector3(0.0f, 1.0f, 0.0f);
 
@@ -4267,6 +4281,15 @@ void InitApp()
 	s_layerWnd = 0;
 	s_owpLayerTable = 0;
 	
+	{
+		s_placefolderWnd = 0;
+		s_placefolderlabel_1 = 0;
+		s_placefolderlabel_2 = 0;
+		s_placefolderlabel_3 = 0;
+		ZeroMemory(s_shortcuttext, sizeof(OWP_Label*) * SHORTCUTTEXTNUM);
+	}
+
+
 	s_cameradollyFlag = false;
 	s_materialrateFlag = false;
 	s_modelworldmatFlag = false;
@@ -4816,6 +4839,8 @@ void InitApp()
 	ChaMatrixIdentity(&s_selectmat);
 	ChaMatrixIdentity(&s_selectmat_posture);
 	ChaMatrixIdentity(&s_ikselectmat);
+	s_selectuserscale = 100;
+
 
 	s_convbone_model = 0;
 	s_convbone_model_batch = 0;
@@ -7399,6 +7424,14 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_placefolderWnd;
 		s_placefolderWnd = 0;
 	}
+	int textno;
+	for (textno = 0; textno < SHORTCUTTEXTNUM; textno++) {
+		if (s_shortcuttext[textno]) {
+			delete s_shortcuttext[textno];
+			s_shortcuttext[textno] = 0;
+		}
+	}
+
 
 
 	if (s_sidemenu_rigid) {
@@ -9921,41 +9954,9 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 					}
 					else {
-						//if (g_previewFlag != 5){
-						if (s_dispselect) {
-							bool excludeinvface = false;
-							int colliobjx, colliobjy, colliobjz, colliringx, colliringy, colliringz;
-							colliobjx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objX", excludeinvface);
-							colliobjy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objY", excludeinvface);
-							colliobjz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "objZ", excludeinvface);
-							if (s_ikkind == 0) {
-								colliringx = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringX", excludeinvface);
-								colliringy = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringY", excludeinvface);
-								colliringz = s_select->CollisionNoBoneObj_Mouse(&s_pickinfo, "ringZ", excludeinvface);
-							}
-							else {
-								colliringx = 0;
-								colliringy = 0;
-								colliringz = 0;
-							}
-
-							if (colliobjx || colliringx || colliobjy || colliringy || colliobjz || colliringz) {
-								RollbackCurBoneNo();
-								s_pickinfo.pickobjno = s_curboneno;
-							}
-
-							if (colliobjx || colliringx) {
-								s_pickinfo.buttonflag = PICK_X;
-							}
-							else if (colliobjy || colliringy) {
-								s_pickinfo.buttonflag = PICK_Y;
-							}
-							else if (colliobjz || colliringz) {
-								s_pickinfo.buttonflag = PICK_Z;
-							}
-							else {
-								ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
-							}
+						bool pickring = false;
+						int pickmanipulator = PickManipulator(&s_pickinfo, pickring);
+						if (pickmanipulator >= 0) {
 							g_underIKRot = true;
 
 							//IK中は30fpsにする
@@ -9964,14 +9965,6 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 							//IKROTREC保存数を減らすため30fps
 							g_fpsforce30 = true;
 						}
-						else {
-							ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
-							s_pickinfo.pickobjno = -1;
-						}
-						//}
-						//else{
-						//	ZeroMemory(&s_pickinfo, sizeof(UIPICKINFO));
-						//}
 					}
 				}
 				else {
@@ -10305,9 +10298,20 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 		s_pickinfo.pickobjno = -1;
 
-		if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
+		bool doneflag = false;
 
-			bool doneflag = false;
+
+		if (s_skey) {
+			//マニピュレータユーザー倍率
+			//Sキーが押されているRDragは　ジョイント選択時も倍率設定
+			if (doneflag == false) {
+				if (s_rbuttonSelectFlag == false) {
+					s_rbuttonSelectFlag = true;
+				}
+				doneflag = true;
+			}
+		}
+		else if (s_spguisw[SPGUISW_CAMERA_AND_IK].state) {
 
 			if (PickSpSmooth(ptCursor) != 0) {
 				//SmoothSpriteButton上で右クリックした場合は　Smooth用のメニューを出す
@@ -10343,16 +10347,15 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				//スプライトボタンクリック時には　ボーン右クリック用のメニューを出さないように
 				doneflag = IsClickedSpriteButton();
 			}
-
-
-			if (doneflag == false) {
-				//ボーン右クリック用のメニュー
-				BoneRClick(-1);
-			}
-
 		}
-		else {
-			BoneRClick(-1);
+
+		int pickboneorrig = 0;
+		if (doneflag == false) {
+			//ボーン右クリック用のメニュー
+			pickboneorrig = BoneRClick(-1);
+			if (pickboneorrig != 0) {
+				doneflag = true;
+			}
 		}
 	}
 	else if (uMsg == WM_RBUTTONDBLCLK) {
@@ -10385,6 +10388,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		
 		s_pickinfo.buttonflag = 0;
 		s_twistcameraFlag = false;
+		s_rbuttonSelectFlag = false;
 	}
 	else if (uMsg == WM_MBUTTONUP) {
 		//ReleaseCapture();
@@ -15729,6 +15733,10 @@ float CalcSelectScale(CBone* curboneptr)
 		s_selectscale *= 0.125f;
 		//s_selectscale *= 0.50f;
 	}
+
+	s_selectscale *= ((float)s_selectuserscale * 0.01f);//2023/09/07
+
+
 	//if (g_4kresolution) {
 	//	s_selectscale *= 0.5f;
 	//}
@@ -28501,6 +28509,13 @@ int OnFrameKeyboard()
 			g_shiftkey = false;
 		}
 
+		if (g_keybuf['S'] & 0x80) {
+			s_skey = true;
+		}
+		else {
+			s_skey = false;
+		}
+
 
 		//end of BoneTwist on MouseWheel 
 		if ((s_tkeyflag != 0) && (s_editmotionflag >= 0) && ((g_keybuf['T'] & 0x80) == 0)) {
@@ -31730,6 +31745,15 @@ int InitPluginMenu()
 
 bool UnderDragOperation_L()
 {
+
+	if (s_twistcameraFlag) {
+		return false;
+	}
+	if (s_rbuttonSelectFlag) {
+		return false;
+	}
+
+
 	if (s_oprigflag == 0) {
 		if ((s_ikkind == 0) && (s_editmotionflag >= 0)) {
 			if (s_pickinfo.buttonflag == PICK_CENTER) {
@@ -31793,7 +31817,9 @@ bool UnderDragOperation_R()
 	if (s_twistcameraFlag == true) {
 		return true;
 	}
-
+	if (s_rbuttonSelectFlag == true) {
+		return true;
+	}
 
 
 	return false;
@@ -33176,21 +33202,76 @@ int CreatePlaceFolderWnd()
 			_ASSERT(0);
 			return 1;
 		}
-		s_placefolderlabel_2 = new OWP_Label(L"Click Frog Button, Change Plate Menu,");
+		s_placefolderlabel_2 = new OWP_Label(L"Click Frog Button for Change Plate Menu.");
 		if (!s_placefolderlabel_2) {
 			_ASSERT(0);
 			return 1;
 		}
-		s_placefolderlabel_3 = new OWP_Label(L"MainWindowGUI Menu->RigidBody Menu->Retarget Menu->MainWindowGUI Menu");
+		s_placefolderlabel_3 = new OWP_Label(L" ");
 		if (!s_placefolderlabel_3) {
 			_ASSERT(0);
 			return 1;
 		}
 
+
+		WCHAR shortcuttext[SHORTCUTTEXTNUM][256] = {
+			L" ",
+			L" ",
+			L"ShortCutKey",
+			L" ",
+			L"　Menu",
+			L"　　SpaceKey　：　Change kind of PlateMenu.",
+			L"　　C + SpaceKey　：　Change Plate.",
+			L"　　V + SpaceKey　：　Change ToolShortCutButtons.",
+			L" ",
+			L"　Selection",
+			
+			L"　　H + LeftArrow or RightArrow　：　Select LeftHand or RightHand.",
+			L"	　　　JointName whitch contain string L_Hand or LeftHand",
+			L"	　　　JointName whitch contain string R_Hand or RightHand",
+			L"　　F + Arrow of Left or Right　：　Select LeftFoot or RightFoot.",
+			L"	　　　JointName whitch contain string L_Foot or LeftFoot",
+			L"	　　　JointName whitch contain string R_Foot or RightFoot",
+			L" ",
+			L"　　LeftArrow or RightArrow　：　Select joint whitch is at same depth level.",
+			L" ",
+			L"　　UpperArrow or LowerArrow　：　Select parent joint or child joint.",
+			
+			L" ",
+			L" ",
+			L"　Edit Motion",
+			L"　　MouseWheel + T　：　Twist motion.",
+			L" ",
+			L" ",
+			L"　Timeline",
+			L"　　Ctrl + MouseWheel　：　Move frame selection by 1 frame.",
+			L" ",
+			L" ",
+
+			L"　Manipulator",
+			L"　　S + Mouse_R_Drag　：　Change manipulator scale.",
+			L" ",
+			L" ",
+			L" "
+		};
+
+		int textno;
+		for (textno = 0; textno < SHORTCUTTEXTNUM; textno++) {
+			s_shortcuttext[textno] = new OWP_Label(shortcuttext[textno]);
+			if (!s_shortcuttext[textno]) {
+				_ASSERT(0);
+				return 1;
+			}
+		}
+
+
+
 		s_placefolderWnd->addParts(*s_placefolderlabel_1);
 		s_placefolderWnd->addParts(*s_placefolderlabel_2);
 		s_placefolderWnd->addParts(*s_placefolderlabel_3);
-
+		for (textno = 0; textno < SHORTCUTTEXTNUM; textno++) {
+			s_placefolderWnd->addParts(*s_shortcuttext[textno]);
+		}
 
 
 		s_placefolderWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
@@ -37053,12 +37134,17 @@ LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 
 int BoneRClick(int srcboneno)
 {
+	int pickflag = 0;//return value
+
+
 	if (!s_model) {
-		return 0;
+		return pickflag;
 	}
 	if (!s_model->GetTopBone()) {
-		return 0;
+		return pickflag;
 	}
+
+
 
 	if (srcboneno < 0) {
 		s_ikcnt = 0;
@@ -37081,15 +37167,17 @@ int BoneRClick(int srcboneno)
 		s_curboneno = -1;//2023/08/28 ジョイント以外を右クリックした場合には　メニューを出さない
 
 		if (s_oprigflag == 0) {
-			CallF(s_model->PickBone(&s_pickinfo), return 1);
+			CallF(s_model->PickBone(&s_pickinfo), return pickflag);
 			if (s_pickinfo.pickobjno >= 0) {
 				s_curboneno = s_pickinfo.pickobjno;
+				pickflag = 1;
 			}
 		}
 		else {
 			int pickrigboneno = PickRigBone(&s_pickinfo);
 			if (pickrigboneno >= 0) {
 				s_curboneno = s_pickinfo.pickobjno;
+				pickflag = 1;
 			}
 		}
 	}
@@ -37111,12 +37199,12 @@ int BoneRClick(int srcboneno)
 				CRMenuMain* rmenu;
 				rmenu = new CRMenuMain(IDR_RMENU);
 				if (!rmenu) {
-					return 1;
+					return pickflag;
 				}
 				int ret;
 				ret = rmenu->Create(parwnd, MENUOFFSET_BONERCLICK);
 				if (ret) {
-					return 1;
+					return pickflag;
 				}
 
 				HMENU submenu = rmenu->GetSubMenu();
@@ -37165,42 +37253,6 @@ int BoneRClick(int srcboneno)
 						L"IK Stop OFF");
 				}
 
-
-				//AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_ALL + MENUOFFSET_BONERCLICK, L"Mass0 ON tO AllJoints");
-				//AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_ALL + MENUOFFSET_BONERCLICK, L"Mass0 OFF to AllJoints");
-				//AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_UPPER + MENUOFFSET_BONERCLICK, L"Mass0 ON to UpperJoints");
-				//AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_UPPER + MENUOFFSET_BONERCLICK, L"Mass0 OFF to UpperJoints");
-				//AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_ON_LOWER + MENUOFFSET_BONERCLICK, L"Mass0 ON to LowerJoints");
-				//AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0_OFF_LOWER + MENUOFFSET_BONERCLICK, L"Mass0 OFF to LowerJoints");
-				//if (curbone->GetMass0() == 0) {
-				//	AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0 + MENUOFFSET_BONERCLICK, L"Tempolary Mass0 Set");
-				//}
-				//else {
-				//	AppendMenu(submenu, MF_STRING, ID_RMENU_MASS0 + MENUOFFSET_BONERCLICK, L"Tempolary Mass0 Unset");
-				//}
-				//if (curbone->GetExcludeMv() == 0) {
-				//	AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV + MENUOFFSET_BONERCLICK, L"Exclude MV Set");
-				//}
-				//else {
-				//	AppendMenu(submenu, MF_STRING, ID_RMENU_EXCLUDE_MV + MENUOFFSET_BONERCLICK, L"Exclude MV Unset");
-				//}
-				//AppendMenu(submenu, MF_STRING, ID_RMENU_KINEMATIC_ON_LOWER + MENUOFFSET_BONERCLICK, L"Kinematic ON to LowerJoints");
-				//AppendMenu(submenu, MF_STRING, ID_RMENU_KINEMATIC_OFF_LOWER + MENUOFFSET_BONERCLICK, L"Kinematic OFF to LowerJoints");
-				//CRigidElem* curre = s_model->GetRigidElem(s_curboneno);
-				//int forbidflag = 0;
-				//if (curre) {
-				//	forbidflag = curre->GetForbidRotFlag();
-				//	if (forbidflag == 0) {
-				//		AppendMenu(submenu, MF_STRING, ID_RMENU_FORBIDROT_ONE + MENUOFFSET_BONERCLICK, L"Forbid Rot Of ParentJoint.");
-				//	}
-				//	else {
-				//		AppendMenu(submenu, MF_STRING, ID_RMENU_ENABLEROT_ONE + MENUOFFSET_BONERCLICK, L"NotForbid Rot Of ParentJoint");
-				//	}
-				//	AppendMenu(submenu, MF_STRING, ID_RMENU_FORBIDROT_CHILDREN + MENUOFFSET_BONERCLICK, L"Forbid Rot Of LowerJoints");
-				//	AppendMenu(submenu, MF_STRING, ID_RMENU_ENABLEROT_CHILDREN + MENUOFFSET_BONERCLICK, L"NotForbid Rot Of LowerJoints");
-				//}
-
-
 				AppendMenu(submenu, MF_STRING, ID_RMENU_0 + MENUOFFSET_BONERCLICK, L"CreateNewRig");
 				int setmenuno = 1;
 				int rigno;
@@ -37214,11 +37266,11 @@ int BoneRClick(int srcboneno)
 
 						rsubmenu[rigno] = new CRMenuMain(IDR_RMENU);
 						if (!rsubmenu[rigno]) {
-							return 1;
+							return pickflag;
 						}
 						ret = rsubmenu[rigno]->CreatePopupMenu(parwnd, submenu, currig.rigname);
 						if (ret) {
-							return 1;
+							return pickflag;
 						}
 						HMENU subsubmenu = rsubmenu[rigno]->GetSubMenu();
 						int subsubmenunum;
@@ -37251,100 +37303,7 @@ int BoneRClick(int srcboneno)
 				int currigno = -1;
 				int menuid;
 				menuid = rmenu->TrackPopupMenu(pt);
-				//if (menuid == ID_RMENU_PHYSICSCONSTRAINT){
-				//	//位置コンストレイントはMass0で実現する。
-				//	////toggle
-				//	//if (curbone->GetPosConstraint() == 0){
-				//	//	s_model->CreatePhysicsPosConstraint(curbone);
-				//	//}
-				//	//else{
-				//	//	s_model->DestroyPhysicsPosConstraint(curbone);
-				//	//}
-				//}
-				//else if (menuid == ID_RMENU_KINEMATIC_ON_LOWER) {
-				//	s_model->SetKinematicTmpLower(curbone, true);
-				//}
-				//else if (menuid == ID_RMENU_KINEMATIC_OFF_LOWER) {
-				//	s_model->SetKinematicTmpLower(curbone, false);
-				//}
-				//else if (menuid == ID_RMENU_MASS0_ON_ALL) {
-				//	s_model->Mass0_All(true);
-				//}
-				//else if (menuid == ID_RMENU_MASS0_OFF_ALL) {
-				//	s_model->Mass0_All(false);
-				//}
-				//else if (menuid == ID_RMENU_MASS0_ON_UPPER) {
-				//	s_model->Mass0_Upper(true, curbone);
-				//}
-				//else if (menuid == ID_RMENU_MASS0_OFF_UPPER) {
-				//	s_model->Mass0_Upper(false, curbone);
-				//}
-				//else if (menuid == ID_RMENU_MASS0_ON_LOWER) {
-				//	s_model->Mass0_Lower(true, curbone);
-				//}
-				//else if (menuid == ID_RMENU_MASS0_OFF_LOWER) {
-				//	s_model->Mass0_Lower(false, curbone);
-				//}
-				//else if (menuid == ID_RMENU_MASS0){
-				//	//toggle
-				//	if (curbone->GetMass0() == 0){
-				//		s_model->SetMass0(curbone);
-				//	}
-				//	else{
-				//		s_model->RestoreMass(curbone);
-				//	}
-				//}
-				//else if (menuid == ID_RMENU_EXCLUDE_MV){
-				//	//toggle
-				//	if (curbone->GetExcludeMv() == 0){
-				//		curbone->SetExcludeMv(1);
-				//	}
-				//	else{
-				//		curbone->SetExcludeMv(0);
-				//	}
-				//}
-				//else if (menuid == ID_RMENU_FORBIDROT_ONE) {
-				//	if (curre) {
-				//		curre->SetForbidRotFlag(1);
-				//	}
-				//}
-				//else if (menuid == ID_RMENU_ENABLEROT_ONE) {
-				//	if (curre) {
-				//		curre->SetForbidRotFlag(0);
-				//	}
-				//}
-				//else if (menuid == ID_RMENU_FORBIDROT_CHILDREN) {
-				//	if (curre) {
-				//		s_model->EnableRotChildren(curbone, false);
-				//	}
-				//}
-				//else if (menuid == ID_RMENU_ENABLEROT_CHILDREN) {
-				//	if (curre) {
-				//		s_model->EnableRotChildren(curbone, true);
-				//	}
-				//}
 
-				//else if (menuid == ID_RMENU_0){
-				//	//新規
-				//	GUIMenuSetVisible(-1, -1);
-				//	currigno = -1;
-				//	DispCustomRigDlg(currigno);
-				//}
-				//else if ((menuid >= (ID_RMENU_0 + MAXRIGNUM)) && (menuid < (ID_RMENU_0 + MAXRIGNUM * 2))){
-				//	//設定
-				//	GUIMenuSetVisible(-1, -1);
-				//	currigno = s_customrigmenuindex[menuid - (ID_RMENU_0 + MAXRIGNUM)];
-				//	DispCustomRigDlg(currigno);
-
-				//}
-				//else if ((menuid >= (ID_RMENU_0 + MAXRIGNUM * 2)) && (menuid < (ID_RMENU_0 + MAXRIGNUM * 3))){
-				//	//実行
-				//	currigno = s_customrigmenuindex[menuid - (ID_RMENU_0 + MAXRIGNUM * 2)];
-				//	Bone2CustomRig(currigno);
-				//	if (s_customrigbone){
-				//		s_oprigflag = 1;
-				//	}
-				//}
 
 				for (rigno = 0; rigno < MAXRIGNUM; rigno++) {
 					CRMenuMain* curmenu = rsubmenu[rigno];
@@ -37361,7 +37320,7 @@ int BoneRClick(int srcboneno)
 		}
 	}
 
-	return 0;
+	return pickflag;
 }
 
 int EnableRigAxisUV(HWND hDlgWnd)
@@ -38784,7 +38743,40 @@ int OnMouseMoveFunc()
 	}
 	s_doingflag = true;
 
-	if (s_pickinfo.buttonflag == PICK_CENTER) {
+
+	if (s_rbuttonSelectFlag) {
+		s_pickinfo.mousebefpos = s_pickinfo.mousepos;
+		POINT ptCursor;
+		GetCursorPos(&ptCursor);
+		::ScreenToClient(s_3dwnd, &ptCursor);
+		s_pickinfo.mousepos = ptCursor;
+
+		float deltax = (float)((s_pickinfo.mousepos.x - s_pickinfo.mousebefpos.x) + (s_pickinfo.mousepos.y - s_pickinfo.mousebefpos.y)) * 0.5f;
+		if (deltax > 0.0f) {
+			if (g_controlkey == true) {
+				s_selectuserscale += 1;
+			}
+			else {
+				s_selectuserscale += 5;
+			}
+			s_selectuserscale = min(300, s_selectuserscale);
+			s_selectuserscale = max(30, s_selectuserscale);
+		}
+		else if (deltax < 0.0f) {
+			if (g_controlkey == true) {
+				s_selectuserscale -= 1;
+			}
+			else {
+				s_selectuserscale -= 5;
+			}
+			s_selectuserscale = min(300, s_selectuserscale);
+			s_selectuserscale = max(30, s_selectuserscale);
+		}
+		else {
+
+		}
+	}
+	else if (s_pickinfo.buttonflag == PICK_CENTER) {
 		if (s_model) {
 			if (g_previewFlag == 0) {
 
@@ -48535,6 +48527,65 @@ int LoadLightsForEdit()
 
 	return result;
 }
+
+int PickManipulator(UIPICKINFO* ppickinfo, bool pickring)
+{
+	if (!ppickinfo) {
+		_ASSERT(0);
+		return -1;
+	}
+
+	if (s_dispselect) {
+		bool excludeinvface = false;
+		int colliobjx, colliobjy, colliobjz, colliringx, colliringy, colliringz;
+		colliobjx = 0;
+		colliobjy = 0;
+		colliobjz = 0; 
+		colliringx = 0; 
+		colliringy = 0; 
+		colliringz = 0;
+		colliobjx = s_select->CollisionNoBoneObj_Mouse(ppickinfo, "objX", excludeinvface);
+		colliobjy = s_select->CollisionNoBoneObj_Mouse(ppickinfo, "objY", excludeinvface);
+		colliobjz = s_select->CollisionNoBoneObj_Mouse(ppickinfo, "objZ", excludeinvface);
+		if ((s_ikkind == 0) || (pickring == true)) {
+			colliringx = s_select->CollisionNoBoneObj_Mouse(ppickinfo, "ringX", excludeinvface);
+			colliringy = s_select->CollisionNoBoneObj_Mouse(ppickinfo, "ringY", excludeinvface);
+			colliringz = s_select->CollisionNoBoneObj_Mouse(ppickinfo, "ringZ", excludeinvface);
+		}
+		else {
+			colliringx = 0;
+			colliringy = 0;
+			colliringz = 0;
+		}
+
+		if (colliobjx || colliringx || colliobjy || colliringy || colliobjz || colliringz) {
+			RollbackCurBoneNo();
+			ppickinfo->pickobjno = s_curboneno;
+		}
+
+		if (colliobjx || colliringx) {
+			ppickinfo->buttonflag = PICK_X;
+		}
+		else if (colliobjy || colliringy) {
+			ppickinfo->buttonflag = PICK_Y;
+		}
+		else if (colliobjz || colliringz) {
+			ppickinfo->buttonflag = PICK_Z;
+		}
+		else {
+			ZeroMemory(ppickinfo, sizeof(UIPICKINFO));
+		}
+	}
+	else {
+		ZeroMemory(ppickinfo, sizeof(UIPICKINFO));
+		ppickinfo->pickobjno = -1;
+	}
+
+	return ppickinfo->pickobjno;
+}
+
+
+
 
 int LoadChooseColor()
 {

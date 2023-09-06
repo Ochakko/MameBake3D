@@ -160,7 +160,7 @@ int CUndoMotion::SaveUndoMotion(bool limitdegflag, CModel* pmodel, int curboneno
 	map<int, CBone*>::iterator itrbone;
 	for( itrbone = pmodel->GetBoneListBegin(); itrbone != pmodel->GetBoneListEnd(); itrbone++ ){
 		CBone* curbone = itrbone->second;
-		_ASSERT( curbone );
+		//_ASSERT( curbone );
 		if (curbone && (curbone->IsSkeleton())){
 			
 			//####################
