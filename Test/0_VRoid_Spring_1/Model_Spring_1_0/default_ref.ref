@@ -751,7 +751,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
     <RigidElem>
       <ChildName>J_Sec_Hair1_07</ChildName>
@@ -775,7 +775,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
     <RigidElem>
       <ChildName>J_Sec_Hair1_08</ChildName>
@@ -799,7 +799,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
     <RigidElem>
       <ChildName>J_Sec_Hair1_09</ChildName>
@@ -823,7 +823,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
     <RigidElem>
       <ChildName>J_Sec_Hair1_10</ChildName>
@@ -847,7 +847,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
     <RigidElem>
       <ChildName>J_Sec_Hair1_11</ChildName>
@@ -871,7 +871,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
     <RigidElem>
       <ChildName>J_Sec_Hair1_12</ChildName>
@@ -895,7 +895,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1455,7 +1455,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1483,7 +1483,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1511,7 +1511,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1539,7 +1539,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1567,7 +1567,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1595,7 +1595,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1623,7 +1623,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1651,7 +1651,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1679,7 +1679,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1707,7 +1707,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1735,7 +1735,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1763,7 +1763,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1791,7 +1791,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
@@ -1819,7 +1819,7 @@
       <COLIID>2</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>

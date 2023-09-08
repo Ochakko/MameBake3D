@@ -3,10 +3,10 @@
     <FileInfo>1001-01</FileInfo>
     <SCBTG>100.000000</SCBTG>
   <Bone>
-    <Name>J_Bip_C_Hips_Joint</Name>
+    <Name>J_Bip_C_Hips</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_C_Spine_Joint</ChildName>
+      <ChildName>J_Bip_C_Spine</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -29,7 +29,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_UpperLeg_Joint</ChildName>
+      <ChildName>J_Bip_L_UpperLeg</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -52,7 +52,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_UpperLeg_Joint</ChildName>
+      <ChildName>J_Bip_R_UpperLeg</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -76,10 +76,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_C_Spine_Joint</Name>
+    <Name>J_Bip_C_Spine</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_C_Chest_Joint</ChildName>
+      <ChildName>J_Bip_C_Chest</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -103,10 +103,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_C_Chest_Joint</Name>
+    <Name>J_Bip_C_Chest</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_C_UpperChest_Joint</ChildName>
+      <ChildName>J_Bip_C_UpperChest</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -130,10 +130,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_C_UpperChest_Joint</Name>
+    <Name>J_Bip_C_UpperChest</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_L_Bust1_Joint</ChildName>
+      <ChildName>J_Sec_L_Bust1</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -156,7 +156,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_R_Bust1_Joint</ChildName>
+      <ChildName>J_Sec_R_Bust1</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -179,7 +179,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_C_Neck_Joint</ChildName>
+      <ChildName>J_Bip_C_Neck</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -202,7 +202,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_Shoulder_Joint</ChildName>
+      <ChildName>J_Bip_L_Shoulder</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -225,7 +225,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_Shoulder_Joint</ChildName>
+      <ChildName>J_Bip_R_Shoulder</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -249,10 +249,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_Bust1_Joint</Name>
+    <Name>J_Sec_L_Bust1</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_L_Bust2_Joint</ChildName>
+      <ChildName>J_Sec_L_Bust2</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -276,10 +276,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_Bust1_Joint</Name>
+    <Name>J_Sec_R_Bust1</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_R_Bust2_Joint</ChildName>
+      <ChildName>J_Sec_R_Bust2</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -303,10 +303,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_C_Neck_Joint</Name>
+    <Name>J_Bip_C_Neck</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_C_Head_Joint</ChildName>
+      <ChildName>J_Bip_C_Head</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -330,10 +330,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_C_Head_Joint</Name>
+    <Name>J_Bip_C_Head</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Adj_L_FaceEye_Joint</ChildName>
+      <ChildName>J_Adj_L_FaceEye</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -356,7 +356,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Adj_R_FaceEye_Joint</ChildName>
+      <ChildName>J_Adj_R_FaceEye</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -379,7 +379,99 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_01_Joint</ChildName>
+      <ChildName>J_Sec_Hair1_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-1.000000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>1</MYSELF>
+      <COLIIDNUM>0</COLIIDNUM>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>1</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_Hair1_02</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-1.000000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>1</MYSELF>
+      <COLIIDNUM>0</COLIIDNUM>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>1</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_Hair1_03</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-1.000000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>1</MYSELF>
+      <COLIIDNUM>0</COLIIDNUM>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>1</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_Hair1_04</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>0</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>3</AK>
+      <CUSAK>2073.137451</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-1.000000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>1</MYSELF>
+      <COLIIDNUM>0</COLIIDNUM>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>1</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_Hair1_05</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -402,7 +494,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_02_Joint</ChildName>
+      <ChildName>J_Sec_Hair1_06</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -425,7 +517,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_03_Joint</ChildName>
+      <ChildName>J_Sec_Hair1_07</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -448,7 +540,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_04_Joint</ChildName>
+      <ChildName>J_Sec_Hair1_08</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -471,7 +563,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_05_Joint</ChildName>
+      <ChildName>J_Sec_Hair1_09</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -494,7 +586,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_06_Joint</ChildName>
+      <ChildName>J_Sec_Hair1_10</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -517,99 +609,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_Hair1_07_Joint</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>3</AK>
-      <CUSAK>2073.137451</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>0</COLIIDNUM>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>J_Sec_Hair1_08_Joint</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>3</AK>
-      <CUSAK>2073.137451</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>0</COLIIDNUM>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>J_Sec_Hair1_09_Joint</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>3</AK>
-      <CUSAK>2073.137451</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>0</COLIIDNUM>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>J_Sec_Hair1_10_Joint</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>3</AK>
-      <CUSAK>2073.137451</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>0</COLIIDNUM>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>J_Sec_Hair1_11_Joint</ChildName>
+      <ChildName>J_Sec_Hair1_11</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -633,10 +633,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_01_Joint</Name>
+    <Name>J_Sec_Hair1_01</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_01_Joint</ChildName>
+      <ChildName>J_Sec_Hair2_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -656,14 +656,14 @@
       <COLIIDNUM>0</COLIIDNUM>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_01_Joint</Name>
+    <Name>J_Sec_Hair2_01</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_01_Joint</ChildName>
+      <ChildName>J_Sec_Hair3_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -683,14 +683,14 @@
       <COLIIDNUM>0</COLIIDNUM>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_02_Joint</Name>
+    <Name>J_Sec_Hair1_02</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_02_Joint</ChildName>
+      <ChildName>J_Sec_Hair2_02</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -710,14 +710,14 @@
       <COLIIDNUM>0</COLIIDNUM>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_02_Joint</Name>
+    <Name>J_Sec_Hair2_02</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_02_Joint</ChildName>
+      <ChildName>J_Sec_Hair3_02</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -737,14 +737,14 @@
       <COLIIDNUM>0</COLIIDNUM>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_03_Joint</Name>
+    <Name>J_Sec_Hair1_03</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_03_Joint</ChildName>
+      <ChildName>J_Sec_Hair2_03</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -764,14 +764,14 @@
       <COLIIDNUM>0</COLIIDNUM>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_03_Joint</Name>
+    <Name>J_Sec_Hair2_03</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_03_Joint</ChildName>
+      <ChildName>J_Sec_Hair3_03</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -791,14 +791,14 @@
       <COLIIDNUM>0</COLIIDNUM>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_04_Joint</Name>
+    <Name>J_Sec_Hair1_04</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_04_Joint</ChildName>
+      <ChildName>J_Sec_Hair2_04</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -818,14 +818,14 @@
       <COLIIDNUM>0</COLIIDNUM>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_04_Joint</Name>
+    <Name>J_Sec_Hair2_04</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_04_Joint</ChildName>
+      <ChildName>J_Sec_Hair3_04</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -845,14 +845,14 @@
       <COLIIDNUM>0</COLIIDNUM>
       <RESTITUTION>0.500000</RESTITUTION>
       <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
+      <FORBIDROT>1</FORBIDROT>
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_05_Joint</Name>
+    <Name>J_Sec_Hair1_05</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_05_Joint</ChildName>
+      <ChildName>J_Sec_Hair2_05</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -876,10 +876,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_05_Joint</Name>
+    <Name>J_Sec_Hair2_05</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_05_Joint</ChildName>
+      <ChildName>J_Sec_Hair3_05</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -903,10 +903,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_06_Joint</Name>
+    <Name>J_Sec_Hair1_06</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_06_Joint</ChildName>
+      <ChildName>J_Sec_Hair2_06</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -930,10 +930,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_06_Joint</Name>
+    <Name>J_Sec_Hair2_06</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_06_Joint</ChildName>
+      <ChildName>J_Sec_Hair3_06</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -957,10 +957,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_07_Joint</Name>
+    <Name>J_Sec_Hair1_07</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_07_Joint</ChildName>
+      <ChildName>J_Sec_Hair2_07</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -984,10 +984,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_07_Joint</Name>
+    <Name>J_Sec_Hair2_07</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_07_Joint</ChildName>
+      <ChildName>J_Sec_Hair3_07</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1011,10 +1011,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_08_Joint</Name>
+    <Name>J_Sec_Hair1_08</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_08_Joint</ChildName>
+      <ChildName>J_Sec_Hair2_08</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1038,10 +1038,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_08_Joint</Name>
+    <Name>J_Sec_Hair2_08</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_08_Joint</ChildName>
+      <ChildName>J_Sec_Hair3_08</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1065,10 +1065,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_09_Joint</Name>
+    <Name>J_Sec_Hair1_09</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_09_Joint</ChildName>
+      <ChildName>J_Sec_Hair2_09</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1092,10 +1092,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_09_Joint</Name>
+    <Name>J_Sec_Hair2_09</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_09_Joint</ChildName>
+      <ChildName>J_Sec_Hair3_09</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1119,10 +1119,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_10_Joint</Name>
+    <Name>J_Sec_Hair1_10</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_10_Joint</ChildName>
+      <ChildName>J_Sec_Hair2_10</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1146,10 +1146,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_10_Joint</Name>
+    <Name>J_Sec_Hair2_10</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_10_Joint</ChildName>
+      <ChildName>J_Sec_Hair3_10</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1173,10 +1173,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair1_11_Joint</Name>
+    <Name>J_Sec_Hair1_11</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair2_11_Joint</ChildName>
+      <ChildName>J_Sec_Hair2_11</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1200,10 +1200,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair2_11_Joint</Name>
+    <Name>J_Sec_Hair2_11</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair3_11_Joint</ChildName>
+      <ChildName>J_Sec_Hair3_11</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1227,10 +1227,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair3_11_Joint</Name>
+    <Name>J_Sec_Hair3_11</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair4_11_Joint</ChildName>
+      <ChildName>J_Sec_Hair4_11</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1254,10 +1254,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_Hair4_11_Joint</Name>
+    <Name>J_Sec_Hair4_11</Name>
     <BTKIN>1</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_Hair5_11_Joint</ChildName>
+      <ChildName>J_Sec_Hair5_11</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1281,10 +1281,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Shoulder_Joint</Name>
+    <Name>J_Bip_L_Shoulder</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_L_UpperArm_Joint</ChildName>
+      <ChildName>J_Bip_L_UpperArm</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1308,10 +1308,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_UpperArm_Joint</Name>
+    <Name>J_Bip_L_UpperArm</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_L_TopsUpperArmInside_01_Joint</ChildName>
+      <ChildName>J_Sec_L_TopsUpperArmInside_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1334,7 +1334,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_L_TopsUpperArmOutside_01_Joint</ChildName>
+      <ChildName>J_Sec_L_TopsUpperArmOutside_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1357,7 +1357,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_LowerArm_Joint</ChildName>
+      <ChildName>J_Bip_L_LowerArm</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1381,10 +1381,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_TopsUpperArmInside_01_Joint</Name>
+    <Name>J_Sec_L_TopsUpperArmInside_01</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_L_TopsUpperArmInside_end_01_Joint</ChildName>
+      <ChildName>J_Sec_L_TopsUpperArmInside_end_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1408,10 +1408,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_TopsUpperArmOutside_01_Joint</Name>
+    <Name>J_Sec_L_TopsUpperArmOutside_01</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_L_TopsUpperArmOutside_end_01_Joint</ChildName>
+      <ChildName>J_Sec_L_TopsUpperArmOutside_end_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1435,10 +1435,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_LowerArm_Joint</Name>
+    <Name>J_Bip_L_LowerArm</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_L_Hand_Joint</ChildName>
+      <ChildName>J_Bip_L_Hand</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1462,10 +1462,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Hand_Joint</Name>
+    <Name>J_Bip_L_Hand</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_L_Index1_Joint</ChildName>
+      <ChildName>J_Bip_L_Index1</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1488,7 +1488,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_Little1_Joint</ChildName>
+      <ChildName>J_Bip_L_Little1</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1511,7 +1511,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_Middle1_Joint</ChildName>
+      <ChildName>J_Bip_L_Middle1</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1534,7 +1534,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_Ring1_Joint</ChildName>
+      <ChildName>J_Bip_L_Ring1</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1557,7 +1557,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_Thumb1_Joint</ChildName>
+      <ChildName>J_Bip_L_Thumb1</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1581,10 +1581,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Index1_Joint</Name>
+    <Name>J_Bip_L_Index1</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_L_Index2_Joint</ChildName>
+      <ChildName>J_Bip_L_Index2</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1608,10 +1608,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Index2_Joint</Name>
+    <Name>J_Bip_L_Index2</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_L_Index3_Joint</ChildName>
+      <ChildName>J_Bip_L_Index3</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1635,10 +1635,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Little1_Joint</Name>
+    <Name>J_Bip_L_Little1</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_L_Little2_Joint</ChildName>
+      <ChildName>J_Bip_L_Little2</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1662,10 +1662,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Little2_Joint</Name>
+    <Name>J_Bip_L_Little2</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_L_Little3_Joint</ChildName>
+      <ChildName>J_Bip_L_Little3</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1689,10 +1689,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Middle1_Joint</Name>
+    <Name>J_Bip_L_Middle1</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_L_Middle2_Joint</ChildName>
+      <ChildName>J_Bip_L_Middle2</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1716,10 +1716,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Middle2_Joint</Name>
+    <Name>J_Bip_L_Middle2</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_L_Middle3_Joint</ChildName>
+      <ChildName>J_Bip_L_Middle3</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1743,10 +1743,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Ring1_Joint</Name>
+    <Name>J_Bip_L_Ring1</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_L_Ring2_Joint</ChildName>
+      <ChildName>J_Bip_L_Ring2</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1770,10 +1770,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Ring2_Joint</Name>
+    <Name>J_Bip_L_Ring2</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_L_Ring3_Joint</ChildName>
+      <ChildName>J_Bip_L_Ring3</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1797,10 +1797,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Thumb1_Joint</Name>
+    <Name>J_Bip_L_Thumb1</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_L_Thumb2_Joint</ChildName>
+      <ChildName>J_Bip_L_Thumb2</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1824,10 +1824,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Thumb2_Joint</Name>
+    <Name>J_Bip_L_Thumb2</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_L_Thumb3_Joint</ChildName>
+      <ChildName>J_Bip_L_Thumb3</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1851,10 +1851,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Shoulder_Joint</Name>
+    <Name>J_Bip_R_Shoulder</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_R_UpperArm_Joint</ChildName>
+      <ChildName>J_Bip_R_UpperArm</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1878,10 +1878,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_UpperArm_Joint</Name>
+    <Name>J_Bip_R_UpperArm</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_R_TopsUpperArmInside_01_Joint</ChildName>
+      <ChildName>J_Sec_R_TopsUpperArmInside_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1904,7 +1904,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_R_TopsUpperArmOutside_01_Joint</ChildName>
+      <ChildName>J_Sec_R_TopsUpperArmOutside_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1927,7 +1927,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_LowerArm_Joint</ChildName>
+      <ChildName>J_Bip_R_LowerArm</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1951,10 +1951,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_TopsUpperArmInside_01_Joint</Name>
+    <Name>J_Sec_R_TopsUpperArmInside_01</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_R_TopsUpperArmInside_end_01_Joint</ChildName>
+      <ChildName>J_Sec_R_TopsUpperArmInside_end_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -1978,10 +1978,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_TopsUpperArmOutside_01_Joint</Name>
+    <Name>J_Sec_R_TopsUpperArmOutside_01</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_R_TopsUpperArmOutside_end_01_Joint</ChildName>
+      <ChildName>J_Sec_R_TopsUpperArmOutside_end_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2005,10 +2005,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_LowerArm_Joint</Name>
+    <Name>J_Bip_R_LowerArm</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_R_Hand_Joint</ChildName>
+      <ChildName>J_Bip_R_Hand</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2032,10 +2032,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Hand_Joint</Name>
+    <Name>J_Bip_R_Hand</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_R_Index1_Joint</ChildName>
+      <ChildName>J_Bip_R_Index1</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2058,7 +2058,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_Little1_Joint</ChildName>
+      <ChildName>J_Bip_R_Little1</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2081,7 +2081,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_Middle1_Joint</ChildName>
+      <ChildName>J_Bip_R_Middle1</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2104,7 +2104,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_Ring1_Joint</ChildName>
+      <ChildName>J_Bip_R_Ring1</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2127,7 +2127,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_Thumb1_Joint</ChildName>
+      <ChildName>J_Bip_R_Thumb1</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2151,10 +2151,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Index1_Joint</Name>
+    <Name>J_Bip_R_Index1</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_R_Index2_Joint</ChildName>
+      <ChildName>J_Bip_R_Index2</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2178,10 +2178,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Index2_Joint</Name>
+    <Name>J_Bip_R_Index2</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_R_Index3_Joint</ChildName>
+      <ChildName>J_Bip_R_Index3</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2205,10 +2205,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Little1_Joint</Name>
+    <Name>J_Bip_R_Little1</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_R_Little2_Joint</ChildName>
+      <ChildName>J_Bip_R_Little2</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2232,10 +2232,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Little2_Joint</Name>
+    <Name>J_Bip_R_Little2</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_R_Little3_Joint</ChildName>
+      <ChildName>J_Bip_R_Little3</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2259,10 +2259,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Middle1_Joint</Name>
+    <Name>J_Bip_R_Middle1</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_R_Middle2_Joint</ChildName>
+      <ChildName>J_Bip_R_Middle2</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2286,10 +2286,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Middle2_Joint</Name>
+    <Name>J_Bip_R_Middle2</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_R_Middle3_Joint</ChildName>
+      <ChildName>J_Bip_R_Middle3</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2313,10 +2313,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Ring1_Joint</Name>
+    <Name>J_Bip_R_Ring1</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_R_Ring2_Joint</ChildName>
+      <ChildName>J_Bip_R_Ring2</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2340,10 +2340,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Ring2_Joint</Name>
+    <Name>J_Bip_R_Ring2</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_R_Ring3_Joint</ChildName>
+      <ChildName>J_Bip_R_Ring3</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2367,10 +2367,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Thumb1_Joint</Name>
+    <Name>J_Bip_R_Thumb1</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_R_Thumb2_Joint</ChildName>
+      <ChildName>J_Bip_R_Thumb2</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2394,10 +2394,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Thumb2_Joint</Name>
+    <Name>J_Bip_R_Thumb2</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_R_Thumb3_Joint</ChildName>
+      <ChildName>J_Bip_R_Thumb3</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2421,10 +2421,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_UpperLeg_Joint</Name>
+    <Name>J_Bip_L_UpperLeg</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_L_TopsUpperLegBack_01_Joint</ChildName>
+      <ChildName>J_Sec_L_TopsUpperLegBack_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2447,7 +2447,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_L_TopsUpperLegFront_01_Joint</ChildName>
+      <ChildName>J_Sec_L_TopsUpperLegFront_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2470,7 +2470,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_L_TopsUpperLegSide_01_Joint</ChildName>
+      <ChildName>J_Sec_L_TopsUpperLegSide_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2493,7 +2493,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_L_LowerLeg_Joint</ChildName>
+      <ChildName>J_Bip_L_LowerLeg</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2517,10 +2517,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_TopsUpperLegBack_01_Joint</Name>
+    <Name>J_Sec_L_TopsUpperLegBack_01</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_R_TopsUpperLegBack_end_01_Joint</ChildName>
+      <ChildName>J_Sec_R_TopsUpperLegBack_end_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2544,10 +2544,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_TopsUpperLegFront_01_Joint</Name>
+    <Name>J_Sec_L_TopsUpperLegFront_01</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_L_TopsUpperLegFront_end_01_Joint</ChildName>
+      <ChildName>J_Sec_L_TopsUpperLegFront_end_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2571,10 +2571,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_L_TopsUpperLegSide_01_Joint</Name>
+    <Name>J_Sec_L_TopsUpperLegSide_01</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_L_TopsUpperLegSide_end_01_Joint</ChildName>
+      <ChildName>J_Sec_L_TopsUpperLegSide_end_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2598,10 +2598,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_LowerLeg_Joint</Name>
+    <Name>J_Bip_L_LowerLeg</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_L_Foot_Joint</ChildName>
+      <ChildName>J_Bip_L_Foot</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2625,10 +2625,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_L_Foot_Joint</Name>
+    <Name>J_Bip_L_Foot</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_L_ToeBase_Joint</ChildName>
+      <ChildName>J_Bip_L_ToeBase</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2652,10 +2652,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_UpperLeg_Joint</Name>
+    <Name>J_Bip_R_UpperLeg</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_R_TopsUpperLegBack_01_Joint</ChildName>
+      <ChildName>J_Sec_R_TopsUpperLegBack_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2678,7 +2678,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_R_TopsUpperLegFront_01_Joint</ChildName>
+      <ChildName>J_Sec_R_TopsUpperLegFront_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2701,7 +2701,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Sec_R_TopsUpperLegSide_01_Joint</ChildName>
+      <ChildName>J_Sec_R_TopsUpperLegSide_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2724,7 +2724,7 @@
       <FORBIDROT>0</FORBIDROT>
     </RigidElem>
     <RigidElem>
-      <ChildName>J_Bip_R_LowerLeg_Joint</ChildName>
+      <ChildName>J_Bip_R_LowerLeg</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2748,10 +2748,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_TopsUpperLegBack_01_Joint</Name>
+    <Name>J_Sec_R_TopsUpperLegBack_01</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_R_TopsUpperLegBack_end_1_01_Joint</ChildName>
+      <ChildName>J_Sec_R_TopsUpperLegBack_end_1_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2775,10 +2775,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_TopsUpperLegFront_01_Joint</Name>
+    <Name>J_Sec_R_TopsUpperLegFront_01</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_R_TopsUpperLegFront_end_01_Joint</ChildName>
+      <ChildName>J_Sec_R_TopsUpperLegFront_end_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2802,10 +2802,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Sec_R_TopsUpperLegSide_01_Joint</Name>
+    <Name>J_Sec_R_TopsUpperLegSide_01</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_R_TopsUpperLegSide_end_01_Joint</ChildName>
+      <ChildName>J_Sec_R_TopsUpperLegSide_end_01</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2829,10 +2829,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_LowerLeg_Joint</Name>
+    <Name>J_Bip_R_LowerLeg</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_R_Foot_Joint</ChildName>
+      <ChildName>J_Bip_R_Foot</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
@@ -2856,10 +2856,10 @@
     </RigidElem>
   </Bone>
   <Bone>
-    <Name>J_Bip_R_Foot_Joint</Name>
+    <Name>J_Bip_R_Foot</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Bip_R_ToeBase_Joint</ChildName>
+      <ChildName>J_Bip_R_ToeBase</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
       <ShpRate>0.600000</ShpRate>
