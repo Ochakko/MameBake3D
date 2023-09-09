@@ -268,25 +268,33 @@ int CLmtFile::LoadLmtFile( WCHAR* strpath, CModel* srcmodel, char* fbxcomment )
 	//}
 
 
-	//FileCommentタグがある場合にはfbxcommentと比較チェック
-	char strcomment[MAX_PATH];
-	ZeroMemory(strcomment, sizeof(char) * MAX_PATH);
-	int resultgetcomment;
-	resultgetcomment = Read_Str(&m_xmliobuf, "<FileComment>", "</FileComment>", strcomment, MAX_PATH);
-	if (resultgetcomment == 0) {
-		if (strstr(fbxcomment, "CommentForEGP_") != 0) {
-			int resultcmp;
-			resultcmp = strcmp(strcomment, fbxcomment);
-			if (resultcmp != 0) {
-				_ASSERT(0);
-				return 2;
-			}
-		}
-		else {
-			_ASSERT(0);
-			return 2;
-		}
-	}
+
+	//2023/09/09
+	// lmtファイルの使いまわしの利便性のために　fbxcommentチェックを無効にする
+	// 読込時にボーン名で探すので問題は無い
+	// 
+	// 
+	////FileCommentタグがある場合にはfbxcommentと比較チェック
+	//char strcomment[MAX_PATH];
+	//ZeroMemory(strcomment, sizeof(char) * MAX_PATH);
+	//int resultgetcomment;
+	//resultgetcomment = Read_Str(&m_xmliobuf, "<FileComment>", "</FileComment>", strcomment, MAX_PATH);
+	//if (resultgetcomment == 0) {
+	//	if (strstr(fbxcomment, "CommentForEGP_") != 0) {
+	//		int resultcmp;
+	//		resultcmp = strcmp(strcomment, fbxcomment);
+	//		if (resultcmp != 0) {
+	//			_ASSERT(0);
+	//			return 2;
+	//		}
+	//	}
+	//	else {
+	//		_ASSERT(0);
+	//		return 2;
+	//	}
+	//}
+
+
 
 	int findflag = 1;
 	while( findflag ){

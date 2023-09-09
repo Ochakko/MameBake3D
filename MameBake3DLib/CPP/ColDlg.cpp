@@ -75,13 +75,19 @@ int CColDlg::Choose( HWND srchwnd, COLORREF* dstcol )
 	// OKボタンを押したときは、return 1; それ以外は、return 0
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+	if (!dstcol) {
+		_ASSERT(0);
+		return 0;
+	}
+
+
 	m_cc.hwndOwner = srchwnd;
 	//m_cc.rgbResult = m_custom[0];
 	m_cc.rgbResult = *dstcol;
 
 	BOOL bret;
 
-	bret = ::ChooseColor( &m_cc );
+	bret = ::ChooseColor(&m_cc);
 	if( bret != 0 ){
 		*dstcol = m_cc.rgbResult;
 
