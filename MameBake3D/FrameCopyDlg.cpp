@@ -860,11 +860,13 @@ int CFrameCopyDlg::ValidateTBOFile(char* dstTBOheader, char* srcbuf, DWORD bufle
 	int cmp8;
 	int cmp9;
 	int cmp10;
+	int cmp11;
 	cmp7 = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.7");//本体ではない
 	cmp8 = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.8");//本体ではない
 	cmp9 = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.9");//本体ではない
 	cmp10 = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.10");//本体ではない 2023/08/21 To12024  FCSLOTNUM-->FCSLOTNUM2
-	if ((cmp7 != 0) && (cmp8 != 0) && (cmp9 != 0) && (cmp10 != 0)) {
+	cmp11 = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.11");//本体ではない 2023/09/11 To12025  ボーン情報を名前ベースに変更
+	if ((cmp7 != 0) && (cmp8 != 0) && (cmp9 != 0) && (cmp10 != 0) && (cmp11 != 0)) {
 		_ASSERT(0);
 		return false;
 	}
@@ -872,7 +874,7 @@ int CFrameCopyDlg::ValidateTBOFile(char* dstTBOheader, char* srcbuf, DWORD bufle
 	DWORD datasize;
 	datasize = (bufleng - sizeof(char) * 256);
 	
-	DWORD chksize1, chksize2;
+	DWORD chksize1, chksize2, chksize3;
 	chksize1 = (sizeof(WCHAR) * FCSLOTNUM * SLOTNAMELEN) +
 		(sizeof(int) * FCSLOTNUM) +
 		(sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG) +
@@ -885,11 +887,21 @@ int CFrameCopyDlg::ValidateTBOFile(char* dstTBOheader, char* srcbuf, DWORD bufle
 		(sizeof(int) * FCSLOTNUM2) +
 		(sizeof(int) * FCSLOTNUM2 * FRAMECOPYLISTLENG);
 
+	chksize3 = (sizeof(WCHAR) * FCSLOTNUM2 * SLOTNAMELEN) +
+		(sizeof(int) * FCSLOTNUM2) +
+		(sizeof(WCHAR) * MAX_PATH * FCSLOTNUM2 * FRAMECOPYLISTLENG) +
+		(sizeof(int) * FCSLOTNUM2) +
+		(sizeof(WCHAR) * MAX_PATH * FCSLOTNUM2 * FRAMECOPYLISTLENG);
+
+
 	if (datasize == chksize1) {
 		return 1;
 	}
 	else if (datasize == chksize2) {
 		return 2;
+	}
+	else if (datasize == chksize3) {
+		return 3;
 	}
 	else {
 		_ASSERT(0);
@@ -963,6 +975,12 @@ bool CFrameCopyDlg::LoadTBOFile()
 
 int CFrameCopyDlg::WriteTBOFile(WCHAR* srcfilename)
 {
+	if (!m_model) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
 	HANDLE hfile = CreateFile(srcfilename, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_ALWAYS,
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 	if (hfile == INVALID_HANDLE_VALUE) {
@@ -974,7 +992,8 @@ int CFrameCopyDlg::WriteTBOFile(WCHAR* srcfilename)
 	char TBOheader[256];
 	::ZeroMemory(TBOheader, sizeof(char) * 256);
 	//strcpy_s(TBOheader, 256, "MB3DTargetBoneFile ver1.0.0.9");//本体ではない
-	strcpy_s(TBOheader, 256, "MB3DTargetBoneFile ver1.0.0.10");//本体ではない
+	//strcpy_s(TBOheader, 256, "MB3DTargetBoneFile ver1.0.0.10");//本体ではない 2023/08/21
+	strcpy_s(TBOheader, 256, "MB3DTargetBoneFile ver1.0.0.11");//本体ではない 2023/09/11
 	DWORD wleng = 0;
 	WriteFile(hfile, TBOheader, sizeof(char) * 256, &wleng, NULL);
 	if (wleng != (sizeof(char) * 256)) {
@@ -999,13 +1018,44 @@ int CFrameCopyDlg::WriteTBOFile(WCHAR* srcfilename)
 	}
 
 
-	//int m_influencelist[FCSLOTNUM2][FRAMECOPYLISTLENG];
+	////int m_influencelist[FCSLOTNUM2][FRAMECOPYLISTLENG];
+	//wleng = 0;
+	//WriteFile(hfile, m_influencelist, sizeof(int) * FCSLOTNUM2 * FRAMECOPYLISTLENG, &wleng, NULL);
+	//if (wleng != (sizeof(int) * FCSLOTNUM2 * FRAMECOPYLISTLENG)) {
+	//	_ASSERT(0);
+	//	return 1;
+	//}
 	wleng = 0;
-	WriteFile(hfile, m_influencelist, sizeof(int) * FCSLOTNUM2 * FRAMECOPYLISTLENG, &wleng, NULL);
-	if (wleng != (sizeof(int) * FCSLOTNUM2 * FRAMECOPYLISTLENG)) {
-		_ASSERT(0);
-		return 1;
+	int slotno;
+	int influenceno;
+	for (slotno = 0; slotno < FCSLOTNUM2; slotno++) {
+		for (influenceno = 0; influenceno < FRAMECOPYLISTLENG; influenceno++) {
+			int writeboneno = m_influencelist[slotno][influenceno];
+			if (writeboneno > 0) {
+				CBone* writebone = m_model->GetBoneByID(writeboneno);
+				const WCHAR* writebonename = writebone->GetWBoneName();
+				WCHAR tmpbuf[MAX_PATH] = { 0L };
+				wcscpy_s(tmpbuf, MAX_PATH, writebonename);
+				WriteFile(hfile, tmpbuf, sizeof(WCHAR) * MAX_PATH, &wleng, NULL);
+				if (wleng != (sizeof(WCHAR) * MAX_PATH)) {
+					_ASSERT(0);
+					return 1;
+				}
+			}
+			else {
+				WCHAR tmpbuf[MAX_PATH] = { 0L };
+				wcscpy_s(tmpbuf, MAX_PATH, L"---unused---");
+				WriteFile(hfile, tmpbuf, sizeof(WCHAR) * MAX_PATH, &wleng, NULL);
+				if (wleng != (sizeof(WCHAR) * MAX_PATH)) {
+					_ASSERT(0);
+					return 1;
+				}
+			}
+		}
 	}
+
+
+
 
 	//int m_ignorenum[FCSLOTNUM2];
 	wleng = 0;
@@ -1014,13 +1064,40 @@ int CFrameCopyDlg::WriteTBOFile(WCHAR* srcfilename)
 		_ASSERT(0);
 		return 1;
 	}
-	//int m_ignorelist[FCSLOTNUM2][FRAMECOPYLISTLENG];
-	wleng = 0;
-	WriteFile(hfile, m_ignorelist, sizeof(int) * FCSLOTNUM2 * FRAMECOPYLISTLENG, &wleng, NULL);
-	if (wleng != (sizeof(int) * FCSLOTNUM2 * FRAMECOPYLISTLENG)) {
-		_ASSERT(0);
-		return 1;
+	////int m_ignorelist[FCSLOTNUM2][FRAMECOPYLISTLENG];
+	//wleng = 0;
+	//WriteFile(hfile, m_ignorelist, sizeof(int) * FCSLOTNUM2 * FRAMECOPYLISTLENG, &wleng, NULL);
+	//if (wleng != (sizeof(int) * FCSLOTNUM2 * FRAMECOPYLISTLENG)) {
+	//	_ASSERT(0);
+	//	return 1;
+	//}
+	int ignoreno;
+	for (slotno = 0; slotno < FCSLOTNUM2; slotno++) {
+		for (ignoreno = 0; ignoreno < FRAMECOPYLISTLENG; ignoreno++) {
+			int writeboneno = m_ignorelist[slotno][ignoreno];
+			if (writeboneno > 0) {
+				CBone* writebone = m_model->GetBoneByID(writeboneno);
+				const WCHAR* writebonename = writebone->GetWBoneName();
+				WCHAR tmpbuf[MAX_PATH] = { 0L };
+				wcscpy_s(tmpbuf, MAX_PATH, writebonename);
+				WriteFile(hfile, tmpbuf, sizeof(WCHAR) * MAX_PATH, &wleng, NULL);
+				if (wleng != (sizeof(WCHAR) * MAX_PATH)) {
+					_ASSERT(0);
+					return 1;
+				}
+			}
+			else {
+				WCHAR tmpbuf[MAX_PATH] = { 0L };
+				wcscpy_s(tmpbuf, MAX_PATH, L"---unused---");
+				WriteFile(hfile, tmpbuf, sizeof(WCHAR) * MAX_PATH, &wleng, NULL);
+				if (wleng != (sizeof(WCHAR) * MAX_PATH)) {
+					_ASSERT(0);
+					return 1;
+				}
+			}
+		}
 	}
+
 
 
 	FlushFileBuffers(hfile);
@@ -1031,6 +1108,13 @@ int CFrameCopyDlg::WriteTBOFile(WCHAR* srcfilename)
 }
 bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 {
+	if (!m_model) {
+		_ASSERT(0);
+		return false;
+	}
+
+
+
 	HANDLE hfile;
 	hfile = CreateFile(srcfilename, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
 		FILE_FLAG_SEQUENTIAL_SCAN, NULL);
@@ -1081,7 +1165,7 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 	if (filetype == 1) {
 		slotNumForLoad = FCSLOTNUM;
 	}
-	else if (filetype == 2) {
+	else if ((filetype == 2) || (filetype == 3)) {
 		slotNumForLoad = FCSLOTNUM2;
 	}
 	else {
@@ -1125,19 +1209,58 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 	MoveMemory(m_influencenum, newbuf + curpos, sizeof(int) * slotNumForLoad);
 	curpos += sizeof(int) * slotNumForLoad;
 
-
-	//int m_influencelist[slotNumForLoad][FRAMECOPYLISTLENG];
-	if ((curpos + sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG) > bufleng) {
-		_ASSERT(0);
-		if (newbuf) {
-			free(newbuf);
-			newbuf = 0;
+	if ((filetype == 1) || (filetype == 2)) {
+		//int m_influencelist[slotNumForLoad][FRAMECOPYLISTLENG];
+		if ((curpos + sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG) > bufleng) {
+			_ASSERT(0);
+			if (newbuf) {
+				free(newbuf);
+				newbuf = 0;
+			}
+			CloseHandle(hfile);
+			return false;
 		}
-		CloseHandle(hfile);
+		MoveMemory(m_influencelist, newbuf + curpos, sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG);
+		curpos += sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG;
+	}
+	else if (filetype == 3) {
+		int slotno;
+		int influenceno;
+		for (slotno = 0; slotno < slotNumForLoad; slotno++) {
+			for (influenceno = 0; influenceno < FRAMECOPYLISTLENG; influenceno++) {
+				if ((curpos + sizeof(WCHAR) * MAX_PATH) > bufleng) {
+					_ASSERT(0);
+					if (newbuf) {
+						free(newbuf);
+						newbuf = 0;
+					}
+					CloseHandle(hfile);
+					return false;
+				}
+				WCHAR tmpbuf[MAX_PATH] = { 0L };
+				MoveMemory(tmpbuf, newbuf + curpos, sizeof(WCHAR)* MAX_PATH);
+				int cmp1 = wcscmp(tmpbuf, L"---unused---");
+				if (cmp1 != 0) {
+					CBone* loadbone = m_model->GetBoneByWName(tmpbuf);
+					if (loadbone) {
+						m_influencelist[slotno][influenceno] = loadbone->GetBoneNo();
+					}
+					else {
+						m_influencelist[slotno][influenceno] = 0;
+					}
+				}
+				else {
+					m_influencelist[slotno][influenceno] = 0;
+				}
+
+				curpos += (sizeof(WCHAR) * MAX_PATH);
+			}
+		}
+	}
+	else {
+		_ASSERT(0);
 		return false;
 	}
-	MoveMemory(m_influencelist, newbuf + curpos, sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG);
-	curpos += sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG;
 
 	//int m_ignorenum[slotNumForLoad];
 	if ((curpos + sizeof(int) * slotNumForLoad) > bufleng) {
@@ -1152,18 +1275,59 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 	MoveMemory(m_ignorenum, newbuf + curpos, sizeof(int) * slotNumForLoad);
 	curpos += sizeof(int) * slotNumForLoad;
 
-	//int m_ignorelist[slotNumForLoad][FRAMECOPYLISTLENG];
-	if ((curpos + sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG) > bufleng) {
-		_ASSERT(0);
-		if (newbuf) {
-			free(newbuf);
-			newbuf = 0;
+
+	if ((filetype == 1) || (filetype == 2)) {
+		//int m_ignorelist[slotNumForLoad][FRAMECOPYLISTLENG];
+		if ((curpos + sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG) > bufleng) {
+			_ASSERT(0);
+			if (newbuf) {
+				free(newbuf);
+				newbuf = 0;
+			}
+			CloseHandle(hfile);
+			return false;
 		}
-		CloseHandle(hfile);
+		MoveMemory(m_ignorelist, newbuf + curpos, sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG);
+		curpos += sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG;
+	}
+	else if (filetype == 3) {
+		int slotno;
+		int ignoreno;
+		for (slotno = 0; slotno < slotNumForLoad; slotno++) {
+			for (ignoreno = 0; ignoreno < FRAMECOPYLISTLENG; ignoreno++) {
+				if ((curpos + sizeof(WCHAR) * MAX_PATH) > bufleng) {
+					_ASSERT(0);
+					if (newbuf) {
+						free(newbuf);
+						newbuf = 0;
+					}
+					CloseHandle(hfile);
+					return false;
+				}
+				WCHAR tmpbuf[MAX_PATH] = { 0L };
+				MoveMemory(tmpbuf, newbuf + curpos, sizeof(WCHAR) * MAX_PATH);
+				int cmp1 = wcscmp(tmpbuf, L"---unused---");
+				if (cmp1 != 0) {
+					CBone* loadbone = m_model->GetBoneByWName(tmpbuf);
+					if (loadbone) {
+						m_ignorelist[slotno][ignoreno] = loadbone->GetBoneNo();
+					}
+					else {
+						m_ignorelist[slotno][ignoreno] = 0;
+					}
+				}
+				else {
+					m_ignorelist[slotno][ignoreno] = 0;
+				}
+
+				curpos += (sizeof(WCHAR) * MAX_PATH);
+			}
+		}
+	}
+	else {
+		_ASSERT(0);
 		return false;
 	}
-	MoveMemory(m_ignorelist, newbuf + curpos, sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG);
-	curpos += sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG;
 
 
 	if (newbuf) {

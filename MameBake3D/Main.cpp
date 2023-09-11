@@ -13133,7 +13133,7 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 	//tboファイルのLoadはOnModelMenu()よりも後で
 	CFrameCopyDlg* curcpdlg = GetCurrentFrameCopyDlg();
 	if (curcpdlg) {
-		bool result = curcpdlg->LoadWithProjectFile(tbofilename);
+		bool result = curcpdlg->LoadWithProjectFile(tbofilename);//LoadTboFile
 	}
 
 
