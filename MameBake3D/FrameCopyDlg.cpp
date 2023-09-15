@@ -1227,7 +1227,10 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 		int slotno;
 		int influenceno;
 		for (slotno = 0; slotno < slotNumForLoad; slotno++) {
-			for (influenceno = 0; influenceno < FRAMECOPYLISTLENG; influenceno++) {
+			
+			int numinfluence = min(m_influencenum[slotno], FRAMECOPYLISTLENG);//有効データ数
+
+			for (influenceno = 0; influenceno < numinfluence; influenceno++) {
 				if ((curpos + sizeof(WCHAR) * MAX_PATH) > bufleng) {
 					_ASSERT(0);
 					if (newbuf) {
@@ -1255,6 +1258,13 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 
 				curpos += (sizeof(WCHAR) * MAX_PATH);
 			}
+
+
+			for (influenceno = numinfluence; influenceno < FRAMECOPYLISTLENG; influenceno++) {//未設定部分
+				m_influencelist[slotno][influenceno] = 0;
+				curpos += (sizeof(WCHAR) * MAX_PATH);
+			}
+
 		}
 	}
 	else {
@@ -1294,7 +1304,10 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 		int slotno;
 		int ignoreno;
 		for (slotno = 0; slotno < slotNumForLoad; slotno++) {
-			for (ignoreno = 0; ignoreno < FRAMECOPYLISTLENG; ignoreno++) {
+
+			int numignore = min(m_ignorenum[slotno], FRAMECOPYLISTLENG);//有効データ数
+
+			for (ignoreno = 0; ignoreno < numignore; ignoreno++) {
 				if ((curpos + sizeof(WCHAR) * MAX_PATH) > bufleng) {
 					_ASSERT(0);
 					if (newbuf) {
@@ -1322,6 +1335,13 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 
 				curpos += (sizeof(WCHAR) * MAX_PATH);
 			}
+
+
+			for (ignoreno = numignore; ignoreno < FRAMECOPYLISTLENG; ignoreno++) {//未設定部分
+				m_ignorelist[slotno][ignoreno] = 0;
+				curpos += (sizeof(WCHAR) * MAX_PATH);
+			}
+
 		}
 	}
 	else {
