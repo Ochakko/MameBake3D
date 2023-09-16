@@ -42,9 +42,19 @@
     2023/09/15_1
 	操作対象ボーンファイル*.tboの読み込みに関するリファクタリング
 
+    2023/09/17_1
+	dest Hips起点ペーストについて　ドキュメント追加
+		Documants/TroubleShooting/About_PasteStartingFromDestHips.docx
+
+
+
+
+
+
+
 
 2023/08/30
-    EditMot 1.2.0.24 リリース候補 RC1
+    EditMot 1.2.0.24 release
 
 	メッシュ単位の視野内判定導入
 		広いシーンで表示の高速化
