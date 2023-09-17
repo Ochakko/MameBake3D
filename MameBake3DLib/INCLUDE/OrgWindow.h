@@ -9907,7 +9907,9 @@ void s_dummyfunc()
 				int movableYStart = y0 + barSize / 2;
 
 				setShowPosLine((e.localY - movableYStart)*(lineDatasize - showLineNum) / movableY);
+
 			}
+
 
 			autoResize();
 

@@ -335,6 +335,10 @@ public:
 		OrgWinGUI::OWP_Timeline& timeline,
 		std::map<int, int>& lineno2boneno, std::map<int, int>& boneno2lineno);
 
+
+	int SetDispGroupObj(OrgWinGUI::OWP_CheckBoxA** pchkobj, int maxnum, int* plinenum);
+	void SetDispGroupObjReq(FbxNode* srcnode, OrgWinGUI::OWP_CheckBoxA** pchkobj, int* pobjno, int depth, int maxnum);
+
 /**
  * @fn
  * AddMotion

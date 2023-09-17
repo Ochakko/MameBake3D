@@ -76,6 +76,8 @@
 
 #include <NodeOnLoad.h>
 
+#include <OrgWindow.h>
+
 
 #include <DXUT.h>
 #include <io.h>
@@ -18309,4 +18311,91 @@ double CModel::GetCurrentFrame()
 		return 1.0;
 	}
 }
+
+
+int CModel::SetDispGroupObj(OrgWinGUI::OWP_CheckBoxA** pchkobj, int maxnum, int* plinenum)
+{
+	if (!m_pscene) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	int objno = 0;
+	int depth = 0;
+	SetDispGroupObjReq(m_pscene->GetRootNode(), pchkobj, &objno, depth, maxnum);
+	*plinenum = objno;
+
+	return 0;
+}
+
+void CModel::SetDispGroupObjReq(FbxNode* pNode, OrgWinGUI::OWP_CheckBoxA** pchkobj, int* pobjno, int depth, int maxnum)
+{
+	if (pNode) {
+
+		bool opeflag = false;
+
+		FbxNodeAttribute* pAttrib = pNode->GetNodeAttribute();
+		if (pAttrib) {
+			FbxNodeAttribute::EType type = (FbxNodeAttribute::EType)(pAttrib->GetAttributeType());
+
+			if (type == FbxNodeAttribute::eMesh) {
+				opeflag = true;
+			}
+		}
+		else {
+			opeflag = true;
+		}
+
+
+		if (opeflag) {
+			char meshnameA[256] = { 0 };
+			strcpy_s(meshnameA, 256, pNode->GetName());
+			WCHAR meshnameW[256] = { 0L };
+			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, meshnameA, 256, meshnameW, 256);
+
+			WCHAR labelnameW[1024] = { 0L };
+			int depthindex;
+			for (depthindex = 0; depthindex < depth; depthindex++) {
+				wcscat_s(labelnameW, 1024, L"  ");
+			}
+			wcscat_s(labelnameW, 1024, meshnameW);
+
+			if ((*pobjno) < maxnum) {
+
+				OWP_CheckBoxA* newchk = new OWP_CheckBoxA(labelnameW, 0);
+				if (!newchk) {
+					_ASSERT(0);
+					return;
+				}
+
+				*(pchkobj + *(pobjno)) = newchk;
+				(*pobjno)++;
+			}
+			else {
+				_ASSERT(0);
+				return;
+			}
+		}
+
+
+
+
+
+
+		int childNodeNum;
+		childNodeNum = pNode->GetChildCount();
+
+		int childdepth = depth + 1;
+
+		for (int i = 0; i < childNodeNum; i++)
+		{
+			FbxNode* pChild = pNode->GetChild(i);  // 子ノードを取得
+			if (pChild) {
+				SetDispGroupObjReq(pChild, pchkobj, pobjno, childdepth, maxnum);
+			}
+		}
+	}
+
+}
+
 

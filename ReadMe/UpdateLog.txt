@@ -46,7 +46,9 @@
 	dest Hips起点ペーストについて　ドキュメント追加
 		Documants/TroubleShooting/About_PasteStartingFromDestHips.docx
 
-
+    2023/09/18_1
+	Disp Groupプレートメニュー
+		まずはGUIだけ右ペインに表示
 
 
 

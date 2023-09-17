@@ -2112,6 +2112,27 @@ static OWP_Button* s_rtgfileload = 0;
 static OrgWindow* s_layerWnd = 0;
 static OWP_LayerTable* s_owpLayerTable = 0;
 
+#define MAXDISPOBJNUM	2048
+#define MAXDISPGROUPNUM	20
+static OrgWindow* s_groupWnd = 0;
+static OWP_ScrollWnd* s_groupSCWnd = 0;
+static OWP_Separator* s_groupsp0 = 0;
+static OWP_Separator* s_groupsp = 0;
+static OWP_Separator* s_groupsp1 = 0;
+static OWP_Separator* s_groupsp2 = 0;
+static OWP_Separator* s_groupsp3 = 0;
+static OWP_CheckBoxA* s_groupselect[MAXDISPGROUPNUM];
+static OWP_Button* s_groupsetB = 0;
+static OWP_Button* s_groupgetB = 0;
+static OWP_Button* s_grouptestB = 0;
+static OWP_Button* s_grouponB = 0;
+static OWP_Button* s_groupoffB = 0;
+static OWP_CheckBoxA* s_groupobj[MAXDISPOBJNUM];
+
+
+
+
+
 static bool s_closeFlag = false;			// 終了フラグ
 static bool s_closetoolFlag = false;
 static bool s_closeobjFlag = false;
@@ -3016,6 +3037,10 @@ static int Dlg2LightsEach(HWND hDlgWnd, int lightindex,
 	int idenable, int idwithviewrot, int idslider);
 static int CheckStr_float(const WCHAR* srcstr);
 
+
+static int CreateDispGroupWnd();
+static int DestroyDispGroupWnd();
+
 static int UpdateCameraPosAndTarget();
 
 
@@ -3872,6 +3897,7 @@ INT WINAPI wWinMain(
 	CreateMainMenuAimBarWnd();
 
 	CreateLightsWnd();
+	CreateDispGroupWnd();
 
 	if (s_dollyhistorydlg.GetCreatedFlag() == false) {
 		int result = CreateDollyHistoryDlg();
@@ -4281,6 +4307,26 @@ void InitApp()
 	s_layerWnd = 0;
 	s_owpLayerTable = 0;
 	
+
+	{
+		s_groupWnd = 0;
+		s_groupSCWnd = 0;
+		s_groupsp0 = 0;
+		s_groupsp = 0;
+		s_groupsp1 = 0;
+		s_groupsp2 = 0;
+		s_groupsp3 = 0;
+		ZeroMemory(s_groupselect, sizeof(OWP_CheckBoxA*)* MAXDISPGROUPNUM);
+		s_groupsetB = 0;
+		s_groupgetB = 0;
+		s_grouptestB = 0;
+		s_grouponB = 0;
+		s_groupoffB = 0;
+		ZeroMemory(s_groupobj, sizeof(OWP_CheckBoxA*) * MAXDISPOBJNUM);
+	}
+
+
+
 	{
 		s_placefolderWnd = 0;
 		s_placefolderlabel_1 = 0;
@@ -7407,6 +7453,11 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 		delete s_rigidWnd;
 		s_rigidWnd = 0;
 	}
+
+
+	DestroyDispGroupWnd();
+
+
 
 	if (s_placefolderlabel_1) {
 		delete s_placefolderlabel_1;
@@ -33294,6 +33345,295 @@ int CreatePlaceFolderWnd()
 
 }
 
+
+int CreateDispGroupWnd()
+{
+
+
+	if (!s_model) {
+		return 0;
+	}
+
+	DestroyDispGroupWnd();
+
+
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
+
+	s_groupWnd = new OrgWindow(
+		0,
+		_T("DispGroupWindow"),		//ウィンドウクラス名
+		GetModuleHandle(NULL),	//インスタンスハンドル
+		WindowPos(windowposx, s_sidemenuheight),
+		WindowSize(s_sidewidth, s_sideheight),		//サイズ
+		_T("DispGroupWindow"),	//タイトル
+		s_mainhwnd,	//親ウィンドウハンドル
+		true,					//表示・非表示状態
+		//70, 50, 70,				//カラー
+		0, 0, 0,				//カラー
+		true, true);					//サイズ変更の可否
+
+	if (s_groupWnd) {
+
+		s_groupWnd->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
+
+
+		s_groupsetB = new OWP_Button(L"Set");
+		if (!s_groupsetB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_groupgetB = new OWP_Button(L"Get");
+		if (!s_groupgetB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_grouptestB = new OWP_Button(L"Test");
+		if (!s_grouptestB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_grouponB = new OWP_Button(L"ON");
+		if (!s_grouponB) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_groupoffB = new OWP_Button(L"OFF");
+		if (!s_groupoffB) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		int groupno;
+		for (groupno = 0; groupno < MAXDISPGROUPNUM; groupno++) {
+			WCHAR groupname[256] = { 0L };
+			swprintf_s(groupname, 256, L"%02d", groupno + 1);
+			s_groupselect[groupno] = new OWP_CheckBoxA(groupname, 0);
+			if (!s_groupselect[groupno]) {
+				_ASSERT(0);
+				return 1;
+			}
+		}
+
+		int linenum = 0;
+		int result = s_model->SetDispGroupObj(&(s_groupobj[0]), MAXDISPOBJNUM, &linenum);
+		if (result != 0) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		if (linenum <= 0) {
+			return 0;
+		}
+
+
+		double centerrate;
+		int linedatasize;
+		if (g_4kresolution) {
+			centerrate = (double)12 / (double)140;
+			//linedatasize = max(140, linenum + 12);
+			//linedatasize = max(106, linenum);
+			linedatasize = linenum * 2;
+		}
+		else {
+			centerrate = (double)12 / (double)70;
+			//linedatasize = max(70, linenum + 12);
+			//linedatasize = max(54, linenum);
+			linedatasize = linenum * 2;
+		}
+
+
+
+		//スクロールウインドウ		
+		s_groupSCWnd = new OWP_ScrollWnd(L"DispGroupScWnd");
+		if (!s_groupSCWnd) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_groupSCWnd->setLineDataSize(linedatasize);//!!!!!!!!!!!!!
+		//s_groupWnd->addParts(*s_groupSCWnd);
+
+
+		
+		s_groupsp0 = new OWP_Separator(s_groupWnd, false, centerrate, false);
+		if (!s_groupsp0) {
+			_ASSERT(0);
+			return 1;
+		}
+		//s_groupSCWnd->addParts(*s_groupsp0);
+		s_groupWnd->addParts(*s_groupsp0);
+		
+
+		s_groupsp = new OWP_Separator(s_groupWnd, false, 0.5, true);
+		if (!s_groupsp) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_groupsp0->addParts1(*s_groupsp);
+
+
+		s_groupsp0->addParts2(*s_groupSCWnd);
+		s_groupsp3 = new OWP_Separator(s_groupWnd, false, 0.8, true);
+		if (!s_groupsp3) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_groupSCWnd->addParts(*s_groupsp3);
+		int lineno;
+		for (lineno = 0; lineno < linenum; lineno++) {
+			s_groupsp3->addParts1(*s_groupobj[lineno]);
+		}
+
+
+
+		s_groupsp1 = new OWP_Separator(s_groupWnd, false, 0.5, true);
+		if (!s_groupsp1) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_groupsp->addParts1(*s_groupsp1);
+
+		s_groupsp2 = new OWP_Separator(s_groupWnd, false, 0.5, true);
+		if (!s_groupsp2) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_groupsp->addParts2(*s_groupsp2);
+
+		for (groupno = 0; groupno < MAXDISPGROUPNUM; groupno++) {
+			int colno = groupno % 4;
+			if (colno == 0) {
+				s_groupsp1->addParts1(*s_groupselect[groupno]);
+			}
+			else if (colno == 1) {
+				s_groupsp1->addParts2(*s_groupselect[groupno]);
+			}
+			else if (colno == 2) {
+				s_groupsp2->addParts1(*s_groupselect[groupno]);
+			}
+			else {
+				s_groupsp2->addParts2(*s_groupselect[groupno]);
+			}
+		}
+		
+
+		s_groupsp1->addParts1(*s_groupsetB);
+		s_groupsp1->addParts2(*s_groupgetB);
+		s_groupsp2->addParts1(*s_grouponB);
+		s_groupsp2->addParts2(*s_groupoffB);
+		s_groupsp2->addParts2(*s_grouptestB);
+
+
+		//autoResizeしないと　チェックボックス４段目以下が反応なかった
+		s_groupsp3->autoResize();
+		s_groupsp1->autoResize();
+		s_groupsp2->autoResize();
+		s_groupsp->autoResize();
+		s_groupsp0->autoResize();
+		s_groupSCWnd->autoResize();
+
+
+		s_groupWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
+		s_groupWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
+		//１クリック目問題対応
+		s_groupWnd->refreshPosAndSize();
+		s_groupWnd->autoResizeAllParts();
+		s_groupWnd->setVisible(false);
+	}
+
+
+
+	return 0;
+}
+
+
+int DestroyDispGroupWnd()
+{
+	if (s_groupWnd) {
+		s_groupWnd->setListenMouse(false);
+		s_groupWnd->setVisible(false);
+		//delete s_groupWnd;
+		//s_groupWnd = 0;
+	}
+
+
+	if (s_groupsetB) {
+		delete s_groupsetB;
+		s_groupsetB = 0;
+	}
+	if (s_groupgetB) {
+		delete s_groupgetB;
+		s_groupgetB = 0;
+	}
+	if (s_grouptestB) {
+		delete s_grouptestB;
+		s_grouptestB = 0;
+	}
+	if (s_grouponB) {
+		delete s_grouponB;
+		s_grouponB = 0;
+	}
+	if (s_groupoffB) {
+		delete s_groupoffB;
+		s_groupoffB = 0;
+	}
+
+	int selno;
+	for (selno = 0; selno < MAXDISPGROUPNUM; selno++) {
+		if (s_groupselect[selno]) {
+			delete s_groupselect[selno];
+		}
+	}
+	ZeroMemory(s_groupselect, sizeof(OWP_CheckBoxA*) * MAXDISPGROUPNUM);
+
+	int objno;
+	for (objno = 0; objno < MAXDISPOBJNUM; objno++) {
+		if (s_groupobj[objno]) {
+			delete s_groupobj[objno];
+		}
+	}
+	ZeroMemory(s_groupobj, sizeof(OWP_CheckBoxA*) * MAXDISPOBJNUM);
+
+	if (s_groupsp3) {
+		delete s_groupsp3;
+		s_groupsp3 = 0;
+	}
+	if (s_groupsp2) {
+		delete s_groupsp2;
+		s_groupsp2 = 0;
+	}
+	if (s_groupsp1) {
+		delete s_groupsp1;
+		s_groupsp1 = 0;
+	}
+	if (s_groupsp) {
+		delete s_groupsp;
+		s_groupsp = 0;
+	}
+	if (s_groupsp0) {
+		delete s_groupsp0;
+		s_groupsp0 = 0;
+	}
+	if (s_groupSCWnd) {
+		delete s_groupSCWnd;
+		s_groupSCWnd = 0;
+	}
+
+	if (s_groupWnd) {
+		delete s_groupWnd;
+		s_groupWnd = 0;
+	}
+
+	return 0;
+}
+
+
+
 int CreateRigidWnd()
 {
 
@@ -39517,9 +39857,31 @@ void ShowDispGroupWnd(bool srcflag)
 	if (s_model) {
 		//s_rigidWnd->setVisible(srcflag);
 
+	}
+
+	if (s_model) {
+
 		s_spdispsw[SPDISPSW_DISPGROUP].state = srcflag;
 		s_spdispsw[SPDISPSW_LIGHTS].state = !srcflag;
+
+
+		if (srcflag == true) {
+
+			CreateDispGroupWnd();
+
+			if (s_groupWnd) {
+				s_groupWnd->setListenMouse(true);
+				s_groupWnd->setVisible(true);
+			}
+		}
+		else {
+			if (s_groupWnd) {
+				s_groupWnd->setListenMouse(false);
+				s_groupWnd->setVisible(false);
+			}
+		}
 	}
+
 }
 
 
