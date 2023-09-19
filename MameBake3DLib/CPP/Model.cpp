@@ -1415,7 +1415,7 @@ int CModel::SelectRenderObject(int srcobjno, std::vector<CMQOObject*>& selectedo
 
 	SelectRenderObjectReq(itrnode->second, selectedobjvec);
 
-
+	return 0;
 }
 void CModel::SelectRenderObjectReq(FbxNode* pNode, std::vector<CMQOObject*>& selectedobjvec)
 {
@@ -18470,7 +18470,7 @@ double CModel::GetCurrentFrame()
 }
 
 
-int CModel::SetDispGroupObj(OrgWinGUI::OWP_CheckBoxA** pchkobj, int maxnum, int* plinenum)
+int CModel::SetDispGroupObj(std::vector<OrgWinGUI::OWP_CheckBoxA*>& checkboxvec)
 {
 	if (!m_pscene) {
 		_ASSERT(0);
@@ -18478,16 +18478,16 @@ int CModel::SetDispGroupObj(OrgWinGUI::OWP_CheckBoxA** pchkobj, int maxnum, int*
 	}
 
 	m_objno2node.clear();
+	checkboxvec.clear();
 
 	int objno = 0;
 	int depth = 0;
-	SetDispGroupObjReq(m_pscene->GetRootNode(), pchkobj, &objno, depth, maxnum);
-	*plinenum = objno;
+	SetDispGroupObjReq(m_pscene->GetRootNode(), checkboxvec, &objno, depth);
 
 	return 0;
 }
 
-void CModel::SetDispGroupObjReq(FbxNode* pNode, OrgWinGUI::OWP_CheckBoxA** pchkobj, int* pobjno, int depth, int maxnum)
+void CModel::SetDispGroupObjReq(FbxNode* pNode, std::vector<OrgWinGUI::OWP_CheckBoxA*>& checkboxvec, int* pobjno, int depth)
 {
 	if (pNode) {
 
@@ -18519,28 +18519,17 @@ void CModel::SetDispGroupObjReq(FbxNode* pNode, OrgWinGUI::OWP_CheckBoxA** pchko
 			}
 			wcscat_s(labelnameW, 1024, meshnameW);
 
-			if ((*pobjno) < maxnum) {
-
-				OWP_CheckBoxA* newchk = new OWP_CheckBoxA(labelnameW, 0);
-				if (!newchk) {
-					_ASSERT(0);
-					return;
-				}
-
-				*(pchkobj + *(pobjno)) = newchk;
-				m_objno2node[*pobjno] = pNode;
-
-				(*pobjno)++;
-			}
-			else {
+			OWP_CheckBoxA* newchk = new OWP_CheckBoxA(labelnameW, 0);
+			if (!newchk) {
 				_ASSERT(0);
 				return;
 			}
+
+			checkboxvec.push_back(newchk);
+			m_objno2node[*pobjno] = pNode;
+
+			(*pobjno)++;
 		}
-
-
-
-
 
 
 		int childNodeNum;
@@ -18552,7 +18541,7 @@ void CModel::SetDispGroupObjReq(FbxNode* pNode, OrgWinGUI::OWP_CheckBoxA** pchko
 		{
 			FbxNode* pChild = pNode->GetChild(i);  // 子ノードを取得
 			if (pChild) {
-				SetDispGroupObjReq(pChild, pchkobj, pobjno, childdepth, maxnum);
+				SetDispGroupObjReq(pChild, checkboxvec, pobjno, childdepth);
 			}
 		}
 	}

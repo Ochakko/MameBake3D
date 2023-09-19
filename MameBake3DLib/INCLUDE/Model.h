@@ -220,8 +220,12 @@ public:
 	int RenderRefArrow(bool limitdegflag, ID3D11DeviceContext* pd3dImmediateContext, 
 		CBone* boneptr, ChaVector4 diffusemult, int refmult, std::vector<ChaVector3> vecbonepos);
 
-	int RenderTest(bool withalpha, ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int srcobjno);
 
+
+	//DispGroup : test button : exclusive display
+	int SetDispGroupObj(std::vector<OrgWinGUI::OWP_CheckBoxA*>& checkboxvec);
+	void SetDispGroupObjReq(FbxNode* srcnode, std::vector<OrgWinGUI::OWP_CheckBoxA*>& checkboxvec, int* pobjno, int depth);
+	int RenderTest(bool withalpha, ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int srcobjno);
 	int SelectRenderObject(int srcobjno, std::vector<CMQOObject*>& selectedobjvec);
 	void SelectRenderObjectReq(FbxNode* pNode, std::vector<CMQOObject*>& selectedobjvec);
 
@@ -342,9 +346,6 @@ public:
 		OrgWinGUI::OWP_Timeline& timeline,
 		std::map<int, int>& lineno2boneno, std::map<int, int>& boneno2lineno);
 
-
-	int SetDispGroupObj(OrgWinGUI::OWP_CheckBoxA** pchkobj, int maxnum, int* plinenum);
-	void SetDispGroupObjReq(FbxNode* srcnode, OrgWinGUI::OWP_CheckBoxA** pchkobj, int* pobjno, int depth, int maxnum);
 
 /**
  * @fn

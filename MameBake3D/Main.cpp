@@ -2112,7 +2112,7 @@ static OWP_Button* s_rtgfileload = 0;
 static OrgWindow* s_layerWnd = 0;
 static OWP_LayerTable* s_owpLayerTable = 0;
 
-#define MAXDISPOBJNUM	4098
+//#define MAXDISPOBJNUM	4098 //vector<>に変更したため不要に
 #define MAXDISPGROUPNUM	20
 static OrgWindow* s_groupWnd = 0;
 static OWP_ScrollWnd* s_groupSCWnd = 0;
@@ -2124,10 +2124,12 @@ static OWP_Separator* s_groupsp3 = 0;
 static OWP_CheckBoxA* s_groupselect[MAXDISPGROUPNUM];
 static OWP_Button* s_groupsetB = 0;
 static OWP_Button* s_groupgetB = 0;
-static OWP_Button* s_grouptestB[MAXDISPOBJNUM];
 static OWP_Button* s_grouponB = 0;
 static OWP_Button* s_groupoffB = 0;
-static OWP_CheckBoxA* s_groupobj[MAXDISPOBJNUM];
+//static OWP_CheckBoxA* s_groupobj[MAXDISPOBJNUM];
+//static OWP_Button* s_grouptestB[MAXDISPOBJNUM];
+static std::vector<OWP_CheckBoxA*> s_groupobjvec;
+static std::vector<OWP_Button*> s_grouptestBvec;
 static int s_grouplinenum = 0;
 static bool s_disponlyoneobj = false;//for test button of groupWnd
 static int s_onlyoneobjno = -1;//for test button of groupWnd
@@ -4322,10 +4324,12 @@ void InitApp()
 		ZeroMemory(s_groupselect, sizeof(OWP_CheckBoxA*)* MAXDISPGROUPNUM);
 		s_groupsetB = 0;
 		s_groupgetB = 0;
-		ZeroMemory(s_grouptestB, sizeof(OWP_Button*) * MAXDISPOBJNUM);
 		s_grouponB = 0;
 		s_groupoffB = 0;
-		ZeroMemory(s_groupobj, sizeof(OWP_CheckBoxA*) * MAXDISPOBJNUM);
+		//ZeroMemory(s_groupobj, sizeof(OWP_CheckBoxA*) * MAXDISPOBJNUM);
+		//ZeroMemory(s_grouptestB, sizeof(OWP_Button*)* MAXDISPOBJNUM);
+		s_groupobjvec.clear();
+		s_grouptestBvec.clear();
 
 		s_grouplinenum = 0;
 		s_disponlyoneobj = false;//for test button of groupWnd
@@ -15139,6 +15143,7 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 		DispCameraPanel();
 
 		SetMainWindowTitle();
+		ShowDispGroupWnd(s_spdispsw[SPDISPSW_DISPGROUP].state);
 
 		s_underselectmodel = false;
 		return 0;//!!!!!!!!!
@@ -15160,6 +15165,7 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 		DispCameraPanel();
 
 		SetMainWindowTitle();
+		ShowDispGroupWnd(s_spdispsw[SPDISPSW_DISPGROUP].state);
 
 
 		s_underselectmodel = false;
@@ -15189,6 +15195,7 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 			//s_dispobj = false;
 			DispObjPanel();
 			refreshModelPanel();
+			ShowDispGroupWnd(s_spdispsw[SPDISPSW_DISPGROUP].state);
 
 			OnAnimMenu(dorefreshtl, s_motmenuindexmap[s_model]);
 		}
@@ -33434,14 +33441,14 @@ int CreateDispGroupWnd()
 			}
 		}
 
-		int linenum = 0;
-		int result = s_model->SetDispGroupObj(&(s_groupobj[0]), MAXDISPOBJNUM, &linenum);
+		int result = s_model->SetDispGroupObj(s_groupobjvec);
 		if (result != 0) {
 			_ASSERT(0);
 			return 1;
 		}
+		s_grouplinenum = (int)s_groupobjvec.size();
 
-		if (linenum <= 0) {
+		if (s_grouplinenum <= 0) {
 			return 0;
 		}
 
@@ -33452,13 +33459,13 @@ int CreateDispGroupWnd()
 			centerrate = (double)12 / (double)140;
 			//linedatasize = max(140, linenum + 12);
 			//linedatasize = max(106, (linenum + 12));
-			linedatasize = (int)((double)linenum * 1.2);
+			linedatasize = (int)((double)s_grouplinenum * 1.2);
 		}
 		else {
 			centerrate = (double)12 / (double)70;
 			//linedatasize = max(70, linenum + 12);
 			//linedatasize = max(54, (linenum + 12));
-			linedatasize = (int)((double)linenum * 1.2);
+			linedatasize = (int)((double)s_grouplinenum * 1.2);
 		}
 
 
@@ -33499,18 +33506,17 @@ int CreateDispGroupWnd()
 		}
 		s_groupSCWnd->addParts(*s_groupsp3);
 		int lineno;
-		for (lineno = 0; lineno < linenum; lineno++) {
-			s_groupsp3->addParts1(*s_groupobj[lineno]);
+		for (lineno = 0; lineno < s_grouplinenum; lineno++) {
+			s_groupsp3->addParts1(*(s_groupobjvec[lineno]));
 
-			s_grouptestB[lineno] = new OWP_Button(L"Test");
-			if (!s_grouptestB[lineno]) {
+			OWP_Button* testbutton = new OWP_Button(L"Test");
+			if (!testbutton) {
 				_ASSERT(0);
 				return 1;
 			}
-			s_groupsp3->addParts2(*s_grouptestB[lineno]);
+			s_grouptestBvec.push_back(testbutton);
+			s_groupsp3->addParts2(*(s_grouptestBvec[lineno]));
 		}
-
-		s_grouplinenum = linenum;//!!!!!!!!!!!!!!!!!
 
 
 		s_groupsp1 = new OWP_Separator(s_groupWnd, false, 0.5, true);
@@ -33552,15 +33558,15 @@ int CreateDispGroupWnd()
 
 		{
 			int lineno1;
-			for (lineno1 = 0; lineno1 < linenum; lineno1++) {
-				if (s_grouptestB[lineno1]) {
-					s_grouptestB[lineno1]->setButtonListener([lineno1]() {
+			for (lineno1 = 0; lineno1 < s_grouplinenum; lineno1++) {
+				if (s_grouptestBvec[lineno1]) {
+					s_grouptestBvec[lineno1]->setButtonListener([lineno1]() {
 
 						//ボタンのtext色をリセット
 						int lineno;
 						for (lineno = 0; lineno < s_grouplinenum; lineno++) {
 							COLORREF normalcol = RGB(255, 255, 255);
-							s_grouptestB[lineno]->setTextColor(normalcol);
+							s_grouptestBvec[lineno]->setTextColor(normalcol);
 						}
 
 						bool currentstate = s_disponlyoneobj;
@@ -33575,7 +33581,7 @@ int CreateDispGroupWnd()
 							s_disponlyoneobj = true;
 							s_onlyoneobjno = lineno1;
 							COLORREF importantcol = RGB(168, 129, 129);
-							s_grouptestB[lineno1]->setTextColor(importantcol);
+							s_grouptestBvec[lineno1]->setTextColor(importantcol);
 						}
 					});
 				}
@@ -33645,17 +33651,24 @@ int DestroyDispGroupWnd()
 	ZeroMemory(s_groupselect, sizeof(OWP_CheckBoxA*) * MAXDISPGROUPNUM);
 
 	
+
 	int objno;
-	for (objno = 0; objno < MAXDISPOBJNUM; objno++) {
-		if (s_groupobj[objno]) {
-			delete s_groupobj[objno];
-		}
-		if (s_grouptestB[objno]) {
-			delete s_grouptestB[objno];
+	size_t objnum = s_groupobjvec.size();
+	for (objno = 0; objno < objnum; objno++) {
+		if (s_groupobjvec[objno]) {
+			delete s_groupobjvec[objno];
 		}
 	}
-	ZeroMemory(s_groupobj, sizeof(OWP_CheckBoxA*) * MAXDISPOBJNUM);
-	ZeroMemory(s_grouptestB, sizeof(OWP_Button*) * MAXDISPOBJNUM);
+	s_groupobjvec.clear();
+
+	int testno;
+	size_t testnum = s_grouptestBvec.size();
+	for (testno = 0; testno < testnum; testno++) {
+		if (s_grouptestBvec[testno]) {
+			delete s_grouptestBvec[testno];
+		}
+	}
+	s_grouptestBvec.clear();
 
 	s_grouplinenum = 0;
 
@@ -33689,6 +33702,11 @@ int DestroyDispGroupWnd()
 		delete s_groupWnd;
 		s_groupWnd = 0;
 	}
+
+
+	s_disponlyoneobj = false;
+	s_onlyoneobjno = -1;
+
 
 	return 0;
 }
