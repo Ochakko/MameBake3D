@@ -2112,7 +2112,7 @@ static OWP_Button* s_rtgfileload = 0;
 static OrgWindow* s_layerWnd = 0;
 static OWP_LayerTable* s_owpLayerTable = 0;
 
-#define MAXDISPOBJNUM	2048
+#define MAXDISPOBJNUM	4098
 #define MAXDISPGROUPNUM	20
 static OrgWindow* s_groupWnd = 0;
 static OWP_ScrollWnd* s_groupSCWnd = 0;
@@ -2124,11 +2124,13 @@ static OWP_Separator* s_groupsp3 = 0;
 static OWP_CheckBoxA* s_groupselect[MAXDISPGROUPNUM];
 static OWP_Button* s_groupsetB = 0;
 static OWP_Button* s_groupgetB = 0;
-static OWP_Button* s_grouptestB = 0;
+static OWP_Button* s_grouptestB[MAXDISPOBJNUM];
 static OWP_Button* s_grouponB = 0;
 static OWP_Button* s_groupoffB = 0;
 static OWP_CheckBoxA* s_groupobj[MAXDISPOBJNUM];
-
+static int s_grouplinenum = 0;
+static bool s_disponlyoneobj = false;//for test button of groupWnd
+static int s_onlyoneobjno = -1;//for test button of groupWnd
 
 
 
@@ -3077,6 +3079,7 @@ static int SetLightDirection();
 
 static int OnRenderSetShaderConst();
 static int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext);
+static int OnRenderOnlyOneObj(ID3D11DeviceContext* pd3dImmediateContext);
 static int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel);
 static int OnRenderGround(ID3D11DeviceContext* pd3dImmediateContext);
 static int OnRenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext);
@@ -4319,10 +4322,14 @@ void InitApp()
 		ZeroMemory(s_groupselect, sizeof(OWP_CheckBoxA*)* MAXDISPGROUPNUM);
 		s_groupsetB = 0;
 		s_groupgetB = 0;
-		s_grouptestB = 0;
+		ZeroMemory(s_grouptestB, sizeof(OWP_Button*) * MAXDISPOBJNUM);
 		s_grouponB = 0;
 		s_groupoffB = 0;
 		ZeroMemory(s_groupobj, sizeof(OWP_CheckBoxA*) * MAXDISPOBJNUM);
+
+		s_grouplinenum = 0;
+		s_disponlyoneobj = false;//for test button of groupWnd
+		s_onlyoneobjno = -1;//for test button of groupWnd
 	}
 
 
@@ -8633,10 +8640,17 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_calclimitedwmflag, 0) == 0) &&
 		!s_underdelmodel && !s_underdelmotion && 
 		!s_underselectmodel && !s_underselectmotion && !s_underselectcamera) {
-		OnRenderModel(pd3dImmediateContext);
-		OnRenderGround(pd3dImmediateContext);
-		OnRenderBoneMark(pd3dImmediateContext);
-		OnRenderSelect(pd3dImmediateContext);
+
+		if (s_disponlyoneobj == false) {
+			OnRenderModel(pd3dImmediateContext);
+			OnRenderGround(pd3dImmediateContext);
+			OnRenderBoneMark(pd3dImmediateContext);
+			OnRenderSelect(pd3dImmediateContext);
+		}
+		else {
+			OnRenderOnlyOneObj(pd3dImmediateContext);
+		}
+		
 		//OnRenderUtDialog(fElapsedTime);
 		if (s_dispsampleui) {//ctrl + 1 (one) key --> toggle
 			OnRenderSprite(pd3dImmediateContext);
@@ -33393,11 +33407,11 @@ int CreateDispGroupWnd()
 			_ASSERT(0);
 			return 1;
 		}
-		s_grouptestB = new OWP_Button(L"Test");
-		if (!s_grouptestB) {
-			_ASSERT(0);
-			return 1;
-		}
+		//s_grouptestB = new OWP_Button(L"Test");
+		//if (!s_grouptestB) {
+		//	_ASSERT(0);
+		//	return 1;
+		//}
 		s_grouponB = new OWP_Button(L"ON");
 		if (!s_grouponB) {
 			_ASSERT(0);
@@ -33437,14 +33451,14 @@ int CreateDispGroupWnd()
 		if (g_4kresolution) {
 			centerrate = (double)12 / (double)140;
 			//linedatasize = max(140, linenum + 12);
-			//linedatasize = max(106, linenum);
-			linedatasize = linenum * 2;
+			//linedatasize = max(106, (linenum + 12));
+			linedatasize = (int)((double)linenum * 1.2);
 		}
 		else {
 			centerrate = (double)12 / (double)70;
 			//linedatasize = max(70, linenum + 12);
-			//linedatasize = max(54, linenum);
-			linedatasize = linenum * 2;
+			//linedatasize = max(54, (linenum + 12));
+			linedatasize = (int)((double)linenum * 1.2);
 		}
 
 
@@ -33478,7 +33492,7 @@ int CreateDispGroupWnd()
 
 
 		s_groupsp0->addParts2(*s_groupSCWnd);
-		s_groupsp3 = new OWP_Separator(s_groupWnd, false, 0.8, true);
+		s_groupsp3 = new OWP_Separator(s_groupWnd, false, 0.8, true, s_groupSCWnd);//parent : s_groupSCWnd
 		if (!s_groupsp3) {
 			_ASSERT(0);
 			return 1;
@@ -33487,8 +33501,16 @@ int CreateDispGroupWnd()
 		int lineno;
 		for (lineno = 0; lineno < linenum; lineno++) {
 			s_groupsp3->addParts1(*s_groupobj[lineno]);
+
+			s_grouptestB[lineno] = new OWP_Button(L"Test");
+			if (!s_grouptestB[lineno]) {
+				_ASSERT(0);
+				return 1;
+			}
+			s_groupsp3->addParts2(*s_grouptestB[lineno]);
 		}
 
+		s_grouplinenum = linenum;//!!!!!!!!!!!!!!!!!
 
 
 		s_groupsp1 = new OWP_Separator(s_groupWnd, false, 0.5, true);
@@ -33526,7 +33548,42 @@ int CreateDispGroupWnd()
 		s_groupsp1->addParts2(*s_groupgetB);
 		s_groupsp2->addParts1(*s_grouponB);
 		s_groupsp2->addParts2(*s_groupoffB);
-		s_groupsp2->addParts2(*s_grouptestB);
+		//s_groupsp2->addParts2(*s_grouptestB);
+
+		{
+			int lineno1;
+			for (lineno1 = 0; lineno1 < linenum; lineno1++) {
+				if (s_grouptestB[lineno1]) {
+					s_grouptestB[lineno1]->setButtonListener([lineno1]() {
+
+						//ボタンのtext色をリセット
+						int lineno;
+						for (lineno = 0; lineno < s_grouplinenum; lineno++) {
+							COLORREF normalcol = RGB(255, 255, 255);
+							s_grouptestB[lineno]->setTextColor(normalcol);
+						}
+
+						bool currentstate = s_disponlyoneobj;
+
+						if (lineno1 == s_onlyoneobjno) {
+							//現在表示中のobjをオフにした場合にだけ　s_disponlyoneobjをオフにする
+							//他のobjのTestボタンを押した場合には　s_disponlyoneobjオンのまま　表示objを変更する
+							s_disponlyoneobj = false;
+							s_onlyoneobjno = -1;
+						}
+						else {
+							s_disponlyoneobj = true;
+							s_onlyoneobjno = lineno1;
+							COLORREF importantcol = RGB(168, 129, 129);
+							s_grouptestB[lineno1]->setTextColor(importantcol);
+						}
+					});
+				}
+			}
+		}
+
+
+
 
 
 		//autoResizeしないと　チェックボックス４段目以下が反応なかった
@@ -33570,10 +33627,6 @@ int DestroyDispGroupWnd()
 		delete s_groupgetB;
 		s_groupgetB = 0;
 	}
-	if (s_grouptestB) {
-		delete s_grouptestB;
-		s_grouptestB = 0;
-	}
 	if (s_grouponB) {
 		delete s_grouponB;
 		s_grouponB = 0;
@@ -33591,13 +33644,21 @@ int DestroyDispGroupWnd()
 	}
 	ZeroMemory(s_groupselect, sizeof(OWP_CheckBoxA*) * MAXDISPGROUPNUM);
 
+	
 	int objno;
 	for (objno = 0; objno < MAXDISPOBJNUM; objno++) {
 		if (s_groupobj[objno]) {
 			delete s_groupobj[objno];
 		}
+		if (s_grouptestB[objno]) {
+			delete s_grouptestB[objno];
+		}
 	}
 	ZeroMemory(s_groupobj, sizeof(OWP_CheckBoxA*) * MAXDISPOBJNUM);
+	ZeroMemory(s_grouptestB, sizeof(OWP_Button*) * MAXDISPOBJNUM);
+
+	s_grouplinenum = 0;
+
 
 	if (s_groupsp3) {
 		delete s_groupsp3;
@@ -35680,6 +35741,49 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 
 	return 0;
 }
+
+int OnRenderOnlyOneObj(ID3D11DeviceContext* pd3dImmediateContext)
+{
+	//if (g_bvh2fbxbatchflag || g_motioncachebatchflag || g_retargetbatchflag) {
+	//if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) || (InterlockedAdd(&g_motioncachebatchflag, 0) != 0) || (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
+	if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) != 0) || (InterlockedAdd(&g_retargetbatchflag, 0) != 0)) {
+		return 0;
+	}
+
+	if (s_nowloading == true) {
+		return 0;
+	}
+
+	if (!s_model) {
+		return 0;
+	}
+
+
+	int rendercount;
+	for (rendercount = 0; rendercount < 2; rendercount++) {
+		bool withalpha;
+		if (rendercount == 0) {
+			withalpha = false;
+		}
+		else {
+			withalpha = true;
+		}
+
+		CModel* curmodel = s_model;
+
+		//if (curmodel && curmodel->GetLoadedFlag() && curmodel->GetModelDisp()){
+		if (curmodel && curmodel->m_loadedflag && curmodel->m_modeldisp) {//curmodelが作成途中の場合を考えて、先頭から２つのpublicデータメンバーを参照する
+			int lightflag = 1;
+			ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
+			int btflag = 0;
+
+			curmodel->RenderTest(withalpha, pd3dImmediateContext, g_lightflag, diffusemult, s_onlyoneobjno);
+		}
+	}
+
+	return 0;
+}
+
 
 int OnRenderGround(ID3D11DeviceContext* pd3dImmediateContext)
 {

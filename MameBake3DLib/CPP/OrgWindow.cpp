@@ -178,17 +178,57 @@ namespace OrgWinGUI{
 				}
 			}
 
+
+
 			//全ての内部パーツを描画
+			int hoststartx;
+			int hostendx;
+			int hoststarty;
+			int hostendy;
+			if (getParentScrollWnd()) {
+				hoststartx = getParentScrollWnd()->getPartsAreaPos().x;
+				hostendx = getParentScrollWnd()->getPartsAreaPos().x + getSize().x;
+				hoststarty = getParentScrollWnd()->getPartsAreaPos().y;
+				hostendy = getParentScrollWnd()->getPartsAreaPos().y + getSize().y;
+
+			}
+			else {
+				hoststartx = getPos().x;
+				hostendx = getPos().x + getSize().x;
+				hoststarty = getPos().y;
+				hostendy = getPos().y + getSize().y;
+			}
+
 			std::list<OrgWindowParts*>::iterator itr;
 			for (itr = partsList1.begin(); itr != partsList1.end(); itr++) {
 				if(*itr){
-					(*itr)->draw();
+					WindowPos clientpos = (*itr)->getPos();
+					if ((clientpos.y >= hoststarty) && (clientpos.y <= hostendy)) {//2023/09/19
+						(*itr)->draw();
+					}
+					else {
+						//スクロールで見切れた場合は描画しない
+						if (clientpos.y > hostendy) {
+							//後続のpartsのYは更に大きいはずなので　高速化のために処理を終了
+							break;
+						}
+					}					
 				}
 			}
 			std::list<OrgWindowParts*>::iterator itr2;
 			for (itr2 = partsList2.begin(); itr2 != partsList2.end(); itr2++) {
 				if (*itr2) {
-					(*itr2)->draw();
+					WindowPos clientpos = (*itr2)->getPos();
+					if ((clientpos.y >= hoststarty) && (clientpos.y <= hostendy)) {//2023/09/19
+						(*itr2)->draw();
+					}
+					else {
+						//スクロールで見切れた場合は描画しない
+						if (clientpos.y > hostendy) {
+							//後続のpartsのYは更に大きいはずなので　高速化のために処理を終了
+							break;
+						}
+					}
 				}
 			}
 

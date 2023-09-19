@@ -219,6 +219,13 @@ public:
 
 	int RenderRefArrow(bool limitdegflag, ID3D11DeviceContext* pd3dImmediateContext, 
 		CBone* boneptr, ChaVector4 diffusemult, int refmult, std::vector<ChaVector3> vecbonepos);
+
+	int RenderTest(bool withalpha, ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int srcobjno);
+
+	int SelectRenderObject(int srcobjno, std::vector<CMQOObject*>& selectedobjvec);
+	void SelectRenderObjectReq(FbxNode* pNode, std::vector<CMQOObject*>& selectedobjvec);
+
+
 /**
  * @fn
  * RenderBoneMark
@@ -2026,6 +2033,8 @@ private:
 	CNodeOnLoad* m_nodeonload;//CNodeOnLoad of Root Node.
 	std::map<FbxNode*, CMQOObject*> m_node2mqoobj;
 	std::map<FbxNode*, CBone*> m_node2bone;
+	std::map<int, FbxNode*> m_objno2node;
+
 
 	bool m_noboneflag;
 	CCameraFbx m_camerafbx;

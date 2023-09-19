@@ -1772,13 +1772,15 @@ void s_dummyfunc()
 	////////////////										////////////////
 	////////////////----------------------------------------////////////////
 
+	class OWP_ScrollWnd;
+
 	///<summary>
 	///	ウィンドウ内部品"セパレータ"クラス
 	///</summary>
 	class OWP_Separator : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_Separator(OrgWindow* _parentWindow, bool _only1line, double _centerRate = 0.5, bool _divideSide = true) : OrgWindowParts() {
+		OWP_Separator(OrgWindow* _parentWindow, bool _only1line, double _centerRate = 0.5, bool _divideSide = true, OWP_ScrollWnd* _parentScrollWnd = 0) : OrgWindowParts() {
 			parentWindow = _parentWindow;
 			currentPartsSizeY1= 0;
 			currentPartsSizeY2= 0;
@@ -1793,6 +1795,7 @@ void s_dummyfunc()
 			partsList2.clear();
 
 			only1line = _only1line;
+			parentScrollWnd = _parentScrollWnd;//2023/09/19
 		}
 		~OWP_Separator(){
 		}
@@ -2180,6 +2183,11 @@ void s_dummyfunc()
 			}
 		}
 
+		OWP_ScrollWnd* getParentScrollWnd()//2023/09/19
+		{
+			return parentScrollWnd;
+		}
+
 	private:
 		////////////////////////// MemberVar /////////////////////////////
 		int currentPartsSizeY1;
@@ -2194,6 +2202,7 @@ void s_dummyfunc()
 		bool shiftDrag;
 			
 		bool only1line;
+		OWP_ScrollWnd* parentScrollWnd;//2023/09/19
 
 		static const int LINE_MARGIN= 1;
 		static const int HANDLE_SIZE= 12;
@@ -10031,6 +10040,12 @@ void s_dummyfunc()
 		void setCallPropertyListener(std::function<void(int targetIndex)> listener){
 			this->callPropertyListener = listener;
 		}
+
+
+		WindowPos getPartsAreaPos() {
+			return partsAreaPos;
+		}
+
 
 	private:
 		////////////////////////// MemberVar /////////////////////////////
