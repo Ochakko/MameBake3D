@@ -32,6 +32,7 @@ class CMQOMaterial;
 #define MAXMODELNUM		100
 #define MAXRENUM		100
 
+#define MAXDISPGROUPNUM	20
 
 //lightnumの最大数はシェーダー(Media/Shader/Ochakko.fx)の変更も必要とするので注意
 #define LIGHTNUMMAX		8

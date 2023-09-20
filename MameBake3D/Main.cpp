@@ -2113,7 +2113,7 @@ static OrgWindow* s_layerWnd = 0;
 static OWP_LayerTable* s_owpLayerTable = 0;
 
 //#define MAXDISPOBJNUM	4098 //vector<>に変更したため不要に
-#define MAXDISPGROUPNUM	20
+//#define MAXDISPGROUPNUM	20 //coef.hに移動
 static OrgWindow* s_groupWnd = 0;
 static OWP_ScrollWnd* s_groupSCWnd = 0;
 static OWP_Separator* s_groupsp0 = 0;
@@ -33441,7 +33441,7 @@ int CreateDispGroupWnd()
 			}
 		}
 
-		int result = s_model->SetDispGroupObj(s_groupobjvec);
+		int result = s_model->SetDispGroupGUI(s_groupobjvec);
 		if (result != 0) {
 			_ASSERT(0);
 			return 1;

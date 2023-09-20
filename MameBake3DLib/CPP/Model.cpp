@@ -479,8 +479,13 @@ int CModel::InitParams()
 	m_nodeonload = 0;
 	m_node2mqoobj.clear();
 	m_node2bone.clear();
-	m_objno2node.clear();
+	m_objno2digelem.clear();
 
+	int groupindex;
+	for (groupindex = 0; groupindex < MAXDISPGROUPNUM; groupindex++) {
+		m_dispgroup[groupindex].clear();
+		m_dispgroupON[groupindex] = true;
+	}
 
 	m_ikstopname.clear();
 
@@ -1165,6 +1170,13 @@ _ASSERT(m_bonelist[0]);
 		SetMaterialName();
 
 
+
+		//for dispgroup
+		CreateObjno2DigElem();
+		MakeDispGroupForRender();
+
+
+
 		_ASSERT(m_bonelist[0]);
 
 		map<int, CBone*>::iterator itrbone;
@@ -1323,79 +1335,93 @@ int CModel::OnRender(bool withalpha,
 
 	ChaVector4 materialdisprate = GetMaterialDispRate();
 
-	map<int,CMQOObject*>::iterator itr;
-	for( itr = m_object.begin(); itr != m_object.end(); itr++ ){
-		CMQOObject* curobj = itr->second;
-		if( curobj && curobj->GetVisible() ){
-			if( curobj->GetDispObj() ){
+	//map<int,CMQOObject*>::iterator itr;
+	//for( itr = m_object.begin(); itr != m_object.end(); itr++ ){
+	//	CMQOObject* curobj = itr->second;
+	int groupindex;
+	for(groupindex = 0; groupindex < MAXDISPGROUPNUM; groupindex++){
 
-				CMQOMaterial* rmaterial = 0;
-				if( curobj->GetPm3() ){
-					bool found_alpha = false;
-					bool found_noalpha = false;
-					int blno;
-					for (blno = 0; blno < curobj->GetPm3()->GetOptMatNum(); blno++) {
-						MATERIALBLOCK* currb = curobj->GetPm3()->GetMatBlock() + blno;
-						CMQOMaterial* curmat;
-						curmat = currb->mqomat;
-						if (!curmat) {
-							continue;
+		if (m_dispgroupON[groupindex] == true) {
+
+			int elemnum = (int)m_dispgroup[groupindex].size();
+			int elemno;
+			for (elemno = 0; elemno < elemnum; elemno++) {
+
+				CMQOObject* curobj = (m_dispgroup[groupindex])[elemno].mqoobject;
+
+				if (curobj && curobj->GetVisible()) {
+					if (curobj->GetDispObj()) {
+
+						CMQOMaterial* rmaterial = 0;
+						if (curobj->GetPm3()) {
+							bool found_alpha = false;
+							bool found_noalpha = false;
+							int blno;
+							for (blno = 0; blno < curobj->GetPm3()->GetOptMatNum(); blno++) {
+								MATERIALBLOCK* currb = curobj->GetPm3()->GetMatBlock() + blno;
+								CMQOMaterial* curmat;
+								curmat = currb->mqomat;
+								if (!curmat) {
+									continue;
+								}
+								if ((curmat->GetDif4F().w * diffusemult.w) <= 0.99999f) {
+									found_alpha = true;
+								}
+								else {
+									found_noalpha = true;
+								}
+							}
+							if ((withalpha == false) && (found_noalpha == false)) {
+								//不透明描画時　１つも不透明がなければ　レンダースキップ
+								continue;
+							}
+							if ((withalpha == true) && (found_alpha == false)) {
+								//半透明描画時　１つも半透明がなければ　レンダースキップ
+								continue;
+							}
+
+							CallF(SetShaderConst(curobj, btflag), return 1);
+							CallF(curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate), return 1);
 						}
-						if ((curmat->GetDif4F().w * diffusemult.w) <= 0.99999f) {
-							found_alpha = true;
+						else if (curobj->GetPm4()) {
+							bool found_alpha = false;
+							bool found_noalpha = false;
+							std::map<int, CMQOMaterial*>::iterator itrmaterial;
+							for (itrmaterial = curobj->GetMaterialBegin(); itrmaterial != curobj->GetMaterialEnd(); itrmaterial++) {
+								CMQOMaterial* curmaterial = itrmaterial->second;
+								if (curmaterial) {
+									if ((curmaterial->GetDif4F().w * diffusemult.w) <= 0.99999f) {
+										found_alpha = true;
+									}
+									else {
+										found_noalpha = true;
+									}
+								}
+							}
+							if ((withalpha == false) && (found_noalpha == false)) {
+								//不透明描画時　１つも不透明がなければ　レンダースキップ
+								continue;
+							}
+							if ((withalpha == true) && (found_alpha == false)) {
+								//半透明描画時　１つも半透明がなければ　レンダースキップ
+								continue;
+							}
+							CallF(SetShaderConst(curobj, btflag), return 1);
+							rmaterial = curobj->GetMaterialBegin()->second;
+							CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, rmaterial, lightflag, diffusemult, materialdisprate), return 1);
 						}
 						else {
-							found_noalpha = true;
+							_ASSERT(0);
 						}
 					}
-					if ((withalpha == false) && (found_noalpha == false)) {
-						//不透明描画時　１つも不透明がなければ　レンダースキップ
-						continue;
-					}
-					if ((withalpha == true) && (found_alpha == false)) {
-						//半透明描画時　１つも半透明がなければ　レンダースキップ
-						continue;
-					}
-
-					CallF(SetShaderConst(curobj, btflag), return 1);
-					CallF( curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate ), return 1 );
-				}
-				else if (curobj->GetPm4()){
-					bool found_alpha = false;
-					bool found_noalpha = false;
-					std::map<int, CMQOMaterial*>::iterator itrmaterial;
-					for (itrmaterial = curobj->GetMaterialBegin(); itrmaterial != curobj->GetMaterialEnd(); itrmaterial++) {
-						CMQOMaterial* curmaterial = itrmaterial->second;
-						if (curmaterial) {
-							if ((curmaterial->GetDif4F().w * diffusemult.w) <= 0.99999f) {
-								found_alpha = true;
-							}
-							else {
-								found_noalpha = true;
-							}
+					if (curobj->GetDispLine()) {
+						if ((withalpha == false) && ((curobj->GetExtLine()->m_color.w * diffusemult.w) > 0.99999f)) {
+							CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult, materialdisprate), return 1);
+						}
+						else if ((withalpha == true) && (((curobj->GetExtLine()->m_color.w * diffusemult.w) <= 0.99999f))) {
+							CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult, materialdisprate), return 1);
 						}
 					}
-					if ((withalpha == false) && (found_noalpha == false)) {
-						//不透明描画時　１つも不透明がなければ　レンダースキップ
-						continue;
-					}
-					if ((withalpha == true) && (found_alpha == false)) {
-						//半透明描画時　１つも半透明がなければ　レンダースキップ
-						continue;
-					}
-					CallF(SetShaderConst(curobj, btflag), return 1);
-					rmaterial = curobj->GetMaterialBegin()->second;
-					CallF( curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, rmaterial, lightflag, diffusemult, materialdisprate ), return 1 );
-				}else{
-					_ASSERT( 0 );
-				}
-			}
-			if (curobj->GetDispLine()) {
-				if ((withalpha == false) && ((curobj->GetExtLine()->m_color.w * diffusemult.w) > 0.99999f)) {
-					CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult, materialdisprate), return 1);
-				}
-				else if ((withalpha == true) && (((curobj->GetExtLine()->m_color.w * diffusemult.w) <= 0.99999f))) {
-					CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult, materialdisprate), return 1);
 				}
 			}
 		}
@@ -1407,13 +1433,15 @@ int CModel::OnRender(bool withalpha,
 
 int CModel::SelectRenderObject(int srcobjno, std::vector<CMQOObject*>& selectedobjvec)
 {
-	map<int, FbxNode*>::iterator itrnode;
-	itrnode = m_objno2node.find(srcobjno);
-	if (itrnode == m_objno2node.end()) {
+	map<int, DISPGROUPELEM>::iterator itrdigelem;
+	itrdigelem = m_objno2digelem.find(srcobjno);
+	if (itrdigelem == m_objno2digelem.end()) {
 		return 0;
 	}
 
-	SelectRenderObjectReq(itrnode->second, selectedobjvec);
+	DISPGROUPELEM digelem = itrdigelem->second;
+
+	SelectRenderObjectReq(digelem.pNode, selectedobjvec);
 
 	return 0;
 }
@@ -18469,25 +18497,23 @@ double CModel::GetCurrentFrame()
 	}
 }
 
-
-int CModel::SetDispGroupObj(std::vector<OrgWinGUI::OWP_CheckBoxA*>& checkboxvec)
+int CModel::CreateObjno2DigElem()
 {
 	if (!m_pscene) {
 		_ASSERT(0);
 		return 1;
 	}
 
-	m_objno2node.clear();
-	checkboxvec.clear();
+	m_objno2digelem.clear();
 
 	int objno = 0;
 	int depth = 0;
-	SetDispGroupObjReq(m_pscene->GetRootNode(), checkboxvec, &objno, depth);
+	CreateObjno2DigElemReq(m_pscene->GetRootNode(), &objno, depth);
 
 	return 0;
-}
 
-void CModel::SetDispGroupObjReq(FbxNode* pNode, std::vector<OrgWinGUI::OWP_CheckBoxA*>& checkboxvec, int* pobjno, int depth)
+}
+void CModel::CreateObjno2DigElemReq(FbxNode* pNode, int* pobjno, int depth)
 {
 	if (pNode) {
 
@@ -18505,16 +18531,59 @@ void CModel::SetDispGroupObjReq(FbxNode* pNode, std::vector<OrgWinGUI::OWP_Check
 			opeflag = true;
 		}
 
-
 		if (opeflag) {
+			DISPGROUPELEM digelem;
+			digelem.Init();
+			digelem.objno = *pobjno;
+			digelem.depth = depth;
+			digelem.groupno = 1;// default value : groupno = groupindex + 1
+			digelem.pNode = pNode;
+			
+			map<FbxNode*, CMQOObject*>::iterator itrmqoobj;
+			itrmqoobj = m_node2mqoobj.find(pNode);
+			if (itrmqoobj != m_node2mqoobj.end()) {
+				digelem.mqoobject = itrmqoobj->second;
+			}
+			else {
+				digelem.mqoobject = 0;
+			}
+
+			m_objno2digelem[*pobjno] = digelem;
+
+			(*pobjno)++;
+		}
+
+		int childNodeNum;
+		childNodeNum = pNode->GetChildCount();
+		int childdepth = depth + 1;
+		for (int i = 0; i < childNodeNum; i++)
+		{
+			FbxNode* pChild = pNode->GetChild(i);  // 子ノードを取得
+			if (pChild) {
+				CreateObjno2DigElemReq(pChild, pobjno, childdepth);
+			}
+		}
+	}
+}
+
+int CModel::SetDispGroupGUI(std::vector<OrgWinGUI::OWP_CheckBoxA*>& checkboxvec)
+{
+	checkboxvec.clear();
+
+	int objnum = (int)m_objno2digelem.size();
+	int objno;
+	for (objno = 0; objno < objnum; objno++) {
+		DISPGROUPELEM digelem = m_objno2digelem[objno];
+	
+		if (digelem.pNode) {
 			char meshnameA[256] = { 0 };
-			strcpy_s(meshnameA, 256, pNode->GetName());
+			strcpy_s(meshnameA, 256, digelem.pNode->GetName());
 			WCHAR meshnameW[256] = { 0L };
 			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, meshnameA, 256, meshnameW, 256);
 
 			WCHAR labelnameW[1024] = { 0L };
 			int depthindex;
-			for (depthindex = 0; depthindex < depth; depthindex++) {
+			for (depthindex = 0; depthindex < digelem.depth; depthindex++) {
 				wcscat_s(labelnameW, 1024, L"  ");
 			}
 			wcscat_s(labelnameW, 1024, meshnameW);
@@ -18522,30 +18591,37 @@ void CModel::SetDispGroupObjReq(FbxNode* pNode, std::vector<OrgWinGUI::OWP_Check
 			OWP_CheckBoxA* newchk = new OWP_CheckBoxA(labelnameW, 0);
 			if (!newchk) {
 				_ASSERT(0);
-				return;
+				return 1;
 			}
 
 			checkboxvec.push_back(newchk);
-			m_objno2node[*pobjno] = pNode;
-
-			(*pobjno)++;
 		}
+	}
 
 
-		int childNodeNum;
-		childNodeNum = pNode->GetChildCount();
+	return 0;
+}
 
-		int childdepth = depth + 1;
+int CModel::MakeDispGroupForRender()
+{
+	int groupindex;
+	for (groupindex = 0; groupindex < MAXDISPGROUPNUM; groupindex++) {
+		m_dispgroup[groupindex].clear();
+	}
 
-		for (int i = 0; i < childNodeNum; i++)
-		{
-			FbxNode* pChild = pNode->GetChild(i);  // 子ノードを取得
-			if (pChild) {
-				SetDispGroupObjReq(pChild, checkboxvec, pobjno, childdepth);
+
+	for (groupindex = 0; groupindex < MAXDISPGROUPNUM; groupindex++) {
+		int objnum = (int)m_objno2digelem.size();
+		int objno;
+		for (objno = 0; objno < objnum; objno++) {
+			DISPGROUPELEM digelem = m_objno2digelem[objno];
+
+			if (digelem.groupno == (groupindex + 1)) {
+				m_dispgroup[groupindex].push_back(digelem);
 			}
 		}
 	}
 
+	return 0;
 }
-
 

@@ -26,6 +26,7 @@
 #include <lmtFile.h>
 #include <RigFile.h>
 #include <LIMFIle.h>
+#include <DispGroupFile.h>
 
 #include "..\\..\\MameBake3D\\FrameCopyDlg.h"
 
@@ -375,6 +376,23 @@ int CChaFile::WriteChara(bool limitdegflag, MODELELEM* srcme, WCHAR* projname, m
 		}
 	}
 
+
+
+
+	{
+		WCHAR wfilename[MAX_PATH] = { 0L };
+		ZeroMemory(wfilename, sizeof(WCHAR) * 256);
+		swprintf_s(wfilename, 256, L"%s.dig", curmodel->GetFileName());
+
+		WCHAR pathname[MAX_PATH] = { 0L };
+		swprintf_s(pathname, MAX_PATH, L"%s\\%s", charafolder, wfilename);
+
+		CDispGroupFile digfile;
+		CallF(digfile.WriteDispGroupFile(pathname, curmodel), return 1);
+	}
+
+
+
 	int savecurreindex = curmodel->GetCurReIndex();
 	for( refno = 0; refno < refnum; refno++ ){
 		REINFO currei = curmodel->GetRigidElemInfo( refno );
@@ -682,7 +700,17 @@ int CChaFile::ReadChara(bool limitdegflag, int charanum, int characnt, XMLIOBUF*
 	newmodel->SetMaterialDispRate(materialdisprate);
 
 
+	{
+		WCHAR digfilename[MAX_PATH] = { 0L };
+		ZeroMemory(digfilename, sizeof(WCHAR) * 256);
+		swprintf_s(digfilename, 256, L"%s.dig", newmodel->GetFileName());
 
+		WCHAR pathname[MAX_PATH] = { 0L };
+		swprintf_s(pathname, MAX_PATH, L"%s\\%s\\%s", m_wloaddir, wmodelfolder, digfilename);
+
+		CDispGroupFile digfile;
+		digfile.LoadDispGroupFile(pathname, newmodel);
+	}
 
 	if( refnum > 0 ){
 		int refcnt;

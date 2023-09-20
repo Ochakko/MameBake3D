@@ -110,6 +110,27 @@ typedef struct tag_physikrec
 	};
 }PHYSIKREC;
 
+typedef struct tag_dispgroupelem
+{
+	int objno;
+	int depth;
+	int groupno;
+	FbxNode* pNode;
+	CMQOObject* mqoobject;
+
+	void Init() {
+		objno = 0;
+		depth = 0;
+		groupno = 1;
+		pNode = 0;
+		mqoobject = 0;
+	};
+
+	tag_dispgroupelem() {
+		Init();
+	};
+}DISPGROUPELEM;
+
 
 #define MAXPHYSIKRECCNT		(60 * 60)
 
@@ -223,12 +244,14 @@ public:
 
 
 	//DispGroup : test button : exclusive display
-	int SetDispGroupObj(std::vector<OrgWinGUI::OWP_CheckBoxA*>& checkboxvec);
-	void SetDispGroupObjReq(FbxNode* srcnode, std::vector<OrgWinGUI::OWP_CheckBoxA*>& checkboxvec, int* pobjno, int depth);
+	int SetDispGroupGUI(std::vector<OrgWinGUI::OWP_CheckBoxA*>& checkboxvec);
 	int RenderTest(bool withalpha, ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int srcobjno);
 	int SelectRenderObject(int srcobjno, std::vector<CMQOObject*>& selectedobjvec);
 	void SelectRenderObjectReq(FbxNode* pNode, std::vector<CMQOObject*>& selectedobjvec);
-
+	
+	int CreateObjno2DigElem();
+	void CreateObjno2DigElemReq(FbxNode* pNode, int* pobjno, int depth);
+	int MakeDispGroupForRender();
 
 /**
  * @fn
@@ -309,7 +332,7 @@ public:
 	int UpdateMatrix(bool limitdegflag, ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinished = false );
 	void UpdateMatrixReq(bool limitdegflag, CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
 	int ChkInView();
-	int SwapCurrentMotionPoint();
+	//int SwapCurrentMotionPoint();
 	int HierarchyRouteUpdateMatrix(bool limitdegflag, CBone* srcbone, ChaMatrix* wmat, ChaMatrix* vpmat);
 	//int UpdateLimitedWM(int srcmotid, double srcframe);
 	int ClearLimitedWM(int srcmotid, double srcframe);
@@ -1909,6 +1932,60 @@ public: //accesser
 	}
 
 
+	int GetDispGroupForRender(int srcgroupindex, std::vector<DISPGROUPELEM>& dstvec)
+	{
+		if ((srcgroupindex >= 0) && (srcgroupindex < MAXDISPGROUPNUM)) {
+			dstvec = m_dispgroup[srcgroupindex];
+			return 0;
+		}
+		else {
+			dstvec.clear();
+			return 1;
+		}
+	}
+	void SetDispGroup(int srcgroupindex, const char* srcnodename)
+	{
+		if (!srcnodename) {
+			_ASSERT(0);
+			return;
+		}
+
+		if ((srcgroupindex >= 0) && (srcgroupindex < MAXDISPGROUPNUM)) {
+			std::map<int, DISPGROUPELEM>::iterator itrdigelem;
+			for (itrdigelem = m_objno2digelem.begin(); itrdigelem != m_objno2digelem.end(); itrdigelem++) {
+				DISPGROUPELEM digelem = itrdigelem->second;
+				if (digelem.pNode) {
+					char chknodename[256] = { 0 };
+					strcpy_s(chknodename, 256, digelem.pNode->GetName());
+					if (strcmp(chknodename, srcnodename) == 0) {//push_backするdigelemのpNodeが見つかった場合
+						itrdigelem->second.groupno = srcgroupindex + 1;//groupno = groupindex + 1
+					}
+				}
+			}
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
+	bool GetDispGroupON(int srcgroupindex) 
+	{
+		if ((srcgroupindex >= 0) && (srcgroupindex < MAXDISPGROUPNUM)) {
+			return m_dispgroupON[srcgroupindex];
+		}
+		else {
+			return false;
+		}
+	}
+	void SetDispGroupON(int srcgroupindex, bool srcflag)
+	{
+		if ((srcgroupindex >= 0) && (srcgroupindex < MAXDISPGROUPNUM)) {
+			m_dispgroupON[srcgroupindex] = srcflag;
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
+
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];
@@ -2034,8 +2111,11 @@ private:
 	CNodeOnLoad* m_nodeonload;//CNodeOnLoad of Root Node.
 	std::map<FbxNode*, CMQOObject*> m_node2mqoobj;
 	std::map<FbxNode*, CBone*> m_node2bone;
-	std::map<int, FbxNode*> m_objno2node;
 
+
+	std::map<int, DISPGROUPELEM> m_objno2digelem;
+	std::vector<DISPGROUPELEM> m_dispgroup[MAXDISPGROUPNUM];//m_dispgroup[groupno] = vector<objno>
+	bool m_dispgroupON[MAXDISPGROUPNUM];
 
 	bool m_noboneflag;
 	CCameraFbx m_camerafbx;
