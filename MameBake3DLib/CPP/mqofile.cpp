@@ -267,6 +267,12 @@ int CMQOFile::LoadMQOFile_aft( float multiple, ChaVector3 offsetpos, ChaVector3 
 	CallF( m_modelptr->MakeExtLine(), return 1 );
 	CallF( m_modelptr->MakeObjectName(), return 1 );
 
+
+	//for dispgroup
+	CallF(m_modelptr->CreateObjno2DigElem(), return 1);
+	CallF(m_modelptr->MakeDispGroupForRender(), return 1);
+
+
 	return 0;
 }
 

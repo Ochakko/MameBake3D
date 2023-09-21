@@ -18549,16 +18549,38 @@ double CModel::GetCurrentFrame()
 
 int CModel::CreateObjno2DigElem()
 {
-	if (!m_pscene) {
-		_ASSERT(0);
-		return 1;
-	}
-
 	m_objno2digelem.clear();
 
-	int objno = 0;
-	int depth = 0;
-	CreateObjno2DigElemReq(m_pscene->GetRootNode(), &objno, depth);
+	if (m_pscene) {
+		//#########
+		//fbx file
+		//#########
+		int objno = 0;
+		int depth = 0;
+		CreateObjno2DigElemReq(m_pscene->GetRootNode(), &objno, depth);
+	}
+	else {
+		//#########
+		//mqo file
+		//#########
+		int objno = 0;
+		int depth = 0;
+		map<int,CMQOObject*>::iterator itr;
+		for (itr = m_object.begin(); itr != m_object.end(); itr++) {
+			CMQOObject* curobj = itr->second;
+
+			DISPGROUPELEM digelem;
+			digelem.Init();
+			digelem.objno = objno;
+			digelem.depth = depth;
+			digelem.groupno = 1;// default value : groupno = groupindex + 1
+			digelem.pNode = 0;
+			digelem.mqoobject = curobj;
+
+			m_objno2digelem[objno] = digelem;
+			objno++;
+		}
+	}
 
 	return 0;
 

@@ -90,6 +90,12 @@
 			モデル単位の描画順序設定もするべき
 				例　UnityAsset JapaneseCityにおいて Sakuraを含むfbxの描画順序を後にすると綺麗に表示される
 
+    2023/09/21_2
+	DispGroup導入で　ボーン操作用オブジェクトが表示されなくなっていたのを修正
+
+	DispGroupについてのドキュメントを追加
+		Documants/TroubleShooting/AboutDispGroup.docx
+
 
 
 2023/08/30
