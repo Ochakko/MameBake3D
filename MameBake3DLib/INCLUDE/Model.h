@@ -248,7 +248,10 @@ public:
 	int RenderTest(bool withalpha, ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int srcobjno);
 	int SelectRenderObject(int srcobjno, std::vector<CMQOObject*>& selectedobjvec);
 	void SelectRenderObjectReq(FbxNode* pNode, std::vector<CMQOObject*>& selectedobjvec);
-	
+	int GetSelectedObjTree(int srcobjno, std::vector<int>& selectedobjtree);
+	void GetSelectedObjTreeReq(FbxNode* pNode, std::vector<int>& selectedobjtree);
+
+
 	int CreateObjno2DigElem();
 	void CreateObjno2DigElemReq(FbxNode* pNode, int* pobjno, int depth);
 	int MakeDispGroupForRender();
@@ -1957,7 +1960,7 @@ public: //accesser
 				if (digelem.pNode) {
 					char chknodename[256] = { 0 };
 					strcpy_s(chknodename, 256, digelem.pNode->GetName());
-					if (strcmp(chknodename, srcnodename) == 0) {//push_backするdigelemのpNodeが見つかった場合
+					if (strcmp(chknodename, srcnodename) == 0) {//名前が一致
 						itrdigelem->second.groupno = srcgroupindex + 1;//groupno = groupindex + 1
 					}
 				}
@@ -1967,7 +1970,20 @@ public: //accesser
 			_ASSERT(0);
 		}
 	}
-	bool GetDispGroupON(int srcgroupindex) 
+	void SetDispGroup(int srcgroupindex, int srcobjno)
+	{
+		if ((srcgroupindex >= 0) && (srcgroupindex < MAXDISPGROUPNUM)) {
+			std::map<int, DISPGROUPELEM>::iterator itrdigelem;
+			itrdigelem = m_objno2digelem.find(srcobjno);
+			if (itrdigelem != m_objno2digelem.end()) {
+				itrdigelem->second.groupno = srcgroupindex + 1;//groupno = groupindex + 1
+			}
+		}
+		else {
+			_ASSERT(0);
+		}
+	}
+	bool GetDispGroupON(int srcgroupindex)
 	{
 		if ((srcgroupindex >= 0) && (srcgroupindex < MAXDISPGROUPNUM)) {
 			return m_dispgroupON[srcgroupindex];

@@ -2126,6 +2126,11 @@ static OWP_Button* s_groupsetB = 0;
 static OWP_Button* s_groupgetB = 0;
 static OWP_Button* s_grouponB = 0;
 static OWP_Button* s_groupoffB = 0;
+static OWP_Label* s_grouplabel11 = 0;
+static OWP_Label* s_grouplabel12 = 0;
+static OWP_Label* s_grouplabel21 = 0;
+static OWP_Label* s_grouplabel22 = 0;
+static bool s_groupUnderGetting = false;//s_groupgetBボタンの処理中は　groupobjvecのチェック処理をスキップ
 //static OWP_CheckBoxA* s_groupobj[MAXDISPOBJNUM];
 //static OWP_Button* s_grouptestB[MAXDISPOBJNUM];
 static std::vector<OWP_CheckBoxA*> s_groupobjvec;
@@ -4326,6 +4331,11 @@ void InitApp()
 		s_groupgetB = 0;
 		s_grouponB = 0;
 		s_groupoffB = 0;
+		s_grouplabel11 = 0;
+		s_grouplabel12 = 0;
+		s_grouplabel21 = 0;
+		s_grouplabel22 = 0;
+		s_groupUnderGetting = false;//s_groupgetBボタンの処理中は　groupobjvecのチェック処理をスキップ
 		//ZeroMemory(s_groupobj, sizeof(OWP_CheckBoxA*) * MAXDISPOBJNUM);
 		//ZeroMemory(s_grouptestB, sizeof(OWP_Button*)* MAXDISPOBJNUM);
 		s_groupobjvec.clear();
@@ -33429,13 +33439,34 @@ int CreateDispGroupWnd()
 			_ASSERT(0);
 			return 1;
 		}
+		s_grouplabel11 = new OWP_Label(L"---------");
+		if (!s_grouplabel11) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_grouplabel12 = new OWP_Label(L"---------");
+		if (!s_grouplabel12) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_grouplabel21 = new OWP_Label(L"---------");
+		if (!s_grouplabel21) {
+			_ASSERT(0);
+			return 1;
+		}
+		s_grouplabel22 = new OWP_Label(L"---------");
+		if (!s_grouplabel22) {
+			_ASSERT(0);
+			return 1;
+		}
 
-		int groupno;
-		for (groupno = 0; groupno < MAXDISPGROUPNUM; groupno++) {
+
+		int groupindex0;
+		for (groupindex0 = 0; groupindex0 < MAXDISPGROUPNUM; groupindex0++) {
 			WCHAR groupname[256] = { 0L };
-			swprintf_s(groupname, 256, L"%02d", groupno + 1);
-			s_groupselect[groupno] = new OWP_CheckBoxA(groupname, 0);
-			if (!s_groupselect[groupno]) {
+			swprintf_s(groupname, 256, L"%02d", groupindex0 + 1);
+			s_groupselect[groupindex0] = new OWP_CheckBoxA(groupname, 0);
+			if (!s_groupselect[groupindex0]) {
 				_ASSERT(0);
 				return 1;
 			}
@@ -33533,22 +33564,26 @@ int CreateDispGroupWnd()
 		}
 		s_groupsp->addParts2(*s_groupsp2);
 
-		for (groupno = 0; groupno < MAXDISPGROUPNUM; groupno++) {
-			int colno = groupno % 4;
+		for (groupindex0 = 0; groupindex0 < MAXDISPGROUPNUM; groupindex0++) {
+			int colno = groupindex0 % 4;
 			if (colno == 0) {
-				s_groupsp1->addParts1(*s_groupselect[groupno]);
+				s_groupsp1->addParts1(*s_groupselect[groupindex0]);
 			}
 			else if (colno == 1) {
-				s_groupsp1->addParts2(*s_groupselect[groupno]);
+				s_groupsp1->addParts2(*s_groupselect[groupindex0]);
 			}
 			else if (colno == 2) {
-				s_groupsp2->addParts1(*s_groupselect[groupno]);
+				s_groupsp2->addParts1(*s_groupselect[groupindex0]);
 			}
 			else {
-				s_groupsp2->addParts2(*s_groupselect[groupno]);
+				s_groupsp2->addParts2(*s_groupselect[groupindex0]);
 			}
 		}
 		
+		s_groupsp1->addParts1(*s_grouplabel11);
+		s_groupsp1->addParts2(*s_grouplabel12);
+		s_groupsp2->addParts1(*s_grouplabel21);
+		s_groupsp2->addParts2(*s_grouplabel22);
 
 		s_groupsp1->addParts1(*s_groupsetB);
 		s_groupsp1->addParts2(*s_groupgetB);
@@ -33556,11 +33591,13 @@ int CreateDispGroupWnd()
 		s_groupsp2->addParts2(*s_groupoffB);
 		//s_groupsp2->addParts2(*s_grouptestB);
 
-		{
+		{//testボタンのラムダ関数
 			int lineno1;
 			for (lineno1 = 0; lineno1 < s_grouplinenum; lineno1++) {
 				if (s_grouptestBvec[lineno1]) {
 					s_grouptestBvec[lineno1]->setButtonListener([lineno1]() {
+
+						HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 						//ボタンのtext色をリセット
 						int lineno;
@@ -33574,21 +33611,251 @@ int CreateDispGroupWnd()
 						if (lineno1 == s_onlyoneobjno) {
 							//現在表示中のobjをオフにした場合にだけ　s_disponlyoneobjをオフにする
 							//他のobjのTestボタンを押した場合には　s_disponlyoneobjオンのまま　表示objを変更する
-							s_disponlyoneobj = false;
-							s_onlyoneobjno = -1;
+							
+							s_disponlyoneobj = false;//!!!!!!!!
+							s_onlyoneobjno = -1;//!!!!!!!!
 						}
 						else {
-							s_disponlyoneobj = true;
-							s_onlyoneobjno = lineno1;
+							s_disponlyoneobj = true;//!!!!!!!!
+							s_onlyoneobjno = lineno1;//!!!!!!!!
+
 							COLORREF importantcol = RGB(168, 129, 129);
 							s_grouptestBvec[lineno1]->setTextColor(importantcol);
+						}
+
+						if (oldcursor) {
+							SetCursor(oldcursor);
 						}
 					});
 				}
 			}
 		}
 
+		{//groupselectボタンのラムダ関数
+			int groupindex;
+			for (groupindex = 0; groupindex < MAXDISPGROUPNUM; groupindex++) {
+				if (s_groupselect[groupindex]) {
+					s_groupselect[groupindex]->setButtonListener([groupindex]() {
+						bool ischecked = s_groupselect[groupindex]->getValue();
+						if (ischecked) {
+							//チェックの場合には　他のグループセレクトボタンはチェックを外す(排他的)
+							int groupindex2;
+							for (groupindex2 = 0; groupindex2 < MAXDISPGROUPNUM; groupindex2++) {
+								if ((groupindex2 != groupindex) && s_groupselect[groupindex2]) {
+									s_groupselect[groupindex2]->setValue(false);
+								}
+							}
+						}
+						if (s_groupWnd) {
+							s_groupWnd->callRewrite();
+						}
+					});
+				}
+			}
+		}
 
+		{//setボタンのラムダ関数
+			if (s_groupsetB) {
+				s_groupsetB->setButtonListener([]() {
+					if (s_model) {
+
+						HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+						//選択中のグループ番号を取得
+						int selectedgroupno = 0;
+						int groupindex;
+						for (groupindex = 0; groupindex < MAXDISPGROUPNUM; groupindex++) {
+							if (s_groupselect[groupindex] && s_groupselect[groupindex]->getValue()) {
+								selectedgroupno = groupindex + 1;//groupno = groupindex + 1
+								break;
+							}
+						}
+
+						//チェックの付いているobjectに対してselectedgroupindexを設定
+						if (selectedgroupno >= 1) {
+							int lineno1;
+							for (lineno1 = 0; lineno1 < s_grouplinenum; lineno1++) {
+								if (s_groupobjvec[lineno1] && s_groupobjvec[lineno1]->getValue()) {
+									s_model->SetDispGroup(selectedgroupno - 1, lineno1);
+								}
+							}
+							s_model->MakeDispGroupForRender();
+						}
+
+						if (oldcursor) {
+							SetCursor(oldcursor);
+						}
+
+					}
+				});
+			}
+		}
+
+		{//getボタンのラムダ関数
+			if (s_groupgetB) {
+				s_groupgetB->setButtonListener([]() {
+					if (s_model) {
+
+						s_groupUnderGetting = true;//s_groupgetBボタンの処理中は　groupobjvecのチェック処理をスキップ
+
+						HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+
+						//objectのチェックを全てリセット
+						int lineno1;
+						for (lineno1 = 0; lineno1 < s_grouplinenum; lineno1++) {
+							if (s_groupobjvec[lineno1]) {
+								s_groupobjvec[lineno1]->setValue(false);
+							}
+						}
+
+
+						//選択中のグループ番号を取得
+						int selectedgroupno = 0;
+						int groupindex;
+						for (groupindex = 0; groupindex < MAXDISPGROUPNUM; groupindex++) {
+							if (s_groupselect[groupindex] && s_groupselect[groupindex]->getValue()) {
+								selectedgroupno = groupindex + 1;//groupno = groupindex + 1
+								break;
+							}
+						}
+
+						//selectedgroupnoに属するgroupobjvecチェックボックスにチェックを入れる
+						if (selectedgroupno >= 1) {
+
+							//selectedgroupnoに属するobjectを取得
+							vector<DISPGROUPELEM> digvec;
+							digvec.clear();
+							s_model->GetDispGroupForRender(selectedgroupno - 1, digvec);//groupindex = groupno - 1
+
+							//objvecにチェックを入れる
+							int digvecsize = (int)digvec.size();
+							int digno;
+							for (digno = 0; digno < digvecsize; digno++) {
+								DISPGROUPELEM digelem = digvec[digno];
+								int objno = digelem.objno;
+								if ((objno >= 0) && (objno < s_grouplinenum) && s_groupobjvec[objno]) {
+									s_groupobjvec[objno]->setValue(true);
+								}
+							}
+							if (s_groupWnd) {
+								s_groupWnd->callRewrite();
+							}
+						}
+
+						if (oldcursor) {
+							SetCursor(oldcursor);
+						}
+
+						s_groupUnderGetting = false;//s_groupgetBボタンの処理中は　groupobjvecのチェック処理をスキップ
+					}
+				});
+			}
+		}
+
+		{//ONボタン
+			if(s_grouponB){
+				s_grouponB->setButtonListener([]() {
+					if (s_model) {
+						HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+						//選択中のグループ番号を取得
+						int selectedgroupno = 0;
+						int groupindex;
+						for (groupindex = 0; groupindex < MAXDISPGROUPNUM; groupindex++) {
+							if (s_groupselect[groupindex] && s_groupselect[groupindex]->getValue()) {
+								selectedgroupno = groupindex + 1;//groupno = groupindex + 1
+								break;
+							}
+						}
+
+						//selectedgroupnoの表示をオン
+						if (selectedgroupno >= 1) {//groupindex = groupno - 1
+							s_model->SetDispGroupON(selectedgroupno - 1, true);
+						}
+
+						if (oldcursor) {
+							SetCursor(oldcursor);
+						}
+					}
+				});
+			}
+		}
+
+		{//OFFボタン
+			if (s_groupoffB) {
+				s_groupoffB->setButtonListener([]() {
+					if (s_model) {
+
+						HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+						//選択中のグループ番号を取得
+						int selectedgroupno = 0;
+						int groupindex;
+						for (groupindex = 0; groupindex < MAXDISPGROUPNUM; groupindex++) {
+							if (s_groupselect[groupindex] && s_groupselect[groupindex]->getValue()) {
+								selectedgroupno = groupindex + 1;//groupno = groupindex + 1
+								break;
+							}
+						}
+
+						//selectedgroupnoの表示をオフ
+						if (selectedgroupno >= 1) {//groupindex = groupno - 1
+							s_model->SetDispGroupON(selectedgroupno - 1, false);
+						}
+
+						if (oldcursor) {
+							SetCursor(oldcursor);
+						}
+
+					}
+				});
+			}
+		}
+
+		{//objvecボタン
+
+			//チェックを入れたobjectの子供treeも一緒にチェックを入れる
+			int objno1;
+			for (objno1 = 0; objno1 < s_grouplinenum; objno1++) {
+				if (s_groupobjvec[objno1]) {
+					s_groupobjvec[objno1]->setButtonListener([objno1]() {
+						if (s_model) {
+							if (s_groupUnderGetting == false) {//s_groupgetBボタンの処理中は　groupobjvecのチェック処理をスキップ)								
+								HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+								vector<int> selectedobjtree;
+								selectedobjtree.clear();
+								s_model->GetSelectedObjTree(objno1, selectedobjtree);//objno1の子供のobjectTreeを取得
+
+
+								bool newstate;
+								if (s_groupobjvec[objno1] && s_groupobjvec[objno1]->getValue()) {
+									newstate = true;
+								}
+								else {
+									newstate = false;
+								}
+
+
+								int selectedobjnum = (int)selectedobjtree.size();
+								int objindex;
+								for (objindex = 0; objindex < selectedobjnum; objindex++) {
+									int selectedobjno = selectedobjtree[objindex];
+									if ((selectedobjno >= 0) && (selectedobjno < s_grouplinenum) && (selectedobjno != objno1)) {
+										s_groupobjvec[selectedobjno]->setValue(newstate);
+									}
+								}
+
+								if (oldcursor) {
+									SetCursor(oldcursor);
+								}
+							}
+						}
+					});
+				}
+			}
+		}
 
 
 
@@ -33640,6 +33907,22 @@ int DestroyDispGroupWnd()
 	if (s_groupoffB) {
 		delete s_groupoffB;
 		s_groupoffB = 0;
+	}
+	if (s_grouplabel11) {
+		delete s_grouplabel11;
+		s_grouplabel11 = 0;
+	}
+	if (s_grouplabel12) {
+		delete s_grouplabel12;
+		s_grouplabel12 = 0;
+	}
+	if (s_grouplabel21) {
+		delete s_grouplabel21;
+		s_grouplabel21 = 0;
+	}
+	if (s_grouplabel22) {
+		delete s_grouplabel22;
+		s_grouplabel22 = 0;
 	}
 
 	int selno;

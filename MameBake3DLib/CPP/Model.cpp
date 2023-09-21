@@ -1433,6 +1433,8 @@ int CModel::OnRender(bool withalpha,
 
 int CModel::SelectRenderObject(int srcobjno, std::vector<CMQOObject*>& selectedobjvec)
 {
+	selectedobjvec.clear();
+
 	map<int, DISPGROUPELEM>::iterator itrdigelem;
 	itrdigelem = m_objno2digelem.find(srcobjno);
 	if (itrdigelem == m_objno2digelem.end()) {
@@ -1469,6 +1471,54 @@ void CModel::SelectRenderObjectReq(FbxNode* pNode, std::vector<CMQOObject*>& sel
 		}
 	}
 }
+
+int CModel::GetSelectedObjTree(int srcobjno, std::vector<int>& selectedobjtree)
+{
+	selectedobjtree.clear();
+
+	map<int, DISPGROUPELEM>::iterator itrdigelem;
+	itrdigelem = m_objno2digelem.find(srcobjno);
+	if (itrdigelem == m_objno2digelem.end()) {
+		return 0;
+	}
+
+	DISPGROUPELEM digelem = itrdigelem->second;
+
+	GetSelectedObjTreeReq(digelem.pNode, selectedobjtree);
+
+	return 0;
+}
+void CModel::GetSelectedObjTreeReq(FbxNode* pNode, std::vector<int>& selectedobjtree)
+{
+	if (pNode) {
+
+		int selectedobjno = -1;
+		map<int, DISPGROUPELEM>::iterator itrdigelem;
+		for (itrdigelem = m_objno2digelem.begin(); itrdigelem != m_objno2digelem.end(); itrdigelem++) {
+			DISPGROUPELEM digelem = itrdigelem->second;
+			if (digelem.pNode == pNode) {
+				selectedobjno = digelem.objno;
+				break;
+			}
+		}
+
+		if (selectedobjno >= 0) {
+			selectedobjtree.push_back(selectedobjno);
+		}
+
+
+		int childNodeNum;
+		childNodeNum = pNode->GetChildCount();
+		for (int i = 0; i < childNodeNum; i++)
+		{
+			FbxNode* pChild = pNode->GetChild(i);  // 子ノードを取得
+			if (pChild) {
+				GetSelectedObjTreeReq(pChild, selectedobjtree);
+			}
+		}
+	}
+}
+
 
 
 
