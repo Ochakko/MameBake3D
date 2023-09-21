@@ -271,6 +271,18 @@ int CMQOFile::LoadMQOFile_aft( float multiple, ChaVector3 offsetpos, ChaVector3 
 	//for dispgroup
 	CallF(m_modelptr->CreateObjno2DigElem(), return 1);
 	CallF(m_modelptr->MakeDispGroupForRender(), return 1);
+	int groupindex;
+	for (groupindex = 0; groupindex < MAXDISPGROUPNUM; groupindex++) {
+		//mqoファイルから読み込んだ場合には　groupno = 1 (groupindex = 0)だけ
+		// CModel::OnRenderでの処理をスキップするために　groupno = 1以外はOFFにする
+		if (groupindex == 0) {
+			m_modelptr->SetDispGroupON(groupindex, true);
+		}
+		else {
+			m_modelptr->SetDispGroupON(groupindex, false);
+		}
+	}
+
 
 
 	return 0;

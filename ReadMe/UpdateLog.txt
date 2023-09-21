@@ -1,3 +1,83 @@
+2023/09/21
+    EditMot 1.2.0.25 RC1(リリース候補1)
+
+    dest Hips起点ペースト
+	操作対象ボーンにHipsを含めずにHipsの子供を指定した場合のペースト処理修正
+	ペーストされる側のペースト開始フレームのHips位置を起点にして　Hipsのモーションもペースト
+	(原則としては　操作対象ボーンに含まれないボーンのモーションはペーストされない　Hipsは例外として処理)
+
+	dest Hips起点ペーストについて　ドキュメント追加
+		Documants/TroubleShooting/About_PasteStartingFromDestHips.docx
+
+    DispGroupプレートメニューが使えるように
+	GUIによるグループ番号のSet, Get, ON, OFF
+
+	描画の際にはグループ番号の小さいものから描画される
+	デフォルト状態では全てのメッシュのグループ番号は1
+	半透明オブジェクトのグループ番号を大きく設定することにより　透過表示が綺麗になる
+	Group単位での表示のオンオフによりモーション編集シーンの表示高速化
+	設定時にTestボタンにより　指定メッシュオブジェクトを排他的に表示テスト
+
+	DispGroupについてのドキュメントを追加
+		Documants/TroubleShooting/AboutDispGroup.docx
+
+    ショートカット
+	左右の手の選択ショートカットキー　：　Hを押しながら左右矢印キー　(HandのH)
+	左右の足の選択ショートカットキー　：　Fを押しながら左右矢印キー　(FootのF)
+	Sキー＋マウス右ドラッグ　：　マニピュレータ表示倍率変更
+
+	右ペインウインドウの初期表示に　ショートカットキー一覧を表示	
+
+	ショートカットについてのドキュメント追加
+		Documants/TroubleShooting/0_ShortCutKey.docx
+
+    Testフォルダのモデルの物理設定修正
+	前髪にForbid Rot設定をして　前髪はほとんど揺れないように
+
+	Test/0_VRoid_Spring_1
+	Test/1_BoySporty_4
+
+    設定ファイルの使いまわしをしやすく
+	fbxファイルとの同期チェックを外し　ボーン情報は番号ではなく名前で入出力
+	コピペしてファイル名を適切に変えるだけで使いまわし可能に
+
+　おちゃっこLAB
+	https://ochakkolab.jp/
+
+　YouTubeチャンネル
+	https://www.youtube.com/@ochakkolab
+
+	動画　モーキャプ編集ツール　予告(2023/09)
+		https://youtu.be/LEbueHtc57Q
+
+	動画　0.07倍速でパンチしたら物理はどうなるんだろう？
+		https://youtu.be/gKuLzPDt-cc
+
+	動画　【小人】小人制御の物理【ドリブン】
+		https://youtu.be/SRoi8Ds9NYI
+
+	動画　いろいろ直った物理でボクシングの動画	
+		https://youtu.be/Zr7fT1gsCl4
+
+	動画　作り直した位置コンストレイント
+		https://youtu.be/8p13H6MGQZ8
+
+	動画　変な風には曲がらない位置コンストレイント
+		https://youtu.be/9Xt8cxjByeA
+
+	動画　制限角度をキャプチャーする
+		https://youtu.be/mkkpo5cmLBs
+
+	動画　モーキャプの動きを盛れ！
+		https://youtu.be/DV9gYsgDzz0
+
+
+
+
+
+
+
+
 2023/09/04
     EditMot 1.2.0.25へ向けて
 
@@ -229,36 +309,6 @@
 	RC7 : メモリアライメントが合っていないことが原因で　複数ライトの向きがずれていた不具合を修正
 	release : RC7でライト向き(XとY)の表記が反対向きになってしまっていたので修正
 		VisualStudioセキュリティー更新後　フルビルドして　インストーラmsiをリリース
-
-　おちゃっこLAB
-	https://ochakkolab.jp/
-
-　YouTubeチャンネル
-	https://www.youtube.com/@ochakkolab
-
-	動画　モーキャプ編集ツール　予告(2023/09)
-		https://youtu.be/LEbueHtc57Q
-
-	動画　0.07倍速でパンチしたら物理はどうなるんだろう？
-		https://youtu.be/gKuLzPDt-cc
-
-	動画　【小人】小人制御の物理【ドリブン】
-		https://youtu.be/SRoi8Ds9NYI
-
-	動画　いろいろ直った物理でボクシングの動画	
-		https://youtu.be/Zr7fT1gsCl4
-
-	動画　作り直した位置コンストレイント
-		https://youtu.be/8p13H6MGQZ8
-
-	動画　変な風には曲がらない位置コンストレイント
-		https://youtu.be/9Xt8cxjByeA
-
-	動画　制限角度をキャプチャーする
-		https://youtu.be/mkkpo5cmLBs
-
-	動画　モーキャプの動きを盛れ！
-		https://youtu.be/DV9gYsgDzz0
 
 
 
