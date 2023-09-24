@@ -4924,6 +4924,10 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 	strcpy_s(tmpname, 512, pMaterial->GetName());
 	newmqomat->SetName( tmpname );
 
+
+	//::MessageBoxA(NULL, tmpname, "MaterialName", MB_OK);
+
+
 	char* emitex = 0;
     const FbxDouble3 lEmissive = FbxGetMaterialProperty(pMaterial,
         FbxSurfaceMaterial::sEmissive, FbxSurfaceMaterial::sEmissiveFactor, &emitex);
@@ -5009,12 +5013,13 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 
 
 	//2023/09/24 VRoidの服の裾(すそ)に透過の印を付ける
-	FbxDouble opacity = ((FbxSurfacePhong*)pMaterial)->TransparencyFactor;//ちゃんとセットされる保証なし
-	if (opacity != 0.0) {
+	//次に続くtexture読み込み部分でも　_13.png, _15.pngについてもSetTransparent(1)
+	FbxDouble transparent = ((FbxSurfacePhong*)pMaterial)->TransparencyFactor;//ちゃんとセットされる保証なし
+	if (transparent != 0.0) {//0.0:Opaque, 1.0:Transparent
 		newmqomat->SetTransparent(1);
 	}
 	else {
-		if (strstr(newmqomat->GetName(), "_CLOTH_02") != 0) {
+		if (strstr(newmqomat->GetName(), "_CLOTH_02") != 0) {//シャツのすそ
 			newmqomat->SetTransparent(1);
 		}
 	}
@@ -5239,6 +5244,7 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 	if (newmqomat->GetTex() && (strlen(newmqomat->GetTex()) > 0)) {
 		if ((strstr(newmqomat->GetTex(), "_13.png") != 0) || (strstr(newmqomat->GetTex(), "_15.png") != 0)) {
 			//2023/09/24 VRoidの服の裾(すそ)に透過の印を付ける
+			//上方において　((FbxSurfacePhong*)pMaterial)->TransparencyFactor != 0.0についてもSetTransparent(1)
 			newmqomat->SetTransparent(1);
 		}
 	}

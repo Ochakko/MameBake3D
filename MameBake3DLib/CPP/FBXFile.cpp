@@ -2477,6 +2477,10 @@ int	CreateFbxMaterialFromMQOMaterial(FbxManager* pSdkManager, FbxScene* pScene, 
 	FbxString lShadingName = "Phong";
 	FbxSurfacePhong* lMaterial = FbxSurfacePhong::Create(pScene, lMaterialName.Buffer());
 
+
+	//::MessageBoxA(NULL, lMaterialName.Buffer(), "MaterialName", MB_OK);
+
+
 	lMaterial->Diffuse.Set(FbxDouble3(mqomat->GetDif4F().x, mqomat->GetDif4F().y, mqomat->GetDif4F().z));
 	lMaterial->Emissive.Set(FbxDouble3(mqomat->GetEmi3F().x, mqomat->GetEmi3F().y, mqomat->GetEmi3F().z));
 	lMaterial->Ambient.Set(FbxDouble3(mqomat->GetAmb3F().x, mqomat->GetAmb3F().y, mqomat->GetAmb3F().z));
@@ -2494,7 +2498,23 @@ int	CreateFbxMaterialFromMQOMaterial(FbxManager* pSdkManager, FbxScene* pScene, 
 
 	//lMaterial->DiffuseFactor.Set(1.0);
 	lMaterial->DiffuseFactor.Set(g_DiffuseFactorAtSaving);
-	lMaterial->TransparencyFactor.Set(mqomat->GetDif4F().w);
+
+
+	//lMaterial->TransparencyFactor.Set(mqomat->GetDif4F().w);
+	//2023/09/24
+	//TransparencyFactor -> 0.0:Opaque, 1.0:Transparent
+	if (mqomat->GetTransparent() != 0) {
+		lMaterial->TransparencyFactor.Set(1.0);
+	}
+	else {
+		if (mqomat->GetDif4F().w <= 0.99999f) {
+			lMaterial->TransparencyFactor.Set(1.0);
+		}
+		else {
+			lMaterial->TransparencyFactor.Set(0.0);
+		}
+	}
+
 	lMaterial->ShadingModel.Set(lShadingName);
 	//lMaterial->Shininess.Set(0.5);
 	lMaterial->Shininess.Set(mqomat->GetPower());
@@ -2554,8 +2574,14 @@ FbxTexture*  CreateTexture(FbxManager* pSdkManager, CModel* srcmodel, CMQOMateri
     lTexture->SetFileName(lTexPath.Buffer());
     //lTexture->SetName("Diffuse Texture");
 	
+
 	//lTexture->SetName(mqomat->GetTex());
 	lTexture->SetName(ptex);//2023/08/29 名前はファイル名だけ
+
+
+	//::MessageBoxA(NULL, ptex, "TextureName", MB_OK);
+
+
 
     lTexture->SetTextureUse(FbxTexture::eStandard);
     lTexture->SetMappingType(FbxTexture::eUV);

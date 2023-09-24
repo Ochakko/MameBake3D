@@ -2500,6 +2500,13 @@ void CMQOObject::IncludeTransparent(float multalpha, bool* pfound_noalpha, bool*
 	for (itrmaterial = GetMaterialBegin(); itrmaterial != GetMaterialEnd(); itrmaterial++) {
 		CMQOMaterial* curmaterial = itrmaterial->second;
 		if (curmaterial) {
+
+			////for debug
+			//if (curmaterial->GetTex() &&
+			//	((strstr(curmaterial->GetTex(), "_13.png") != 0) || (strstr(curmaterial->GetTex(), "_15.png") != 0))) {
+			//	int dbgflag1 = 1;
+			//}
+
 			if (curmaterial->GetTransparent() != 0) {//2023/09/24 VRoidの裾(すそ)透過対策
 				found_alpha = true;
 			}
