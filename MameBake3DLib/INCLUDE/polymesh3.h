@@ -39,6 +39,8 @@ public:
 
 	void DestroySystemDispObj();
 
+	void IncludeTransparent(float alphamult, bool* pfound_noalpha, bool* pfound_alpha);
+
 private:
 	void InitParams();
 	void DestroyObjs();

@@ -2476,3 +2476,47 @@ CBone* CMQOObject::GetHipsBone()
 
 	return hipsbone;
 }
+
+void CMQOObject::IncludeTransparent(float multalpha, bool* pfound_noalpha, bool* pfound_alpha)
+{
+	if (!pfound_noalpha || !pfound_alpha) {
+		_ASSERT(0);
+		return;
+	}
+	if (!m_pm4) {
+		_ASSERT(0);
+		return;
+	}
+
+
+	//PolyMesh4をメンバに持つ場合の処理(render時には　PolyMesh4::m_materialoffsetを使う)
+	//PolyMesh3の場合はPolyMesh3::IncludeTransparentで処理
+
+
+	bool found_alpha = false;
+	bool found_noalpha = false;
+
+	std::map<int, CMQOMaterial*>::iterator itrmaterial;
+	for (itrmaterial = GetMaterialBegin(); itrmaterial != GetMaterialEnd(); itrmaterial++) {
+		CMQOMaterial* curmaterial = itrmaterial->second;
+		if (curmaterial) {
+			if (curmaterial->GetTransparent() != 0) {//2023/09/24 VRoidの裾(すそ)透過対策
+				found_alpha = true;
+			}
+			else {
+				if ((curmaterial->GetDif4F().w * multalpha) <= 0.99999f) {
+					found_alpha = true;
+				}
+				else {
+					found_noalpha = true;
+				}
+			}
+		}
+	}
+
+	*pfound_noalpha = found_noalpha;
+	*pfound_alpha = found_alpha;
+
+}
+
+

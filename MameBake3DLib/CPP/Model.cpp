@@ -1169,8 +1169,6 @@ _ASSERT(m_bonelist[0]);
 		//}
 		SetMaterialName();
 
-
-
 		//for dispgroup
 		CreateObjno2DigElem();
 		MakeDispGroupForRender();
@@ -1354,23 +1352,10 @@ int CModel::OnRender(bool withalpha,
 
 						CMQOMaterial* rmaterial = 0;
 						if (curobj->GetPm3()) {
-							bool found_alpha = false;
 							bool found_noalpha = false;
-							int blno;
-							for (blno = 0; blno < curobj->GetPm3()->GetOptMatNum(); blno++) {
-								MATERIALBLOCK* currb = curobj->GetPm3()->GetMatBlock() + blno;
-								CMQOMaterial* curmat;
-								curmat = currb->mqomat;
-								if (!curmat) {
-									continue;
-								}
-								if ((curmat->GetDif4F().w * diffusemult.w) <= 0.99999f) {
-									found_alpha = true;
-								}
-								else {
-									found_noalpha = true;
-								}
-							}
+							bool found_alpha = false;
+							curobj->GetPm3()->IncludeTransparent(diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
+
 							if ((withalpha == false) && (found_noalpha == false)) {
 								//不透明描画時　１つも不透明がなければ　レンダースキップ
 								continue;
@@ -1384,20 +1369,10 @@ int CModel::OnRender(bool withalpha,
 							CallF(curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate), return 1);
 						}
 						else if (curobj->GetPm4()) {
-							bool found_alpha = false;
 							bool found_noalpha = false;
-							std::map<int, CMQOMaterial*>::iterator itrmaterial;
-							for (itrmaterial = curobj->GetMaterialBegin(); itrmaterial != curobj->GetMaterialEnd(); itrmaterial++) {
-								CMQOMaterial* curmaterial = itrmaterial->second;
-								if (curmaterial) {
-									if ((curmaterial->GetDif4F().w * diffusemult.w) <= 0.99999f) {
-										found_alpha = true;
-									}
-									else {
-										found_noalpha = true;
-									}
-								}
-							}
+							bool found_alpha = false;
+							curobj->IncludeTransparent(diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
+
 							if ((withalpha == false) && (found_noalpha == false)) {
 								//不透明描画時　１つも不透明がなければ　レンダースキップ
 								continue;
@@ -1407,8 +1382,8 @@ int CModel::OnRender(bool withalpha,
 								continue;
 							}
 							CallF(SetShaderConst(curobj, btflag), return 1);
-							rmaterial = curobj->GetMaterialBegin()->second;
-							CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, rmaterial, lightflag, diffusemult, materialdisprate), return 1);
+							
+							CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate), return 1);
 						}
 						else {
 							_ASSERT(0);
@@ -1558,61 +1533,38 @@ int CModel::RenderTest(bool withalpha, ID3D11DeviceContext* pd3dImmediateContext
 
 				CMQOMaterial* rmaterial = 0;
 				if (curobj->GetPm3()) {
-					bool found_alpha = false;
 					bool found_noalpha = false;
-					int blno;
-					for (blno = 0; blno < curobj->GetPm3()->GetOptMatNum(); blno++) {
-						MATERIALBLOCK* currb = curobj->GetPm3()->GetMatBlock() + blno;
-						CMQOMaterial* curmat;
-						curmat = currb->mqomat;
-						if (!curmat) {
-							continue;
-						}
-						if ((curmat->GetDif4F().w * diffusemult.w) <= 0.99999f) {
-							found_alpha = true;
-						}
-						else {
-							found_noalpha = true;
-						}
-					}
+					bool found_alpha = false;
+					curobj->GetPm3()->IncludeTransparent(diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
+
 					if ((withalpha == false) && (found_noalpha == false)) {
 						//不透明描画時　１つも不透明がなければ　レンダースキップ
-						return 0;
+						continue;
 					}
 					if ((withalpha == true) && (found_alpha == false)) {
 						//半透明描画時　１つも半透明がなければ　レンダースキップ
-						return 0;
+						continue;
 					}
 
 					CallF(SetShaderConst(curobj, btflag), return 1);
 					CallF(curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate), return 1);
 				}
 				else if (curobj->GetPm4()) {
-					bool found_alpha = false;
 					bool found_noalpha = false;
-					std::map<int, CMQOMaterial*>::iterator itrmaterial;
-					for (itrmaterial = curobj->GetMaterialBegin(); itrmaterial != curobj->GetMaterialEnd(); itrmaterial++) {
-						CMQOMaterial* curmaterial = itrmaterial->second;
-						if (curmaterial) {
-							if ((curmaterial->GetDif4F().w * diffusemult.w) <= 0.99999f) {
-								found_alpha = true;
-							}
-							else {
-								found_noalpha = true;
-							}
-						}
-					}
+					bool found_alpha = false;
+					curobj->IncludeTransparent(diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
+
 					if ((withalpha == false) && (found_noalpha == false)) {
 						//不透明描画時　１つも不透明がなければ　レンダースキップ
-						return 0;
+						continue;
 					}
 					if ((withalpha == true) && (found_alpha == false)) {
 						//半透明描画時　１つも半透明がなければ　レンダースキップ
-						return 0;
+						continue;
 					}
 					CallF(SetShaderConst(curobj, btflag), return 1);
-					rmaterial = curobj->GetMaterialBegin()->second;
-					CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, rmaterial, lightflag, diffusemult, materialdisprate), return 1);
+					
+					CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate), return 1);
 				}
 				else {
 					_ASSERT(0);
@@ -5038,6 +4990,37 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 	newmqomat->SetPower(static_cast<float>(Shininess));
 
 
+
+	//char strtransparent[256] = { 0 };
+	//if (pMaterial->sTransparencyFactor) {
+	//	strcpy_s(strtransparent, pMaterial->sTransparencyFactor);//"TransparencyFactor"という文字列
+	//	FbxGetMaterialProperty(pMaterial,
+	//		FbxSurfaceMaterial::sTransparencyFactor, FbxSurfaceMaterial::sTransparencyFactor, &transparencyfactor);
+	//}
+	//}
+	//char strtransparentcolor[256] = { 0 };
+	//if (pMaterial->sTransparentColor) {
+	//	strcpy_s(strtransparentcolor, pMaterial->sTransparentColor);//"TransparentColor"という文字列
+	//	::MessageBoxA(NULL, strtransparentcolor, "check transparent", MB_OK);
+	//}
+	// Opacity.
+	//FbxDouble opacity = ((FbxSurfacePhong*)surfaceMaterial)->TransparencyFactor;//ちゃんとセットされる保証なし
+
+
+
+	//2023/09/24 VRoidの服の裾(すそ)に透過の印を付ける
+	FbxDouble opacity = ((FbxSurfacePhong*)pMaterial)->TransparencyFactor;//ちゃんとセットされる保証なし
+	if (opacity != 0.0) {
+		newmqomat->SetTransparent(1);
+	}
+	else {
+		if (strstr(newmqomat->GetName(), "_CLOTH_02") != 0) {
+			newmqomat->SetTransparent(1);
+		}
+	}
+
+
+
 //texture
 	bool findalbedometal = false;
 	{
@@ -5252,6 +5235,13 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 		}
 	}
 
+
+	if (newmqomat->GetTex() && (strlen(newmqomat->GetTex()) > 0)) {
+		if ((strstr(newmqomat->GetTex(), "_13.png") != 0) || (strstr(newmqomat->GetTex(), "_15.png") != 0)) {
+			//2023/09/24 VRoidの服の裾(すそ)に透過の印を付ける
+			newmqomat->SetTransparent(1);
+		}
+	}
 
 
    return 0;
@@ -18600,7 +18590,14 @@ void CModel::CreateObjno2DigElemReq(FbxNode* pNode, int* pobjno, int depth)
 			}
 		}
 		else {
-			opeflag = true;
+			char nodename[256] = { 0 };
+			strcpy_s(nodename, 256, pNode->GetName());
+			if ((strstr(nodename, "J_Sec_") != 0) && (strstr(nodename, "_end") != 0)) {
+				//VRoid VRM1.0のendjointはeNullを含むが　表示オブジェクトの親のeNullにはならないと仮定してopeflag = false;
+			}
+			else {
+				opeflag = true;
+			}
 		}
 
 		if (opeflag) {
@@ -18696,4 +18693,6 @@ int CModel::MakeDispGroupForRender()
 
 	return 0;
 }
+
+
 

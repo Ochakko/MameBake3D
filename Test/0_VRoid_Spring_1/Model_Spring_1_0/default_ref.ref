@@ -6,54 +6,6 @@
     <Name>J_Bip_C_Hips</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_L_SkirtSide0_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>J_Sec_R_SkirtSide0_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
       <ChildName>J_Bip_C_Spine</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
@@ -70,7 +22,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -94,7 +46,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -118,175 +70,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_L_SkirtSide0_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_L_SkirtSide1_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_L_SkirtSide1_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_L_SkirtSide2_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_L_SkirtSide2_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_L_SkirtSide2_end_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_R_SkirtSide0_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_R_SkirtSide1_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_R_SkirtSide1_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_R_SkirtSide2_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_R_SkirtSide2_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_R_SkirtSide2_end_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -314,7 +98,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -370,7 +154,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -394,7 +178,79 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_C_Hood_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_L_HoodString1_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_R_HoodString1_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -494,7 +350,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -522,7 +378,147 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_C_Hood_01</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_C_Hood_end_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_L_HoodString1_01</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_L_HoodString2_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_L_HoodString2_01</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_L_HoodString2_end_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_R_HoodString1_01</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_R_HoodString2_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_R_HoodString2_01</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_R_HoodString2_end_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -578,7 +574,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -602,7 +598,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -1086,7 +1082,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -1114,7 +1110,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -1142,7 +1138,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -1170,7 +1166,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -1198,7 +1194,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -1226,7 +1222,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -1254,7 +1250,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -1282,7 +1278,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -1310,7 +1306,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -1338,7 +1334,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -1366,7 +1362,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -1394,7 +1390,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -1422,7 +1418,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -1882,30 +1878,6 @@
     <Name>J_Bip_L_LowerArm</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_L_LowerSleeve_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
       <ChildName>J_Bip_L_Hand</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
@@ -1922,35 +1894,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_L_LowerSleeve_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_L_LowerSleeve_end_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -1978,7 +1922,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2002,7 +1946,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2026,7 +1970,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2050,7 +1994,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2074,31 +2018,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>J_Sec_L_TipSleeve_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2126,7 +2046,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2154,7 +2074,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2182,7 +2102,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2210,7 +2130,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2238,7 +2158,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2266,7 +2186,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2294,7 +2214,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2322,7 +2242,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2350,7 +2270,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2378,35 +2298,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_L_TipSleeve_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_L_TipSleeve_end_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2474,30 +2366,6 @@
     <Name>J_Bip_R_LowerArm</Name>
     <BTKIN>0</BTKIN>
     <RigidElem>
-      <ChildName>J_Sec_R_LowerSleeve_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>2.000000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
       <ChildName>J_Bip_R_Hand</ChildName>
       <ColType>1</ColType>
       <SkipFlag>0</SkipFlag>
@@ -2514,35 +2382,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_R_LowerSleeve_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_R_LowerSleeve_end_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2570,7 +2410,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2594,7 +2434,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2618,7 +2458,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2642,7 +2482,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2666,31 +2506,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>J_Sec_R_TipSleeve_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2718,7 +2534,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2746,7 +2562,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2774,7 +2590,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2802,7 +2618,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2830,7 +2646,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2858,7 +2674,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2886,7 +2702,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2914,7 +2730,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2942,7 +2758,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -2970,35 +2786,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_R_TipSleeve_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_R_TipSleeve_end_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -3009,54 +2797,6 @@
   <Bone>
     <Name>J_Bip_L_UpperLeg</Name>
     <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_L_SkirtBack0_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>J_Sec_L_SkirtFront0_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
     <RigidElem>
       <ChildName>J_Bip_L_LowerLeg</ChildName>
       <ColType>1</ColType>
@@ -3074,175 +2814,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_L_SkirtBack0_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_L_SkirtBack1_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_L_SkirtBack1_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_L_SkirtBack2_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_L_SkirtBack2_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_L_SkirtBack2_end_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_L_SkirtFront0_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_L_SkirtFront1_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_L_SkirtFront1_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_L_SkirtFront2_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_L_SkirtFront2_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_L_SkirtFront2_end_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -3253,6 +2825,150 @@
   <Bone>
     <Name>J_Bip_L_LowerLeg</Name>
     <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_L_CoatSkirtBack_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_L_CoatSkirtFront_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_L_CoatSkirtSide1_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_L_CoatSkirtBack_02</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_L_CoatSkirtFront_02</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_L_CoatSkirtSide1_02</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
     <RigidElem>
       <ChildName>J_Bip_L_Foot</ChildName>
       <ColType>1</ColType>
@@ -3270,7 +2986,231 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_L_CoatSkirtBack_01</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_L_CoatSkirtBack_end_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_L_CoatSkirtFront_01</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_L_CoatSkirtFront_end_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_L_CoatSkirtSide1_01</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_L_CoatSkirtSide2_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_L_CoatSkirtSide2_01</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_L_CoatSkirtSide2_end_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_L_CoatSkirtBack_02</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_L_CoatSkirtBack_end_02</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_L_CoatSkirtFront_02</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_L_CoatSkirtFront_end_02</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_L_CoatSkirtSide1_02</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_L_CoatSkirtSide2_02</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_L_CoatSkirtSide2_02</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_L_CoatSkirtSide2_end_02</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -3298,7 +3238,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -3309,54 +3249,6 @@
   <Bone>
     <Name>J_Bip_R_UpperLeg</Name>
     <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_R_SkirtBack0_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-    <RigidElem>
-      <ChildName>J_Sec_R_SkirtFront0_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
     <RigidElem>
       <ChildName>J_Bip_R_LowerLeg</ChildName>
       <ColType>1</ColType>
@@ -3374,175 +3266,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_R_SkirtBack0_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_R_SkirtBack1_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_R_SkirtBack1_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_R_SkirtBack2_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_R_SkirtBack2_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_R_SkirtBack2_end_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_R_SkirtFront0_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_R_SkirtFront1_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_R_SkirtFront1_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_R_SkirtFront2_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
-      <COLIIDNUM>1</COLIIDNUM>
-      <COLIID>1</COLIID>
-      <RESTITUTION>0.500000</RESTITUTION>
-      <FRICTION>0.500000</FRICTION>
-      <FORBIDROT>0</FORBIDROT>
-    </RigidElem>
-  </Bone>
-  <Bone>
-    <Name>J_Sec_R_SkirtFront2_01</Name>
-    <BTKIN>0</BTKIN>
-    <RigidElem>
-      <ChildName>J_Sec_R_SkirtFront2_end_01</ChildName>
-      <ColType>1</ColType>
-      <SkipFlag>0</SkipFlag>
-      <ShpRate>0.600000</ShpRate>
-      <BoxzRate>0.600000</BoxzRate>
-      <LK>2</LK>
-      <CUSLK>100.000000</CUSLK>
-      <AK>2</AK>
-      <CUSAK>0.500000</CUSAK>
-      <Mass>1.000000</Mass>
-      <LDMP>0.500000</LDMP>
-      <ADMP>0.500000</ADMP>
-      <BTG>-1.000000</BTG>
-      <DMPANIML>0.000000</DMPANIML>
-      <DMPANIMA>0.000000</DMPANIMA>
-      <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -3553,6 +3277,150 @@
   <Bone>
     <Name>J_Bip_R_LowerLeg</Name>
     <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_R_CoatSkirtBack_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_R_CoatSkirtFront_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_R_CoatSkirtSide1_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_R_CoatSkirtBack_02</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_R_CoatSkirtFront_02</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+    <RigidElem>
+      <ChildName>J_Sec_R_CoatSkirtSide1_02</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
     <RigidElem>
       <ChildName>J_Bip_R_Foot</ChildName>
       <ColType>1</ColType>
@@ -3570,7 +3438,231 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_R_CoatSkirtBack_01</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_R_CoatSkirtBack_end_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_R_CoatSkirtFront_01</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_R_CoatSkirtFront_end_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_R_CoatSkirtSide1_01</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_R_CoatSkirtSide2_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_R_CoatSkirtSide2_01</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_R_CoatSkirtSide2_end_01</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_R_CoatSkirtBack_02</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_R_CoatSkirtBack_end_02</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_R_CoatSkirtFront_02</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_R_CoatSkirtFront_end_02</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_R_CoatSkirtSide1_02</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_R_CoatSkirtSide2_02</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
+      <COLIIDNUM>1</COLIIDNUM>
+      <COLIID>1</COLIID>
+      <RESTITUTION>0.500000</RESTITUTION>
+      <FRICTION>0.500000</FRICTION>
+      <FORBIDROT>0</FORBIDROT>
+    </RigidElem>
+  </Bone>
+  <Bone>
+    <Name>J_Sec_R_CoatSkirtSide2_02</Name>
+    <BTKIN>0</BTKIN>
+    <RigidElem>
+      <ChildName>J_Sec_R_CoatSkirtSide2_end_02</ChildName>
+      <ColType>1</ColType>
+      <SkipFlag>1</SkipFlag>
+      <ShpRate>0.600000</ShpRate>
+      <BoxzRate>0.600000</BoxzRate>
+      <LK>2</LK>
+      <CUSLK>100.000000</CUSLK>
+      <AK>2</AK>
+      <CUSAK>0.500000</CUSAK>
+      <Mass>1.000000</Mass>
+      <LDMP>0.500000</LDMP>
+      <ADMP>0.500000</ADMP>
+      <BTG>-0.090000</BTG>
+      <DMPANIML>0.000000</DMPANIML>
+      <DMPANIMA>0.000000</DMPANIMA>
+      <GROUP>2</GROUP>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>
@@ -3598,7 +3690,7 @@
       <DMPANIML>0.000000</DMPANIML>
       <DMPANIMA>0.000000</DMPANIMA>
       <GROUP>2</GROUP>
-      <MYSELF>1</MYSELF>
+      <MYSELF>0</MYSELF>
       <COLIIDNUM>1</COLIIDNUM>
       <COLIID>1</COLIID>
       <RESTITUTION>0.500000</RESTITUTION>

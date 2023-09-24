@@ -771,7 +771,7 @@ int CDispObj::CreateVBandIBLine()
 }
 
 int CDispObj::RenderNormal(bool withalpha,
-	ID3D11DeviceContext* pd3d11DeviceContext, CMQOMaterial* rmaterial, int lightflag, 
+	ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, 
 	ChaVector4 diffusemult, ChaVector4 materialdisprate)
 {
 	// Only PM4
@@ -783,13 +783,15 @@ int CDispObj::RenderNormal(bool withalpha,
 		return 0;
 	}
 
-	HRESULT hr;
-
 	int materialnum = m_pm4->GetDispMaterialNum();
 	if (materialnum <= 0) {
 		_ASSERT(0);
 		return 0;
 	}
+
+	vector<int> afterrendermaterialcnt;
+	afterrendermaterialcnt.clear();
+
 
 	int materialcnt;
 	for (materialcnt = 0; materialcnt < materialnum; materialcnt++) {
@@ -798,324 +800,400 @@ int CDispObj::RenderNormal(bool withalpha,
 		int curtrinum = 0;
 		int result0 = m_pm4->GetDispMaterial(materialcnt, &curmat, &curoffset, &curtrinum);
 		if ((result0 == 0) && (curmat != NULL) && (curtrinum > 0)) {
-
-			ChaVector4 diffuse;
-			ChaVector4 curdif4f = curmat->GetDif4F();
-			diffuse.w = curdif4f.w * diffusemult.w;
-			diffuse.x = curdif4f.x * diffusemult.x * materialdisprate.x;
-			diffuse.y = curdif4f.y * diffusemult.y * materialdisprate.x;
-			diffuse.z = curdif4f.z * diffusemult.z * materialdisprate.x;
-			//diffuse.Clamp(0.0f, 1.0f);
-
-			if ((withalpha == false) && (diffuse.w <= 0.99999f)) {
-				continue;
-			}
-			if ((withalpha == true) && (diffuse.w > 0.99999f)) {
-				continue;
-			}
-
-
-			if (diffuse.w <= 0.99999f) {
-				//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
-				if (g_zcmpalways == false) {
-					pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
-				}
-				g_zcmpalways = true;
+			if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0) && (strstr(curmat->GetTex(), "_13.png") != 0)) {
+				//VRoid VRM 裾(すそ)の透過の順番のため　最後に描画
+				afterrendermaterialcnt.push_back(materialcnt);
 			}
 			else {
-				//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
-				if (g_zcmpalways == true) {
-					pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
-				}
-				g_zcmpalways = false;
+				RenderNormalMaterial(withalpha,
+					pd3d11DeviceContext,
+					curmat, curoffset, curtrinum,
+					lightflag, diffusemult, materialdisprate);
 			}
-
-			//pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
-
-
-		//diffuse = ChaVector4( 0.6f, 0.6f, 0.6f, 1.0f );
-
-			hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));
-			_ASSERT(SUCCEEDED(hr));
-
-			ChaVector3 tmpamb = curmat->GetAmb3F() * materialdisprate.w;
-			//tmpamb.Clamp(0.0f, 1.0f);
-			hr = g_hambient->SetRawValue(&tmpamb, 0, sizeof(ChaVector3));
-			_ASSERT(SUCCEEDED(hr));
-			
-			ChaVector3 tmpspc = curmat->GetSpc3F() * materialdisprate.y;
-			//tmpspc.Clamp(0.0f, 1.0f);
-			hr = g_hspecular->SetRawValue(&tmpspc, 0, sizeof(ChaVector3));
-			_ASSERT(SUCCEEDED(hr));
-			
-			hr = g_hpower->SetFloat(curmat->GetPower());
-			_ASSERT(SUCCEEDED(hr));
-			
-			ChaVector3 tmpemi = curmat->GetEmi3F() * materialdisprate.z;
-			//tmpemi.Clamp(0.0f, 1.0f);
-			hr = g_hemissive->SetRawValue(&tmpemi, 0, sizeof(ChaVector3));
-			_ASSERT(SUCCEEDED(hr));
-			
-			hr = g_hPm3Scale->SetRawValue(&m_scale, 0, sizeof(ChaVector3));
-			_ASSERT(SUCCEEDED(hr));
-
-
-			pd3d11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-			ID3DX11EffectTechnique* curtech = 0;
-			if (m_hasbone) {
-				if (lightflag != 0) {
-					switch (g_nNumActiveLights) {
-					case 1:
-						curtech = g_hRenderBoneL1;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL1);
-						break;
-					case 2:
-						curtech = g_hRenderBoneL2;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL2);
-						break;
-					case 3:
-						curtech = g_hRenderBoneL3;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL3);
-						break;
-					case 4:
-						curtech = g_hRenderBoneL4;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL4);
-						break;
-					case 5:
-						curtech = g_hRenderBoneL5;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL5);
-						break;
-					case 6:
-						curtech = g_hRenderBoneL6;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL6);
-						break;
-					case 7:
-						curtech = g_hRenderBoneL7;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL7);
-						break;
-					case 8:
-						curtech = g_hRenderBoneL8;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL8);
-						break;
-
-					case 0:
-						curtech = g_hRenderBoneL0;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL0);
-						break;
-
-					default:
-						_ASSERT(0);
-						curtech = g_hRenderBoneL1;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL1);
-						break;
-					}
-				}
-				else {
-					curtech = g_hRenderBoneL0;
-					pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL0);
-					//_ASSERT(0);
-				}
-
-				//// no lighting test
-				//curtech = g_hRenderBoneL0;
-				//pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL0);
-
-
-				ID3D11Buffer* pVBset[2] = { m_VB, m_InfB };
-				UINT strideset[2] = { sizeof(PM3DISPV), sizeof(PM3INF) };
-				UINT offsetset[2] = { 0, 0 };
-				pd3d11DeviceContext->IASetVertexBuffers(0, 2, &pVBset[0], &strideset[0], &offsetset[0]);
-
-			}
-			else {
-
-				if (lightflag != 0) {
-					switch (g_nNumActiveLights) {
-					case 1:
-						curtech = g_hRenderNoBoneL1;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL1);
-						break;
-					case 2:
-						curtech = g_hRenderNoBoneL2;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL2);
-						break;
-					case 3:
-						curtech = g_hRenderNoBoneL3;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL3);
-						break;
-					case 4:
-						curtech = g_hRenderNoBoneL4;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL4);
-						break;
-					case 5:
-						curtech = g_hRenderNoBoneL5;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL5);
-						break;
-					case 6:
-						curtech = g_hRenderNoBoneL6;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL6);
-						break;
-					case 7:
-						curtech = g_hRenderNoBoneL7;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL7);
-						break;
-					case 8:
-						curtech = g_hRenderNoBoneL8;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL8);
-						break;
-
-					case 0:
-						curtech = g_hRenderNoBoneL0;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL0);
-						break;
-
-					default:
-						_ASSERT(0);
-						curtech = g_hRenderNoBoneL1;
-						pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL1);
-						break;
-					}
-				}
-				else {
-					curtech = g_hRenderNoBoneL0;
-					pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL0);
-					_ASSERT(0);
-				}
-
-
-				//// no lighting test
-				//curtech = g_hRenderNoBoneL0;
-				//pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL0);
-
-
-				UINT vbstride1 = sizeof(PM3DISPV);
-				UINT offset = 0;
-				pd3d11DeviceContext->IASetVertexBuffers(0, 1, &m_VB, &vbstride1, &offset);
-			}
-
-			////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			//// no bone and no lighting test
-			////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			//curtech = g_hRenderNoBoneL0;
-			//pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL0);
-			//UINT vbstride1 = sizeof(PM3DISPV);
-			//UINT offset = 0;
-			//pd3d11DeviceContext->IASetVertexBuffers(0, 1, &m_VB, &vbstride1, &offset);
-
-
-			pd3d11DeviceContext->IASetIndexBuffer(m_IB, DXGI_FORMAT_R32_UINT, 0);
-
-
-			//UINT indexoffset = (UINT)curoffset;
-			//pd3d11DeviceContext->IASetIndexBuffer(m_IB, DXGI_FORMAT_R32_UINT, indexoffset);//########## 2022/07/05
-
-
-			//ID3D11Resource* disptex = 0;
-			//if( curmat->GetTexID() >= 0 ){
-			//	CTexElem* findtex = g_texbank->GetTexElem( curmat->GetTexID() );
-			//	if( findtex ){
-			//		disptex = findtex->GetPTex();
-			//		_ASSERT( disptex );
-			//	}else{
-			//		disptex = 0;
-			//	}
-			//}else{
-			//	disptex = 0;
-			//}
-			//int passno;
-			//if( disptex ){
-			//	passno = 0;
-			//}else{
-			//	passno = 1;
-			//}
-			//hr = g_pEffect->SetTexture( g_hMeshTexture, disptex );
-			//_ASSERT( !hr );
-
-			ID3D11ShaderResourceView* texresview = 0;
-			if (curmat->GetTexID() >= 0) {
-				CTexElem* findtex = g_texbank->GetTexElem(curmat->GetTexID());
-				if (findtex && findtex->IsValid()) {
-					texresview = findtex->GetPTex();
-					_ASSERT(texresview);
-				}
-				else {
-					texresview = 0;
-				}
-			}
-			else {
-				texresview = 0;
-			}
-
-			if (texresview && (texresview != g_presview)) {
-				hr = g_hMeshTexture->SetResource(texresview);
-				_ASSERT(SUCCEEDED(hr));
-				g_presview = texresview;
-			}
-			else {
-				//g_hMeshTexture->SetResource(NULL);
-			}
-
-			UINT p;
-			if (texresview) {
-				p = 0;
-			}
-			else {
-				p = 1;
-			}
-
-			//// no texture test
-			//g_hMeshTexture->SetResource(NULL);
-			//p = 1;///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! no texture test
-
-			//FLOAT blendFactor[4] = { D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO };
-			FLOAT blendFactor[4] = { D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO };
-			pd3d11DeviceContext->OMSetBlendState(g_blendState, blendFactor, 0xffffffff);
-
-
-			/////////////
-				//HRESULT hres;
-
-			int rendervnum;
-			//if (m_pm3) {
-			//	rendervnum = m_pm3->GetOptLeng();
-			//}
-			//else 
-			if (m_pm4) {
-				rendervnum = m_pm4->GetOptLeng();
-			}
-			int curnumprim;
-			//if (m_pm3) {
-			//	curnumprim = m_pm3->GetFaceNum();
-			//}
-			//else 
-			if (m_pm4) {
-				//curnumprim = m_pm4->GetFaceNum();
-				curnumprim = curtrinum;
-			}
-			else {
-				_ASSERT(0);
-				return 1;
-			}
-
-			//D3D11_TECHNIQUE_DESC techDesc;
-			//curtech->GetDesc(&techDesc);
-			//for (UINT p = 0; p < techDesc.Passes; ++p)
-			//{
-				//pはテクスチャの有無によるパスの数字
-			hr = curtech->GetPassByIndex(p)->Apply(0, pd3d11DeviceContext);
-			_ASSERT(SUCCEEDED(hr));
-			//pd3d11DeviceContext->DrawIndexed(curnumprim * 3, 0, 0);
-			pd3d11DeviceContext->DrawIndexed(curnumprim * 3, curoffset, 0);
-
-			//pd3d11DeviceContext->Draw(rendervnum, 0);
-		//}
-
 		}
 	}
 
 
+	if (!afterrendermaterialcnt.empty()) {
+		//VRoid VRM 裾(すそ)の透過の順番のため　最後に描画
+		int aftermatnum = (int)afterrendermaterialcnt.size();
+		int aftmaterialcnt;
+		for (aftmaterialcnt = 0; aftmaterialcnt < aftermatnum; aftmaterialcnt++) {
+			CMQOMaterial* curmat = NULL;
+			int curoffset = 0;
+			int curtrinum = 0;
+
+			materialcnt = afterrendermaterialcnt[aftmaterialcnt];
+
+			int result0 = m_pm4->GetDispMaterial(materialcnt, &curmat, &curoffset, &curtrinum);
+			if ((result0 == 0) && (curmat != NULL) && (curtrinum > 0)) {
+				RenderNormalMaterial(withalpha,
+					pd3d11DeviceContext,
+					curmat, curoffset, curtrinum,
+					lightflag, diffusemult, materialdisprate);
+			}
+		}
+	}
+
+
+
 	return 0;
+}
+
+
+int CDispObj::RenderNormalMaterial(bool withalpha,
+	ID3D11DeviceContext* pd3d11DeviceContext, 
+	CMQOMaterial* curmat, int curoffset, int curtrinum, 
+	int lightflag, ChaVector4 diffusemult, ChaVector4 materialdisprate)
+{
+	if (!curmat) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	if (!m_pm4) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	HRESULT hr;
+
+
+	ChaVector4 diffuse;
+	ChaVector4 curdif4f = curmat->GetDif4F();
+	diffuse.w = curdif4f.w * diffusemult.w;
+	diffuse.x = curdif4f.x * diffusemult.x * materialdisprate.x;
+	diffuse.y = curdif4f.y * diffusemult.y * materialdisprate.x;
+	diffuse.z = curdif4f.z * diffusemult.z * materialdisprate.x;
+	//diffuse.Clamp(0.0f, 1.0f);
+
+	//if ((withalpha == false) && (diffuse.w <= 0.99999f)) {
+	//	continue;
+	//}
+	//if ((withalpha == true) && (diffuse.w > 0.99999f)) {
+	//	continue;
+	//}
+	bool opeflag = false;
+	if (withalpha == false) {//2023/09/24
+		if ((curmat->GetTransparent() == 0) && (diffuse.w > 0.99999f)) {
+			opeflag = true;
+		}
+		else {
+			opeflag = false;
+		}
+	}
+	else {
+		if ((curmat->GetTransparent() == 1) || (diffuse.w <= 0.99999f)) {
+			opeflag = true;
+		}
+		else {
+			opeflag = false;
+		}
+	}
+	if (opeflag == false) {
+		return 0;
+	}
+
+
+	if (diffuse.w <= 0.99999f) {
+		//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
+		if (g_zcmpalways == false) {
+			pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
+		}
+		g_zcmpalways = true;
+	}
+	else {
+		//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
+		if (g_zcmpalways == true) {
+			pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+		}
+		g_zcmpalways = false;
+	}
+
+	//pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+
+
+//diffuse = ChaVector4( 0.6f, 0.6f, 0.6f, 1.0f );
+
+	hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));
+	_ASSERT(SUCCEEDED(hr));
+
+	ChaVector3 tmpamb = curmat->GetAmb3F() * materialdisprate.w;
+	//tmpamb.Clamp(0.0f, 1.0f);
+	hr = g_hambient->SetRawValue(&tmpamb, 0, sizeof(ChaVector3));
+	_ASSERT(SUCCEEDED(hr));
+
+	ChaVector3 tmpspc = curmat->GetSpc3F() * materialdisprate.y;
+	//tmpspc.Clamp(0.0f, 1.0f);
+	hr = g_hspecular->SetRawValue(&tmpspc, 0, sizeof(ChaVector3));
+	_ASSERT(SUCCEEDED(hr));
+
+	hr = g_hpower->SetFloat(curmat->GetPower());
+	_ASSERT(SUCCEEDED(hr));
+
+	ChaVector3 tmpemi = curmat->GetEmi3F() * materialdisprate.z;
+	//tmpemi.Clamp(0.0f, 1.0f);
+	hr = g_hemissive->SetRawValue(&tmpemi, 0, sizeof(ChaVector3));
+	_ASSERT(SUCCEEDED(hr));
+
+	hr = g_hPm3Scale->SetRawValue(&m_scale, 0, sizeof(ChaVector3));
+	_ASSERT(SUCCEEDED(hr));
+
+
+	pd3d11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	ID3DX11EffectTechnique* curtech = 0;
+	if (m_hasbone) {
+		if (lightflag != 0) {
+			switch (g_nNumActiveLights) {
+			case 1:
+				curtech = g_hRenderBoneL1;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL1);
+				break;
+			case 2:
+				curtech = g_hRenderBoneL2;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL2);
+				break;
+			case 3:
+				curtech = g_hRenderBoneL3;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL3);
+				break;
+			case 4:
+				curtech = g_hRenderBoneL4;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL4);
+				break;
+			case 5:
+				curtech = g_hRenderBoneL5;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL5);
+				break;
+			case 6:
+				curtech = g_hRenderBoneL6;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL6);
+				break;
+			case 7:
+				curtech = g_hRenderBoneL7;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL7);
+				break;
+			case 8:
+				curtech = g_hRenderBoneL8;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL8);
+				break;
+
+			case 0:
+				curtech = g_hRenderBoneL0;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL0);
+				break;
+
+			default:
+				_ASSERT(0);
+				curtech = g_hRenderBoneL1;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL1);
+				break;
+			}
+		}
+		else {
+			curtech = g_hRenderBoneL0;
+			pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL0);
+			//_ASSERT(0);
+		}
+
+		//// no lighting test
+		//curtech = g_hRenderBoneL0;
+		//pd3d11DeviceContext->IASetInputLayout(m_layoutBoneL0);
+
+
+		ID3D11Buffer* pVBset[2] = { m_VB, m_InfB };
+		UINT strideset[2] = { sizeof(PM3DISPV), sizeof(PM3INF) };
+		UINT offsetset[2] = { 0, 0 };
+		pd3d11DeviceContext->IASetVertexBuffers(0, 2, &pVBset[0], &strideset[0], &offsetset[0]);
+
+	}
+	else {
+
+		if (lightflag != 0) {
+			switch (g_nNumActiveLights) {
+			case 1:
+				curtech = g_hRenderNoBoneL1;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL1);
+				break;
+			case 2:
+				curtech = g_hRenderNoBoneL2;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL2);
+				break;
+			case 3:
+				curtech = g_hRenderNoBoneL3;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL3);
+				break;
+			case 4:
+				curtech = g_hRenderNoBoneL4;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL4);
+				break;
+			case 5:
+				curtech = g_hRenderNoBoneL5;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL5);
+				break;
+			case 6:
+				curtech = g_hRenderNoBoneL6;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL6);
+				break;
+			case 7:
+				curtech = g_hRenderNoBoneL7;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL7);
+				break;
+			case 8:
+				curtech = g_hRenderNoBoneL8;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL8);
+				break;
+
+			case 0:
+				curtech = g_hRenderNoBoneL0;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL0);
+				break;
+
+			default:
+				_ASSERT(0);
+				curtech = g_hRenderNoBoneL1;
+				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL1);
+				break;
+			}
+		}
+		else {
+			curtech = g_hRenderNoBoneL0;
+			pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL0);
+			_ASSERT(0);
+		}
+
+
+		//// no lighting test
+		//curtech = g_hRenderNoBoneL0;
+		//pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL0);
+
+
+		UINT vbstride1 = sizeof(PM3DISPV);
+		UINT offset = 0;
+		pd3d11DeviceContext->IASetVertexBuffers(0, 1, &m_VB, &vbstride1, &offset);
+	}
+
+	////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//// no bone and no lighting test
+	////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//curtech = g_hRenderNoBoneL0;
+	//pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL0);
+	//UINT vbstride1 = sizeof(PM3DISPV);
+	//UINT offset = 0;
+	//pd3d11DeviceContext->IASetVertexBuffers(0, 1, &m_VB, &vbstride1, &offset);
+
+
+	pd3d11DeviceContext->IASetIndexBuffer(m_IB, DXGI_FORMAT_R32_UINT, 0);
+
+
+	//UINT indexoffset = (UINT)curoffset;
+	//pd3d11DeviceContext->IASetIndexBuffer(m_IB, DXGI_FORMAT_R32_UINT, indexoffset);//########## 2022/07/05
+
+
+	//ID3D11Resource* disptex = 0;
+	//if( curmat->GetTexID() >= 0 ){
+	//	CTexElem* findtex = g_texbank->GetTexElem( curmat->GetTexID() );
+	//	if( findtex ){
+	//		disptex = findtex->GetPTex();
+	//		_ASSERT( disptex );
+	//	}else{
+	//		disptex = 0;
+	//	}
+	//}else{
+	//	disptex = 0;
+	//}
+	//int passno;
+	//if( disptex ){
+	//	passno = 0;
+	//}else{
+	//	passno = 1;
+	//}
+	//hr = g_pEffect->SetTexture( g_hMeshTexture, disptex );
+	//_ASSERT( !hr );
+
+	ID3D11ShaderResourceView* texresview = 0;
+	if (curmat->GetTexID() >= 0) {
+		CTexElem* findtex = g_texbank->GetTexElem(curmat->GetTexID());
+		if (findtex && findtex->IsValid()) {
+			texresview = findtex->GetPTex();
+			_ASSERT(texresview);
+		}
+		else {
+			texresview = 0;
+		}
+	}
+	else {
+		texresview = 0;
+	}
+
+	if (texresview && (texresview != g_presview)) {
+		hr = g_hMeshTexture->SetResource(texresview);
+		_ASSERT(SUCCEEDED(hr));
+		g_presview = texresview;
+	}
+	else {
+		//g_hMeshTexture->SetResource(NULL);
+	}
+
+	UINT p;
+	if (texresview) {
+		p = 0;
+	}
+	else {
+		p = 1;
+	}
+
+	//// no texture test
+	//g_hMeshTexture->SetResource(NULL);
+	//p = 1;///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! no texture test
+
+	//FLOAT blendFactor[4] = { D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO };
+	FLOAT blendFactor[4] = { D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO };
+	pd3d11DeviceContext->OMSetBlendState(g_blendState, blendFactor, 0xffffffff);
+
+
+	/////////////
+		//HRESULT hres;
+
+	int rendervnum;
+	//if (m_pm3) {
+	//	rendervnum = m_pm3->GetOptLeng();
+	//}
+	//else 
+	if (m_pm4) {
+		rendervnum = m_pm4->GetOptLeng();
+	}
+	int curnumprim;
+	//if (m_pm3) {
+	//	curnumprim = m_pm3->GetFaceNum();
+	//}
+	//else 
+	if (m_pm4) {
+		//curnumprim = m_pm4->GetFaceNum();
+		curnumprim = curtrinum;
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
+
+	//D3D11_TECHNIQUE_DESC techDesc;
+	//curtech->GetDesc(&techDesc);
+	//for (UINT p = 0; p < techDesc.Passes; ++p)
+	//{
+		//pはテクスチャの有無によるパスの数字
+	hr = curtech->GetPassByIndex(p)->Apply(0, pd3d11DeviceContext);
+	_ASSERT(SUCCEEDED(hr));
+	//pd3d11DeviceContext->DrawIndexed(curnumprim * 3, 0, 0);
+	pd3d11DeviceContext->DrawIndexed(curnumprim * 3, curoffset, 0);
+
+	//pd3d11DeviceContext->Draw(rendervnum, 0);
+//}
+
+	return 0;
+
+
 }
 
 
@@ -1385,12 +1463,34 @@ int CDispObj::RenderNormalPM3(bool withalpha,
 		diffuse.z = curdif4f.z * diffusemult.z * materialdisprate.x;
 		//diffuse.Clamp(0.0f, 1.0f);
 
-		if ((withalpha == false) && (diffuse.w <= 0.99999f)) {
+		//if ((withalpha == false) && ((curmat->GetTransparent() == 0) && (diffuse.w <= 0.99999f))) {
+		//	continue;
+		//}
+		//if ((withalpha == true) && (((curmat->GetTransparent() == 1) || (diffuse.w > 0.99999f))) {
+		//	continue;
+		//}
+		bool opeflag = false;
+		if (withalpha == false) {//2023/09/24
+			if ((curmat->GetTransparent() == 0) && (diffuse.w > 0.99999f)) {
+				opeflag = true;
+			}
+			else {
+				opeflag = false;
+			}
+		}
+		else {
+			if ((curmat->GetTransparent() == 1) || (diffuse.w <= 0.99999f)) {
+				opeflag = true;
+			}
+			else {
+				opeflag = false;
+			}
+		}
+		if (opeflag == false) {
 			continue;
 		}
-		if ((withalpha == true) && (diffuse.w > 0.99999f)) {
-			continue;
-		}
+
+
 
 
 		hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));

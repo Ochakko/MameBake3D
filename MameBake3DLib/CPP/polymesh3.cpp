@@ -904,3 +904,39 @@ int CPolyMesh3::MultScale( ChaVector3 srcscale, ChaVector3 srctra )
 	return 0;
 }
 
+void CPolyMesh3::IncludeTransparent(float alphamult, bool* pfound_noalpha, bool* pfound_alpha)
+{
+	if (!pfound_noalpha || !pfound_alpha) {
+		_ASSERT(0);
+		return;
+	}
+
+
+	bool found_noalpha = false;
+	bool found_alpha = false;
+
+	int blno;
+	for (blno = 0; blno < GetOptMatNum(); blno++) {
+		MATERIALBLOCK* currb = GetMatBlock() + blno;
+		CMQOMaterial* curmat;
+		curmat = currb->mqomat;
+		if (!curmat) {
+			continue;
+		}
+		if (curmat->GetTransparent() != 0) {//2023/09/24 VRoid‚Ìž(‚·‚»)“§‰ß‘Îô
+			found_alpha = true;
+		}
+		else {
+			if ((curmat->GetDif4F().w * alphamult) <= 0.99999f) {
+				found_alpha = true;
+			}
+			else {
+				found_noalpha = true;
+			}
+		}
+	}
+
+	*pfound_noalpha = found_noalpha;
+	*pfound_alpha = found_alpha;
+
+}

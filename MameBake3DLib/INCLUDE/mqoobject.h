@@ -108,6 +108,13 @@ public:
 
 	CBone* GetHipsBone();
 
+
+
+
+	//2023/09/24
+	void IncludeTransparent(float multalpha, bool* pfound_noalpha, bool* pfound_alpha);
+
+
 private:
 	void InitParams();
 

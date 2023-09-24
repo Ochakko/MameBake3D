@@ -4004,8 +4004,18 @@ INT WINAPI wWinMain(
 	// and FrameRender callback when there is idle time between handling window messages.
 	DXUTMainLoop();
 
+
 	// Perform any application-level cleanup here. Direct3D device resources are released within the
 	// appropriate callback functions and therefore don't require any cleanup code here
+
+
+	//2023/09/23
+	if (s_mainhwnd && IsWindow(s_mainhwnd)) {
+		DestroyWindow(s_mainhwnd);
+		s_mainhwnd = 0;
+	}
+	s_mainhwnd = 0;
+
 
 	return DXUTGetExitCode();
 }
@@ -8096,7 +8106,6 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 
 	DestroyEulKeys();
 	DestroyKeys();
-
 
 	DeleteCriticalSection(&s_CritSection_LTimeline);
 	DeleteCriticalSection(&g_CritSection_GetGP);
@@ -38773,9 +38782,11 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		//	OnMouseMoveFunc();
 		//	break;
 
+
 	case WM_DESTROY:
-		PostQuitMessage(0);
+		//PostQuitMessage(0);
 		//return 0;
+		DXUTShutdown(0);//2023/09/23 ここで解放処理を呼んでも　DirectX11の遅延解放のため？VisualStudioのログにデバイスのAlive情報は出る
 		break;
 	case WM_CREATE:
 		InitializeMainWindow((CREATESTRUCT*)lParam);

@@ -1128,7 +1128,6 @@ private:
 	void InitCameraFbx();
 
 
-
 public: //accesser
 	FbxManager* GetFBXSDK(){
 		return m_psdk;
