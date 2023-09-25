@@ -1,8 +1,15 @@
-2023/09/25
-    EditMot 1.2.0.25 RC4(リリース候補4)
+2023/09/26
+    EditMot 1.2.0.25 RC5(リリース候補5)
 
     シャツのすそを外に出しているVRoidモデルの表示対応
 	シャツのすそで足の表示が欠けないように
+	
+	プロジェクトファイル(*.cha)の<Chara>タグと</Chara>タグの間に
+	<LaterTransparent>_15.png</LaterTransparent>
+	<LaterTransparent>_13.png</LaterTransparent>
+	というようにテキストで記述すると
+	そのキャラクターの描画の最後に　_15.png, _13.pngのテクスチャを貼っているオブジェクトを_15.png, _13.pngの順番で描画
+	透過テクスチャの奥に透けて見えるオブジェクトを先に描画し　上に重なるオブジェクトを後に描画するように指定します
 
     Fbx書き出し修正
 	fbxInfoのリビジョン番号アップ
@@ -39,11 +46,12 @@
 	ショートカットについてのドキュメント追加
 		Documants/TroubleShooting/0_ShortCutKey.docx
 
-    Testフォルダのモデルの物理設定修正
+    Testフォルダのモデル追加及び修正
 	前髪にForbid Rot設定をして　前髪はほとんど揺れないように
 
 	Test/0_VRoid_Spring_1
 	Test/1_BoySporty_4
+	Test/2_Autumn_1 (新規)	
 
 	Spring_1については　髪の毛の剛体グループが同グループ同士で当たらない設定に修正してrefファイル保存
 

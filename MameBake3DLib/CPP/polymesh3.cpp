@@ -904,7 +904,7 @@ int CPolyMesh3::MultScale( ChaVector3 srcscale, ChaVector3 srctra )
 	return 0;
 }
 
-void CPolyMesh3::IncludeTransparent(float alphamult, bool* pfound_noalpha, bool* pfound_alpha)
+void CPolyMesh3::IncludeTransparent(vector<string> latername, float alphamult, bool* pfound_noalpha, bool* pfound_alpha)
 {
 	if (!pfound_noalpha || !pfound_alpha) {
 		_ASSERT(0);
@@ -934,6 +934,18 @@ void CPolyMesh3::IncludeTransparent(float alphamult, bool* pfound_noalpha, bool*
 				found_noalpha = true;
 			}
 		}
+
+
+		if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
+			int laternum = (int)latername.size();
+			int laterno;
+			for (laterno = 0; laterno < laternum; laterno++) {
+				if (strcmp(curmat->GetTex(), latername[laterno].c_str()) == 0) {
+					found_alpha = true;
+				}
+			}
+		}
+
 	}
 
 	*pfound_noalpha = found_noalpha;

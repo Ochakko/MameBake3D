@@ -2001,6 +2001,26 @@ public: //accesser
 		}
 	}
 
+	void AddLaterTransparent(std::string srctexname)
+	{
+		m_latertransparent.push_back(srctexname);
+	}
+	int GetLaterTransparentNum()
+	{
+		return (int)m_latertransparent.size();
+	}
+	std::string GetLaterTransparent(int srcindex)
+	{
+		if ((srcindex >= 0) && (srcindex < GetLaterTransparentNum())) {
+			return m_latertransparent[srcindex];
+		}
+		else {
+			_ASSERT(0);
+			std::string strerror = "indexError";
+			return strerror;
+		}
+	}
+
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];
@@ -2131,6 +2151,8 @@ private:
 	std::map<int, DISPGROUPELEM> m_objno2digelem;
 	std::vector<DISPGROUPELEM> m_dispgroup[MAXDISPGROUPNUM];//m_dispgroup[groupno] = vector<objno>
 	bool m_dispgroupON[MAXDISPGROUPNUM];
+	std::vector<std::string> m_latertransparent;
+
 
 	bool m_noboneflag;
 	CCameraFbx m_camerafbx;

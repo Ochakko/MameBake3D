@@ -197,12 +197,15 @@ int CDispGroupFile::ReadDig(XMLIOBUF* xmliobuf)
 	while (result == 0) {
 		XMLIOBUF namebuf;
 		ZeroMemory(&namebuf, sizeof(XMLIOBUF));
-		result = SetXmlIOBuf(xmliobuf, "<NodeName>", "</NodeName>", &namebuf);
+		int delpatflag = 0;
+		result = SetXmlIOBuf(xmliobuf, "<NodeName>", "</NodeName>", &namebuf, delpatflag);
 
 		char nodename[256];
 		ZeroMemory(nodename, sizeof(char) * 256);
 		if (result == 0) {
-			strncpy_s(nodename, 256, namebuf.buf + namebuf.pos, namebuf.bufleng - namebuf.pos);
+			//strncpy_s(nodename, 256, namebuf.buf + namebuf.pos, namebuf.bufleng - namebuf.pos);
+			CallF(Read_Str(&namebuf, "<NodeName>", "</NodeName>", nodename, 256), return 1);
+
 			m_model->SetDispGroup(groupindex, nodename);
 		}
 	}

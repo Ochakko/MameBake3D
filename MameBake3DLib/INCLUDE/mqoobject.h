@@ -112,7 +112,7 @@ public:
 
 
 	//2023/09/24
-	void IncludeTransparent(float multalpha, bool* pfound_noalpha, bool* pfound_alpha);
+	void IncludeTransparent(std::vector<std::string> latername, float multalpha, bool* pfound_noalpha, bool* pfound_alpha);
 
 
 private:

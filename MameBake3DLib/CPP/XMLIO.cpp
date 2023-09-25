@@ -643,7 +643,14 @@ int CXMLIO::SetXmlIOBuf( XMLIOBUF* srcbuf, const char* startpat, const char* end
 	srcbuf->pos = chkendpos;
 
 	dstbuf->buf = startptr;
-	dstbuf->bufleng = (int)( endptr - startptr );
+
+	if (delpatflag) {//2023/09/25
+		dstbuf->bufleng = (int)(endptr - startptr);//startptrはdelpatflagを考慮済
+	}
+	else {
+		dstbuf->bufleng = (int)(endptr + epatlen - startptr);//startptrはdelpatflagを考慮済
+	}
+
 	dstbuf->pos = 0;
 	dstbuf->isend = 0;
 
@@ -663,7 +670,7 @@ CBone* CXMLIO::FindBoneByName(CModel* srcmodel, char* bonename, int srcleng)
 	}
 	CBone* curbone = srcmodel->FindBoneByName(bonename);
 	if (!curbone){
-		_ASSERT(0);
+		//_ASSERT(0);
 		return 0;
 	}
 

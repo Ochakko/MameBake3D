@@ -73,9 +73,9 @@ public:
  */
 	int RenderNormal(bool withalpha, 
 		ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, 
-		ChaVector4 diffusemult, ChaVector4 materialdisprate);
+		ChaVector4 diffusemult, ChaVector4 materialdisprate, std::vector<std::string> latername);
 
-	int RenderNormalMaterial(bool withalpha,
+	int RenderNormalMaterial(bool laterflag, bool withalpha,
 		ID3D11DeviceContext* pd3d11DeviceContext,
 		CMQOMaterial* rmaterial, int curoffset, int curtrinum,
 		int lightflag, ChaVector4 diffusemult, ChaVector4 materialdisprate);
@@ -91,7 +91,12 @@ public:
  */
 	int RenderNormalPM3(bool withalpha, 
 		ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, 
-		ChaVector4 diffusemult, ChaVector4 materialdisprate );
+		ChaVector4 diffusemult, ChaVector4 materialdisprate, std::vector<std::string> latername);
+
+	int RenderNormalPM3Material(bool laterflag, bool withalpha,
+		ID3D11DeviceContext* pd3d11DeviceContext,
+		CMQOMaterial* rmaterial, int curoffset, int curtrinum,
+		int lightflag, ChaVector4 diffusemult, ChaVector4 materialdisprate);
 
 /**
  * @fn

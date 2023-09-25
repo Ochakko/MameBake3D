@@ -352,7 +352,7 @@ int CLmtFile::ReadBone(bool limitdegflag, XMLIOBUF* xmliobuf, CModel* srcmodel)
 	CallF( Read_Str(xmliobuf, "<Name>", "</Name>", bonename, 256), return 1 );
 	CBone* curbone = FindBoneByName(srcmodel, bonename, 256);
 	if (!curbone){
-		_ASSERT(0);
+		//_ASSERT(0);
 		return 0;
 	}
 

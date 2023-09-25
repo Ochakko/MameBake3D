@@ -2477,7 +2477,7 @@ CBone* CMQOObject::GetHipsBone()
 	return hipsbone;
 }
 
-void CMQOObject::IncludeTransparent(float multalpha, bool* pfound_noalpha, bool* pfound_alpha)
+void CMQOObject::IncludeTransparent(vector<string> latername, float multalpha, bool* pfound_noalpha, bool* pfound_alpha)
 {
 	if (!pfound_noalpha || !pfound_alpha) {
 		_ASSERT(0);
@@ -2516,6 +2516,16 @@ void CMQOObject::IncludeTransparent(float multalpha, bool* pfound_noalpha, bool*
 				}
 				else {
 					found_noalpha = true;
+				}
+			}
+
+			if (curmaterial->GetTex() && (strlen(curmaterial->GetTex()) > 0)) {
+				int laternum = (int)latername.size();
+				int laterno;
+				for (laterno = 0; laterno < laternum; laterno++) {
+					if (strcmp(curmaterial->GetTex(), latername[laterno].c_str()) == 0) {
+						found_alpha = true;
+					}
 				}
 			}
 		}

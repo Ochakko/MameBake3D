@@ -589,6 +589,8 @@ int CModel::InitParams()
 
 	m_noboneflag = false;
 
+	m_latertransparent.clear();
+
 	InitUndoMotion( 0 );
 
 	return 0;
@@ -1354,7 +1356,7 @@ int CModel::OnRender(bool withalpha,
 						if (curobj->GetPm3()) {
 							bool found_noalpha = false;
 							bool found_alpha = false;
-							curobj->GetPm3()->IncludeTransparent(diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
+							curobj->GetPm3()->IncludeTransparent(m_latertransparent, diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
 
 							if ((withalpha == false) && (found_noalpha == false)) {
 								//不透明描画時　１つも不透明がなければ　レンダースキップ
@@ -1366,12 +1368,12 @@ int CModel::OnRender(bool withalpha,
 							}
 
 							CallF(SetShaderConst(curobj, btflag), return 1);
-							CallF(curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate), return 1);
+							CallF(curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, m_latertransparent), return 1);
 						}
 						else if (curobj->GetPm4()) {
 							bool found_noalpha = false;
 							bool found_alpha = false;
-							curobj->IncludeTransparent(diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
+							curobj->IncludeTransparent(m_latertransparent, diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
 
 							if ((withalpha == false) && (found_noalpha == false)) {
 								//不透明描画時　１つも不透明がなければ　レンダースキップ
@@ -1383,7 +1385,7 @@ int CModel::OnRender(bool withalpha,
 							}
 							CallF(SetShaderConst(curobj, btflag), return 1);
 							
-							CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate), return 1);
+							CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, m_latertransparent), return 1);
 						}
 						else {
 							_ASSERT(0);
@@ -1535,7 +1537,7 @@ int CModel::RenderTest(bool withalpha, ID3D11DeviceContext* pd3dImmediateContext
 				if (curobj->GetPm3()) {
 					bool found_noalpha = false;
 					bool found_alpha = false;
-					curobj->GetPm3()->IncludeTransparent(diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
+					curobj->GetPm3()->IncludeTransparent(m_latertransparent, diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
 
 					if ((withalpha == false) && (found_noalpha == false)) {
 						//不透明描画時　１つも不透明がなければ　レンダースキップ
@@ -1547,12 +1549,12 @@ int CModel::RenderTest(bool withalpha, ID3D11DeviceContext* pd3dImmediateContext
 					}
 
 					CallF(SetShaderConst(curobj, btflag), return 1);
-					CallF(curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate), return 1);
+					CallF(curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, m_latertransparent), return 1);
 				}
 				else if (curobj->GetPm4()) {
 					bool found_noalpha = false;
 					bool found_alpha = false;
-					curobj->IncludeTransparent(diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
+					curobj->IncludeTransparent(m_latertransparent, diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
 
 					if ((withalpha == false) && (found_noalpha == false)) {
 						//不透明描画時　１つも不透明がなければ　レンダースキップ
@@ -1564,7 +1566,7 @@ int CModel::RenderTest(bool withalpha, ID3D11DeviceContext* pd3dImmediateContext
 					}
 					CallF(SetShaderConst(curobj, btflag), return 1);
 					
-					CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate), return 1);
+					CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, m_latertransparent), return 1);
 				}
 				else {
 					_ASSERT(0);
@@ -5041,9 +5043,9 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 			newmqomat->SetTransparent(1);
 		}
 	}
-	if (strstr(newmqomat->GetName(), "_CLOTH_02") != 0) {//シャツのすそ
-		newmqomat->SetTransparent(1);
-	}
+	//if (strstr(newmqomat->GetName(), "_CLOTH_02") != 0) {//シャツのすそ
+	//	newmqomat->SetTransparent(1);
+	//}
 
 
 
@@ -5263,13 +5265,13 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 	}
 
 
-	if (newmqomat->GetTex() && (strlen(newmqomat->GetTex()) > 0)) {
-		if ((strstr(newmqomat->GetTex(), "_13.png") != 0) || (strstr(newmqomat->GetTex(), "_15.png") != 0)) {
-			//2023/09/24 VRoidの服の裾(すそ)に透過の印を付ける
-			//上方において　((FbxSurfacePhong*)pMaterial)->TransparencyFactor != 0.0についてもSetTransparent(1)
-			newmqomat->SetTransparent(1);
-		}
-	}
+	//if (newmqomat->GetTex() && (strlen(newmqomat->GetTex()) > 0)) {
+	//	if ((strstr(newmqomat->GetTex(), "_13.png") != 0) || (strstr(newmqomat->GetTex(), "_15.png") != 0) || (strstr(newmqomat->GetTex(), "_16.png") != 0)) {
+	//		//2023/09/24 VRoidの服の裾(すそ)に透過の印を付ける
+	//		//上方において　((FbxSurfacePhong*)pMaterial)->TransparencyFactor != 0.0についてもSetTransparent(1)
+	//		newmqomat->SetTransparent(1);
+	//	}
+	//}
 
 
    return 0;

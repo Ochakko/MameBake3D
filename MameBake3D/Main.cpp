@@ -6405,6 +6405,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 	dsDescZCmpAlways.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
 	dsDescZCmpAlways.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
 	// Stencil operations if pixel is back-facing
+
 	dsDescZCmpAlways.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
 	dsDescZCmpAlways.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
 	dsDescZCmpAlways.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
@@ -6416,7 +6417,6 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 
 	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 	g_zcmpalways = false;
-
 
 
 	WCHAR initialdir[MAX_PATH] = { 0L };
@@ -6950,8 +6950,8 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	//g_Mesh10.Destroy();
 
 	SAFE_RELEASE(g_pEffect);
-
 	SAFE_RELEASE(g_blendState);//!!!!!
+
 
 	if (s_editrangehistory) {
 		delete[] s_editrangehistory;

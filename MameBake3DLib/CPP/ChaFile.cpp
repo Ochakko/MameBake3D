@@ -222,6 +222,15 @@ int CChaFile::WriteChara(bool limitdegflag, MODELELEM* srcme, WCHAR* projname, m
 		}
 	}
 
+	//2023/09/25
+	int laternum = curmodel->GetLaterTransparentNum();
+	int laterno;
+	for (laterno = 0; laterno < laternum; laterno++) {
+		string latertexname = curmodel->GetLaterTransparent(laterno);
+		CallF(Write2File("    <LaterTransparent>%s</LaterTransparent>\r\n", latertexname.c_str()), return 1);
+	}
+
+
 
 	CallF( Write2File( "    <RGDMORPH>%d</RGDMORPH>\r\n", curmodel->GetRgdMorphIndex() ), return 1 );
 
@@ -643,15 +652,18 @@ int CChaFile::ReadChara(bool limitdegflag, int charanum, int characnt, XMLIOBUF*
 		if (errorno1 == 0) {
 			bool findikstopname = true;
 			while (findikstopname) {
-				XMLIOBUF refbuf;
-				ZeroMemory(&refbuf, sizeof(XMLIOBUF));
-				int errorno = SetXmlIOBuf(xmlbuf, "<IKStopName>", "</IKStopName>", &refbuf, 0);
+				XMLIOBUF stopikbuf;
+				ZeroMemory(&stopikbuf, sizeof(XMLIOBUF));
+				int delpatflag = 0;
+				int errorno = SetXmlIOBuf(xmlbuf, "<IKStopName>", "</IKStopName>", &stopikbuf, delpatflag);
 				if (errorno != 0) {
 					findikstopname = false;
 					break;
 				}
-				char stopname[256] = { 0 };
-				CallF(Read_Str(&refbuf, "<IKStopName>", "</IKStopName>", stopname, 256), return 1);
+				char stopname[256];
+				ZeroMemory(stopname, sizeof(char) * 256);
+				CallF(Read_Str(&stopikbuf, "<IKStopName>", "</IKStopName>", stopname, 256), return 1);
+				//strncpy_s(stopname, 256, stopikbuf.buf + stopikbuf.pos, stopikbuf.bufleng - stopikbuf.pos);
 
 				ikstopname.push_back(stopname);
 			}
@@ -660,6 +672,29 @@ int CChaFile::ReadChara(bool limitdegflag, int charanum, int characnt, XMLIOBUF*
 			//古いファイルには　IKStopNameタグエントリーは無い　デフォルト設定する
 			ikstopname.push_back("Shoulder");
 			ikstopname.push_back("UpperLeg");
+		}
+	}
+
+
+	//2023/09/25
+	std::vector<std::string> latername;
+	{
+		bool findlater = true;
+		while (findlater) {
+			XMLIOBUF laterbuf;
+			ZeroMemory(&laterbuf, sizeof(XMLIOBUF));
+			int delpatflag = 0;
+			int errorno = SetXmlIOBuf(xmlbuf, "<LaterTransparent>", "</LaterTransparent>", &laterbuf, delpatflag);
+			if (errorno != 0) {
+				findlater = false;
+				break;
+			}
+			char strlatername[256];
+			ZeroMemory(strlatername, sizeof(char) * 256);
+			//strncpy_s(strlatername, 256, laterbuf.buf + laterbuf.pos, laterbuf.bufleng - laterbuf.pos);
+			CallF(Read_Str(&laterbuf, "<LaterTransparent>", "</LaterTransparent>", strlatername, 256), return 1);
+
+			latername.push_back(strlatername);
 		}
 	}
 
@@ -698,6 +733,13 @@ int CChaFile::ReadChara(bool limitdegflag, int charanum, int characnt, XMLIOBUF*
 	newmodel->SetModelRotation(ChaVector3(rotx, roty, rotz));
 	newmodel->CalcModelWorldMatOnLoad();
 	newmodel->SetMaterialDispRate(materialdisprate);
+
+
+	int laternamenum = (int)latername.size();
+	int laterno;
+	for (laterno = 0; laterno < laternamenum; laterno++) {
+		newmodel->AddLaterTransparent(latername[laterno]);
+	}
 
 
 	{

@@ -9,6 +9,7 @@
 //#include <infelem.h>
 
 #include <map>
+#include <string>
 //using namespace std;
 
 class CMQOObject;
@@ -39,7 +40,7 @@ public:
 
 	void DestroySystemDispObj();
 
-	void IncludeTransparent(float alphamult, bool* pfound_noalpha, bool* pfound_alpha);
+	void IncludeTransparent(std::vector<std::string> latername, float alphamult, bool* pfound_noalpha, bool* pfound_alpha);
 
 private:
 	void InitParams();

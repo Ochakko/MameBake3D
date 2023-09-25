@@ -772,7 +772,7 @@ int CDispObj::CreateVBandIBLine()
 
 int CDispObj::RenderNormal(bool withalpha,
 	ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, 
-	ChaVector4 diffusemult, ChaVector4 materialdisprate)
+	ChaVector4 diffusemult, ChaVector4 materialdisprate, std::vector<std::string> latername)
 {
 	// Only PM4
 
@@ -789,10 +789,6 @@ int CDispObj::RenderNormal(bool withalpha,
 		return 0;
 	}
 
-	vector<int> afterrendermaterialcnt;
-	afterrendermaterialcnt.clear();
-
-
 	int materialcnt;
 	for (materialcnt = 0; materialcnt < materialnum; materialcnt++) {
 		CMQOMaterial* curmat = NULL;
@@ -800,12 +796,22 @@ int CDispObj::RenderNormal(bool withalpha,
 		int curtrinum = 0;
 		int result0 = m_pm4->GetDispMaterial(materialcnt, &curmat, &curoffset, &curtrinum);
 		if ((result0 == 0) && (curmat != NULL) && (curtrinum > 0)) {
-			if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0) && (strstr(curmat->GetTex(), "_13.png") != 0)) {
-				//VRoid VRM êû(Ç∑Çª)ÇÃìßâﬂÇÃèáî‘ÇÃÇΩÇﬂÅ@ç≈å„Ç…ï`âÊ
-				afterrendermaterialcnt.push_back(materialcnt);
+
+			bool laterflag = false;
+			if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
+				int laternum = (int)latername.size();
+				int laterno;
+				for (laterno = 0; laterno < laternum; laterno++) {
+					if (strcmp(curmat->GetTex(), latername[laterno].c_str()) == 0) {
+						laterflag = true;
+						break;
+					}
+				}
 			}
-			else {
-				RenderNormalMaterial(withalpha,
+
+			if (laterflag == false) {
+				bool laterflag2 = false;
+				RenderNormalMaterial(laterflag2, withalpha,
 					pd3d11DeviceContext,
 					curmat, curoffset, curtrinum,
 					lightflag, diffusemult, materialdisprate);
@@ -814,23 +820,29 @@ int CDispObj::RenderNormal(bool withalpha,
 	}
 
 
-	if (!afterrendermaterialcnt.empty()) {
+	if (withalpha && !latername.empty()) {
 		//VRoid VRM êû(Ç∑Çª)ÇÃìßâﬂÇÃèáî‘ÇÃÇΩÇﬂÅ@ç≈å„Ç…ï`âÊ
-		int aftermatnum = (int)afterrendermaterialcnt.size();
-		int aftmaterialcnt;
-		for (aftmaterialcnt = 0; aftmaterialcnt < aftermatnum; aftmaterialcnt++) {
-			CMQOMaterial* curmat = NULL;
-			int curoffset = 0;
-			int curtrinum = 0;
+		int latermatnum = (int)latername.size();
+		int laterindex;
+		for (laterindex = 0; laterindex < latermatnum; laterindex++) {//laternameÇ…äiî[Ç≥ÇÍÇƒÇ¢ÇÈèáî‘Ç≈ï`âÊ
 
-			materialcnt = afterrendermaterialcnt[aftmaterialcnt];
-
-			int result0 = m_pm4->GetDispMaterial(materialcnt, &curmat, &curoffset, &curtrinum);
-			if ((result0 == 0) && (curmat != NULL) && (curtrinum > 0)) {
-				RenderNormalMaterial(withalpha,
-					pd3d11DeviceContext,
-					curmat, curoffset, curtrinum,
-					lightflag, diffusemult, materialdisprate);
+			int materialcnt2;
+			for (materialcnt2 = 0; materialcnt2 < materialnum; materialcnt2++) {
+				CMQOMaterial* curmat = NULL;
+				int curoffset = 0;
+				int curtrinum = 0;
+				int result0 = m_pm4->GetDispMaterial(materialcnt2, &curmat, &curoffset, &curtrinum);
+				if ((result0 == 0) && (curmat != NULL) && (curtrinum > 0)) {
+					if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
+						if (strcmp(curmat->GetTex(), latername[laterindex].c_str()) == 0) {
+							bool laterflag2 = true;
+							RenderNormalMaterial(laterflag2, withalpha,
+								pd3d11DeviceContext,
+								curmat, curoffset, curtrinum,
+								lightflag, diffusemult, materialdisprate);
+						}
+					}
+				}
 			}
 		}
 	}
@@ -841,7 +853,7 @@ int CDispObj::RenderNormal(bool withalpha,
 }
 
 
-int CDispObj::RenderNormalMaterial(bool withalpha,
+int CDispObj::RenderNormalMaterial(bool laterflag, bool withalpha,
 	ID3D11DeviceContext* pd3d11DeviceContext, 
 	CMQOMaterial* curmat, int curoffset, int curtrinum, 
 	int lightflag, ChaVector4 diffusemult, ChaVector4 materialdisprate)
@@ -874,22 +886,28 @@ int CDispObj::RenderNormalMaterial(bool withalpha,
 	//	continue;
 	//}
 	bool opeflag = false;
-	if (withalpha == false) {//2023/09/24
-		if ((curmat->GetTransparent() == 0) && (diffuse.w > 0.99999f)) {
-			opeflag = true;
-		}
-		else {
-			opeflag = false;
-		}
+	if (laterflag && withalpha) {
+		opeflag = true;
 	}
 	else {
-		if ((curmat->GetTransparent() == 1) || (diffuse.w <= 0.99999f)) {
-			opeflag = true;
+		if (withalpha == false) {//2023/09/24
+			if ((curmat->GetTransparent() == 0) && (diffuse.w > 0.99999f)) {
+				opeflag = true;
+			}
+			else {
+				opeflag = false;
+			}
 		}
 		else {
-			opeflag = false;
+			if ((curmat->GetTransparent() == 1) || (diffuse.w <= 0.99999f)) {
+				opeflag = true;
+			}
+			else {
+				opeflag = false;
+			}
 		}
 	}
+
 	if (opeflag == false) {
 		return 0;
 	}
@@ -1432,7 +1450,7 @@ int CDispObj::RenderNormalMaterial(bool withalpha,
 
 int CDispObj::RenderNormalPM3(bool withalpha,
 	ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, 
-	ChaVector4 diffusemult, ChaVector4 materialdisprate)
+	ChaVector4 diffusemult, ChaVector4 materialdisprate, vector<string> latername)
 {
 	if( !m_pm3 ){
 		return 0;
@@ -1442,34 +1460,100 @@ int CDispObj::RenderNormalPM3(bool withalpha,
 	}
 
 
-
-	HRESULT hr;
+	//HRESULT hr;
 	int blno;
-	for( blno = 0; blno < m_pm3->GetOptMatNum(); blno++ ){
+	for (blno = 0; blno < m_pm3->GetOptMatNum(); blno++) {
 		MATERIALBLOCK* currb = m_pm3->GetMatBlock() + blno;
 
 		CMQOMaterial* curmat;
-			curmat = currb->mqomat;
-		if( !curmat ){
-			_ASSERT( 0 );
+		curmat = currb->mqomat;
+		if (!curmat) {
+			_ASSERT(0);
 			return 1;
 		}
 
-		ChaVector4 diffuse;
-		ChaVector4 curdif4f = curmat->GetDif4F();
-		diffuse.w = curdif4f.w * diffusemult.w;
-		diffuse.x = curdif4f.x * diffusemult.x * materialdisprate.x;
-		diffuse.y = curdif4f.y * diffusemult.y * materialdisprate.x;
-		diffuse.z = curdif4f.z * diffusemult.z * materialdisprate.x;
-		//diffuse.Clamp(0.0f, 1.0f);
+		int curnumprim;
+		curnumprim = currb->endface - currb->startface + 1;
 
-		//if ((withalpha == false) && ((curmat->GetTransparent() == 0) && (diffuse.w <= 0.99999f))) {
-		//	continue;
-		//}
-		//if ((withalpha == true) && (((curmat->GetTransparent() == 1) || (diffuse.w > 0.99999f))) {
-		//	continue;
-		//}
-		bool opeflag = false;
+		bool laterflag = false;
+		if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
+			int laternum = (int)latername.size();
+			int laterno;
+			for (laterno = 0; laterno < laternum; laterno++) {
+				if (strcmp(curmat->GetTex(), latername[laterno].c_str()) == 0) {
+					laterflag = true;
+					break;
+				}
+			}
+		}
+
+		if (laterflag == false) {
+			bool laterflag2 = false;
+			int result = RenderNormalPM3Material(laterflag2, withalpha,
+				pd3d11DeviceContext,
+				curmat, currb->startface * 3, curnumprim,
+				lightflag, diffusemult, materialdisprate);
+		}
+	}
+
+
+
+	if (withalpha && !latername.empty()) {
+		//VRoid VRM êû(Ç∑Çª)ÇÃìßâﬂÇÃèáî‘ÇÃÇΩÇﬂÅ@ç≈å„Ç…ï`âÊ
+		int latermatnum = (int)latername.size();
+		int laterindex;
+		for (laterindex = 0; laterindex < latermatnum; laterindex++) {//laternameÇ…äiî[Ç≥ÇÍÇƒÇ¢ÇÈèáî‘Ç≈ï`âÊ
+
+			int blno2;
+			for (blno2 = 0; blno2 < m_pm3->GetOptMatNum(); blno2++) {
+				MATERIALBLOCK* currb = m_pm3->GetMatBlock() + blno2;
+
+				CMQOMaterial* curmat;
+				curmat = currb->mqomat;
+				if (curmat && curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
+					if (strcmp(curmat->GetTex(), latername[laterindex].c_str()) == 0) {
+
+						int curnumprim;
+						curnumprim = currb->endface - currb->startface + 1;
+
+						bool laterflag2 = true;
+						int result = RenderNormalPM3Material(laterflag2, withalpha,
+							pd3d11DeviceContext,
+							curmat, currb->startface * 3, curnumprim,
+							lightflag, diffusemult, materialdisprate);
+					}
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+int CDispObj::RenderNormalPM3Material(bool laterflag, bool withalpha,
+	ID3D11DeviceContext* pd3d11DeviceContext,
+	CMQOMaterial* curmat, int curoffset, int curtrinum,
+	int lightflag, ChaVector4 diffusemult, ChaVector4 materialdisprate)
+{
+	ChaVector4 diffuse;
+	ChaVector4 curdif4f = curmat->GetDif4F();
+	diffuse.w = curdif4f.w * diffusemult.w;
+	diffuse.x = curdif4f.x * diffusemult.x * materialdisprate.x;
+	diffuse.y = curdif4f.y * diffusemult.y * materialdisprate.x;
+	diffuse.z = curdif4f.z * diffusemult.z * materialdisprate.x;
+	//diffuse.Clamp(0.0f, 1.0f);
+
+	//if ((withalpha == false) && ((curmat->GetTransparent() == 0) && (diffuse.w <= 0.99999f))) {
+	//	continue;
+	//}
+	//if ((withalpha == true) && (((curmat->GetTransparent() == 1) || (diffuse.w > 0.99999f))) {
+	//	continue;
+	//}
+	bool opeflag = false;
+	if (withalpha && laterflag) {
+		opeflag = true;
+	}
+	else {
 		if (withalpha == false) {//2023/09/24
 			if ((curmat->GetTransparent() == 0) && (diffuse.w > 0.99999f)) {
 				opeflag = true;
@@ -1486,164 +1570,157 @@ int CDispObj::RenderNormalPM3(bool withalpha,
 				opeflag = false;
 			}
 		}
-		if (opeflag == false) {
-			continue;
+	}
+
+	if (opeflag == false) {
+		return 0;
+	}
+
+
+
+	HRESULT hr;
+	hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));
+	_ASSERT(SUCCEEDED(hr));
+	ChaVector3 tmpamb = curmat->GetAmb3F() * materialdisprate.w;
+	//tmpamb.Clamp(0.0f, 1.0f);
+	hr = g_hambient->SetRawValue(&tmpamb, 0, sizeof(ChaVector3));
+	_ASSERT(SUCCEEDED(hr));
+	ChaVector3 tmpspc = curmat->GetSpc3F() * materialdisprate.y;
+	//tmpspc.Clamp(0.0f, 1.0f);
+	hr = g_hspecular->SetRawValue(&tmpspc, 0, sizeof(ChaVector3));
+	_ASSERT(SUCCEEDED(hr));
+	hr = g_hpower->SetFloat(curmat->GetPower());
+	_ASSERT(SUCCEEDED(hr));
+	ChaVector3 tmpemi = curmat->GetEmi3F() * materialdisprate.z;
+	//tmpemi.Clamp(0.0f, 1.0f);
+	hr = g_hemissive->SetRawValue(&tmpemi, 0, sizeof(ChaVector3));
+	_ASSERT(SUCCEEDED(hr));
+	hr = g_hPm3Scale->SetRawValue(&m_scale, 0, sizeof(ChaVector3));
+	_ASSERT(SUCCEEDED(hr));
+	hr = g_hPm3Offset->SetRawValue(&m_scaleoffset, 0, sizeof(ChaVector3));
+	_ASSERT(SUCCEEDED(hr));
+
+	if (diffuse.w <= 0.99999f) {
+		//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
+		if (g_zcmpalways == false) {
+			pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
 		}
-
-
-
-
-		hr = g_hdiffuse->SetRawValue(&diffuse, 0, sizeof(ChaVector4));
-		_ASSERT(SUCCEEDED(hr));
-		ChaVector3 tmpamb = curmat->GetAmb3F() * materialdisprate.w;
-		//tmpamb.Clamp(0.0f, 1.0f);
-		hr = g_hambient->SetRawValue(&tmpamb, 0, sizeof(ChaVector3));
-		_ASSERT(SUCCEEDED(hr));
-		ChaVector3 tmpspc = curmat->GetSpc3F() * materialdisprate.y;
-		//tmpspc.Clamp(0.0f, 1.0f);
-		hr = g_hspecular->SetRawValue(&tmpspc, 0, sizeof(ChaVector3));
-		_ASSERT(SUCCEEDED(hr));
-		hr = g_hpower->SetFloat(curmat->GetPower());
-		_ASSERT(SUCCEEDED(hr));
-		ChaVector3 tmpemi = curmat->GetEmi3F() * materialdisprate.z;
-		//tmpemi.Clamp(0.0f, 1.0f);
-		hr = g_hemissive->SetRawValue(&tmpemi, 0, sizeof(ChaVector3));
-		_ASSERT(SUCCEEDED(hr));
-		hr = g_hPm3Scale->SetRawValue(&m_scale, 0, sizeof(ChaVector3));
-		_ASSERT(SUCCEEDED(hr));
-		hr = g_hPm3Offset->SetRawValue(&m_scaleoffset, 0, sizeof(ChaVector3));
-		_ASSERT(SUCCEEDED(hr));
-
-		if (diffuse.w <= 0.99999f) {
-			//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
-			if (g_zcmpalways == false) {
-				pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmpAlways, 1);
-			}
-			g_zcmpalways = true;
+		g_zcmpalways = true;
+	}
+	else {
+		//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
+		if (g_zcmpalways == true) {
+			pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
 		}
-		else {
-			//m_pdev->SetRenderState( D3DRS_ZWRITEENABLE, TRUE );
-			if (g_zcmpalways == true) {
-				pd3d11DeviceContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
-			}
-			g_zcmpalways = false;
-		}
+		g_zcmpalways = false;
+	}
 
 
 
-		pd3d11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	pd3d11DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-		ID3DX11EffectTechnique* curtech = 0;
+	ID3DX11EffectTechnique* curtech = 0;
 
 
-		if (lightflag != 0) {
-			switch (g_nNumActiveLights) {
-			case 1:
-				curtech = g_hRenderNoBoneL1;
-				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL1);
-				break;
-			case 2:
-				curtech = g_hRenderNoBoneL2;
-				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL2);
-				break;
-			case 3:
-				curtech = g_hRenderNoBoneL3;
-				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL3);
-				break;
-			case 4:
-				curtech = g_hRenderNoBoneL4;
-				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL4);
-				break;
-			case 5:
-				curtech = g_hRenderNoBoneL5;
-				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL5);
-				break;
-			case 6:
-				curtech = g_hRenderNoBoneL6;
-				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL6);
-				break;
-			case 7:
-				curtech = g_hRenderNoBoneL7;
-				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL7);
-				break;
-			case 8:
-				curtech = g_hRenderNoBoneL8;
-				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL8);
-				break;
+	if (lightflag != 0) {
+		switch (g_nNumActiveLights) {
+		case 1:
+			curtech = g_hRenderNoBoneL1;
+			pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL1);
+			break;
+		case 2:
+			curtech = g_hRenderNoBoneL2;
+			pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL2);
+			break;
+		case 3:
+			curtech = g_hRenderNoBoneL3;
+			pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL3);
+			break;
+		case 4:
+			curtech = g_hRenderNoBoneL4;
+			pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL4);
+			break;
+		case 5:
+			curtech = g_hRenderNoBoneL5;
+			pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL5);
+			break;
+		case 6:
+			curtech = g_hRenderNoBoneL6;
+			pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL6);
+			break;
+		case 7:
+			curtech = g_hRenderNoBoneL7;
+			pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL7);
+			break;
+		case 8:
+			curtech = g_hRenderNoBoneL8;
+			pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL8);
+			break;
 
-			case 0:
-				curtech = g_hRenderNoBoneL0;
-				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL0);
-				break;
-
-			default:
-				_ASSERT(0);
-				curtech = g_hRenderNoBoneL1;
-				pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL1);
-				break;
-			}
-		}
-		else {
+		case 0:
 			curtech = g_hRenderNoBoneL0;
 			pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL0);
-			//_ASSERT(0);
+			break;
+
+		default:
+			_ASSERT(0);
+			curtech = g_hRenderNoBoneL1;
+			pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL1);
+			break;
 		}
+	}
+	else {
+		curtech = g_hRenderNoBoneL0;
+		pd3d11DeviceContext->IASetInputLayout(m_layoutNoBoneL0);
+		//_ASSERT(0);
+	}
 
-		UINT vbstride1 = sizeof(PM3DISPV);
-		UINT offset = 0;
-		pd3d11DeviceContext->IASetVertexBuffers(0, 1, &m_VB, &vbstride1, &offset);
+	UINT vbstride1 = sizeof(PM3DISPV);
+	UINT offset = 0;
+	pd3d11DeviceContext->IASetVertexBuffers(0, 1, &m_VB, &vbstride1, &offset);
 
-		pd3d11DeviceContext->IASetIndexBuffer(m_IB, DXGI_FORMAT_R32_UINT, 0);
+	pd3d11DeviceContext->IASetIndexBuffer(m_IB, DXGI_FORMAT_R32_UINT, 0);
 
 
-		ID3D11ShaderResourceView* texresview = 0;
-		if (curmat->GetTexID() >= 0) {
-			CTexElem* findtex = g_texbank->GetTexElem(curmat->GetTexID());
-			if (findtex && findtex->IsValid()) {
-				texresview = findtex->GetPTex();
-				_ASSERT(texresview);
-			}
-			else {
-				texresview = 0;
-			}
+	ID3D11ShaderResourceView* texresview = 0;
+	if (curmat->GetTexID() >= 0) {
+		CTexElem* findtex = g_texbank->GetTexElem(curmat->GetTexID());
+		if (findtex && findtex->IsValid()) {
+			texresview = findtex->GetPTex();
+			_ASSERT(texresview);
 		}
 		else {
 			texresview = 0;
 		}
+	}
+	else {
+		texresview = 0;
+	}
 
-		if (texresview && (texresview != g_presview)) {
-			hr = g_hMeshTexture->SetResource(texresview);
-			_ASSERT(SUCCEEDED(hr));
-			g_presview = texresview;
-		}
-		else {
-			//g_hMeshTexture->SetResource(NULL);
-		}
+	if (texresview && (texresview != g_presview)) {
+		hr = g_hMeshTexture->SetResource(texresview);
+		_ASSERT(SUCCEEDED(hr));
+		g_presview = texresview;
+	}
+	else {
+		//g_hMeshTexture->SetResource(NULL);
+	}
 
-		UINT p;
-		if (texresview) {
-			p = 0;
-		}
-		else {
-			p = 1;
-		}
+	UINT p;
+	if (texresview) {
+		p = 0;
+	}
+	else {
+		p = 1;
+	}
 
 
-		FLOAT blendFactor[4] = { D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO };
-		pd3d11DeviceContext->OMSetBlendState(g_blendState, blendFactor, 0xffffffff);
+	FLOAT blendFactor[4] = { D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO };
+	pd3d11DeviceContext->OMSetBlendState(g_blendState, blendFactor, 0xffffffff);
 
 
 	/////////////
 		//HRESULT hres;
-		int rendervnum;
-		if (m_pm3) {
-			rendervnum = m_pm3->GetOptLeng();
-		}
-		else if (m_pm4) {
-			rendervnum = m_pm4->GetOptLeng();
-		}
-		int curnumprim;
-		curnumprim = currb->endface - currb->startface + 1;
 
 		//D3D11_TECHNIQUE_DESC techDesc;
 		//curtech->GetDesc(&techDesc);
@@ -1651,11 +1728,10 @@ int CDispObj::RenderNormalPM3(bool withalpha,
 		//for (UINT p = 0; p < techDesc.Passes; ++p)
 		//{
 			//pÇÕÉeÉNÉXÉ`ÉÉÇÃóLñ≥Ç…ÇÊÇÈÉpÉXÇÃêîéö
-			curtech->GetPassByIndex(p)->Apply(0, pd3d11DeviceContext);
-			pd3d11DeviceContext->DrawIndexed(curnumprim * 3, currb->startface * 3, 0);
-		//}
+	curtech->GetPassByIndex(p)->Apply(0, pd3d11DeviceContext);
+	pd3d11DeviceContext->DrawIndexed(curtrinum * 3, curoffset, 0);
+	//}
 
-	}
 
 	return 0;
 }

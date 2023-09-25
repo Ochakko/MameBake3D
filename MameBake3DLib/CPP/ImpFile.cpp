@@ -254,7 +254,7 @@ int CImpFile::ReadBone(XMLIOBUF* xmliobuf, CModel* srcmodel)
 	CallF( Read_Str( xmliobuf, "<Name>", "</Name>", bonename, 256 ), return 1 );
 	CBone* curbone = FindBoneByName(srcmodel, bonename, 256);//_Joint有無対応
 	if (!curbone){
-		_ASSERT(0);
+		//_ASSERT(0);
 		return 0;
 	}
 
@@ -291,7 +291,7 @@ int CImpFile::ReadRE(XMLIOBUF* xmlbuf, CModel* srcmodel, CBone* curbone)
 	CallF( Read_Str( xmlbuf, "<ChildName>", "</ChildName>", childname, 256 ), return 1 );
 	CBone* childbone = FindBoneByName(srcmodel, childname, 256);//_Joint有無対応
 	if (!childbone){
-		_ASSERT(0);
+		//_ASSERT(0);
 		return 0;
 	}
 
