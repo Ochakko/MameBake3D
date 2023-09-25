@@ -861,53 +861,139 @@ int CFrameCopyDlg::ValidateTBOFile(char* dstTBOheader, char* srcbuf, DWORD bufle
 	int cmp9;
 	int cmp10;
 	int cmp11;
+	int cmp12;
 	cmp7 = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.7");//本体ではない
 	cmp8 = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.8");//本体ではない
 	cmp9 = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.9");//本体ではない
 	cmp10 = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.10");//本体ではない 2023/08/21 To12024  FCSLOTNUM-->FCSLOTNUM2
 	cmp11 = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.11");//本体ではない 2023/09/11 To12025  ボーン情報を名前ベースに変更
-	if ((cmp7 != 0) && (cmp8 != 0) && (cmp9 != 0) && (cmp10 != 0) && (cmp11 != 0)) {
-		_ASSERT(0);
-		return false;
-	}
+	cmp12 = strcmp(dstTBOheader, "MB3DTargetBoneFile ver1.0.0.12");//本体ではない 2023/09/25 To12025 RC4  設定されている分だけ書き出し
 
-	DWORD datasize;
-	datasize = (bufleng - sizeof(char) * 256);
-	
-	DWORD chksize1, chksize2, chksize3;
-	chksize1 = (sizeof(WCHAR) * FCSLOTNUM * SLOTNAMELEN) +
-		(sizeof(int) * FCSLOTNUM) +
-		(sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG) +
-		(sizeof(int) * FCSLOTNUM) +
-		(sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG);
+	if (cmp12 == 0) {
+		DWORD datasize;
+		datasize = (bufleng - sizeof(char) * 256);
 
-	chksize2 = (sizeof(WCHAR) * FCSLOTNUM2 * SLOTNAMELEN) +
-		(sizeof(int) * FCSLOTNUM2) +
-		(sizeof(int) * FCSLOTNUM2 * FRAMECOPYLISTLENG) +
-		(sizeof(int) * FCSLOTNUM2) +
-		(sizeof(int) * FCSLOTNUM2 * FRAMECOPYLISTLENG);
-
-	chksize3 = (sizeof(WCHAR) * FCSLOTNUM2 * SLOTNAMELEN) +
-		(sizeof(int) * FCSLOTNUM2) +
-		(sizeof(WCHAR) * MAX_PATH * FCSLOTNUM2 * FRAMECOPYLISTLENG) +
-		(sizeof(int) * FCSLOTNUM2) +
-		(sizeof(WCHAR) * MAX_PATH * FCSLOTNUM2 * FRAMECOPYLISTLENG);
+		DWORD chksize1;
+		chksize1 = (sizeof(char) * 256) +
+			(sizeof(WCHAR) * FCSLOTNUM2 * SLOTNAMELEN) +
+			(sizeof(int) * FCSLOTNUM2) +
+			(sizeof(int) * FCSLOTNUM2);
+		if (bufleng < chksize1) {
+			_ASSERT(0);
+			return 0;
+		}
 
 
-	if (datasize == chksize1) {
-		return 1;
-	}
-	else if (datasize == chksize2) {
-		return 2;
-	}
-	else if (datasize == chksize3) {
-		return 3;
+		DWORD totalinfluencenum = 0;
+		DWORD pcurrent = (sizeof(char) * 256) + 
+			(sizeof(WCHAR) * FCSLOTNUM2 * SLOTNAMELEN);
+		int slotno;
+		for (slotno = 0; slotno < FCSLOTNUM2; slotno++) {
+			if (pcurrent >= bufleng) {
+				_ASSERT(0);
+				return 0;
+			}
+
+			DWORD addnum = *((int*)(srcbuf + pcurrent));
+			if (addnum > FRAMECOPYLISTLENG) {
+				_ASSERT(0);
+				return 0;
+			}
+
+			totalinfluencenum += addnum;
+			pcurrent += sizeof(int);
+		}
+		if (totalinfluencenum > (FCSLOTNUM2 * FRAMECOPYLISTLENG)) {
+			_ASSERT(0);
+			return 0;
+		}
+
+		DWORD totalignorenum = 0;
+		DWORD pcurrent2 = (sizeof(char) * 256) + 
+			(sizeof(WCHAR) * FCSLOTNUM2 * SLOTNAMELEN) +
+			(sizeof(int) * FCSLOTNUM2) +
+			(sizeof(WCHAR) * MAX_PATH * totalinfluencenum);
+		int slotno2;
+		for (slotno2 = 0; slotno2 < FCSLOTNUM2; slotno2++) {
+			if (pcurrent2 >= bufleng) {
+				_ASSERT(0);
+				return 0;
+			}
+
+			DWORD addnum2 = *((int*)(srcbuf + pcurrent2));
+			if (addnum2 > FRAMECOPYLISTLENG) {
+				_ASSERT(0);
+				return 0;
+			}
+
+			totalignorenum += addnum2;
+			pcurrent2 += sizeof(int);
+		}
+		if (totalignorenum > (FCSLOTNUM2 * FRAMECOPYLISTLENG)) {
+			_ASSERT(0);
+			return 0;
+		}
+
+
+		DWORD chkdatasize = (sizeof(WCHAR) * FCSLOTNUM2 * SLOTNAMELEN) +
+			(sizeof(int) * FCSLOTNUM2) +
+			(sizeof(WCHAR) * MAX_PATH * totalinfluencenum) +
+			(sizeof(int) * FCSLOTNUM2) +
+			(sizeof(WCHAR) * MAX_PATH * totalignorenum);
+
+		if (datasize == chkdatasize) {
+			return 4;//MB3DTargetBoneFile ver1.0.0.12
+		}
+		else {
+			_ASSERT(0);
+			return 0;
+		}
+
+
 	}
 	else {
-		_ASSERT(0);
-		return 0;
-	}
+		if ((cmp7 != 0) && (cmp8 != 0) && (cmp9 != 0) && (cmp10 != 0) && (cmp11 != 0)) {
+			_ASSERT(0);
+			return 0;
+		}
 
+		DWORD datasize;
+		datasize = (bufleng - sizeof(char) * 256);
+
+		DWORD chksize1, chksize2, chksize3;
+		chksize1 = (sizeof(WCHAR) * FCSLOTNUM * SLOTNAMELEN) +
+			(sizeof(int) * FCSLOTNUM) +
+			(sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG) +
+			(sizeof(int) * FCSLOTNUM) +
+			(sizeof(int) * FCSLOTNUM * FRAMECOPYLISTLENG);
+
+		chksize2 = (sizeof(WCHAR) * FCSLOTNUM2 * SLOTNAMELEN) +
+			(sizeof(int) * FCSLOTNUM2) +
+			(sizeof(int) * FCSLOTNUM2 * FRAMECOPYLISTLENG) +
+			(sizeof(int) * FCSLOTNUM2) +
+			(sizeof(int) * FCSLOTNUM2 * FRAMECOPYLISTLENG);
+
+		chksize3 = (sizeof(WCHAR) * FCSLOTNUM2 * SLOTNAMELEN) +
+			(sizeof(int) * FCSLOTNUM2) +
+			(sizeof(WCHAR) * MAX_PATH * FCSLOTNUM2 * FRAMECOPYLISTLENG) +
+			(sizeof(int) * FCSLOTNUM2) +
+			(sizeof(WCHAR) * MAX_PATH * FCSLOTNUM2 * FRAMECOPYLISTLENG);
+
+
+		if (datasize == chksize1) {
+			return 1;
+		}
+		else if (datasize == chksize2) {
+			return 2;
+		}
+		else if (datasize == chksize3) {
+			return 3;
+		}
+		else {
+			_ASSERT(0);
+			return 0;
+		}
+	}
 
 	return 0;
 }
@@ -993,7 +1079,8 @@ int CFrameCopyDlg::WriteTBOFile(WCHAR* srcfilename)
 	::ZeroMemory(TBOheader, sizeof(char) * 256);
 	//strcpy_s(TBOheader, 256, "MB3DTargetBoneFile ver1.0.0.9");//本体ではない
 	//strcpy_s(TBOheader, 256, "MB3DTargetBoneFile ver1.0.0.10");//本体ではない 2023/08/21
-	strcpy_s(TBOheader, 256, "MB3DTargetBoneFile ver1.0.0.11");//本体ではない 2023/09/11
+	//strcpy_s(TBOheader, 256, "MB3DTargetBoneFile ver1.0.0.11");//本体ではない 2023/09/11
+	strcpy_s(TBOheader, 256, "MB3DTargetBoneFile ver1.0.0.12");//本体ではない 2023/09/25 for ver1.2.0.25 RC4
 	DWORD wleng = 0;
 	WriteFile(hfile, TBOheader, sizeof(char) * 256, &wleng, NULL);
 	if (wleng != (sizeof(char) * 256)) {
@@ -1029,7 +1116,9 @@ int CFrameCopyDlg::WriteTBOFile(WCHAR* srcfilename)
 	int slotno;
 	int influenceno;
 	for (slotno = 0; slotno < FCSLOTNUM2; slotno++) {
-		for (influenceno = 0; influenceno < FRAMECOPYLISTLENG; influenceno++) {
+		//for (influenceno = 0; influenceno < FRAMECOPYLISTLENG; influenceno++) {
+		int influencenum = m_influencenum[slotno];
+		for(influenceno = 0; influenceno < influencenum; influenceno++){//2023/09/25 セットされている分だけ書き出し MB3DTargetBoneFile ver1.0.0.12 RC4
 			int writeboneno = m_influencelist[slotno][influenceno];
 			if (writeboneno > 0) {
 				CBone* writebone = m_model->GetBoneByID(writeboneno);
@@ -1073,7 +1162,9 @@ int CFrameCopyDlg::WriteTBOFile(WCHAR* srcfilename)
 	//}
 	int ignoreno;
 	for (slotno = 0; slotno < FCSLOTNUM2; slotno++) {
-		for (ignoreno = 0; ignoreno < FRAMECOPYLISTLENG; ignoreno++) {
+		//for (ignoreno = 0; ignoreno < FRAMECOPYLISTLENG; ignoreno++) {
+		int ignorenum = m_ignorenum[slotno];
+		for (ignoreno = 0; ignoreno < ignorenum; ignoreno++) {//2023/09/25 セットされている分だけ書き出し MB3DTargetBoneFile ver1.0.0.12 RC4
 			int writeboneno = m_ignorelist[slotno][ignoreno];
 			if (writeboneno > 0) {
 				CBone* writebone = m_model->GetBoneByID(writeboneno);
@@ -1165,7 +1256,7 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 	if (filetype == 1) {
 		slotNumForLoad = FCSLOTNUM;
 	}
-	else if ((filetype == 2) || (filetype == 3)) {
+	else if ((filetype == 2) || (filetype == 3) || (filetype == 4)) {
 		slotNumForLoad = FCSLOTNUM2;
 	}
 	else {
@@ -1223,7 +1314,7 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 		MoveMemory(m_influencelist, newbuf + curpos, sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG);
 		curpos += sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG;
 	}
-	else if (filetype == 3) {
+	else if ((filetype == 3) || (filetype == 4)) {
 		int slotno;
 		int influenceno;
 		for (slotno = 0; slotno < slotNumForLoad; slotno++) {
@@ -1262,7 +1353,10 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 
 			for (influenceno = numinfluence; influenceno < FRAMECOPYLISTLENG; influenceno++) {//未設定部分
 				m_influencelist[slotno][influenceno] = 0;
-				curpos += (sizeof(WCHAR) * MAX_PATH);
+
+				if (filetype == 3) {//2023/09/25 filetype4には未設定エントリーは書き出されない
+					curpos += (sizeof(WCHAR) * MAX_PATH);
+				}
 			}
 
 		}
@@ -1300,7 +1394,7 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 		MoveMemory(m_ignorelist, newbuf + curpos, sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG);
 		curpos += sizeof(int) * slotNumForLoad * FRAMECOPYLISTLENG;
 	}
-	else if (filetype == 3) {
+	else if ((filetype == 3) || (filetype == 4)) {
 		int slotno;
 		int ignoreno;
 		for (slotno = 0; slotno < slotNumForLoad; slotno++) {
@@ -1339,7 +1433,10 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 
 			for (ignoreno = numignore; ignoreno < FRAMECOPYLISTLENG; ignoreno++) {//未設定部分
 				m_ignorelist[slotno][ignoreno] = 0;
-				curpos += (sizeof(WCHAR) * MAX_PATH);
+
+				if (filetype == 3) {//2023/09/25 filetype4には未設定エントリーは書き出されない
+					curpos += (sizeof(WCHAR) * MAX_PATH);
+				}
 			}
 
 		}

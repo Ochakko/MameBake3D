@@ -1662,7 +1662,8 @@ bool CreateScene(bool limitdegflag, FbxManager* pSdkManager, FbxScene* pScene, C
 		//sceneInfo->mRevision = "rev. 2.7";//since 2022/11/23 about PM07:00
 		//sceneInfo->mRevision = "rev. 2.8";//since 2022/12/30 about PM05:00 for version1.1.0.10
 		//sceneInfo->mRevision = "rev. 2.9";//since 2023/04/19 about PM07:00 for version1.2.0.20
-		sceneInfo->mRevision = "rev. 3.0";//since 2023/06/06 about PM10:00 for version1.2.0.21
+		//sceneInfo->mRevision = "rev. 3.0";//since 2023/06/06 about PM10:00 for version1.2.0.21
+		sceneInfo->mRevision = "rev. 3.1";//since 2023/09/25 about AM10:00 for version1.2.0.25
 		//######################################################################
 		//rev変更時は　FbxSetDefaultBonePosReq のoldbvh処理部分も更新する必要有
 		//######################################################################
@@ -2502,7 +2503,7 @@ int	CreateFbxMaterialFromMQOMaterial(FbxManager* pSdkManager, FbxScene* pScene, 
 
 	//lMaterial->TransparencyFactor.Set(mqomat->GetDif4F().w);
 	//2023/09/24
-	//TransparencyFactor -> 0.0:Opaque, 1.0:Transparent
+	//TransparencyFactor -> 0.0:Opaque, 1.0:Transparent (alphaはテクスチャ依存)
 	if (mqomat->GetTransparent() != 0) {
 		lMaterial->TransparencyFactor.Set(1.0);
 	}
@@ -5293,11 +5294,13 @@ void FbxSetDefaultBonePosReq(FbxScene* pScene, CModel* pmodel, CNodeOnLoad* node
 				FbxString currentrev2 = "rev. 2.8";
 				FbxString currentrev3 = "rev. 2.9";
 				FbxString currentrev4 = "rev. 3.0";
+				FbxString currentrev5 = "rev. 3.1";
 				//2.7, 2.8, 2.9, 3.0が内容変更後の新バージョン
 				if ((sceneinfo->mRevision != currentrev1) &&
 					(sceneinfo->mRevision != currentrev2) &&
 					(sceneinfo->mRevision != currentrev3) &&
-					(sceneinfo->mRevision != currentrev4)
+					(sceneinfo->mRevision != currentrev4) &&
+					(sceneinfo->mRevision != currentrev5)
 					) {
 					oldbvh = true;//!!!!!!!!!!!!!!!!!!!!
 				}

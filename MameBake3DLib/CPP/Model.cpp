@@ -1339,7 +1339,7 @@ int CModel::OnRender(bool withalpha,
 	int groupindex;
 	for(groupindex = 0; groupindex < MAXDISPGROUPNUM; groupindex++){
 
-		if (m_dispgroupON[groupindex] == true) {
+		if ((m_dispgroupON[groupindex] == true) && !(m_dispgroup[groupindex].empty())) {
 
 			int elemnum = (int)m_dispgroup[groupindex].size();
 			int elemno;
@@ -4965,7 +4965,7 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 	tmpdif.x = (float)lDiffuse[0] * g_DiffuseFactorAtLoading;
 	tmpdif.y = (float)lDiffuse[1] * g_DiffuseFactorAtLoading;
 	tmpdif.z = (float)lDiffuse[2] * g_DiffuseFactorAtLoading;
-	tmpdif.w = 1.0f;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	tmpdif.w = 1.0f;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!　alpha値はtexture依存　透過オンはTransparencyFactor!=0.0で
 	newmqomat->SetDif4F( tmpdif );
 
 
@@ -5015,14 +5015,36 @@ int CModel::SetMQOMaterial( CMQOMaterial* newmqomat, FbxSurfaceMaterial* pMateri
 	//2023/09/24 VRoidの服の裾(すそ)に透過の印を付ける
 	//次に続くtexture読み込み部分でも　_13.png, _15.pngについてもSetTransparent(1)
 	FbxDouble transparent = ((FbxSurfacePhong*)pMaterial)->TransparencyFactor;//ちゃんとセットされる保証なし
-	if (transparent != 0.0) {//0.0:Opaque, 1.0:Transparent
-		newmqomat->SetTransparent(1);
+
+	bool oldtransparent = false;
+	if (m_pscene) {
+		FbxDocumentInfo* sceneinfo = m_pscene->GetSceneInfo();
+		if (sceneinfo) {
+			FbxString chkauthor = "OchakkoLab";
+			if (sceneinfo->mAuthor == chkauthor) {
+				FbxString currentrev1 = "rev. 3.1";
+				if (sceneinfo->mRevision != currentrev1) {
+					oldtransparent = true;//!!!!!!!!!!!!!!!!!!!!
+				}
+			}
+		}
 	}
-	else {
-		if (strstr(newmqomat->GetName(), "_CLOTH_02") != 0) {//シャツのすそ
+
+	if(oldtransparent) {
+		//rev. 3.1よりも昔のEditMotで作成したfbxにおいては　TransparencyFactor = diffuse.w
+		if (transparent <= 0.99999) {
 			newmqomat->SetTransparent(1);
 		}
 	}
+	else {
+		if (transparent != 0.0) {//0.0:Opaque, 1.0:Transparent (alphaはテクスチャ依存)
+			newmqomat->SetTransparent(1);
+		}
+	}
+	if (strstr(newmqomat->GetName(), "_CLOTH_02") != 0) {//シャツのすそ
+		newmqomat->SetTransparent(1);
+	}
+
 
 
 
