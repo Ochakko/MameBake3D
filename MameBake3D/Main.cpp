@@ -19646,7 +19646,7 @@ int CreateConvBoneWnd()
 			return 1;
 		}
 
-		s_convbonesp = new OWP_Separator(s_convboneWnd, false, 0.5, true);									// セパレータ1（境界線による横方向2分割）
+		s_convbonesp = new OWP_Separator(s_convboneWnd, false, 0.5, true, s_convboneSCWnd);									// セパレータ1（境界線による横方向2分割）
 		if (!s_convbonesp) {
 			_ASSERT(0);
 			return 1;
@@ -30128,6 +30128,11 @@ int OnFrameToolWnd()
 			}
 			if (selbone) {
 				s_curboneno = selbone->GetBoneNo();
+
+				if (s_owpTimeline) {
+					s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+				}
+
 				ChangeCurrentBone();
 			}
 		}
@@ -30142,6 +30147,11 @@ int OnFrameToolWnd()
 			}
 			if (selbone) {
 				s_curboneno = selbone->GetBoneNo();
+
+				if (s_owpTimeline) {
+					s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+				}
+
 				ChangeCurrentBone();
 			}
 		}
@@ -30156,6 +30166,11 @@ int OnFrameToolWnd()
 			}
 			if (selbone) {
 				s_curboneno = selbone->GetBoneNo();
+
+				if (s_owpTimeline) {
+					s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+				}
+
 				ChangeCurrentBone();
 			}
 		}
@@ -30170,6 +30185,11 @@ int OnFrameToolWnd()
 			}
 			if (selbone) {
 				s_curboneno = selbone->GetBoneNo();
+
+				if (s_owpTimeline) {
+					s_owpTimeline->setCurrentLine(s_boneno2lineno[s_curboneno], true);
+				}
+
 				ChangeCurrentBone();
 			}
 		}
