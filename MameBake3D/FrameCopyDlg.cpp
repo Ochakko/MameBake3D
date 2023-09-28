@@ -228,7 +228,7 @@ int CFrameCopyDlg::ExecuteOnOK()
 	for (itrbone = m_model->GetBoneListBegin(); itrbone != m_model->GetBoneListEnd(); itrbone++) {
 		int chkboneno = itrbone->first;
 		CBone* chkbone = itrbone->second;
-		if (chkbone && (chkbone->IsSkeleton())) {
+		if (chkbone && chkbone->IsSkeleton() && (chkbone->GetBoneNo() != 0)) {//2023/09/28 exlucde RootNode (boneno == 0)
 			CBone* valbone = m_validelemmap[chkboneno];
 			CBone* invalbone = m_invalidelemmap[chkboneno];
 
@@ -687,7 +687,6 @@ int CFrameCopyDlg::SetTree2ListReq( int validorinvalid, int srcno, int addbrofla
 	int bonenum = m_model->GetBoneListSize();//eNull含む
 
 	if( (srcno >= 0) && (srcno < bonenum) ){
-	
 		curbone = m_model->GetBoneByID( srcno );
 		if (curbone && curbone->IsSkeleton()) {
 			if( validorinvalid == 0 ){

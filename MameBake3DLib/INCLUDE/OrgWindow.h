@@ -1349,6 +1349,12 @@ void s_dummyfunc()
 				return;//!!!!!!!!!!!!!!!!
 			}
 
+			//2023/09/28 上方へ移動
+			//マウスキャプチャ
+			if (!mouseCaptureFlagL && !mouseCaptureFlagR) SetCapture(hWnd);
+			if (lButton) mouseCaptureFlagL = true;
+			else		  mouseCaptureFlagR = true;
+
 			int xButtonX1=size.x-1-2-9;
 			int xButtonY1=1+2;
 			int xButtonX2=xButtonX1+9;
@@ -1387,10 +1393,12 @@ void s_dummyfunc()
 				}
 			}
 
-			//マウスキャプチャ
-			if( !mouseCaptureFlagL && !mouseCaptureFlagR ) SetCapture(hWnd);
-			if( lButton ) mouseCaptureFlagL=true;
-			else		  mouseCaptureFlagR=true;
+			//2023/09/28 上方へ移動
+			////マウスキャプチャ
+			//if( !mouseCaptureFlagL && !mouseCaptureFlagR ) SetCapture(hWnd);
+			//if( lButton ) mouseCaptureFlagL=true;
+			//else		  mouseCaptureFlagR=true;
+
 
 			//内部パーツ
 			setDoneFlag(false);

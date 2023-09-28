@@ -1,4 +1,17 @@
-2023/09/28
+2023/09/28_2
+    EditMot 1.2.0.26へ向けて
+
+    2023/09/28_2
+	モデル設定ファイル修正
+		2_Autumn_1 : 操作対象ボーン設定の NoHipsスロットにRootNodeが２つ入っていたのを削除
+		1_Test20221218_CB0 : 物理設定refファイルの　剛体の回転バネ定数をregularからweakに変更
+
+	OrgWindow : OnLRButtonDownのSetCaptureを if でreturnするよりも前に移動
+		スクロールバーのSetCaptureがうまくいかないことがあったため
+
+
+
+2023/09/28_1
     動画：モーキャプを滑らかにコピペ編集　(destHipsStartingPaste)
 	https://youtu.be/A8E1K5UXOaM
 
