@@ -1,3 +1,8 @@
+2023/09/28
+    動画：モーキャプを滑らかにコピペ編集　(destHipsStartingPaste)
+	https://youtu.be/A8E1K5UXOaM
+
+
 2023/09/27
     EditMot 1.2.0.25 release
 

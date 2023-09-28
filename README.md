@@ -30,8 +30,8 @@ Fig.1 Edit using RefPos.
 ![TopFig](ReadMe/SS_EditMot12014_1_600.png "トップ絵")
 Fig.2 CustomRig ON.  
 
-![SymCopy](ReadMe/EditMot_12024_SymCopyWithPhysicsAndLights.png "SymCopy")
-Fig.3 SymCopy & Lights Settings
+![Autumn](ReadMe/EditMot_12025_Autumn_1.png "Autumn_1")<br>
+Fig.3 VRoid Model Autumn
 
 ![Brush-1](ReadMe/EditMot_Brushes_1_ROI.png "Brush-1")
 Fig.4 Using Custom Weight Curve For PhysicalMotion.  
@@ -47,7 +47,7 @@ TopPosスライダーでモーションカーブの重みのピーク位置を�
 Fig.5 PluginSDK of Custom Weight Curve.<br><br><br>
 
 # Current Movie
-[ver1.2.0.24 Overview](https://youtu.be/LEbueHtc57Q)<br><br>
+[ver1.2.0.25](https://youtu.be/A8E1K5UXOaM)<br><br>
 
 
 # Release of Built App (msi)
@@ -55,7 +55,7 @@ See releases link of this repository's page.
 <br><br><br>
 
 # Description
-[Desctiption at OchakoLAB](https://ochakkolab.jp/LABMenu/MameBake3D.html "Desc-1")
+[Description at OchakoLAB](https://ochakkolab.jp/LABMenu/MameBake3D.html "Desc-1")
 
 # Channel
 [Youtube Channel](https://www.youtube.com/@ochakkolab "Channel")
