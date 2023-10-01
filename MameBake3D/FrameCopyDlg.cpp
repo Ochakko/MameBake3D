@@ -1320,6 +1320,8 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 			
 			int numinfluence = min(m_influencenum[slotno], FRAMECOPYLISTLENG);//有効データ数
 
+
+			int validnum = 0;//2023/10/01
 			for (influenceno = 0; influenceno < numinfluence; influenceno++) {
 				if ((curpos + sizeof(WCHAR) * MAX_PATH) > bufleng) {
 					_ASSERT(0);
@@ -1336,28 +1338,32 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 				if (cmp1 != 0) {
 					CBone* loadbone = m_model->GetBoneByWName(tmpbuf);
 					if (loadbone) {
-						m_influencelist[slotno][influenceno] = loadbone->GetBoneNo();
-					}
-					else {
-						m_influencelist[slotno][influenceno] = 0;
+						//m_influencelist[slotno][influenceno] = loadbone->GetBoneNo();
+						
+						int boneno = loadbone->GetBoneNo();
+						if (boneno > 0) {
+							m_influencelist[slotno][validnum] = boneno;//2023/10/01
+							validnum++;
+						}
+						else {
+							//RootNodeエントリ boneno == 0 は読み込まない
+						}
 					}
 				}
-				else {
-					m_influencelist[slotno][influenceno] = 0;
-				}
-
 				curpos += (sizeof(WCHAR) * MAX_PATH);
 			}
 
+			m_influencenum[slotno] = validnum;//2023/10/01
 
-			for (influenceno = numinfluence; influenceno < FRAMECOPYLISTLENG; influenceno++) {//未設定部分
+			for (influenceno = validnum; influenceno < FRAMECOPYLISTLENG; influenceno++) {//未設定部分 validnum-->FRAMECOPYLISTLENG
 				m_influencelist[slotno][influenceno] = 0;
+			}
 
-				if (filetype == 3) {//2023/09/25 filetype4には未設定エントリーは書き出されない
+			if (filetype == 3) {//2023/09/25 filetype4には未設定エントリーは書き出されない
+				for (influenceno = numinfluence; influenceno < FRAMECOPYLISTLENG; influenceno++) {//未読込部分 numinfluence-->FRAMECOPYLISTLENG
 					curpos += (sizeof(WCHAR) * MAX_PATH);
 				}
 			}
-
 		}
 	}
 	else {
@@ -1400,6 +1406,7 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 
 			int numignore = min(m_ignorenum[slotno], FRAMECOPYLISTLENG);//有効データ数
 
+			int validnum = 0;//2023/10/01
 			for (ignoreno = 0; ignoreno < numignore; ignoreno++) {
 				if ((curpos + sizeof(WCHAR) * MAX_PATH) > bufleng) {
 					_ASSERT(0);
@@ -1416,28 +1423,32 @@ bool CFrameCopyDlg::LoadTBOFile(WCHAR* srcfilename)
 				if (cmp1 != 0) {
 					CBone* loadbone = m_model->GetBoneByWName(tmpbuf);
 					if (loadbone) {
-						m_ignorelist[slotno][ignoreno] = loadbone->GetBoneNo();
-					}
-					else {
-						m_ignorelist[slotno][ignoreno] = 0;
-					}
-				}
-				else {
-					m_ignorelist[slotno][ignoreno] = 0;
-				}
+						//m_ignorelist[slotno][ignoreno] = loadbone->GetBoneNo();
 
+						int boneno = loadbone->GetBoneNo();
+						if (boneno > 0) {
+							m_ignorelist[slotno][validnum] = boneno;//2023/10/01
+							validnum++;
+						}
+						else {
+							//RootNodeエントリ boneno == 0 は読み込まない
+						}
+					}
+				}
 				curpos += (sizeof(WCHAR) * MAX_PATH);
 			}
 
+			m_ignorenum[slotno] = validnum;//2023/10/01
 
-			for (ignoreno = numignore; ignoreno < FRAMECOPYLISTLENG; ignoreno++) {//未設定部分
+			for (ignoreno = validnum; ignoreno < FRAMECOPYLISTLENG; ignoreno++) {//未設定部分 validnum-->FRAMECOPYLISTLENG
 				m_ignorelist[slotno][ignoreno] = 0;
+			}
 
-				if (filetype == 3) {//2023/09/25 filetype4には未設定エントリーは書き出されない
+			if (filetype == 3) {//2023/09/25 filetype4には未設定エントリーは書き出されない
+				for (ignoreno = numignore; ignoreno < FRAMECOPYLISTLENG; ignoreno++) {//未読込部分 numignore-->FRAMECOPYLISTLENG
 					curpos += (sizeof(WCHAR) * MAX_PATH);
 				}
 			}
-
 		}
 	}
 	else {
