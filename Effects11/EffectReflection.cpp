@@ -1928,7 +1928,7 @@ HRESULT CEffect::GetDevice(_Outptr_ ID3D11Device **ppDevice)
     static LPCSTR pFuncName = "ID3DX11Effect::GetDevice";
     VERIFYPARAMETER(ppDevice);
 
-    m_pDevice->AddRef();
+    m_pDevice->AddRef();//2023/10/02 checked 
     *ppDevice = m_pDevice;
 
 lExit:

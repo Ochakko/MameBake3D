@@ -549,11 +549,20 @@ HRESULT WINAPI DXUT_Dynamic_D3D11CreateDevice( IDXGIAdapter* pAdapter,
                                                D3D_FEATURE_LEVEL* pFeatureLevel,
                                                ID3D11DeviceContext** ppImmediateContext )
 {
-    if( DXUT_EnsureD3D11APIs() && s_DynamicD3D11CreateDevice )
-        return s_DynamicD3D11CreateDevice( pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels,
-                                           SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext );
+    if (DXUT_EnsureD3D11APIs() && s_DynamicD3D11CreateDevice)
+    {
+
+#if defined(DEBUG) | defined(_DEBUG)
+        Flags |= D3D11_CREATE_DEVICE_DEBUG;//2023/10/02
+#endif
+
+        return s_DynamicD3D11CreateDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels,
+            SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
+    }
     else
+    {
         return DXUTERR_NODIRECT3D;
+    }
 }
 
 #define TRACE_ID(iD) case iD: return L## #iD;

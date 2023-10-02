@@ -1,4 +1,4 @@
-//--------------------------------------------------------------------------------------
+﻿//--------------------------------------------------------------------------------------
 // File: EffectNonRuntime.cpp
 //
 // D3DX11 Effect low-frequency utility functions
@@ -1003,7 +1003,7 @@ void CEffect::AddRefAllForCloning( _In_ CEffect* pEffectSource )
         SAFE_ADDREF(m_pShaderBlocks[i].pD3DObject);
     }
 
-    SAFE_ADDREF( m_pDevice );
+    SAFE_ADDREF( m_pDevice );//2023/10/02 checked!!!
 
     SAFE_ADDREF( m_pClassLinkage );
     assert( m_pContext == nullptr );
@@ -1116,9 +1116,12 @@ HRESULT CEffect::BindToDevice(ID3D11Device *pDevice, LPCSTR srcName)
 
     bool featureLevelGE11 = ( pDevice->GetFeatureLevel() >= D3D_FEATURE_LEVEL_11_0 );
 
-    pDevice->AddRef();
-    SAFE_RELEASE(m_pDevice);
+    //pDevice->AddRef();//2023/10/02 comment out
+    //SAFE_RELEASE(m_pDevice);//2023/10/02 comment out
+
     m_pDevice = pDevice;
+    m_pDevice->AddRef();//2023/10/02
+
     VH( m_pDevice->CreateClassLinkage( &m_pClassLinkage ) );
     SetDebugObjectName(m_pClassLinkage,srcName);
 

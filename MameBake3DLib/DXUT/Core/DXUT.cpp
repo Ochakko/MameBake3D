@@ -1966,8 +1966,11 @@ HRESULT DXUTChangeDevice( DXUTDeviceSettings* pNewDeviceSettings,
         }
     }
 
-    if( pOldDeviceSettings )
-        DXUTCleanup3DEnvironment( false );
+    //if( pOldDeviceSettings )
+    if (pOldDeviceSettings || DXUTGetD3D11Device() || DXUTGetD3D11Device1() || DXUTGetD3D11Device2() || DXUTGetD3D11Device3())
+    {
+        DXUTCleanup3DEnvironment(false);
+    }
 
     // Create the D3D device and call the app's device callbacks
     hr = DXUTCreate3DEnvironment11();
@@ -3218,8 +3221,14 @@ void DXUTCleanup3DEnvironment( _In_ bool bReleaseSettings )
             ID3D11Debug * d3dDebug = nullptr;
             if( SUCCEEDED( pd3dDevice->QueryInterface( IID_PPV_ARGS(&d3dDebug) ) ) )
             {
-                d3dDebug->ReportLiveDeviceObjects( static_cast<D3D11_RLDO_FLAGS>(D3D11_RLDO_SUMMARY | D3D11_RLDO_DETAIL) );
-                d3dDebug->Release();
+                //2023/10/02 デバイス解放よりも後で呼ぶ
+                //d3dDebug->ReportLiveDeviceObjects( static_cast<D3D11_RLDO_FLAGS>(D3D11_RLDO_SUMMARY | D3D11_RLDO_DETAIL) );
+
+                //2023/10/02
+                //ここでReleaseすると　下方のreferences = pd3dDevice->Release();部分で　references == 0となる
+                //d3DebugのReleaseをpd3dDeviceのリリースよりも後にすると　pd3dDeviceのrefcountが2だけ残る
+                //つまり　ID3D11Debugインターフェイスが生きていると　d3d11deviceのリファレンスも残るようだ
+                //d3dDebug->Release();
             }
 #endif
 
@@ -3252,13 +3261,34 @@ void DXUTCleanup3DEnvironment( _In_ bool bReleaseSettings )
             // Release the D3D device and in debug configs, displays a message box if there 
             // are unrelease objects.
             UINT references = pd3dDevice->Release();
+#ifndef NDEBUG
+            if (references > 2)//下方の2023/10/02の所に説明在り
+#else
             if( references > 0 )
+#endif
             {
                 DXUTDisplayErrorMessage( DXUTERR_NONZEROREFCOUNT );
                 DXUT_ERR( L"DXUTCleanup3DEnvironment", DXUTERR_NONZEROREFCOUNT );
             }
+
+
+#ifndef NDEBUG
+            //2023/10/02 デバイス解放よりも後で呼ぶ
+            //Device解放前にd3dDebugをReleaseすると　上方のreferences = pd3dDevice->Release();部分で　references == 0となる
+            //次のコードで確かめたところ　ID3D11Debugが生きていると　d3d11deviceのrefcountは 2増えるようだ
+            //つまり　ID3D11Debugインターフェイスが生きていると　d3d11deviceのリファレンスも残るようだ
+
+            if (d3dDebug)
+            {
+                //d3dDebug->ReportLiveDeviceObjects(static_cast<D3D11_RLDO_FLAGS>(D3D11_RLDO_SUMMARY | D3D11_RLDO_DETAIL));
+                d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+                d3dDebug->Release();
+            }
+#endif
+
         }
-        GetDXUTState().SetD3D11Device( nullptr );
+        GetDXUTState().SetD3D11Device(nullptr);
+
 
 #ifndef NDEBUG
         {
@@ -3275,13 +3305,14 @@ void DXUTCleanup3DEnvironment( _In_ bool bReleaseSettings )
         {
             auto pOldDeviceSettings = GetDXUTState().GetCurrentDeviceSettings();
             SAFE_DELETE(pOldDeviceSettings);
-            GetDXUTState().SetCurrentDeviceSettings( nullptr );
+            GetDXUTState().SetCurrentDeviceSettings(nullptr);
         }
 
-        auto pBackBufferSurfaceDesc = GetDXUTState().GetBackBufferSurfaceDescDXGI();
-        ZeroMemory( pBackBufferSurfaceDesc, sizeof( DXGI_SURFACE_DESC ) );
 
-        GetDXUTState().SetDeviceCreated( false );
+        auto pBackBufferSurfaceDesc = GetDXUTState().GetBackBufferSurfaceDescDXGI();
+        ZeroMemory(pBackBufferSurfaceDesc, sizeof(DXGI_SURFACE_DESC));
+        GetDXUTState().SetDeviceCreated(false);
+
     }
 }
 

@@ -1652,6 +1652,7 @@ static ChaMatrix s_selectmat_posture;//for display manipulator
 static ChaMatrix s_ikselectmat;//for ik, fk
 static int s_selectuserscale = 100;
 
+
 static HWND s_mainhwnd = NULL;
 
 static int s_onragdollik = 0;
@@ -5219,281 +5220,950 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 {
 	HRESULT hr;
 
-	ID3D11DeviceContext* pd3dImmediateContext = DXUTGetD3D11DeviceContext();
-	V_RETURN(g_DialogResourceManager.OnD3D11CreateDevice(pd3dDevice, pd3dImmediateContext));
-	//V_RETURN(g_D3DSettingsDlg.OnD3D11CreateDevice(pd3dDevice));
-	g_pTxtHelper = new CDXUTTextHelper(pd3dDevice, pd3dImmediateContext, &g_DialogResourceManager, 10);
+	
+	if (pd3dDevice && (g_endappflag == 0)) {//2023/10/02
+
+		ID3D11DeviceContext* pd3dImmediateContext = DXUTGetD3D11DeviceContext();
+		V_RETURN(g_DialogResourceManager.OnD3D11CreateDevice(pd3dDevice, pd3dImmediateContext));
+		//V_RETURN(g_D3DSettingsDlg.OnD3D11CreateDevice(pd3dDevice));
+		g_pTxtHelper = new CDXUTTextHelper(pd3dDevice, pd3dImmediateContext, &g_DialogResourceManager, 10);
 
 
-	s_pdev = pd3dDevice;
+		s_pdev = pd3dDevice;
 
-	//hr = g_SettingsDlg.OnD3D11CreateDevice(pd3dDevice);
-	//if (FAILED(hr)) {
-	//	_ASSERT(0);
-	//	return hr;
-	//}
-	//hr = D3DX10CreateFont(pd3dDevice, 15, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
-	//	OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
-	//	L"MS ゴシック", &g_pFont);
-	//	//L"Arial", &g_pFont10);
-	//if (FAILED(hr)) {
-	//	_ASSERT(0);
-	//	return hr;
-	//}
+		//hr = g_SettingsDlg.OnD3D11CreateDevice(pd3dDevice);
+		//if (FAILED(hr)) {
+		//	_ASSERT(0);
+		//	return hr;
+		//}
+		//hr = D3DX10CreateFont(pd3dDevice, 15, 0, FW_BOLD, 1, FALSE, DEFAULT_CHARSET,
+		//	OUT_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+		//	L"MS ゴシック", &g_pFont);
+		//	//L"Arial", &g_pFont10);
+		//if (FAILED(hr)) {
+		//	_ASSERT(0);
+		//	return hr;
+		//}
 
-	//hr = D3DX10CreateSprite(pd3dDevice, 512, &g_pSprite);
-	//if (FAILED(hr)) {
-	//	_ASSERT(0);
-	//	return hr;
-	//}
-	////g_pTxtHelper = new CDXUTTextHelper(NULL, NULL, g_pFont, g_pSprite, 15);
-
-
-
-	//DWORD dwShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
-	DWORD dwShaderFlags = D3D10_SHADER_ENABLE_BACKWARDS_COMPATIBILITY;
-
-	////	DWORD dwShaderFlags = D3D11_SHADER_ENABLE_STRICTNESS;
-////#if defined( DEBUG ) || defined( _DEBUG )
-////	// Set the D3D11_SHADER_DEBUG flag to embed debug information in the shaders.
-////	// Setting this flag improves the shader debugging experience, but still allows 
-////	// the shaders to be optimized and to run exactly the way they will run in 
-////	// the release configuration of this program.
-////	dwShaderFlags |= D3D11_SHADER_DEBUG;
-////#endif
-//
-	//DWORD dwShaderFlags = D3DXFX_NOT_CLONEABLE;
-	//DWORD dwShaderFlags = D3DXFX_NOT_CLONEABLE | D3D10_SHADER_ENABLE_BACKWARDS_COMPATIBILITY;
-//
-//#if defined( DEBUG ) || defined( _DEBUG )
-//	// Set the D3DXSHADER_DEBUG flag to embed debug information in the shaders.
-//	// Setting this flag improves the shader debugging experience, but still allows 
-//	// the shaders to be optimized and to run exactly the way they will run in 
-//	// the release configuration of this program.
-//	dwShaderFlags |= D3DXSHADER_DEBUG;
-//#endif
-//
-//#ifdef DEBUG_VS
-//	dwShaderFlags |= D3DXSHADER_FORCE_VS_SOFTWARE_NOOPT;
-//#endif
-//#ifdef DEBUG_PS
-//	dwShaderFlags |= D3DXSHADER_FORCE_PS_SOFTWARE_NOOPT;
-//#endif
-//
-//	// Preshaders are parts of the shader that the effect system pulls out of the 
-//	// shader and runs on the host CPU. They should be used if you are GPU limited. 
-//	// The D3DXSHADER_NO_PRESHADER flag disables preshaders.
-//	if (!g_bEnablePreshader)
-//		dwShaderFlags |= D3DXSHADER_NO_PRESHADER;
+		//hr = D3DX10CreateSprite(pd3dDevice, 512, &g_pSprite);
+		//if (FAILED(hr)) {
+		//	_ASSERT(0);
+		//	return hr;
+		//}
+		////g_pTxtHelper = new CDXUTTextHelper(NULL, NULL, g_pFont, g_pSprite, 15);
 
 
-	// Read the D3DX effect file
-	WCHAR str[MAX_PATH];
-	hr = DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"..\\Media\\Shader\\Ochakko.fx");
-	//hr = DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"..\\Media\\Shader\\Ochakko11.fx");
-	//hr = DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"..\\Media\\Shader\\Ochakko.fxo");
-	if (FAILED(hr)) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return hr;
-	}
-	//ID3D11Blob*	l_pBlob_Effect = NULL;
-	//ID3D11Blob*	l_pBlob_Errors = NULL;
-	//hr = D3DX10CompileEffectFromFile(str, NULL, NULL,
-	//	D3D11_SHADER_ENABLE_STRICTNESS, 0, NULL,
-	//	&l_pBlob_Effect, &l_pBlob_Errors);
-	//if (FAILED(hr)) {
-	//	LPVOID l_pError = NULL;
-	//	if (l_pBlob_Errors)
-	//	{
-	//		l_pError = l_pBlob_Errors->GetBufferPointer();
-	//		// then cast to a char* to see it in the locals window
-	//	}
 
-	//	LPVOID l_pErrorEffect = NULL;
-	//	if (l_pBlob_Effect)
-	//	{
-	//		l_pErrorEffect = l_pBlob_Effect->GetBufferPointer();
-	//		// then cast to a char* to see it in the locals window
-	//	}
+		//DWORD dwShaderFlags = D3D10_SHADER_ENABLE_STRICTNESS;
+		DWORD dwShaderFlags = D3D10_SHADER_ENABLE_BACKWARDS_COMPATIBILITY;
 
-	//	_ASSERT(0);
-	//	return hr;
-	//}
-
-
-	/*
-	HRESULT D3DX10CreateEffectFromFile(
-	  LPCTSTR pFileName,
-	  CONST D3D11_SHADER_MACRO *pDefines,
-	  ID3D11Include *pInclude,
-	  LPCSTR pProfile,
-	  UINT HLSLFlags,
-	  UINT FXFlags,
-	  ID3D11Device *pDevice,
-	  ID3D11EffectPool *pEffectPool,
-	  ID3DX10ThreadPump *pPump,
-	  ID3D11Effect **ppEffect,
-	  ID3D11Blob **ppErrors,
-	  HRESULT *pHResult
-	);*/
-
-	//D3DX10CreateEffectFromFile(str, NULL, NULL, "fx_4_0", dwShaderFlags, 0, pd3dDevice, NULL,
-	//	NULL, &g_pEffect10, NULL, NULL);
+		////	DWORD dwShaderFlags = D3D11_SHADER_ENABLE_STRICTNESS;
+	////#if defined( DEBUG ) || defined( _DEBUG )
+	////	// Set the D3D11_SHADER_DEBUG flag to embed debug information in the shaders.
+	////	// Setting this flag improves the shader debugging experience, but still allows 
+	////	// the shaders to be optimized and to run exactly the way they will run in 
+	////	// the release configuration of this program.
+	////	dwShaderFlags |= D3D11_SHADER_DEBUG;
+	////#endif
+	//
+		//DWORD dwShaderFlags = D3DXFX_NOT_CLONEABLE;
+		//DWORD dwShaderFlags = D3DXFX_NOT_CLONEABLE | D3D10_SHADER_ENABLE_BACKWARDS_COMPATIBILITY;
+	//
+	//#if defined( DEBUG ) || defined( _DEBUG )
+	//	// Set the D3DXSHADER_DEBUG flag to embed debug information in the shaders.
+	//	// Setting this flag improves the shader debugging experience, but still allows 
+	//	// the shaders to be optimized and to run exactly the way they will run in 
+	//	// the release configuration of this program.
+	//	dwShaderFlags |= D3DXSHADER_DEBUG;
+	//#endif
+	//
+	//#ifdef DEBUG_VS
+	//	dwShaderFlags |= D3DXSHADER_FORCE_VS_SOFTWARE_NOOPT;
+	//#endif
+	//#ifdef DEBUG_PS
+	//	dwShaderFlags |= D3DXSHADER_FORCE_PS_SOFTWARE_NOOPT;
+	//#endif
+	//
+	//	// Preshaders are parts of the shader that the effect system pulls out of the 
+	//	// shader and runs on the host CPU. They should be used if you are GPU limited. 
+	//	// The D3DXSHADER_NO_PRESHADER flag disables preshaders.
+	//	if (!g_bEnablePreshader)
+	//		dwShaderFlags |= D3DXSHADER_NO_PRESHADER;
 
 
-	ID3D10Blob* l_pBlob_Errors = NULL;
-	//hr = D3DX11CreateEffectFromFile(str, NULL, NULL,
-	//	"fx_4_0", dwShaderFlags, 0, pd3dDevice, NULL, NULL,
-	//	&g_pEffect, &l_pBlob_Errors, NULL);
-	//hr = D3DX11CreateEffectFromFile(str, dwShaderFlags, pd3dDevice, &g_pEffect);
-	//HRESULT WINAPI D3DX11CreateEffectFromFile(LPCWSTR pFileName, UINT FXFlags, ID3D11Device *pDevice, ID3DX11Effect **ppEffect)
-
-
-//	//compile shader
-//	ID3DBlob* errorBlob;
-//	DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-//
-//#if defined _DEBUG || defined DEBUG
-//	shaderFlags = D3DCOMPILE_DEBUG;
-//#endif
-
-	hr = D3DX11CompileEffectFromFile(str, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, dwShaderFlags,
-		0, pd3dDevice, &g_pEffect, &l_pBlob_Errors);
-	////if (FAILED(hr))
-	////{
-	////	MessageBox(nullptr, (LPCWSTR)errorBlob->GetBufferPointer(), L"error", MB_OK);
-	////	return hr;
-	////}
-	////m_pTechnique = m_pFx->GetTechniqueByName("ColorTech");
-	////m_pFxWorldViewProj = m_pFx->GetVariableByName("gWorldViewProj")->AsMatrix();
-
-	if (FAILED(hr)) {
-		LPVOID l_pError = NULL;
-		if (l_pBlob_Errors)
-		{
-			l_pError = l_pBlob_Errors->GetBufferPointer();
-			// then cast to a char* to see it in the locals window
+		// Read the D3DX effect file
+		WCHAR str[MAX_PATH];
+		hr = DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"..\\Media\\Shader\\Ochakko.fx");
+		//hr = DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"..\\Media\\Shader\\Ochakko11.fx");
+		//hr = DXUTFindDXSDKMediaFileCch(str, MAX_PATH, L"..\\Media\\Shader\\Ochakko.fxo");
+		if (FAILED(hr)) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return hr;
 		}
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return hr;
-	}
+		//ID3D11Blob*	l_pBlob_Effect = NULL;
+		//ID3D11Blob*	l_pBlob_Errors = NULL;
+		//hr = D3DX10CompileEffectFromFile(str, NULL, NULL,
+		//	D3D11_SHADER_ENABLE_STRICTNESS, 0, NULL,
+		//	&l_pBlob_Effect, &l_pBlob_Errors);
+		//if (FAILED(hr)) {
+		//	LPVOID l_pError = NULL;
+		//	if (l_pBlob_Errors)
+		//	{
+		//		l_pError = l_pBlob_Errors->GetBufferPointer();
+		//		// then cast to a char* to see it in the locals window
+		//	}
+
+		//	LPVOID l_pErrorEffect = NULL;
+		//	if (l_pBlob_Effect)
+		//	{
+		//		l_pErrorEffect = l_pBlob_Effect->GetBufferPointer();
+		//		// then cast to a char* to see it in the locals window
+		//	}
+
+		//	_ASSERT(0);
+		//	return hr;
+		//}
 
 
-	CalcTotalBound();
+		/*
+		HRESULT D3DX10CreateEffectFromFile(
+		  LPCTSTR pFileName,
+		  CONST D3D11_SHADER_MACRO *pDefines,
+		  ID3D11Include *pInclude,
+		  LPCSTR pProfile,
+		  UINT HLSLFlags,
+		  UINT FXFlags,
+		  ID3D11Device *pDevice,
+		  ID3D11EffectPool *pEffectPool,
+		  ID3DX10ThreadPump *pPump,
+		  ID3D11Effect **ppEffect,
+		  ID3D11Blob **ppErrors,
+		  HRESULT *pHResult
+		);*/
+
+		//D3DX10CreateEffectFromFile(str, NULL, NULL, "fx_4_0", dwShaderFlags, 0, pd3dDevice, NULL,
+		//	NULL, &g_pEffect10, NULL, NULL);
 
 
-	CallF(GetShaderHandle(), return S_FALSE);
+		ID3D10Blob* l_pBlob_Errors = NULL;
+		//hr = D3DX11CreateEffectFromFile(str, NULL, NULL,
+		//	"fx_4_0", dwShaderFlags, 0, pd3dDevice, NULL, NULL,
+		//	&g_pEffect, &l_pBlob_Errors, NULL);
+		//hr = D3DX11CreateEffectFromFile(str, dwShaderFlags, pd3dDevice, &g_pEffect);
+		//HRESULT WINAPI D3DX11CreateEffectFromFile(LPCWSTR pFileName, UINT FXFlags, ID3D11Device *pDevice, ID3DX11Effect **ppEffect)
+
+
+	//	//compile shader
+	//	ID3DBlob* errorBlob;
+	//	DWORD shaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+	//
+	//#if defined _DEBUG || defined DEBUG
+	//	shaderFlags = D3DCOMPILE_DEBUG;
+	//#endif
+
+		hr = D3DX11CompileEffectFromFile(str, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, dwShaderFlags,
+			0, pd3dDevice, &g_pEffect, &l_pBlob_Errors);
+		////if (FAILED(hr))
+		////{
+		////	MessageBox(nullptr, (LPCWSTR)errorBlob->GetBufferPointer(), L"error", MB_OK);
+		////	return hr;
+		////}
+		////m_pTechnique = m_pFx->GetTechniqueByName("ColorTech");
+		////m_pFxWorldViewProj = m_pFx->GetVariableByName("gWorldViewProj")->AsMatrix();
+
+		if (FAILED(hr)) {
+			LPVOID l_pError = NULL;
+			if (l_pBlob_Errors)
+			{
+				l_pError = l_pBlob_Errors->GetBufferPointer();
+				// then cast to a char* to see it in the locals window
+			}
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return hr;
+		}
+
+
+		CalcTotalBound();
+
+
+		CallF(GetShaderHandle(), return S_FALSE);
 
 
 
-	if (!g_texbank) {
-		g_texbank = new CTexBank(s_pdev);
 		if (!g_texbank) {
+			g_texbank = new CTexBank(s_pdev);
+			if (!g_texbank) {
+				_ASSERT(0);
+				PostQuitMessage(1);
+				return 0;
+			}
+		}
+
+		s_select = new CModel();
+		if (!s_select) {
 			_ASSERT(0);
 			PostQuitMessage(1);
-			return 0;
+			return S_FALSE;
 		}
-	}
+		CallF(s_select->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\select_2.mqo", 0, 1.0f, 0), return S_FALSE);
+		//CallF(s_select->MakeDispObj(), return S_FALSE;);
 
-	s_select = new CModel();
-	if (!s_select) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_select->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\select_2.mqo", 0, 1.0f, 0), return S_FALSE);
-	//CallF(s_select->MakeDispObj(), return S_FALSE;);
+		s_matred = s_select->GetMQOMaterialByName("matred");
+		if (!s_matred) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		s_ringred = s_select->GetMQOMaterialByName("ringred");
+		if (!s_ringred) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		s_matblue = s_select->GetMQOMaterialByName("matblue");
+		if (!s_matblue) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		s_ringblue = s_select->GetMQOMaterialByName("ringblue");
+		if (!s_ringblue) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		s_matgreen = s_select->GetMQOMaterialByName("matgreen");
+		if (!s_matgreen) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		s_ringgreen = s_select->GetMQOMaterialByName("ringgreen");
+		if (!s_ringgreen) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		s_matyellow = s_select->GetMQOMaterialByName("matyellow");
+		if (!s_matyellow) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
 
-	s_matred = s_select->GetMQOMaterialByName("matred");
-	if (!s_matred) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	s_ringred = s_select->GetMQOMaterialByName("ringred");
-	if (!s_ringred) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	s_matblue = s_select->GetMQOMaterialByName("matblue");
-	if (!s_matblue) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	s_ringblue = s_select->GetMQOMaterialByName("ringblue");
-	if (!s_ringblue) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	s_matgreen = s_select->GetMQOMaterialByName("matgreen");
-	if (!s_matgreen) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	s_ringgreen = s_select->GetMQOMaterialByName("ringgreen");
-	if (!s_ringgreen) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	s_matyellow = s_select->GetMQOMaterialByName("matyellow");
-	if (!s_matyellow) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-
-	//s_matredmat = s_matred->GetDif4F();
-	//s_ringredmat = s_ringred->GetDif4F();
-	//s_matbluemat = s_matblue->GetDif4F();
-	//s_ringbluemat = s_ringblue->GetDif4F();
-	//s_matgreenmat = s_matgreen->GetDif4F();
-	//s_ringgreenmat = s_ringgreen->GetDif4F();
-	//s_matyellowmat = s_matyellow->GetDif4F();
-	s_matredmat = ChaVector4(255.0f / 255.0f, 128.0f / 255.0f, 128.0f / 255.0f, 1.0f);
-	s_ringredmat = ChaVector4(255.0f / 255.0f, 128.0f / 255.0f, 128.0f / 255.0f, 1.0f);
-	s_matbluemat = ChaVector4(150.0f / 255.0f, 200.0f / 255.0f, 255.0f / 255.0f, 1.0f);
-	s_ringbluemat = ChaVector4(150.0f / 255.0f, 200.0f / 255.0f, 255.0f / 255.0f, 1.0f);
-	s_matgreenmat = ChaVector4(0.0f / 255.0f, 255.0f / 255.0f, 0.0f / 255.0f, 1.0f);
-	s_ringgreenmat = ChaVector4(0.0f / 255.0f, 255.0f / 255.0f, 0.0f / 255.0f, 1.0f);
-	s_matyellowmat = s_matyellow->GetDif4F();
+		//s_matredmat = s_matred->GetDif4F();
+		//s_ringredmat = s_ringred->GetDif4F();
+		//s_matbluemat = s_matblue->GetDif4F();
+		//s_ringbluemat = s_ringblue->GetDif4F();
+		//s_matgreenmat = s_matgreen->GetDif4F();
+		//s_ringgreenmat = s_ringgreen->GetDif4F();
+		//s_matyellowmat = s_matyellow->GetDif4F();
+		s_matredmat = ChaVector4(255.0f / 255.0f, 128.0f / 255.0f, 128.0f / 255.0f, 1.0f);
+		s_ringredmat = ChaVector4(255.0f / 255.0f, 128.0f / 255.0f, 128.0f / 255.0f, 1.0f);
+		s_matbluemat = ChaVector4(150.0f / 255.0f, 200.0f / 255.0f, 255.0f / 255.0f, 1.0f);
+		s_ringbluemat = ChaVector4(150.0f / 255.0f, 200.0f / 255.0f, 255.0f / 255.0f, 1.0f);
+		s_matgreenmat = ChaVector4(0.0f / 255.0f, 255.0f / 255.0f, 0.0f / 255.0f, 1.0f);
+		s_ringgreenmat = ChaVector4(0.0f / 255.0f, 255.0f / 255.0f, 0.0f / 255.0f, 1.0f);
+		s_matyellowmat = s_matyellow->GetDif4F();
 
 
 
 
-	s_select_posture = new CModel();
-	if (!s_select_posture) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_select_posture->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\select_2_posture.mqo", 0, 1.0f, 0), return S_FALSE);
-	//CallF(s_select_posture->MakeDispObj(), return S_FALSE);
+		s_select_posture = new CModel();
+		if (!s_select_posture) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_select_posture->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\select_2_posture.mqo", 0, 1.0f, 0), return S_FALSE);
+		//CallF(s_select_posture->MakeDispObj(), return S_FALSE);
 
 
-	int rigopemarkno;
-	for (rigopemarkno = 0; rigopemarkno <= RIGMULTINDEXMAX; rigopemarkno++) {
-		{
-			s_rigopemark_sphere[rigopemarkno] = new CModel();
-			if (s_rigopemark_sphere[rigopemarkno]) {
-				float rigmult = 0.30f * (float)(rigopemarkno + 1) * 0.5f;
-				CallF(s_rigopemark_sphere[rigopemarkno]->LoadMQO(s_pdev, pd3dImmediateContext,
-					L"..\\Media\\MameMedia\\rigmark.mqo", 0, rigmult, 0), return S_FALSE);
-				//CallF(s_rigopemark_sphere[rigopemarkno]->MakeDispObj(), return S_FALSE);
-				s_rigmaterial_sphere[rigopemarkno] = s_rigopemark_sphere[rigopemarkno]->GetMQOMaterialByName("mat1");
-				if (!s_rigmaterial_sphere[rigopemarkno]) {
+		int rigopemarkno;
+		for (rigopemarkno = 0; rigopemarkno <= RIGMULTINDEXMAX; rigopemarkno++) {
+			{
+				s_rigopemark_sphere[rigopemarkno] = new CModel();
+				if (s_rigopemark_sphere[rigopemarkno]) {
+					float rigmult = 0.30f * (float)(rigopemarkno + 1) * 0.5f;
+					CallF(s_rigopemark_sphere[rigopemarkno]->LoadMQO(s_pdev, pd3dImmediateContext,
+						L"..\\Media\\MameMedia\\rigmark.mqo", 0, rigmult, 0), return S_FALSE);
+					//CallF(s_rigopemark_sphere[rigopemarkno]->MakeDispObj(), return S_FALSE);
+					s_rigmaterial_sphere[rigopemarkno] = s_rigopemark_sphere[rigopemarkno]->GetMQOMaterialByName("mat1");
+					if (!s_rigmaterial_sphere[rigopemarkno]) {
+						_ASSERT(0);
+						PostQuitMessage(1);
+						return S_FALSE;
+					}
+				}
+				else {
 					_ASSERT(0);
 					PostQuitMessage(1);
 					return S_FALSE;
 				}
 			}
-			else {
+
+			{
+				s_rigopemark_ringX[rigopemarkno] = new CModel();
+				if (s_rigopemark_ringX[rigopemarkno]) {
+					float rigmult = (float)(rigopemarkno + 1) * 0.5f;
+					CallF(s_rigopemark_ringX[rigopemarkno]->LoadMQO(s_pdev, pd3dImmediateContext,
+						L"..\\Media\\MameMedia\\ringX.mqo", 0, rigmult, 0), return S_FALSE);
+					//CallF(s_rigopemark_ringX[rigopemarkno]->MakeDispObj(), return S_FALSE);
+					s_rigmaterial_ringX[rigopemarkno] = s_rigopemark_ringX[rigopemarkno]->GetMQOMaterialByName("ringred");
+					if (!s_rigmaterial_ringX[rigopemarkno]) {
+						_ASSERT(0);
+						PostQuitMessage(1);
+						return S_FALSE;
+					}
+				}
+				else {
+					_ASSERT(0);
+					PostQuitMessage(1);
+					return S_FALSE;
+				}
+			}
+
+			{
+				s_rigopemark_ringY[rigopemarkno] = new CModel();
+				if (s_rigopemark_ringY[rigopemarkno]) {
+					float rigmult = (float)(rigopemarkno + 1) * 0.5f;
+					CallF(s_rigopemark_ringY[rigopemarkno]->LoadMQO(s_pdev, pd3dImmediateContext,
+						L"..\\Media\\MameMedia\\ringY.mqo", 0, rigmult, 0), return S_FALSE);
+					//CallF(s_rigopemark_ringY[rigopemarkno]->MakeDispObj(), return S_FALSE);
+					s_rigmaterial_ringY[rigopemarkno] = s_rigopemark_ringY[rigopemarkno]->GetMQOMaterialByName("ringgreen");
+					if (!s_rigmaterial_ringY[rigopemarkno]) {
+						_ASSERT(0);
+						PostQuitMessage(1);
+						return S_FALSE;
+					}
+				}
+				else {
+					_ASSERT(0);
+					PostQuitMessage(1);
+					return S_FALSE;
+				}
+			}
+
+			{
+				s_rigopemark_ringZ[rigopemarkno] = new CModel();
+				if (s_rigopemark_ringZ[rigopemarkno]) {
+					float rigmult = (float)(rigopemarkno + 1) * 0.5f;
+					CallF(s_rigopemark_ringZ[rigopemarkno]->LoadMQO(s_pdev, pd3dImmediateContext,
+						L"..\\Media\\MameMedia\\ringZ.mqo", 0, rigmult, 0), return S_FALSE);
+					//CallF(s_rigopemark_ringZ[rigopemarkno]->MakeDispObj(), return S_FALSE);
+					s_rigmaterial_ringZ[rigopemarkno] = s_rigopemark_ringZ[rigopemarkno]->GetMQOMaterialByName("ringblue");
+					if (!s_rigmaterial_ringZ[rigopemarkno]) {
+						_ASSERT(0);
+						PostQuitMessage(1);
+						return S_FALSE;
+					}
+				}
+				else {
+					_ASSERT(0);
+					PostQuitMessage(1);
+					return S_FALSE;
+				}
+			}
+		}
+		s_matrigmat = ChaVector4(255.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f, 1.0f);
+
+
+		s_bmark = new CModel();
+		if (!s_bmark) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_bmark->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\bonemark.mqo", 0, 1.0f, 0), return S_FALSE);
+		//CallF(s_bmark->MakeDispObj(), return S_FALSE);
+
+
+
+
+		s_ground = new CModel();
+		if (!s_ground) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_ground->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\ground2.mqo", 0, 1.0f, 0), return S_FALSE);
+		//CallF(s_ground->MakeDispObj(), return S_FALSE);
+
+		s_gplane = new CModel();
+		if (!s_gplane) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_gplane->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\gplane.mqo", 0, 1.0f, 0), return S_FALSE);
+		//CallF(s_gplane->MakeDispObj(), return S_FALSE);
+		ChaVector3 tra(0.0f, 0.0, 0.0f);
+		ChaVector3 mult(5.0f, 1.0f, 5.0f);
+		CallF(s_gplane->MultDispObj(mult, tra), return S_FALSE);
+
+
+		s_bcircle = new CMySprite(s_pdev);
+		if (!s_bcircle) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+
+		WCHAR path[MAX_PATH];
+		wcscpy_s(path, MAX_PATH, g_basedir);
+		WCHAR* lasten = 0;
+		WCHAR* last2en = 0;
+		lasten = wcsrchr(path, TEXT('\\'));
+		if (!lasten) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		*lasten = 0L;
+		last2en = wcsrchr(path, TEXT('\\'));
+		if (!last2en) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		*last2en = 0L;
+		wcscat_s(path, MAX_PATH, L"\\Media\\MameMedia\\");
+		CallF(s_bcircle->Create(pd3dImmediateContext, path, L"bonecircle.dds", 0, 0), return S_FALSE);
+
+		///////
+		WCHAR mpath[MAX_PATH];
+		wcscpy_s(mpath, MAX_PATH, g_basedir);
+		lasten = 0;
+		last2en = 0;
+		lasten = wcsrchr(mpath, TEXT('\\'));
+		if (!lasten) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		*lasten = 0L;
+		last2en = wcsrchr(mpath, TEXT('\\'));
+		if (!last2en) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		*last2en = 0L;
+		wcscat_s(mpath, MAX_PATH, L"\\Media\\MameMedia\\");
+
+
+
+		if (s_undosprite) {
+			delete s_undosprite;
+			s_undosprite = 0;
+		}
+		s_undosprite = new CUndoSprite();
+		if (!s_undosprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_undosprite->CreateSprites(s_pdev, pd3dImmediateContext, mpath), return S_FALSE);
+
+
+		if (s_fpssprite) {
+			delete s_fpssprite;
+			s_fpssprite = 0;
+		}
+		s_fpssprite = new CFpsSprite();
+		if (!s_fpssprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_fpssprite->CreateSprites(s_pdev, pd3dImmediateContext, mpath), return S_FALSE);
+
+
+
+		s_spundo[0].sprite = new CMySprite(s_pdev);
+		if (!s_spundo[0].sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spundo[0].sprite->Create(pd3dImmediateContext, mpath, L"Undo_1.png", 0, 0), return S_FALSE);
+		s_spundo[1].sprite = new CMySprite(s_pdev);
+		if (!s_spundo[1].sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spundo[1].sprite->Create(pd3dImmediateContext, mpath, L"Redo_1.png", 0, 0), return S_FALSE);
+
+		s_spaxis[0].sprite = new CMySprite(s_pdev);
+		if (!s_spaxis[0].sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spaxis[0].sprite->Create(pd3dImmediateContext, mpath, L"X.gif", 0, 0), return S_FALSE);
+		s_spaxis[1].sprite = new CMySprite(s_pdev);
+		if (!s_spaxis[1].sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spaxis[1].sprite->Create(pd3dImmediateContext, mpath, L"Y.gif", 0, 0), return S_FALSE);
+		s_spaxis[2].sprite = new CMySprite(s_pdev);
+		if (!s_spaxis[2].sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spaxis[2].sprite->Create(pd3dImmediateContext, mpath, L"Z.gif", 0, 0), return S_FALSE);
+
+		//SpriteSwitch RefPos
+		s_sprefpos.spriteON = new CMySprite(s_pdev);
+		if (!s_sprefpos.spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_sprefpos.spriteON->Create(pd3dImmediateContext, mpath, L"RefPosON.gif", 0, 0), return S_FALSE);
+		s_sprefpos.spriteOFF = new CMySprite(s_pdev);
+		if (!s_sprefpos.spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_sprefpos.spriteOFF->Create(pd3dImmediateContext, mpath, L"RefPosOFF.gif", 0, 0), return S_FALSE);
+
+		//SpriteSwitch LimitEul
+		s_splimiteul.spriteON = new CMySprite(s_pdev);
+		if (!s_splimiteul.spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_splimiteul.spriteON->Create(pd3dImmediateContext, mpath, L"LimitEul_ON.png", 0, 0), return S_FALSE);
+		s_splimiteul.spriteOFF = new CMySprite(s_pdev);
+		if (!s_splimiteul.spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_splimiteul.spriteOFF->Create(pd3dImmediateContext, mpath, L"LimitEul_OFF.png", 0, 0), return S_FALSE);
+
+		//SpriteSwitch CameraMode
+		s_spcameramode.spriteON = new CMySprite(s_pdev);
+		if (!s_spcameramode.spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spcameramode.spriteON->Create(pd3dImmediateContext, mpath, L"CamAnimON.png", 0, 0), return S_FALSE);
+		s_spcameramode.spriteOFF = new CMySprite(s_pdev);
+		if (!s_spcameramode.spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spcameramode.spriteOFF->Create(pd3dImmediateContext, mpath, L"CamAnimOFF.png", 0, 0), return S_FALSE);
+
+
+		//SpriteSwitch CameraInheritMode
+		s_spcamerainherit.sprite1 = new CMySprite(s_pdev);
+		if (!s_spcamerainherit.sprite1) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spcamerainherit.sprite1->Create(pd3dImmediateContext, mpath, L"CameraInherit_All.png", 0, 0), return S_FALSE);
+		s_spcamerainherit.sprite2 = new CMySprite(s_pdev);
+		if (!s_spcamerainherit.sprite2) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spcamerainherit.sprite2->Create(pd3dImmediateContext, mpath, L"CameraInherit_CancelNull1.png", 0, 0), return S_FALSE);
+		s_spcamerainherit.sprite3 = new CMySprite(s_pdev);
+		if (!s_spcamerainherit.sprite3) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spcamerainherit.sprite3->Create(pd3dImmediateContext, mpath, L"CameraInherit_CancelNull2.png", 0, 0), return S_FALSE);
+
+
+
+		//SpriteSwitch Scraping
+		s_spscraping.spriteON = new CMySprite(s_pdev);
+		if (!s_spscraping.spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spscraping.spriteON->Create(pd3dImmediateContext, mpath, L"WallScrapingIK_ON.png", 0, 0), return S_FALSE);
+		s_spscraping.spriteOFF = new CMySprite(s_pdev);
+		if (!s_spscraping.spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spscraping.spriteOFF->Create(pd3dImmediateContext, mpath, L"WallScrapingIK_OFF.png", 0, 0), return S_FALSE);
+
+
+		//SpriteSwitch IKMode
+		s_spikmodesw[0].spriteON = new CMySprite(s_pdev);
+		if (!s_spikmodesw[0].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spikmodesw[0].spriteON->Create(pd3dImmediateContext, mpath, L"IKRot2ON.gif", 0, 0), return S_FALSE);
+		s_spikmodesw[0].spriteOFF = new CMySprite(s_pdev);
+		if (!s_spikmodesw[0].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spikmodesw[0].spriteOFF->Create(pd3dImmediateContext, mpath, L"IKRot2OFF.gif", 0, 0), return S_FALSE);
+		s_spikmodesw[1].spriteON = new CMySprite(s_pdev);
+		if (!s_spikmodesw[1].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spikmodesw[1].spriteON->Create(pd3dImmediateContext, mpath, L"IKMove2ON.gif", 0, 0), return S_FALSE);
+		s_spikmodesw[1].spriteOFF = new CMySprite(s_pdev);
+		if (!s_spikmodesw[1].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spikmodesw[1].spriteOFF->Create(pd3dImmediateContext, mpath, L"IKMove2OFF.gif", 0, 0), return S_FALSE);
+		s_spikmodesw[2].spriteON = new CMySprite(s_pdev);
+		if (!s_spikmodesw[2].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spikmodesw[2].spriteON->Create(pd3dImmediateContext, mpath, L"IKScale2ON.gif", 0, 0), return S_FALSE);
+		s_spikmodesw[2].spriteOFF = new CMySprite(s_pdev);
+		if (!s_spikmodesw[2].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spikmodesw[2].spriteOFF->Create(pd3dImmediateContext, mpath, L"IKScale2OFF.gif", 0, 0), return S_FALSE);
+
+
+		//SpriteSwitch ON
+		s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON = new CMySprite(s_pdev);
+		if (!s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_CameraAndIK140ON.png", 0, 0), return S_FALSE);
+		s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteON = new CMySprite(s_pdev);
+		if (!s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispAndLimits140ON.png", 0, 0), return S_FALSE);
+		s_spguisw[SPGUISW_BRUSHPARAMS].spriteON = new CMySprite(s_pdev);
+		if (!s_spguisw[SPGUISW_BRUSHPARAMS].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spguisw[SPGUISW_BRUSHPARAMS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_BrushParams140ON.png", 0, 0), return S_FALSE);
+		s_spguisw[SPGUISW_BULLETPHYSICS].spriteON = new CMySprite(s_pdev);
+		if (!s_spguisw[SPGUISW_BULLETPHYSICS].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140ON.png", 0, 0), return S_FALSE);
+		s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON = new CMySprite(s_pdev);
+		if (!s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_RefPos140ON.png", 0, 0), return S_FALSE);
+		//SpriteSwitch OFF
+		s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF = new CMySprite(s_pdev);
+		if (!s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_CameraAndIK140OFF.png", 0, 0), return S_FALSE);
+		s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteOFF = new CMySprite(s_pdev);
+		if (!s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispAndLimits140OFF.png", 0, 0), return S_FALSE);
+		s_spguisw[SPGUISW_BRUSHPARAMS].spriteOFF = new CMySprite(s_pdev);
+		if (!s_spguisw[SPGUISW_BRUSHPARAMS].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spguisw[SPGUISW_BRUSHPARAMS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_BrushParams140OFF.png", 0, 0), return S_FALSE);
+		s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF = new CMySprite(s_pdev);
+		if (!s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140OFF.png", 0, 0), return S_FALSE);
+		s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF = new CMySprite(s_pdev);
+		if (!s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_RefPos140OFF.png", 0, 0), return S_FALSE);
+
+
+		//Disp ON
+		s_spdispsw[SPDISPSW_LIGHTS].spriteON = new CMySprite(s_pdev);
+		if (!s_spdispsw[SPDISPSW_LIGHTS].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spdispsw[SPDISPSW_LIGHTS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_Lights140ON.png", 0, 0), return S_FALSE);
+		s_spdispsw[SPDISPSW_DISPGROUP].spriteON = new CMySprite(s_pdev);
+		if (!s_spdispsw[SPDISPSW_DISPGROUP].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spdispsw[SPDISPSW_DISPGROUP].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispGroup140ON.png", 0, 0), return S_FALSE);
+		s_spdispsw[SPDISPSW_LIGHTS].spriteOFF = new CMySprite(s_pdev);
+		if (!s_spdispsw[SPDISPSW_LIGHTS].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spdispsw[SPDISPSW_LIGHTS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_Lights140OFF.png", 0, 0), return S_FALSE);
+		s_spdispsw[SPDISPSW_DISPGROUP].spriteOFF = new CMySprite(s_pdev);
+		if (!s_spdispsw[SPDISPSW_DISPGROUP].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spdispsw[SPDISPSW_DISPGROUP].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispGroup140OFF.png", 0, 0), return S_FALSE);
+
+
+		//RigidSwitch ON
+		s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteON = new CMySprite(s_pdev);
+		if (!s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuRigid140ON.png", 0, 0), return S_FALSE);
+		s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON = new CMySprite(s_pdev);
+		if (!s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuImpulse140ON.png", 0, 0), return S_FALSE);
+		s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteON = new CMySprite(s_pdev);
+		if (!s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuGP140ON.png", 0, 0), return S_FALSE);
+		s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteON = new CMySprite(s_pdev);
+		if (!s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuDamp140ON.png", 0, 0), return S_FALSE);
+		//RigidSwitch OFF
+		s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteOFF = new CMySprite(s_pdev);
+		if (!s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuRigid140OFF.png", 0, 0), return S_FALSE);
+		s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF = new CMySprite(s_pdev);
+		if (!s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuImpulse140OFF.png", 0, 0), return S_FALSE);
+		s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteOFF = new CMySprite(s_pdev);
+		if (!s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuGP140OFF.png", 0, 0), return S_FALSE);
+		s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteOFF = new CMySprite(s_pdev);
+		if (!s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuDamp140OFF.png", 0, 0), return S_FALSE);
+
+		s_spretargetsw[SPRETARGETSW_RETARGET].spriteON = new CMySprite(s_pdev);
+		if (!s_spretargetsw[SPRETARGETSW_RETARGET].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spretargetsw[SPRETARGETSW_RETARGET].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateRetarget140ON.png", 0, 0), return S_FALSE);
+		s_spretargetsw[SPRETARGETSW_RETARGET].spriteOFF = new CMySprite(s_pdev);
+		if (!s_spretargetsw[SPRETARGETSW_RETARGET].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spretargetsw[SPRETARGETSW_RETARGET].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateRetarget140OFF.png", 0, 0), return S_FALSE);
+		s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteON = new CMySprite(s_pdev);
+		if (!s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteON) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateLimitEuler140ON.png", 0, 0), return S_FALSE);
+		s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF = new CMySprite(s_pdev);
+		if (!s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateLimitEuler140OFF.png", 0, 0), return S_FALSE);
+
+		{
+			int aimno;
+			for (aimno = 0; aimno < SPAIMBARNUM; aimno++) {
+				s_spaimbar[aimno].spriteON = new CMySprite(s_pdev);
+				if (!s_spaimbar[aimno].spriteON) {
+					_ASSERT(0);
+					PostQuitMessage(1);
+					return S_FALSE;
+				}
+				CallF(s_spaimbar[aimno].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140ON.png", 0, 0), return S_FALSE);
+				s_spaimbar[aimno].spriteOFF = new CMySprite(s_pdev);
+				if (!s_spaimbar[aimno].spriteOFF) {
+					_ASSERT(0);
+					PostQuitMessage(1);
+					return S_FALSE;
+				}
+				CallF(s_spaimbar[aimno].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140OFF.png", 0, 0), return S_FALSE);
+			}
+		}
+		{
+			int aimno;
+			for (aimno = 0; aimno < SPMENU_MAX; aimno++) {
+				s_spmenuaimbar[aimno].spriteON = new CMySprite(s_pdev);
+				if (!s_spmenuaimbar[aimno].spriteON) {
+					_ASSERT(0);
+					PostQuitMessage(1);
+					return S_FALSE;
+				}
+				CallF(s_spmenuaimbar[aimno].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140ON.png", 0, 0), return S_FALSE);
+				s_spmenuaimbar[aimno].spriteOFF = new CMySprite(s_pdev);
+				if (!s_spmenuaimbar[aimno].spriteOFF) {
+					_ASSERT(0);
+					PostQuitMessage(1);
+					return S_FALSE;
+				}
+				CallF(s_spmenuaimbar[aimno].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140OFF.png", 0, 0), return S_FALSE);
+			}
+		}
+
+		{
+			s_spsel3d.spriteON = new CMySprite(s_pdev);
+			if (!s_spsel3d.spriteON) {
+				_ASSERT(0);
+				PostQuitMessage(1);
+				return S_FALSE;
+			}
+			CallF(s_spsel3d.spriteON->Create(pd3dImmediateContext, mpath, L"button101_Select.tif", 0, 0), return S_FALSE);
+			s_spsel3d.spriteOFF = new CMySprite(s_pdev);
+			if (!s_spsel3d.spriteOFF) {
+				_ASSERT(0);
+				PostQuitMessage(1);
+				return S_FALSE;
+			}
+			CallF(s_spsel3d.spriteOFF->Create(pd3dImmediateContext, mpath, L"button101_UnSelect.tif", 0, 0), return S_FALSE);
+		}
+
+
+
+		s_spcam[SPR_CAM_I].sprite = new CMySprite(s_pdev);
+		if (!s_spcam[SPR_CAM_I].sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spcam[SPR_CAM_I].sprite->Create(pd3dImmediateContext, mpath, L"cam_i.gif", 0, 0), return S_FALSE);
+		s_spcam[SPR_CAM_KAI].sprite = new CMySprite(s_pdev);
+		if (!s_spcam[SPR_CAM_KAI].sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spcam[SPR_CAM_KAI].sprite->Create(pd3dImmediateContext, mpath, L"cam_kai.gif", 0, 0), return S_FALSE);
+		s_spcam[SPR_CAM_KAKU].sprite = new CMySprite(s_pdev);
+		if (!s_spcam[SPR_CAM_KAKU].sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spcam[SPR_CAM_KAKU].sprite->Create(pd3dImmediateContext, mpath, L"cam_kaku.gif", 0, 0), return S_FALSE);
+
+		s_sprig[SPRIG_INACTIVE].sprite = new CMySprite(s_pdev);
+		if (!s_sprig[SPRIG_INACTIVE].sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_sprig[SPRIG_INACTIVE].sprite->Create(pd3dImmediateContext, mpath, L"RigOFF.gif", 0, 0), return S_FALSE);
+		s_sprig[SPRIG_ACTIVE].sprite = new CMySprite(s_pdev);
+		if (!s_sprig[SPRIG_ACTIVE].sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_sprig[SPRIG_ACTIVE].sprite->Create(pd3dImmediateContext, mpath, L"RigON.gif", 0, 0), return S_FALSE);
+
+		//s_spbt.sprite = new CMySprite(s_pdev);
+		//_ASSERT(s_spbt.sprite);
+		//CallF(s_spbt.sprite->Create(pd3dImmediateContext, mpath, L"BtApply.png", 0, 0), return S_FALSE);
+
+		s_spmousehere.sprite = new CMySprite(s_pdev);
+		if (!s_spmousehere.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spmousehere.sprite->Create(pd3dImmediateContext, mpath, L"img_l105.png", 0, 0), return S_FALSE);
+
+		{
+			WCHAR pngpath[MAX_PATH];
+			swprintf_s(pngpath, MAX_PATH, L"%simg_l105.png", mpath);
+			//swprintf_s(bmppath, MAX_PATH, L"%simg_l105.bmp", mpath);
+			//g_mouseherebmp = (HBITMAP)::LoadImage(GetModuleHandle(NULL), bmppath, IMAGE_BITMAP, 52, 50, LR_LOADFROMFILE);
+			//_ASSERT(g_mouseherebmp);
+			//g_tranbmp = 0xFF000000;
+			g_mousehereimage = new Gdiplus::Image(pngpath);
+			if (!g_mousehereimage) {
 				_ASSERT(0);
 				PostQuitMessage(1);
 				return S_FALSE;
@@ -5501,950 +6171,283 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* pd3dDevice, const DXGI_SURFAC
 		}
 
 		{
-			s_rigopemark_ringX[rigopemarkno] = new CModel();
-			if (s_rigopemark_ringX[rigopemarkno]) {
-				float rigmult = (float)(rigopemarkno + 1) * 0.5f;
-				CallF(s_rigopemark_ringX[rigopemarkno]->LoadMQO(s_pdev, pd3dImmediateContext,
-					L"..\\Media\\MameMedia\\ringX.mqo", 0, rigmult, 0), return S_FALSE);
-				//CallF(s_rigopemark_ringX[rigopemarkno]->MakeDispObj(), return S_FALSE);
-				s_rigmaterial_ringX[rigopemarkno] = s_rigopemark_ringX[rigopemarkno]->GetMQOMaterialByName("ringred");
-				if (!s_rigmaterial_ringX[rigopemarkno]) {
-					_ASSERT(0);
-					PostQuitMessage(1);
-					return S_FALSE;
-				}
-			}
-			else {
+			WCHAR pngpath[MAX_PATH];
+			swprintf_s(pngpath, MAX_PATH, L"%sMenuAimBar140.png", mpath);
+			//swprintf_s(bmppath, MAX_PATH, L"%simg_l105.bmp", mpath);
+			//g_mouseherebmp = (HBITMAP)::LoadImage(GetModuleHandle(NULL), bmppath, IMAGE_BITMAP, 52, 50, LR_LOADFROMFILE);
+			//_ASSERT(g_mouseherebmp);
+			//g_tranbmp = 0xFF000000;
+			g_menuaimbarimage = new Gdiplus::Image(pngpath);
+			if (!g_menuaimbarimage) {
 				_ASSERT(0);
 				PostQuitMessage(1);
 				return S_FALSE;
 			}
 		}
 
+
+		s_spret2prev.sprite = new CMySprite(s_pdev);
+		if (!s_spret2prev.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spret2prev.sprite->Create(pd3dImmediateContext, mpath, L"img_ret2prev.png", 0, 0), return S_FALSE);
+
+		s_spret2prev2.sprite = new CMySprite(s_pdev);
+		if (!s_spret2prev2.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spret2prev2.sprite->Create(pd3dImmediateContext, mpath, L"img_ret2prev2.png", 0, 0), return S_FALSE);
+
+
+		s_spcplw2w.sprite = new CMySprite(s_pdev);
+		if (!s_spcplw2w.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spcplw2w.sprite->Create(pd3dImmediateContext, mpath, L"BakeLW2W.png", 0, 0), return S_FALSE);
+
+		s_spsmooth.sprite = new CMySprite(s_pdev);
+		if (!s_spsmooth.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spsmooth.sprite->Create(pd3dImmediateContext, mpath, L"SmoothFilter.png", 0, 0), return S_FALSE);
+
+		s_spconstexe.sprite = new CMySprite(s_pdev);
+		if (!s_spconstexe.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spconstexe.sprite->Create(pd3dImmediateContext, mpath, L"Constraint_Execute.png", 0, 0), return S_FALSE);
+		s_spconstrefresh.sprite = new CMySprite(s_pdev);
+		if (!s_spconstrefresh.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spconstrefresh.sprite->Create(pd3dImmediateContext, mpath, L"Constraint_refresh.png", 0, 0), return S_FALSE);
+
+		s_spcopy.sprite = new CMySprite(s_pdev);
+		if (!s_spcopy.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spcopy.sprite->Create(pd3dImmediateContext, mpath, L"CopyButton.gif", 0, 0), return S_FALSE);
+		s_spsymcopy.sprite = new CMySprite(s_pdev);
+		if (!s_spsymcopy.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spsymcopy.sprite->Create(pd3dImmediateContext, mpath, L"SymCopyButton3.png", 0, 0), return S_FALSE);
+		s_sppaste.sprite = new CMySprite(s_pdev);
+		if (!s_sppaste.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_sppaste.sprite->Create(pd3dImmediateContext, mpath, L"PasteButton.gif", 0, 0), return S_FALSE);
+		s_spcopyhistory.sprite = new CMySprite(s_pdev);
+		if (!s_spcopyhistory.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spcopyhistory.sprite->Create(pd3dImmediateContext, mpath, L"CopyHistoryButton.gif", 0, 0), return S_FALSE);
+
+
+		s_spinterpolate.sprite = new CMySprite(s_pdev);
+		if (!s_spinterpolate.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spinterpolate.sprite->Create(pd3dImmediateContext, mpath, L"InterpolateButton.png", 0, 0), return S_FALSE);
+		s_spinit.sprite = new CMySprite(s_pdev);
+		if (!s_spinit.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spinit.sprite->Create(pd3dImmediateContext, mpath, L"InitButton.png", 0, 0), return S_FALSE);
+		s_spscaleinit.sprite = new CMySprite(s_pdev);
+		if (!s_spscaleinit.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spscaleinit.sprite->Create(pd3dImmediateContext, mpath, L"ScaleInitButton.png", 0, 0), return S_FALSE);
+		s_spproperty.sprite = new CMySprite(s_pdev);
+		if (!s_spproperty.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spproperty.sprite->Create(pd3dImmediateContext, mpath, L"PropertyButton.png", 0, 0), return S_FALSE);
+
+		s_spzeroframe.sprite = new CMySprite(s_pdev);
+		if (!s_spzeroframe.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spzeroframe.sprite->Create(pd3dImmediateContext, mpath, L"Edit0FrameButton.png", 0, 0), return S_FALSE);
+		s_spcameradolly.sprite = new CMySprite(s_pdev);
+		if (!s_spcameradolly.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spcameradolly.sprite->Create(pd3dImmediateContext, mpath, L"CameraDollyButton.png", 0, 0), return S_FALSE);
+		s_spmodelposdir.sprite = new CMySprite(s_pdev);
+		if (!s_spmodelposdir.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spmodelposdir.sprite->Create(pd3dImmediateContext, mpath, L"ModelPosDirButton.png", 0, 0), return S_FALSE);
+		s_spmaterialrate.sprite = new CMySprite(s_pdev);
+		if (!s_spmaterialrate.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_spmaterialrate.sprite->Create(pd3dImmediateContext, mpath, L"MaterialRateButton.png", 0, 0), return S_FALSE);
+
+
+
+		s_mousecenteron.sprite = new CMySprite(s_pdev);
+		if (!s_mousecenteron.sprite) {
+			_ASSERT(0);
+			PostQuitMessage(1);
+			return S_FALSE;
+		}
+		CallF(s_mousecenteron.sprite->Create(pd3dImmediateContext, mpath, L"MouseCenterButtonON.png", 0, 0), return S_FALSE);
+
+		///////
+		//s_pdev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		//s_pdev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
+		//s_pdev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+		//s_pdev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+		//s_pdev->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+		//s_pdev->SetRenderState(D3DRS_ALPHAREF, 0x00);
+		//s_pdev->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+
+		D3D11_BLEND_DESC blendDesc;
+		ZeroMemory(&blendDesc, sizeof(blendDesc));
+		blendDesc.AlphaToCoverageEnable = FALSE;
+		blendDesc.IndependentBlendEnable = FALSE;
+		blendDesc.RenderTarget[0].BlendEnable = TRUE;
+		blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+		blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+		//blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_DEST_COLOR;
+
+		blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+		blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+		//blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
+		//blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+		blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+		blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+		if (FAILED(s_pdev->CreateBlendState(&blendDesc, &g_blendState)))
 		{
-			s_rigopemark_ringY[rigopemarkno] = new CModel();
-			if (s_rigopemark_ringY[rigopemarkno]) {
-				float rigmult = (float)(rigopemarkno + 1) * 0.5f;
-				CallF(s_rigopemark_ringY[rigopemarkno]->LoadMQO(s_pdev, pd3dImmediateContext,
-					L"..\\Media\\MameMedia\\ringY.mqo", 0, rigmult, 0), return S_FALSE);
-				//CallF(s_rigopemark_ringY[rigopemarkno]->MakeDispObj(), return S_FALSE);
-				s_rigmaterial_ringY[rigopemarkno] = s_rigopemark_ringY[rigopemarkno]->GetMQOMaterialByName("ringgreen");
-				if (!s_rigmaterial_ringY[rigopemarkno]) {
-					_ASSERT(0);
-					PostQuitMessage(1);
-					return S_FALSE;
-				}
-			}
-			else {
-				_ASSERT(0);
-				PostQuitMessage(1);
-				return S_FALSE;
-			}
-		}
-
-		{
-			s_rigopemark_ringZ[rigopemarkno] = new CModel();
-			if (s_rigopemark_ringZ[rigopemarkno]) {
-				float rigmult = (float)(rigopemarkno + 1) * 0.5f;
-				CallF(s_rigopemark_ringZ[rigopemarkno]->LoadMQO(s_pdev, pd3dImmediateContext,
-					L"..\\Media\\MameMedia\\ringZ.mqo", 0, rigmult, 0), return S_FALSE);
-				//CallF(s_rigopemark_ringZ[rigopemarkno]->MakeDispObj(), return S_FALSE);
-				s_rigmaterial_ringZ[rigopemarkno] = s_rigopemark_ringZ[rigopemarkno]->GetMQOMaterialByName("ringblue");
-				if (!s_rigmaterial_ringZ[rigopemarkno]) {
-					_ASSERT(0);
-					PostQuitMessage(1);
-					return S_FALSE;
-				}
-			}
-			else {
-				_ASSERT(0);
-				PostQuitMessage(1);
-				return S_FALSE;
-			}
-		}
-	}
-	s_matrigmat = ChaVector4(255.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f, 1.0f);
-
-
-	s_bmark = new CModel();
-	if (!s_bmark) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_bmark->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\bonemark.mqo", 0, 1.0f, 0), return S_FALSE);
-	//CallF(s_bmark->MakeDispObj(), return S_FALSE);
-
-
-
-
-	s_ground = new CModel();
-	if (!s_ground) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_ground->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\ground2.mqo", 0, 1.0f, 0), return S_FALSE);
-	//CallF(s_ground->MakeDispObj(), return S_FALSE);
-
-	s_gplane = new CModel();
-	if (!s_gplane) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_gplane->LoadMQO(s_pdev, pd3dImmediateContext, L"..\\Media\\MameMedia\\gplane.mqo", 0, 1.0f, 0), return S_FALSE);
-	//CallF(s_gplane->MakeDispObj(), return S_FALSE);
-	ChaVector3 tra(0.0f, 0.0, 0.0f);
-	ChaVector3 mult(5.0f, 1.0f, 5.0f);
-	CallF(s_gplane->MultDispObj(mult, tra), return S_FALSE);
-
-
-	s_bcircle = new CMySprite(s_pdev);
-	if (!s_bcircle) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-
-	WCHAR path[MAX_PATH];
-	wcscpy_s(path, MAX_PATH, g_basedir);
-	WCHAR* lasten = 0;
-	WCHAR* last2en = 0;
-	lasten = wcsrchr(path, TEXT('\\'));
-	if (!lasten) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	*lasten = 0L;
-	last2en = wcsrchr(path, TEXT('\\'));
-	if (!last2en) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	*last2en = 0L;
-	wcscat_s(path, MAX_PATH, L"\\Media\\MameMedia\\");
-	CallF(s_bcircle->Create(pd3dImmediateContext, path, L"bonecircle.dds", 0, 0), return S_FALSE);
-
-	///////
-	WCHAR mpath[MAX_PATH];
-	wcscpy_s(mpath, MAX_PATH, g_basedir);
-	lasten = 0;
-	last2en = 0;
-	lasten = wcsrchr(mpath, TEXT('\\'));
-	if (!lasten) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	*lasten = 0L;
-	last2en = wcsrchr(mpath, TEXT('\\'));
-	if (!last2en) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	*last2en = 0L;
-	wcscat_s(mpath, MAX_PATH, L"\\Media\\MameMedia\\");
-
-
-
-	if (s_undosprite) {
-		delete s_undosprite;
-		s_undosprite = 0;
-	}
-	s_undosprite = new CUndoSprite();
-	if (!s_undosprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_undosprite->CreateSprites(s_pdev, pd3dImmediateContext, mpath), return S_FALSE);
-
-
-	if (s_fpssprite) {
-		delete s_fpssprite;
-		s_fpssprite = 0;
-	}
-	s_fpssprite = new CFpsSprite();
-	if (!s_fpssprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_fpssprite->CreateSprites(s_pdev, pd3dImmediateContext, mpath), return S_FALSE);
-
-
-
-	s_spundo[0].sprite = new CMySprite(s_pdev);
-	if (!s_spundo[0].sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spundo[0].sprite->Create(pd3dImmediateContext, mpath, L"Undo_1.png", 0, 0), return S_FALSE);
-	s_spundo[1].sprite = new CMySprite(s_pdev);
-	if (!s_spundo[1].sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spundo[1].sprite->Create(pd3dImmediateContext, mpath, L"Redo_1.png", 0, 0), return S_FALSE);
-
-	s_spaxis[0].sprite = new CMySprite(s_pdev);
-	if (!s_spaxis[0].sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spaxis[0].sprite->Create(pd3dImmediateContext, mpath, L"X.gif", 0, 0), return S_FALSE);
-	s_spaxis[1].sprite = new CMySprite(s_pdev);
-	if (!s_spaxis[1].sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spaxis[1].sprite->Create(pd3dImmediateContext, mpath, L"Y.gif", 0, 0), return S_FALSE);
-	s_spaxis[2].sprite = new CMySprite(s_pdev);
-	if (!s_spaxis[2].sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spaxis[2].sprite->Create(pd3dImmediateContext, mpath, L"Z.gif", 0, 0), return S_FALSE);
-
-	//SpriteSwitch RefPos
-	s_sprefpos.spriteON = new CMySprite(s_pdev);
-	if (!s_sprefpos.spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_sprefpos.spriteON->Create(pd3dImmediateContext, mpath, L"RefPosON.gif", 0, 0), return S_FALSE);
-	s_sprefpos.spriteOFF = new CMySprite(s_pdev);
-	if (!s_sprefpos.spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_sprefpos.spriteOFF->Create(pd3dImmediateContext, mpath, L"RefPosOFF.gif", 0, 0), return S_FALSE);
-
-	//SpriteSwitch LimitEul
-	s_splimiteul.spriteON = new CMySprite(s_pdev);
-	if (!s_splimiteul.spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_splimiteul.spriteON->Create(pd3dImmediateContext, mpath, L"LimitEul_ON.png", 0, 0), return S_FALSE);
-	s_splimiteul.spriteOFF = new CMySprite(s_pdev);
-	if (!s_splimiteul.spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_splimiteul.spriteOFF->Create(pd3dImmediateContext, mpath, L"LimitEul_OFF.png", 0, 0), return S_FALSE);
-
-	//SpriteSwitch CameraMode
-	s_spcameramode.spriteON = new CMySprite(s_pdev);
-	if (!s_spcameramode.spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spcameramode.spriteON->Create(pd3dImmediateContext, mpath, L"CamAnimON.png", 0, 0), return S_FALSE);
-	s_spcameramode.spriteOFF = new CMySprite(s_pdev);
-	if (!s_spcameramode.spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spcameramode.spriteOFF->Create(pd3dImmediateContext, mpath, L"CamAnimOFF.png", 0, 0), return S_FALSE);
-
-
-	//SpriteSwitch CameraInheritMode
-	s_spcamerainherit.sprite1 = new CMySprite(s_pdev);
-	if (!s_spcamerainherit.sprite1) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spcamerainherit.sprite1->Create(pd3dImmediateContext, mpath, L"CameraInherit_All.png", 0, 0), return S_FALSE);
-	s_spcamerainherit.sprite2 = new CMySprite(s_pdev);
-	if (!s_spcamerainherit.sprite2) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spcamerainherit.sprite2->Create(pd3dImmediateContext, mpath, L"CameraInherit_CancelNull1.png", 0, 0), return S_FALSE);
-	s_spcamerainherit.sprite3 = new CMySprite(s_pdev);
-	if (!s_spcamerainherit.sprite3) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spcamerainherit.sprite3->Create(pd3dImmediateContext, mpath, L"CameraInherit_CancelNull2.png", 0, 0), return S_FALSE);
-
-
-
-	//SpriteSwitch Scraping
-	s_spscraping.spriteON = new CMySprite(s_pdev);
-	if (!s_spscraping.spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spscraping.spriteON->Create(pd3dImmediateContext, mpath, L"WallScrapingIK_ON.png", 0, 0), return S_FALSE);
-	s_spscraping.spriteOFF = new CMySprite(s_pdev);
-	if (!s_spscraping.spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spscraping.spriteOFF->Create(pd3dImmediateContext, mpath, L"WallScrapingIK_OFF.png", 0, 0), return S_FALSE);
-
-
-	//SpriteSwitch IKMode
-	s_spikmodesw[0].spriteON = new CMySprite(s_pdev);
-	if (!s_spikmodesw[0].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spikmodesw[0].spriteON->Create(pd3dImmediateContext, mpath, L"IKRot2ON.gif", 0, 0), return S_FALSE);
-	s_spikmodesw[0].spriteOFF = new CMySprite(s_pdev);
-	if (!s_spikmodesw[0].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spikmodesw[0].spriteOFF->Create(pd3dImmediateContext, mpath, L"IKRot2OFF.gif", 0, 0), return S_FALSE);
-	s_spikmodesw[1].spriteON = new CMySprite(s_pdev);
-	if (!s_spikmodesw[1].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spikmodesw[1].spriteON->Create(pd3dImmediateContext, mpath, L"IKMove2ON.gif", 0, 0), return S_FALSE);
-	s_spikmodesw[1].spriteOFF = new CMySprite(s_pdev);
-	if (!s_spikmodesw[1].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spikmodesw[1].spriteOFF->Create(pd3dImmediateContext, mpath, L"IKMove2OFF.gif", 0, 0), return S_FALSE);
-	s_spikmodesw[2].spriteON = new CMySprite(s_pdev);
-	if (!s_spikmodesw[2].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spikmodesw[2].spriteON->Create(pd3dImmediateContext, mpath, L"IKScale2ON.gif", 0, 0), return S_FALSE);
-	s_spikmodesw[2].spriteOFF = new CMySprite(s_pdev);
-	if (!s_spikmodesw[2].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spikmodesw[2].spriteOFF->Create(pd3dImmediateContext, mpath, L"IKScale2OFF.gif", 0, 0), return S_FALSE);
-
-
-	//SpriteSwitch ON
-	s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON = new CMySprite(s_pdev);
-	if (!s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_CameraAndIK140ON.png", 0, 0), return S_FALSE);
-	s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteON = new CMySprite(s_pdev);
-	if (!s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispAndLimits140ON.png", 0, 0), return S_FALSE);
-	s_spguisw[SPGUISW_BRUSHPARAMS].spriteON = new CMySprite(s_pdev);
-	if (!s_spguisw[SPGUISW_BRUSHPARAMS].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spguisw[SPGUISW_BRUSHPARAMS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_BrushParams140ON.png", 0, 0), return S_FALSE);
-	s_spguisw[SPGUISW_BULLETPHYSICS].spriteON = new CMySprite(s_pdev);
-	if (!s_spguisw[SPGUISW_BULLETPHYSICS].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140ON.png", 0, 0), return S_FALSE);
-	s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON = new CMySprite(s_pdev);
-	if (!s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_RefPos140ON.png", 0, 0), return S_FALSE);
-	//SpriteSwitch OFF
-	s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF = new CMySprite(s_pdev);
-	if (!s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spguisw[SPGUISW_CAMERA_AND_IK].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_CameraAndIK140OFF.png", 0, 0), return S_FALSE);
-	s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteOFF = new CMySprite(s_pdev);
-	if (!s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spguisw[SPGUISW_DISP_AND_LIMITS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispAndLimits140OFF.png", 0, 0), return S_FALSE);
-	s_spguisw[SPGUISW_BRUSHPARAMS].spriteOFF = new CMySprite(s_pdev);
-	if (!s_spguisw[SPGUISW_BRUSHPARAMS].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spguisw[SPGUISW_BRUSHPARAMS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_BrushParams140OFF.png", 0, 0), return S_FALSE);
-	s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF = new CMySprite(s_pdev);
-	if (!s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spguisw[SPGUISW_BULLETPHYSICS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_BulletPhysics140OFF.png", 0, 0), return S_FALSE);
-	s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF = new CMySprite(s_pdev);
-	if (!s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spguisw[SPGUISW_VSYNC_AND_REFPOS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_RefPos140OFF.png", 0, 0), return S_FALSE);
-
-
-	//Disp ON
-	s_spdispsw[SPDISPSW_LIGHTS].spriteON = new CMySprite(s_pdev);
-	if (!s_spdispsw[SPDISPSW_LIGHTS].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spdispsw[SPDISPSW_LIGHTS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_Lights140ON.png", 0, 0), return S_FALSE);
-	s_spdispsw[SPDISPSW_DISPGROUP].spriteON = new CMySprite(s_pdev);
-	if (!s_spdispsw[SPDISPSW_DISPGROUP].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spdispsw[SPDISPSW_DISPGROUP].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispGroup140ON.png", 0, 0), return S_FALSE);
-	s_spdispsw[SPDISPSW_LIGHTS].spriteOFF = new CMySprite(s_pdev);
-	if (!s_spdispsw[SPDISPSW_LIGHTS].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spdispsw[SPDISPSW_LIGHTS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_Lights140OFF.png", 0, 0), return S_FALSE);
-	s_spdispsw[SPDISPSW_DISPGROUP].spriteOFF = new CMySprite(s_pdev);
-	if (!s_spdispsw[SPDISPSW_DISPGROUP].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spdispsw[SPDISPSW_DISPGROUP].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_DispGroup140OFF.png", 0, 0), return S_FALSE);
-
-
-	//RigidSwitch ON
-	s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteON = new CMySprite(s_pdev);
-	if (!s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuRigid140ON.png", 0, 0), return S_FALSE);
-	s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON = new CMySprite(s_pdev);
-	if (!s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_sprigidsw[SPRIGIDSW_IMPULSE].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuImpulse140ON.png", 0, 0), return S_FALSE);
-	s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteON = new CMySprite(s_pdev);
-	if (!s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuGP140ON.png", 0, 0), return S_FALSE);
-	s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteON = new CMySprite(s_pdev);
-	if (!s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuDamp140ON.png", 0, 0), return S_FALSE);
-	//RigidSwitch OFF
-	s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteOFF = new CMySprite(s_pdev);
-	if (!s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_sprigidsw[SPRIGIDSW_RIGIDPARAMS].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuRigid140OFF.png", 0, 0), return S_FALSE);
-	s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF = new CMySprite(s_pdev);
-	if (!s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_sprigidsw[SPRIGIDSW_IMPULSE].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuImpulse140OFF.png", 0, 0), return S_FALSE);
-	s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteOFF = new CMySprite(s_pdev);
-	if (!s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_sprigidsw[SPRIGIDSW_GROUNDPLANE].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuGP140OFF.png", 0, 0), return S_FALSE);
-	s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteOFF = new CMySprite(s_pdev);
-	if (!s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_sprigidsw[SPRIGIDSW_DAMPANIM].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlate_menuDamp140OFF.png", 0, 0), return S_FALSE);
-
-	s_spretargetsw[SPRETARGETSW_RETARGET].spriteON = new CMySprite(s_pdev);
-	if (!s_spretargetsw[SPRETARGETSW_RETARGET].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spretargetsw[SPRETARGETSW_RETARGET].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateRetarget140ON.png", 0, 0), return S_FALSE);
-	s_spretargetsw[SPRETARGETSW_RETARGET].spriteOFF = new CMySprite(s_pdev);
-	if (!s_spretargetsw[SPRETARGETSW_RETARGET].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spretargetsw[SPRETARGETSW_RETARGET].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateRetarget140OFF.png", 0, 0), return S_FALSE);
-	s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteON = new CMySprite(s_pdev);
-	if (!s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteON) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateLimitEuler140ON.png", 0, 0), return S_FALSE);
-	s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF = new CMySprite(s_pdev);
-	if (!s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spretargetsw[SPRETARGETSW_LIMITEULER].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateLimitEuler140OFF.png", 0, 0), return S_FALSE);
-
-	{
-		int aimno;
-		for (aimno = 0; aimno < SPAIMBARNUM; aimno++) {
-			s_spaimbar[aimno].spriteON = new CMySprite(s_pdev);
-			if (!s_spaimbar[aimno].spriteON) {
-				_ASSERT(0);
-				PostQuitMessage(1);
-				return S_FALSE;
-			}
-			CallF(s_spaimbar[aimno].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140ON.png", 0, 0), return S_FALSE);
-			s_spaimbar[aimno].spriteOFF = new CMySprite(s_pdev);
-			if (!s_spaimbar[aimno].spriteOFF) {
-				_ASSERT(0);
-				PostQuitMessage(1);
-				return S_FALSE;
-			}
-			CallF(s_spaimbar[aimno].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140OFF.png", 0, 0), return S_FALSE);
-		}
-	}
-	{
-		int aimno;
-		for (aimno = 0; aimno < SPMENU_MAX; aimno++) {
-			s_spmenuaimbar[aimno].spriteON = new CMySprite(s_pdev);
-			if (!s_spmenuaimbar[aimno].spriteON) {
-				_ASSERT(0);
-				PostQuitMessage(1);
-				return S_FALSE;
-			}
-			CallF(s_spmenuaimbar[aimno].spriteON->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140ON.png", 0, 0), return S_FALSE);
-			s_spmenuaimbar[aimno].spriteOFF = new CMySprite(s_pdev);
-			if (!s_spmenuaimbar[aimno].spriteOFF) {
-				_ASSERT(0);
-				PostQuitMessage(1);
-				return S_FALSE;
-			}
-			CallF(s_spmenuaimbar[aimno].spriteOFF->Create(pd3dImmediateContext, mpath, L"GUIPlateAim140OFF.png", 0, 0), return S_FALSE);
-		}
-	}
-
-	{
-		s_spsel3d.spriteON = new CMySprite(s_pdev);
-		if (!s_spsel3d.spriteON) {
 			_ASSERT(0);
 			PostQuitMessage(1);
 			return S_FALSE;
 		}
-		CallF(s_spsel3d.spriteON->Create(pd3dImmediateContext, mpath, L"button101_Select.tif", 0, 0), return S_FALSE);
-		s_spsel3d.spriteOFF = new CMySprite(s_pdev);
-		if (!s_spsel3d.spriteOFF) {
-			_ASSERT(0);
-			PostQuitMessage(1);
-			return S_FALSE;
-		}
-		CallF(s_spsel3d.spriteOFF->Create(pd3dImmediateContext, mpath, L"button101_UnSelect.tif", 0, 0), return S_FALSE);
+		/*
+		FLOAT blendFactor[4] = { D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO };
+		g_context->OMSetBlendState(g_blendMode[BlendMode::NONE]->GetBlendState(), blendFactor, 0xffffffff);
+		*/
+
+		D3D11_DEPTH_STENCIL_DESC dsDescNormal;
+		ZeroMemory(&dsDescNormal, sizeof(D3D11_DEPTH_STENCIL_DESC));
+		// Depth test parameters
+		dsDescNormal.DepthEnable = true;
+		dsDescNormal.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		dsDescNormal.DepthFunc = D3D11_COMPARISON_LESS;
+		// Stencil test parameters
+		dsDescNormal.StencilEnable = true;
+		dsDescNormal.StencilReadMask = 0xFF;
+		dsDescNormal.StencilWriteMask = 0xFF;
+		// Stencil operations if pixel is front-facing
+		dsDescNormal.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsDescNormal.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+		dsDescNormal.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		dsDescNormal.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+		// Stencil operations if pixel is back-facing
+		dsDescNormal.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsDescNormal.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+		dsDescNormal.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		dsDescNormal.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+		// Create depth stencil state
+		//ID3D11DepthStencilState * pDSState;
+		s_pdev->CreateDepthStencilState(&dsDescNormal, &g_pDSStateZCmp);
+
+
+		D3D11_DEPTH_STENCIL_DESC dsDescZCmpAlways;
+		ZeroMemory(&dsDescZCmpAlways, sizeof(D3D11_DEPTH_STENCIL_DESC));
+		// Depth test parameters
+		dsDescZCmpAlways.DepthEnable = false;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		dsDescZCmpAlways.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+		dsDescZCmpAlways.DepthFunc = D3D11_COMPARISON_LESS;
+		// Stencil test parameters
+		dsDescZCmpAlways.StencilEnable = true;
+		dsDescZCmpAlways.StencilReadMask = 0xFF;
+		dsDescZCmpAlways.StencilWriteMask = 0xFF;
+		// Stencil operations if pixel is front-facing
+		dsDescZCmpAlways.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsDescZCmpAlways.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+		dsDescZCmpAlways.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		dsDescZCmpAlways.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+		// Stencil operations if pixel is back-facing
+
+		dsDescZCmpAlways.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+		dsDescZCmpAlways.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+		dsDescZCmpAlways.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+		dsDescZCmpAlways.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+		// Create depth stencil state
+		//ID3D11DepthStencilState * pDSState;
+		s_pdev->CreateDepthStencilState(&dsDescZCmpAlways, &g_pDSStateZCmpAlways);
+
+
+		pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
+		g_zcmpalways = false;
+
+
+		WCHAR initialdir[MAX_PATH] = { 0L };
+		wcscpy_s(initialdir, MAX_PATH, g_basedir);
+		wcscat_s(initialdir, MAX_PATH, L"..\\Test\\");
+		SetCurrentDirectoryW(initialdir);
+
+
+
+		////check
+		//double test0 = 0.0;
+		//double test1 = 1.0;
+		//double test0add01 = (double)((int)(test0 + 0.1));
+		//double test0add049 = (double)((int)(test0 + 0.49));
+		//double test1add01 = (double)((int)(test1 + 0.1));
+		//double test1add049 = (double)((int)(test1 + 0.49));
+		//WCHAR strtest[1024] = { 0L };
+		//swprintf_s(strtest, 1024, L"test0add01 %f, test0add049 %f, test1add01 %f, test1add049 %f",
+		//	test0add01, test0add049, test1add01, test1add049);
+		//::MessageBox(NULL, strtest, L"Check", MB_OK);
+
+		return S_OK;
 	}
-
-
-
-	s_spcam[SPR_CAM_I].sprite = new CMySprite(s_pdev);
-	if (!s_spcam[SPR_CAM_I].sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
+	else {
+	_ASSERT(0);
+	return 1;
 	}
-	CallF(s_spcam[SPR_CAM_I].sprite->Create(pd3dImmediateContext, mpath, L"cam_i.gif", 0, 0), return S_FALSE);
-	s_spcam[SPR_CAM_KAI].sprite = new CMySprite(s_pdev);
-	if (!s_spcam[SPR_CAM_KAI].sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spcam[SPR_CAM_KAI].sprite->Create(pd3dImmediateContext, mpath, L"cam_kai.gif", 0, 0), return S_FALSE);
-	s_spcam[SPR_CAM_KAKU].sprite = new CMySprite(s_pdev);
-	if (!s_spcam[SPR_CAM_KAKU].sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spcam[SPR_CAM_KAKU].sprite->Create(pd3dImmediateContext, mpath, L"cam_kaku.gif", 0, 0), return S_FALSE);
-
-	s_sprig[SPRIG_INACTIVE].sprite = new CMySprite(s_pdev);
-	if (!s_sprig[SPRIG_INACTIVE].sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_sprig[SPRIG_INACTIVE].sprite->Create(pd3dImmediateContext, mpath, L"RigOFF.gif", 0, 0), return S_FALSE);
-	s_sprig[SPRIG_ACTIVE].sprite = new CMySprite(s_pdev);
-	if (!s_sprig[SPRIG_ACTIVE].sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_sprig[SPRIG_ACTIVE].sprite->Create(pd3dImmediateContext, mpath, L"RigON.gif", 0, 0), return S_FALSE);
-
-	//s_spbt.sprite = new CMySprite(s_pdev);
-	//_ASSERT(s_spbt.sprite);
-	//CallF(s_spbt.sprite->Create(pd3dImmediateContext, mpath, L"BtApply.png", 0, 0), return S_FALSE);
-
-	s_spmousehere.sprite = new CMySprite(s_pdev);
-	if (!s_spmousehere.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spmousehere.sprite->Create(pd3dImmediateContext, mpath, L"img_l105.png", 0, 0), return S_FALSE);
-
-	{
-		WCHAR pngpath[MAX_PATH];
-		swprintf_s(pngpath, MAX_PATH, L"%simg_l105.png", mpath);
-		//swprintf_s(bmppath, MAX_PATH, L"%simg_l105.bmp", mpath);
-		//g_mouseherebmp = (HBITMAP)::LoadImage(GetModuleHandle(NULL), bmppath, IMAGE_BITMAP, 52, 50, LR_LOADFROMFILE);
-		//_ASSERT(g_mouseherebmp);
-		//g_tranbmp = 0xFF000000;
-		g_mousehereimage = new Gdiplus::Image(pngpath);
-		if (!g_mousehereimage) {
-			_ASSERT(0);
-			PostQuitMessage(1);
-			return S_FALSE;
-		}
-	}
-
-	{
-		WCHAR pngpath[MAX_PATH];
-		swprintf_s(pngpath, MAX_PATH, L"%sMenuAimBar140.png", mpath);
-		//swprintf_s(bmppath, MAX_PATH, L"%simg_l105.bmp", mpath);
-		//g_mouseherebmp = (HBITMAP)::LoadImage(GetModuleHandle(NULL), bmppath, IMAGE_BITMAP, 52, 50, LR_LOADFROMFILE);
-		//_ASSERT(g_mouseherebmp);
-		//g_tranbmp = 0xFF000000;
-		g_menuaimbarimage = new Gdiplus::Image(pngpath);
-		if (!g_menuaimbarimage) {
-			_ASSERT(0);
-			PostQuitMessage(1);
-			return S_FALSE;
-		}
-	}
-
-
-	s_spret2prev.sprite = new CMySprite(s_pdev);
-	if (!s_spret2prev.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spret2prev.sprite->Create(pd3dImmediateContext, mpath, L"img_ret2prev.png", 0, 0), return S_FALSE);
-
-	s_spret2prev2.sprite = new CMySprite(s_pdev);
-	if (!s_spret2prev2.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spret2prev2.sprite->Create(pd3dImmediateContext, mpath, L"img_ret2prev2.png", 0, 0), return S_FALSE);
-
-
-	s_spcplw2w.sprite = new CMySprite(s_pdev);
-	if (!s_spcplw2w.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spcplw2w.sprite->Create(pd3dImmediateContext, mpath, L"BakeLW2W.png", 0, 0), return S_FALSE);
-
-	s_spsmooth.sprite = new CMySprite(s_pdev);
-	if (!s_spsmooth.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spsmooth.sprite->Create(pd3dImmediateContext, mpath, L"SmoothFilter.png", 0, 0), return S_FALSE);
-
-	s_spconstexe.sprite = new CMySprite(s_pdev);
-	if (!s_spconstexe.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spconstexe.sprite->Create(pd3dImmediateContext, mpath, L"Constraint_Execute.png", 0, 0), return S_FALSE);
-	s_spconstrefresh.sprite = new CMySprite(s_pdev);
-	if (!s_spconstrefresh.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spconstrefresh.sprite->Create(pd3dImmediateContext, mpath, L"Constraint_refresh.png", 0, 0), return S_FALSE);
-
-	s_spcopy.sprite = new CMySprite(s_pdev);
-	if (!s_spcopy.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spcopy.sprite->Create(pd3dImmediateContext, mpath, L"CopyButton.gif", 0, 0), return S_FALSE);
-	s_spsymcopy.sprite = new CMySprite(s_pdev);
-	if (!s_spsymcopy.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spsymcopy.sprite->Create(pd3dImmediateContext, mpath, L"SymCopyButton3.png", 0, 0), return S_FALSE);
-	s_sppaste.sprite = new CMySprite(s_pdev);
-	if (!s_sppaste.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_sppaste.sprite->Create(pd3dImmediateContext, mpath, L"PasteButton.gif", 0, 0), return S_FALSE);
-	s_spcopyhistory.sprite = new CMySprite(s_pdev);
-	if (!s_spcopyhistory.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spcopyhistory.sprite->Create(pd3dImmediateContext, mpath, L"CopyHistoryButton.gif", 0, 0), return S_FALSE);
-
-
-	s_spinterpolate.sprite = new CMySprite(s_pdev);
-	if (!s_spinterpolate.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spinterpolate.sprite->Create(pd3dImmediateContext, mpath, L"InterpolateButton.png", 0, 0), return S_FALSE);
-	s_spinit.sprite = new CMySprite(s_pdev);
-	if (!s_spinit.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spinit.sprite->Create(pd3dImmediateContext, mpath, L"InitButton.png", 0, 0), return S_FALSE);
-	s_spscaleinit.sprite = new CMySprite(s_pdev);
-	if (!s_spscaleinit.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spscaleinit.sprite->Create(pd3dImmediateContext, mpath, L"ScaleInitButton.png", 0, 0), return S_FALSE);
-	s_spproperty.sprite = new CMySprite(s_pdev);
-	if (!s_spproperty.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spproperty.sprite->Create(pd3dImmediateContext, mpath, L"PropertyButton.png", 0, 0), return S_FALSE);
-
-	s_spzeroframe.sprite = new CMySprite(s_pdev);
-	if (!s_spzeroframe.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spzeroframe.sprite->Create(pd3dImmediateContext, mpath, L"Edit0FrameButton.png", 0, 0), return S_FALSE);
-	s_spcameradolly.sprite = new CMySprite(s_pdev);
-	if (!s_spcameradolly.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spcameradolly.sprite->Create(pd3dImmediateContext, mpath, L"CameraDollyButton.png", 0, 0), return S_FALSE);
-	s_spmodelposdir.sprite = new CMySprite(s_pdev);
-	if (!s_spmodelposdir.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spmodelposdir.sprite->Create(pd3dImmediateContext, mpath, L"ModelPosDirButton.png", 0, 0), return S_FALSE);
-	s_spmaterialrate.sprite = new CMySprite(s_pdev);
-	if (!s_spmaterialrate.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_spmaterialrate.sprite->Create(pd3dImmediateContext, mpath, L"MaterialRateButton.png", 0, 0), return S_FALSE);
-
-
-
-	s_mousecenteron.sprite = new CMySprite(s_pdev);
-	if (!s_mousecenteron.sprite) {
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	CallF(s_mousecenteron.sprite->Create(pd3dImmediateContext, mpath, L"MouseCenterButtonON.png", 0, 0), return S_FALSE);
-
-	///////
-	//s_pdev->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	//s_pdev->SetRenderState(D3DRS_BLENDOP, D3DBLENDOP_ADD);
-	//s_pdev->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	//s_pdev->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	//s_pdev->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
-	//s_pdev->SetRenderState(D3DRS_ALPHAREF, 0x00);
-	//s_pdev->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
-
-	D3D11_BLEND_DESC blendDesc;
-	ZeroMemory(&blendDesc, sizeof(blendDesc));
-	blendDesc.AlphaToCoverageEnable = FALSE;
-	blendDesc.IndependentBlendEnable = FALSE;
-	blendDesc.RenderTarget[0].BlendEnable = TRUE;
-	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-	//blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_DEST_COLOR;
-
-	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-	//blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA;
-	//blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
-	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-	if (FAILED(s_pdev->CreateBlendState(&blendDesc, &g_blendState)))
-	{
-		_ASSERT(0);
-		PostQuitMessage(1);
-		return S_FALSE;
-	}
-	/*
-	FLOAT blendFactor[4] = { D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO, D3D11_BLEND_ZERO };
-	g_context->OMSetBlendState(g_blendMode[BlendMode::NONE]->GetBlendState(), blendFactor, 0xffffffff);
-	*/
-
-	D3D11_DEPTH_STENCIL_DESC dsDescNormal;
-	ZeroMemory(&dsDescNormal, sizeof(D3D11_DEPTH_STENCIL_DESC));
-	// Depth test parameters
-	dsDescNormal.DepthEnable = true;
-	dsDescNormal.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	dsDescNormal.DepthFunc = D3D11_COMPARISON_LESS;
-	// Stencil test parameters
-	dsDescNormal.StencilEnable = true;
-	dsDescNormal.StencilReadMask = 0xFF;
-	dsDescNormal.StencilWriteMask = 0xFF;
-	// Stencil operations if pixel is front-facing
-	dsDescNormal.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	dsDescNormal.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-	dsDescNormal.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	dsDescNormal.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	// Stencil operations if pixel is back-facing
-	dsDescNormal.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	dsDescNormal.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-	dsDescNormal.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	dsDescNormal.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	// Create depth stencil state
-	//ID3D11DepthStencilState * pDSState;
-	s_pdev->CreateDepthStencilState(&dsDescNormal, &g_pDSStateZCmp);
-
-
-	D3D11_DEPTH_STENCIL_DESC dsDescZCmpAlways;
-	ZeroMemory(&dsDescZCmpAlways, sizeof(D3D11_DEPTH_STENCIL_DESC));
-	// Depth test parameters
-	dsDescZCmpAlways.DepthEnable = false;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	dsDescZCmpAlways.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	dsDescZCmpAlways.DepthFunc = D3D11_COMPARISON_LESS;
-	// Stencil test parameters
-	dsDescZCmpAlways.StencilEnable = true;
-	dsDescZCmpAlways.StencilReadMask = 0xFF;
-	dsDescZCmpAlways.StencilWriteMask = 0xFF;
-	// Stencil operations if pixel is front-facing
-	dsDescZCmpAlways.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	dsDescZCmpAlways.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
-	dsDescZCmpAlways.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	dsDescZCmpAlways.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	// Stencil operations if pixel is back-facing
-
-	dsDescZCmpAlways.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
-	dsDescZCmpAlways.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
-	dsDescZCmpAlways.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
-	dsDescZCmpAlways.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
-	// Create depth stencil state
-	//ID3D11DepthStencilState * pDSState;
-	s_pdev->CreateDepthStencilState(&dsDescZCmpAlways, &g_pDSStateZCmpAlways);
-
-
-	pd3dImmediateContext->OMSetDepthStencilState(g_pDSStateZCmp, 1);
-	g_zcmpalways = false;
-
-
-	WCHAR initialdir[MAX_PATH] = { 0L };
-	wcscpy_s(initialdir, MAX_PATH, g_basedir);
-	wcscat_s(initialdir, MAX_PATH, L"..\\Test\\");
-	SetCurrentDirectoryW(initialdir);
-
-
-
-	////check
-	//double test0 = 0.0;
-	//double test1 = 1.0;
-	//double test0add01 = (double)((int)(test0 + 0.1));
-	//double test0add049 = (double)((int)(test0 + 0.49));
-	//double test1add01 = (double)((int)(test1 + 0.1));
-	//double test1add049 = (double)((int)(test1 + 0.49));
-	//WCHAR strtest[1024] = { 0L };
-	//swprintf_s(strtest, 1024, L"test0add01 %f, test0add049 %f, test1add01 %f, test1add049 %f",
-	//	test0add01, test0add049, test1add01, test1add049);
-	//::MessageBox(NULL, strtest, L"Check", MB_OK);
-
-
-
-
-
-
-
-	return S_OK;
 }
 
 
@@ -6513,6 +6516,12 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* pd3dDevice, IDXGISwapChai
 	const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc, void* pUserContext)
 {
 	HRESULT hr;
+
+
+	//if (g_endappflag != 0) {
+	//	return S_OK;
+	//}
+
 
 	V_RETURN(g_DialogResourceManager.OnD3D11ResizedSwapChain(pd3dDevice, pBackBufferSurfaceDesc));
 	//V_RETURN(g_SettingsDlg.OnD3D11ResizedSwapChain(pd3dDevice, pBackBufferSurfaceDesc));
@@ -6940,7 +6949,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 
 	g_DialogResourceManager.OnD3D11DestroyDevice();
 	//g_SettingsDlg.OnD3D11DestroyDevice();
-	CDXUTDirectionWidget::StaticOnD3D11DestroyDevice();
+	CDXUTDirectionWidget::StaticOnD3D11DestroyDevice();//!!!!!!!!!!!
 	DXUTGetGlobalResourceCache().OnDestroyDevice();
 	SAFE_DELETE(g_pTxtHelper);
 
@@ -6949,6 +6958,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	//SAFE_RELEASE(g_pVertexLayout);
 	//g_Mesh10.Destroy();
 
+	
 	SAFE_RELEASE(g_pEffect);
 	SAFE_RELEASE(g_blendState);//!!!!!
 
@@ -17148,7 +17158,16 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				//#####################################
 				g_tmpmqopath[0] = 0L;
 				wfilename[0] = 0L;
-				ofn.lpstrInitialDir = g_basedir;
+				//ofn.lpstrInitialDir = g_basedir;
+
+				//2023/10/02 １つ上のディレクトリに
+				WCHAR waFolderPath[MAX_PATH];
+				wcscpy_s(waFolderPath, MAX_PATH, g_basedir);
+				WCHAR* lasten = wcsrchr(waFolderPath, TEXT('\\'));
+				if (lasten) {
+					*lasten = 0L;
+				}
+				ofn.lpstrInitialDir = waFolderPath;
 				ofn.lpstrFile = wfilename;
 
 				if (GetOpenFileNameW(&ofn) == IDOK) {
@@ -38804,9 +38823,9 @@ LRESULT CALLBACK MainWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 
 	case WM_DESTROY:
-		//PostQuitMessage(0);
-		//return 0;
-		DXUTShutdown(0);//2023/09/23 ここで解放処理を呼んでも　DirectX11の遅延解放のため？VisualStudioのログにデバイスのAlive情報は出る
+		PostQuitMessage(0);
+		return 0;
+		//DXUTShutdown(0);//2023/09/23 ここで解放処理を呼んでも　DirectX11の遅延解放のため？VisualStudioのログにデバイスのAlive情報は出る
 		break;
 	case WM_CREATE:
 		InitializeMainWindow((CREATESTRUCT*)lParam);
