@@ -1606,26 +1606,35 @@ void s_dummyfunc()
 			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++){
 				//if (*plItr && (*plItr)->getParentWindow() && !((*plItr)->getParentWindow()->getDoneFlag())) {
 				if (*plItr) {
-					WindowSize partsSize = (*plItr)->getSize();
-					int tmpPosX = e.localX - (*plItr)->getPos().x;
-					int tmpPosY = e.localY - (*plItr)->getPos().y;
-					//if (0 <= tmpPosX && tmpPosX<partsSize.x &&
-					//	0 <= tmpPosY && tmpPosY<partsSize.y){
 
-					MouseEvent mouseEvent;
-					mouseEvent.globalX = e.globalX;
-					mouseEvent.globalY = e.globalY;
-					mouseEvent.localX = tmpPosX;
-					mouseEvent.localY = tmpPosY;
-					mouseEvent.altKey = e.altKey;
-					mouseEvent.shiftKey = e.shiftKey;
-					mouseEvent.ctrlKey = e.ctrlKey;
-					mouseEvent.wheeldelta = e.wheeldelta;
+					WindowPos chkpos = (*plItr)->getPos();
+					WindowSize chksize = (*plItr)->getSize();
+					//############################################################
+					//2023/10/03 マウス位置が子供ウインドウ内部にある場合だけ処理
+					//############################################################
+					if ((e.localX >= chkpos.x) && (e.localX <= (chkpos.x + chksize.x)) &&
+						(e.localY >= chkpos.y) && (e.localY <= (chkpos.y + chksize.y))) {
 
-					(*plItr)->onMouseWheel(mouseEvent);
-					//setDoneFlag(1);
-					//return;
-				//}
+						//WindowSize partsSize = (*plItr)->getSize();
+						//int tmpPosX = e.localX - (*plItr)->getPos().x;
+						//int tmpPosY = e.localY - (*plItr)->getPos().y;
+						////if (0 <= tmpPosX && tmpPosX<partsSize.x &&
+						////	0 <= tmpPosY && tmpPosY<partsSize.y){
+
+						MouseEvent mouseEvent;
+						mouseEvent.globalX = e.globalX;
+						mouseEvent.globalY = e.globalY;
+						mouseEvent.localX = e.localX - chkpos.x;//!!!!
+						mouseEvent.localY = e.localY - chkpos.y;//!!!!
+						mouseEvent.altKey = e.altKey;
+						mouseEvent.shiftKey = e.shiftKey;
+						mouseEvent.ctrlKey = e.ctrlKey;
+						mouseEvent.wheeldelta = e.wheeldelta;
+
+						(*plItr)->onMouseWheel(mouseEvent);
+						//setDoneFlag(1);
+						//return;
+					}
 				}
 			}
 
@@ -1676,6 +1685,7 @@ void s_dummyfunc()
 			std::list<OrgWindowParts*>::iterator plItr;
 			for ( plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
 				if (*plItr) {
+
 					MouseEvent mouseEvent;
 					mouseEvent.globalX = e.globalX;
 					mouseEvent.globalY = e.globalY;
@@ -4019,7 +4029,7 @@ void s_dummyfunc()
 			drag=false;
 			isslider = true;//!!!!!!
 			//clickpos = WindowPos(0, 0);
-			diffclickcenter = 0;//クリック位置の　つまみ中央からのずれ
+			diffclickcenter = 0;//クリック位置の　ボタン中央からのずれ
 		}
 
 		//////////////////////////// Method //////////////////////////////
@@ -4048,12 +4058,20 @@ void s_dummyfunc()
 			MoveToEx(hdcM->hDC, pos2x,pos2y+1, NULL);
 			LineTo(hdcM->hDC,   pos2x,pos2y-2);
 
-			//つまみ
-			int tumamiPosX= pos1x+ (int)( (value-minValue)*(float)(pos2x-pos1x)/(maxValue-minValue)+ 0.5f );
-			pos1x= tumamiPosX-1;
-			pos1y= pos1y-AXIS_SIZE_Y/2;
-			pos2x= tumamiPosX+1;
-			pos2y= pos1y+AXIS_SIZE_Y;
+			{//2023/10/03追加 CenterBar
+				int col1 = 127;
+				hdcM->setPenAndBrush(RGB(col1, col1, col1), RGB(col1, col1, col1));
+				int BarWidth = 1;
+				Rectangle(hdcM->hDC, pos1x, pos1y - BarWidth, pos2x, pos1y + BarWidth);
+			}
+
+
+			//ボタン
+			int buttonPosX = pos1x + (int)( (value-minValue)*(float)(pos2x-pos1x)/(maxValue-minValue)+ 0.5f );
+			//pos1x= buttonPosX-1;
+			//pos1y= pos1y-AXIS_SIZE_Y/2;
+			//pos2x= buttonPosX+1;
+			//pos2y= pos1y+AXIS_SIZE_Y;
 			//hdcM->setPenAndBrush(RGB(240,240,240),RGB(baseColor.r,baseColor.g,baseColor.b));
 			//Rectangle(hdcM->hDC,pos1x,pos1y,pos2x+1,pos2y+1);
 			//hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
@@ -4065,12 +4083,12 @@ void s_dummyfunc()
 			{//2023/10/03
 				int col0 = 240;
 				int col1 = 127;
-				hdcM->setPenAndBrush(RGB(col1, col1, col1), RGB(col1, col1, col1));
-				Ellipse(hdcM->hDC, pos1x - THUMB_SIZE, pos1y - THUMB_SIZE, pos1x + THUMB_SIZE, pos1y + THUMB_SIZE);
+				hdcM->setPenAndBrush(RGB(col0, col0, col0), RGB(col0, col0, col0));
+				Ellipse(hdcM->hDC, buttonPosX - THUMB_SIZE, pos1y - THUMB_SIZE, buttonPosX + THUMB_SIZE, pos1y + THUMB_SIZE);
 				//hdcM->setPenAndBrush(RGB(0, 0, 0), RGB(0, 0, 0));
-				//Ellipse(hdcM->hDC, pos1x - (THUMB_SIZE - 2), pos1y - (THUMB_SIZE - 2), pos1x + (THUMB_SIZE - 2), pos1y + (THUMB_SIZE - 2));
-				//hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
-				//Ellipse(hdcM->hDC, pos1x - (THUMB_SIZE - 4), pos1y - (THUMB_SIZE - 4), pos1x + (THUMB_SIZE - 4), pos1y + (THUMB_SIZE - 4));
+				//Ellipse(hdcM->hDC, buttonPosX - (THUMB_SIZE - 1), pos1y - (THUMB_SIZE - 1), buttonPosX + (THUMB_SIZE - 1), pos1y + (THUMB_SIZE - 1));
+				//hdcM->setPenAndBrush(RGB(col1, col1, col1), RGB(col1, col1, col1));
+				//Ellipse(hdcM->hDC, buttonPosX - (THUMB_SIZE - 2), pos1y - (THUMB_SIZE - 2), buttonPosX + (THUMB_SIZE - 2), pos1y + (THUMB_SIZE - 2));
 			}
 
 
@@ -4141,8 +4159,8 @@ void s_dummyfunc()
 					{//2023/10/03
 							int pos1x = pos.x + AXIS_POS_X;
 							int pos2x = pos.x + size.x - LABEL_SIZE_X;
-							int tumamiCenter = pos1x + (int)((value - minValue) * (float)(pos2x - pos1x) / (maxValue - minValue) + 0.5f);
-							diffclickcenter = e.localX - tumamiCenter;//クリック位置の　つまみ中央からのずれ
+							int buttonCenter = pos1x + (int)((value - minValue) * (float)(pos2x - pos1x) / (maxValue - minValue) + 0.5f);
+							diffclickcenter = e.localX - buttonCenter;//クリック位置の　ボタン中央からのずれ
 					}
 
 					drag = true;
@@ -4170,7 +4188,7 @@ void s_dummyfunc()
 
 					//setValue(minValue + (maxValue - minValue) * (float)tmpPos.x / (float)(size.x - AXIS_POS_X - LABEL_SIZE_X));
 
-					{//2023/10/03 つまみのクリック位置を起点にして　つまみを動かす
+					{//2023/10/03 ボタンのクリック位置を起点にして　ボタンを動かす
 						setValue(minValue + (maxValue - minValue) * (float)(tmpPos.x - diffclickcenter) / (float)(size.x - AXIS_POS_X - LABEL_SIZE_X));
 					}
 
@@ -4185,6 +4203,46 @@ void s_dummyfunc()
 				}
 			}
 		}
+
+		virtual void onMouseWheel(const MouseEvent& e) {//2023/10/03
+
+			//if ((e.localX >= pos.x) && (e.localX <= (pos.x + size.x)) && 
+			//	(e.localY >= pos.y) && (e.localY <= (pos.y + size.y))) {
+
+			//onMouseWheelのe.localX, localYは pos.x, pos.yを引いてから渡されてくる
+			bool undercapturing = false;//SetCaptureはparentwindowに対して行われる　キャプチャーするべきsliderかどうかの印
+			if ((e.localX >= 0) && (e.localX <= size.x) && 
+				(e.localY >= 0) && (e.localY <= size.y)) {
+				undercapturing = true;
+			}
+			else {
+				undercapturing = false;
+			}
+
+			if (undercapturing) {
+				int wheeldelta = e.wheeldelta;
+				double pixdelta = 0.0;
+				if (wheeldelta > 0) {
+					pixdelta = 1.0;
+				}
+				else if (wheeldelta < 0) {
+					pixdelta = -1.0;
+				}
+				else {
+					pixdelta = 0.0;
+				}
+
+				int pos1x = pos.x + AXIS_POS_X;
+				int pos2x = pos.x + size.x - LABEL_SIZE_X;
+				//double buttonCenter = pixdelta + pos1x + (value - minValue) * (double)(pos2x - pos1x) / (maxValue - minValue) + 0.5;
+				double buttonCenter = pixdelta + (value - minValue) * (double)(pos2x - pos1x) / (maxValue - minValue);
+
+				double newvalue = minValue + (maxValue - minValue) * buttonCenter / (double)(size.x - AXIS_POS_X - LABEL_SIZE_X);
+				setValue(newvalue);
+			}
+		}
+
+
 
 		/////////////////////////// Accessor /////////////////////////////
 		//	Accessor : maxValue
@@ -4233,7 +4291,7 @@ void s_dummyfunc()
 		static const int AXIS_SIZE_Y= 10;
 		static const int THUMB_SIZE = 5;
 
-		int diffclickcenter;// つまみのクリック位置を起点にして　つまみを動かす
+		int diffclickcenter;// ボタンのクリック位置を起点にして　ボタンを動かす
 	};
 
 	///<summary>
