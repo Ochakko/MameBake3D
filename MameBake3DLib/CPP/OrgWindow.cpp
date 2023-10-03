@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 
 #include <crtdbg.h>
 #include <OrgWindow.h>
@@ -23,7 +23,7 @@ namespace OrgWinGUI{
 
 	////////////////----------------------------------------////////////////
 	////////////////										////////////////
-	////////////////		ƒEƒBƒ“ƒhƒE“à•”•iƒNƒ‰ƒX			////////////////
+	////////////////		ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“ã‚¯ãƒ©ã‚¹			////////////////
 	////////////////										////////////////
 	////////////////----------------------------------------////////////////
 
@@ -62,9 +62,9 @@ namespace OrgWinGUI{
 
 		//		//PAINTSTRUCT ps;
 		//		//HDC hdc = BeginPaint(hWnd, &ps);
-		//		// ƒƒ‚ƒŠƒfƒoƒCƒXƒRƒ“ƒeƒLƒXƒg‚ğì¬‚·‚é
+		//		// ãƒ¡ãƒ¢ãƒªãƒ‡ãƒã‚¤ã‚¹ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚’ä½œæˆã™ã‚‹
 		//		HDC hCompatDC = CreateCompatibleDC(hdcM.hDC);
-		//		// ƒ[ƒh‚µ‚½ƒrƒbƒgƒ}ƒbƒv‚ğ‘I‘ğ‚·‚é
+		//		// ãƒ­ãƒ¼ãƒ‰ã—ãŸãƒ“ãƒƒãƒˆãƒãƒƒãƒ—ã‚’é¸æŠã™ã‚‹
 		//		HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
 		//		BITMAP bmp;
 		//		GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
@@ -86,9 +86,9 @@ namespace OrgWinGUI{
 		//		::ScreenToClient(getHWnd(), &mousepoint);
 		//		PAINTSTRUCT ps;
 		//		HDC hdc = BeginPaint(getHWnd(), &ps);
-		//		// ƒƒ‚ƒŠƒfƒoƒCƒXƒRƒ“ƒeƒLƒXƒg‚ğì¬‚·‚é
+		//		// ãƒ¡ãƒ¢ãƒªãƒ‡ãƒã‚¤ã‚¹ã‚³ãƒ³ãƒ†ã‚­ã‚¹ãƒˆã‚’ä½œæˆã™ã‚‹
 		//		HDC hCompatDC = CreateCompatibleDC(hdc);
-		//		// ƒ[ƒh‚µ‚½ƒrƒbƒgƒ}ƒbƒv‚ğ‘I‘ğ‚·‚é
+		//		// ãƒ­ãƒ¼ãƒ‰ã—ãŸãƒ“ãƒƒãƒˆãƒãƒƒãƒ—ã‚’é¸æŠã™ã‚‹
 		//		HBITMAP hPrevBitmap = (HBITMAP)SelectObject(hCompatDC, g_mouseherebmp);
 		//		BITMAP bmp;
 		//		GetObject(g_mouseherebmp, sizeof(BITMAP), &bmp);
@@ -153,7 +153,7 @@ namespace OrgWinGUI{
 		//	return;
 		//}
 
-		//˜g‚ğ‘‚­
+		//æ ã‚’æ›¸ã
 		if (hdcM) {
 			int centerPos = getCenterLinePos();
 			hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
@@ -180,7 +180,7 @@ namespace OrgWinGUI{
 
 
 
-			//‘S‚Ä‚Ì“à•”ƒp[ƒc‚ğ•`‰æ
+			//å…¨ã¦ã®å†…éƒ¨ãƒ‘ãƒ¼ãƒ„ã‚’æç”»
 			int hoststartx;
 			int hostendx;
 			int hoststarty;
@@ -207,9 +207,9 @@ namespace OrgWinGUI{
 						(*itr)->draw();
 					}
 					else {
-						//ƒXƒNƒ[ƒ‹‚ÅŒ©Ø‚ê‚½ê‡‚Í•`‰æ‚µ‚È‚¢
+						//ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ã§è¦‹åˆ‡ã‚ŒãŸå ´åˆã¯æç”»ã—ãªã„
 						if (clientpos.y > hostendy) {
-							//Œã‘±‚Ìparts‚ÌY‚ÍX‚É‘å‚«‚¢‚Í‚¸‚È‚Ì‚Å@‚‘¬‰»‚Ì‚½‚ß‚Éˆ—‚ğI—¹
+							//å¾Œç¶šã®partsã®Yã¯æ›´ã«å¤§ãã„ã¯ãšãªã®ã§ã€€é«˜é€ŸåŒ–ã®ãŸã‚ã«å‡¦ç†ã‚’çµ‚äº†
 							break;
 						}
 					}					
@@ -223,9 +223,9 @@ namespace OrgWinGUI{
 						(*itr2)->draw();
 					}
 					else {
-						//ƒXƒNƒ[ƒ‹‚ÅŒ©Ø‚ê‚½ê‡‚Í•`‰æ‚µ‚È‚¢
+						//ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ã§è¦‹åˆ‡ã‚ŒãŸå ´åˆã¯æç”»ã—ãªã„
 						if (clientpos.y > hostendy) {
-							//Œã‘±‚Ìparts‚ÌY‚ÍX‚É‘å‚«‚¢‚Í‚¸‚È‚Ì‚Å@‚‘¬‰»‚Ì‚½‚ß‚Éˆ—‚ğI—¹
+							//å¾Œç¶šã®partsã®Yã¯æ›´ã«å¤§ãã„ã¯ãšãªã®ã§ã€€é«˜é€ŸåŒ–ã®ãŸã‚ã«å‡¦ç†ã‚’çµ‚äº†
 							break;
 						}
 					}
@@ -279,7 +279,7 @@ namespace OrgWinGUI{
 			//const int AXIS_CURSOR_SIZE = 4;
 			//const int AXIS_LABEL_SIDE_MARGIN = 7;
 
-			////–Ú·‚èü & ƒ‰ƒxƒ‹
+			////ç›®ç››ã‚Šç·š & ãƒ©ãƒ™ãƒ«
 			//int x0 = pos.x + MARGIN + LABEL_SIZE_X;
 			//int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
 			//int y0 = pos.y + MARGIN;
@@ -313,7 +313,7 @@ namespace OrgWinGUI{
 			//const int AXIS_CURSOR_SIZE = 4;
 			//const int AXIS_LABEL_SIDE_MARGIN = 7;
 
-			////–Ú·‚èü & ƒ‰ƒxƒ‹
+			////ç›®ç››ã‚Šç·š & ãƒ©ãƒ™ãƒ«
 			//int x0 = pos.x + MARGIN + LABEL_SIZE_X;
 			//int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
 			//int y0 = pos.y + MARGIN;
@@ -351,12 +351,12 @@ namespace OrgWinGUI{
 
 		drawEdge();
 
-		//ŠÔ²–Ú·‚è
+		//æ™‚é–“è»¸ç›®ç››ã‚Š
 		{
 			const int AXIS_CURSOR_SIZE = 4;
 			const int AXIS_LABEL_SIDE_MARGIN = 7;
 
-			//–Ú·‚èü & ƒ‰ƒxƒ‹
+			//ç›®ç››ã‚Šç·š & ãƒ©ãƒ™ãƒ«
 			int x0 = pos.x + MARGIN + LABEL_SIZE_X;
 			int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
 			int y0 = pos.y + MARGIN;
@@ -385,7 +385,7 @@ namespace OrgWinGUI{
 						if (((i < 1000) && (i % 5 == 0)) || ((i >= 1000) && (i % 10 == 0))) {
 							TCHAR tmpChar[20];
 							_stprintf_s(tmpChar, 20, _T("%.3G"), (double)i);
-							hdcM->setFont(12, _T("‚l‚r ƒSƒVƒbƒN"));
+							hdcM->setFont(12, _T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 							SetTextColor(hdcM->hDC, RGB(240, 240, 240));
 							TextOut(hdcM->hDC,
 								xx - (int)((double)_tcslen(tmpChar) * 2.0), y0,
@@ -395,7 +395,7 @@ namespace OrgWinGUI{
 				}
 			}
 			else {
-				//ƒ‚[ƒVƒ‡ƒ“Ä¶’†‚Í@–Ú·‚è•”•ª‚É@ƒJƒŒƒ“ƒgƒ^ƒCƒ€‚Ì”’l‚¾‚¯‚ğ•\¦
+				//ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³å†ç”Ÿä¸­ã¯ã€€ç›®ç››ã‚Šéƒ¨åˆ†ã«ã€€ã‚«ãƒ¬ãƒ³ãƒˆã‚¿ã‚¤ãƒ ã®æ•°å€¤ã ã‘ã‚’è¡¨ç¤º
 
 				startindex = max(0, (IntTime(currentTime) - KEYNUM_ONPREVIEW));
 				endindex = min(IntTime(maxTime), (IntTime(currentTime) + KEYNUM_ONPREVIEW));
@@ -410,7 +410,7 @@ namespace OrgWinGUI{
 
 						TCHAR tmpChar[20];
 						_stprintf_s(tmpChar, 20, _T("%d"), (int)currentTime);
-						hdcM->setFont(12, _T("‚l‚r ƒSƒVƒbƒN"));
+						hdcM->setFont(12, _T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 						SetTextColor(hdcM->hDC, RGB(240, 240, 240));
 						TextOut(hdcM->hDC,
 							xx - (int)((double)_tcslen(tmpChar) * 12.0) - 12, y0 + 18,
@@ -420,7 +420,7 @@ namespace OrgWinGUI{
 				}
 			}
 
-			//ƒJ[ƒ\ƒ‹
+			//ã‚«ãƒ¼ã‚½ãƒ«
 			int xx = (int)((currentTime - showPos_time)*timeSize) + x0 + 1;
 			hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
 			if (((x0 - AXIS_CURSOR_SIZE) <= xx) && 
@@ -431,7 +431,7 @@ namespace OrgWinGUI{
 				}
 			}
 
-			//˜g
+			//æ 
 			hdcM->setPenAndBrush(NULL, RGB(baseColor.r, baseColor.g, baseColor.b));
 			Rectangle(hdcM->hDC, pos.x, y0, x0, y1);
 			Rectangle(hdcM->hDC, x1, y0, pos.x + size.x, y1);
@@ -442,7 +442,7 @@ namespace OrgWinGUI{
 		drawEdge(false);
 
 
-		//sƒf[ƒ^
+		//è¡Œãƒ‡ãƒ¼ã‚¿
 		int showLineNum = (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) / (LABEL_SIZE_Y - 1);
 
 		int linenum;
@@ -466,7 +466,7 @@ namespace OrgWinGUI{
 					timeSize, showPos_time, highLight);
 			}
 		}
-		//ƒhƒ‰ƒbƒO‚É‚æ‚é‘I‘ğ”ÍˆÍ
+		//ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹é¸æŠç¯„å›²
 		if (dragSelect && (dragSelectTime1 != dragSelectTime2)) {
 			int xx0 = pos.x + MARGIN + LABEL_SIZE_X + 1;
 			int yy0 = pos.y + MARGIN + AXIS_SIZE_Y;
@@ -477,21 +477,21 @@ namespace OrgWinGUI{
 			int y0 = yy0 + (min(dragSelectLine1, dragSelectLine2) - showPos_line) * (LABEL_SIZE_Y - 1) + 1;
 			int y1 = yy0 + (max(dragSelectLine1, dragSelectLine2) - showPos_line + 1) * (LABEL_SIZE_Y - 1) - 1;
 
-			{//˜g•`‰æ
+			{//æ æç”»
 				hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
-				if (xx0 <= x0) {		//¶˜g
+				if (xx0 <= x0) {		//å·¦æ 
 					MoveToEx(hdcM->hDC, x0, max(yy0, y0 + 1), NULL);
 					LineTo(hdcM->hDC, x0, min(y1, yy1));
 				}
-				if (x1 <= xx1) {		//‰E˜g
+				if (x1 <= xx1) {		//å³æ 
 					MoveToEx(hdcM->hDC, x1, max(yy0, y0 + 1), NULL);
 					LineTo(hdcM->hDC, x1, min(y1, yy1));
 				}
-				if (yy0 <= y0) {		//ã˜g
+				if (yy0 <= y0) {		//ä¸Šæ 
 					MoveToEx(hdcM->hDC, max(xx0, x0 + 1), y0, NULL);
 					LineTo(hdcM->hDC, min(x1, xx1), y0);
 				}
-				if (y1 <= yy1) {		//‰º˜g
+				if (y1 <= yy1) {		//ä¸‹æ 
 					MoveToEx(hdcM->hDC, max(xx0, x0 + 1), y1, NULL);
 					LineTo(hdcM->hDC, min(x1, xx1), y1);
 				}
@@ -501,19 +501,19 @@ namespace OrgWinGUI{
 
 
 
-			////ŠÔ²ƒXƒNƒ[ƒ‹ƒo[
+			////æ™‚é–“è»¸ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 			//{
 			//	int x0 = pos.x + MARGIN + LABEL_SIZE_X;
 			//	int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
 			//	int y0 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH;
 			//	int y1 = y0 + SCROLL_BAR_WIDTH;
 
-			//	//˜g
+			//	//æ 
 			//	//hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
 			//	hdcM->setPenAndBrush(RGB(255, 255, 255), NULL);
 			//	Rectangle(hdcM->hDC, x0, y0, x1, y1);
 
-			//	//’†g
+			//	//ä¸­èº«
 			//	double showTimeLength = ((double)x1 - x0 - 3) / timeSize;
 			//	double barSize = ((double)x1 - x0 - 4)*showTimeLength / maxTime;
 			//	double barStart = ((double)x1 - x0 - 4)*showPos_time / maxTime;
@@ -525,7 +525,7 @@ namespace OrgWinGUI{
 			//}
 		}
 
-		//ƒ‰ƒxƒ‹ƒXƒNƒ[ƒ‹ƒo[
+		//ãƒ©ãƒ™ãƒ«ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 		if(g_previewFlag == 0)
 		{
 			int x0 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH - 1;
@@ -533,12 +533,12 @@ namespace OrgWinGUI{
 			int y0 = pos.y + MARGIN + AXIS_SIZE_Y;
 			int y1 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH + 1;
 
-			//˜g
+			//æ 
 			//hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
 			hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
 			Rectangle(hdcM->hDC, x0, y0, x1, y1);
 
-			//’†g
+			//ä¸­èº«
 			if (lineData.size() > 0) {
 				int barSize = (y1 - y0 - 4) * showLineNum / (int)lineData.size();
 				int barStart = (y1 - y0 - 4) * showPos_line / (int)lineData.size();
@@ -594,12 +594,12 @@ namespace OrgWinGUI{
 
 		//drawEdge();
 
-		////ŠÔ²–Ú·‚è
+		////æ™‚é–“è»¸ç›®ç››ã‚Š
 		//{
 		//	const int AXIS_CURSOR_SIZE = 4;
 		//	const int AXIS_LABEL_SIDE_MARGIN = 7;
 
-		//	//–Ú·‚èü & ƒ‰ƒxƒ‹
+		//	//ç›®ç››ã‚Šç·š & ãƒ©ãƒ™ãƒ«
 		//	int x0 = pos.x + MARGIN + LABEL_SIZE_X;
 		//	int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
 		//	int y0 = pos.y + MARGIN;
@@ -616,7 +616,7 @@ namespace OrgWinGUI{
 		//			if (((i < 1000) && (i % 5 == 0)) || ((i >= 1000) && (i % 10 == 0))) {
 		//				TCHAR tmpChar[20];
 		//				_stprintf_s(tmpChar, 20, _T("%.3G"), (double)i);
-		//				hdcM->setFont(12, _T("‚l‚r ƒSƒVƒbƒN"));
+		//				hdcM->setFont(12, _T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 		//				SetTextColor(hdcM->hDC, RGB(240, 240, 240));
 		//				TextOut(hdcM->hDC,
 		//					xx - (int)((double)_tcslen(tmpChar)*2.0), y0,
@@ -625,7 +625,7 @@ namespace OrgWinGUI{
 		//		}
 		//	}
 
-		//	//ƒJ[ƒ\ƒ‹
+		//	//ã‚«ãƒ¼ã‚½ãƒ«
 		//	int xx = (int)((currentTime - showPos_time)*timeSize) + x0 + 1;
 		//	hdcM->setPenAndBrush(RGB(240, 240, 240), NULL);
 		//	if (x0 - AXIS_CURSOR_SIZE <= xx && xx <= x1 + AXIS_CURSOR_SIZE) {
@@ -635,7 +635,7 @@ namespace OrgWinGUI{
 		//		}
 		//	}
 
-		//	//˜g
+		//	//æ 
 		//	hdcM->setPenAndBrush(NULL, RGB(baseColor.r, baseColor.g, baseColor.b));
 		//	Rectangle(hdcM->hDC, pos.x, y0, x0, y1);
 		//	Rectangle(hdcM->hDC, x1, y0, pos.x + size.x, y1);
@@ -645,7 +645,7 @@ namespace OrgWinGUI{
 
 		//drawEdge(false);
 
-		//sƒf[ƒ^
+		//è¡Œãƒ‡ãƒ¼ã‚¿
 		//int showLineNum = (size.y - SCROLL_BAR_WIDTH - AXIS_SIZE_Y - MARGIN * 2) / (LABEL_SIZE_Y - 1);
 		//int showLineNum = 3;
 		int showLineNum = 4;
@@ -683,12 +683,12 @@ namespace OrgWinGUI{
 			}
 		}
 		else {
-			//2023/08/26 ƒJƒŒƒ“ƒgƒ‚ƒfƒ‹‚Éƒ‚[ƒVƒ‡ƒ“‚ª–³‚¢ê‡‚Æ@‹–ìŠO‚Ìê‡‚É‚Í@ƒIƒCƒ‰[ƒOƒ‰ƒtXV‚Í‚¨‹x‚İ
+			//2023/08/26 ã‚«ãƒ¬ãƒ³ãƒˆãƒ¢ãƒ‡ãƒ«ã«ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãŒç„¡ã„å ´åˆã¨ã€€è¦–é‡å¤–ã®å ´åˆã«ã¯ã€€ã‚ªã‚¤ãƒ©ãƒ¼ã‚°ãƒ©ãƒ•æ›´æ–°ã¯ãŠä¼‘ã¿
 			int dbgflag2 = 1;
 		}
 
 
-		////motionbrush ‚OƒtƒŒ[ƒ€‚©‚ç‘‚­
+		////motionbrush ï¼ãƒ•ãƒ¬ãƒ¼ãƒ ã‹ã‚‰æ›¸ã
 		//bool highLight = false;
 		//lineData[3]->draw(hdcM,
 		//pos.x + MARGIN,
@@ -698,7 +698,7 @@ namespace OrgWinGUI{
 		//timeSize, 0.0, highLight);
 
 
-		////ƒhƒ‰ƒbƒO‚É‚æ‚é‘I‘ğ”ÍˆÍ
+		////ãƒ‰ãƒ©ãƒƒã‚°ã«ã‚ˆã‚‹é¸æŠç¯„å›²
 		//if (dragSelect && dragSelectTime1 != dragSelectTime2) {
 		//	int xx0 = pos.x + MARGIN + LABEL_SIZE_X + 1;
 		//	int yy0 = pos.y + MARGIN + AXIS_SIZE_Y;
@@ -709,40 +709,40 @@ namespace OrgWinGUI{
 		//	int y0 = yy0 + (min(dragSelectLine1, dragSelectLine2) - showPos_line)* (LABEL_SIZE_Y - 1) + 1;
 		//	int y1 = yy0 + (max(dragSelectLine1, dragSelectLine2) - showPos_line + 1)* (LABEL_SIZE_Y - 1) - 1;
 
-		//	{//˜g•`‰æ
+		//	{//æ æç”»
 		//		hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
-		//		if (xx0 <= x0) {		//¶˜g
+		//		if (xx0 <= x0) {		//å·¦æ 
 		//			MoveToEx(hdcM->hDC, x0, max(yy0, y0 + 1), NULL);
 		//			LineTo(hdcM->hDC, x0, min(y1, yy1));
 		//		}
-		//		if (x1 <= xx1) {		//‰E˜g
+		//		if (x1 <= xx1) {		//å³æ 
 		//			MoveToEx(hdcM->hDC, x1, max(yy0, y0 + 1), NULL);
 		//			LineTo(hdcM->hDC, x1, min(y1, yy1));
 		//		}
-		//		if (yy0 <= y0) {		//ã˜g
+		//		if (yy0 <= y0) {		//ä¸Šæ 
 		//			MoveToEx(hdcM->hDC, max(xx0, x0 + 1), y0, NULL);
 		//			LineTo(hdcM->hDC, min(x1, xx1), y0);
 		//		}
-		//		if (y1 <= yy1) {		//‰º˜g
+		//		if (y1 <= yy1) {		//ä¸‹æ 
 		//			MoveToEx(hdcM->hDC, max(xx0, x0 + 1), y1, NULL);
 		//			LineTo(hdcM->hDC, min(x1, xx1), y1);
 		//		}
 		//	}
 		//}
 
-		////ƒ‰ƒxƒ‹ƒXƒNƒ[ƒ‹ƒo[
+		////ãƒ©ãƒ™ãƒ«ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 		//{
 		//	int x0 = pos.x + MARGIN + LABEL_SIZE_X;
 		//	int x1 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH;
 		//	int y0 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH;
 		//	int y1 = y0 + SCROLL_BAR_WIDTH;
 
-		//	//˜g
+		//	//æ 
 		//	//hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
 		//	hdcM->setPenAndBrush(RGB(255, 255, 255), NULL);
 		//	Rectangle(hdcM->hDC, x0, y0, x1, y1);
 
-		//	//’†g
+		//	//ä¸­èº«
 		//	double showTimeLength = ((double)(x1 - x0 - 3)) / timeSize;
 		//	double barSize = ((double)(x1 - x0 - 4))*showTimeLength / maxTime;
 		//	double barStart = ((double)(x1 - x0 - 4))*showPos_time / maxTime;
@@ -753,18 +753,18 @@ namespace OrgWinGUI{
 		//	}
 		//}
 
-		////ŠÔ²ƒXƒNƒ[ƒ‹ƒo[
+		////æ™‚é–“è»¸ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼
 		//{
 		//	int x0 = pos.x + size.x - MARGIN - SCROLL_BAR_WIDTH - 1;
 		//	int x1 = x0 + SCROLL_BAR_WIDTH + 1;
 		//	int y0 = pos.y + MARGIN + AXIS_SIZE_Y;
 		//	int y1 = pos.y + size.y - MARGIN - SCROLL_BAR_WIDTH + 1;
 
-		//	//˜g
+		//	//æ 
 		//	hdcM->setPenAndBrush(RGB(min(baseColor.r + 20, 255), min(baseColor.g + 20, 255), min(baseColor.b + 20, 255)), NULL);
 		//	Rectangle(hdcM->hDC, x0, y0, x1, y1);
 
-		//	//’†g
+		//	//ä¸­èº«
 		//	int barSize = (y1 - y0 - 4)*showLineNum / (int)lineData.size();
 		//	int barStart = (y1 - y0 - 4)*showPos_line / (int)lineData.size();
 		//	if (showLineNum<(int)lineData.size()) {
@@ -817,9 +817,9 @@ namespace OrgWinGUI{
 		curpoollen = (int)g_eulpool.size();
 
 
-		//if ((s_befheadno != (g_eulpool.size() - 1)) || (s_befelemno != (EULPOOLBLKLEN - 1))) {//‘O‰ñƒŠƒŠ[ƒX‚µ‚½ƒ|ƒCƒ“ƒ^‚ªÅŒã”ö‚Å‚Í‚È‚¢ê‡
+		//if ((s_befheadno != (g_eulpool.size() - 1)) || (s_befelemno != (EULPOOLBLKLEN - 1))) {//å‰å›ãƒªãƒªãƒ¼ã‚¹ã—ãŸãƒã‚¤ãƒ³ã‚¿ãŒæœ€å¾Œå°¾ã§ã¯ãªã„å ´åˆ
 
-		//‘O‰ñƒŠƒŠ[ƒX‚µ‚½ƒ|ƒCƒ“ƒ^‚ÌŸ‚Ìƒƒ“ƒo[‚ğƒ`ƒFƒbƒN‚µ‚Ä–¢g—p‚¾‚Á‚½‚çƒŠƒŠ[ƒX
+		//å‰å›ãƒªãƒªãƒ¼ã‚¹ã—ãŸãƒã‚¤ãƒ³ã‚¿ã®æ¬¡ã®ãƒ¡ãƒ³ãƒãƒ¼ã‚’ãƒã‚§ãƒƒã‚¯ã—ã¦æœªä½¿ç”¨ã ã£ãŸã‚‰ãƒªãƒªãƒ¼ã‚¹
 			int chkheadno;
 			chkheadno = s_befheadno;
 			int chkelemno;
@@ -853,7 +853,7 @@ namespace OrgWinGUI{
 			}
 
 			//if ((chkheadno >= 0) && (chkheadno < curpoollen)) {
-				//ƒv[ƒ‹‚ğæ“ª‚©‚çŒŸõ‚µ‚Ä–¢g—p‚ª‚İ‚Â‚©‚ê‚Î‚»‚ê‚ğƒŠƒŠ[ƒX
+				//ãƒ—ãƒ¼ãƒ«ã‚’å…ˆé ­ã‹ã‚‰æ¤œç´¢ã—ã¦æœªä½¿ç”¨ãŒã¿ã¤ã‹ã‚Œã°ãã‚Œã‚’ãƒªãƒªãƒ¼ã‚¹
 			int eulno;
 			for (eulno = 0; eulno < curpoollen; eulno++) {
 				OWP_EulerGraph::EulLineData::EulKey* cureulhead = (OWP_EulerGraph::EulLineData::EulKey*)g_eulpool[eulno];
@@ -880,7 +880,7 @@ namespace OrgWinGUI{
 			//}
 		//}
 
-		//–¢g—peul‚ªpool‚É–³‚©‚Á‚½ê‡AƒAƒƒP[ƒg‚µ‚ÄƒAƒƒP[ƒg‚µ‚½æ“ª‚Ìƒ|ƒCƒ“ƒ^‚ğƒŠƒŠ[ƒX
+		//æœªä½¿ç”¨eulãŒpoolã«ç„¡ã‹ã£ãŸå ´åˆã€ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆã—ã¦ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆã—ãŸå…ˆé ­ã®ãƒã‚¤ãƒ³ã‚¿ã‚’ãƒªãƒªãƒ¼ã‚¹
 		OWP_EulerGraph::EulLineData::EulKey* alloceul;
 		alloceul = new OWP_EulerGraph::EulLineData::EulKey[EULPOOLBLKLEN];
 		if (!alloceul) {
@@ -917,7 +917,7 @@ namespace OrgWinGUI{
 				return 0;
 			}
 		}
-		g_eulpool.push_back((void*)alloceul);//allocate block(ƒAƒƒP[ƒg‚Ìæ“ªƒ|ƒCƒ“ƒ^)‚ğŠi”[
+		g_eulpool.push_back((void*)alloceul);//allocate block(ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆæ™‚ã®å…ˆé ­ãƒã‚¤ãƒ³ã‚¿)ã‚’æ ¼ç´
 
 		alloceul->SetUseFlag(1);
 
@@ -971,7 +971,7 @@ namespace OrgWinGUI{
 	}
 
 
-/// LineData::Key ‚±‚±‚©‚ç
+/// LineData::Key ã“ã“ã‹ã‚‰
 
 
 	//namespace global func
@@ -984,9 +984,9 @@ namespace OrgWinGUI{
 		curpoollen = (int)g_keypool.size();
 
 
-		//if ((s_befheadno != (g_keypool.size() - 1)) || (s_befelemno != (KEYPOOLBLKLEN - 1))) {//‘O‰ñƒŠƒŠ[ƒX‚µ‚½ƒ|ƒCƒ“ƒ^‚ªÅŒã”ö‚Å‚Í‚È‚¢ê‡
+		//if ((s_befheadno != (g_keypool.size() - 1)) || (s_befelemno != (KEYPOOLBLKLEN - 1))) {//å‰å›ãƒªãƒªãƒ¼ã‚¹ã—ãŸãƒã‚¤ãƒ³ã‚¿ãŒæœ€å¾Œå°¾ã§ã¯ãªã„å ´åˆ
 
-		//‘O‰ñƒŠƒŠ[ƒX‚µ‚½ƒ|ƒCƒ“ƒ^‚ÌŸ‚Ìƒƒ“ƒo[‚ğƒ`ƒFƒbƒN‚µ‚Ä–¢g—p‚¾‚Á‚½‚çƒŠƒŠ[ƒX
+		//å‰å›ãƒªãƒªãƒ¼ã‚¹ã—ãŸãƒã‚¤ãƒ³ã‚¿ã®æ¬¡ã®ãƒ¡ãƒ³ãƒãƒ¼ã‚’ãƒã‚§ãƒƒã‚¯ã—ã¦æœªä½¿ç”¨ã ã£ãŸã‚‰ãƒªãƒªãƒ¼ã‚¹
 		int chkheadno;
 		chkheadno = s_befheadno;
 		int chkelemno;
@@ -1020,7 +1020,7 @@ namespace OrgWinGUI{
 		}
 
 		//if ((chkheadno >= 0) && (chkheadno < curpoollen)) {
-			//ƒv[ƒ‹‚ğæ“ª‚©‚çŒŸõ‚µ‚Ä–¢g—p‚ª‚İ‚Â‚©‚ê‚Î‚»‚ê‚ğƒŠƒŠ[ƒX
+			//ãƒ—ãƒ¼ãƒ«ã‚’å…ˆé ­ã‹ã‚‰æ¤œç´¢ã—ã¦æœªä½¿ç”¨ãŒã¿ã¤ã‹ã‚Œã°ãã‚Œã‚’ãƒªãƒªãƒ¼ã‚¹
 		int keyno;
 		for (keyno = 0; keyno < curpoollen; keyno++) {
 			OWP_Timeline::LineData::Key* curkeyhead = (OWP_Timeline::LineData::Key*)g_keypool[keyno];
@@ -1047,7 +1047,7 @@ namespace OrgWinGUI{
 		//}
 	//}
 
-	//–¢g—pkey‚ªpool‚É–³‚©‚Á‚½ê‡AƒAƒƒP[ƒg‚µ‚ÄƒAƒƒP[ƒg‚µ‚½æ“ª‚Ìƒ|ƒCƒ“ƒ^‚ğƒŠƒŠ[ƒX
+	//æœªä½¿ç”¨keyãŒpoolã«ç„¡ã‹ã£ãŸå ´åˆã€ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆã—ã¦ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆã—ãŸå…ˆé ­ã®ãƒã‚¤ãƒ³ã‚¿ã‚’ãƒªãƒªãƒ¼ã‚¹
 		OWP_Timeline::LineData::Key* allockey;
 		allockey = new OWP_Timeline::LineData::Key[KEYPOOLBLKLEN];
 		if (!allockey) {
@@ -1084,7 +1084,7 @@ namespace OrgWinGUI{
 				return 0;
 			}
 		}
-		g_keypool.push_back((void*)allockey);//allocate block(ƒAƒƒP[ƒg‚Ìæ“ªƒ|ƒCƒ“ƒ^)‚ğŠi”[
+		g_keypool.push_back((void*)allockey);//allocate block(ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆæ™‚ã®å…ˆé ­ãƒã‚¤ãƒ³ã‚¿)ã‚’æ ¼ç´
 
 		allockey->SetUseFlag(1);
 
@@ -1138,7 +1138,7 @@ namespace OrgWinGUI{
 	}
 
 
-/// LineData::Key ‚±‚±‚Ü‚Å
+/// LineData::Key ã“ã“ã¾ã§
 
 
 	void OWP_CheckBoxA::draw() {
@@ -1154,7 +1154,7 @@ namespace OrgWinGUI{
 		if (hdcM) {
 			drawEdge();
 
-			//ƒ`ƒFƒbƒNƒ{ƒbƒNƒX
+			//ãƒã‚§ãƒƒã‚¯ãƒœãƒƒã‚¯ã‚¹
 			int pos1x = pos.x + BOX_POS_X;
 			int pos1y = pos.y + size.y / 2 - BOX_WIDTH / 2;
 			int pos2x = pos.x + BOX_POS_X + BOX_WIDTH - 1;
@@ -1177,10 +1177,10 @@ namespace OrgWinGUI{
 			MoveToEx(hdcM->hDC, pos1x + 2, pos2y, NULL);
 			LineTo(hdcM->hDC, pos2x - 1, pos2y);
 
-			//–¼‘O
+			//åå‰
 			pos1x = pos.x + BOX_POS_X + BOX_WIDTH + 3;
 			pos1y = pos.y + size.y / 2 - 5;
-			hdcM->setFont(12, _T("‚l‚r ƒSƒVƒbƒN"));
+			hdcM->setFont(12, _T("ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯"));
 			//SetTextColor(hdcM->hDC, RGB(240, 240, 240));
 			SetTextColor(hdcM->hDC, OrgWindowParts::getTextColor());
 			TextOut(hdcM->hDC,
@@ -1237,7 +1237,7 @@ namespace OrgWinGUI{
 			}
 		}
 		else {
-			//ƒJƒŒƒ“ƒgƒtƒŒ[ƒ€‚ªƒ^ƒCƒ€ƒ‰ƒCƒ“‚ÌƒZƒ“ƒ^[‚É—ˆ‚é‚æ‚¤‚ÉŒvZ
+			//ã‚«ãƒ¬ãƒ³ãƒˆãƒ•ãƒ¬ãƒ¼ãƒ ãŒã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®ã‚»ãƒ³ã‚¿ãƒ¼ã«æ¥ã‚‹ã‚ˆã†ã«è¨ˆç®—
 
 			int x0 = MARGIN + LABEL_SIZE_X;
 			int x1 = size.x - MARGIN - SCROLL_BAR_WIDTH;
@@ -1254,14 +1254,14 @@ namespace OrgWinGUI{
 			}
 		}
 
-		//2022/10/22 ƒOƒ‰ƒt•`‰æŠJnˆÊ’u‚ª’†“r”¼’[‚ÈˆÊ’u‚É‚È‚ç‚È‚¢‚æ‚¤‚ÉintƒLƒƒƒXƒg‚µ‚Ä‚©‚ç•Ô‚·
-		//intƒLƒƒƒXƒg‚µ‚È‚¢ê‡@—á‚¦‚Î@ƒIƒCƒ‰[ƒOƒ‰ƒt‚Ì‘I‘ğ”ÍˆÍ‚ÌƒJƒŒƒ“ƒgƒ‰ƒCƒ“•`‰æˆÊ’u‚ª@ƒ^ƒCƒ€ƒ‰ƒCƒ“‚ÌRectangle‚Æ”÷–­‚ÉˆÊ’u‚¸‚ê‚·‚é
+		//2022/10/22 ã‚°ãƒ©ãƒ•æç”»é–‹å§‹ä½ç½®ãŒä¸­é€”åŠç«¯ãªä½ç½®ã«ãªã‚‰ãªã„ã‚ˆã†ã«intã‚­ãƒ£ã‚¹ãƒˆã—ã¦ã‹ã‚‰è¿”ã™
+		//intã‚­ãƒ£ã‚¹ãƒˆã—ãªã„å ´åˆã€€ä¾‹ãˆã°ã€€ã‚ªã‚¤ãƒ©ãƒ¼ã‚°ãƒ©ãƒ•ã®é¸æŠç¯„å›²ã®ã‚«ãƒ¬ãƒ³ãƒˆãƒ©ã‚¤ãƒ³æç”»ä½ç½®ãŒã€€ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®Rectangleã¨å¾®å¦™ã«ä½ç½®ãšã‚Œã™ã‚‹
 		return (double)((int)newshowpostime);
 	}
 
 
 	void OWP_Timeline::setCurrentTime(double _currentTime, bool CallListener, bool needRewrite) {
-		//default : CallListener = false, needRewrite = true (OWP_EulerGraph‚ÌneedRewrite‚Í false‚ªdefault)
+		//default : CallListener = false, needRewrite = true (OWP_EulerGraphã®needRewriteã¯ falseãŒdefault)
 		static int s_paintcnt = 0;
 		s_paintcnt++;
 
@@ -1276,12 +1276,12 @@ namespace OrgWinGUI{
 		currentTime = min(max(_currentTime, 0), maxTime);
 		showPos_time = calcShowPosTime(currentTime);
 
-		//ƒŠƒXƒi[ƒR[ƒ‹
+		//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 		if (CallListener && (this->cursorListener != NULL)) {
 			(this->cursorListener)();
 		}
 
-		//Ä•`‰æ—v‹
+		//å†æç”»è¦æ±‚
 		if (needRewrite && rewriteOnChange) {
 			callRewrite();
 		}
@@ -1304,7 +1304,7 @@ namespace OrgWinGUI{
 			}
 		}
 		else {
-			//ƒJƒŒƒ“ƒgƒtƒŒ[ƒ€‚ªƒ^ƒCƒ€ƒ‰ƒCƒ“‚ÌƒZƒ“ƒ^[‚É—ˆ‚é‚æ‚¤‚ÉŒvZ
+			//ã‚«ãƒ¬ãƒ³ãƒˆãƒ•ãƒ¬ãƒ¼ãƒ ãŒã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®ã‚»ãƒ³ã‚¿ãƒ¼ã«æ¥ã‚‹ã‚ˆã†ã«è¨ˆç®—
 
 			int x0 = MARGIN + LABEL_SIZE_X;
 			int x1 = size.x - MARGIN - SCROLL_BAR_WIDTH;
@@ -1321,12 +1321,12 @@ namespace OrgWinGUI{
 			}
 		}
 
-		//2022/10/22 ƒOƒ‰ƒt•`‰æŠJnˆÊ’u‚ª’†“r”¼’[‚ÈˆÊ’u‚É‚È‚ç‚È‚¢‚æ‚¤‚ÉintƒLƒƒƒXƒg‚µ‚Ä‚©‚ç•Ô‚·
-		//intƒLƒƒƒXƒg‚µ‚È‚¢ê‡@—á‚¦‚Î@ƒIƒCƒ‰[ƒOƒ‰ƒt‚Ì‘I‘ğ”ÍˆÍ‚ÌƒJƒŒƒ“ƒgƒ‰ƒCƒ“•`‰æˆÊ’u‚ª@ƒ^ƒCƒ€ƒ‰ƒCƒ“‚ÌRectangle‚Æ”÷–­‚ÉˆÊ’u‚¸‚ê‚·‚é
+		//2022/10/22 ã‚°ãƒ©ãƒ•æç”»é–‹å§‹ä½ç½®ãŒä¸­é€”åŠç«¯ãªä½ç½®ã«ãªã‚‰ãªã„ã‚ˆã†ã«intã‚­ãƒ£ã‚¹ãƒˆã—ã¦ã‹ã‚‰è¿”ã™
+		//intã‚­ãƒ£ã‚¹ãƒˆã—ãªã„å ´åˆã€€ä¾‹ãˆã°ã€€ã‚ªã‚¤ãƒ©ãƒ¼ã‚°ãƒ©ãƒ•ã®é¸æŠç¯„å›²ã®ã‚«ãƒ¬ãƒ³ãƒˆãƒ©ã‚¤ãƒ³æç”»ä½ç½®ãŒã€€ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®Rectangleã¨å¾®å¦™ã«ä½ç½®ãšã‚Œã™ã‚‹
 		return (double)((int)newshowpostime);
 	}
 	void OWP_EulerGraph::setCurrentTime(double _currentTime, bool CallListener, bool needRewrite) {
-		//default : CallListener = false, needRewrite = false(OWP_timeline‚ÌneedRewrite‚Í true‚ªdefault)
+		//default : CallListener = false, needRewrite = false(OWP_timelineã®needRewriteã¯ trueãŒdefault)
 		static int s_paintcnt = 0;
 		s_paintcnt++;
 
@@ -1340,12 +1340,12 @@ namespace OrgWinGUI{
 		currentTime = min(max(_currentTime, 0), maxTime);
 		showPos_time = calcShowPosTime(currentTime);
 
-		//ƒŠƒXƒi[ƒR[ƒ‹
+		//ãƒªã‚¹ãƒŠãƒ¼ã‚³ãƒ¼ãƒ«
 		if (CallListener && (this->cursorListener != NULL)) {
 			(this->cursorListener)();
 		}
 
-		//Ä•`‰æ—v‹
+		//å†æç”»è¦æ±‚
 		//if (rewriteOnChange) {
 		if (needRewrite && rewriteOnChange) {
 			callRewrite();
@@ -1408,12 +1408,12 @@ namespace OrgWinGUI{
 	}
 
 
-	/// Method : Ä•`‰æ—v‹‚ğ‘—‚é
+	/// Method : å†æç”»è¦æ±‚ã‚’é€ã‚‹
 	void OrgWindowParts::callRewrite(){
 		//if( parentWindow==NULL ) return;
 		if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
-			//Ä•`‰æ—Ìˆæ
+			//å†æç”»é ˜åŸŸ
 			RECT tmpRect;
 			tmpRect.left = pos.x + 1;
 			tmpRect.top = pos.y + 1;
@@ -1427,25 +1427,25 @@ namespace OrgWinGUI{
 	}
 
 	///<summary>
-	///	ƒEƒBƒ“ƒhƒE“à•”•i"ƒ^ƒCƒ€ƒ‰ƒCƒ“ƒe[ƒuƒ‹"ƒNƒ‰ƒX
+	///	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦å†…éƒ¨å“"ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ãƒ†ãƒ¼ãƒ–ãƒ«"ã‚¯ãƒ©ã‚¹
 	///</summary>
 	//const double OWP_Timeline::LineData::TIME_ERROR_WIDTH= 0.0001;
 
 	////////////////----------------------------------------////////////////
 	////////////////										////////////////
-	////////////////		ƒIƒŠƒWƒiƒ‹ƒEƒBƒ“ƒhƒEƒNƒ‰ƒX		////////////////
+	////////////////		ã‚ªãƒªã‚¸ãƒŠãƒ«ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚¯ãƒ©ã‚¹		////////////////
 	////////////////										////////////////
 	////////////////----------------------------------------////////////////
 
 	////////////////////////// MemberVar /////////////////////////////
 
-	//	MemberVar : ƒEƒBƒ“ƒhƒEƒnƒ“ƒhƒ‹‚ÆOrgWindowƒCƒ“ƒXƒ^ƒ“ƒXƒ|ƒCƒ“ƒ^‚Ì‘Î‰ƒ}ƒbƒv
+	//	MemberVar : ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒãƒ³ãƒ‰ãƒ«ã¨OrgWindowã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒã‚¤ãƒ³ã‚¿ã®å¯¾å¿œãƒãƒƒãƒ—
 	map<HWND,OrgWindow*> OrgWindow::hWndAndClassMap;
 
 	//////////////////////////// Method //////////////////////////////
 
 	//
-	//	Method : ƒEƒBƒ“ƒhƒEƒvƒƒV[ƒWƒƒ
+	//	Method : ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£
 	//
 	LRESULT CALLBACK OrgWindow::wndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam){
 		map<HWND,OrgWindow*>::iterator owItr;
@@ -1458,13 +1458,14 @@ namespace OrgWinGUI{
 			//	return 0;
 			//}
 		}
-		OrgWindow *owner= owItr->second;	//ƒEƒBƒ“ƒhƒEì¬Œ³‚ÌƒNƒ‰ƒX‚ÌƒCƒ“ƒXƒ^ƒ“ƒXƒ|ƒCƒ“ƒ^
+		OrgWindow *owner= owItr->second;	//ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ä½œæˆå…ƒã®ã‚¯ãƒ©ã‚¹ã®ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ãƒã‚¤ãƒ³ã‚¿
 
 
 		MouseEvent mouseEvent;
 		KeyboardEvent keyboardEvent;
 		POINT tmpPoint;
-		switch (message){				//ƒCƒxƒ“ƒgì¬
+		switch (message){				//ã‚¤ãƒ™ãƒ³ãƒˆä½œæˆ
+			case WM_LBUTTONDBLCLK://2023/10/04
 			case WM_LBUTTONDOWN:
 			case WM_RBUTTONDOWN:
 			case WM_MBUTTONDOWN:
@@ -1503,19 +1504,22 @@ namespace OrgWinGUI{
 		}
 
 		switch (message){
-			case WM_LBUTTONDOWN:		//¶ƒ}ƒEƒXƒ{ƒ^ƒ“ƒ_ƒEƒ“
+			case WM_LBUTTONDBLCLK://2023/10/04
+				owner->onLButtonDBLCLK(mouseEvent);//å·¦ãƒœã‚¿ãƒ³ãƒ€ãƒ–ãƒ«ã‚¯ãƒªãƒƒã‚¯
+				return 0;
+			case WM_LBUTTONDOWN:		//å·¦ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ãƒ€ã‚¦ãƒ³
 				owner->onLButtonDown(mouseEvent);
 				return 0;
-			case WM_LBUTTONUP:			//¶ƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒv
+			case WM_LBUTTONUP:			//å·¦ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—
 				owner->onLButtonUp(mouseEvent);
 				return 0;
-			case WM_RBUTTONDOWN:		//‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒ_ƒEƒ“
+			case WM_RBUTTONDOWN:		//å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ãƒ€ã‚¦ãƒ³
 				owner->onRButtonDown(mouseEvent);
 				return 0;
-			case WM_RBUTTONUP:			//‰Eƒ}ƒEƒXƒ{ƒ^ƒ“ƒAƒbƒv
+			case WM_RBUTTONUP:			//å³ãƒã‚¦ã‚¹ãƒœã‚¿ãƒ³ã‚¢ãƒƒãƒ—
 				owner->onRButtonUp(mouseEvent);
 				return 0;
-			case WM_MOUSEMOVE:			//ƒ}ƒEƒXˆÚ“®
+			case WM_MOUSEMOVE:			//ãƒã‚¦ã‚¹ç§»å‹•
 				owner->onMouseMove(mouseEvent);
 				return 0;
 			case WM_MBUTTONDOWN:
@@ -1533,19 +1537,19 @@ namespace OrgWinGUI{
 			case WM_MOUSELEAVE:
 				owner->onMouseLeave(mouseEvent);
 				return 0;
-			case WM_KEYDOWN:			//ƒL[ƒ{[ƒhƒCƒxƒ“ƒg
+			case WM_KEYDOWN:			//ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã‚¤ãƒ™ãƒ³ãƒˆ
 			case WM_KEYUP:
 				owner->onKeyboard(keyboardEvent);
 				return 0;
-			case WM_MOVE:				//ˆÊ’u•ÏX
+			case WM_MOVE:				//ä½ç½®å¤‰æ›´
 				owner->refreshPosAndSize();
 				return 0;
-			case WM_SIZE:				//ƒTƒCƒY•ÏX
+			case WM_SIZE:				//ã‚µã‚¤ã‚ºå¤‰æ›´
 				owner->refreshPosAndSize();
 				owner->callRewrite();
 				owner->nowChangingSize= true;
 				return 0;
-			case WM_PAINT:				//•`‰æ
+			case WM_PAINT:				//æç”»
 				owner->allPaint();
 				return 0;
 			case WM_CLOSE:
