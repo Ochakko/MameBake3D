@@ -4018,6 +4018,8 @@ void s_dummyfunc()
 
 			drag=false;
 			isslider = true;//!!!!!!
+			//clickpos = WindowPos(0, 0);
+			diffclickcenter = 0;//クリック位置の　つまみ中央からのずれ
 		}
 
 		//////////////////////////// Method //////////////////////////////
@@ -4052,13 +4054,25 @@ void s_dummyfunc()
 			pos1y= pos1y-AXIS_SIZE_Y/2;
 			pos2x= tumamiPosX+1;
 			pos2y= pos1y+AXIS_SIZE_Y;
-			hdcM->setPenAndBrush(RGB(240,240,240),RGB(baseColor.r,baseColor.g,baseColor.b));
-			Rectangle(hdcM->hDC,pos1x,pos1y,pos2x+1,pos2y+1);
-			hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
-			MoveToEx(hdcM->hDC, pos1x,pos1y+2, NULL);
-			LineTo(hdcM->hDC,   pos1x,pos2y-1);
-			MoveToEx(hdcM->hDC, pos2x,pos1y+2, NULL);
-			LineTo(hdcM->hDC,   pos2x,pos2y-1);
+			//hdcM->setPenAndBrush(RGB(240,240,240),RGB(baseColor.r,baseColor.g,baseColor.b));
+			//Rectangle(hdcM->hDC,pos1x,pos1y,pos2x+1,pos2y+1);
+			//hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),NULL);
+			//MoveToEx(hdcM->hDC, pos1x,pos1y+2, NULL);
+			//LineTo(hdcM->hDC,   pos1x,pos2y-1);
+			//MoveToEx(hdcM->hDC, pos2x,pos1y+2, NULL);
+			//LineTo(hdcM->hDC,   pos2x,pos2y-1);
+
+			{//2023/10/03
+				int col0 = 240;
+				int col1 = 127;
+				hdcM->setPenAndBrush(RGB(col1, col1, col1), RGB(col1, col1, col1));
+				Ellipse(hdcM->hDC, pos1x - THUMB_SIZE, pos1y - THUMB_SIZE, pos1x + THUMB_SIZE, pos1y + THUMB_SIZE);
+				//hdcM->setPenAndBrush(RGB(0, 0, 0), RGB(0, 0, 0));
+				//Ellipse(hdcM->hDC, pos1x - (THUMB_SIZE - 2), pos1y - (THUMB_SIZE - 2), pos1x + (THUMB_SIZE - 2), pos1y + (THUMB_SIZE - 2));
+				//hdcM->setPenAndBrush(RGB(240, 240, 240), RGB(240, 240, 240));
+				//Ellipse(hdcM->hDC, pos1x - (THUMB_SIZE - 4), pos1y - (THUMB_SIZE - 4), pos1x + (THUMB_SIZE - 4), pos1y + (THUMB_SIZE - 4));
+			}
+
 
 			//ラベル
 			pos1x= pos.x+size.x-LABEL_SIZE_X+3;
@@ -4116,9 +4130,20 @@ void s_dummyfunc()
 				WindowPos tmpPos = WindowPos(e.localX, e.localY) - WindowPos(AXIS_POS_X, size.y / 2);
 				const int EDGE_WIDTH = 4;
 				if ((-EDGE_WIDTH <= tmpPos.x) && (tmpPos.x <= (size.x - LABEL_SIZE_X + EDGE_WIDTH)) &&
-					((-EDGE_WIDTH - AXIS_SIZE_Y / 2) <= tmpPos.y) && 
-					(tmpPos.y <= (size.y + EDGE_WIDTH + AXIS_SIZE_Y / 2))) {
-					setValue(minValue + (maxValue - minValue) * (float)tmpPos.x / (float)(size.x - AXIS_POS_X - LABEL_SIZE_X));
+					//((-EDGE_WIDTH - AXIS_SIZE_Y / 2) <= tmpPos.y) && 
+					//(tmpPos.y <= (size.y + EDGE_WIDTH + AXIS_SIZE_Y / 2))) {
+					((-EDGE_WIDTH - THUMB_SIZE) <= tmpPos.y) &&
+					(tmpPos.y <= (size.y + EDGE_WIDTH + THUMB_SIZE))) {
+
+					////2023/10/03  Thumbの真ん中以外をクリックしたときに　スライダーを動かさないために　コメントアウト
+					//setValue(minValue + (maxValue - minValue) * (float)tmpPos.x / (float)(size.x - AXIS_POS_X - LABEL_SIZE_X));
+
+					{//2023/10/03
+							int pos1x = pos.x + AXIS_POS_X;
+							int pos2x = pos.x + size.x - LABEL_SIZE_X;
+							int tumamiCenter = pos1x + (int)((value - minValue) * (float)(pos2x - pos1x) / (maxValue - minValue) + 0.5f);
+							diffclickcenter = e.localX - tumamiCenter;//クリック位置の　つまみ中央からのずれ
+					}
 
 					drag = true;
 
@@ -4142,7 +4167,13 @@ void s_dummyfunc()
 
 				WindowPos tmpPos = WindowPos(e.localX, e.localY) - WindowPos(AXIS_POS_X, size.y / 2);
 				if (drag) {
-					setValue(minValue + (maxValue - minValue) * (float)tmpPos.x / (float)(size.x - AXIS_POS_X - LABEL_SIZE_X));
+
+					//setValue(minValue + (maxValue - minValue) * (float)tmpPos.x / (float)(size.x - AXIS_POS_X - LABEL_SIZE_X));
+
+					{//2023/10/03 つまみのクリック位置を起点にして　つまみを動かす
+						setValue(minValue + (maxValue - minValue) * (float)(tmpPos.x - diffclickcenter) / (float)(size.x - AXIS_POS_X - LABEL_SIZE_X));
+					}
+
 
 					RECT tmpRect;
 					tmpRect.left = pos.x + 1;
@@ -4200,6 +4231,9 @@ void s_dummyfunc()
 		static const int LABEL_SIZE_X= 65;
 		static const int AXIS_POS_X= 5;
 		static const int AXIS_SIZE_Y= 10;
+		static const int THUMB_SIZE = 5;
+
+		int diffclickcenter;// つまみのクリック位置を起点にして　つまみを動かす
 	};
 
 	///<summary>
