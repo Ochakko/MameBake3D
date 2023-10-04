@@ -533,6 +533,10 @@ void s_dummyfunc()
 		virtual void onLButtonDBLCLK(const MouseEvent& e) {//2023/10/04
 			int dbgflag1 = 1;
 		}
+		//	Method : 右マウスボタン ダブルクリックイベント受信
+		virtual void onRButtonDBLCLK(const MouseEvent& e) {//2023/10/04
+			int dbgflag1 = 1;
+		}
 		//	Method : 左マウスボタンアップイベント受信
 		virtual void onLButtonUp(const MouseEvent& e){
 		}
@@ -1389,6 +1393,54 @@ void s_dummyfunc()
 				}
 			}
 		}
+		//	Method : 右マウスボタン ダブルクリックイベント受信
+		virtual void onRButtonDBLCLK(const MouseEvent& e) {//2023/10/04
+			if (!listenmouse) {
+				return;//!!!!!!!!!!!!!!!!
+			}
+
+			int xButtonX1 = size.x - 1 - 2 - 9;
+			int xButtonY1 = 1 + 2;
+			int xButtonX2 = xButtonX1 + 9;
+			int xButtonY2 = xButtonY1 + 9;
+			refreshPosAndSize();
+
+			//マウスキャプチャ
+			//if (!mouseCaptureFlagL && !mouseCaptureFlagR) SetCapture(hWnd);
+			//if (lButton) mouseCaptureFlagL = true;
+			//else		  mouseCaptureFlagR = true;
+
+			//内部パーツ
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
+				if (*plItr) {
+
+					WindowPos chkpos = (*plItr)->getPos();
+					WindowSize chksize = (*plItr)->getSize();
+					//############################################################
+					//2023/10/03 マウス位置が子供ウインドウ内部にある場合だけ処理
+					//############################################################
+					if ((e.localX >= chkpos.x) && (e.localX <= (chkpos.x + chksize.x)) &&
+						(e.localY >= chkpos.y) && (e.localY <= (chkpos.y + chksize.y))) {
+
+						MouseEvent mouseEvent;
+						mouseEvent.globalX = e.globalX;
+						mouseEvent.globalY = e.globalY;
+						mouseEvent.localX = e.localX - chkpos.x;//!!!!
+						mouseEvent.localY = e.localY - chkpos.y;//!!!!
+						mouseEvent.altKey = e.altKey;
+						mouseEvent.shiftKey = e.shiftKey;
+						mouseEvent.ctrlKey = e.ctrlKey;
+						mouseEvent.wheeldelta = e.wheeldelta;
+
+						(*plItr)->onRButtonDBLCLK(mouseEvent);
+						//setDoneFlag(1);
+						//return;
+					}
+				}
+			}
+		}
+
 		virtual void onRButtonDown(const MouseEvent& e){
 			if (!listenmouse) {
 				return;//!!!!!!!!!!!!!!!!
@@ -2100,6 +2152,59 @@ void s_dummyfunc()
 				}
 			}
 		}
+		//	Method : 右マウスボタン ダブルクリックイベント受信
+		virtual void onRButtonDBLCLK(const MouseEvent& e) {//2023/10/04
+			//内部パーツ
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList1.begin(); plItr != partsList1.end(); plItr++) {
+				if (*plItr) {
+					WindowPos chkpos = (*plItr)->getPos();
+					WindowSize chksize = (*plItr)->getSize();
+					//############################################################
+					//2023/10/04 マウス位置が子供ウインドウ内部にある場合だけ処理
+					//############################################################
+					if ((e.localX >= chkpos.x) && (e.localX <= (chkpos.x + chksize.x)) &&
+						(e.localY >= chkpos.y) && (e.localY <= (chkpos.y + chksize.y))) {
+
+						MouseEvent mouseEvent;
+						mouseEvent.globalX = e.globalX;
+						mouseEvent.globalY = e.globalY;
+						mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
+						mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+						mouseEvent.altKey = e.altKey;
+						mouseEvent.shiftKey = e.shiftKey;
+						mouseEvent.ctrlKey = e.ctrlKey;
+						mouseEvent.wheeldelta = e.wheeldelta;
+
+						(*plItr)->onRButtonDBLCLK(mouseEvent);
+					}
+				}
+			}
+			std::list<OrgWindowParts*>::iterator plItr2;
+			for (plItr2 = partsList2.begin(); plItr2 != partsList2.end(); plItr2++) {
+				if (*plItr2) {
+					WindowPos chkpos = (*plItr2)->getPos();
+					WindowSize chksize = (*plItr2)->getSize();
+					//############################################################
+					//2023/10/04 マウス位置が子供ウインドウ内部にある場合だけ処理
+					//############################################################
+					if ((e.localX >= chkpos.x) && (e.localX <= (chkpos.x + chksize.x)) &&
+						(e.localY >= chkpos.y) && (e.localY <= (chkpos.y + chksize.y))) {
+						MouseEvent mouseEvent;
+						mouseEvent.globalX = e.globalX;
+						mouseEvent.globalY = e.globalY;
+						mouseEvent.localX = e.localX + pos.x - (*plItr2)->getPos().x;
+						mouseEvent.localY = e.localY + pos.y - (*plItr2)->getPos().y;
+						mouseEvent.altKey = e.altKey;
+						mouseEvent.shiftKey = e.shiftKey;
+						mouseEvent.ctrlKey = e.ctrlKey;
+						mouseEvent.wheeldelta = e.wheeldelta;
+
+						(*plItr2)->onRButtonDBLCLK(mouseEvent);
+					}
+				}
+			}
+		}
 		virtual void onRButtonDown(const MouseEvent& e){
 			onLRButtonDown(e,false);
 		}
@@ -2752,6 +2857,35 @@ void s_dummyfunc()
 				}
 			}
 		}
+		//	Method : 右マウスボタン ダブルクリックイベント受信
+		virtual void onRButtonDBLCLK(const MouseEvent& e) {//2023/10/04
+			//内部パーツ
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
+				if (*plItr) {
+					WindowPos chkpos = (*plItr)->getPos();
+					WindowSize chksize = (*plItr)->getSize();
+					//############################################################
+					//2023/10/04 マウス位置が子供ウインドウ内部にある場合だけ処理
+					//############################################################
+					if ((e.localX >= chkpos.x) && (e.localX <= (chkpos.x + chksize.x)) &&
+						(e.localY >= chkpos.y) && (e.localY <= (chkpos.y + chksize.y))) {
+
+						MouseEvent mouseEvent;
+						mouseEvent.globalX = e.globalX;
+						mouseEvent.globalY = e.globalY;
+						mouseEvent.localX = e.localX + pos.x - (*plItr)->getPos().x;
+						mouseEvent.localY = e.localY + pos.y - (*plItr)->getPos().y;
+						mouseEvent.altKey = e.altKey;
+						mouseEvent.shiftKey = e.shiftKey;
+						mouseEvent.ctrlKey = e.ctrlKey;
+
+						(*plItr)->onRButtonDBLCLK(mouseEvent);
+					}
+				}
+			}
+		}
+
 		virtual void onRButtonDown(const MouseEvent& e){
 			onLRButtonDown(e,false);
 		}
@@ -3211,6 +3345,10 @@ void s_dummyfunc()
 		//	Method : 左マウスボタン ダブルクリックイベント受信
 		virtual void onLButtonDBLCLK(const MouseEvent& e) {//2023/10/04
 		}
+		//	Method : 右マウスボタン ダブルクリックイベント受信
+		virtual void onRButtonDBLCLK(const MouseEvent& e) {//2023/10/04
+			int dbgflag1 = 1;
+		}
 
 		/////////////////////////// Accessor /////////////////////////////
 		//	Accessor : buttonListener
@@ -3594,6 +3732,10 @@ void s_dummyfunc()
 		//	Method : 左マウスボタン ダブルクリックイベント受信
 		virtual void onLButtonDBLCLK(const MouseEvent& e) {//2023/10/04
 		}
+		//	Method : 右マウスボタン ダブルクリックイベント受信
+		virtual void onRButtonDBLCLK(const MouseEvent& e) {//2023/10/04
+			int dbgflag1 = 1;
+		}
 
 
 		/////////////////////////// Accessor /////////////////////////////
@@ -3861,6 +4003,10 @@ void s_dummyfunc()
 		//	Method : 左マウスボタン ダブルクリックイベント受信
 		virtual void onLButtonDBLCLK(const MouseEvent& e) {//2023/10/04
 		}
+		//	Method : 右マウスボタン ダブルクリックイベント受信
+		virtual void onRButtonDBLCLK(const MouseEvent& e) {//2023/10/04
+			int dbgflag1 = 1;
+		}
 
 		/////////////////////////// Accessor /////////////////////////////
 		//	Accessor : value
@@ -4024,6 +4170,10 @@ void s_dummyfunc()
 		//	Method : 左マウスボタン ダブルクリックイベント受信
 		virtual void onLButtonDBLCLK(const MouseEvent& e) {//2023/10/04
 		}
+		//	Method : 右マウスボタン ダブルクリックイベント受信
+		virtual void onRButtonDBLCLK(const MouseEvent& e) {//2023/10/04
+			int dbgflag1 = 1;
+		}
 
 		/// Method : 項目の追加
 		void addLine( const TCHAR *name ){
@@ -4176,6 +4326,10 @@ void s_dummyfunc()
 			isslider = true;//!!!!!!
 			//clickpos = WindowPos(0, 0);
 			diffclickcenter = 0;//クリック位置の　ボタン中央からのずれ
+
+			oldvaluevec.clear();
+			oldvaluevec.push_back(value);
+			oldvalueindex = 0;
 		}
 
 		//////////////////////////// Method //////////////////////////////
@@ -4320,7 +4474,7 @@ void s_dummyfunc()
 		//	Method : 左マウスボタン ダブルクリックイベント受信
 		virtual void onLButtonDBLCLK(const MouseEvent& e) {//2023/10/04
 
-			//スライダー　センターバーダブルクリック　：　クリック位置にThumbButtonを移動
+			//スライダー　センターバー　左ダブルクリック　：　クリック位置にThumbButtonを移動
 
 			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
 
@@ -4335,7 +4489,7 @@ void s_dummyfunc()
 
 					//クリック位置にThumbButtonを移動 (クリック位置に対応するvalue値を設定)
 					setValue(minValue + (maxValue - minValue) * (float)tmpPos.x / (float)(size.x - AXIS_POS_X - LABEL_SIZE_X));
-
+					saveUndoValue(value);
 
 					RECT tmpRect;
 					tmpRect.left = pos.x + 1;
@@ -4346,10 +4500,40 @@ void s_dummyfunc()
 				}
 			}
 		}
+		//	Method : 右マウスボタン ダブルクリックイベント受信
+		virtual void onRButtonDBLCLK(const MouseEvent& e) {//2023/10/04
+
+			//スライダー　センターバー　右ダブルクリック　：　Value値をアンドゥ
+
+			if ((g_endappflag == 0) && parentWindow && IsWindow(parentWindow->getHWnd())) {
+
+				WindowPos tmpPos = WindowPos(e.localX, e.localY) - WindowPos(AXIS_POS_X, size.y / 2);
+				const int EDGE_WIDTH = 4;
+				if ((-EDGE_WIDTH <= tmpPos.x) && (tmpPos.x <= (size.x - LABEL_SIZE_X + EDGE_WIDTH)) &&
+					//((-EDGE_WIDTH - AXIS_SIZE_Y / 2) <= tmpPos.y) && 
+					//(tmpPos.y <= (size.y + EDGE_WIDTH + AXIS_SIZE_Y / 2))) {
+					((-EDGE_WIDTH - THUMB_SIZE) <= tmpPos.y) &&
+					(tmpPos.y <= (size.y + EDGE_WIDTH + THUMB_SIZE))) {
+
+					double oldvalue = getUndoValue();
+					if (oldvalue != value) {
+						setValue(oldvalue);
+
+						RECT tmpRect;
+						tmpRect.left = pos.x + 1;
+						tmpRect.top = pos.y + 1;
+						tmpRect.right = pos.x + size.x - 1;
+						tmpRect.bottom = pos.y + size.y - 1;
+						InvalidateRect(parentWindow->getHWnd(), &tmpRect, false);
+					}
+				}
+			}
+		}
 
 		//	Method : 左マウスボタンアップイベント受信
 		virtual void onLButtonUp(const MouseEvent& e){
 			drag=false;
+			saveUndoValue(value);
 		}
 		//	Method : マウス移動イベント受信
 		virtual void onMouseMove(const MouseEvent& e){
@@ -4445,6 +4629,52 @@ void s_dummyfunc()
 				(this->cursorListener)();
 			}
 		}
+		void saveUndoValue(double savevalue)
+		{
+			//アンドゥ用に保存する
+	
+			if (!oldvaluevec.empty()) {
+				size_t chkvecsize = oldvaluevec.size();
+				double chkvalue = oldvaluevec[chkvecsize - 1];
+				if (chkvalue == savevalue) {
+					//前回の値と同じ場合には保存しない
+					return;
+				}
+			}
+
+			size_t chkvecsize2 = oldvaluevec.size();
+			if (chkvecsize2 > 1000000) {//プログラムのシンプルさのために　保存数上限を越えたら空にする
+				_ASSERT(0);
+				oldvaluevec.clear();
+			}
+			oldvaluevec.push_back(value);
+			oldvalueindex = oldvaluevec.size() - 1;
+		}
+		double getUndoValue()
+		{
+			if (!oldvaluevec.empty()) {
+				size_t vecsize = oldvaluevec.size();
+				size_t valueindex;
+				if (oldvalueindex >= 1) {
+					valueindex = oldvalueindex - 1;
+				}
+				else {
+					valueindex = vecsize - 1;
+				}
+				if (valueindex < vecsize) {
+					double oldvalue = oldvaluevec[valueindex];
+					oldvalueindex = valueindex;
+					return oldvalue;//!!!!!!!!!
+				}
+				else {
+					return value;
+				}
+			}
+			else {
+				return value;
+			}
+		}
+
 		//	Accessor : cursorListener
 		void setCursorListener(std::function<void()> listener){
 			this->cursorListener= listener;
@@ -4464,6 +4694,9 @@ void s_dummyfunc()
 		static const int THUMB_SIZE = 5;
 
 		int diffclickcenter;// ボタンのクリック位置を起点にして　ボタンを動かす
+
+		std::vector<double> oldvaluevec;
+		size_t oldvalueindex;
 	};
 
 	///<summary>
@@ -5236,6 +5469,10 @@ void s_dummyfunc()
 		}
 		//	Method : 左マウスボタン ダブルクリックイベント受信
 		virtual void onLButtonDBLCLK(const MouseEvent& e) {//2023/10/04
+		}
+		//	Method : 右マウスボタン ダブルクリックイベント受信
+		virtual void onRButtonDBLCLK(const MouseEvent& e) {//2023/10/04
+			int dbgflag1 = 1;
 		}
 
 		///	Method : 左マウスボタンアップイベント受信
@@ -7350,6 +7587,10 @@ void s_dummyfunc()
 		//	Method : 左マウスボタン ダブルクリックイベント受信
 		virtual void onLButtonDBLCLK(const MouseEvent& e) {//2023/10/04
 		}
+		//	Method : 右マウスボタン ダブルクリックイベント受信
+		virtual void onRButtonDBLCLK(const MouseEvent& e) {//2023/10/04
+			int dbgflag1 = 1;
+		}
 
 		virtual void onRButtonDown(const MouseEvent& e) {
 			selectClear(true);
@@ -9367,6 +9608,10 @@ void s_dummyfunc()
 		//	Method : 左マウスボタン ダブルクリックイベント受信
 		virtual void onLButtonDBLCLK(const MouseEvent& e) {//2023/10/04
 		}
+		//	Method : 右マウスボタン ダブルクリックイベント受信
+		virtual void onRButtonDBLCLK(const MouseEvent& e) {//2023/10/04
+			int dbgflag1 = 1;
+		}
 
 		///	Method : 左マウスボタンアップイベント受信
 		virtual void onLButtonUp(const MouseEvent& e){
@@ -10143,6 +10388,10 @@ void s_dummyfunc()
 		}
 		//	Method : 左マウスボタン ダブルクリックイベント受信
 		virtual void onLButtonDBLCLK(const MouseEvent& e) {//2023/10/04
+		}
+		//	Method : 右マウスボタン ダブルクリックイベント受信
+		virtual void onRButtonDBLCLK(const MouseEvent& e) {//2023/10/04
+			int dbgflag1 = 1;
 		}
 
 

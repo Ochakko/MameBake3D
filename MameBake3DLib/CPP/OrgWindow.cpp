@@ -1466,6 +1466,7 @@ namespace OrgWinGUI{
 		POINT tmpPoint;
 		switch (message){				//イベント作成
 			case WM_LBUTTONDBLCLK://2023/10/04
+			case WM_RBUTTONDBLCLK://2023/10/04
 			case WM_LBUTTONDOWN:
 			case WM_RBUTTONDOWN:
 			case WM_MBUTTONDOWN:
@@ -1506,6 +1507,9 @@ namespace OrgWinGUI{
 		switch (message){
 			case WM_LBUTTONDBLCLK://2023/10/04
 				owner->onLButtonDBLCLK(mouseEvent);//左ボタンダブルクリック
+				return 0;
+			case WM_RBUTTONDBLCLK://2023/10/04
+				owner->onRButtonDBLCLK(mouseEvent);//左ボタンダブルクリック
 				return 0;
 			case WM_LBUTTONDOWN:		//左マウスボタンダウン
 				owner->onLButtonDown(mouseEvent);

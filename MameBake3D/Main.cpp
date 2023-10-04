@@ -9686,7 +9686,9 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		//}
 		//SetCapture( s_3dwnd );
 
+
 		SetCapture(DXUTGetHWND());
+		
 		
 
 
