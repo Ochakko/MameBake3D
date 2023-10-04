@@ -51,6 +51,12 @@
 			アンドゥ用バッファは100万回分値を保存しますが　100万回を越えるとクリアーして空にします(シンプルさのため)
 			アンドゥ用バッファは　アプリ終了時には　保存されません
 
+    2023/10/04_3
+	動画　モーキャプでポーズtoポーズ　ver.1.2.0.25
+		https://youtu.be/e6XSIv3hiJI
+
+
+
 
 
 
@@ -132,7 +138,11 @@
 　YouTubeチャンネル
 	https://www.youtube.com/@ochakkolab
 
-	(動画　1.2.0.25 準備中)
+	動画　モーキャプでポーズtoポーズ　ver.1.2.0.25
+		https://youtu.be/e6XSIv3hiJI
+
+	動画　モーキャプを滑らかにコピペ編集 ver.1.2.0.25
+		https://youtu.be/A8E1K5UXOaM
 
 	動画　モーキャプ編集ツール　1.2.0.24 (2023/09)
 		https://youtu.be/LEbueHtc57Q
