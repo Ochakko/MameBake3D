@@ -1964,7 +1964,8 @@ static OrgWindow* s_placefolderWnd = 0;
 static OWP_Label* s_placefolderlabel_1 = 0;
 static OWP_Label* s_placefolderlabel_2 = 0;
 static OWP_Label* s_placefolderlabel_3 = 0;
-#define SHORTCUTTEXTNUM	35
+//#define SHORTCUTTEXTNUM	35
+#define SHORTCUTTEXTNUM	40
 static OWP_Label* s_shortcuttext[SHORTCUTTEXTNUM];
 
 
@@ -33386,6 +33387,11 @@ int CreatePlaceFolderWnd()
 			L"　　S + Mouse_R_Drag　：　Change manipulator scale.",
 			L" ",
 			L" ",
+			L"　OWP_Slider",
+			L"　　Drag on CenterBar　：　Slide starting from clicked position.",
+			L"    LButton DoubleClick :  Set value of clicked position.",
+			L"    RButton DoubleClick :  Undo value limited to 1,000,000 times.",
+			L" ",
 			L" "
 		};
 
@@ -47472,6 +47478,9 @@ int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha)
 				bool bsuccess;
 				bsuccess = ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
 				if (bsuccess) {
+
+					CloseHandle(hfile);//読み終わったら閉じる
+
 					bool foundsame = false;
 					wstring newwstr = readwstr;
 					std::vector<wstring>::iterator itropenfilename;
@@ -47512,15 +47521,26 @@ int GetchaHistoryDir(std::vector<wstring>& dstvecopenfilename, int filter_cha)
 								vecopenfilename.push_back(readwstr);
 								foundnum++;
 							}
+							else if (fattr == INVALID_FILE_ATTRIBUTES) {
+								//2023/10/04
+								//ファイルが存在しない場合　履歴を削除する
+								DeleteFileW(openfilename);
+							}
 						}
 						//if (foundnum >= dispnum) {
 						if (foundnum >= numhistory) {
-							CloseHandle(hfile);
 							break;
 						}
 					}
+					else {
+						//2023/10/04
+						//重複する履歴は削除する(履歴が多すぎるとオープン処理が重くなるため)
+						DeleteFileW(openfilename);
+					}
 				}
-				CloseHandle(hfile);
+				else {
+					CloseHandle(hfile);//読み終わったら閉じる
+				}
 			}
 		}
 
@@ -47623,6 +47643,9 @@ int GetRtgHistoryDir(std::vector<wstring>& dstvecopenfilename)
 				bool bsuccess;
 				bsuccess = ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
 				if (bsuccess) {
+
+					CloseHandle(hfile);//読み終わったら閉じる
+
 					bool foundsame = false;
 					wstring newwstr = readwstr;
 					std::vector<wstring>::iterator itropenfilename;
@@ -47643,15 +47666,28 @@ int GetRtgHistoryDir(std::vector<wstring>& dstvecopenfilename)
 							vecopenfilename.push_back(readwstr);
 							foundnum++;
 						}
+						else if (fattr == INVALID_FILE_ATTRIBUTES) {
+							//2023/10/04
+							//ファイルが存在しない場合　履歴を削除する
+							DeleteFileW(openfilename);
+						}
+
 
 						//if (foundnum >= dispnum) {
 						if (foundnum >= numhistory) {
-							CloseHandle(hfile);
 							break;
 						}
 					}
+					else {
+						//2023/10/04
+						//重複する履歴は削除する(履歴が多すぎるとオープン処理が重くなるため)
+						DeleteFileW(openfilename);
+					}
+
 				}
-				CloseHandle(hfile);
+				else {
+					CloseHandle(hfile);//読み終わったら閉じる
+				}
 			}
 		}
 
@@ -47756,6 +47792,9 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 				bool bsuccess;
 				bsuccess = ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
 				if (bsuccess) {
+
+					CloseHandle(hfile);//読み終わったら閉じる
+
 					bool foundsame = false;
 					wstring newwstr = readwstr;
 					std::vector<wstring>::iterator itropenfilename;
@@ -47776,15 +47815,26 @@ int GetbvhHistoryDir(std::vector<wstring>& dstvecopenfilename)
 							vecopenfilename.push_back(readwstr);
 							foundnum++;
 						}
+						else if (fattr == INVALID_FILE_ATTRIBUTES) {
+							//2023/10/04
+							//ファイルが存在しない場合　履歴を削除する
+							DeleteFileW(openfilename);
+						}
 
 						//if (foundnum >= dispnum) {
 						if (foundnum >= numhistory) {
-							CloseHandle(hfile);
 							break;
 						}
 					}
+					else {
+						//2023/10/04
+						//重複する履歴は削除する(履歴が多すぎるとオープン処理が重くなるため)
+						DeleteFileW(openfilename);
+					}
 				}
-				CloseHandle(hfile);
+				else {
+					CloseHandle(hfile);//読み終わったら閉じる
+				}
 			}
 		}
 
@@ -47947,6 +47997,9 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 				bool bsuccess;
 				bsuccess = ReadFile(hfile, readwstr, (MAX_PATH * sizeof(WCHAR)), &readleng, NULL);
 				if (bsuccess) {
+
+					CloseHandle(hfile);//読み終わったら閉じる
+
 					bool foundsame = false;
 					wstring newwstr = readwstr;
 					std::vector<wstring>::iterator itropenfilename;
@@ -47962,8 +48015,16 @@ int GetBatchHistoryDir(WCHAR* dstname, int dstlen)
 							break;
 						}
 					}
+					else {
+						//2023/10/04
+						//重複する履歴は削除する(履歴が多すぎるとオープン処理が重くなるため)
+						DeleteFileW(openfilename);
+					}
 				}
-				CloseHandle(hfile);
+				else {
+					CloseHandle(hfile);
+				}
+				
 			}
 		}
 	}

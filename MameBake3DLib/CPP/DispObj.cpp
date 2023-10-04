@@ -798,15 +798,20 @@ int CDispObj::RenderNormal(bool withalpha,
 		if ((result0 == 0) && (curmat != NULL) && (curtrinum > 0)) {
 
 			bool laterflag = false;
-			if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
-				int laternum = (int)latername.size();
-				int laterno;
-				for (laterno = 0; laterno < laternum; laterno++) {
-					if (strcmp(curmat->GetTex(), latername[laterno].c_str()) == 0) {
-						laterflag = true;
-						break;
+			if (!latername.empty()) {
+				if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
+					int laternum = (int)latername.size();
+					int laterno;
+					for (laterno = 0; laterno < laternum; laterno++) {
+						if (strcmp(curmat->GetTex(), latername[laterno].c_str()) == 0) {
+							laterflag = true;
+							break;
+						}
 					}
 				}
+			}
+			else {
+				laterflag = false;
 			}
 
 			if (laterflag == false) {
@@ -1476,15 +1481,20 @@ int CDispObj::RenderNormalPM3(bool withalpha,
 		curnumprim = currb->endface - currb->startface + 1;
 
 		bool laterflag = false;
-		if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
-			int laternum = (int)latername.size();
-			int laterno;
-			for (laterno = 0; laterno < laternum; laterno++) {
-				if (strcmp(curmat->GetTex(), latername[laterno].c_str()) == 0) {
-					laterflag = true;
-					break;
+		if (!latername.empty()) {
+			if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
+				int laternum = (int)latername.size();
+				int laterno;
+				for (laterno = 0; laterno < laternum; laterno++) {
+					if (strcmp(curmat->GetTex(), latername[laterno].c_str()) == 0) {
+						laterflag = true;
+						break;
+					}
 				}
 			}
+		}
+		else {
+			laterflag = false;
 		}
 
 		if (laterflag == false) {
