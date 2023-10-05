@@ -75,6 +75,17 @@
 			Flower_Aというオブジェクトを右クリックして　ON(pattern include num)を選ぶと
 			Flower_A, Flower_B, Flower_C, ... などのFlowerが名前に含まれるオブジェクトのチェックが全てオンになる
 
+    2023/10/05_2
+	LaterTransparentについてリファクタリング
+		laternameを元にlatermaterialを準備して　リアルタイムの文字列比較を無くし　描画を高速化
+
+	不具合修正
+		モーション有のモデル読み込み後フレーム範囲を選択して-->モデル全削除-->モーションの無いモデル読み込み-->再生ボタンを押すと　エラーダイアログの後落ちる不具合修正
+		s_model->GetCurMotInfo()のNULLチェック
+
+	右ペインのショートカット一覧に　DispGroupWindowのSimilarCheckについて記述追加
+
+
 
  
 

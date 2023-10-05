@@ -14,6 +14,7 @@
 
 #include <DispObj.h>
 
+#include <mqoobject.h>
 #include <mqomaterial.h>
 
 #include <polymesh3.h>
@@ -772,12 +773,15 @@ int CDispObj::CreateVBandIBLine()
 
 int CDispObj::RenderNormal(bool withalpha,
 	ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, 
-	ChaVector4 diffusemult, ChaVector4 materialdisprate, std::vector<std::string> latername)
+	ChaVector4 diffusemult, ChaVector4 materialdisprate, CMQOObject* pmqoobj)
 {
+
+	if (!pd3d11DeviceContext || !pmqoobj) {
+		_ASSERT(0);
+		return 0;
+	}
+
 	// Only PM4
-
-
-	//if (!m_pm3 && !m_pm4) {
 	if (!m_pm4) {
 		_ASSERT(0);
 		return 0;
@@ -797,22 +801,7 @@ int CDispObj::RenderNormal(bool withalpha,
 		int result0 = m_pm4->GetDispMaterial(materialcnt, &curmat, &curoffset, &curtrinum);
 		if ((result0 == 0) && (curmat != NULL) && (curtrinum > 0)) {
 
-			bool laterflag = false;
-			if (!latername.empty()) {
-				if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
-					int laternum = (int)latername.size();
-					int laterno;
-					for (laterno = 0; laterno < laternum; laterno++) {
-						if (strcmp(curmat->GetTex(), latername[laterno].c_str()) == 0) {
-							laterflag = true;
-							break;
-						}
-					}
-				}
-			}
-			else {
-				laterflag = false;
-			}
+			bool laterflag = pmqoobj->ExistInLaterMaterial(curmat);
 
 			if (laterflag == false) {
 				bool laterflag2 = false;
@@ -824,30 +813,18 @@ int CDispObj::RenderNormal(bool withalpha,
 		}
 	}
 
-
-	if (withalpha && !latername.empty()) {
+	int latermatnum = pmqoobj->GetLaterMaterialNum();
+	if (withalpha && (latermatnum > 0)) {
 		//VRoid VRM êû(Ç∑Çª)ÇÃìßâﬂÇÃèáî‘ÇÃÇΩÇﬂÅ@ç≈å„Ç…ï`âÊ
-		int latermatnum = (int)latername.size();
 		int laterindex;
-		for (laterindex = 0; laterindex < latermatnum; laterindex++) {//laternameÇ…äiî[Ç≥ÇÍÇƒÇ¢ÇÈèáî‘Ç≈ï`âÊ
-
-			int materialcnt2;
-			for (materialcnt2 = 0; materialcnt2 < materialnum; materialcnt2++) {
-				CMQOMaterial* curmat = NULL;
-				int curoffset = 0;
-				int curtrinum = 0;
-				int result0 = m_pm4->GetDispMaterial(materialcnt2, &curmat, &curoffset, &curtrinum);
-				if ((result0 == 0) && (curmat != NULL) && (curtrinum > 0)) {
-					if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
-						if (strcmp(curmat->GetTex(), latername[laterindex].c_str()) == 0) {
-							bool laterflag2 = true;
-							RenderNormalMaterial(laterflag2, withalpha,
-								pd3d11DeviceContext,
-								curmat, curoffset, curtrinum,
-								lightflag, diffusemult, materialdisprate);
-						}
-					}
-				}
+		for (laterindex = 0; laterindex < latermatnum; laterindex++) {
+			LATERMATERIAL latermaterial = pmqoobj->GetLaterMaterial(laterindex);
+			if (latermaterial.pmaterial) {
+				bool laterflag2 = true;
+				RenderNormalMaterial(laterflag2, withalpha,
+					pd3d11DeviceContext,
+					latermaterial.pmaterial, latermaterial.offset, latermaterial.trinum,
+					lightflag, diffusemult, materialdisprate);
 			}
 		}
 	}
@@ -1455,7 +1432,7 @@ int CDispObj::RenderNormalMaterial(bool laterflag, bool withalpha,
 
 int CDispObj::RenderNormalPM3(bool withalpha,
 	ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, 
-	ChaVector4 diffusemult, ChaVector4 materialdisprate, vector<string> latername)
+	ChaVector4 diffusemult, ChaVector4 materialdisprate, CMQOObject* pmqoobj)
 {
 	if( !m_pm3 ){
 		return 0;
@@ -1480,23 +1457,7 @@ int CDispObj::RenderNormalPM3(bool withalpha,
 		int curnumprim;
 		curnumprim = currb->endface - currb->startface + 1;
 
-		bool laterflag = false;
-		if (!latername.empty()) {
-			if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
-				int laternum = (int)latername.size();
-				int laterno;
-				for (laterno = 0; laterno < laternum; laterno++) {
-					if (strcmp(curmat->GetTex(), latername[laterno].c_str()) == 0) {
-						laterflag = true;
-						break;
-					}
-				}
-			}
-		}
-		else {
-			laterflag = false;
-		}
-
+		bool laterflag = pmqoobj->ExistInLaterMaterial(curmat);
 		if (laterflag == false) {
 			bool laterflag2 = false;
 			int result = RenderNormalPM3Material(laterflag2, withalpha,
@@ -1508,31 +1469,18 @@ int CDispObj::RenderNormalPM3(bool withalpha,
 
 
 
-	if (withalpha && !latername.empty()) {
+	int latermatnum = pmqoobj->GetLaterMaterialNum();
+	if (withalpha && (latermatnum > 0)) {
 		//VRoid VRM êû(Ç∑Çª)ÇÃìßâﬂÇÃèáî‘ÇÃÇΩÇﬂÅ@ç≈å„Ç…ï`âÊ
-		int latermatnum = (int)latername.size();
 		int laterindex;
-		for (laterindex = 0; laterindex < latermatnum; laterindex++) {//laternameÇ…äiî[Ç≥ÇÍÇƒÇ¢ÇÈèáî‘Ç≈ï`âÊ
-
-			int blno2;
-			for (blno2 = 0; blno2 < m_pm3->GetOptMatNum(); blno2++) {
-				MATERIALBLOCK* currb = m_pm3->GetMatBlock() + blno2;
-
-				CMQOMaterial* curmat;
-				curmat = currb->mqomat;
-				if (curmat && curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
-					if (strcmp(curmat->GetTex(), latername[laterindex].c_str()) == 0) {
-
-						int curnumprim;
-						curnumprim = currb->endface - currb->startface + 1;
-
-						bool laterflag2 = true;
-						int result = RenderNormalPM3Material(laterflag2, withalpha,
-							pd3d11DeviceContext,
-							curmat, currb->startface * 3, curnumprim,
-							lightflag, diffusemult, materialdisprate);
-					}
-				}
+		for (laterindex = 0; laterindex < latermatnum; laterindex++) {
+			LATERMATERIAL latermaterial = pmqoobj->GetLaterMaterial(laterindex);
+			if (latermaterial.pmaterial) {
+				bool laterflag2 = true;
+				RenderNormalPM3Material(laterflag2, withalpha,
+					pd3d11DeviceContext,
+					latermaterial.pmaterial, latermaterial.offset, latermaterial.trinum,
+					lightflag, diffusemult, materialdisprate);
 			}
 		}
 	}

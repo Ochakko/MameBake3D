@@ -253,6 +253,8 @@ void CMQOObject::InitParams()
 
 	m_meshmat.SetIdentity();
 
+	m_latermaterial.clear();
+
 //	next = 0;
 }
 
@@ -2537,3 +2539,98 @@ void CMQOObject::IncludeTransparent(vector<string> latername, float multalpha, b
 }
 
 
+int CMQOObject::MakeLaterMaterial(vector<string> latername)
+{
+
+	m_latermaterial.clear();
+
+
+
+	if (m_pm4) {
+
+		//##############################################################
+		//laternameに格納されている順番で格納するようにループして調べる
+		//##############################################################
+
+		int materialnum = m_pm4->GetDispMaterialNum();
+		if (materialnum > 0) {
+			int latermatnum = (int)latername.size();
+			int laterindex; 
+			for (laterindex = 0; laterindex < latermatnum; laterindex++) {
+
+				int materialcnt2;
+				for (materialcnt2 = 0; materialcnt2 < materialnum; materialcnt2++) {
+					CMQOMaterial* curmat = NULL;
+					int curoffset = 0;
+					int curtrinum = 0;
+					int result0 = m_pm4->GetDispMaterial(materialcnt2, &curmat, &curoffset, &curtrinum);
+					if ((result0 == 0) && (curmat != NULL) && (curtrinum > 0)) {
+						if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
+							if (strcmp(curmat->GetTex(), latername[laterindex].c_str()) == 0) {
+								LATERMATERIAL latermaterial;
+								latermaterial.Init();
+								latermaterial.pmaterial = curmat;
+								latermaterial.offset = curoffset;
+								latermaterial.trinum = curtrinum;
+								m_latermaterial.push_back(latermaterial);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	else if (m_pm3) {
+
+		//##############################################################
+		//laternameに格納されている順番で格納するようにループして調べる
+		//##############################################################
+
+		int latermatnum = (int)latername.size();
+		int laterindex;
+		for (laterindex = 0; laterindex < latermatnum; laterindex++) {
+
+			int blno2;
+			for (blno2 = 0; blno2 < m_pm3->GetOptMatNum(); blno2++) {
+				MATERIALBLOCK* currb = m_pm3->GetMatBlock() + blno2;
+
+				int curnumprim;
+				curnumprim = currb->endface - currb->startface + 1;
+				int curoffset;
+				curoffset = currb->startface * 3;
+
+				CMQOMaterial* curmat;
+				curmat = currb->mqomat;
+				if (curmat && curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
+					if (strcmp(curmat->GetTex(), latername[laterindex].c_str()) == 0) {
+						LATERMATERIAL latermaterial;
+						latermaterial.Init();
+						latermaterial.pmaterial = curmat;
+						latermaterial.offset = curoffset;
+						latermaterial.trinum = curnumprim;
+						m_latermaterial.push_back(latermaterial);
+					}
+				}
+			}
+		}
+	}
+	else {
+		return 0;
+	}
+
+	return 0;
+}
+
+bool CMQOObject::ExistInLaterMaterial(CMQOMaterial* srcmat)
+{
+	int latermatnum = GetLaterMaterialNum();
+	int laterindex;
+	for (laterindex = 0; laterindex < latermatnum; laterindex++) {
+		LATERMATERIAL chkmat = GetLaterMaterial(laterindex);
+		if (srcmat && chkmat.pmaterial && (chkmat.pmaterial == srcmat)) {
+			return true;//found !!!
+		}
+	}
+
+	return false;
+}

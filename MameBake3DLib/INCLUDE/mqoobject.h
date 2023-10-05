@@ -29,6 +29,25 @@ class CBone;
 class CInfBone;
 class CRigidElem;
 
+typedef struct tag_latermaterial
+{
+	CMQOMaterial* pmaterial;
+	int offset;
+	int trinum;
+
+	void Init()
+	{
+		pmaterial = 0;
+		offset = 0;
+		trinum = 0;
+	};
+	tag_latermaterial()
+	{
+		Init();
+	};
+}LATERMATERIAL;
+
+
 class CMQOObject
 {
 public:
@@ -114,6 +133,9 @@ public:
 	//2023/09/24
 	void IncludeTransparent(std::vector<std::string> latername, float multalpha, bool* pfound_noalpha, bool* pfound_alpha);
 
+	//2023/10/05
+	int MakeLaterMaterial(std::vector<std::string> latername);
+	bool ExistInLaterMaterial(CMQOMaterial* srcmat);
 
 private:
 	void InitParams();
@@ -352,6 +374,30 @@ public:
 	{
 		m_pnode = srcnode;
 	}
+
+	int GetLaterMaterialNum()
+	{
+		return (int)m_latermaterial.size();
+	}
+	LATERMATERIAL GetLaterMaterial(int srcindex)
+	{
+		LATERMATERIAL inimat;
+		inimat.Init();
+
+		if (m_latermaterial.empty()) {
+			return inimat;
+		}
+
+		int latermatsize = GetLaterMaterialNum();
+		if ((srcindex >= 0) && (srcindex < latermatsize)) {
+			return m_latermaterial[srcindex];
+		}
+		else {
+			return inimat;
+		}
+	}
+	
+
 private:
 	int m_objfrom;
 
@@ -435,6 +481,9 @@ private:
 
 	ChaMatrix m_meshmat;
 	int m_dbgcount;
+
+	std::vector<LATERMATERIAL> m_latermaterial;
+
 };
 
 #endif

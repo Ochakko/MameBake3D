@@ -815,6 +815,7 @@ int CModel::LoadMQO( ID3D11Device* pdev, ID3D11DeviceContext* pd3dImmediateConte
 	
 	CallF(MakeDispObj(), return 1);
 
+	MakeLaterMaterial();
 
 	return 0;
 }
@@ -1175,6 +1176,7 @@ _ASSERT(m_bonelist[0]);
 		CreateObjno2DigElem();
 		MakeDispGroupForRender();
 
+		MakeLaterMaterial();//*.cha経由で読み込まれる場合は　ChaFile.cpp内でLaterTransparentタグ読み込み後に　MakeLaterMaterial()が改めて呼ばれる
 
 
 		_ASSERT(m_bonelist[0]);
@@ -1368,7 +1370,7 @@ int CModel::OnRender(bool withalpha,
 							}
 
 							CallF(SetShaderConst(curobj, btflag), return 1);
-							CallF(curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, m_latertransparent), return 1);
+							CallF(curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, curobj), return 1);
 						}
 						else if (curobj->GetPm4()) {
 							bool found_noalpha = false;
@@ -1385,7 +1387,7 @@ int CModel::OnRender(bool withalpha,
 							}
 							CallF(SetShaderConst(curobj, btflag), return 1);
 							
-							CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, m_latertransparent), return 1);
+							CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, curobj), return 1);
 						}
 						else {
 							_ASSERT(0);
@@ -1549,7 +1551,7 @@ int CModel::RenderTest(bool withalpha, ID3D11DeviceContext* pd3dImmediateContext
 					}
 
 					CallF(SetShaderConst(curobj, btflag), return 1);
-					CallF(curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, m_latertransparent), return 1);
+					CallF(curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, curobj), return 1);
 				}
 				else if (curobj->GetPm4()) {
 					bool found_noalpha = false;
@@ -1566,7 +1568,7 @@ int CModel::RenderTest(bool withalpha, ID3D11DeviceContext* pd3dImmediateContext
 					}
 					CallF(SetShaderConst(curobj, btflag), return 1);
 					
-					CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, m_latertransparent), return 1);
+					CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, curobj), return 1);
 				}
 				else {
 					_ASSERT(0);
@@ -18718,6 +18720,20 @@ int CModel::MakeDispGroupForRender()
 			if (digelem.groupno == (groupindex + 1)) {
 				m_dispgroup[groupindex].push_back(digelem);
 			}
+		}
+	}
+
+	return 0;
+}
+
+int CModel::MakeLaterMaterial()
+{
+	map<int, CMQOObject*>::iterator itrobj;
+	for (itrobj = m_object.begin(); itrobj != m_object.end(); itrobj++) {
+		CMQOObject* curobj = itrobj->second;
+		if (curobj) {
+			int result = curobj->MakeLaterMaterial(m_latertransparent);
+			_ASSERT(result == 0);
 		}
 	}
 

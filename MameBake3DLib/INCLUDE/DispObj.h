@@ -3,6 +3,8 @@
 
 #include <ChaVecCalc.h>
 
+
+class CMQOObject;
 class CMQOMaterial;
 class CPolyMesh3;
 class CPolyMesh4;
@@ -73,7 +75,7 @@ public:
  */
 	int RenderNormal(bool withalpha, 
 		ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, 
-		ChaVector4 diffusemult, ChaVector4 materialdisprate, std::vector<std::string> latername);
+		ChaVector4 diffusemult, ChaVector4 materialdisprate, CMQOObject* pmqoobj);
 
 	int RenderNormalMaterial(bool laterflag, bool withalpha,
 		ID3D11DeviceContext* pd3d11DeviceContext,
@@ -91,7 +93,7 @@ public:
  */
 	int RenderNormalPM3(bool withalpha, 
 		ID3D11DeviceContext* pd3d11DeviceContext, int lightflag, 
-		ChaVector4 diffusemult, ChaVector4 materialdisprate, std::vector<std::string> latername);
+		ChaVector4 diffusemult, ChaVector4 materialdisprate, CMQOObject* pmqoobj);
 
 	int RenderNormalPM3Material(bool laterflag, bool withalpha,
 		ID3D11DeviceContext* pd3d11DeviceContext,

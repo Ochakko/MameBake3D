@@ -292,6 +292,8 @@ public:
  */
 	int MakeObjectName();
 
+	int MakeLaterMaterial();
+
 /**
  * @fn
  * MakePolyMesh3
@@ -2020,6 +2022,7 @@ public: //accesser
 			return strerror;
 		}
 	}
+
 
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;

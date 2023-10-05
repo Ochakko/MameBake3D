@@ -1965,7 +1965,8 @@ static OWP_Label* s_placefolderlabel_1 = 0;
 static OWP_Label* s_placefolderlabel_2 = 0;
 static OWP_Label* s_placefolderlabel_3 = 0;
 //#define SHORTCUTTEXTNUM	35
-#define SHORTCUTTEXTNUM	40
+//#define SHORTCUTTEXTNUM	40
+#define SHORTCUTTEXTNUM	44
 static OWP_Label* s_shortcuttext[SHORTCUTTEXTNUM];
 
 
@@ -13793,6 +13794,11 @@ int UpdateEditedEuler()
 		return 0;
 	}
 
+
+	if (!s_model->GetCurMotInfo()) {
+		return 0;
+	}
+
 	//if (s_model && (s_model->GetLoadedFlag() == false)) {
 	//	return 0;
 	//}
@@ -14014,6 +14020,10 @@ int refreshEulerGraph()
 	//	return;
 	//}
 
+	if (!s_model->GetCurMotInfo()) {
+		return 0;
+	}
+
 
 	MOTINFO* curmotinfo = 0;
 	if (s_model && ((curmotinfo = s_model->GetCurMotInfo()) != 0)) {
@@ -14204,6 +14214,10 @@ void refreshTimeline(OWP_Timeline& timeline)
 	//if (s_model && (s_model->GetLoadedFlag() == false)) {
 	//	return;
 	//}
+
+	if (!s_model->GetCurMotInfo()) {
+		return;
+	}
 
 	int saveshowposline = timeline.getShowPosLine();
 
@@ -24903,10 +24917,12 @@ int CreateMotionBrush(double srcstart, double srcend, bool onrefreshflag)
 	//s_editrange.GetRange(&keynum, &startframe, &endframe);
 
 	if (!s_model) {
-		return -1;
+		//return -1;
+		return 2;//2023/10/05 
 	}
 	if (!s_model->GetCurMotInfo()) {
-		return -1;
+		//return -1;
+		return 2;//2023/10/05 
 	}
 
 
@@ -25186,15 +25202,15 @@ int SetLTimelineMark(int curboneno)
 						s_owpPlayerButton->setJointName(markname);//2023/01/08
 					}
 
-					if (s_owpTimeline && s_owpLTimeline) {
-						double frame;
-						for (frame = 0.0; frame < s_model->GetCurMotInfo()->frameleng; frame += 1.0) {
-							KeyInfo chkki = s_owpTimeline->ExistKey(curlineno, frame);
-							if (chkki.lineIndex >= 0) {
-								s_owpLTimeline->newKey(markname, frame, 0);
-							}
-						}
-					}
+					//if (s_owpTimeline && s_owpLTimeline) {
+					//	double frame;
+					//	for (frame = 0.0; frame < s_model->GetCurMotInfo()->frameleng; frame += 1.0) {
+					//		KeyInfo chkki = s_owpTimeline->ExistKey(curlineno, frame);
+					//		if (chkki.lineIndex >= 0) {
+					//			s_owpLTimeline->newKey(markname, frame, 0);
+					//		}
+					//	}
+					//}
 				}
 
 			}
@@ -29840,7 +29856,7 @@ int OnFrameTimeLineWnd()
 	}
 
 	if (s_lastkeyFlag) {
-		if (s_model) {
+		if (s_model && s_model->GetCurMotInfo()) {
 			double lastframe = s_model->GetCurMotInfo()->frameleng - 1.0;
 
 			s_buttonselectstart = lastframe;
@@ -30999,9 +31015,10 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 	}
 
 	if (srcbone && (docopyflag == 1)) {
-		_ASSERT(s_model->GetCurMotInfo());
-		int curmotid = s_model->GetCurMotInfo()->motid;
-		srcbone->PasteMotionPoint(g_limitdegflag, curmotid, RoundingTime(newframe), srcmp);
+		if (s_model->GetCurMotInfo()) {
+			int curmotid = s_model->GetCurMotInfo()->motid;
+			srcbone->PasteMotionPoint(g_limitdegflag, curmotid, RoundingTime(newframe), srcmp);
+		}
 	}
 
 	return 0;
@@ -31079,66 +31096,67 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double copystar
 
 	if (srcbone && (docopyflag == 1)) {
 		CMotionPoint* newmp = 0;
-		_ASSERT(s_model->GetCurMotInfo());
-		int curmotid = s_model->GetCurMotInfo()->motid;
-		newmp = srcbone->GetMotionPoint(curmotid, newframe);
-		if (newmp) {
-			if (hasNotMvParFlag == 1) {
-				CBone* parentbone = srcbone->GetParent(false);
-				if (parentbone && parentbone->IsSkeleton()) {
+		if (s_model->GetCurMotInfo()) {
+			int curmotid = s_model->GetCurMotInfo()->motid;
+			newmp = srcbone->GetMotionPoint(curmotid, newframe);
+			if (newmp) {
+				if (hasNotMvParFlag == 1) {
+					CBone* parentbone = srcbone->GetParent(false);
+					if (parentbone && parentbone->IsSkeleton()) {
 
-					operatingjointno = parentbone->GetBoneNo();//!!!! For CopyLimitedWorldToWorld()
+						operatingjointno = parentbone->GetBoneNo();//!!!! For CopyLimitedWorldToWorld()
 
-					ChaMatrix parentwm = parentbone->GetWorldMat(g_limitdegflag,
-						curmotid, newframe, 0);
-					ChaMatrix parentwm0 = parentbone->GetWorldMat(g_limitdegflag,
-						curmotid, RoundingTime(dststartframe), 0);
+						ChaMatrix parentwm = parentbone->GetWorldMat(g_limitdegflag,
+							curmotid, newframe, 0);
+						ChaMatrix parentwm0 = parentbone->GetWorldMat(g_limitdegflag,
+							curmotid, RoundingTime(dststartframe), 0);
 
 
-					if (parentbone->IsHipsBone()) {
+						if (parentbone->IsHipsBone()) {
 
-						//####################################################################################
-						//NotMvがhipsの場合
-						//ペースト後の最初のフレームのparentboneの位置が同じで　コピー側のtraanimで動くように
-						//####################################################################################
+							//####################################################################################
+							//NotMvがhipsの場合
+							//ペースト後の最初のフレームのparentboneの位置が同じで　コピー側のtraanimで動くように
+							//####################################################################################
 
-						ChaMatrix srclocalparent0;
-						srclocalparent0.SetIdentity();
-						ChaMatrix srclocalparent;
-						srclocalparent.SetIdentity();
+							ChaMatrix srclocalparent0;
+							srclocalparent0.SetIdentity();
+							ChaMatrix srclocalparent;
+							srclocalparent.SetIdentity();
 
-						vector<CPELEM2>::iterator itrcp;
-						for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
-							CBone* findbone = itrcp->bone;
-							if (findbone && findbone == parentbone) {
-								CMotionPoint findmp = itrcp->mp;
-								if (IsEqualRoundingTime(findmp.GetFrame(), srcframe)) {
-									srclocalparent = findmp.GetWorldMat();//copy情報としてローカルが格納されているがhipsなので実質global
-								}
-								if (IsEqualRoundingTime(findmp.GetFrame(), copystarttime)) {
-									srclocalparent0 = findmp.GetWorldMat();//copy情報としてローカルが格納されているがhipsなので実質global
+							vector<CPELEM2>::iterator itrcp;
+							for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
+								CBone* findbone = itrcp->bone;
+								if (findbone && findbone == parentbone) {
+									CMotionPoint findmp = itrcp->mp;
+									if (IsEqualRoundingTime(findmp.GetFrame(), srcframe)) {
+										srclocalparent = findmp.GetWorldMat();//copy情報としてローカルが格納されているがhipsなので実質global
+									}
+									if (IsEqualRoundingTime(findmp.GetFrame(), copystarttime)) {
+										srclocalparent0 = findmp.GetWorldMat();//copy情報としてローカルが格納されているがhipsなので実質global
+									}
 								}
 							}
+
+							ChaMatrix smat0, rmat0, tmat0, tanimmat0;
+							GetSRTandTraAnim(parentwm0, parentbone->GetNodeMat(), &smat0, &rmat0, &tmat0, &tanimmat0);
+							ChaMatrix srcsmat0, srcrmat0, srctmat0, srctanimmat0;
+							GetSRTandTraAnim(srclocalparent0, parentbone->GetNodeMat(), &srcsmat0, &srcrmat0, &srctmat0, &srctanimmat0);
+
+							ChaMatrix newparentwm = srclocalparent * ChaMatrixInv(srctanimmat0) * tanimmat0;
+
+							parentbone->UpdateCurrentWM(g_limitdegflag, curmotid, newframe, newparentwm);
+
 						}
+						else {
+							//######################
+							//NotMvがhips以外の場合
+							//######################
+							bool setbroflag = false;
+							srcbone->UpdateParentWMReq(g_limitdegflag, setbroflag,
+								curmotid, newframe, parentwm, parentwm);
 
-						ChaMatrix smat0, rmat0, tmat0, tanimmat0;
-						GetSRTandTraAnim(parentwm0, parentbone->GetNodeMat(), &smat0, &rmat0, &tmat0, &tanimmat0);
-						ChaMatrix srcsmat0, srcrmat0, srctmat0, srctanimmat0;
-						GetSRTandTraAnim(srclocalparent0, parentbone->GetNodeMat(), &srcsmat0, &srcrmat0, &srctmat0, &srctanimmat0);
-
-						ChaMatrix newparentwm = srclocalparent * ChaMatrixInv(srctanimmat0) * tanimmat0;
-
-						parentbone->UpdateCurrentWM(g_limitdegflag, curmotid, newframe, newparentwm);
-
-					}
-					else {
-						//######################
-						//NotMvがhips以外の場合
-						//######################
-						bool setbroflag = false;
-						srcbone->UpdateParentWMReq(g_limitdegflag, setbroflag,
-							curmotid, newframe, parentwm, parentwm);
-
+						}
 					}
 				}
 			}
@@ -33413,7 +33431,13 @@ int CreatePlaceFolderWnd()
 			L"    LButton DoubleClick :  Set value of clicked position.",
 			L"    RButton DoubleClick :  Undo value limited to 1,000,000 times.",
 			L" ",
+			L" ",
+
+			L"　DispGroupWindow",
+			L"　　RButton on a Element　：　Context Menu for SimilarCheck.",
+			L" ",
 			L" "
+
 		};
 
 		int textno;

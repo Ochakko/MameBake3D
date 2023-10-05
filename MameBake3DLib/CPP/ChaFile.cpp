@@ -740,7 +740,7 @@ int CChaFile::ReadChara(bool limitdegflag, int charanum, int characnt, XMLIOBUF*
 	for (laterno = 0; laterno < laternamenum; laterno++) {
 		newmodel->AddLaterTransparent(latername[laterno]);
 	}
-
+	newmodel->MakeLaterMaterial();
 
 	{
 		WCHAR digfilename[MAX_PATH] = { 0L };
