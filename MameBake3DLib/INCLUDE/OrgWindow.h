@@ -3981,6 +3981,7 @@ void s_dummyfunc()
 
 			//buttonListener = [](){s_dummyfunc();};
 			buttonListener = NULL;
+			contextmenuListener = NULL;
 		}
 		~OWP_CheckBoxA(){
 			delete[] name;
@@ -3999,6 +4000,13 @@ void s_dummyfunc()
 			//	(e.localY >= pos.y) && (e.localY <= (pos.y + size.y))) {
 				setValue(value ^ true);
 			//}
+		}
+		//	Method : コンテクストメニューイベント受信
+		virtual void onRButtonDown(const MouseEvent& e) {
+			//リスナーコール
+			if (this->contextmenuListener != NULL) {
+				(this->contextmenuListener)();
+			}
 		}
 		//	Method : 左マウスボタン ダブルクリックイベント受信
 		virtual void onLButtonDBLCLK(const MouseEvent& e) {//2023/10/04
@@ -4031,9 +4039,19 @@ void s_dummyfunc()
 		bool getValue() const{
 			return value;
 		}
+		int getName(TCHAR* dstname, int dstleng) {
+			if (dstname && (dstleng > 0) && (dstleng <= 512)) {
+				_tcscpy_s(dstname, dstleng, name);
+				return 0;
+			}
+			return 1;
+		}
 		//	Accessor : buttonListener
 		void setButtonListener(std::function<void()> listener){
 			this->buttonListener= listener;
+		}
+		void setContextMenuListener(std::function<void()> listener) {
+			this->contextmenuListener = listener;
 		}
 
 	private:
@@ -4041,6 +4059,7 @@ void s_dummyfunc()
 		TCHAR *name;
 		bool value;
 		std::function<void()> buttonListener;
+		std::function<void()> contextmenuListener;//右クリック用リスナー
 
 		static const int SIZE_Y= 15;
 		static const int BOX_POS_X= 3;
@@ -10463,6 +10482,26 @@ void s_dummyfunc()
 		void onRButtonDown(const MouseEvent& e){
 			if (!canMouseControll) return;
 
+			//内部パーツ
+			std::list<OrgWindowParts*>::iterator plItr;
+			for (plItr = partsList.begin(); plItr != partsList.end(); plItr++) {
+				if (*plItr) {
+					WindowSize partsSize = (*plItr)->getSize();
+					int tmpPosX = e.localX + pos.x - (*plItr)->getPos().x;
+					int tmpPosY = e.localY + pos.y - (*plItr)->getPos().y;
+
+					MouseEvent mouseEvent;
+					mouseEvent.globalX = e.globalX;
+					mouseEvent.globalY = e.globalY;
+					mouseEvent.localX = tmpPosX;
+					mouseEvent.localY = tmpPosY;
+					mouseEvent.altKey = e.altKey;
+					mouseEvent.shiftKey = e.shiftKey;
+					mouseEvent.ctrlKey = e.ctrlKey;
+
+					(*plItr)->onRButtonDown(mouseEvent);
+				}
+			}
 		}
 		///	Method : 右マウスボタンアップイベント受信
 		void onRButtonUp(const MouseEvent& e){

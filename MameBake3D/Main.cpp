@@ -2216,6 +2216,8 @@ static bool s_LstopFlag = false;
 //static int s_LstopDoneCount = 0;
 static bool s_retargetguiFlag = false;
 
+static int s_checksimilarFlag = false;
+static int s_checksimilarobjno = 0;
 
 static int s_calclimitedwmState = 0;
 
@@ -2296,6 +2298,7 @@ static CEditRange s_previewrange;
 #define MENUOFFSET_GETSYMROOTMODE		(MENUOFFSET_BONERCLICK + 100)
 #define MENUOFFSET_INTERPOLATEFROMTOOL		(MENUOFFSET_GETSYMROOTMODE + 30)
 #define MENUOFFSET_FILTERFROMTOOL		(MENUOFFSET_INTERPOLATEFROMTOOL + 30)
+#define MENUOFFSET_CHECKSIMILARGROUP		(MENUOFFSET_FILTERFROMTOOL + 30)
 
 
 #define SPAXISNUM	3
@@ -3051,6 +3054,8 @@ static int CheckStr_float(const WCHAR* srcstr);
 
 static int CreateDispGroupWnd();
 static int DestroyDispGroupWnd();
+static int CheckSimilarMenu();
+static int CheckSimilarGroup(int opetype);
 
 static int UpdateCameraPosAndTarget();
 
@@ -4593,6 +4598,8 @@ void InitApp()
 	s_calclimitedwmState = 0;
 	s_180DegFlag = false;
 	s_scaleAllInitFlag = false;
+	s_checksimilarFlag = false;
+	s_checksimilarobjno = 0;
 
 	s_temppath[0] = 0L;
 	::GetTempPathW(MAX_PATH, s_temppath);
@@ -9117,6 +9124,13 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				FilterFuncDlg();
 				//s_filterState = 0;//2023/08/09コメントアウト:前回の値を保持
 				s_underfilteringbymenu = false;
+			}
+		}
+		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_CHECKSIMILARGROUP)) &&
+			(menuid <= (ID_RMENU_0 + MENUOFFSET_CHECKSIMILARGROUP + 3))) {
+			if (s_model && s_groupWnd) {
+				int opetype = menuid - (ID_RMENU_0 + MENUOFFSET_CHECKSIMILARGROUP);
+				CheckSimilarGroup(opetype);
 			}
 		}
 		//else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_INITMPFROMTOOL)) && (menuid <= (ID_RMENU_0 + 3 * 3 + MENUOFFSET_INITMPFROMTOOL))) {
@@ -30142,6 +30156,13 @@ int OnFrameToolWnd()
 	}
 
 
+	//DispGroupWnd チェックボックスを右クリック　類似をチェックするためのコンテクストメニューを出す
+	if (s_checksimilarFlag) {
+		CheckSimilarMenu();
+		s_checksimilarFlag = false;
+	}
+
+
 
 	if (s_selecthand == 1) {
 		if (s_model) {
@@ -33877,6 +33898,8 @@ int CreateDispGroupWnd()
 			int objno1;
 			for (objno1 = 0; objno1 < s_grouplinenum; objno1++) {
 				if (s_groupobjvec[objno1]) {
+
+					//左クリックで　チェックボックスのチェックをオンオフ
 					s_groupobjvec[objno1]->setButtonListener([objno1]() {
 						if (s_model) {
 							if (s_groupUnderGetting == false) {//s_groupgetBボタンの処理中は　groupobjvecのチェック処理をスキップ)								
@@ -33911,6 +33934,16 @@ int CreateDispGroupWnd()
 							}
 						}
 					});
+
+
+					//右クリックメニュー
+					s_groupobjvec[objno1]->setContextMenuListener([objno1]() {
+						if (s_model && (s_groupUnderGetting == false) && (s_checksimilarFlag == false)) {//s_groupgetBボタンの処理中は　groupobjvecのチェック処理をスキップ)								
+								s_checksimilarFlag = true;
+								s_checksimilarobjno = objno1;
+						}
+					});
+
 				}
 			}
 		}
@@ -33938,6 +33971,185 @@ int CreateDispGroupWnd()
 
 	return 0;
 }
+
+int CheckSimilarGroup(int opetype)
+{
+	if (s_model && (s_grouplinenum > 0) && 
+		(opetype >= 0) && (opetype <= 3) && 
+		(s_checksimilarobjno >= 0) && (s_checksimilarobjno < s_grouplinenum)) {
+		
+		OWP_CheckBoxA* srccheckbox = s_groupobjvec[s_checksimilarobjno];
+		if (srccheckbox) {
+			WCHAR similarname[512] = { 0L };
+			int result = srccheckbox->getName(similarname, 512);
+			if ((result == 0) && (similarname[0] != 0L)) {
+				WCHAR pattern0[512] = { 0L };
+
+				WCHAR* patptr0 = wcschr(similarname, TEXT('_'));
+				if (patptr0) {
+					*patptr0 = 0L;
+					wcscpy_s(pattern0, 512, similarname);
+					int pattern0len = (int)wcslen(pattern0);
+
+					if ((opetype == 0) || (opetype == 1)) {
+						//#####################
+						//pattern include num
+						//#####################
+
+						int objno1;
+						for (objno1 = 0; objno1 < s_grouplinenum; objno1++) {
+							if (s_groupobjvec[objno1]) {
+								WCHAR chkname[512] = { 0L };
+								int result1 = s_groupobjvec[objno1]->getName(chkname, 512);
+								if ((result == 0) && (chkname[0] != 0L)) {
+									WCHAR* findptr = wcsstr(chkname, pattern0);//check if pattern is included
+									if (findptr) {
+										if (opetype == 0) {
+											s_groupobjvec[objno1]->setValue(true);
+										}
+										else if (opetype == 1) {
+											s_groupobjvec[objno1]->setValue(false);
+										}
+										else {
+											_ASSERT(0);
+											return 1;
+										}
+									}
+								}
+							}
+						}
+					}
+					else if ((opetype == 2) || (opetype == 3)) {
+						//#####################
+						//pattern exclude num
+						//#####################
+
+						bool numflag = true;
+						int findpos = pattern0len - 1;
+						while (numflag && (findpos > 1)) {
+							WCHAR chkwc = pattern0[findpos];
+							if ((chkwc == TEXT('0')) || (chkwc == TEXT('1')) || (chkwc == TEXT('2')) || (chkwc == TEXT('3')) || (chkwc == TEXT('4')) ||
+								(chkwc == TEXT('5')) || (chkwc == TEXT('6')) || (chkwc == TEXT('7')) || (chkwc == TEXT('8')) || (chkwc == TEXT('9'))) {
+								findpos--;
+							}
+							else {
+								numflag = false;
+								break;
+							}
+						}
+						if ((findpos >= 0) && (findpos < pattern0len)) {
+							pattern0[findpos + 1] = 0L;
+
+							int objno1;
+							for (objno1 = 0; objno1 < s_grouplinenum; objno1++) {
+								if (s_groupobjvec[objno1]) {
+									WCHAR chkname[512] = { 0L };
+									int result1 = s_groupobjvec[objno1]->getName(chkname, 512);
+									if ((result == 0) && (chkname[0] != 0L)) {
+										WCHAR* findptr = wcsstr(chkname, pattern0);//check if pattern is included
+										if (findptr) {
+											if (opetype == 2) {
+												s_groupobjvec[objno1]->setValue(true);
+											}
+											else if (opetype == 3) {
+												s_groupobjvec[objno1]->setValue(false);
+											}
+											else {
+												_ASSERT(0);
+												return 1;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					else {
+						_ASSERT(0);
+						return 1;
+					}
+				}
+			}
+		}
+	}
+	else {
+		return 1;
+	}
+
+	return 0;
+}
+
+
+int CheckSimilarMenu()
+{
+	if (!s_model) {
+		return 0;
+	}
+
+	HWND parwnd;
+	parwnd = s_3dwnd;
+
+
+	CRMenuMain* rmenu;
+	rmenu = new CRMenuMain(IDR_RMENU);
+	if (!rmenu) {
+		return 1;
+	}
+	int ret;
+	ret = rmenu->Create(parwnd, MENUOFFSET_CHECKSIMILARGROUP);
+	if (ret) {
+		return 1;
+	}
+
+	HMENU submenu = rmenu->GetSubMenu();
+
+	int menunum;
+	menunum = GetMenuItemCount(submenu);
+	int menuno;
+	for (menuno = 0; menuno < menunum; menuno++)
+	{
+		RemoveMenu(submenu, 0, MF_BYPOSITION);
+	}
+
+
+	WCHAR strmenu[256] = { 0L };
+	int setmenuid;
+
+	setmenuid = ID_RMENU_0 + 0 + MENUOFFSET_CHECKSIMILARGROUP;
+	wcscpy_s(strmenu, 256, L"SimilarON (pattern include number)");
+	AppendMenu(submenu, MF_STRING, setmenuid, strmenu);
+	
+	setmenuid = ID_RMENU_0 + 1 + MENUOFFSET_CHECKSIMILARGROUP;
+	wcscpy_s(strmenu, 256, L"SimilarOFF (pattern include number)");
+	AppendMenu(submenu, MF_STRING, setmenuid, strmenu);
+
+	setmenuid = ID_RMENU_0 + 2 + MENUOFFSET_CHECKSIMILARGROUP;
+	wcscpy_s(strmenu, 256, L"SimilarON (pattern exclude number)");
+	AppendMenu(submenu, MF_STRING, setmenuid, strmenu);
+
+	setmenuid = ID_RMENU_0 + 3 + MENUOFFSET_CHECKSIMILARGROUP;
+	wcscpy_s(strmenu, 256, L"SimilarOFF (pattern exclude number)");
+	AppendMenu(submenu, MF_STRING, setmenuid, strmenu);
+
+
+
+	POINT pt;
+	GetCursorPos(&pt);
+	//::ScreenToClient(parwnd, &pt);
+
+	s_cursubmenu = rmenu->GetSubMenu();
+
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)1);
+	int menuid;
+	menuid = rmenu->TrackPopupMenu(pt);
+
+	rmenu->Destroy();
+	delete rmenu;
+	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+
+	return 0;
+}
+
 
 
 int DestroyDispGroupWnd()
