@@ -7757,6 +7757,75 @@ int CModel::SetMaterialName()
 	return 0;
 }
 
+int CModel::GetTextureNameVec(std::vector<std::string>& dstvec)
+{
+	dstvec.clear();
+
+	vector<string> tmpvec;
+
+	//MQOファイル用のマテリアルを格納
+	map<int, CMQOMaterial*>::iterator itrmat;
+	for (itrmat = m_material.begin(); itrmat != m_material.end(); itrmat++) {
+		CMQOMaterial* curmat = itrmat->second;
+		if (curmat) {
+			if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
+				string curtexname = curmat->GetTex();
+
+
+				bool sameflag = false;
+				vector<string>::iterator itrchk;
+				for (itrchk = dstvec.begin(); itrchk != dstvec.end(); itrchk++) {
+					if (*itrchk == curtexname) {
+						sameflag = true;
+						break;
+					}
+				}
+
+				if (sameflag == false) {
+					dstvec.push_back(curtexname);//重複を除いて格納
+				}
+				tmpvec.push_back(curtexname);//textureが在るものは重複可で全部格納
+			}
+		}
+	}
+
+
+	//fbxファイル用のマテリアルを格納
+	map<int, CMQOObject*>::iterator itrobj;
+	for (itrobj = m_object.begin(); itrobj != m_object.end(); itrobj++) {
+		CMQOObject* curobj = itrobj->second;
+		if (curobj) {
+			map<int, CMQOMaterial*>::iterator itrmat2;
+			for (itrmat2 = curobj->GetMaterialBegin(); itrmat2 != curobj->GetMaterialEnd(); itrmat2++) {
+				CMQOMaterial* curmat2 = itrmat2->second;
+				if (curmat2) {
+					if (curmat2->GetTex() && (strlen(curmat2->GetTex()) > 0)) {
+						string curtexname2 = curmat2->GetTex();
+							
+						bool sameflag2 = false;
+						vector<string>::iterator itrchk2;
+						for (itrchk2 = dstvec.begin(); itrchk2 != dstvec.end(); itrchk2++) {
+							if (*itrchk2 == curtexname2) {
+								sameflag2 = true;
+								break;
+							}
+						}
+
+						if (sameflag2 == false) {
+							dstvec.push_back(curtexname2);//重複を除いて格納
+						}
+						tmpvec.push_back(curtexname2);//textureが在るものは重複可で全部格納
+
+					}
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
+
 
 int CModel::DestroyBtObject()
 {
@@ -18740,5 +18809,26 @@ int CModel::MakeLaterMaterial()
 	return 0;
 }
 
+int CModel::SetLaterTransparentVec(std::vector<std::wstring> srclatervec)
+{
+	//###########
+	//丸ごと設定
+	//###########
+	m_latertransparent.clear();
+
+	int newlaternum = (int)srclatervec.size();
+	int laterno;
+	for (laterno = 0; laterno < newlaternum; laterno++) {
+		WCHAR wcname[512] = { 0L };
+		wcscpy_s(wcname, 512, srclatervec[laterno].c_str());
+		char mbname[512] = { 0 };
+		WideCharToMultiByte(CP_ACP, 0, wcname, 512, mbname, 512, NULL, NULL);
+		m_latertransparent.push_back(mbname);
+	}
+
+	MakeLaterMaterial();
+
+	return 0;
+}
 
 

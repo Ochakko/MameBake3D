@@ -2983,6 +2983,7 @@ LRESULT CALLBACK SaveGcoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK CheckAxisTypeProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK LightsForEditDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
+LRESULT CALLBACK LaterTransparentDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK RotAxisDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK CustomRigDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
 LRESULT CALLBACK AboutDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp);
@@ -3056,7 +3057,8 @@ static int Dlg2LightsEach(HWND hDlgWnd, int lightindex,
 static int CheckStr_float(const WCHAR* srcstr);
 
 static int CreateLaterTransparentWnd();
-
+static int LaterTransparent2Dlg(HWND hDlgWnd);
+static int Dlg2LaterTransparent(HWND hDlgWnd);
 
 
 static int CreateDispGroupWnd();
@@ -3922,7 +3924,7 @@ INT WINAPI wWinMain(
 
 	CreateLightsWnd();
 	CreateDispGroupWnd();
-	CreateLaterTransparentWnd();
+	//CreateLaterTransparentWnd();//s_modelが設定されてから作成する
 
 	if (s_dollyhistorydlg.GetCreatedFlag() == false) {
 		int result = CreateDollyHistoryDlg();
@@ -15233,6 +15235,8 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 
 		SetMainWindowTitle();
 		ShowDispGroupWnd(s_spdispsw[SPDISPSW_DISPGROUP].state);
+		ShowLaterTransparentWnd(s_spdispsw[SPDISPSW_LATERTRANSPARENT].state);
+
 
 		s_underselectmodel = false;
 		return 0;//!!!!!!!!!
@@ -15255,6 +15259,7 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 
 		SetMainWindowTitle();
 		ShowDispGroupWnd(s_spdispsw[SPDISPSW_DISPGROUP].state);
+		ShowLaterTransparentWnd(s_spdispsw[SPDISPSW_LATERTRANSPARENT].state);
 
 
 		s_underselectmodel = false;
@@ -15285,6 +15290,7 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 			DispObjPanel();
 			refreshModelPanel();
 			ShowDispGroupWnd(s_spdispsw[SPDISPSW_DISPGROUP].state);
+			ShowLaterTransparentWnd(s_spdispsw[SPDISPSW_LATERTRANSPARENT].state);
 
 			OnAnimMenu(dorefreshtl, s_motmenuindexmap[s_model]);
 		}
@@ -22573,10 +22579,21 @@ int SetSpRet2PrevParams()
 		return 0;
 	}
 
+	float spretwidth;
+	float spretheight;
+	int spretshift = 0;
+
+	if (g_4kresolution) {
+		spretwidth = 32.0;
+		spretheight = 32.0;
+	}
+	else {
+		spretwidth = 18.0;
+		spretheight = 18.0;
+	}
+
+
 	{
-		float spretwidth = 32.0f;
-		float spretheight = 32.0f;
-		int spretshift = 0;
 		//s_spret2prev.dispcenter.x = (LONG)(16.0f + 8.0f);
 		s_spret2prev.dispcenter.x = s_guibarX0 - 70 - (LONG)(16.0f + 8.0f);
 		//s_spret2prev.dispcenter.y = 486;
@@ -22603,9 +22620,6 @@ int SetSpRet2PrevParams()
 	}
 
 	{
-		float spretwidth = 32.0f;
-		float spretheight = 32.0f;
-		int spretshift = 0;
 
 		int spgshift = 6;
 		s_spret2prev2.dispcenter.x = s_spcam[2].dispcenter.x - ((int)s_spsizeSmall + 6) * 4;
@@ -23836,11 +23850,19 @@ bool PickSpFrog(POINT srcpos)
 		return 0;
 	}
 
-	int starty0 = s_spret2prev.dispcenter.y - 16;
-	int endy0 = starty0 + 32;
+	int spretwidth;
+	if (g_4kresolution) {
+		spretwidth = 32;
+	}
+	else {
+		spretwidth = 18;
+	}
+
+	int starty0 = s_spret2prev.dispcenter.y - spretwidth / 2;
+	int endy0 = starty0 + spretwidth;
 	if ((srcpos.y >= starty0) && (srcpos.y <= endy0)) {
-		int startx0 = s_spret2prev.dispcenter.x - 16;
-		int endx0 = startx0 + 32;
+		int startx0 = s_spret2prev.dispcenter.x - spretwidth / 2;
+		int endx0 = startx0 + spretwidth;
 		if ((srcpos.x >= startx0) && (srcpos.x <= endx0)) {
 			return true;
 		}
@@ -23864,11 +23886,20 @@ bool PickSpFrog2(POINT srcpos)
 	}
 
 
-	int starty0 = s_spret2prev2.dispcenter.y - 16;
-	int endy0 = starty0 + 32;
+	int spretwidth;
+	if (g_4kresolution) {
+		spretwidth = 32;
+	}
+	else {
+		spretwidth = 18;
+	}
+
+
+	int starty0 = s_spret2prev2.dispcenter.y - spretwidth / 2;
+	int endy0 = starty0 + spretwidth;
 	if ((srcpos.y >= starty0) && (srcpos.y <= endy0)) {
-		int startx0 = s_spret2prev2.dispcenter.x - 16;
-		int endx0 = startx0 + 32;
+		int startx0 = s_spret2prev2.dispcenter.x - spretwidth / 2;
+		int endx0 = startx0 + spretwidth;
 		if ((srcpos.x >= startx0) && (srcpos.x <= endx0)) {
 			return true;
 		}
@@ -25647,50 +25678,50 @@ int CreateLaterTransparentWnd()
 	////s_dseullimitctrls.clear();
 
 
-	//s_lightsforeditdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_LIGHTSFOREDITDLG), s_mainhwnd, (DLGPROC)LightsForEditDlgProc);
-	//if (!s_lightsforeditdlg) {
-	//	_ASSERT(0);
-	//	return 1;
-	//}
+	s_latertransparentdlg = CreateDialogW((HINSTANCE)GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_LATERTRANSPARENTDLG), s_mainhwnd, (DLGPROC)LaterTransparentDlgProc);
+	if (!s_latertransparentdlg) {
+		_ASSERT(0);
+		return 1;
+	}
 
-	//int windowposx;
-	//if (g_4kresolution) {
-	//	windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
-	//}
-	//else {
-	//	windowposx = s_timelinewidth + s_mainwidth + 16;
-	//}
+	int windowposx;
+	if (g_4kresolution) {
+		windowposx = s_timelinewidth + s_mainwidth + s_modelwindowwidth + 16;
+	}
+	else {
+		windowposx = s_timelinewidth + s_mainwidth + 16;
+	}
 
-	//SetParent(s_lightsforeditdlg, s_mainhwnd);
-	//SetWindowPos(
-	//	s_lightsforeditdlg,
-	//	HWND_TOP,
-	//	windowposx,
-	//	s_sidemenuheight,
-	//	s_sidewidth,
-	//	s_sideheight,
-	//	SWP_SHOWWINDOW
-	//);
+	SetParent(s_latertransparentdlg, s_mainhwnd);
+	SetWindowPos(
+		s_latertransparentdlg,
+		HWND_TOP,
+		windowposx,
+		s_sidemenuheight,
+		s_sidewidth,
+		s_sideheight,
+		SWP_SHOWWINDOW
+	);
 
-	//////s_dseullimitctrls.push_back(IDD_ANGLELIMITDLG);
-	////s_dseullimitctrls.push_back(IDC_BONEAXIS);
-	////s_dseullimitctrls.push_back(IDC_EDIT_XL);
-	////s_dseullimitctrls.push_back(IDC_EDIT_XU);
-	////s_dseullimitctrls.push_back(IDC_EDIT_YL);
-	////s_dseullimitctrls.push_back(IDC_EDIT_YU);
-	////s_dseullimitctrls.push_back(IDC_EDIT_ZL);
-	////s_dseullimitctrls.push_back(IDC_EDIT_ZU);
-	////s_dseullimitctrls.push_back(IDOK);
-
-
-	////ShowWindow(s_lightsforeditdlg, SW_SHOW);
-	////UpdateWindow(s_lightsforeditdlg);
-
-	//ShowWindow(s_lightsforeditdlg, SW_HIDE);
-	////UpdateWindow(s_lightsforeditdlg);
+	////s_dseullimitctrls.push_back(IDD_ANGLELIMITDLG);
+	//s_dseullimitctrls.push_back(IDC_BONEAXIS);
+	//s_dseullimitctrls.push_back(IDC_EDIT_XL);
+	//s_dseullimitctrls.push_back(IDC_EDIT_XU);
+	//s_dseullimitctrls.push_back(IDC_EDIT_YL);
+	//s_dseullimitctrls.push_back(IDC_EDIT_YU);
+	//s_dseullimitctrls.push_back(IDC_EDIT_ZL);
+	//s_dseullimitctrls.push_back(IDC_EDIT_ZU);
+	//s_dseullimitctrls.push_back(IDOK);
 
 
-	////AngleLimit2Bone();
+	//ShowWindow(s_lightsforeditdlg, SW_SHOW);
+	//UpdateWindow(s_lightsforeditdlg);
+
+	ShowWindow(s_latertransparentdlg, SW_HIDE);
+	//UpdateWindow(s_lightsforeditdlg);
+
+
+	//AngleLimit2Bone();
 
 
 	return 0;
@@ -26558,6 +26589,122 @@ int Dlg2Lights(HWND hDlgWnd, int lightindex)
 }
 
 
+int LaterTransparent2Dlg(HWND hDlgWnd)
+{
+
+	//m_list_wnd.SendMessage( LB_RESETCONTENT, 0, 0 );
+	HWND list1wnd = GetDlgItem(hDlgWnd, IDC_LIST1);
+	if (!list1wnd) {
+		_ASSERT(0);
+		return 1;
+	}
+	HWND list2wnd = GetDlgItem(hDlgWnd, IDC_LIST2);
+	if (!list2wnd) {
+		_ASSERT(0);
+		return 1;
+	}
+	::SendMessage(list1wnd, LB_RESETCONTENT, 0, 0);
+	::SendMessage(list2wnd, LB_RESETCONTENT, 0, 0);
+
+	if (!s_model) {
+		return 0;
+	}
+
+	vector<string> modelstexturevec;
+	int result = s_model->GetTextureNameVec(modelstexturevec);
+	if (result == 0) {
+		int texturenum = (int)modelstexturevec.size();
+
+		int listno;
+		for (listno = 0; listno < texturenum; listno++) {
+			string curtexname = modelstexturevec[listno];
+			char mbtexname[512] = { 0 };
+			strcpy_s(mbtexname, 512, curtexname.c_str());
+			WCHAR wctexname[512] = { 0L };
+			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, mbtexname, 512, wctexname, 512);
+
+			LRESULT lres;
+			lres = SendMessage(list1wnd, LB_ADDSTRING, 0, (LPARAM)wctexname);
+			if ((lres == LB_ERR) || (lres == LB_ERRSPACE)) {
+				_ASSERT(0);
+				return 1;
+			}
+		}
+
+
+		int laternum = s_model->GetLaterTransparentNum();
+		int listno2;
+		for (listno2 = 0; listno2 < laternum; listno2++) {
+			string curlatername = s_model->GetLaterTransparent(listno2);
+			char mblastername[512] = { 0 };
+			strcpy_s(mblastername, 512, curlatername.c_str());
+			WCHAR wclastername[512] = { 0L };
+			MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, mblastername, 512, wclastername, 512);
+
+
+
+			LRESULT lres2;
+			lres2 = SendMessage(list2wnd, LB_ADDSTRING, 0, (LPARAM)wclastername);
+			if ((lres2 == LB_ERR) || (lres2 == LB_ERRSPACE)) {
+				_ASSERT(0);
+				return 1;
+			}
+		}
+
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+
+	return 0;
+}
+
+
+int Dlg2LaterTransparent(HWND hDlgWnd)
+{
+	if (!s_model) {
+		return 0;
+	}
+
+	HWND list2wnd = GetDlgItem(hDlgWnd, IDC_LIST2);
+	if (!list2wnd) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	int elemnum = (int)SendMessage(list2wnd, LB_GETCOUNT, 0, 0);
+
+	//リスト２をsavelist2に格納
+	vector<wstring> savelist2;
+	int elemno;
+	for (elemno = 0; elemno < elemnum; elemno++) {
+		int textlen;
+		textlen = (int)SendMessage(list2wnd, LB_GETTEXTLEN, 0, 0);
+		if ((textlen >= 0) && (textlen < 512)) {
+			WCHAR text2[512] = { 0L };
+			int result = (int)SendMessage(list2wnd, LB_GETTEXT, (WPARAM)elemno, (LPARAM)(&text2[0]));
+			if (result != LB_ERR) {
+				savelist2.push_back(text2);
+			}
+			else {
+				_ASSERT(0);
+				return 1;
+			}
+		}
+	}
+
+
+	int result2 = s_model->SetLaterTransparentVec(savelist2);//丸ごと設定
+	if (result2 != 0) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	return 0;
+}
 
 int AngleLimit2Dlg(HWND hDlgWnd, bool updateonlycheckeul)
 {
@@ -27232,6 +27379,269 @@ int ChooseLightColorBar(HWND hDlgWnd, int lightindex, int idcolorbar)
 	}
 
 	return 0;
+}
+LRESULT CALLBACK LaterTransparentDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+
+	switch (msg) {
+	case WM_INITDIALOG:
+	{
+		LaterTransparent2Dlg(hDlgWnd);
+		return FALSE;
+	}
+	break;
+
+	case WM_COMMAND:
+
+		switch (LOWORD(wp)) {
+
+		case IDC_ADDTOLATERTRANSPARENT:
+		{
+			HWND list1wnd = GetDlgItem(hDlgWnd, IDC_LIST1);
+			HWND list2wnd = GetDlgItem(hDlgWnd, IDC_LIST2);
+			if (list1wnd && list2wnd) {
+				int selindex1;
+				selindex1 = (int)SendMessage(list1wnd, LB_GETCURSEL, 0, 0);
+				if (selindex1 != LB_ERR) {//何も選択していないときもLB_ERRが返る
+					int textlen1;
+					textlen1 = (int)SendMessage(list1wnd, LB_GETTEXTLEN, 0, 0);
+					if ((textlen1 >= 0) && (textlen1 < 512)) {
+						WCHAR text1[512] = { 0L };
+						int result1 = (int)SendMessage(list1wnd, LB_GETTEXT, (WPARAM)selindex1, (LPARAM)(&text1[0]));
+						if (result1 != LB_ERR) {
+							LRESULT lres2;
+							lres2 = SendMessage(list2wnd, LB_ADDSTRING, 0, (LPARAM)(&text1[0]));
+							if ((lres2 == LB_ERR) || (lres2 == LB_ERRSPACE)) {
+								_ASSERT(0);
+								return FALSE;
+							}
+						}
+					}
+				}
+				else {
+					_ASSERT(0);
+					return FALSE;
+				}
+
+				Dlg2LaterTransparent(hDlgWnd);
+			}
+		}
+		break;
+		case IDC_DELETEALL:
+		{
+			HWND list2wnd = GetDlgItem(hDlgWnd, IDC_LIST2);
+			if (list2wnd) {
+				::SendMessage(list2wnd, LB_RESETCONTENT, 0, 0);
+
+				Dlg2LaterTransparent(hDlgWnd);
+			}
+
+		}
+		break;
+		case IDC_DELETEONE:
+		{
+			HWND list2wnd = GetDlgItem(hDlgWnd, IDC_LIST2);
+			if (list2wnd) {
+				int selindex;
+				selindex = (int)SendMessage(list2wnd, LB_GETCURSEL, 0, 0);
+				if (selindex != LB_ERR) {//何も選択していないときもLB_ERRが返る
+					int ret;
+					ret = (int)SendMessage(list2wnd, LB_DELETESTRING, (WPARAM)selindex, 0);
+					if (ret == LB_ERR) {
+						_ASSERT(0);
+						return FALSE;
+					}
+
+					Dlg2LaterTransparent(hDlgWnd);
+				}
+				else {
+					_ASSERT(0);
+					return FALSE;
+				}
+			}
+		}
+		break;
+		case IDC_UPORDER:
+		{
+			HWND list2wnd = GetDlgItem(hDlgWnd, IDC_LIST2);
+			if (list2wnd) {
+				int selindex;
+				selindex = (int)SendMessage(list2wnd, LB_GETCURSEL, 0, 0);
+				if (selindex != LB_ERR) {//何も選択していないときもLB_ERRが返る
+
+					int elemnum = (int)SendMessage(list2wnd, LB_GETCOUNT, 0, 0);
+
+					if ((selindex != 0) && (elemnum > 0)) {//一番上以外の要素に対して操作
+
+						//操作前のリストをsavelist2に格納
+						vector<wstring> savelist2;
+						int elemno;
+						for (elemno = 0; elemno < elemnum; elemno++) {
+							int textlen;
+							textlen = (int)SendMessage(list2wnd, LB_GETTEXTLEN, 0, 0);
+							if ((textlen >= 0) && (textlen < 512)) {
+								WCHAR text2[512] = { 0L };
+								int result = (int)SendMessage(list2wnd, LB_GETTEXT, (WPARAM)elemno, (LPARAM)(&text2[0]));
+								if (result != LB_ERR) {
+									savelist2.push_back(text2);
+								}
+								else {
+									_ASSERT(0);
+									return FALSE;
+								}
+							}
+						}
+
+						//リストを全削除
+						::SendMessage(list2wnd, LB_RESETCONTENT, 0, 0);
+
+						//順番を変えて　list2にAddし直し
+						int listno2;
+						for (listno2 = 0; listno2 < elemnum; listno2++) {
+							if (listno2 == (selindex - 1)) {
+								LRESULT lres0;
+								lres0 = SendMessage(list2wnd, LB_ADDSTRING, 0, (LPARAM)savelist2[selindex].c_str());
+								if ((lres0 == LB_ERR) || (lres0 == LB_ERRSPACE)) {
+									_ASSERT(0);
+									return FALSE;
+								}
+							}
+							else if (listno2 == selindex) {
+								LRESULT lres1;
+								lres1 = SendMessage(list2wnd, LB_ADDSTRING, 0, (LPARAM)savelist2[selindex - 1].c_str());
+								if ((lres1 == LB_ERR) || (lres1 == LB_ERRSPACE)) {
+									_ASSERT(0);
+									return FALSE;
+								}
+							}
+							else {
+								LRESULT lres2;
+								lres2 = SendMessage(list2wnd, LB_ADDSTRING, 0, (LPARAM)savelist2[listno2].c_str());
+								if ((lres2 == LB_ERR) || (lres2 == LB_ERRSPACE)) {
+									_ASSERT(0);
+									return FALSE;
+								}
+							}
+
+						}
+
+						Dlg2LaterTransparent(hDlgWnd);
+					}
+					else {
+						//一番上の要素に対してはUpOrder操作をしない
+					}
+				}
+				else {
+					_ASSERT(0);
+					return FALSE;
+				}
+			}
+		}
+		break;
+		case IDC_DOWNORDER:
+		{
+			HWND list2wnd = GetDlgItem(hDlgWnd, IDC_LIST2);
+			if (list2wnd) {
+				int selindex;
+				selindex = (int)SendMessage(list2wnd, LB_GETCURSEL, 0, 0);
+				if (selindex != LB_ERR) {//何も選択していないときもLB_ERRが返る
+
+					int elemnum = (int)SendMessage(list2wnd, LB_GETCOUNT, 0, 0);
+
+					if ((selindex != (elemnum - 1)) && (elemnum > 0)) {//一番下以外の要素に対して操作
+
+						//操作前のリストをsavelist2に格納
+						vector<wstring> savelist2;
+						int elemno;
+						for (elemno = 0; elemno < elemnum; elemno++) {
+							int textlen;
+							textlen = (int)SendMessage(list2wnd, LB_GETTEXTLEN, 0, 0);
+							if ((textlen >= 0) && (textlen < 512)) {
+								WCHAR text2[512] = { 0L };
+								int result = (int)SendMessage(list2wnd, LB_GETTEXT, (WPARAM)elemno, (LPARAM)(&text2[0]));
+								if (result != LB_ERR) {
+									savelist2.push_back(text2);
+								}
+								else {
+									_ASSERT(0);
+									return FALSE;
+								}
+							}
+						}
+
+						//リストを全削除
+						::SendMessage(list2wnd, LB_RESETCONTENT, 0, 0);
+
+						//順番を変えて　list2にAddし直し
+						int listno2;
+						for (listno2 = 0; listno2 < elemnum; listno2++) {
+							if (listno2 == selindex) {
+								LRESULT lres0;
+								lres0 = SendMessage(list2wnd, LB_ADDSTRING, 0, (LPARAM)savelist2[selindex + 1].c_str());
+								if ((lres0 == LB_ERR) || (lres0 == LB_ERRSPACE)) {
+									_ASSERT(0);
+									return FALSE;
+								}
+							}
+							else if (listno2 == (selindex + 1)) {
+								LRESULT lres1;
+								lres1 = SendMessage(list2wnd, LB_ADDSTRING, 0, (LPARAM)savelist2[selindex].c_str());
+								if ((lres1 == LB_ERR) || (lres1 == LB_ERRSPACE)) {
+									_ASSERT(0);
+									return FALSE;
+								}
+							}
+							else {
+								LRESULT lres2;
+								lres2 = SendMessage(list2wnd, LB_ADDSTRING, 0, (LPARAM)savelist2[listno2].c_str());
+								if ((lres2 == LB_ERR) || (lres2 == LB_ERRSPACE)) {
+									_ASSERT(0);
+									return FALSE;
+								}
+							}
+						}
+
+						Dlg2LaterTransparent(hDlgWnd);
+
+					}
+					else {
+						//一番下の要素に対してはDownOrder操作をしない
+					}
+				}
+				else {
+					_ASSERT(0);
+					return FALSE;
+				}
+			}
+		}
+		break;
+
+		case IDCANCEL:
+			//EndDialog(hDlgWnd, IDCANCEL);
+		break;
+		default:
+			return FALSE;
+		break;
+	}
+	break;
+	case WM_CLOSE:
+		if (s_latertransparentdlg) {
+
+			//if (s_lightstimerid > 0) {
+			//	KillTimer(hDlgWnd, s_lightstimerid);
+			//	s_lightstimerid = 0;
+			//}
+
+			DestroyWindow(s_latertransparentdlg);
+			s_latertransparentdlg = 0;
+		}
+	break;
+	default:
+		DefWindowProc(hDlgWnd, msg, wp, lp);
+		return FALSE;
+	}
+	return TRUE;
+
 }
 
 
@@ -40657,14 +41067,22 @@ void ShowLightsWnd(bool srcflag)
 
 void ShowLaterTransparentWnd(bool srcflag)
 {
-	if (s_latertransparentdlg != 0) {
-		if (srcflag == true) {
+	if (srcflag == true) {
+		if (s_latertransparentdlg) {
+			DestroyWindow(s_latertransparentdlg);
+			s_latertransparentdlg = 0;
+		}
+
+		int result = CreateLaterTransparentWnd();
+		if ((result == 0) && s_latertransparentdlg) {
 			ShowWindow(s_latertransparentdlg, SW_SHOW);
 			UpdateWindow(s_latertransparentdlg);
 		}
-		else {
-			ShowWindow(s_latertransparentdlg, SW_HIDE);
-			UpdateWindow(s_latertransparentdlg);
+	}
+	else {
+		if (s_latertransparentdlg) {
+			DestroyWindow(s_latertransparentdlg);
+			s_latertransparentdlg = 0;
 		}
 	}
 

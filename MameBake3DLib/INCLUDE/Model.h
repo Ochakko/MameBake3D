@@ -900,6 +900,8 @@ public:
 
 	int SetIKStopFlag();
 
+	int GetTextureNameVec(std::vector<std::string>& dstvec);
+	int SetLaterTransparentVec(std::vector<std::wstring> srclatervec);//丸ごと設定
 
 private:
 	int InitParams();
@@ -1000,6 +1002,7 @@ private:
 	//void FillUpEmptyKeyReq( int motid, double animleng, CBone* curbone, CBone* parentbone );//publicへ
 
 	int SetMaterialName();
+
 
 	int DestroyBtObject();
 	void DestroyBtObjectReq( CBtObject* curbt );
