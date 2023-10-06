@@ -131,7 +131,7 @@ public:
 
 
 	//2023/09/24
-	void IncludeTransparent(std::vector<std::string> latername, float multalpha, bool* pfound_noalpha, bool* pfound_alpha);
+	int IncludeTransparent(float multalpha, bool* pfound_noalpha, bool* pfound_alpha);
 
 	//2023/10/05
 	int MakeLaterMaterial(std::vector<std::string> latername);

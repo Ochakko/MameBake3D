@@ -22579,17 +22579,24 @@ int SetSpRet2PrevParams()
 		return 0;
 	}
 
-	float spretwidth;
-	float spretheight;
+	float spretwidth1;
+	float spretheight1;
+	float spretwidth2;
+	float spretheight2;
 	int spretshift = 0;
 
+	//プレートメニュー横のカエルボタンの大きさは4K時にも同じ
+	spretwidth1 = 32.0;
+	spretheight1 = 32.0;
+
+	//ショートカットボタン横のカエルボタンの大きさは4K時は大きく
 	if (g_4kresolution) {
-		spretwidth = 32.0;
-		spretheight = 32.0;
+		spretwidth2 = 32.0;
+		spretheight2 = 32.0;
 	}
 	else {
-		spretwidth = 18.0;
-		spretheight = 18.0;
+		spretwidth2 = 18.0;
+		spretheight2 = 18.0;
 	}
 
 
@@ -22608,7 +22615,7 @@ int SetSpRet2PrevParams()
 		disppos.x = (float)(s_spret2prev.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 		disppos.y = -((float)(s_spret2prev.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 		disppos.z = 0.0f;
-		ChaVector2 dispsize = ChaVector2(spretwidth / (float)s_mainwidth * 2.0f, spretheight / (float)s_mainheight * 2.0f);
+		ChaVector2 dispsize = ChaVector2(spretwidth1 / (float)s_mainwidth * 2.0f, spretheight1 / (float)s_mainheight * 2.0f);
 
 		if (s_spret2prev.sprite) {
 			CallF(s_spret2prev.sprite->SetPos(disppos), return 1);
@@ -22630,7 +22637,7 @@ int SetSpRet2PrevParams()
 		disppos.x = (float)(s_spret2prev2.dispcenter.x) / ((float)s_mainwidth / 2.0f) - 1.0f;
 		disppos.y = -((float)(s_spret2prev2.dispcenter.y) / ((float)s_mainheight / 2.0f) - 1.0f);
 		disppos.z = 0.0f;
-		ChaVector2 dispsize = ChaVector2(spretwidth / (float)s_mainwidth * 2.0f, spretheight / (float)s_mainheight * 2.0f);
+		ChaVector2 dispsize = ChaVector2(spretwidth2 / (float)s_mainwidth * 2.0f, spretheight2 / (float)s_mainheight * 2.0f);
 
 		if (s_spret2prev2.sprite) {
 			CallF(s_spret2prev2.sprite->SetPos(disppos), return 1);
@@ -23850,13 +23857,7 @@ bool PickSpFrog(POINT srcpos)
 		return 0;
 	}
 
-	int spretwidth;
-	if (g_4kresolution) {
-		spretwidth = 32;
-	}
-	else {
-		spretwidth = 18;
-	}
+	int spretwidth = 32;//プレートメニュー横のカエルボタンの大きさは４K時にも同じ
 
 	int starty0 = s_spret2prev.dispcenter.y - spretwidth / 2;
 	int endy0 = starty0 + spretwidth;
@@ -23887,7 +23888,7 @@ bool PickSpFrog2(POINT srcpos)
 
 
 	int spretwidth;
-	if (g_4kresolution) {
+	if (g_4kresolution) {//ショートカットボタン横のカエルボタンは４K時には大きく
 		spretwidth = 32;
 	}
 	else {
@@ -27415,12 +27416,20 @@ LRESULT CALLBACK LaterTransparentDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 								_ASSERT(0);
 								return FALSE;
 							}
+
+
+							//追加した要素を選択
+							int elemnum = (int)SendMessage(list2wnd, LB_GETCOUNT, 0, 0);
+							if (elemnum >= 1) {
+								SendMessage(list2wnd, LB_SETCURSEL, (WPARAM)(elemnum - 1), 0);
+							}
+
 						}
 					}
 				}
 				else {
-					_ASSERT(0);
-					return FALSE;
+					//何も選択していないときもLB_ERRが返る
+					return TRUE;
 				}
 
 				Dlg2LaterTransparent(hDlgWnd);
@@ -27455,8 +27464,8 @@ LRESULT CALLBACK LaterTransparentDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 					Dlg2LaterTransparent(hDlgWnd);
 				}
 				else {
-					_ASSERT(0);
-					return FALSE;
+					//何も選択していないときもLB_ERRが返る
+					return TRUE;
 				}
 			}
 		}
@@ -27525,6 +27534,11 @@ LRESULT CALLBACK LaterTransparentDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 
 						}
 
+						if ((selindex - 1) >= 0) {
+							//UpOrderした要素を選択
+							SendMessage(list2wnd, LB_SETCURSEL, (WPARAM)(selindex - 1), 0);
+						}
+
 						Dlg2LaterTransparent(hDlgWnd);
 					}
 					else {
@@ -27532,8 +27546,8 @@ LRESULT CALLBACK LaterTransparentDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 					}
 				}
 				else {
-					_ASSERT(0);
-					return FALSE;
+					//何も選択していないときもLB_ERRが返る
+					return TRUE;
 				}
 			}
 		}
@@ -27601,6 +27615,11 @@ LRESULT CALLBACK LaterTransparentDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 							}
 						}
 
+						if ((selindex + 1) < elemnum) {
+							//DownOrderした要素を選択
+							SendMessage(list2wnd, LB_SETCURSEL, (WPARAM)(selindex + 1), 0);
+						}
+
 						Dlg2LaterTransparent(hDlgWnd);
 
 					}
@@ -27609,8 +27628,8 @@ LRESULT CALLBACK LaterTransparentDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 					}
 				}
 				else {
-					_ASSERT(0);
-					return FALSE;
+					//何も選択していないときもLB_ERRが返る
+					return TRUE;
 				}
 			}
 		}

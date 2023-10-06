@@ -40,7 +40,7 @@ public:
 
 	void DestroySystemDispObj();
 
-	void IncludeTransparent(std::vector<std::string> latername, float alphamult, bool* pfound_noalpha, bool* pfound_alpha);
+	int IncludeTransparent(CMQOObject* srcobj, float alphamult, bool* pfound_noalpha, bool* pfound_alpha);
 
 private:
 	void InitParams();

@@ -904,16 +904,18 @@ int CPolyMesh3::MultScale( ChaVector3 srcscale, ChaVector3 srctra )
 	return 0;
 }
 
-void CPolyMesh3::IncludeTransparent(vector<string> latername, float alphamult, bool* pfound_noalpha, bool* pfound_alpha)
+int CPolyMesh3::IncludeTransparent(CMQOObject* srcobj, float alphamult, bool* pfound_noalpha, bool* pfound_alpha)
 {
-	if (!pfound_noalpha || !pfound_alpha) {
+	if (!pfound_noalpha || !pfound_alpha || !srcobj) {
 		_ASSERT(0);
-		return;
+		return 1;
 	}
 
 
 	bool found_noalpha = false;
 	bool found_alpha = false;
+	int laternum = srcobj->GetLaterMaterialNum();
+
 
 	int blno;
 	for (blno = 0; blno < GetOptMatNum(); blno++) {
@@ -935,20 +937,24 @@ void CPolyMesh3::IncludeTransparent(vector<string> latername, float alphamult, b
 			}
 		}
 
-
-		if (curmat->GetTex() && (strlen(curmat->GetTex()) > 0)) {
-			int laternum = (int)latername.size();
+		//latermaterialチェック
+		if ((found_alpha == false) && (laternum > 0)) {
 			int laterno;
 			for (laterno = 0; laterno < laternum; laterno++) {
-				if (strcmp(curmat->GetTex(), latername[laterno].c_str()) == 0) {
+				LATERMATERIAL chklatermat = srcobj->GetLaterMaterial(laterno);
+				if (chklatermat.pmaterial && (chklatermat.pmaterial == curmat)) {
 					found_alpha = true;
 				}
 			}
 		}
 
+		if (found_noalpha && found_alpha) {
+			break;
+		}
 	}
 
 	*pfound_noalpha = found_noalpha;
 	*pfound_alpha = found_alpha;
 
+	return 0;
 }

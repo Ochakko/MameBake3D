@@ -1,3 +1,73 @@
+2023/10/07
+    EditMot 1.2.0.26 RC1(リリース候補1)
+
+    100万回アンドゥー機能付きスライダー
+	個々のOWP_Sliderに対して右ダブルクリックでアンドゥ
+	表示とドラッグも改善
+	操作法を右ペインに表示
+	スライダーの履歴はアプリ終了時に消えます
+
+    テクスチャ指定の描画順設定をGUI化
+	LaterTransparentの設定ダイアログを　プレートメニューから呼び出し
+	LaterTransparentリファクタリング
+
+    操作対象ボーン設定ファイル読み込み修正
+	無効エントリは読み込まないように
+	RootNode(0)というエントリを読み込まない
+
+    ファイルオープン時に　重複する内容の履歴と　存在しないファイルの履歴を　自動削除
+	履歴が多すぎるとオープン処理が重くなるため
+	削除処理が走る際にいつもより重くなるが　１度削除が走った後は軽くなる
+
+    モデル設定ファイル修正
+	2_Autumn_1 : 操作対象ボーン設定の NoHipsスロットにRootNodeが２つ入っていたのを削除
+	1_Test20221218_CB0 : 物理設定refファイルの　剛体の回転バネ定数をregularからweakに変更
+
+    不具合修正
+
+
+　おちゃっこLAB
+	https://ochakkolab.jp/
+
+　YouTubeチャンネル
+	https://www.youtube.com/@ochakkolab
+
+	動画　モーキャプでポーズtoポーズ　ver.1.2.0.25
+		https://youtu.be/e6XSIv3hiJI
+
+	動画　モーキャプを滑らかにコピペ編集 ver.1.2.0.25
+		https://youtu.be/A8E1K5UXOaM
+
+	動画　モーキャプ編集ツール　1.2.0.24 (2023/09)
+		https://youtu.be/LEbueHtc57Q
+
+	動画　0.07倍速でパンチしたら物理はどうなるんだろう？
+		https://youtu.be/gKuLzPDt-cc
+
+	動画　【小人】小人制御の物理【ドリブン】
+		https://youtu.be/SRoi8Ds9NYI
+
+	動画　いろいろ直った物理でボクシングの動画	
+		https://youtu.be/Zr7fT1gsCl4
+
+	動画　作り直した位置コンストレイント
+		https://youtu.be/8p13H6MGQZ8
+
+	動画　変な風には曲がらない位置コンストレイント
+		https://youtu.be/9Xt8cxjByeA
+
+	動画　制限角度をキャプチャーする
+		https://youtu.be/mkkpo5cmLBs
+
+	動画　モーキャプの動きを盛れ！
+		https://youtu.be/DV9gYsgDzz0
+
+
+
+
+
+
+
 2023/09/28_2
     EditMot 1.2.0.26へ向けて
 
@@ -175,42 +245,6 @@
 	tboファイルについて　必要分だけを読み書き　ジョイント情報を番号ペースから名前ベースへ変更
 
 
-
-　おちゃっこLAB
-	https://ochakkolab.jp/
-
-　YouTubeチャンネル
-	https://www.youtube.com/@ochakkolab
-
-	動画　モーキャプでポーズtoポーズ　ver.1.2.0.25
-		https://youtu.be/e6XSIv3hiJI
-
-	動画　モーキャプを滑らかにコピペ編集 ver.1.2.0.25
-		https://youtu.be/A8E1K5UXOaM
-
-	動画　モーキャプ編集ツール　1.2.0.24 (2023/09)
-		https://youtu.be/LEbueHtc57Q
-
-	動画　0.07倍速でパンチしたら物理はどうなるんだろう？
-		https://youtu.be/gKuLzPDt-cc
-
-	動画　【小人】小人制御の物理【ドリブン】
-		https://youtu.be/SRoi8Ds9NYI
-
-	動画　いろいろ直った物理でボクシングの動画	
-		https://youtu.be/Zr7fT1gsCl4
-
-	動画　作り直した位置コンストレイント
-		https://youtu.be/8p13H6MGQZ8
-
-	動画　変な風には曲がらない位置コンストレイント
-		https://youtu.be/9Xt8cxjByeA
-
-	動画　制限角度をキャプチャーする
-		https://youtu.be/mkkpo5cmLBs
-
-	動画　モーキャプの動きを盛れ！
-		https://youtu.be/DV9gYsgDzz0
 
 
 

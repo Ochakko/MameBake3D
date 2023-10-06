@@ -1352,54 +1352,47 @@ int CModel::OnRender(bool withalpha,
 				CMQOObject* curobj = (m_dispgroup[groupindex])[elemno].mqoobject;
 
 				if (curobj && curobj->GetVisible()) {
+
+					//if (curobj->GetDispLine()) {
+					//	int dbgflag1 = 1;
+					//}
+
+
+					bool found_noalpha = false;
+					bool found_alpha = false;
+					int result = curobj->IncludeTransparent(diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
+					if (result == 1) {
+						_ASSERT(0);
+						return 1;
+					}
+					else if (result == 2) {
+						continue;
+					}
+
+					if ((withalpha == false) && (found_noalpha == false)) {
+						//不透明描画時　１つも不透明がなければ　レンダースキップ
+						continue;
+					}
+					if ((withalpha == true) && (found_alpha == false)) {
+						//半透明描画時　１つも半透明がなければ　レンダースキップ
+						continue;
+					}
+
 					if (curobj->GetDispObj()) {
-
-						CMQOMaterial* rmaterial = 0;
 						if (curobj->GetPm3()) {
-							bool found_noalpha = false;
-							bool found_alpha = false;
-							curobj->GetPm3()->IncludeTransparent(m_latertransparent, diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
-
-							if ((withalpha == false) && (found_noalpha == false)) {
-								//不透明描画時　１つも不透明がなければ　レンダースキップ
-								continue;
-							}
-							if ((withalpha == true) && (found_alpha == false)) {
-								//半透明描画時　１つも半透明がなければ　レンダースキップ
-								continue;
-							}
-
 							CallF(SetShaderConst(curobj, btflag), return 1);
 							CallF(curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, curobj), return 1);
 						}
 						else if (curobj->GetPm4()) {
-							bool found_noalpha = false;
-							bool found_alpha = false;
-							curobj->IncludeTransparent(m_latertransparent, diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
-
-							if ((withalpha == false) && (found_noalpha == false)) {
-								//不透明描画時　１つも不透明がなければ　レンダースキップ
-								continue;
-							}
-							if ((withalpha == true) && (found_alpha == false)) {
-								//半透明描画時　１つも半透明がなければ　レンダースキップ
-								continue;
-							}
-							CallF(SetShaderConst(curobj, btflag), return 1);
-							
+							CallF(SetShaderConst(curobj, btflag), return 1);						
 							CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, curobj), return 1);
 						}
 						else {
 							_ASSERT(0);
 						}
 					}
-					if (curobj->GetDispLine()) {
-						if ((withalpha == false) && ((curobj->GetExtLine()->m_color.w * diffusemult.w) > 0.99999f)) {
-							CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult, materialdisprate), return 1);
-						}
-						else if ((withalpha == true) && (((curobj->GetExtLine()->m_color.w * diffusemult.w) <= 0.99999f))) {
-							CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult, materialdisprate), return 1);
-						}
+					else if (curobj->GetDispLine()) {
+						CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult, materialdisprate), return 1);
 					}
 				}
 			}
@@ -1533,55 +1526,44 @@ int CModel::RenderTest(bool withalpha, ID3D11DeviceContext* pd3dImmediateContext
 		CMQOObject* curobj = selectedobjvec[selectedno];
 
 		if (curobj && curobj->GetVisible()) {
+
+			bool found_noalpha = false;
+			bool found_alpha = false;
+			int result = curobj->IncludeTransparent(diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
+			if (result == 1) {
+				_ASSERT(0);
+				return 1;
+			}
+			else if (result == 2) {
+				continue;
+			}
+
+			if ((withalpha == false) && (found_noalpha == false)) {
+				//不透明描画時　１つも不透明がなければ　レンダースキップ
+				continue;
+			}
+			if ((withalpha == true) && (found_alpha == false)) {
+				//半透明描画時　１つも半透明がなければ　レンダースキップ
+				continue;
+			}
+
 			if (curobj->GetDispObj()) {
-
-				CMQOMaterial* rmaterial = 0;
 				if (curobj->GetPm3()) {
-					bool found_noalpha = false;
-					bool found_alpha = false;
-					curobj->GetPm3()->IncludeTransparent(m_latertransparent, diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
-
-					if ((withalpha == false) && (found_noalpha == false)) {
-						//不透明描画時　１つも不透明がなければ　レンダースキップ
-						continue;
-					}
-					if ((withalpha == true) && (found_alpha == false)) {
-						//半透明描画時　１つも半透明がなければ　レンダースキップ
-						continue;
-					}
-
 					CallF(SetShaderConst(curobj, btflag), return 1);
 					CallF(curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, curobj), return 1);
 				}
 				else if (curobj->GetPm4()) {
-					bool found_noalpha = false;
-					bool found_alpha = false;
-					curobj->IncludeTransparent(m_latertransparent, diffusemult.w, &found_noalpha, &found_alpha);//2023/09/24
-
-					if ((withalpha == false) && (found_noalpha == false)) {
-						//不透明描画時　１つも不透明がなければ　レンダースキップ
-						continue;
-					}
-					if ((withalpha == true) && (found_alpha == false)) {
-						//半透明描画時　１つも半透明がなければ　レンダースキップ
-						continue;
-					}
-					CallF(SetShaderConst(curobj, btflag), return 1);
-					
+					CallF(SetShaderConst(curobj, btflag), return 1);					
 					CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, curobj), return 1);
 				}
 				else {
 					_ASSERT(0);
 				}
 			}
-			if (curobj->GetDispLine()) {
-				if ((withalpha == false) && ((curobj->GetExtLine()->m_color.w * diffusemult.w) > 0.99999f)) {
-					CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult, materialdisprate), return 1);
-				}
-				else if ((withalpha == true) && (((curobj->GetExtLine()->m_color.w * diffusemult.w) <= 0.99999f))) {
-					CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult, materialdisprate), return 1);
-				}
+			else if (curobj->GetDispLine()) {
+				CallF(curobj->GetDispLine()->RenderLine(withalpha, pd3dImmediateContext, diffusemult, materialdisprate), return 1);
 			}
+
 		}
 	}
 

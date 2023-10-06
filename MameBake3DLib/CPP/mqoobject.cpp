@@ -2395,35 +2395,57 @@ int CMQOObject::ChkInView(ChaMatrix matWorld, ChaMatrix matVP)
 	ChaMatrix chkmatworld;
 	chkmatworld.SetIdentity();
 
-	if (m_pm3) {
-		srcmb = m_pm3->GetBound();
-		chkmatworld = matWorld;
-	}
-	else if (m_pm4) {
-		srcmb = m_pm4->GetBound();
 
-		//##################################################################
-		//2023/08/27
-		//hipsが大きく移動すると　視野外になる不具合への対応
-		//hipsのworldmatを考慮する
-		// 
-		//GetHipsBone()はclisterの最初のボーンを親方向へさかのぼって探す
-		//##################################################################
+	//2023/10/07
+	//現在はmqoに対してはこの関数は呼んでいないが
+	//m_pm3とm_extlineが両方存在するデータ在り　(ground2.mqo)
+	//最初に　GetDispObj()とGetDispLine()とで場合分けする
 
-		CBone* hipsbone = GetHipsBone();
-		if (hipsbone && hipsbone->GetParModel()) {
-			int currentmotid = hipsbone->GetParModel()->GetCurrentMotID();
-			if (currentmotid > 0) {
-				double roundingframe = (double)((int)hipsbone->GetParModel()->GetCurrentFrame());
-				ChaMatrix hipsworld = hipsbone->GetWorldMat(g_limitdegflag, currentmotid, roundingframe, 0);
-				chkmatworld = hipsworld * matWorld;
+
+	if (GetDispObj()) {
+		if (m_pm3) {
+			srcmb = m_pm3->GetBound();
+			chkmatworld = matWorld;
+		}
+		else if (m_pm4) {
+			srcmb = m_pm4->GetBound();
+
+			//##################################################################
+			//2023/08/27
+			//hipsが大きく移動すると　視野外になる不具合への対応
+			//hipsのworldmatを考慮する
+			// 
+			//GetHipsBone()はclisterの最初のボーンを親方向へさかのぼって探す
+			//##################################################################
+
+			CBone* hipsbone = GetHipsBone();
+			if (hipsbone && hipsbone->GetParModel()) {
+				int currentmotid = hipsbone->GetParModel()->GetCurrentMotID();
+				if (currentmotid > 0) {
+					double roundingframe = (double)((int)hipsbone->GetParModel()->GetCurrentFrame());
+					ChaMatrix hipsworld = hipsbone->GetWorldMat(g_limitdegflag, currentmotid, roundingframe, 0);
+					chkmatworld = hipsworld * matWorld;
+				}
+				else {
+					chkmatworld = matWorld;
+				}
 			}
 			else {
 				chkmatworld = matWorld;
 			}
 		}
 		else {
-			chkmatworld = matWorld;
+			return 2;
+		}
+	}
+	else if (GetDispLine()) {
+		if (m_extline) {
+			//2023/10/07
+			//extlineは　視野内とする
+			m_frustum.SetVisible(true);
+		}
+		else {
+			return 2;
 		}
 	}
 	else {
@@ -2479,63 +2501,108 @@ CBone* CMQOObject::GetHipsBone()
 	return hipsbone;
 }
 
-void CMQOObject::IncludeTransparent(vector<string> latername, float multalpha, bool* pfound_noalpha, bool* pfound_alpha)
+int CMQOObject::IncludeTransparent(float multalpha, bool* pfound_noalpha, bool* pfound_alpha)
 {
 	if (!pfound_noalpha || !pfound_alpha) {
 		_ASSERT(0);
-		return;
-	}
-	if (!m_pm4) {
-		_ASSERT(0);
-		return;
+		return 1;
 	}
 
 
-	//PolyMesh4をメンバに持つ場合の処理(render時には　PolyMesh4::m_materialoffsetを使う)
-	//PolyMesh3の場合はPolyMesh3::IncludeTransparentで処理
+	//2023/10/07
+	//ExtLine(ground2.mqo)の場合GetPm3()がNULLではない場合があるのでif構成は下記のようになる
 
 
-	bool found_alpha = false;
-	bool found_noalpha = false;
+	int retresult = 0;
 
-	std::map<int, CMQOMaterial*>::iterator itrmaterial;
-	for (itrmaterial = GetMaterialBegin(); itrmaterial != GetMaterialEnd(); itrmaterial++) {
-		CMQOMaterial* curmaterial = itrmaterial->second;
-		if (curmaterial) {
+	if (GetDispObj()) {
+		if (GetPm3()) {
+			retresult = GetPm3()->IncludeTransparent(this, multalpha, pfound_noalpha, pfound_alpha);
+		}
+		else if (GetPm4()) {
+			bool found_alpha = false;
+			bool found_noalpha = false;
+			int laternum = GetLaterMaterialNum();
 
-			////for debug
-			//if (curmaterial->GetTex() &&
-			//	((strstr(curmaterial->GetTex(), "_13.png") != 0) || (strstr(curmaterial->GetTex(), "_15.png") != 0))) {
-			//	int dbgflag1 = 1;
-			//}
+			std::map<int, CMQOMaterial*>::iterator itrmaterial;
+			for (itrmaterial = GetMaterialBegin(); itrmaterial != GetMaterialEnd(); itrmaterial++) {
+				CMQOMaterial* curmaterial = itrmaterial->second;
+				if (curmaterial) {
 
-			if (curmaterial->GetTransparent() != 0) {//2023/09/24 VRoidの裾(すそ)透過対策
-				found_alpha = true;
-			}
-			else {
-				if ((curmaterial->GetDif4F().w * multalpha) <= 0.99999f) {
-					found_alpha = true;
-				}
-				else {
-					found_noalpha = true;
-				}
-			}
+					////for debug
+					//if (curmaterial->GetTex() &&
+					//	((strstr(curmaterial->GetTex(), "_13.png") != 0) || (strstr(curmaterial->GetTex(), "_15.png") != 0))) {
+					//	int dbgflag1 = 1;
+					//}
 
-			if (curmaterial->GetTex() && (strlen(curmaterial->GetTex()) > 0)) {
-				int laternum = (int)latername.size();
-				int laterno;
-				for (laterno = 0; laterno < laternum; laterno++) {
-					if (strcmp(curmaterial->GetTex(), latername[laterno].c_str()) == 0) {
+					if (curmaterial->GetTransparent() != 0) {//2023/09/24 VRoidの裾(すそ)透過対策
 						found_alpha = true;
+					}
+					else {
+						if ((curmaterial->GetDif4F().w * multalpha) <= 0.99999f) {
+							found_alpha = true;
+						}
+						else {
+							found_noalpha = true;
+						}
+					}
+
+					//latermaterialチェック
+					if ((found_alpha == false) && (laternum > 0)) {
+						int laterno;
+						for (laterno = 0; laterno < laternum; laterno++) {
+							LATERMATERIAL chklatermat = GetLaterMaterial(laterno);
+							if (chklatermat.pmaterial && (chklatermat.pmaterial == curmaterial)) {
+								found_alpha = true;
+							}
+						}
+					}
+
+					if (found_noalpha && found_alpha) {
+						break;
 					}
 				}
 			}
+			*pfound_noalpha = found_noalpha;
+			*pfound_alpha = found_alpha;
+			retresult = 0;
+		}
+		else {
+			*pfound_noalpha = false;
+			*pfound_alpha = false;
+			retresult = 2;
 		}
 	}
+	else if (GetDispLine()) {
+		if (GetExtLine()) {
+			bool found_alpha = false;
+			bool found_noalpha = false;
 
-	*pfound_noalpha = found_noalpha;
-	*pfound_alpha = found_alpha;
+			if ((GetExtLine()->m_color.w * multalpha) > 0.99999f) {
+				found_noalpha = true;
+			}
+			else {
+				found_alpha = true;
+			}
 
+			*pfound_noalpha = found_noalpha;
+			*pfound_alpha = found_alpha;
+
+			retresult = 0;
+		}
+		else {
+			*pfound_noalpha = false;
+			*pfound_alpha = false;
+			retresult = 2;
+		}
+	}
+	else {
+		*pfound_noalpha = false;
+		*pfound_alpha = false;
+		retresult = 2;
+	}
+
+	return retresult;
 }
 
 
