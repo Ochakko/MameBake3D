@@ -85,7 +85,11 @@
 
 	右ペインのショートカット一覧に　DispGroupWindowのSimilarCheckについて記述追加
 
-
+    2023/10/06_2
+	LaterTransparentプレートメニュー追加
+		まだプレート表示だけ
+		カエルボタンを押したときの　Lights, DispGroupの並びに追加
+		
 
  
 
