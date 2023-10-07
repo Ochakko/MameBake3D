@@ -33954,12 +33954,12 @@ int CreatePlaceFolderWnd()
 			L"　　Drag on CenterBar　：　Slide starting from clicked position.",
 			L"    LButton DoubleClick :  Set value of clicked position.",
 			L"    RButton DoubleClick :  Undo value limited to 1,000,000 times.",
-			L" ",
+			L"    Mouse Wheel : Slide per a pixel.",
 			L" ",
 
+			L" ",
 			L"　DispGroupWindow",
 			L"　　RButton on a Element　：　Context Menu for SimilarCheck.",
-			L" ",
 			L" "
 
 		};
