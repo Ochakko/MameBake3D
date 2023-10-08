@@ -10510,6 +10510,43 @@ void s_dummyfunc()
 			mouseRBtnOnIndex = -1;
 		}
 
+		virtual void onMouseWheel(const MouseEvent& e) {
+			int x0 = size.x - SCROLL_BAR_WIDTH - 1;
+			int x1 = size.x;
+			int y0 = 0;
+			int y1 = size.y;
+
+			if ((e.localX >= x0) && (e.localX <= x1) && 
+				(e.localY >= y0) && (e.localY <= y1)) {
+
+				//#########################################
+				//スクロールバーの上でホイールを回した場合
+				//#########################################
+
+				int wheeldelta = e.wheeldelta;
+				int linedelta= 0;
+				if (wheeldelta > 0) {
+					linedelta = -1;
+				}
+				else if (wheeldelta < 0) {
+					linedelta = 1;
+				}
+				else {
+					linedelta = 0;
+				}
+
+				//int showLineNum = (y1 - y0) / (LABEL_SIZE_Y);
+				//int barSize = (y1 - y0) * showLineNum / lineDatasize;
+				//int movableY = y1 - y0 - barSize;
+				//int movableYStart = y0 + barSize / 2;
+
+				int curline = getShowPosLine();
+
+				setShowPosLine(curline + linedelta);
+
+				autoResize();
+			}
+		}
 
 		//////////////////////////// Accessor //////////////////////////////
 		void setLineDataSize(int srcsize){
@@ -10635,7 +10672,8 @@ void s_dummyfunc()
 		int lineDatasize;
 		
 		static const int LABEL_SIZE_Y = 15;
-		static const int SCROLL_BAR_WIDTH = 10;
+		//static const int SCROLL_BAR_WIDTH = 10;
+		static const int SCROLL_BAR_WIDTH = 20;
 		static const int MARGIN = 3;
 		static const int NAME_POS_X = 5;
 

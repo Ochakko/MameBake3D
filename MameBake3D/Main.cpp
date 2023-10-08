@@ -1967,7 +1967,8 @@ static OWP_Label* s_placefolderlabel_2 = 0;
 static OWP_Label* s_placefolderlabel_3 = 0;
 //#define SHORTCUTTEXTNUM	35
 //#define SHORTCUTTEXTNUM	40
-#define SHORTCUTTEXTNUM	44
+//#define SHORTCUTTEXTNUM	44
+#define SHORTCUTTEXTNUM	48
 static OWP_Label* s_shortcuttext[SHORTCUTTEXTNUM];
 
 
@@ -33960,6 +33961,10 @@ int CreatePlaceFolderWnd()
 			L" ",
 			L"　DispGroupWindow",
 			L"　　RButton on a Element　：　Context Menu for SimilarCheck.",
+			L" ",
+			L" ",
+			L"　OWP_ScrollWindow",
+			L"　　MouseWheel on ScrollBar　：　Scroll Window.",
 			L" "
 
 		};
@@ -34535,58 +34540,16 @@ int CheckSimilarGroup(int opetype)
 
 				WCHAR* patptr0 = wcschr(similarname, TEXT('_'));
 				if (patptr0) {
-					*patptr0 = 0L;
-					wcscpy_s(pattern0, 512, similarname);
-					int pattern0len = (int)wcslen(pattern0);
 
-					if ((opetype == 0) || (opetype == 1)) {
-						//#####################
-						//pattern include num
-						//#####################
+					if (patptr0 != similarname) {//2023/10/08 先頭の文字が '_'以外の場合だけ処理する
+						*patptr0 = 0L;
+						wcscpy_s(pattern0, 512, similarname);
+						int pattern0len = (int)wcslen(pattern0);
 
-						int objno1;
-						for (objno1 = 0; objno1 < s_grouplinenum; objno1++) {
-							if (s_groupobjvec[objno1]) {
-								WCHAR chkname[512] = { 0L };
-								int result1 = s_groupobjvec[objno1]->getName(chkname, 512);
-								if ((result == 0) && (chkname[0] != 0L)) {
-									WCHAR* findptr = wcsstr(chkname, pattern0);//check if pattern is included
-									if (findptr) {
-										if (opetype == 0) {
-											s_groupobjvec[objno1]->setValue(true);
-										}
-										else if (opetype == 1) {
-											s_groupobjvec[objno1]->setValue(false);
-										}
-										else {
-											_ASSERT(0);
-											return 1;
-										}
-									}
-								}
-							}
-						}
-					}
-					else if ((opetype == 2) || (opetype == 3)) {
-						//#####################
-						//pattern exclude num
-						//#####################
-
-						bool numflag = true;
-						int findpos = pattern0len - 1;
-						while (numflag && (findpos > 1)) {
-							WCHAR chkwc = pattern0[findpos];
-							if ((chkwc == TEXT('0')) || (chkwc == TEXT('1')) || (chkwc == TEXT('2')) || (chkwc == TEXT('3')) || (chkwc == TEXT('4')) ||
-								(chkwc == TEXT('5')) || (chkwc == TEXT('6')) || (chkwc == TEXT('7')) || (chkwc == TEXT('8')) || (chkwc == TEXT('9'))) {
-								findpos--;
-							}
-							else {
-								numflag = false;
-								break;
-							}
-						}
-						if ((findpos >= 0) && (findpos < pattern0len)) {
-							pattern0[findpos + 1] = 0L;
+						if ((opetype == 0) || (opetype == 1)) {
+							//#####################
+							//pattern include num
+							//#####################
 
 							int objno1;
 							for (objno1 = 0; objno1 < s_grouplinenum; objno1++) {
@@ -34596,10 +34559,10 @@ int CheckSimilarGroup(int opetype)
 									if ((result == 0) && (chkname[0] != 0L)) {
 										WCHAR* findptr = wcsstr(chkname, pattern0);//check if pattern is included
 										if (findptr) {
-											if (opetype == 2) {
+											if (opetype == 0) {
 												s_groupobjvec[objno1]->setValue(true);
 											}
-											else if (opetype == 3) {
+											else if (opetype == 1) {
 												s_groupobjvec[objno1]->setValue(false);
 											}
 											else {
@@ -34611,10 +34574,59 @@ int CheckSimilarGroup(int opetype)
 								}
 							}
 						}
+						else if ((opetype == 2) || (opetype == 3)) {
+							//#####################
+							//pattern exclude num
+							//#####################
+
+							bool numflag = true;
+							int findpos = pattern0len - 1;
+							while (numflag && (findpos > 1)) {
+								WCHAR chkwc = pattern0[findpos];
+								if ((chkwc == TEXT('0')) || (chkwc == TEXT('1')) || (chkwc == TEXT('2')) || (chkwc == TEXT('3')) || (chkwc == TEXT('4')) ||
+									(chkwc == TEXT('5')) || (chkwc == TEXT('6')) || (chkwc == TEXT('7')) || (chkwc == TEXT('8')) || (chkwc == TEXT('9'))) {
+									findpos--;
+								}
+								else {
+									numflag = false;
+									break;
+								}
+							}
+							if ((findpos >= 0) && (findpos < pattern0len)) {
+								pattern0[findpos + 1] = 0L;
+
+								int objno1;
+								for (objno1 = 0; objno1 < s_grouplinenum; objno1++) {
+									if (s_groupobjvec[objno1]) {
+										WCHAR chkname[512] = { 0L };
+										int result1 = s_groupobjvec[objno1]->getName(chkname, 512);
+										if ((result == 0) && (chkname[0] != 0L)) {
+											WCHAR* findptr = wcsstr(chkname, pattern0);//check if pattern is included
+											if (findptr) {
+												if (opetype == 2) {
+													s_groupobjvec[objno1]->setValue(true);
+												}
+												else if (opetype == 3) {
+													s_groupobjvec[objno1]->setValue(false);
+												}
+												else {
+													_ASSERT(0);
+													return 1;
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+						else {
+							_ASSERT(0);
+							return 1;
+						}
 					}
 					else {
-						_ASSERT(0);
-						return 1;
+						//先頭の文字が　'_'　の場合　は操作の対象外
+
 					}
 				}
 			}
