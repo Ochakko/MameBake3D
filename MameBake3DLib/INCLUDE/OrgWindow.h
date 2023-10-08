@@ -1077,6 +1077,17 @@ void s_dummyfunc()
 				return WindowSize(0, 0);
 			}
 		}
+		WindowSize getClientSize() {
+			if (hWnd == NULL) _ASSERT_EXPR(0, L"hWnd = NULL");
+			if (hWnd) {
+				refreshPosAndSize();
+				return WindowSize(partsAreaSize.x, partsAreaSize.y);
+			}
+			else {
+				_ASSERT(0);
+				return WindowSize(0, 0);
+			}
+		}
 		void setSize(const WindowSize& _size){
 			if( hWnd==NULL ) _ASSERT_EXPR( 0, L"hWnd = NULL" );
 			if (hWnd) {
@@ -2018,6 +2029,7 @@ void s_dummyfunc()
 
 
 			partsAreaPos1=  pos;
+			int scrollbarwidth = 20;
 			if( divideSide ){
 				partsAreaPos2=  pos+ WindowPos(centerPos+1+LINE_MARGIN, 0);
 				partsAreaSize1= WindowSize( centerPos-LINE_MARGIN, size.y);
@@ -4724,7 +4736,7 @@ void s_dummyfunc()
 	class OWP_Timeline : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_Timeline(const bool srcshortlabel, const std::basic_string<TCHAR> &_name=_T(""), const double &_maxTime=1.0, const double &_timeSize=8.0 ) : OrgWindowParts() {
+		OWP_Timeline(const bool _heightwheel, const bool srcshortlabel, const std::basic_string<TCHAR> &_name=_T(""), const double &_maxTime=1.0, const double &_timeSize=8.0 ) : OrgWindowParts() {
 			
 			TIME_ERROR_WIDTH = 0.0001;
 
@@ -4792,6 +4804,9 @@ void s_dummyfunc()
 			else {
 				LABEL_SIZE_Y = 15;
 			}
+
+			heightwheel = _heightwheel;//高さ方向にホイールスクロールするかどうか
+
 		}
 		~OWP_Timeline(){
 			selectAll(true);
@@ -5849,6 +5864,44 @@ void s_dummyfunc()
 			}
 		}
 		virtual void onMouseWheel(const MouseEvent& e){
+
+			if (heightwheel) {//高さ方向にホイールスクロールするかどうか
+				//#################################################
+				//高さ方向のホイール処理　クライアントエリア全領域
+				//#################################################
+				//int x0 = size.x - SCROLL_BAR_WIDTH - 1;//スクロールバーだけ
+				int x0 = 0;
+				int x1 = size.x;
+				int y0 = 0;
+				int y1 = size.y;
+				if ((e.localX >= x0) && (e.localX <= x1) &&
+					(e.localY >= y0) && (e.localY <= y1)) {
+
+					//#########################################
+					//クライアントエリアでホイールを回した場合
+					//#########################################
+
+					int wheeldelta = e.wheeldelta;
+					int linedelta = 0;
+					if (wheeldelta > 0) {
+						linedelta = -1;
+					}
+					else if (wheeldelta < 0) {
+						linedelta = 1;
+					}
+					else {
+						linedelta = 0;
+					}
+					int curline = getShowPosLine();
+					setShowPosLine(curline + linedelta);
+					autoResize();
+				}
+			}
+
+
+			//#####################################
+			//時間方向のホイール処理　LTimeline用
+			//#####################################
 			wheeldelta = e.wheeldelta;
 			if (this->mouseWheelListener != NULL){
 				(this->mouseWheelListener)();
@@ -6052,7 +6105,7 @@ void s_dummyfunc()
 		std::function<void(const KeyInfo&)> keyDeleteListener;
 
 		bool dispkeyflag;
-
+		bool heightwheel;//高さ方向にホイールスクロールするかどうか
 
 		//行データクラス-------------
 		public: class LineData{
@@ -6825,7 +6878,8 @@ void s_dummyfunc()
 
 
 		static const int AXIS_SIZE_Y= 15;
-		static const int SCROLL_BAR_WIDTH= 10;
+		//static const int SCROLL_BAR_WIDTH= 10;
+		static const int SCROLL_BAR_WIDTH = 20;
 		static const int MARGIN= 3;
 		double timeSize;
 		bool allowSameTimeKey;
@@ -9324,7 +9378,8 @@ void s_dummyfunc()
 
 
 		static const int AXIS_SIZE_Y = 15;
-		static const int SCROLL_BAR_WIDTH = 10;
+		//static const int SCROLL_BAR_WIDTH = 10;
+		static const int SCROLL_BAR_WIDTH = 20;
 		static const int MARGIN = 3;
 		static const int DOT_SIZE_X = 3;
 		static const int DOT_SIZE_Y = 3;
@@ -10177,7 +10232,7 @@ void s_dummyfunc()
 	class OWP_ScrollWnd : public OrgWindowParts{
 	public:
 		//////////////////// Constructor/Destructor //////////////////////
-		OWP_ScrollWnd(const TCHAR *_name) : OrgWindowParts() {
+		OWP_ScrollWnd(const TCHAR *_name, bool _allareamousewheel) : OrgWindowParts() {
 			name = new TCHAR[256];
 			if (_name) {
 				size_t tclen = _tcslen(_name);
@@ -10226,6 +10281,9 @@ void s_dummyfunc()
 			currentPartsSizeY = 0;
 			open = true;
 			canClose = true;
+
+
+			allareamousewheel = _allareamousewheel;//子供にsliderを持たない場合　全クライアント領域でマウスホイール処理を行う
 
 		}
 		~OWP_ScrollWnd(){
@@ -10278,8 +10336,14 @@ void s_dummyfunc()
 				return;
 			}
 
-			size = parentWindow->getSize();
-			//pos = WindowPos(0, 0);//2023/02/17 setPosを反映させるためコメントアウト
+			//size = parentWindow->getSize();//2023/10/08コメントアウト
+			////pos = WindowPos(0, 0);//2023/02/17 setPosを反映させるためコメントアウト
+
+			//2023/10/08
+			// OrgWindowの子供にとってのOrgWindowのサイズはWindowSize(partsAreaSize.x, partsAreaSize.y)
+			// getSize()で計算すると　ウインドウ１クリック後に　スライダー位置が右に６ピクセル(partsAreaPos.x * 2)だけずれる
+			size = parentWindow->getClientSize();
+
 
 			int showLineNum = (size.y) / (LABEL_SIZE_Y);
 
@@ -10511,17 +10575,23 @@ void s_dummyfunc()
 		}
 
 		virtual void onMouseWheel(const MouseEvent& e) {
-			int x0 = size.x - SCROLL_BAR_WIDTH - 1;
+			int x0;
 			int x1 = size.x;
 			int y0 = 0;
 			int y1 = size.y;
 
+
+			//2023/10/08
+			if (allareamousewheel) {//allareamousewheelはコンストラクタで設定
+				x0 = 0;//全クライアントエリア
+			}
+			else {
+				x0 = size.x - SCROLL_BAR_WIDTH - 1;//スクロールバー上だけ
+			}
+
+
 			if ((e.localX >= x0) && (e.localX <= x1) && 
 				(e.localY >= y0) && (e.localY <= y1)) {
-
-				//#########################################
-				//スクロールバーの上でホイールを回した場合
-				//#########################################
 
 				int wheeldelta = e.wheeldelta;
 				int linedelta= 0;
@@ -10700,9 +10770,12 @@ void s_dummyfunc()
 
 		static const int SIZE_CLOSE_Y = 15;
 		static const int BOX_POS_X = 3;
-		static const int BOX_WIDTH = 10;
+		//static const int BOX_WIDTH = 10;
+		static const int BOX_WIDTH = 20;
 		static const int NAME_POS_X1 = 5;
 		static const int NAME_POS_X2 = 3;
+
+		bool allareamousewheel;//子供にsliderを持たない場合　全クライアント領域でマウスホイール処理を行う
 	};
 
 

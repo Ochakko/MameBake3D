@@ -13619,7 +13619,8 @@ int AddTimeLine(int newmotid, bool dorefreshtl)
 			//OWP_Timeline* owpTimeline = 0;
 			//タイムラインのGUIパーツを生成
 			bool shortlabel = false;
-			s_owpTimeline = new OWP_Timeline(shortlabel, L"testmotion", 100.0, 4.0);
+			bool heightwheel = true;
+			s_owpTimeline = new OWP_Timeline(heightwheel, shortlabel, L"testmotion", 100.0, 4.0);
 			s_owpTimeline->setDispKeyFlag(false);//高速化のためkey表示無し
 
 			// カーソル移動時のイベントリスナーに
@@ -13699,7 +13700,8 @@ int AddTimeLine(int newmotid, bool dorefreshtl)
 					s_owpLTimeline = 0;
 				}
 				bool shortlabel = true;
-				s_owpLTimeline = new OWP_Timeline(shortlabel, L"EditRangeTimeLine");
+				bool heightwheel = false;
+				s_owpLTimeline = new OWP_Timeline(heightwheel, shortlabel, L"EditRangeTimeLine");
 				if (s_owpLTimeline) {
 					s_owpLTimeline->setDispKeyFlag(true);
 					//s_LtimelineWnd->addParts(*s_owpLTimeline);//playerbuttonより後
@@ -18674,7 +18676,7 @@ int CreateModelPanel()
 
 
 		//スクロールウインドウ
-		s_modelpanel.scroll = new OWP_ScrollWnd(L"ModelPanelScroll");
+		s_modelpanel.scroll = new OWP_ScrollWnd(L"ModelPanelScroll", true);
 		if (!s_modelpanel.scroll) {
 			_ASSERT(0);
 			return 1;
@@ -19068,7 +19070,7 @@ int CreateCameraPanel()
 			}
 
 			//スクロールウインドウ
-			s_camerapanel.scroll = new OWP_ScrollWnd(L"CameraPanelScroll");
+			s_camerapanel.scroll = new OWP_ScrollWnd(L"CameraPanelScroll", true);
 			if (!s_camerapanel.scroll) {
 				_ASSERT(0);
 				return 1;
@@ -19381,7 +19383,7 @@ int CreateMotionPanel()
 			}
 
 			//スクロールウインドウ
-			s_motionpanel.scroll = new OWP_ScrollWnd(L"MotionPanelScroll");
+			s_motionpanel.scroll = new OWP_ScrollWnd(L"MotionPanelScroll", true);
 			if (!s_motionpanel.scroll) {
 				_ASSERT(0);
 				return 1;
@@ -19679,7 +19681,7 @@ int CreateConvBoneWnd()
 		s_convboneWnd->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
 
 		//スクロールウインドウ
-		s_convboneSCWnd = new OWP_ScrollWnd(L"ConvBoneScWnd");
+		s_convboneSCWnd = new OWP_ScrollWnd(L"ConvBoneScWnd", true);
 		if (!s_convboneSCWnd) {
 			_ASSERT(0);
 			return 1;
@@ -34134,7 +34136,7 @@ int CreateDispGroupWnd()
 
 
 		//スクロールウインドウ		
-		s_groupSCWnd = new OWP_ScrollWnd(L"DispGroupScWnd");
+		s_groupSCWnd = new OWP_ScrollWnd(L"DispGroupScWnd", true);
 		if (!s_groupSCWnd) {
 			_ASSERT(0);
 			return 1;
@@ -34504,13 +34506,12 @@ int CreateDispGroupWnd()
 
 
 		//autoResizeしないと　チェックボックス４段目以下が反応なかった
+		s_groupSCWnd->autoResize();
 		s_groupsp3->autoResize();
 		s_groupsp1->autoResize();
 		s_groupsp2->autoResize();
 		s_groupsp->autoResize();
 		s_groupsp0->autoResize();
-		s_groupSCWnd->autoResize();
-
 
 		s_groupWnd->setSize(WindowSize(s_sidewidth, s_sideheight));
 		s_groupWnd->setPos(WindowPos(windowposx, s_sidemenuheight));
