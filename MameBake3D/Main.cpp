@@ -26686,8 +26686,8 @@ int Dlg2LaterTransparent(HWND hDlgWnd)
 	int elemno;
 	for (elemno = 0; elemno < elemnum; elemno++) {
 		int textlen;
-		textlen = (int)SendMessage(list2wnd, LB_GETTEXTLEN, 0, 0);
-		if ((textlen >= 0) && (textlen < 512)) {
+		textlen = (int)SendMessage(list2wnd, LB_GETTEXTLEN, (WPARAM)elemno, 0);
+		if ((textlen > 0) && (textlen < 512)) {
 			WCHAR text2[512] = { 0L };
 			int result = (int)SendMessage(list2wnd, LB_GETTEXT, (WPARAM)elemno, (LPARAM)(&text2[0]));
 			if (result != LB_ERR) {
@@ -27408,25 +27408,49 @@ LRESULT CALLBACK LaterTransparentDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 				selindex1 = (int)SendMessage(list1wnd, LB_GETCURSEL, 0, 0);
 				if (selindex1 != LB_ERR) {//何も選択していないときもLB_ERRが返る
 					int textlen1;
-					textlen1 = (int)SendMessage(list1wnd, LB_GETTEXTLEN, 0, 0);
-					if ((textlen1 >= 0) && (textlen1 < 512)) {
+					textlen1 = (int)SendMessage(list1wnd, LB_GETTEXTLEN, (WPARAM)selindex1, 0);
+					if ((textlen1 > 0) && (textlen1 < 512)) {
 						WCHAR text1[512] = { 0L };
 						int result1 = (int)SendMessage(list1wnd, LB_GETTEXT, (WPARAM)selindex1, (LPARAM)(&text1[0]));
 						if (result1 != LB_ERR) {
-							LRESULT lres2;
-							lres2 = SendMessage(list2wnd, LB_ADDSTRING, 0, (LPARAM)(&text1[0]));
-							if ((lres2 == LB_ERR) || (lres2 == LB_ERRSPACE)) {
-								_ASSERT(0);
-								return FALSE;
+
+
+							//text1と同じ名前がlist2にあるかどうかチェック　2023/10/10
+							bool foundsame = false;
+							{
+								int chkelemnum = (int)SendMessage(list2wnd, LB_GETCOUNT, 0, 0);
+								int chkelemno;
+								for (chkelemno = 0; chkelemno < chkelemnum; chkelemno++) {
+									WCHAR chktext2[512] = { 0L };
+									int chktextlen2 = (int)SendMessage(list2wnd, LB_GETTEXTLEN, (WPARAM)chkelemno, 0);
+									if ((chktextlen2 > 0) && (chktextlen2 < 512)) {
+										int result2 = (int)SendMessage(list2wnd, LB_GETTEXT, (WPARAM)chkelemno, (LPARAM)(&chktext2[0]));
+										if (result2 != LB_ERR) {
+											if (wcscmp(text1, chktext2) == 0) {
+												foundsame = true;
+												break;
+											}
+										}
+									}
+								}
 							}
 
 
-							//追加した要素を選択
-							int elemnum = (int)SendMessage(list2wnd, LB_GETCOUNT, 0, 0);
-							if (elemnum >= 1) {
-								SendMessage(list2wnd, LB_SETCURSEL, (WPARAM)(elemnum - 1), 0);
-							}
+							if (foundsame == false) {//list2にtext1がまだ存在しない場合に　list2にtext1をAdd
+								LRESULT lres2;
+								lres2 = SendMessage(list2wnd, LB_ADDSTRING, 0, (LPARAM)(&text1[0]));
+								if ((lres2 == LB_ERR) || (lres2 == LB_ERRSPACE)) {
+									_ASSERT(0);
+									return FALSE;
+								}
 
+
+								//追加した要素を選択
+								int elemnum = (int)SendMessage(list2wnd, LB_GETCOUNT, 0, 0);
+								if (elemnum >= 1) {
+									SendMessage(list2wnd, LB_SETCURSEL, (WPARAM)(elemnum - 1), 0);
+								}
+							}
 						}
 					}
 				}
@@ -27490,8 +27514,8 @@ LRESULT CALLBACK LaterTransparentDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 						int elemno;
 						for (elemno = 0; elemno < elemnum; elemno++) {
 							int textlen;
-							textlen = (int)SendMessage(list2wnd, LB_GETTEXTLEN, 0, 0);
-							if ((textlen >= 0) && (textlen < 512)) {
+							textlen = (int)SendMessage(list2wnd, LB_GETTEXTLEN, (WPARAM)elemno, 0);
+							if ((textlen > 0) && (textlen < 512)) {
 								WCHAR text2[512] = { 0L };
 								int result = (int)SendMessage(list2wnd, LB_GETTEXT, (WPARAM)elemno, (LPARAM)(&text2[0]));
 								if (result != LB_ERR) {
@@ -27572,8 +27596,8 @@ LRESULT CALLBACK LaterTransparentDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPAR
 						int elemno;
 						for (elemno = 0; elemno < elemnum; elemno++) {
 							int textlen;
-							textlen = (int)SendMessage(list2wnd, LB_GETTEXTLEN, 0, 0);
-							if ((textlen >= 0) && (textlen < 512)) {
+							textlen = (int)SendMessage(list2wnd, LB_GETTEXTLEN, (WPARAM)elemno, 0);
+							if ((textlen > 0) && (textlen < 512)) {
 								WCHAR text2[512] = { 0L };
 								int result = (int)SendMessage(list2wnd, LB_GETTEXT, (WPARAM)elemno, (LPARAM)(&text2[0]));
 								if (result != LB_ERR) {

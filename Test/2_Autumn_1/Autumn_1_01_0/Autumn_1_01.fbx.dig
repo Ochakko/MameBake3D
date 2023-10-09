@@ -7,13 +7,13 @@
     <NodeName>RootNode</NodeName>
     <NodeName>Autumn_1_01</NodeName>
     <NodeName>Face</NodeName>
-    <NodeName>Body</NodeName>
     <NodeName>Hair</NodeName>
     <NodeName>secondary</NodeName>
   </DispGroup>
   <DispGroup>
     <GroupNo>2</GroupNo>
     <GroupON>1</GroupON>
+    <NodeName>Body</NodeName>
   </DispGroup>
   <DispGroup>
     <GroupNo>3</GroupNo>
