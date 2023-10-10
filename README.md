@@ -30,7 +30,7 @@ Fig.1 Edit using RefPos.
 ![TopFig](ReadMe/SS_EditMot12014_1_600.png "トップ絵")
 Fig.2 CustomRig ON.  
 
-![Autumn](ReadMe/EditMot_12025_Autumn_1.png "Autumn_1")<br>
+![Autumn2](ReadMe/SS_EditMot_12026_Autumn_2.png "Autumn_2")<br>
 Fig.3 VRoid Model Autumn
 
 ![Brush-1](ReadMe/EditMot_Brushes_1_ROI.png "Brush-1")
