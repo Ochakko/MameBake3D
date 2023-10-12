@@ -1247,6 +1247,7 @@ static LONG s_befprogressmodelcnt = 0;
 HWND s_progresswnd;
 
 
+static bool s_smoothBefRetarget = false;
 static vector<wstring> s_retargetout;
 static LONG s_retargetnum = 0;
 static LONG s_retargetcnt = 0;
@@ -4408,6 +4409,7 @@ void InitApp()
 	g_fpsforce30 = false;
 	g_underRetargetFlag = false;
 	s_retargetguiFlag = false;
+	s_smoothBefRetarget = false;
 
 	g_VSync = false;
 	g_fpskind = 0;
@@ -12138,6 +12140,29 @@ int RetargetFile(char* fbxpath)
 			//s_model = s_convbone_model_batch;
 
 
+			if(s_smoothBefRetarget && newmodel->GetCurMotInfo()){
+				//##############################################################################
+				//2023/10/12 retarget前にsmoothするオプション RetargetBatch()のダイアログで選択
+				//ノイズによって　180度裏返り機能の閾値を越えないようにする
+				//##############################################################################
+				s_model = newmodel;
+
+				int saveFilterState = s_filterState;
+				double savestart = s_buttonselectstart;
+				double saveend = s_buttonselectend;
+
+				s_filterState = 1;
+				s_buttonselectstart = 1.0;
+				s_buttonselectend = newmodel->GetCurMotInfo()->frameleng - 1.0;
+
+				FilterNoDlg(false);
+
+				s_filterState = saveFilterState;
+				s_buttonselectstart = savestart;
+				s_buttonselectend = saveend;
+			}
+
+
 			OnModelMenu(false, s_convbone_model_batch_selindex, 1);
 			s_model = s_convbone_model_batch;
 			s_convbone_model = s_convbone_model_batch;
@@ -12225,6 +12250,18 @@ int RetargetBatch()
 	if (InterlockedAdd(&g_retargetbatchflag, 0) != 0) {//if already under calc, return 0.
 		return 0;
 	}
+
+
+	//2023/10/12
+	int optionret;
+	optionret = (int)::MessageBox(s_mainhwnd, L"リターゲット前にSmooth処理をしますか？", L"Select Option", MB_YESNO);
+	if (optionret == IDYES) {
+		s_smoothBefRetarget = true;
+	}
+	else {
+		s_smoothBefRetarget = false;
+	}
+
 
 
 	s_savelimitdegflag = g_limitdegflag;
@@ -17181,7 +17218,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				wfilename[0] = 0L;
 				WCHAR waFolderPath[MAX_PATH];
 				//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_PROGRAMS, 0);//これではAppDataのパスになってしまう
-				swprintf_s(waFolderPath, MAX_PATH, L"C:\\Program Files\\OchakkoLAB\\EditMot1.2.0.26\\Test\\");
+				swprintf_s(waFolderPath, MAX_PATH, L"C:\\Program Files\\OchakkoLAB\\EditMot1.2.0.27\\Test\\");
 				ofn.lpstrInitialDir = waFolderPath;
 				ofn.lpstrFile = wfilename;
 
@@ -40014,7 +40051,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.26 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.27 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -47979,7 +48016,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.26 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.27 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

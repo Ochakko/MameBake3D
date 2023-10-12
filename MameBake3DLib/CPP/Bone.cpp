@@ -4766,6 +4766,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 	}
 
 
+
 	int notmodify180flag = GetNotModify180Flag(srcmotid, roundingframe);
 	CQuaternion axisq;
 	axisq.RotationMatrix(GetNodeMat());

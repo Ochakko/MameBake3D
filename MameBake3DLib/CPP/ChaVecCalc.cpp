@@ -3783,8 +3783,25 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	ChaVector3 tmpVec;
 	double shadowLeng;
 	
-	const float thdeg = 165.0f;
 	float tmpX0, tmpY0, tmpZ0;
+	float tmpX1, tmpY1, tmpZ1;
+
+	//const float thdeg = 165.0f;
+	//const float thdeg = 90.0f;//2023/10/11
+
+
+	//2023/10/12_1
+	//通常ボーン90.0度 endjoint180度で大体うまくいくのでこれをデフォルト値とする (一番問題が出やすいbvh121とbvh144でテストして決めた)
+	//bvh2fbxもやり直してテスト
+	//今後の予定として　デフォルト値を変更必要なジョイントに対して　GUIで閾値を軸ごとに変更可能にする
+	float thdeg;
+	if (isendbone == 0) {
+		thdeg = 91.0f;
+	}
+	else {
+		thdeg = 180.0f;
+	}
+
 
 
 	EQ.Rotate(&targetVec, axisXVec);
@@ -3812,19 +3829,20 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	else {
 		tmpZ0 = Euler.z - 360.0f * this->GetRound((Euler.z - befeul.z) / 360.0f);//オーバー１８０度
 	}
+	tmpZ1 = tmpZ0;
 	if (notmodify180flag == 0) {
 		//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
 		if ((tmpZ0 - befeul.z) >= thdeg) {
-			tmpZ0 -= 180.0f;
+			tmpZ1 = tmpZ0 - 180.0f;
 		}
 		if ((befeul.z - tmpZ0) >= thdeg) {
-			tmpZ0 += 180.0f;
+			tmpZ1 = tmpZ0 + 180.0f;
 		}
 	}
 	else {
 		//tmpZ0そのまま
 	}
-	Euler.z = tmpZ0;
+	Euler.z = tmpZ1;
 
 
 	EinvZ = ChaVector3(0.0f, 0.0f, -Euler.z);
@@ -3861,19 +3879,20 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	else {
 		tmpY0 = Euler.y - 360.0f * this->GetRound((Euler.y - befeul.y) / 360.0f);//オーバー１８０度
 	}
+	tmpY1 = tmpY0;
 	if (notmodify180flag == 0) {
 		//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
 		if ((tmpY0 - befeul.y) >= thdeg) {
-			tmpY0 -= 180.0f;
+			tmpY1 = tmpY0 - 180.0f;
 		}
 		if ((befeul.y - tmpY0) >= thdeg) {
-			tmpY0 += 180.0f;
+			tmpY1 = tmpY0 + 180.0f;
 		}
 	}
 	else {
 		//tmpY0そのまま
 	}
-	Euler.y = tmpY0;
+	Euler.y = tmpY1;
 
 
 	EinvY = ChaVector3(0.0f, -Euler.y, 0.0f);
@@ -3930,21 +3949,22 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//自動化が難しいので　ユーザ指定のオプション化
 	//DispAndLimitsプレートメニューに　x180チェックボックス追加
 	//x180にチェックを入れると　X軸に関しても１８０度モディファイを行う
+	tmpX1 = tmpX0;
 	if ((g_underIKRot == false) || (g_x180flag == true)) {
 		if (notmodify180flag == 0) {
 			//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
 			if ((tmpX0 - befeul.x) >= thdeg) {
-				tmpX0 -= 180.0f;
+				tmpX1 = tmpX0 - 180.0f;
 			}
 			if ((befeul.x - tmpX0) >= thdeg) {
-				tmpX0 += 180.0f;
+				tmpX1 = tmpX0 + 180.0f;
 			}
 		}
 		else {
 			//tmpX0そのまま
 		}
 	}
-	Euler.x = tmpX0;
+	Euler.x = tmpX1;
 
 	//###################################################################################################################################
 	//2023/01/12
