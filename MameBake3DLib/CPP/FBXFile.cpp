@@ -356,6 +356,8 @@ int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename, char* fbx
 		return 1;
 	}
 
+	g_underWriteFbx = true;
+
 	s_bvhflag = 1;
 	s_bvhjointnum = 0;
 	s_behead = pbvhfile->GetBVHElem();
@@ -381,6 +383,7 @@ int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename, char* fbx
     if(lResult == false)
     {
 		_ASSERT( 0 );
+		g_underWriteFbx = false;
 		return 1;
     }
 
@@ -391,6 +394,7 @@ int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename, char* fbx
     if(lResult == false)
     {
 		_ASSERT( 0 );
+		g_underWriteFbx = false;
 		return 1;
 	}
 
@@ -405,6 +409,7 @@ int BVH2FBXFile(FbxManager* psdk, CBVHFile* pbvhfile, char* pfilename, char* fbx
 	}
 
 	s_bvhflag = 0;
+	g_underWriteFbx = false;
 
 	return 0;
 }
@@ -429,6 +434,8 @@ int WriteFBXFile(bool limitdegflag, FbxManager* psdk, CModel* pmodel, char* pfil
 
     bool lResult;
 
+	g_underWriteFbx = true;
+
     // Create the entity that will hold the scene.
 	FbxScene* lScene;
     lScene = FbxScene::Create(s_pSdkManager,"");
@@ -439,6 +446,7 @@ int WriteFBXFile(bool limitdegflag, FbxManager* psdk, CModel* pmodel, char* pfil
     if(lResult == false)
     {
 		_ASSERT( 0 );
+		g_underWriteFbx = false;
 		return 1;
     }
 
@@ -449,6 +457,7 @@ int WriteFBXFile(bool limitdegflag, FbxManager* psdk, CModel* pmodel, char* pfil
     if(lResult == false)
     {
 		_ASSERT( 0 );
+		g_underWriteFbx = false;
 		return 1;
 	}
 
@@ -461,6 +470,8 @@ int WriteFBXFile(bool limitdegflag, FbxManager* psdk, CModel* pmodel, char* pfil
 		lScene->Destroy(true);
 		lScene = 0;
 	}
+
+	g_underWriteFbx = false;
 
 	return 0;
 }

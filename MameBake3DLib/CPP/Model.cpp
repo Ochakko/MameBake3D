@@ -11490,6 +11490,13 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 											curframe, startframe, applyframe,
 											rotq0, keynum1flag, postflag, fromiktarget);
 									}
+									else {
+										//2023/10/12
+										//applyframeにも　オイラー角の計算は必要
+										ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
+										neweul = parentbone->CalcLocalEulXYZ(limitdegflag, -1, m_curmotinfo->motid, curframe, BEFEUL_BEFFRAME);
+										parentbone->SetLocalEul(limitdegflag, m_curmotinfo->motid, curframe, neweul, 0);
+									}
 								}
 								keyno++;
 							}
@@ -14413,29 +14420,29 @@ int CModel::CalcQForRot(bool limitdegflag, bool calcaplyflag,
 	//つまり　A = currentworldmat, B = localq.MakeRotMatX()とすると A * (invA * B * A)
 	ChaMatrix transmat2ForRot;
 	ChaMatrix transmat2ForHipsRot;
-
+	
 	//hisp移動はうまくいくが　回転がおかしい 　hips以外は良い
 	//transmat2 = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;//bef
-
+	
 	//hips回転はうまくいくが　移動がおかしい
 	//transmat2 = localq.MakeRotMatX();//for hips edit
-
+	
 	//####################################################################
 	//ToDo : RotQBoneReq2()を作って　引数として上記２つの回転情報を渡す
 	//####################################################################
-
+	 
 	if (calcaplyflag == true) {
 		transmat2ForRot = invcurparrotmat * aplyparrotmat * srcaddrot.MakeRotMatX() * invaplyparrotmat * curparrotmat;//bef
 	}
 	else {
 		transmat2ForRot = invcurparrotmat * srcaddrot.MakeRotMatX() * curparrotmat;//bef
 	}
-	
+	 	
 	transmat2ForHipsRot = srcaddrot.MakeRotMatX();//for hips edit
-
-
+	
 	dstqForRot->RotationMatrix(transmat2ForRot);
 	dstqForHipsRot->RotationMatrix(transmat2ForHipsRot);
+
 
 
 	return 0;
@@ -14928,6 +14935,13 @@ int CModel::IKRotateAxisDeltaPostIK(
 										aplybone, aplybone,
 										curframe, startframe, applyframe,
 										localq, keynum1flag, postflag, fromiktarget);
+								}
+								else {
+									//2023/10/12
+									//applyframeにも　オイラー角の計算は必要
+									ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
+									neweul = aplybone->CalcLocalEulXYZ(limitdegflag, -1, m_curmotinfo->motid, curframe, BEFEUL_BEFFRAME);
+									aplybone->SetLocalEul(limitdegflag, m_curmotinfo->motid, curframe, neweul, 0);
 								}
 								keyno++;
 							}

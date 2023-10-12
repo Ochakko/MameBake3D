@@ -24,7 +24,7 @@
 #include <wincodec.h>
 // XInput includes
 #include <xinput.h>
-// HRESULT translation for Direct3D and other APIs 
+// HRESULT translation for Direct3D and other APIs
 #include <dxerr.h>
 #endif
 
@@ -103,7 +103,9 @@ ID3D11ShaderResourceView* g_presview = 0;
 bool g_underloading = false;
 int g_underselectingframe = 0;
 bool g_underIKRot = false;
+bool g_underIKRotApplyFrame = false;
 bool g_fpsforce30 = false;
+bool g_underWriteFbx = false;
 
 int	g_numthread = 3;
 
@@ -314,7 +316,9 @@ extern ID3D11ShaderResourceView* g_presview;
 extern bool g_underloading;
 extern int g_underselectingframe;
 extern bool g_underIKRot;
+extern bool g_underIKRotApplyFrame;
 extern bool g_fpsforce30;
+extern bool g_underWriteFbx;
 
 extern int	g_numthread;
 extern double g_btcalccnt;

@@ -4406,10 +4406,14 @@ void InitApp()
 	g_refalpha = 50;
 
 	g_underIKRot = false;
+	g_underIKRotApplyFrame = false;
 	g_fpsforce30 = false;
 	g_underRetargetFlag = false;
 	s_retargetguiFlag = false;
 	s_smoothBefRetarget = false;
+
+	g_underWriteFbx = false;
+
 
 	g_VSync = false;
 	g_fpskind = 0;
@@ -10090,6 +10094,8 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 						s_pickinfo.buttonflag = PICK_CENTER;//!!!!!!!!!!!!!
 						g_underIKRot = true;
+						g_underIKRotApplyFrame = true;
+
 
 						//IK中は30fpsにする
 						//IK中の描画回数が多いと　IKROTRECの保存数が多すぎて
@@ -10108,6 +10114,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 						int pickmanipulator = PickManipulator(&s_pickinfo, pickring);
 						if (pickmanipulator >= 0) {
 							g_underIKRot = true;
+							g_underIKRotApplyFrame = true;
 
 							//IK中は30fpsにする
 							//IK中の描画回数が多いと　IKROTRECの保存数が多すぎて
@@ -10130,6 +10137,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 					}
 					else {
 						g_underIKRot = true;
+						g_underIKRotApplyFrame = true;
 
 						//IK中は30fpsにする
 						//IK中の描画回数が多いと　IKROTRECの保存数が多すぎて
@@ -10252,6 +10260,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		}
 
 		//マウスによるIKとFKの後処理　applyframe以外のフレームの処理
+		g_underIKRotApplyFrame = false;
 		g_fpsforce30 = false;
 		int editmotionflag = s_editmotionflag;
 		if (s_oprigflag == 0) {
@@ -10341,6 +10350,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				}
 			}
 		}
+
 		g_underIKRot = false;
 
 

@@ -4571,24 +4571,44 @@ ChaVector3 CBone::GetBefEul(bool limitdegflag, int srcmotid, double srcframe)
 		return befeul;
 	}
 
+	//##############################################################################################
+	//2023/10/12
+	//モデル読込中と　リターゲット中と　ファイル書き出し中だけ　前のフレーム番号のオイラー角を取得
+	//それ以外の場合には　カレントフレームの編集前のオイラー角を取得
+	//このようにすることで　リターゲット中及びIK中の　１８０度裏返り問題が大きく緩和される
+	//(読込中とリターゲット中とファイル書き出し中がifの前半部分　IK中はelse部分)
+	//主にbvh121とbvh144でテスト
+	//##############################################################################################
 
-	//1つ前のフレームのEULはすでに計算されていると仮定する。
-	double befframe;
-	befframe = roundingframe - 1.0;
-	if (roundingframe <= 1.01) {
-		//roundingframe が0.0または1.0の場合 
-		//befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	if ((g_underRetargetFlag == true) || 
+		(GetParModel() && GetParModel()->GetLoadedFlag() == false) || 
+		(g_underWriteFbx == true)) {
+
+		//1つ前のフレームのEULはすでに計算されていると仮定する。
+		double befframe;
+		befframe = roundingframe - 1.0;
+		if (roundingframe <= 1.01) {
+			//roundingframe が0.0または1.0の場合 
+			//befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+			CMotionPoint* curmp;
+			curmp = GetMotionPoint(srcmotid, roundingframe);
+			if (curmp) {
+				befeul = GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
+			}
+		}
+		else {
+			CMotionPoint* befmp;
+			befmp = GetMotionPoint(srcmotid, befframe);
+			if (befmp) {
+				befeul = GetLocalEul(limitdegflag, srcmotid, befframe, befmp);
+			}
+		}
+	}
+	else {
 		CMotionPoint* curmp;
 		curmp = GetMotionPoint(srcmotid, roundingframe);
 		if (curmp) {
 			befeul = GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
-		}
-	}
-	else {
-		CMotionPoint* befmp;
-		befmp = GetMotionPoint(srcmotid, befframe);
-		if (befmp) {
-			befeul = GetLocalEul(limitdegflag, srcmotid, befframe, befmp);
 		}
 	}
 

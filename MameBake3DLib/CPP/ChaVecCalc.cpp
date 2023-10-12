@@ -3830,18 +3830,20 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 		tmpZ0 = Euler.z - 360.0f * this->GetRound((Euler.z - befeul.z) / 360.0f);//オーバー１８０度
 	}
 	tmpZ1 = tmpZ0;
-	if (notmodify180flag == 0) {
-		//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
-		if ((tmpZ0 - befeul.z) >= thdeg) {
-			tmpZ1 = tmpZ0 - 180.0f;
+	//if (g_underIKRot == false) {//<--コメントアウトをはずすと　bvh144のリターゲットの太ももが変になる
+		if (notmodify180flag == 0) {
+			//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
+			if ((tmpZ0 - befeul.z) >= thdeg) {
+				tmpZ1 = tmpZ0 - 180.0f;
+			}
+			if ((befeul.z - tmpZ0) >= thdeg) {
+				tmpZ1 = tmpZ0 + 180.0f;
+			}
 		}
-		if ((befeul.z - tmpZ0) >= thdeg) {
-			tmpZ1 = tmpZ0 + 180.0f;
+		else {
+			//tmpZ0そのまま
 		}
-	}
-	else {
-		//tmpZ0そのまま
-	}
+	//}
 	Euler.z = tmpZ1;
 
 
@@ -3880,18 +3882,20 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 		tmpY0 = Euler.y - 360.0f * this->GetRound((Euler.y - befeul.y) / 360.0f);//オーバー１８０度
 	}
 	tmpY1 = tmpY0;
-	if (notmodify180flag == 0) {
-		//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
-		if ((tmpY0 - befeul.y) >= thdeg) {
-			tmpY1 = tmpY0 - 180.0f;
+	//if (g_underIKRot == false) {//<--コメントアウトをはずすと　bvh144のリターゲットの太ももが変になる
+		if (notmodify180flag == 0) {
+			//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
+			if ((tmpY0 - befeul.y) >= thdeg) {
+				tmpY1 = tmpY0 - 180.0f;
+			}
+			if ((befeul.y - tmpY0) >= thdeg) {
+				tmpY1 = tmpY0 + 180.0f;
+			}
 		}
-		if ((befeul.y - tmpY0) >= thdeg) {
-			tmpY1 = tmpY0 + 180.0f;
+		else {
+			//tmpY0そのまま
 		}
-	}
-	else {
-		//tmpY0そのまま
-	}
+	//}
 	Euler.y = tmpY1;
 
 
@@ -3951,6 +3955,8 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//x180にチェックを入れると　X軸に関しても１８０度モディファイを行う
 	tmpX1 = tmpX0;
 	if ((g_underIKRot == false) || (g_x180flag == true)) {
+	//if((g_underRetargetFlag == true) || (g_x180flag == true)) {
+		//if ((notmodify180flag == 0) && (isendbone != 0)) {
 		if (notmodify180flag == 0) {
 			//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
 			if ((tmpX0 - befeul.x) >= thdeg) {
