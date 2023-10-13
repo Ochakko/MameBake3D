@@ -13883,6 +13883,10 @@ int UpdateEditedEuler()
 	//}
 
 
+	//2023/10/13
+	int eultiptime = (int)(s_owpEulerGraph->getCurrentTime() + 0.0001);
+
+
 	//選択状態がない場合にはtopboneのオイラーグラフを表示する。
 	if (s_curboneno < 0) {
 		CBone* topbone = s_model->GetTopBone();
@@ -14007,6 +14011,13 @@ int UpdateEditedEuler()
 				s_owpEulerGraph->setKey(needCallRewrite, _T("Y"), (double)curtime, cureul.y);
 				s_owpEulerGraph->setKey(needCallRewrite, _T("Z"), (double)curtime, cureul.z);
 
+
+				//2023/10/13
+				if (curtime == eultiptime) {
+					s_owpEulerGraph->setEulTip(cureul);
+				}
+
+
 				if (minfirstflag == 1) {
 					minval = min(cureul.z, min(cureul.x, cureul.y));
 					minfirstflag = 0;
@@ -14087,6 +14098,7 @@ int refreshEulerGraph()
 {
 	//オイラーグラフのキーを作成しなおさない場合はUpdateEditedEuler()
 
+
 	if (s_owpEulerGraph) {
 		s_owpEulerGraph->SetCurrentModel(s_model);
 	}
@@ -14102,6 +14114,10 @@ int refreshEulerGraph()
 	if (!s_model->GetCurMotInfo()) {
 		return 0;
 	}
+
+
+	//2023/10/13
+	int eultiptime = (int)(s_owpEulerGraph->getCurrentTime() + 0.0001);
 
 
 	MOTINFO* curmotinfo = 0;
@@ -14201,6 +14217,12 @@ int refreshEulerGraph()
 						s_owpEulerGraph->newKey(needCallRewrite, _T("Y"), (double)curtime, cureul.y);
 						s_owpEulerGraph->newKey(needCallRewrite, _T("Z"), (double)curtime, cureul.z);
 						//s_owpEulerGraph->newKey(_T("S"), (double)curtime, 0.0);
+
+
+						//2023/10/13
+						if (curtime == eultiptime) {
+							s_owpEulerGraph->setEulTip(cureul);
+						}
 
 
 						if (minfirstflag == 1) {

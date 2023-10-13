@@ -681,6 +681,57 @@ namespace OrgWinGUI{
 			else {
 				int dbgflag1 = 1;
 			}
+
+
+			//2023/10/13 eultip
+			if (g_previewFlag == 0) {
+				int fontsize, startx, starty, stepy;
+				if (g_4kresolution) {
+					fontsize = 24;
+					startx = 100;
+					starty = 160;
+					stepy = 40;
+				}
+				else {
+					fontsize = 12;
+					startx = 50;
+					starty = 100;
+					stepy = 20;
+				}
+
+				TCHAR strtipFrame[256];
+				_stprintf_s(strtipFrame, 256, _T("Frame : %.1f"), getCurrentTime());
+				hdcM->setFont(fontsize, _T("ＭＳ ゴシック"));
+				SetTextColor(hdcM->hDC, RGB(240, 240, 240));
+				TextOut(hdcM->hDC,
+					pos.x + LABEL_SIZE_X + startx, starty,
+					strtipFrame, (int)_tcslen(strtipFrame));
+
+				TCHAR strtipX[256];
+				_stprintf_s(strtipX, 256, _T("X : %.2f"), eultip.x);
+				//hdcM->setFont(fontsize, _T("ＭＳ ゴシック"));
+				//SetTextColor(hdcM->hDC, RGB(240, 240, 240));
+				TextOut(hdcM->hDC,
+					pos.x + LABEL_SIZE_X + startx, starty + stepy,
+					strtipX, (int)_tcslen(strtipX));
+
+				TCHAR strtipY[256];
+				_stprintf_s(strtipY, 256, _T("Y : %.2f"), eultip.y);
+				//hdcM->setFont(fontsize, _T("ＭＳ ゴシック"));
+				//SetTextColor(hdcM->hDC, RGB(240, 240, 240));
+				TextOut(hdcM->hDC,
+					pos.x + LABEL_SIZE_X + startx, starty + 2 * stepy,
+					strtipY, (int)_tcslen(strtipY));
+
+				TCHAR strtipZ[256];
+				_stprintf_s(strtipZ, 256, _T("Z : %.2f"), eultip.z);
+				//hdcM->setFont(fontsize, _T("ＭＳ ゴシック"));
+				//SetTextColor(hdcM->hDC, RGB(240, 240, 240));
+				TextOut(hdcM->hDC,
+					pos.x + LABEL_SIZE_X + startx, starty + 3 * stepy,
+					strtipZ, (int)_tcslen(strtipZ));
+			}
+
 		}
 		else {
 			//2023/08/26 カレントモデルにモーションが無い場合と　視野外の場合には　オイラーグラフ更新はお休み

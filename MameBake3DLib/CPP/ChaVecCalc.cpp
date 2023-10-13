@@ -3794,12 +3794,19 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//通常ボーン90.0度 endjoint180度で大体うまくいくのでこれをデフォルト値とする (一番問題が出やすいbvh121とbvh144でテストして決めた)
 	//bvh2fbxもやり直してテスト
 	//今後の予定として　デフォルト値を変更必要なジョイントに対して　GUIで閾値を軸ごとに変更可能にする
+	// 
+	// 
+	//2023/10/13 予定更新　上記GUIでの閾値の設定は　次記述と同じisendboneかどうかの２種類だけにする予定
+	//
 	float thdeg;
 	if (isendbone == 0) {
 		thdeg = 91.0f;
 	}
 	else {
-		thdeg = 180.0f;
+		//thdeg = 180.0f;
+		//thdeg = 360.0f;
+		//thdeg = 91.0f;
+		thdeg = 165.0f;
 	}
 
 
@@ -3955,7 +3962,7 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//x180にチェックを入れると　X軸に関しても１８０度モディファイを行う
 	tmpX1 = tmpX0;
 	if ((g_underIKRot == false) || (g_x180flag == true)) {
-	//if((g_underRetargetFlag == true) || (g_x180flag == true)) {
+		//if((g_underRetargetFlag == true) || (g_x180flag == true)) {
 		//if ((notmodify180flag == 0) && (isendbone != 0)) {
 		if (notmodify180flag == 0) {
 			//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正

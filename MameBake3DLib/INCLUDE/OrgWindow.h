@@ -6984,6 +6984,8 @@ void s_dummyfunc()
 				GRAPH_SIZE_Y = 170;
 			}
 
+			eultip = ChaVector3(0.0f, 0.0f, 0.0f);
+
 		}
 		~OWP_EulerGraph() {
 			selectAll(true);
@@ -8231,7 +8233,15 @@ void s_dummyfunc()
 			return retki;
 		}
 
-	
+		void setEulTip(ChaVector3 srceul)
+		{
+			eultip = srceul;
+		}
+		ChaVector3 getEulTip()
+		{
+			return eultip;
+		}
+
 	private:
 		////////////////////////// MemberVar /////////////////////////////
 		double maxTime, currentTime, showPos_time, showPos_width;
@@ -8251,6 +8261,7 @@ void s_dummyfunc()
 		double dispscale;
 		double dispoffset;
 		CModel* currentmodel;
+		ChaVector3 eultip;//カレントのオイラー角を　グラフ上に表示するため　値をMain.cppでセットする
 
 		//行データクラス-------------
 		public : class EulLineData {
