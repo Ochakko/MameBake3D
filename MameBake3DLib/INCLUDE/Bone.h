@@ -49,6 +49,7 @@ typedef struct tag_ikrotrec
 
 
 
+
 class CBone
 {
 public:
@@ -429,8 +430,8 @@ public:
 
 	int CalcBoneDepth();
 
-	ChaVector3 GetBefEul(bool limitdegflag, int srcmotid, double srcframe);
-	ChaVector3 GetUnlimitedBefEul(int srcmotid, double srcframe);
+	BEFEUL GetBefEul(bool limitdegflag, int srcmotid, double srcframe);
+	//ChaVector3 GetUnlimitedBefEul(int srcmotid, double srcframe);
 	int GetNotModify180Flag(int srcmotid, double srcframe);
 	ChaVector3 CalcLocalEulXYZ(bool limitdegflag, int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 	//ChaVector3 CalcLocalUnlimitedEulXYZ(int srcmotid, double srcframe);//motion-->anglelimit用
@@ -489,7 +490,7 @@ public:
 	ChaMatrix CalcSymXMat2(bool limitdegflag, int srcmotid, double srcframe, int symrootmode);
 	int PasteMotionPoint(bool limitdegflag, int srcmotid, double srcframe, CMotionPoint srcmp);
 
-	ChaVector3 CalcFBXEulXYZ(bool limitdegflag, int srcmotid, double srcframe, ChaVector3* befeulptr = 0);//2022/09/12 fbx書き出し専用
+	ChaVector3 CalcFBXEulXYZ(bool limitdegflag, int srcmotid, double srcframe);//2022/09/12 fbx書き出し専用
 	ChaVector3 CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe);//2022/09/12 fbx書き出し専用
 	int QuaternionInOrder(bool limitdegflag, int srcmotid, double srcframe, CQuaternion* srcdstq);
 	int CalcNewBtMat(CModel* srcmodel, CBone* childbone, ChaMatrix* dstmat, ChaVector3* dstpos);
@@ -525,7 +526,7 @@ public:
 	//int ResizeIndexedMotionPoint(int srcmotid, double animleng);
 	//void ResizeIndexedMotionPointReq(int srcmotid, double animleng);
 
-	ChaVector3 LimitEul(ChaVector3 srceul, ChaVector3 srcbefeul);
+	ChaVector3 LimitEul(ChaVector3 srceul);
 	//void SetBefWorldMatReq(int srcmotid, double srcframe);
 
 	int ResetAngleLimit(int srcval);

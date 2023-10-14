@@ -100,7 +100,7 @@ public:
 	ChaMatrix GetCameraTransformMat(int cameramotid, double nextframe, int inheritmode, bool multInvNodeMat);
 	int GetCameraAnimParams(int cameramotid, double nextframe, double camdist, 
 		ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaVector3* pcamupdir, ChaMatrix* protmat, int inheritmode);
-	ChaVector3 CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVector3 befeul);
+	ChaVector3 CalcCameraFbxEulXYZ(int cameramotid, double srcframe);
 
 	CAMERANODE* GetFirstValidCameraNode();//anim無しカメラ用
 

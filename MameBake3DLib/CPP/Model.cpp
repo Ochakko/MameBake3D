@@ -6532,7 +6532,7 @@ void CModel::PostLoadFbxAnimReq(FbxAnimLayer* mCurrentAnimLayer, int srcmotid, d
 					//CCameraFbx::PostLoadFbxAnim()でのmotidとCAMERANODE*の対応表エントリーよりも後で呼ぶ
 					if (srcbone->IsSkeleton() || (srcbone->IsCamera() && IsCameraMotion(srcmotid))) {
 						bool limitdegflag = false;
-						ChaVector3 cureul = srcbone->CalcFBXEulXYZ(limitdegflag, srcmotid, curframe, 0);
+						ChaVector3 cureul = srcbone->CalcFBXEulXYZ(limitdegflag, srcmotid, curframe);
 						curmp->SetLocalEul(cureul);
 						curmp->SetLimitedLocalEul(cureul);
 						curmp->SetCalcLimitedWM(2);
@@ -18320,7 +18320,7 @@ ChaMatrix CModel::GetCameraTransformMat(int cameramotid, double nextframe, int i
 
 }
 
-ChaVector3 CModel::CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVector3 befeul)
+ChaVector3 CModel::CalcCameraFbxEulXYZ(int cameramotid, double srcframe)
 {
 	ChaVector3 reteul = ChaVector3(0.0f, 0.0f, 0.0f);
 
@@ -18335,7 +18335,7 @@ ChaVector3 CModel::CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVect
 		return reteul;
 	}
 
-	return m_camerafbx.CalcCameraFbxEulXYZ(cameramotid, srcframe, befeul);
+	return m_camerafbx.CalcCameraFbxEulXYZ(cameramotid, srcframe);
 }
 
 

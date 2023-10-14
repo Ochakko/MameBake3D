@@ -892,7 +892,7 @@ public:
 	int GetCameraAnimParams(int cameramotid, double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaVector3* pcamupvec, ChaMatrix* protmat, int inheritmode);
 	int GetCameraAnimParams(double nextframe, double camdist, ChaVector3* pEyePos, ChaVector3* pTargetPos, ChaVector3* pcamupvec, ChaMatrix* protmat, int inheritmode);
 	int GetCameraProjParams(int cameramotid, float* pprojnear, float* pprojfar, float* pfovy, ChaVector3* pcampos, ChaVector3* pcamdir, ChaVector3* pcamupvec);
-	ChaVector3 CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVector3 befeul);
+	ChaVector3 CalcCameraFbxEulXYZ(int cameramotid, double srcframe);
 	ChaMatrix GetCameraTransformMat(int cameramotid, double nextframe, int inheritmode, bool multInvNodeMat);
 
 	ChaVector3 GetCameraAdjustPos(int cameramotid);

@@ -10061,6 +10061,10 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				s_pickinfo.buttonflag = spakind;
 				s_pickinfo.pickobjno = s_curboneno;
 
+				g_underIKRot = true;//2023/10/14 !!!!! 設定し忘れていた
+				g_underIKRotApplyFrame = true;//2023/10/14 !!!!! 設定し忘れていた
+
+
 				//} else if ((oprigdoneflag == 0) && (pickrigflag == 1)){
 				//	RollbackCurBoneNo();
 				//	ToggleRig();

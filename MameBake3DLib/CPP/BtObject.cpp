@@ -345,7 +345,8 @@ int CBtObject::CreateObject(bool limitdegflag, int srcmotid, double srcframe, CB
 
 
 	ChaVector3 starteul = ChaVector3(0.0f, 0.0f, 0.0f);
-	ChaVector3 befeul = m_bone->GetLocalEul(limitdegflag, srcmotid, srcframe, 0);
+	//ChaVector3 befeul = m_bone->GetLocalEul(limitdegflag, srcmotid, srcframe, 0);
+	BEFEUL befeul = m_bone->GetBefEul(limitdegflag, srcmotid, srcframe);
 	CQuaternion axisq;
 	axisq.RotationMatrix(m_bone->GetNodeMat());
 	int notmodify180flag = 0;
@@ -1173,7 +1174,11 @@ int CBtObject::SetBtMotion(bool limitdegflag, ChaMatrix curtraanim)
 	curlocalq.RotationMatrix(xlocalrotmat);	
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 	int notmodify180flag = 1;
-	ChaVector3 befeul = m_bone->GetBtEul();
+	//ChaVector3 befeul = m_bone->GetBtEul();
+	BEFEUL befeul;
+	befeul.Init();
+	befeul.currentframeeul = m_bone->GetBtEul();
+	befeul.befframeeul = m_bone->GetBtEul();
 	CQuaternion axisq;
 	axisq.RotationMatrix(m_bone->GetNodeMat());
 	curlocalq.Q2EulXYZusingQ(&axisq, befeul, &cureul, 0, 0, notmodify180flag);

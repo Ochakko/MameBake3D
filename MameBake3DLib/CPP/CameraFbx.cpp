@@ -576,7 +576,7 @@ int CCameraFbx::GetCameraAnimParams(int cameramotid, double nextframe, double ca
 }
 
 
-ChaVector3 CCameraFbx::CalcCameraFbxEulXYZ(int cameramotid, double srcframe, ChaVector3 befeul)
+ChaVector3 CCameraFbx::CalcCameraFbxEulXYZ(int cameramotid, double srcframe)
 {
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 

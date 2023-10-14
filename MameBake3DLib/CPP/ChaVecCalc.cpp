@@ -1194,7 +1194,10 @@ FbxDouble3 ChaVector3::ConvRotOrder2XYZ(EFbxRotationOrder rotorder)
 	rotq.SetRotation(rotorder, 0, *this);
 
 	ChaVector3 eulxyz = ChaVector3(0.0f, 0.0f, 0.0f);
-	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	//ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	BEFEUL befeul;
+	befeul.Init();
+
 	int isfirstbone = 0;
 	int isendbone = 0;
 	int notmodify180flag = 1;
@@ -3744,7 +3747,7 @@ int CQuaternion::Q2EulXYZusingMat(int rotorder, CQuaternion* axisq, ChaVector3 b
 }
 
 
-int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag)
+int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag)
 {
 
 	//2022/12/16 ZEROVECLEN
@@ -3794,19 +3797,52 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//通常ボーン90.0度 endjoint180度で大体うまくいくのでこれをデフォルト値とする (一番問題が出やすいbvh121とbvh144でテストして決めた)
 	//bvh2fbxもやり直してテスト
 	//今後の予定として　デフォルト値を変更必要なジョイントに対して　GUIで閾値を軸ごとに変更可能にする
-	// 
-	// 
-	//2023/10/13 予定更新　上記GUIでの閾値の設定は　次記述と同じisendboneかどうかの２種類だけにする予定
-	//
 	float thdeg;
 	if (isendbone == 0) {
-		thdeg = 91.0f;
+
+		//if ((g_underRetargetFlag == true) ||
+		//	//(GetParModel() && GetParModel()->GetLoadedFlag() == false) ||
+		//	(g_underWriteFbx == true)) {
+		//	thdeg = 135.0f;
+		//}
+		//else {
+		//	thdeg = 91.0f;
+		//}
+
+		//thdeg = 91.0f;
+		//thdeg = 135.0f;
+		//thdeg = 115.0f;
+		//thdeg = 125.0f;
+		//thdeg = 165.0f;
+
+
+		//if (g_underIKRot == true) {
+		//	//thdeg = 91.0f;
+		//	//thdeg = 98.0f;
+		//	thdeg = 90.0f;
+		//}
+		//else {
+		//	thdeg = 140.0f;
+		//}
+
+		//thdeg = 140.0f;
+		thdeg = 90.0f;
+
 	}
 	else {
 		//thdeg = 180.0f;
 		//thdeg = 360.0f;
 		//thdeg = 91.0f;
 		thdeg = 165.0f;
+	}
+
+
+	ChaVector3 validbefeul;//2023/10/14
+	if (g_underIKRotApplyFrame == true) {
+		validbefeul = befeul.currentframeeul;
+	}
+	else {
+		validbefeul = befeul.befframeeul;
 	}
 
 
@@ -3830,28 +3866,31 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//	Euler.z = -Euler.z;
 	//}
 
-	if (Euler.z >= 0.0f) {
-		tmpZ0 = Euler.z + 360.0f * this->GetRound((befeul.z - Euler.z) / 360.0f);//オーバー１８０度
-	}
-	else {
-		tmpZ0 = Euler.z - 360.0f * this->GetRound((Euler.z - befeul.z) / 360.0f);//オーバー１８０度
-	}
-	tmpZ1 = tmpZ0;
-	//if (g_underIKRot == false) {//<--コメントアウトをはずすと　bvh144のリターゲットの太ももが変になる
+	{
+		if (Euler.z >= 0.0f) {
+			tmpZ0 = Euler.z + 360.0f * this->GetRound((validbefeul.z - Euler.z) / 360.0f);//オーバー１８０度
+		}
+		else {
+			tmpZ0 = Euler.z - 360.0f * this->GetRound((Euler.z - validbefeul.z) / 360.0f);//オーバー１８０度
+		}
+		tmpZ1 = tmpZ0;
+		//if (g_underIKRot == false) {//<--コメントアウトをはずすと　bvh144のリターゲットの太ももが変になる
 		if (notmodify180flag == 0) {
 			//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
-			if ((tmpZ0 - befeul.z) >= thdeg) {
+			if ((tmpZ0 - validbefeul.z) >= thdeg) {
 				tmpZ1 = tmpZ0 - 180.0f;
 			}
-			if ((befeul.z - tmpZ0) >= thdeg) {
+			if ((validbefeul.z - tmpZ0) >= thdeg) {
 				tmpZ1 = tmpZ0 + 180.0f;
 			}
 		}
 		else {
 			//tmpZ0そのまま
 		}
-	//}
-	Euler.z = tmpZ1;
+		//}
+		Euler.z = tmpZ1;
+	}
+
 
 
 	EinvZ = ChaVector3(0.0f, 0.0f, -Euler.z);
@@ -3882,29 +3921,31 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//	Euler.y = -Euler.y;
 	//}
 
-	if (Euler.y >= 0.0f) {
-		tmpY0 = Euler.y + 360.0f * this->GetRound((befeul.y - Euler.y) / 360.0f);//オーバー１８０度
-	}
-	else {
-		tmpY0 = Euler.y - 360.0f * this->GetRound((Euler.y - befeul.y) / 360.0f);//オーバー１８０度
-	}
-	tmpY1 = tmpY0;
-	//if (g_underIKRot == false) {//<--コメントアウトをはずすと　bvh144のリターゲットの太ももが変になる
+	{
+
+		if (Euler.y >= 0.0f) {
+			tmpY0 = Euler.y + 360.0f * this->GetRound((validbefeul.y - Euler.y) / 360.0f);//オーバー１８０度
+		}
+		else {
+			tmpY0 = Euler.y - 360.0f * this->GetRound((Euler.y - validbefeul.y) / 360.0f);//オーバー１８０度
+		}
+		tmpY1 = tmpY0;
+		//if (g_underIKRot == false) {//<--コメントアウトをはずすと　bvh144のリターゲットの太ももが変になる
 		if (notmodify180flag == 0) {
 			//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
-			if ((tmpY0 - befeul.y) >= thdeg) {
+			if ((tmpY0 - validbefeul.y) >= thdeg) {
 				tmpY1 = tmpY0 - 180.0f;
 			}
-			if ((befeul.y - tmpY0) >= thdeg) {
+			if ((validbefeul.y - tmpY0) >= thdeg) {
 				tmpY1 = tmpY0 + 180.0f;
 			}
 		}
 		else {
 			//tmpY0そのまま
 		}
-	//}
-	Euler.y = tmpY1;
-
+		//}
+		Euler.y = tmpY1;
+	}
 
 	EinvY = ChaVector3(0.0f, -Euler.y, 0.0f);
 	QinvY.SetRotationXYZ(&iniq, EinvY);
@@ -3936,48 +3977,57 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector
 	//if (vecDotVec(&shadowVec, &axisYVec) < 0.0f) {
 	//	Euler.x = -Euler.x;
 	//}
-	if (Euler.x >= 0.0f) {
-		tmpX0 = Euler.x + 360.0f * this->GetRound((befeul.x - Euler.x) / 360.0f);//オーバー１８０度
-	}
-	else {
-		tmpX0 = Euler.x - 360.0f * this->GetRound((Euler.x - befeul.x) / 360.0f);//オーバー１８０度
-	}
 
-	//2023/02/15
-	//X軸の角度を180度補正しても　後続の軸が無いので　他の軸の計算に反映出来ない
-	//しかし　補正を取り除いてしまうと　リターゲット結果がおかしいことがあるbvh121
-	//取り除くと　IK中に　キャラクターが逆立ちしなくなる
-	//##############
-	//2023/02/23
-	//いろいろテストした結果
-	// 
-	//回転が全てリセットされているところから　IKする場合には　
-	//X軸に関して１８０度モディファイをした方が　結果が良い（ひっくり返らない）
-	//
-	//元のモーションがある上に　IK編集する場合には
-	//X軸に関して１８０度モディファイをしない方が　結果が良い
-	//
-	//自動化が難しいので　ユーザ指定のオプション化
-	//DispAndLimitsプレートメニューに　x180チェックボックス追加
-	//x180にチェックを入れると　X軸に関しても１８０度モディファイを行う
-	tmpX1 = tmpX0;
-	if ((g_underIKRot == false) || (g_x180flag == true)) {
-		//if((g_underRetargetFlag == true) || (g_x180flag == true)) {
-		//if ((notmodify180flag == 0) && (isendbone != 0)) {
-		if (notmodify180flag == 0) {
-			//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
-			if ((tmpX0 - befeul.x) >= thdeg) {
-				tmpX1 = tmpX0 - 180.0f;
-			}
-			if ((befeul.x - tmpX0) >= thdeg) {
-				tmpX1 = tmpX0 + 180.0f;
-			}
+
+	{
+		if (Euler.x >= 0.0f) {
+			tmpX0 = Euler.x + 360.0f * this->GetRound((validbefeul.x - Euler.x) / 360.0f);//オーバー１８０度
 		}
 		else {
-			//tmpX0そのまま
+			tmpX0 = Euler.x - 360.0f * this->GetRound((Euler.x - validbefeul.x) / 360.0f);//オーバー１８０度
 		}
+
+		//2023/02/15
+		//X軸の角度を180度補正しても　後続の軸が無いので　他の軸の計算に反映出来ない
+		//しかし　補正を取り除いてしまうと　リターゲット結果がおかしいことがあるbvh121
+		//取り除くと　IK中に　キャラクターが逆立ちしなくなる
+		//##############
+		//2023/02/23
+		//いろいろテストした結果
+		// 
+		//回転が全てリセットされているところから　IKする場合には　
+		//X軸に関して１８０度モディファイをした方が　結果が良い（ひっくり返らない）
+		//
+		//元のモーションがある上に　IK編集する場合には
+		//X軸に関して１８０度モディファイをしない方が　結果が良い
+		//
+		//自動化が難しいので　ユーザ指定のオプション化
+		//DispAndLimitsプレートメニューに　x180チェックボックス追加
+		//x180にチェックを入れると　X軸に関しても１８０度モディファイを行う
+		tmpX1 = tmpX0;
+		
+		//if (g_underRetargetFlag == false) {
+		if ((g_underIKRot == false) || (g_x180flag == true)) {		
+
+			//if((g_underRetargetFlag == true) || (g_x180flag == true)) {
+			//if ((notmodify180flag == 0) && (isendbone != 0)) {
+			if (notmodify180flag == 0) {
+				//180度(thdeg : 165度以上)の変化は　軸反転しないような表現に補正
+				if ((tmpX0 - validbefeul.x) >= thdeg) {
+					tmpX1 = tmpX0 - 180.0f;
+				}
+				if ((validbefeul.x - tmpX0) >= thdeg) {
+					tmpX1 = tmpX0 + 180.0f;
+				}
+			}
+			else {
+				//tmpX0そのまま
+			}
+		}
+		Euler.x = tmpX1;
 	}
-	Euler.x = tmpX1;
+
+
 
 	//###################################################################################################################################
 	//2023/01/12
@@ -4536,7 +4586,7 @@ int CQuaternion::GetRound(float srcval)
 
 }
 //
-int CQuaternion::CalcFBXEulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag)
+int CQuaternion::CalcFBXEulXYZ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag)
 {
 	int noise[4] = { 0, 1, 0, -1 };
 	static int dbgcnt = 0;
@@ -4796,7 +4846,9 @@ ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat, int notmodify180flag)//回転成分
 	//ジョイントのオイラー角を取得する場合には　CBone::CalcLocalEulXYZ()を使う
 	
 	ChaVector3 reteul = ChaVector3(0.0f, 0.0f, 0.0f);
-	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	//ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	BEFEUL befeul;
+	befeul.Init();
 
 	int isfirstbone = 0;
 	int isendbone = 0;

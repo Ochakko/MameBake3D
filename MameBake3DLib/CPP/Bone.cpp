@@ -51,6 +51,7 @@ using namespace OrgWinGUI;
 //2023/02/12
 #define EULLIMITPLAY	1
 
+
 map<CModel*,int> g_bonecntmap;
 /*
 extern WCHAR g_basedir[MAX_PATH];
@@ -4561,104 +4562,140 @@ void CBone::SetOldJointFPos(ChaVector3 srcpos){
 	m_oldjointfpos = srcpos;
 }
 
-ChaVector3 CBone::GetBefEul(bool limitdegflag, int srcmotid, double srcframe)
+BEFEUL CBone::GetBefEul(bool limitdegflag, int srcmotid, double srcframe)
 {
 	double roundingframe = RoundingTime(srcframe);
 
-	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	BEFEUL befeul;
+	befeul.Init();
 
 	if (IsNotSkeleton() && IsNotCamera()) {
 		return befeul;
 	}
 
-	//##############################################################################################
-	//2023/10/12
-	//モデル読込中と　リターゲット中と　ファイル書き出し中だけ　前のフレーム番号のオイラー角を取得
-	//それ以外の場合には　カレントフレームの編集前のオイラー角を取得
-	//このようにすることで　リターゲット中及びIK中の　１８０度裏返り問題が大きく緩和される
-	//(読込中とリターゲット中とファイル書き出し中がifの前半部分　IK中はelse部分)
-	//主にbvh121とbvh144でテスト
-	//##############################################################################################
-
-	if ((g_underRetargetFlag == true) || 
-		(GetParModel() && GetParModel()->GetLoadedFlag() == false) || 
-		(g_underWriteFbx == true)) {
-
-		//1つ前のフレームのEULはすでに計算されていると仮定する。
-		double befframe;
-		befframe = roundingframe - 1.0;
-		if (roundingframe <= 1.01) {
-			//roundingframe が0.0または1.0の場合 
-			//befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-			CMotionPoint* curmp;
-			curmp = GetMotionPoint(srcmotid, roundingframe);
-			if (curmp) {
-				befeul = GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
-			}
-		}
-		else {
-			CMotionPoint* befmp;
-			befmp = GetMotionPoint(srcmotid, befframe);
-			if (befmp) {
-				befeul = GetLocalEul(limitdegflag, srcmotid, befframe, befmp);
-			}
-		}
-	}
-	else {
-		CMotionPoint* curmp;
-		curmp = GetMotionPoint(srcmotid, roundingframe);
-		if (curmp) {
-			befeul = GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
-		}
-	}
-
-	//if (g_underIKRot == true) {
-	//	if (roundingframe <= 1.01) {
-	//		befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-	//	}
-	//}
-
-	return befeul;
-}
-
-ChaVector3 CBone::GetUnlimitedBefEul(int srcmotid, double srcframe)
-{
-	double roundingframe = RoundingTime(srcframe);
-
-	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
-
-	if (IsNotSkeleton()) {
-		return befeul;
-	}
-
-
-	//1つ前のフレームのEULはすでに計算されていると仮定する。
+	//###########
+	//bef frame
+	//###########
 	double befframe;
 	befframe = roundingframe - 1.0;
 	if (roundingframe <= 1.01) {
-		//befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+		//roundingframe が0.0または1.0の場合 
 		CMotionPoint* curmp;
 		curmp = GetMotionPoint(srcmotid, roundingframe);
 		if (curmp) {
-			befeul = curmp->GetLocalEul();//unlimited !!!
+			befeul.befframeeul = GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
 		}
 	}
 	else {
 		CMotionPoint* befmp;
 		befmp = GetMotionPoint(srcmotid, befframe);
 		if (befmp) {
-			befeul = befmp->GetLocalEul();//unlimited !!!
+			befeul.befframeeul = GetLocalEul(limitdegflag, srcmotid, befframe, befmp);
 		}
 	}
 
-	//if (g_underIKRot == true) {
+	//##############
+	//current frame
+	//##############
+	CMotionPoint* curmp;
+	curmp = GetMotionPoint(srcmotid, roundingframe);
+	if (curmp) {
+		befeul.currentframeeul = GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
+	}
+
+
+
+
+
+
+	////##############################################################################################
+	////2023/10/12
+	////モデル読込中と　リターゲット中と　ファイル書き出し中だけ　前のフレーム番号のオイラー角を取得
+	////それ以外の場合には　カレントフレームの編集前のオイラー角を取得
+	////このようにすることで　リターゲット中及びIK中の　１８０度裏返り問題が大きく緩和される
+	////(読込中とリターゲット中とファイル書き出し中がifの前半部分　IK中はelse部分)
+	////主にbvh121とbvh144でテスト
+	////##############################################################################################
+	//
+	//if ((g_underRetargetFlag == true) || 
+	//	(GetParModel() && GetParModel()->GetLoadedFlag() == false) || 
+	//	(g_underWriteFbx == true)) {
+	//
+	//	//1つ前のフレームのEULはすでに計算されていると仮定する。
+	//	double befframe;
+	//	befframe = roundingframe - 1.0;
 	//	if (roundingframe <= 1.01) {
-	//		befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	//		//roundingframe が0.0または1.0の場合 
+	//		//befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	//		CMotionPoint* curmp;
+	//		curmp = GetMotionPoint(srcmotid, roundingframe);
+	//		if (curmp) {
+	//			befeul = GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
+	//		}
+	//	}
+	//	else {
+	//		CMotionPoint* befmp;
+	//		befmp = GetMotionPoint(srcmotid, befframe);
+	//		if (befmp) {
+	//			befeul = GetLocalEul(limitdegflag, srcmotid, befframe, befmp);
+	//		}
 	//	}
 	//}
+	//else {
+	//	CMotionPoint* curmp;
+	//	curmp = GetMotionPoint(srcmotid, roundingframe);
+	//	if (curmp) {
+	//		befeul = GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
+	//	}
+	//}
+	//
+	////if (g_underIKRot == true) {
+	////	if (roundingframe <= 1.01) {
+	////		befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	////	}
+	////}
 
 	return befeul;
 }
+
+//ChaVector3 CBone::GetUnlimitedBefEul(int srcmotid, double srcframe)
+//{
+//	double roundingframe = RoundingTime(srcframe);
+//
+//	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+//
+//	if (IsNotSkeleton()) {
+//		return befeul;
+//	}
+//
+//
+//	//1つ前のフレームのEULはすでに計算されていると仮定する。
+//	double befframe;
+//	befframe = roundingframe - 1.0;
+//	if (roundingframe <= 1.01) {
+//		//befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+//		CMotionPoint* curmp;
+//		curmp = GetMotionPoint(srcmotid, roundingframe);
+//		if (curmp) {
+//			befeul = curmp->GetLocalEul();//unlimited !!!
+//		}
+//	}
+//	else {
+//		CMotionPoint* befmp;
+//		befmp = GetMotionPoint(srcmotid, befframe);
+//		if (befmp) {
+//			befeul = befmp->GetLocalEul();//unlimited !!!
+//		}
+//	}
+//
+//	//if (g_underIKRot == true) {
+//	//	if (roundingframe <= 1.01) {
+//	//		befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+//	//	}
+//	//}
+//
+//	return befeul;
+//}
 
 int CBone::GetNotModify180Flag(int srcmotid, double srcframe)
 {
@@ -4691,6 +4728,8 @@ int CBone::GetNotModify180Flag(int srcmotid, double srcframe)
 		//IKRot中は　０フレームも１フレームも　180度チェックをする
 		notmodify180flag = 0;
 	}
+
+
 
 
 	////2023/02/03
@@ -4734,7 +4773,9 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 	//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
 
 	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-	ChaVector3 befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	BEFEUL befeul;
+	befeul.Init();
+
 
 	if (IsNotSkeleton() && IsNotCamera() && IsNotNull()) {
 		return cureul;
@@ -4756,7 +4797,8 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 		befeul = GetBefEul(limitdegOnLimitEul, srcmotid, roundingframe);
 	}
 	else if ((befeulkind == BEFEUL_DIRECT) && directbefeul){
-		befeul = *directbefeul;
+		befeul.befframeeul = *directbefeul;
+		befeul.currentframeeul = *directbefeul;
 	}
 
 	int isfirstbone = 0;
@@ -4863,7 +4905,7 @@ ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 
 		if (GetParModel() && GetParModel()->IsCameraLoaded()) {
 
-			cureul = GetParModel()->CalcCameraFbxEulXYZ(srcmotid, roundingframe, befeul);
+			cureul = GetParModel()->CalcCameraFbxEulXYZ(srcmotid, roundingframe);
 			//####  rotorder注意  #####
 		}
 		else {
@@ -6201,7 +6243,8 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 					//############################################
 					ChaVector3 limiteul;
 					bool limitdegOnLimitEul1 = false;//2023/02/07 befeulはunlimited. 何回転もする場合にオーバー１８０度の角度で制限するために.
-					limiteul = LimitEul(neweul, GetBefEul(limitdegOnLimitEul1, srcmotid, roundingframe));
+					//limiteul = LimitEul(neweul, GetBefEul(limitdegOnLimitEul1, srcmotid, roundingframe));
+					limiteul = LimitEul(neweul);
 					int inittraflag0 = 0;
 					//子ジョイントへの波及は　SetWorldMatFromEulAndScaleAndTra内でしている
 					SetWorldMatFromEulAndScaleAndTra(limitdegflag, inittraflag0, setchildflag,
@@ -6222,7 +6265,8 @@ int CBone::SetWorldMat(bool limitdegflag, bool directsetflag,
 					else {
 						ChaVector3 limiteul;
 						bool limitdegOnLimitEul2 = false;//2023/02/07 befeulはunlimited. 何回転もする場合にオーバー１８０度の角度で制限するために.
-						limiteul = LimitEul(neweul, GetBefEul(limitdegOnLimitEul2, srcmotid, roundingframe));
+						//limiteul = LimitEul(neweul, GetBefEul(limitdegOnLimitEul2, srcmotid, roundingframe));
+						limiteul = LimitEul(neweul);
 						int inittraflag0 = 0;
 						//子ジョイントへの波及は　SetWorldMatFromEulAndScaleAndTra内でしている
 						SetWorldMatFromEulAndScaleAndTra(limitdegflag, inittraflag0, setchildflag,
@@ -6371,7 +6415,7 @@ float CBone::LimitAngle(enum tag_axiskind srckind, float srcval)
 }
 
 
-ChaVector3 CBone::LimitEul(ChaVector3 srceul, ChaVector3 srcbefeul)
+ChaVector3 CBone::LimitEul(ChaVector3 srceul)
 {
 	const float thdeg = 165.0f;
 
@@ -7356,7 +7400,7 @@ int CBone::PasteMotionPoint(bool limitdegflag, int srcmotid, double srcframe, CM
 	return 0;
 }
 
-ChaVector3 CBone::CalcFBXEulXYZ(bool limitdegflag, int srcmotid, double srcframe, ChaVector3* befeulptr)
+ChaVector3 CBone::CalcFBXEulXYZ(bool limitdegflag, int srcmotid, double srcframe)
 {
 
 	//############################

@@ -17,6 +17,7 @@ class ChaVector3;
 
 #include <coef.h>
 
+
 //2022/07/29   for FbxAMatrix
 #include <fbxsdk.h>
 #include <fbxsdk/scene/shading/fbxlayeredtexture.h>
@@ -258,6 +259,22 @@ public:
 };
 
 
+typedef struct tag_befeul
+{
+	ChaVector3 befframeeul;
+	ChaVector3 currentframeeul;
+
+	void Init()
+	{
+		befframeeul = ChaVector3(0.0f, 0.0f, 0.0f);
+		currentframeeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	};
+	tag_befeul()
+	{
+		Init();
+	};
+
+}BEFEUL;
 
 
 class ChaVector4
@@ -352,7 +369,7 @@ public:
 	int SetRotationZXY(CQuaternion* axisq, double degx, double degy, double degz);
 	//int GetAxisAndRot(ChaVector3* axisvecptr, float* frad);
 	//int QuaternionToAxisAngle(ChaVector3* dstaxis, float* dstrad);
-	int CalcFBXEulXYZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodifyflag);
+	int CalcFBXEulXYZ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodifyflag);
 	//int CalcFBXEulZXY(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone);
 	int IsInit();
 
@@ -416,7 +433,7 @@ public:
 	//int Q2EulZXY(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
 	//int Q2EulYXZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
 	int Q2EulXYZusingMat(int rotorder, CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag);//bulletÇ‡XYZÇÃèá
-	int Q2EulXYZusingQ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag);//bulletÇ‡XYZÇÃèá
+	int Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag);//bulletÇ‡XYZÇÃèá
 	//int Q2EulZYX(int needmodifyflag, CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
 
 
@@ -911,6 +928,8 @@ private:
 
 	ChaMatrix m_matVP;
 };
+
+
 
 
 #endif

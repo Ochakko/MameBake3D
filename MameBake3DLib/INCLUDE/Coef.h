@@ -224,8 +224,6 @@ enum {
 };
 
 
-
-
 typedef struct tag_anglelimmit
 {
 	int limitoff[AXIS_MAX];
