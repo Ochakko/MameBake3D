@@ -9122,6 +9122,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 					}
 				}
 			}
+
 		}
 
 		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_INTERPOLATEFROMTOOL)) && 
@@ -20036,7 +20037,7 @@ int CreateConvBoneWnd()
 						//curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
 						s_convboneWnd->callRewrite();
 					}
-					});
+				});
 			}
 		}
 
@@ -20239,6 +20240,14 @@ int SetConvBoneBvh()
 	delete rmenu;
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
 
+	if (s_convboneWnd) {
+		//2023/10/15
+		//OrgWindowのLisner関数でコンテクストメニューを出した場合　メニュー終了時にLBUTTONUPを呼び出す必要有り
+		//呼び出さなかった場合　SetCaptureとReleaseCaptureのバランスが崩れて　スクロールバーを画面外でBUTTONUPしたときに処理されない
+		::SendMessage(s_convboneWnd->getHWnd(), WM_LBUTTONUP, 0, 0);
+	}
+
+
 	return 0;
 }
 int SetConvBone(int cbno)
@@ -20353,6 +20362,14 @@ int SetConvBone(int cbno)
 	rmenu->Destroy();
 	delete rmenu;
 	InterlockedExchange(&g_undertrackingRMenu, (LONG)0);
+
+	if (s_convboneWnd) {
+		//2023/10/15
+		//OrgWindowのLisner関数でコンテクストメニューを出した場合　メニュー終了時にLBUTTONUPを呼び出す必要有り
+		//呼び出さなかった場合　SetCaptureとReleaseCaptureのバランスが崩れて　スクロールバーを画面外でBUTTONUPしたときに処理されない
+		::SendMessage(s_convboneWnd->getHWnd(), WM_LBUTTONUP, 0, 0);
+	}
+
 
 	return 0;
 }

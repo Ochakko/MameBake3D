@@ -217,6 +217,22 @@ void s_dummyfunc()
 
 	class MouseEvent{
 	public:
+		MouseEvent() {
+			Init();
+		}
+		~MouseEvent() {
+		}
+		void Init() {
+			localX = 0;
+			localY = 0;
+			globalX = 0;
+			globalY = 0;
+			shiftKey = false;
+			ctrlKey = false;
+			altKey = false;
+			wheeldelta = 0;
+		}
+
 		int localX,localY;
 		int globalX,globalY;
 		bool shiftKey,ctrlKey,altKey;
@@ -225,6 +241,20 @@ void s_dummyfunc()
 
 	class KeyboardEvent{
 	public:
+		KeyboardEvent()
+		{
+			Init();
+		}
+		~KeyboardEvent() {};
+
+		void Init() {
+			keyCode = 0;
+			shiftKey = false;
+			ctrlKey = false;
+			altKey = false;
+			repeat = false;
+			onDown = false;
+		}
 		int keyCode;
 		bool shiftKey,ctrlKey,altKey;
 		bool repeat;
@@ -1483,11 +1513,16 @@ void s_dummyfunc()
 				return;//!!!!!!!!!!!!!!!!
 			}
 
-			//2023/09/28 上方へ移動
-			//マウスキャプチャ
-			if (!mouseCaptureFlagL && !mouseCaptureFlagR) SetCapture(hWnd);
-			if (lButton) mouseCaptureFlagL = true;
-			else		  mouseCaptureFlagR = true;
+			//2023/10/15 再び下方へソースの位置を戻す
+			// ここで呼ぶと　タイトルバードラッグなどが効かない
+			// 
+			////2023/09/28 上方へ移動
+			////マウスキャプチャ
+			//if (!mouseCaptureFlagL && !mouseCaptureFlagR) SetCapture(hWnd);
+			//if (lButton) mouseCaptureFlagL = true;
+			//else		  mouseCaptureFlagR = true;
+
+
 
 			int xButtonX1=size.x-1-2-9;
 			int xButtonY1=1+2;
@@ -1509,7 +1544,8 @@ void s_dummyfunc()
 
 				
 				////タイトルバー
-				if( (1 <= e.localX) && (e.localX <= size.x - 2)
+				//if( (1 <= e.localX) && (e.localX <= size.x - 2)
+				if ((1 <= e.localX) && (e.localX <= (size.x - 20 - 8)) //2023/10/15 スクロールバーの幅 20 : スクロールバーのSetCaptureを呼ぶため除外
 				 && (1 <= e.localY) && (e.localY <= 1 + 2 + 9 + 1) ){
 					if (istopmost) {
 						SendMessage(hWnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
@@ -1527,11 +1563,11 @@ void s_dummyfunc()
 				}
 			}
 
-			//2023/09/28 上方へ移動
-			////マウスキャプチャ
-			//if( !mouseCaptureFlagL && !mouseCaptureFlagR ) SetCapture(hWnd);
-			//if( lButton ) mouseCaptureFlagL=true;
-			//else		  mouseCaptureFlagR=true;
+
+			//マウスキャプチャ
+			if( !mouseCaptureFlagL && !mouseCaptureFlagR ) SetCapture(hWnd);
+			if( lButton ) mouseCaptureFlagL=true;
+			else		  mouseCaptureFlagR=true;
 
 
 			//内部パーツ
