@@ -18784,8 +18784,8 @@ int CreateModelPanel()
 				}
 			}
 
-			//s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
-			s_modelpanel.separator = new OWP_Separator(s_modelpanel.panel, true);									// セパレータ1（境界線による横方向2分割）
+			//s_modelpanel.separator =  new OWP_Separator(s_modelpanel.panel, false);// セパレータ1（境界線による横方向2分割）
+			s_modelpanel.separator = new OWP_Separator(s_modelpanel.panel, true, 0.5, true, s_modelpanel.scroll);// セパレータ1（境界線による横方向2分割）
 			if (!s_modelpanel.separator) {
 				_ASSERT(0);
 				return 1;
@@ -18794,7 +18794,7 @@ int CreateModelPanel()
 			s_modelpanel.separator->setPos(OrgWinGUI::WindowPos(0, 0));
 
 			// セパレータ2（境界線による横方向2分割）
-			s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, true);									// セパレータ2（境界線による横方向2分割）
+			s_modelpanel.separator2 = new OWP_Separator(s_modelpanel.panel, true, 0.5, true, s_modelpanel.scroll);// セパレータ2（境界線による横方向2分割）
 			if (!s_modelpanel.separator2) {
 				_ASSERT(0);
 				return 1;
@@ -18866,6 +18866,11 @@ int CreateModelPanel()
 
 			//s_modelpanel.scroll->addParts(*(s_modelpanel.separator));
 			//s_modelpanel.panel->addParts(*(s_modelpanel.scroll));
+
+
+			s_modelpanel.scroll->autoResize();
+			s_modelpanel.separator->autoResize();
+			s_modelpanel.separator2->autoResize();
 
 		}
 
@@ -18969,6 +18974,7 @@ int CreateModelPanel()
 
 		////s_modelpanel.panel->setSize(WindowSize(200, 100));//880
 		//s_modelpanel.panel->setSize(WindowSize(s_modelwindowwidth, s_modelwindowheight));
+
 
 		s_rcmodelpanel.top = s_modelpanelpos.y;
 		s_rcmodelpanel.bottom = s_modelpanelpos.y + s_modelwindowheight;
@@ -19155,7 +19161,7 @@ int CreateCameraPanel()
 			s_camerapanel.panel->setPos(s_camerapanelpos);
 			s_camerapanel.scroll->setPos(WindowPos(0, 30));
 
-			s_camerapanel.separator = new OWP_Separator(s_camerapanel.panel, false);									// セパレータ1（境界線による横方向2分割）
+			s_camerapanel.separator = new OWP_Separator(s_camerapanel.panel, false, 0.8, true, s_camerapanel.scroll);									// セパレータ1（境界線による横方向2分割）
 			if (!s_camerapanel.separator) {
 				_ASSERT(0);
 				return 1;
@@ -19422,9 +19428,30 @@ int CreateMotionPanel()
 	if (s_motionpanel.panel) {
 		s_motionpanel.panel->setSizeMin(WindowSize(150, 150));		// 最小サイズを設定
 
+		//スクロールウインドウ
+		//2023/10/15 Separatorに渡すので　Separatorよりも先に作成
+		s_motionpanel.scroll = new OWP_ScrollWnd(L"MotionPanelScroll", true);
+		if (!s_motionpanel.scroll) {
+			_ASSERT(0);
+			return 1;
+		}
+		//要素数が変わったときには指定し忘れないように！！！
+		s_motionpanel.scroll->setLineDataSize(motionnum + 3);
+		s_motionpanel.scroll->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight - 30));
+		s_motionpanel.panel->addParts(*(s_motionpanel.scroll));
+		s_motionpanel.panel->setPos(s_motionpanelpos);
+		s_motionpanel.scroll->setPos(WindowPos(0, 30));
+
 
 
 		if (s_model) {
+			s_motionpanel.separator = new OWP_Separator(s_motionpanel.panel, false, 0.8, true, s_motionpanel.scroll);// セパレータ1（境界線による横方向2分割）
+			if (!s_motionpanel.separator) {
+				_ASSERT(0);
+				return 1;
+			}
+
+
 			int motioncnt = 0;
 			std::map<int, MOTINFO*>::iterator itrmi;
 			for (itrmi = s_model->GetMotInfoBegin(); itrmi != s_model->GetMotInfoEnd(); itrmi++) {
@@ -19455,31 +19482,10 @@ int CreateMotionPanel()
 				}
 			}
 
-			//スクロールウインドウ
-			s_motionpanel.scroll = new OWP_ScrollWnd(L"MotionPanelScroll", true);
-			if (!s_motionpanel.scroll) {
-				_ASSERT(0);
-				return 1;
-			}
-			//要素数が変わったときには指定し忘れないように！！！
-			s_motionpanel.scroll->setLineDataSize(motionnum + 3);
-			s_motionpanel.scroll->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight - 30));
-			s_motionpanel.panel->addParts(*(s_motionpanel.scroll));
-			s_motionpanel.panel->setPos(s_motionpanelpos);
-			s_motionpanel.scroll->setPos(WindowPos(0, 30));
-
-			s_motionpanel.separator = new OWP_Separator(s_motionpanel.panel, false);									// セパレータ1（境界線による横方向2分割）
-			if (!s_motionpanel.separator) {
-				_ASSERT(0);
-				return 1;
-			}
-			//s_motionpanel.separator->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight));
-			//s_motionpanel.scroll->addParts(*(s_motionpanel.separator));
-			if (s_motionpanel.separator) {
-				s_motionpanel.scroll->addParts(*(s_motionpanel.separator));
-				if (s_motionpanel.radiobutton) {
-					s_motionpanel.separator->addParts1(*(s_motionpanel.radiobutton));//add once
-				}
+			s_motionpanel.separator->setSize(WindowSize(s_motionwindowwidth, s_motionwindowheight));
+			s_motionpanel.scroll->addParts(*(s_motionpanel.separator));
+			if (s_motionpanel.radiobutton) {
+				s_motionpanel.separator->addParts1(*(s_motionpanel.radiobutton));//add once
 			}
 
 			if (s_model) {
@@ -34243,7 +34249,7 @@ int CreateDispGroupWnd()
 
 
 		
-		s_groupsp0 = new OWP_Separator(s_groupWnd, false, centerrate, false);
+		s_groupsp0 = new OWP_Separator(s_groupWnd, false, centerrate, false);//上段と下段を格納
 		if (!s_groupsp0) {
 			_ASSERT(0);
 			return 1;
@@ -34252,7 +34258,7 @@ int CreateDispGroupWnd()
 		s_groupWnd->addParts(*s_groupsp0);
 		
 
-		s_groupsp = new OWP_Separator(s_groupWnd, false, 0.5, true);
+		s_groupsp = new OWP_Separator(s_groupWnd, false, 0.5, true);//ウインドウ上段部分用
 		if (!s_groupsp) {
 			_ASSERT(0);
 			return 1;
@@ -34261,7 +34267,7 @@ int CreateDispGroupWnd()
 
 
 		s_groupsp0->addParts2(*s_groupSCWnd);
-		s_groupsp3 = new OWP_Separator(s_groupWnd, false, 0.8, true, s_groupSCWnd);//parent : s_groupSCWnd
+		s_groupsp3 = new OWP_Separator(s_groupWnd, false, 0.8, true, s_groupSCWnd);//parent : s_groupSCWnd　下段　objチェックボックスとtestボタン用
 		if (!s_groupsp3) {
 			_ASSERT(0);
 			return 1;
@@ -34281,14 +34287,14 @@ int CreateDispGroupWnd()
 		}
 
 
-		s_groupsp1 = new OWP_Separator(s_groupWnd, false, 0.5, true);
+		s_groupsp1 = new OWP_Separator(s_groupWnd, false, 0.5, true);//上段　グループ番号チェックボックス用
 		if (!s_groupsp1) {
 			_ASSERT(0);
 			return 1;
 		}
 		s_groupsp->addParts1(*s_groupsp1);
 
-		s_groupsp2 = new OWP_Separator(s_groupWnd, false, 0.5, true);
+		s_groupsp2 = new OWP_Separator(s_groupWnd, false, 0.5, true);//上段　グループ番号チェックボックス用
 		if (!s_groupsp2) {
 			_ASSERT(0);
 			return 1;

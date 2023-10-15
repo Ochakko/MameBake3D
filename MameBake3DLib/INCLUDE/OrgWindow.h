@@ -433,6 +433,8 @@ void s_dummyfunc()
 			isregistered = false;
 			isactive = false;
 			isslider = false;
+			isradiobutton = false;
+			isseparator = false;
 
 			//baseColor.r = 70;
 			//baseColor.g = 50;
@@ -481,6 +483,22 @@ void s_dummyfunc()
 		{
 			return isplayerbutton;
 		}
+		void setIsRadioButton(bool srcflag)
+		{
+			isradiobutton = srcflag;
+		}
+		bool getIsRadioButton()
+		{
+			return isradiobutton;
+		}
+		void setIsSeparator(bool srcflag)
+		{
+			isseparator = srcflag;
+		}
+		bool getIsSeparator()
+		{
+			return isseparator;
+		}
 
 		OrgWindow* getParentWindow()
 		{
@@ -494,7 +512,7 @@ void s_dummyfunc()
 		{
 			return lrbuttondone;
 		}
-
+		
 
 		virtual ~OrgWindowParts(){
 			parentWindow = NULL;
@@ -639,6 +657,8 @@ void s_dummyfunc()
 		bool isactive;
 		bool isslider;
 		bool isplayerbutton;
+		bool isradiobutton;
+		bool isseparator;
 		bool lrbuttondone;
 		//////////////////////////// Method //////////////////////////////
 		//	Method : 親ウィンドウに登録
@@ -1928,6 +1948,8 @@ void s_dummyfunc()
 
 			only1line = _only1line;
 			parentScrollWnd = _parentScrollWnd;//2023/09/19
+
+			setIsSeparator(true);
 		}
 		~OWP_Separator(){
 		}
@@ -2729,6 +2751,10 @@ void s_dummyfunc()
 		}
 		///	Method : 描画
 		virtual void draw(){
+			if (!hdcM) {
+				return;
+			}
+
 			//枠を書く
 			if( open ){
 				hdcM->setPenAndBrush(RGB(min(baseColor.r+20,255),min(baseColor.g+20,255),min(baseColor.b+20,255)),RGB(baseColor.r,baseColor.g,baseColor.b));
@@ -3116,6 +3142,10 @@ void s_dummyfunc()
 		}
 		//	Method : 描画
 		virtual void draw(){
+			if (!hdcM) {
+				return;
+			}
+
 			//名前
 			int pos1x= pos.x+NAME_POS_X;
 			int pos1y= pos.y+size.y/2-5;
@@ -3259,6 +3289,11 @@ void s_dummyfunc()
 		}
 		//	Method : 描画
 		virtual void draw(){
+			if (!hdcM) {
+				return;
+			}
+
+
 			drawEdge();
 
 			//ボックス
@@ -3483,6 +3518,11 @@ void s_dummyfunc()
 		}
 		//	Method : 描画
 		virtual void draw(){
+			if (!hdcM) {
+				return;
+			}
+
+
 			drawEdge();
 
 			//全てのボタンについて繰り返す
@@ -4120,6 +4160,8 @@ void s_dummyfunc()
 
 			selectIndex= 0;
 
+			setIsRadioButton(true);
+
 			//selectListener = [](){s_dummyfunc();};
 			selectListener = NULL;
 		}
@@ -4129,10 +4171,14 @@ void s_dummyfunc()
 		//////////////////////////// Method //////////////////////////////
 		/// Method : 自動サイズ設定
 		virtual void autoResize(){
-			size.y = SIZE_Y*(int)nameList.size() + 4;
+			size.y = SIZE_Y * (int)nameList.size() + 4;
 		}
 		///	Method : 描画
 		virtual void draw(){
+			if (!hdcM) {
+				return;
+			}
+
 			drawEdge();
 
 			//ラジオボタンの数だけ繰り返す
@@ -4370,6 +4416,10 @@ void s_dummyfunc()
 		}
 		//	Method : 描画
 		virtual void draw(){
+			if (!hdcM) {
+				return;
+			}
+
 			drawEdge();
 
 
@@ -9482,6 +9532,10 @@ void s_dummyfunc()
 		}
 		//	Method : 描画
 		virtual void draw(){
+			if (!hdcM) {
+				return;
+			}
+
 			drawEdge();
 
 			int showLineNum= (size.y-MARGIN*2)/(LABEL_SIZE_Y-1);
@@ -10394,6 +10448,10 @@ void s_dummyfunc()
 		
 		//	Method : 描画
 		virtual void draw(){
+			if (!hdcM) {
+				return;
+			}
+
 			drawEdge();
 
 			//全ての内部パーツを描画

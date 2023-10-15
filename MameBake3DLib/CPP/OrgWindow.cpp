@@ -106,6 +106,10 @@ namespace OrgWinGUI{
 
 	void OrgWindowParts::draw()
 	{
+		if (!hdcM) {
+			return;
+		}
+
 		drawEdge();
 		{
 			if (g_dsmousewait == 1) {
@@ -141,6 +145,11 @@ namespace OrgWinGUI{
 	}
 
 	void OWP_Separator::draw() {
+		if (!hdcM) {
+			return;
+		}
+
+
 		//static int s_paintcnt = 0;
 		//s_paintcnt++;
 		//if (g_previewFlag != 0) {
@@ -203,14 +212,22 @@ namespace OrgWinGUI{
 			for (itr = partsList1.begin(); itr != partsList1.end(); itr++) {
 				if(*itr){
 					WindowPos clientpos = (*itr)->getPos();
-					if ((clientpos.y >= hoststarty) && (clientpos.y <= hostendy)) {//2023/09/19
+					WindowSize clientsize = (*itr)->getSize();
+
+					if ((*itr)->getIsRadioButton() || (*itr)->getIsSeparator()) {//2023/10/15
+						//OWP_RadioButtonとOWP_Separatorについては　WindowPartsとしては１つ　エリアが包含していれば良い
+						//パーツの下がエリアの始まりよりも下　かつ　パーツの上がエリアの終わりよりも上
+						if (((clientpos.y + clientsize.y) >= hoststarty) && (clientpos.y <= hostendy)) {
+							(*itr)->draw();
+						}
+					}
+					else if ((clientpos.y >= hoststarty) && (clientpos.y <= hostendy)) {//2023/09/19
 						(*itr)->draw();
 					}
 					else {
 						//スクロールで見切れた場合は描画しない
 						if (clientpos.y > hostendy) {
-							//後続のpartsのYは更に大きいはずなので　高速化のために処理を終了
-							break;
+							break;//!!!!! 後続のpartsのYは更に大きいはずなので　高速化のために処理を終了
 						}
 					}					
 				}
@@ -219,14 +236,22 @@ namespace OrgWinGUI{
 			for (itr2 = partsList2.begin(); itr2 != partsList2.end(); itr2++) {
 				if (*itr2) {
 					WindowPos clientpos = (*itr2)->getPos();
-					if ((clientpos.y >= hoststarty) && (clientpos.y <= hostendy)) {//2023/09/19
+					WindowSize clientsize = (*itr2)->getSize();
+
+					if ((*itr2)->getIsRadioButton() || (*itr2)->getIsSeparator()) {//2023/10/15
+						//OWP_RadioButtonとOWP_Separatorについては　WindowPartsとしては１つ　エリアが包含していれば良い
+						//パーツの下がエリアの始まりよりも下　かつ　パーツの上がエリアの終わりよりも上
+						if (((clientpos.y + clientsize.y) >= hoststarty) && (clientpos.y <= hostendy)) {
+							(*itr2)->draw();
+						}
+					}
+					else if ((clientpos.y >= hoststarty) && (clientpos.y <= hostendy)) {//2023/09/19
 						(*itr2)->draw();
 					}
 					else {
 						//スクロールで見切れた場合は描画しない
 						if (clientpos.y > hostendy) {
-							//後続のpartsのYは更に大きいはずなので　高速化のために処理を終了
-							break;
+							break;//!!!!! 後続のpartsのYは更に大きいはずなので　高速化のために処理を終了
 						}
 					}
 				}
@@ -340,6 +365,10 @@ namespace OrgWinGUI{
 		}
 	}
 	void OWP_Timeline::draw() {
+		if (!hdcM) {
+			return;
+		}
+
 		//static int s_paintcnt = 0;
 		//s_paintcnt++;
 		//if (g_previewFlag != 0) {
@@ -584,6 +613,10 @@ namespace OrgWinGUI{
 	}
 
 	void OWP_EulerGraph::draw() {
+		if (!hdcM) {
+			return;
+		}
+
 		//static int s_paintcnt = 0;
 		//s_paintcnt++;
 		//if (g_previewFlag != 0) {
@@ -1193,6 +1226,10 @@ namespace OrgWinGUI{
 
 
 	void OWP_CheckBoxA::draw() {
+		if (!hdcM) {
+			return;
+		}
+
 		if (!parentWindow) {
 			return;
 		}
