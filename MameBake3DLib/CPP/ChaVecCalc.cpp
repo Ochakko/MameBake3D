@@ -3840,9 +3840,12 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* r
 	//2023/10/16
 	//GetRound()では　180度以上のずれを１回転で補正していた
 	//ChaGetRoundThreshold()では　１回転よりどれだけ小さい角度で一回転とみなすか(使う側で足すのは３６０度単位なので姿勢は変わらない)を指定する(軸ごとに)
+	//float throundX = 91.0f;
+	//float throundY = 180.0f;
+	//float throundZ = 180.0f;
 	float throundX = 91.0f;
-	float throundY = 180.0f;
-	float throundZ = 180.0f;
+	float throundY = 181.0f;
+	float throundZ = 181.0f;
 
 
 	ChaVector3 validbefeul;//2023/10/14
@@ -4084,7 +4087,7 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* r
 
 
 	//if (g_underIKRot == true) {
-	//	ModifyEuler360(&Euler, &(befeul.befframeeul), notmodify180flag, 180.0f, 180.0f, 180.0f);
+	//	ChaModifyEuler360(&Euler, &(befeul.befframeeul), notmodify180flag, 180.0f, 180.0f, 180.0f);
 	//}
 
 
@@ -5234,7 +5237,6 @@ int ChaModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notmodify180fl
 		eulerA->x = tmpX0;
 		eulerA->y = tmpY0;
 		eulerA->z = tmpZ0;
-
 	}
 	else {
 		//そのまま

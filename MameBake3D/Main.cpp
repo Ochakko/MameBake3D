@@ -10259,10 +10259,14 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 
 		int ikframenum = 0;
+		double startframe = 1.0;
+		double endframe = 1.0;
 		if (s_editmotionflag >= 0) {
 			//s_editrangeがクリアされないうちにフレーム数を保存
-			ikframenum = s_editrange.GetKeyNum();
+			//ikframenum = s_editrange.GetKeyNum();
+			s_editrange.GetRange(&ikframenum, &startframe, &endframe);
 		}
+
 
 		//マウスによるIKとFKの後処理　applyframe以外のフレームの処理
 		g_underIKRotApplyFrame = false;
@@ -10375,6 +10379,29 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 		HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
+		if (s_model) {
+			//2023/10/16
+			//befeul.currentframeeulでオイラーは計算されている状態
+			// ！！！！！　g_underIKRot = falseとした後で　！！！！！
+			//後処理として　befeul.befframeeulで計算し直す
+
+			MOTINFO* curmi = s_model->GetCurMotInfo();
+			if (curmi) {
+				CBone* lastparent = 0;
+				if (s_editmotionflag >= 0) {
+					lastparent = s_model->GetBoneByID(s_editmotionflag);
+				}
+				if (!lastparent) {
+					lastparent = s_model->GetTopBone(false);
+				}
+
+				//全フレーム計算し直す　モーション切り替えでOnAnimMenuが呼ばれた後にも　オイラー角の連続性が同じになるように
+				double startframe0 = 1.0;
+				double endframe0 = curmi->frameleng - 1.0;
+
+				s_model->CalcBoneEulReq(g_limitdegflag, lastparent, curmi->motid, startframe0, endframe0);
+			}
+		}
 
 		//2023/08/09
 		//自動フィルターは選択フレーム数が少ないときに動かなくなる　また　他の制限を満たしているジョイントの角度まで小さくなる
@@ -10413,6 +10440,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			}
 
 			UpdateEditedEuler();
+			//refreshEulerGraph();
 
 
 			if (oldcursor != NULL) {
@@ -12200,6 +12228,14 @@ int RetargetFile(char* fbxpath)
 					_ASSERT(0);
 				}
 			}
+
+			//if (s_convbone_model_batch && s_convbone_model_batch->GetCurMotInfo()) {
+			//	int motid = s_convbone_model_batch->GetCurMotInfo()->motid;
+			//	double startframe = 1.0;
+			//	double endframe = s_convbone_model_batch->GetCurMotInfo()->frameleng - 1.0;
+			//	s_convbone_model->ModifyEuler360Req(g_limitdegflag, s_convbone_model->GetTopBone(false),
+			//		motid, startframe, endframe);
+			//}
 
 			//int modelindex = (int)s_modelindex.size() - 1;
 			//OnDelModel(modelindex);

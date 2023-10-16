@@ -485,9 +485,6 @@ public:
 	int IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 		int srcboneno, int maxlevel);
 
-	void ModifyEuler360Req(int limitdegflag, CBone* srcbone, int srcmotid, double startframe, double endframe);
-
-
 
 	void ClearIKRotRec();
 	void ClearIKRotRecUV();
@@ -819,6 +816,7 @@ public:
 
 	int CalcBoneEul(bool limitdegflag, int srcmotid);
 	void CalcBoneEulReq(bool limitdegflag, CBone* curbone, int srcmotid, double srcframe);
+	void CalcBoneEulReq(bool limitdegflag, CBone* curbone, int srcmotid, double startframe, double endframe);
 
 	int RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, 
 		int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig, int buttonflag);

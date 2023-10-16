@@ -11494,7 +11494,7 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 											curframe, startframe, applyframe,
 											rotq0, keynum1flag, postflag, fromiktarget);
 									}
-									//else {//2023/10/16_1 Q2EulXYZusingQ()にて　IK時にbefeul.currentframeeulを使用することにしたので不用に
+									//else {//2023/10/16_1 Q2EulXYZusingQ()にて　IK時にbefeul.currentframeeulを使用することにしたので不要に
 									//	//2023/10/12
 									//	//applyframeにも　オイラー角の計算は必要
 									//	//ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -11558,10 +11558,6 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 	if ((calccnt == (calcnum - 1)) && g_absikflag && lastpar) {
 		AdjustBoneTra(limitdegflag, erptr, lastpar);
 	}
-
-
-	//2023/10/16_1 PostIKをframe単位のマルチスレッド化する準備として　Q2Eulをcurrentframeで計算し　後処理として次のModifyEulerでbefframe参照
-	ModifyEuler360Req(limitdegflag, lastpar, m_curmotinfo->motid, startframe, endframe);
 
 
 	//g_underIKRot = false;//2023/01/14 parent limited or not
@@ -13954,10 +13950,6 @@ int CModel::RigControlPostRig(bool limitdegflag, int depthcnt,
 		}
 	}
 
-	//2023/10/16_1 PostIKをframe単位のマルチスレッド化する準備として　Q2Eulをcurrentframeで計算し　後処理として次のModifyEulerでbefframe参照
-	ModifyEuler360Req(limitdegflag, lastbone, m_curmotinfo->motid, startframe, endframe);
-
-
 	if (lastbone) {
 		return lastbone->GetBoneNo();
 	}
@@ -14961,7 +14953,7 @@ int CModel::IKRotateAxisDeltaPostIK(
 										curframe, startframe, applyframe,
 										localq, keynum1flag, postflag, fromiktarget);
 								}
-								//else {//2023/10/16_1 Q2EulXYZusingQ()にて　IK時にbefeul.currentframeeulを使用することにしたので不用に
+								//else {//2023/10/16_1 Q2EulXYZusingQ()にて　IK時にbefeul.currentframeeulを使用することにしたので不要に
 								//	//2023/10/12
 								//	//applyframeにも　オイラー角の計算は必要
 								//	//ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
@@ -15036,9 +15028,6 @@ int CModel::IKRotateAxisDeltaPostIK(
 	if ((calccnt == (calcnum - 1)) && g_absikflag && lastbone) {
 		AdjustBoneTra(limitdegflag, erptr, lastbone);
 	}
-
-	//2023/10/16_1 PostIKをframe単位のマルチスレッド化する準備として　Q2Eulをcurrentframeで計算し　後処理として次のModifyEulerでbefframe参照
-	ModifyEuler360Req(limitdegflag, lastaplybone, m_curmotinfo->motid, startframe, endframe);
 
 	//g_underIKRot = false;//2023/01/14 parent limited or not
 	if (editboneforret) {
@@ -16656,6 +16645,36 @@ int CModel::RecalcBoneAxisX(CBone* srcbone)
 	return 0;
 }
 
+//###############################################
+//この関数の下に　１フレームだけ計算する関数あり
+//###############################################
+void CModel::CalcBoneEulReq(bool limitdegflag, CBone* curbone, int srcmotid, double startframe, double endframe)
+{
+	if (!curbone) {
+		return;
+	}
+
+	if (curbone->IsSkeleton()) {
+		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+		int paraxiskind = -1;
+		double srcframe;
+		for (srcframe = startframe; srcframe <= endframe; srcframe += 1.0) {
+			cureul = curbone->CalcLocalEulXYZ(limitdegflag, paraxiskind, srcmotid, srcframe, BEFEUL_BEFFRAME);
+			curbone->SetLocalEul(limitdegflag, srcmotid, srcframe, cureul, 0);
+		}
+	}
+
+	if (curbone->GetChild(false)) {
+		CalcBoneEulReq(limitdegflag, curbone->GetChild(false), srcmotid, startframe, endframe);
+	}
+	if (curbone->GetBrother(false)) {
+		CalcBoneEulReq(limitdegflag, curbone->GetBrother(false), srcmotid, startframe, endframe);
+	}
+}
+
+//#################################################
+//この関数の上に　フレーム範囲を　計算する関数あり
+//#################################################
 void CModel::CalcBoneEulReq(bool limitdegflag, CBone* curbone, int srcmotid, double srcframe)
 {
 	if (!curbone){
@@ -18863,34 +18882,46 @@ int CModel::SetLaterTransparentVec(std::vector<std::wstring> srclatervec)
 	return 0;
 }
 
-void CModel::ModifyEuler360Req(int limitdegflag, CBone* srcbone, int srcmotid, double startframe, double endframe)
-{
-	if (srcbone) {
 
-		if (srcbone->IsSkeleton()) {
-			double curframe;
-			for (curframe = startframe; curframe <= endframe; curframe += 1.0) {
-				if (curframe >= 1.01) {
-					double befframe;
-					befframe = curframe - 1.0;
-
-					ChaVector3 befeul = srcbone->GetLocalEul(limitdegflag, srcmotid, befframe, 0);
-					ChaVector3 cureul = srcbone->GetLocalEul(limitdegflag, srcmotid, curframe, 0);
-					ChaModifyEuler360(&cureul, &befeul, 0, 180.0f, 180.0f, 180.0f);
-					srcbone->SetLocalEul(limitdegflag, srcmotid, curframe, cureul, 0);
-				}
-			}
-		}
-
-		if (srcbone->GetChild(false)) {
-			ModifyEuler360Req(limitdegflag, srcbone->GetChild(false), srcmotid, startframe, endframe);
-		}
-		if (srcbone->GetBrother(false)) {
-			ModifyEuler360Req(limitdegflag, srcbone->GetBrother(false), srcmotid, startframe, endframe);
-		}
-	}
-
-}
+//###############################################################################################
+//ModifyEuler360 と　CalcLocalEulXYZとでは　結果が違った (CalcLocalEulXYZの方が大分きれい)
+// PostIKの後処理としては　内部でCalcLocalEulXYZを呼び出しているCalcBoneEulReq()を使用することに
+//###############################################################################################
+//void CModel::ModifyEuler360Req(int limitdegflag, CBone* srcbone, int srcmotid, double startframe, double endframe)
+//{
+//	if (srcbone) {
+//
+//		if (srcbone->IsSkeleton()) {
+//			double curframe;
+//			for (curframe = startframe; curframe <= endframe; curframe += 1.0) {
+//				if (curframe >= 1.01) {
+//					double befframe;
+//					befframe = curframe - 1.0;
+//
+//					//ChaMatrix befwm = srcbone->GetWorldMat(limitdegflag, srcmotid, curframe, 0);
+//					//ChaVector3 befeul = srcbone->GetLocalEul(limitdegflag, srcmotid, befframe, 0);
+//					//ChaVector3 cureul = srcbone->GetLocalEul(limitdegflag, srcmotid, curframe, 0);
+//					//ChaModifyEuler360(&cureul, &befeul, 0, 180.0f, 180.0f, 180.0f);
+//					//ChaModifyEuler360(&cureul, &befeul, 0, 91.0f, 181.0f, 181.0f);
+//					//srcbone->SetWorldMatFromEul(limitdegflag, 0, 0, befwm, cureul, srcmotid, curframe, 0);
+//					//srcbone->SetLocalEul(limitdegflag, srcmotid, curframe, cureul, 0);
+//
+//					ChaVector3 cureul;
+//					cureul = srcbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, curframe, BEFEUL_BEFFRAME);
+//					srcbone->SetLocalEul(limitdegflag, srcmotid, curframe, cureul, 0);
+//				}
+//			}
+//		}
+//
+//		if (srcbone->GetChild(false)) {
+//			ModifyEuler360Req(limitdegflag, srcbone->GetChild(false), srcmotid, startframe, endframe);
+//		}
+//		if (srcbone->GetBrother(false)) {
+//			ModifyEuler360Req(limitdegflag, srcbone->GetBrother(false), srcmotid, startframe, endframe);
+//		}
+//	}
+//
+//}
 
 
 

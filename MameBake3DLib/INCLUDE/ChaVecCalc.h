@@ -1,4 +1,4 @@
-#ifndef ChaCalcH
+ï»¿#ifndef ChaCalcH
 #define ChaCalcH
 
 
@@ -16,6 +16,7 @@ class ChaVector3;
 
 
 #include <coef.h>
+
 
 
 //2022/07/29   for FbxAMatrix
@@ -46,7 +47,7 @@ class ChaVector3;
 //}
 
 
-//ChaMatrix‚Ìdata[]‚Ìindex‚ð‚í‚©‚è‚â‚·‚­
+//ChaMatrixã®data[]ã®indexã‚’ã‚ã‹ã‚Šã‚„ã™ã
 enum {
 	MATI_11,
 	MATI_12,
@@ -123,22 +124,22 @@ public:
 #endif
 	void SetIdentity();
 	FbxAMatrix FBXAMATRIX();
-	void SetTranslation(ChaVector3 srctra);//‰Šú‰»‚µ‚È‚¢
-	void SetXYZRotation(CQuaternion* srcaxisq, ChaVector3 srceul);//‰Šú‰»‚µ‚È‚¢
-	void SetXYZRotation(CQuaternion* srcaxisq, CQuaternion srcq);//‰Šú‰»‚µ‚È‚¢
-	void SetScale(ChaVector3 srcscale);//‰Šú‰»‚µ‚È‚¢
-	void SetBasis(ChaMatrix srcmat);//‰Šú‰»‚µ‚È‚¢@copy3x3
-	void SetRotation(EFbxRotationOrder rotorder, CQuaternion* srcaxisq, ChaVector3 srceul);//‰Šú‰»‚µ‚È‚¢
+	void SetTranslation(ChaVector3 srctra);//åˆæœŸåŒ–ã—ãªã„
+	void SetXYZRotation(CQuaternion* srcaxisq, ChaVector3 srceul);//åˆæœŸåŒ–ã—ãªã„
+	void SetXYZRotation(CQuaternion* srcaxisq, CQuaternion srcq);//åˆæœŸåŒ–ã—ãªã„
+	void SetScale(ChaVector3 srcscale);//åˆæœŸåŒ–ã—ãªã„
+	void SetBasis(ChaMatrix srcmat);//åˆæœŸåŒ–ã—ãªã„ã€€copy3x3
+	void SetRotation(EFbxRotationOrder rotorder, CQuaternion* srcaxisq, ChaVector3 srceul);//åˆæœŸåŒ–ã—ãªã„
 
-	void SetTranslationZero();//‰Šú‰»‚µ‚È‚¢
-	void SetForVectorTransform();//‰Šú‰»‚µ‚È‚¢
-	void AddTranslation(ChaVector3 srctra);//‰Šú‰»‚µ‚È‚¢
+	void SetTranslationZero();//åˆæœŸåŒ–ã—ãªã„
+	void SetForVectorTransform();//åˆæœŸåŒ–ã—ãªã„
+	void AddTranslation(ChaVector3 srctra);//åˆæœŸåŒ–ã—ãªã„
 
-	ChaVector3 GetRow(int rowindex);//s
-	ChaVector3 GetCol(int colindex);//—ñ
+	ChaVector3 GetRow(int rowindex);//è¡Œ
+	ChaVector3 GetCol(int colindex);//åˆ—
 	ChaVector3 GetTranslation();//GetRow(3)
-	void SetRow(int rowindex, ChaVector3 srcrow);//s
-	void SetCol(int colindex, ChaVector3 srccol);//—ñ
+	void SetRow(int rowindex, ChaVector3 srcrow);//è¡Œ
+	void SetCol(int colindex, ChaVector3 srccol);//åˆ—
 
 	CQuaternion GetRotQ();
 
@@ -429,11 +430,11 @@ public:
 	ChaMatrix CalcSymX2();
 
 
-	//¶‚Ë‚¶
+	//å·¦ã­ã˜
 	//int Q2EulZXY(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
 	//int Q2EulYXZ(CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
-	int Q2EulXYZusingMat(int rotorder, CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag);//bullet‚àXYZ‚Ì‡
-	int Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag);//bullet‚àXYZ‚Ì‡
+	int Q2EulXYZusingMat(int rotorder, CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag);//bulletã‚‚XYZã®é †
+	int Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag);//bulletã‚‚XYZã®é †
 	//int Q2EulZYX(int needmodifyflag, CQuaternion* axisq, ChaVector3 befeul, ChaVector3* reteul);
 
 
@@ -445,7 +446,7 @@ public:
 	//inout : srcdstq
 	int InOrder(CQuaternion* srcdstq);
 
-	//ChaModifyEuler360‚Ö
+	//ChaModifyEuler360ã¸
 	//int ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notmodify180flag, float throundX, float throundY, float throundZ);
 	
 	int ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfirstbone, int isendbone, int notmodifyflag);
@@ -460,10 +461,10 @@ private:
 	int vec3RotateZ(ChaVector3* dstvec, double deg, ChaVector3* srcvec);
 
 	//int ModifyEuler(ChaVector3* eulerA, ChaVector3* eulerB);
-	//int ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfirstbone, int isendbone, int notmodifyflag);//public‚ÉˆÚ“®
+	//int ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfirstbone, int isendbone, int notmodifyflag);//publicã«ç§»å‹•
 	int GetRound(float srcval);
 
-	//ChaGetRoundThreshold()‚Ö
+	//ChaGetRoundThreshold()ã¸
 	//int GetRoundThreshold(float srcval, float degth);
 
 	float QuaternionLimitPhai(float srcphai);
@@ -485,7 +486,7 @@ double ChaVector3LengthDbl(ChaVector3* psrc);
 double ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* psrc2);
 
 
-//ˆÈ‰º‚Q‚Â@CQuaternion‚ÌŠO‚Éo‚µ‚½‚ª@ŒvŽZ—pƒNƒ‰ƒX‚Ìƒƒ“ƒoŠÖ”‚É‚·‚é—\’è@iƒ}ƒ‹ƒ`ƒXƒŒƒbƒh€”õj
+//ä»¥ä¸‹ï¼’ã¤ã€€CQuaternionã®å¤–ã«å‡ºã—ãŸãŒã€€è¨ˆç®—ç”¨ã‚¯ãƒ©ã‚¹ã®ãƒ¡ãƒ³ãƒé–¢æ•°ã«ã™ã‚‹äºˆå®šã€€ï¼ˆãƒžãƒ«ãƒã‚¹ãƒ¬ãƒƒãƒ‰æº–å‚™ï¼‰
 int ChaModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notmodify180flag, float throundX, float throundY, float throundZ);
 int ChaGetRoundThreshold(float srcval, float degth);
 
@@ -500,13 +501,13 @@ ChaVector3* ChaVector3TransformNormal(ChaVector3 *pOut, const ChaVector3* pV, co
 
 
 void ChaMatrixIdentity(ChaMatrix* pdst);
-ChaMatrix ChaMatrixScale(ChaMatrix srcmat);//ƒXƒP[ƒ‹¬•ª‚¾‚¯‚Ìs—ñ‚É‚·‚é
-ChaMatrix ChaMatrixRot(ChaMatrix srcmat);//‰ñ“]¬•ª‚¾‚¯‚Ìs—ñ‚É‚·‚é
-ChaMatrix ChaMatrixTra(ChaMatrix srcmat);//ˆÚ“®¬•ª‚¾‚¯‚Ìs—ñ‚É‚·‚é
-ChaVector3 ChaMatrixScaleVec(ChaMatrix srcmat);//ƒXƒP[ƒ‹¬•ª‚ÌƒxƒNƒgƒ‹‚ðŽæ“¾
-ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat, int notmodify180flag);//‰ñ“]¬•ª‚ÌƒxƒNƒgƒ‹‚ðŽæ“¾
-ChaVector3 ChaMatrixTraVec(ChaMatrix srcmat);//ˆÚ“®¬•ª‚ÌƒxƒNƒgƒ‹‚ðŽæ“¾
-CQuaternion ChaMatrix2Q(ChaMatrix srcmat);//ChaMatrix‚ðŽó‚¯Žæ‚Á‚Ä@CQuaternion‚ð•Ô‚·
+ChaMatrix ChaMatrixScale(ChaMatrix srcmat);//ã‚¹ã‚±ãƒ¼ãƒ«æˆåˆ†ã ã‘ã®è¡Œåˆ—ã«ã™ã‚‹
+ChaMatrix ChaMatrixRot(ChaMatrix srcmat);//å›žè»¢æˆåˆ†ã ã‘ã®è¡Œåˆ—ã«ã™ã‚‹
+ChaMatrix ChaMatrixTra(ChaMatrix srcmat);//ç§»å‹•æˆåˆ†ã ã‘ã®è¡Œåˆ—ã«ã™ã‚‹
+ChaVector3 ChaMatrixScaleVec(ChaMatrix srcmat);//ã‚¹ã‚±ãƒ¼ãƒ«æˆåˆ†ã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’å–å¾—
+ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat, int notmodify180flag);//å›žè»¢æˆåˆ†ã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’å–å¾—
+ChaVector3 ChaMatrixTraVec(ChaMatrix srcmat);//ç§»å‹•æˆåˆ†ã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’å–å¾—
+CQuaternion ChaMatrix2Q(ChaMatrix srcmat);//ChaMatrixã‚’å—ã‘å–ã£ã¦ã€€CQuaternionã‚’è¿”ã™
 void ChaMatrixNormalizeRot(ChaMatrix* pdst);
 void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc);
 void ChaMatrixTranslation(ChaMatrix* pdst, float srcx, float srcy, float srcz);
@@ -558,7 +559,7 @@ void GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatptr, Cha
 void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr, ChaMatrix* tanimmatptr);//For Local Posture
 ChaMatrix ChaMatrixFromSRT(bool sflag, bool tflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctmat);//For Local Posture
 ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctanimmat);//For Local Posture
-ChaMatrix GetS0RTMatrix(ChaMatrix srcmat);//Šg‘åk¬‚ð‰Šú‰»‚µ‚½RTs—ñ‚ð•Ô‚·
+ChaMatrix GetS0RTMatrix(ChaMatrix srcmat);//æ‹¡å¤§ç¸®å°ã‚’åˆæœŸåŒ–ã—ãŸRTè¡Œåˆ—ã‚’è¿”ã™
 ChaMatrix ChaMatrixKeepScale(ChaMatrix srcmat, ChaVector3 srcsvec);
 
 ChaMatrix TransZeroMat(ChaMatrix srcmat);
@@ -593,13 +594,13 @@ extern double ChaVector3LengthSqDbl(ChaVector3* psrc);
 extern ChaVector3* ChaVector3TransformNormal(ChaVector3 *pOut, const ChaVector3* pV, const ChaMatrix* pM);
 
 extern void ChaMatrixIdentity(ChaMatrix* pdst);
-extern ChaMatrix ChaMatrixScale(ChaMatrix srcmat);//ƒXƒP[ƒ‹¬•ª‚¾‚¯‚Ìs—ñ‚É‚·‚é
-extern ChaMatrix ChaMatrixRot(ChaMatrix srcmat);//‰ñ“]¬•ª‚¾‚¯‚Ìs—ñ‚É‚·‚é
-extern ChaMatrix ChaMatrixTra(ChaMatrix srcmat);//ˆÚ“®¬•ª‚¾‚¯‚Ìs—ñ‚É‚·‚é
-extern ChaVector3 ChaMatrixScaleVec(ChaMatrix srcmat);//ƒXƒP[ƒ‹¬•ª‚ÌƒxƒNƒgƒ‹‚ðŽæ“¾
-extern ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat, int notmodify180flag);//‰ñ“]¬•ª‚ÌƒxƒNƒgƒ‹‚ðŽæ“¾
-extern ChaVector3 ChaMatrixTraVec(ChaMatrix srcmat);//ˆÚ“®¬•ª‚ÌƒxƒNƒgƒ‹‚ðŽæ“¾
-extern CQuaternion ChaMatrix2Q(ChaMatrix srcmat);//ChaMatrix‚ðŽó‚¯Žæ‚Á‚Ä@CQuaternion‚ð•Ô‚·
+extern ChaMatrix ChaMatrixScale(ChaMatrix srcmat);//ã‚¹ã‚±ãƒ¼ãƒ«æˆåˆ†ã ã‘ã®è¡Œåˆ—ã«ã™ã‚‹
+extern ChaMatrix ChaMatrixRot(ChaMatrix srcmat);//å›žè»¢æˆåˆ†ã ã‘ã®è¡Œåˆ—ã«ã™ã‚‹
+extern ChaMatrix ChaMatrixTra(ChaMatrix srcmat);//ç§»å‹•æˆåˆ†ã ã‘ã®è¡Œåˆ—ã«ã™ã‚‹
+extern ChaVector3 ChaMatrixScaleVec(ChaMatrix srcmat);//ã‚¹ã‚±ãƒ¼ãƒ«æˆåˆ†ã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’å–å¾—
+extern ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat, int notmodify180flag);//å›žè»¢æˆåˆ†ã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’å–å¾—
+extern ChaVector3 ChaMatrixTraVec(ChaMatrix srcmat);//ç§»å‹•æˆåˆ†ã®ãƒ™ã‚¯ãƒˆãƒ«ã‚’å–å¾—
+extern CQuaternion ChaMatrix2Q(ChaMatrix srcmat);//ChaMatrixã‚’å—ã‘å–ã£ã¦ã€€CQuaternionã‚’è¿”ã™
 extern void ChaMatrixNormalizeRot(ChaMatrix* pdst);
 extern void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc);
 extern void ChaMatrixTranslation(ChaMatrix* pdst, float srcx, float srcy, float srcz);
@@ -650,7 +651,7 @@ extern void GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatp
 extern void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr, ChaMatrix* tanimmatptr);//For Local Posture
 extern ChaMatrix ChaMatrixFromSRT(bool sflag, bool tflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctmat);//For Local Posture
 extern ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctanimmat);//For Local Posture
-extern ChaMatrix GetS0RTMatrix(ChaMatrix srcmat);//Šg‘åk¬‚ð‰Šú‰»‚µ‚½RTs—ñ‚ð•Ô‚·
+extern ChaMatrix GetS0RTMatrix(ChaMatrix srcmat);//æ‹¡å¤§ç¸®å°ã‚’åˆæœŸåŒ–ã—ãŸRTè¡Œåˆ—ã‚’è¿”ã™
 extern ChaMatrix ChaMatrixKeepScale(ChaMatrix srcmat, ChaVector3 srcsvec);
 
 extern ChaMatrix TransZeroMat(ChaMatrix srcmat);
@@ -691,8 +692,8 @@ typedef  struct tag_rpselem
 typedef  struct tag_ui_pickinfo
 {
 	int buttonflag;
-	//WM_LBUTTONDOWN-->PICK_L, WM_RBUTTONDOWN-->PICK_R, WM_MBUTTONDOWN-->PICK_MB‰Ÿ‚µ‚Ä‚¢‚È‚¢‚Æ‚«-->PICK_NONEB
-	//ˆÈ‰ºAbuttonflag‚ªPICK_NONEˆÈŠO‚ÌŽž‚ÉˆÓ–¡‚ðŽ‚ÂB
+	//WM_LBUTTONDOWN-->PICK_L, WM_RBUTTONDOWN-->PICK_R, WM_MBUTTONDOWN-->PICK_Mã€‚æŠ¼ã—ã¦ã„ãªã„ã¨ã-->PICK_NONEã€‚
+	//ä»¥ä¸‹ã€buttonflagãŒPICK_NONEä»¥å¤–ã®æ™‚ã«æ„å‘³ã‚’æŒã¤ã€‚
 	POINT mousepos;
 	POINT mousebefpos;
 	POINT clickpos;
@@ -780,7 +781,7 @@ typedef struct tag_verface
 
 typedef  struct tag_pervert
 {
-	int				indexno;//3Šp‚Ì‡”Ô
+	int				indexno;//3è§’ã®é †ç•ª
 	int				vno;
 	int				uvnum;
 	ChaVector2		uv[2];
@@ -789,9 +790,9 @@ typedef  struct tag_pervert
 	ChaVector3 smnormal;
 
 	int				createflag;
-	//’¸“_‚ðì¬‚µ‚È‚¢ê‡‚O
-	//UV, VCOL, Materialno‚Ìˆá‚¢‚É‚æ‚èì¬‚·‚éê‡‚Í‚P‚ð‘«‚·
-	//normal‚É‚æ‚èì¬‚·‚éê‡‚Í‚Q‚ð‘«‚·
+	//é ‚ç‚¹ã‚’ä½œæˆã—ãªã„å ´åˆï¼
+	//UV, VCOL, Materialnoã®é•ã„ã«ã‚ˆã‚Šä½œæˆã™ã‚‹å ´åˆã¯ï¼‘ã‚’è¶³ã™
+	//normalã«ã‚ˆã‚Šä½œæˆã™ã‚‹å ´åˆã¯ï¼’ã‚’è¶³ã™
 
 	tag_pervert() {
 		indexno = 0;
@@ -907,7 +908,7 @@ public:
 	~N3SM();
 	void InitParams();
 	int smfacenum;
-	//void** ppsmface;//N3P‚Ìƒ|ƒCƒ“ƒ^‚Ì”z—ñ
+	//void** ppsmface;//N3Pã®ãƒã‚¤ãƒ³ã‚¿ã®é…åˆ—
 	N3P** ppsmface;//*(ppsmface + smfaceno) --> pointer which is allocateed(malloc) at other place
 };
 
