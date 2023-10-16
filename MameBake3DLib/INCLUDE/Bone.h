@@ -720,6 +720,54 @@ public: //accesser
 		}
 	};
 
+	int GetInitIndexedMotionPointSize()
+	{
+		return (int)m_initindexedmotionpoint.size();
+	}
+	bool ExistInitIndexedMotionPoint(int srcmotid)
+	{
+		bool getbychain = false;
+		std::map<int, bool>::iterator itrinitflag;
+		itrinitflag = m_initindexedmotionpoint.find(srcmotid);//initflag
+		if (itrinitflag == m_initindexedmotionpoint.end()) {//エントリーがまだ無いとき
+			getbychain = true;
+		}
+		else {
+			if (itrinitflag->second == false) {//初期化フラグがfalseのとき　
+				getbychain = true;
+			}
+		}
+		return getbychain;
+	}
+	int GetInitIndexedMotionPointFrameLeng(int srcmotid)
+	{
+		int mpmapleng = 0;
+		std::map<int, std::vector<CMotionPoint*>>::iterator itrvecmpmap;
+
+		itrvecmpmap = m_indexedmotionpoint.find(srcmotid);
+		if (itrvecmpmap == m_indexedmotionpoint.end()) {
+			return 0;
+		}
+		else {
+			mpmapleng = (int)(itrvecmpmap->second).size();
+		}
+		return mpmapleng;
+	}
+	CMotionPoint* GetInitIndexedMotionPoint(int srcmotid, int srcframeindex)
+	{
+		CMotionPoint* retmp = 0;
+		std::map<int, std::vector<CMotionPoint*>>::iterator itrvecmpmap;
+
+		itrvecmpmap = m_indexedmotionpoint.find(srcmotid);
+		if (itrvecmpmap == m_indexedmotionpoint.end()) {
+			return 0;
+		}
+		else {
+			retmp = (itrvecmpmap->second)[srcframeindex];
+		}
+		return retmp;
+	}
+
 	CMotionPoint GetCurMp(){ return m_curmp; };
 	void SetCurMp( CMotionPoint srcmp ){ m_curmp = srcmp; };
 

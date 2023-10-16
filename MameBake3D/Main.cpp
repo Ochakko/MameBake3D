@@ -10388,12 +10388,12 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			MOTINFO* curmi = s_model->GetCurMotInfo();
 			if (curmi) {
 				CBone* lastparent = 0;
-				if (s_editmotionflag >= 0) {
-					lastparent = s_model->GetBoneByID(s_editmotionflag);
-				}
-				if (!lastparent) {
+				//if (s_editmotionflag >= 0) {
+				//	lastparent = s_model->GetBoneByID(s_editmotionflag);
+				//}
+				//if (!lastparent) {
 					lastparent = s_model->GetTopBone(false);
-				}
+				//}
 
 				//全フレーム計算し直す　モーション切り替えでOnAnimMenuが呼ばれた後にも　オイラー角の連続性が同じになるように
 				double startframe0 = 1.0;

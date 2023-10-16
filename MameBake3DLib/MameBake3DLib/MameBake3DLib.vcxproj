@@ -231,6 +231,7 @@
     <ClCompile Include="..\CPP\TexElem.cpp" />
     <ClCompile Include="..\CPP\ThreadingBase.cpp" />
     <ClCompile Include="..\CPP\ThreadingLoadFbx.cpp" />
+    <ClCompile Include="..\CPP\ThreadingPostIK.cpp" />
     <ClCompile Include="..\CPP\ThreadingUpdateMatrix.cpp" />
     <ClCompile Include="..\CPP\ThreadingUpdateTimeline.cpp" />
     <ClCompile Include="..\CPP\UndoMotion.cpp" />
@@ -601,6 +602,7 @@
     <ClInclude Include="..\INCLUDE\TexElem.h" />
     <ClInclude Include="..\INCLUDE\ThreadingBase.h" />
     <ClInclude Include="..\INCLUDE\ThreadingLoadFbx.h" />
+    <ClInclude Include="..\INCLUDE\ThreadingPostIK.h" />
     <ClInclude Include="..\INCLUDE\ThreadingUpdateMatrix.h" />
     <ClInclude Include="..\INCLUDE\ThreadingUpdateTimeline.h" />
     <ClInclude Include="..\INCLUDE\UndoMotion.h" />

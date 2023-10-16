@@ -228,6 +228,9 @@
     <ClCompile Include="..\CPP\DispGroupFile.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
+    <ClCompile Include="..\CPP\ThreadingPostIK.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h">
@@ -1317,6 +1320,9 @@
       <Filter>disp4</Filter>
     </ClInclude>
     <ClInclude Include="..\INCLUDE\DispGroupFile.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\ThreadingPostIK.h">
       <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>

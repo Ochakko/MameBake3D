@@ -36,6 +36,7 @@ class CRigidElem;
 class CEditRange;
 class CThreadingLoadFbx;
 class CThreadingUpdateMatrix;
+class CThreadingPostIK;
 class CNodeOnLoad;
 
 typedef struct funcmpparams
@@ -491,9 +492,14 @@ public:
 
 
 	int IKRotate(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, int maxlevel, double directframe = -1.0);
-	int IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, 
-		int maxlevel, double directframe, bool postflag);
-	int IKTargetVec(bool limitdegflag, CEditRange* srptr, double srcframe, bool postflag);
+	
+	//2023/10/17 ChaCalcFuncに移動
+	//int IKRotateForIKTarget(bool limitdegflag, CEditRange* erptr, int srcboneno, ChaVector3 targetpos, 
+
+	//2023/10/17 ChaCalcFuncに移動
+	//	int maxlevel, double directframe, bool postflag);
+	//int IKTargetVec(bool limitdegflag, CEditRange* srptr, double srcframe, bool postflag);
+
 	int SetIKTargetVec();
 	void SetIKTargetVecReq(CBone* srcbone);
 	int PosConstraintExecuteFromButton(bool limitdegflag, CEditRange* erptr);
@@ -596,9 +602,9 @@ public:
 		bool limitdegflag, CEditRange* erptr,
 		int srcboneno);
 
-
-	int FKBoneTra(bool limitdegflag, int onlyoneflag, CEditRange* erptr, 
-		int srcboneno, ChaVector3 addtra, double onlyoneframe = 0.0 );
+	//2023/10/17 ChaCalcFuncに移動
+	//int FKBoneTra(bool limitdegflag, int onlyoneflag, CEditRange* erptr, 
+	//	int srcboneno, ChaVector3 addtra, double onlyoneframe = 0.0 );
 
 
 
@@ -865,6 +871,13 @@ public:
 	bool ChkBoneHasRig(CBone* srcbone);
 
 	int CreateBoneUpdateMatrix();//g_UpdateMatrixThreads変更時にも呼ぶ
+	
+	int CreatePostIKThreads();
+	int DestroyPostIKThreads();
+	void WaitPostIKFinished();
+	int SetPostIKFrame(double srcstart, double srcend);
+	
+	
 	//int GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread = false);//CThreadingLoadFbxからも呼ぶ CBoneに移動
 
 	void InitMPReq(bool limitdegflag, CBone* curbone, int srcmotid, double curframe);
@@ -904,6 +917,10 @@ public:
 
 	int GetTextureNameVec(std::vector<std::string>& dstvec);
 	int SetLaterTransparentVec(std::vector<std::wstring> srclatervec);//丸ごと設定
+
+
+	int SetBefEditMat(bool limitdegflag, CEditRange* erptr, CBone* curbone, int maxlevel);
+	int SetBefEditMatFK(bool limitdegflag, CEditRange* erptr, CBone* curbone);
 
 private:
 	int InitParams();
@@ -1062,10 +1079,8 @@ private:
 	int GetValidUndoID();//undo用のid
 	int GetValidRedoID();//redo用のid
 
-	int SetBefEditMat(bool limitdegflag, CEditRange* erptr, CBone* curbone, int maxlevel);
-	int SetBefEditMatFK(bool limitdegflag, CEditRange* erptr, CBone* curbone);
-
-	int AdjustBoneTra(bool limitdegflag, CEditRange* erptr, CBone* lastpar);
+	//2023/10/17 ChaCalcFuncに移動
+	//int AdjustBoneTra(bool limitdegflag, CEditRange* erptr, CBone* lastpar);
 
 	void SetFirstFrameBonePosReq(CBone* srcbone, int srcmotid, HINFO* phinfo);
 	void InterpolateBetweenSelectionReq(bool limitdegflag, CBone* interpolatebone, 
@@ -1091,19 +1106,22 @@ private:
 
 	void SetCurrentRigidElemReq(CBone* srcbone, std::string curname);
 
-
-	int CalcQForRot(bool limitdegflag, bool calcaplyflag,
-		int srcmotid, double srcframe, double srcapplyframe, CQuaternion srcaddrot,
-		CBone* srcrotbone, CBone* srcaplybone, 
-		CQuaternion* dstqForRot, CQuaternion* dstqForHipsRot);
+	//2023/10/17 ChaCalcFuncクラスに移動
+	//int CalcQForRot(bool limitdegflag, bool calcaplyflag,
+	//	int srcmotid, double srcframe, double srcapplyframe, CQuaternion srcaddrot,
+	//	CBone* srcrotbone, CBone* srcaplybone, 
+	//	CQuaternion* dstqForRot, CQuaternion* dstqForHipsRot);
 	int IsMovableRot(bool limitdegflag, int srcmotid, double srcframe, double srcapplyframe, 
 		CQuaternion srcaddrot, CBone* srcrotbone, CBone* srcaplybone);
 
-	bool CalcAxisAndRotForIKRotateAxis(int limitdegflag,
-		CBone* parentbone, CBone* firstbone,
-		double curframe, ChaVector3 targetpos,
-		ChaVector3 srcikaxis,
-		ChaVector3* dstaxis, float* dstrotrad);
+	//2023/10/17 ChaCalcFuncに移動
+	//bool CalcAxisAndRotForIKRotateAxis(int limitdegflag,
+	//	CBone* parentbone, CBone* firstbone,
+	//	double curframe, ChaVector3 targetpos,
+	//	ChaVector3 srcikaxis,
+	//	ChaVector3* dstaxis, float* dstrotrad);
+
+
 	int CalcAxisAndRotForIKRotate(int limitdegflag,
 		CBone* parentbone, CBone* firstbone, 
 		double curframe, ChaVector3 targetpos, 
@@ -1113,10 +1131,11 @@ private:
 		double curframe, ChaVector3 targetpos,
 		ChaVector3* dstaxis, float* dstrotrad);
 
-	int IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
-		int keyno, CBone* rotbone, CBone* parentbone,
-		double curframe, double startframe, double applyframe,
-		CQuaternion rotq0, bool keynum1flag, bool postflag, bool fromiktarget);
+	//2023/10/17 ChaCalcFuncクラスに移動
+	//int IKRotateOneFrame(int limitdegflag, CEditRange* erptr,
+	//	int keyno, CBone* rotbone, CBone* parentbone,
+	//	double curframe, double startframe, double applyframe,
+	//	CQuaternion rotq0, bool keynum1flag, bool postflag, bool fromiktarget);
 
 	void ClearIKRotRecReq(CBone* srcbone);
 	void ClearIKRotRecUVReq(CBone* srcbone);
@@ -2028,6 +2047,20 @@ public: //accesser
 		}
 	}
 
+	int GetIKTargetBoneVecSize()
+	{
+		return (int)m_iktargetbonevec.size();
+	}
+	CBone* GetIKTargetBone(int srcindex)
+	{
+		int leng = GetIKTargetBoneVecSize();
+		if ((srcindex >= 0) && (srcindex < leng)) {
+			return m_iktargetbonevec[srcindex];
+		}
+		else {
+			return 0;
+		}
+	}
 
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
@@ -2075,8 +2108,10 @@ private:
 
 	CThreadingUpdateMatrix* m_boneupdatematrix;
 	CThreadingLoadFbx* m_LoadFbxAnim;
+	CThreadingPostIK* m_PostIKThreads;
 	int m_creatednum_boneupdatematrix;//スレッド数の変化に対応。作成済の数。処理用。
 	int m_creatednum_loadfbxanim;//スレッド数の変化に対応。作成済の数。処理用。
+	int m_postikthreadsnum;
 
 	std::map<int, MOTINFO*> m_motinfo;//モーションのプロパティをモーションIDから検索できるようにしたmap。
 	MOTINFO* m_curmotinfo;//m_motinfoの中の現在再生中のMOTINFOへのポインタ。

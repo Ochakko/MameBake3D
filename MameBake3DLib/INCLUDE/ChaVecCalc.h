@@ -7,6 +7,10 @@ class CQuaternion;
 class btMatrix3x3;
 class btVector3;
 class ChaVector3;
+class CBone;
+class CMotionPoint;
+class CEditRange;
+
 //struct D3DXMATRIX;
 //struct D3DXVECTOR2;
 //struct D3DXVECTOR3;
@@ -477,6 +481,60 @@ public:
 	float w;
 };
 
+class ChaCalcFunc
+{
+	//#############################################################################################################
+	//2023/10/17
+	//このクラスの意味
+	//マルチスレッドから　同期処理なしで呼び出し可能にするため
+	//ChaCalcFuncのインスタンスをスレッドごとに作成し　インスタンス単位で実行中に再入しないようにするためのクラス
+	//#############################################################################################################
+
+public:
+	ChaCalcFunc() {};
+	~ChaCalcFunc() {};
+
+	int ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notmodify180flag, float throundX, float throundY, float throundZ);
+	int GetRoundThreshold(float srcval, float degth);
+
+	
+	int GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr, bool onaddmotion = false);
+
+
+	int IKRotateOneFrame(CModel* srcmodel, int limitdegflag, CEditRange* erptr,
+		int keyno, CBone* rotbone, CBone* parentbone,
+		int srcmotid, double curframe, double startframe, double applyframe,
+		CQuaternion rotq0, bool keynum1flag, bool postflag, bool fromiktarget);
+	int RotAndTraBoneQReq(CBone* srcbone, bool limitdegflag, int* onlycheckptr,
+		double srcstartframe, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
+		CQuaternion qForRot, CQuaternion qForHipsRot, bool fromiktarget);
+
+	
+	int IKTargetVec(CModel* srcmodel, bool limitdegflag, CEditRange* erptr, int srcmotid, double srcframe, bool postflag);
+	int IKRotateForIKTarget(CModel* srcmodel, bool limitdegflag, CEditRange* erptr,
+		int srcboneno, int srcmotid, ChaVector3 targetpos, int maxlevel, double directframe, bool postflag);
+
+	int AdjustBoneTra(CModel* srcmodel, bool limitdegflag, CEditRange* erptr, CBone* lastpar, int srcmotid);
+
+
+	int FKBoneTra(CModel* srcmodel, bool limitdegflag, int onlyoneflag, CEditRange* erptr,
+		int srcboneno, int srcmotid, ChaVector3 addtra, double onlyoneframe = 0.0);
+
+
+	int CalcQForRot(bool limitdegflag, bool calcaplyflag,
+		int srcmotid, double srcframe, double srcapplyframe, CQuaternion srcaddrot,
+		CBone* srcrotbone, CBone* srcaplybone,
+		CQuaternion* dstqForRot, CQuaternion* dstqForHipsRot);
+	bool CalcAxisAndRotForIKRotateAxis(CModel* srcmodel, int limitdegflag,
+		CBone* parentbone, CBone* firstbone,
+		int srcmotid, double curframe, ChaVector3 targetpos,
+		ChaVector3 srcikaxis,
+		ChaVector3* dstaxis, float* dstrotrad);
+
+
+};
+
+
 
 #ifdef CHACALCCPP
 BOOL IsValidNewEul(ChaVector3 srcneweul, ChaVector3 srcbefeul);
@@ -484,11 +542,6 @@ ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat);
 
 double ChaVector3LengthDbl(ChaVector3* psrc);
 double ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* psrc2);
-
-
-//以下２つ　CQuaternionの外に出したが　計算用クラスのメンバ関数にする予定　（マルチスレッド準備）
-int ChaModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notmodify180flag, float throundX, float throundY, float throundZ);
-int ChaGetRoundThreshold(float srcval, float degth);
 
 
 //float ChaVector3LengthDbl(ChaVector3* psrc);
@@ -581,9 +634,6 @@ extern ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat);
 
 extern double ChaVector3LengthDbl(ChaVector3* psrc);
 extern double ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* psrc2);
-
-extern int ChaModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notmodify180flag, float throundX, float throundY, float throundZ);
-extern int GetRoundThreshold(float srcval, float degth);
 
 //extern float ChaVector3LengthDbl(ChaVector3* psrc);
 extern void ChaVector3Normalize(ChaVector3* pdst, const ChaVector3* psrc);
