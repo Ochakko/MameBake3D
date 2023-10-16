@@ -485,6 +485,10 @@ public:
 	int IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 		int srcboneno, int maxlevel);
 
+	void ModifyEuler360Req(int limitdegflag, CBone* srcbone, int srcmotid, double startframe, double endframe);
+
+
+
 	void ClearIKRotRec();
 	void ClearIKRotRecUV();
 

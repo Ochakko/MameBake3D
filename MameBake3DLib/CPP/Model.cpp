@@ -11320,6 +11320,8 @@ int CModel::IKRotateUnderIK(bool limitdegflag, CEditRange* erptr,
 
 					//parentboneのrotqを保存
 					IKROTREC currotrec;
+					currotrec.applyframemat = parentbone->GetWorldMat(limitdegflag, m_curmotinfo->motid, applyframe, 0);
+					currotrec.applyframeeul = parentbone->GetLocalEul(limitdegflag, m_curmotinfo->motid, applyframe, 0);
 					currotrec.rotq = rotq0;
 					currotrec.targetpos = targetpos;
 					currotrec.lessthanthflag = false;
@@ -11341,6 +11343,8 @@ int CModel::IKRotateUnderIK(bool limitdegflag, CEditRange* erptr,
 					rotq0.SetAxisAndRot(rotaxis2, rotrad2);
 
 					IKROTREC currotrec;
+					currotrec.applyframemat = parentbone->GetWorldMat(limitdegflag, m_curmotinfo->motid, applyframe, 0);
+					currotrec.applyframeeul = parentbone->GetLocalEul(limitdegflag, m_curmotinfo->motid, applyframe, 0);
 					currotrec.rotq = rotq0;
 					currotrec.targetpos = targetpos;
 					currotrec.lessthanthflag = true;//!!!!!!!!!!!
@@ -11490,13 +11494,20 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 											curframe, startframe, applyframe,
 											rotq0, keynum1flag, postflag, fromiktarget);
 									}
-									else {
-										//2023/10/12
-										//applyframeにも　オイラー角の計算は必要
-										ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
-										neweul = parentbone->CalcLocalEulXYZ(limitdegflag, -1, m_curmotinfo->motid, curframe, BEFEUL_BEFFRAME);
-										parentbone->SetLocalEul(limitdegflag, m_curmotinfo->motid, curframe, neweul, 0);
-									}
+									//else {//2023/10/16_1 Q2EulXYZusingQ()にて　IK時にbefeul.currentframeeulを使用することにしたので不用に
+									//	//2023/10/12
+									//	//applyframeにも　オイラー角の計算は必要
+									//	//ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
+									//	//neweul = parentbone->CalcLocalEulXYZ(limitdegflag, -1, m_curmotinfo->motid, curframe, BEFEUL_BEFFRAME);
+									//	//parentbone->SetLocalEul(limitdegflag, m_curmotinfo->motid, curframe, neweul, 0);
+									//	
+									//	//2023/10/16
+									//	// applyframeで急激に値が変わるとカーブが想定と違うことがあるので　計算済を徐々にトレースしながら
+									//	parentbone->SetWorldMat(limitdegflag, m_curmotinfo->motid, curframe, currotrec.applyframemat, 0);
+									//	ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
+									//	neweul = parentbone->CalcLocalEulXYZ(limitdegflag, -1, m_curmotinfo->motid, curframe, BEFEUL_BEFFRAME);
+									//	parentbone->SetLocalEul(limitdegflag, m_curmotinfo->motid, curframe, neweul, 0);
+									//}
 								}
 								keyno++;
 							}
@@ -11547,6 +11558,11 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 	if ((calccnt == (calcnum - 1)) && g_absikflag && lastpar) {
 		AdjustBoneTra(limitdegflag, erptr, lastpar);
 	}
+
+
+	//2023/10/16_1 PostIKをframe単位のマルチスレッド化する準備として　Q2Eulをcurrentframeで計算し　後処理として次のModifyEulerでbefframe参照
+	ModifyEuler360Req(limitdegflag, lastpar, m_curmotinfo->motid, startframe, endframe);
+
 
 	//g_underIKRot = false;//2023/01/14 parent limited or not
 	if (editboneforret)
@@ -13938,6 +13954,10 @@ int CModel::RigControlPostRig(bool limitdegflag, int depthcnt,
 		}
 	}
 
+	//2023/10/16_1 PostIKをframe単位のマルチスレッド化する準備として　Q2Eulをcurrentframeで計算し　後処理として次のModifyEulerでbefframe参照
+	ModifyEuler360Req(limitdegflag, lastbone, m_curmotinfo->motid, startframe, endframe);
+
+
 	if (lastbone) {
 		return lastbone->GetBoneNo();
 	}
@@ -14760,6 +14780,8 @@ int CModel::IKRotateAxisDeltaUnderIK(
 
 				////parentboneのrotqを保存
 				IKROTREC currotrec;
+				currotrec.applyframemat = aplybone->GetWorldMat(limitdegflag, m_curmotinfo->motid, applyframe, 0);
+				currotrec.applyframeeul = aplybone->GetLocalEul(limitdegflag, m_curmotinfo->motid, applyframe, 0);
 				currotrec.rotq = localq;
 				currotrec.targetpos = ChaVector3(0.0f, 0.0f, 0.0f);
 				currotrec.lessthanthflag = false;
@@ -14769,6 +14791,8 @@ int CModel::IKRotateAxisDeltaUnderIK(
 				//rotqの回転角度が1e-4より小さい場合
 				//ウェイトが小さいフレームにおいても　IKTargetが走るように記録する必要がある
 				IKROTREC currotrec;
+				currotrec.applyframemat = aplybone->GetWorldMat(limitdegflag, m_curmotinfo->motid, applyframe, 0);
+				currotrec.applyframeeul = aplybone->GetLocalEul(limitdegflag, m_curmotinfo->motid, applyframe, 0);
 				currotrec.rotq = localq;
 				currotrec.targetpos = ChaVector3(0.0f, 0.0f, 0.0f);
 				currotrec.lessthanthflag = true;//!!!!!!!!!!!
@@ -14844,6 +14868,7 @@ int CModel::IKRotateAxisDeltaPostIK(
 	CBone* firstbone = curbone;
 	CBone* parentbone = 0;
 	CBone* lastbone = 0;
+	CBone* lastaplybone = 0;
 	//CBone* topbone = GetTopBone();
 	CBone* editboneforret = 0;
 	if (firstbone->GetParent(false)) {
@@ -14936,13 +14961,21 @@ int CModel::IKRotateAxisDeltaPostIK(
 										curframe, startframe, applyframe,
 										localq, keynum1flag, postflag, fromiktarget);
 								}
-								else {
-									//2023/10/12
-									//applyframeにも　オイラー角の計算は必要
-									ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
-									neweul = aplybone->CalcLocalEulXYZ(limitdegflag, -1, m_curmotinfo->motid, curframe, BEFEUL_BEFFRAME);
-									aplybone->SetLocalEul(limitdegflag, m_curmotinfo->motid, curframe, neweul, 0);
-								}
+								//else {//2023/10/16_1 Q2EulXYZusingQ()にて　IK時にbefeul.currentframeeulを使用することにしたので不用に
+								//	//2023/10/12
+								//	//applyframeにも　オイラー角の計算は必要
+								//	//ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
+								//	//neweul = aplybone->CalcLocalEulXYZ(limitdegflag, -1, m_curmotinfo->motid, curframe, BEFEUL_BEFFRAME);
+								//	//aplybone->SetLocalEul(limitdegflag, m_curmotinfo->motid, curframe, neweul, 0);
+
+								//	//2023/10/16
+								//	// applyframeで急激に値が変わるとカーブが想定と違うことがあるので　計算済を徐々にトレースしながら
+								//	aplybone->SetWorldMat(limitdegflag, m_curmotinfo->motid, curframe, currotrec.applyframemat, 0);
+								//	ChaVector3 neweul = ChaVector3(0.0f, 0.0f, 0.0f);
+								//	neweul = aplybone->CalcLocalEulXYZ(limitdegflag, -1, m_curmotinfo->motid, curframe, BEFEUL_BEFFRAME);
+								//	aplybone->SetLocalEul(limitdegflag, m_curmotinfo->motid, curframe, neweul, 0);
+
+								//}
 								keyno++;
 							}
 						}
@@ -14961,6 +14994,8 @@ int CModel::IKRotateAxisDeltaPostIK(
 				}
 			}
 			
+			lastaplybone = aplybone;
+
 			if (aplybone) {
 				//check ikstopflag
 				if (aplybone->GetIKStopFlag()) {
@@ -15001,8 +15036,9 @@ int CModel::IKRotateAxisDeltaPostIK(
 	if ((calccnt == (calcnum - 1)) && g_absikflag && lastbone) {
 		AdjustBoneTra(limitdegflag, erptr, lastbone);
 	}
-	
 
+	//2023/10/16_1 PostIKをframe単位のマルチスレッド化する準備として　Q2Eulをcurrentframeで計算し　後処理として次のModifyEulerでbefframe参照
+	ModifyEuler360Req(limitdegflag, lastaplybone, m_curmotinfo->motid, startframe, endframe);
 
 	//g_underIKRot = false;//2023/01/14 parent limited or not
 	if (editboneforret) {
@@ -18826,5 +18862,35 @@ int CModel::SetLaterTransparentVec(std::vector<std::wstring> srclatervec)
 
 	return 0;
 }
+
+void CModel::ModifyEuler360Req(int limitdegflag, CBone* srcbone, int srcmotid, double startframe, double endframe)
+{
+	if (srcbone) {
+
+		if (srcbone->IsSkeleton()) {
+			double curframe;
+			for (curframe = startframe; curframe <= endframe; curframe += 1.0) {
+				if (curframe >= 1.01) {
+					double befframe;
+					befframe = curframe - 1.0;
+
+					ChaVector3 befeul = srcbone->GetLocalEul(limitdegflag, srcmotid, befframe, 0);
+					ChaVector3 cureul = srcbone->GetLocalEul(limitdegflag, srcmotid, curframe, 0);
+					ChaModifyEuler360(&cureul, &befeul, 0, 180.0f, 180.0f, 180.0f);
+					srcbone->SetLocalEul(limitdegflag, srcmotid, curframe, cureul, 0);
+				}
+			}
+		}
+
+		if (srcbone->GetChild(false)) {
+			ModifyEuler360Req(limitdegflag, srcbone->GetChild(false), srcmotid, startframe, endframe);
+		}
+		if (srcbone->GetBrother(false)) {
+			ModifyEuler360Req(limitdegflag, srcbone->GetBrother(false), srcmotid, startframe, endframe);
+		}
+	}
+
+}
+
 
 

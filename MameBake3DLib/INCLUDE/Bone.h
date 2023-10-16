@@ -40,10 +40,20 @@ typedef struct tag_ikrotrec
 	//ウェイトが小さいフレームにおいても　IKTargetが走るように記録する必要がある
 	bool lessthanthflag;
 
-	tag_ikrotrec() {
+	ChaMatrix applyframemat;
+	ChaVector3 applyframeeul;
+
+	void Init() {
 		targetpos = ChaVector3(0.0f, 0.0f, 0.0f);
 		rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 		lessthanthflag = true;
+		
+		applyframemat.SetIdentity();
+		applyframeeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	}
+
+	tag_ikrotrec() {
+		Init();
 	};
 }IKROTREC;
 

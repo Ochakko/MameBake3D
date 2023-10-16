@@ -3739,7 +3739,7 @@ int CQuaternion::Q2EulXYZusingMat(int rotorder, CQuaternion* axisq, ChaVector3 b
 	Euler.x = (float)(x * 180.0 / PAI);
 	Euler.y = (float)(y * 180.0 / PAI);
 	Euler.z = (float)(z * 180.0 / PAI);
-	ModifyEuler360(&Euler, &befeul, notmodify180flag);
+	ChaModifyEuler360(&Euler, &befeul, notmodify180flag, 91.0f, 180.0f, 180.0f);
 
 
 	*reteul = Euler;
@@ -3826,7 +3826,8 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* r
 		//}
 
 		//thdeg = 140.0f;
-		thdeg = 90.0f;
+		//thdeg = 90.0f;
+		thdeg = 91.0f;
 
 	}
 	else {
@@ -3836,9 +3837,17 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* r
 		thdeg = 165.0f;
 	}
 
+	//2023/10/16
+	//GetRound()では　180度以上のずれを１回転で補正していた
+	//ChaGetRoundThreshold()では　１回転よりどれだけ小さい角度で一回転とみなすか(使う側で足すのは３６０度単位なので姿勢は変わらない)を指定する(軸ごとに)
+	float throundX = 91.0f;
+	float throundY = 180.0f;
+	float throundZ = 180.0f;
+
 
 	ChaVector3 validbefeul;//2023/10/14
-	if (g_underIKRotApplyFrame == true) {
+	//if (g_underIKRotApplyFrame == true) {//2023/10/14
+	if (g_underIKRot == true) {//2023/10/16 IK処理のframe単位のマルチスレッド化の準備としてcurrentframeで計算　後処理でbefframeで計算
 		validbefeul = befeul.currentframeeul;
 	}
 	else {
@@ -3868,10 +3877,10 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* r
 
 	{
 		if (Euler.z >= 0.0f) {
-			tmpZ0 = Euler.z + 360.0f * this->GetRound((validbefeul.z - Euler.z) / 360.0f);//オーバー１８０度
+			tmpZ0 = Euler.z + 360.0f * ChaGetRoundThreshold((validbefeul.z - Euler.z) / 360.0f, throundZ);//オーバー１８０度
 		}
 		else {
-			tmpZ0 = Euler.z - 360.0f * this->GetRound((Euler.z - validbefeul.z) / 360.0f);//オーバー１８０度
+			tmpZ0 = Euler.z - 360.0f * ChaGetRoundThreshold((Euler.z - validbefeul.z) / 360.0f, throundZ);//オーバー１８０度
 		}
 		tmpZ1 = tmpZ0;
 		//if (g_underIKRot == false) {//<--コメントアウトをはずすと　bvh144のリターゲットの太ももが変になる
@@ -3924,10 +3933,10 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* r
 	{
 
 		if (Euler.y >= 0.0f) {
-			tmpY0 = Euler.y + 360.0f * this->GetRound((validbefeul.y - Euler.y) / 360.0f);//オーバー１８０度
+			tmpY0 = Euler.y + 360.0f * ChaGetRoundThreshold((validbefeul.y - Euler.y) / 360.0f, throundY);//オーバー１８０度
 		}
 		else {
-			tmpY0 = Euler.y - 360.0f * this->GetRound((Euler.y - validbefeul.y) / 360.0f);//オーバー１８０度
+			tmpY0 = Euler.y - 360.0f * ChaGetRoundThreshold((Euler.y - validbefeul.y) / 360.0f, throundY);//オーバー１８０度
 		}
 		tmpY1 = tmpY0;
 		//if (g_underIKRot == false) {//<--コメントアウトをはずすと　bvh144のリターゲットの太ももが変になる
@@ -3981,12 +3990,12 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* r
 
 	{
 		if (Euler.x >= 0.0f) {
-			tmpX0 = Euler.x + 360.0f * this->GetRound((validbefeul.x - Euler.x) / 360.0f);//オーバー１８０度
+			tmpX0 = Euler.x + 360.0f * ChaGetRoundThreshold((validbefeul.x - Euler.x) / 360.0f, throundX);//オーバー１８０度
 		}
 		else {
-			tmpX0 = Euler.x - 360.0f * this->GetRound((Euler.x - validbefeul.x) / 360.0f);//オーバー１８０度
+			tmpX0 = Euler.x - 360.0f * ChaGetRoundThreshold((Euler.x - validbefeul.x) / 360.0f, throundX);//オーバー１８０度
 		}
-
+	
 		//2023/02/15
 		//X軸の角度を180度補正しても　後続の軸が無いので　他の軸の計算に反映出来ない
 		//しかし　補正を取り除いてしまうと　リターゲット結果がおかしいことがあるbvh121
@@ -4072,6 +4081,14 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* r
 	//	ModifyEuler360(&Euler, &befeul, notmodify180flag);
 	//}
 	
+
+
+	//if (g_underIKRot == true) {
+	//	ModifyEuler360(&Euler, &(befeul.befframeeul), notmodify180flag, 180.0f, 180.0f, 180.0f);
+	//}
+
+
+
 	*reteul = Euler;
 
 	return 0;
@@ -4281,99 +4298,6 @@ BOOL IsValidNewEul(ChaVector3 srcneweul, ChaVector3 srcbefeul)
 	return TRUE;
 }
 
-
-int CQuaternion::ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notmodify180flag)
-{
-	//#########################################################
-	// 2022/12/04
-	//+-180dgreeに制限せずに　オイラー角を連続させるための関数
-	//#########################################################
-
-	//###########################################################################################
-	//2023/02/04
-	//当たり前のことだが　XYZEul(180, 0, 180)とXYZEul(0, 0, 0)は違う姿勢
-	//360度のプラスマイナスは有りだが　180度のプラスマイナスは　違う姿勢にすること
-	//ノイズ対策として+-180度は有り得るが
-	//同じ姿勢の別表現としての+-180度は　XYZEul(0, 180, 0)をXYZEul(180, 0, 180)にする以外に思いつかない
-	//360のプラスマイナスに戻して　後処理として補正を行う
-	//###########################################################################################
-
-
-	float tmpX0, tmpY0, tmpZ0;
-	if (notmodify180flag == 0) {
-		if (eulerA->x >= 0.0f) {
-			tmpX0 = eulerA->x + 360.0f * this->GetRound((eulerB->x - eulerA->x) / 360.0f);
-		}
-		else {
-			tmpX0 = eulerA->x - 360.0f * this->GetRound((eulerA->x - eulerB->x) / 360.0f);
-		}
-		if (eulerA->y >= 0.0f) {
-			tmpY0 = eulerA->y + 360.0f * this->GetRound((eulerB->y - eulerA->y) / 360.0f);
-		}
-		else {
-			tmpY0 = eulerA->y - 360.0f * this->GetRound((eulerA->y - eulerB->y) / 360.0f);
-		}
-		if (eulerA->z >= 0.0f) {
-			tmpZ0 = eulerA->z + 360.0f * this->GetRound((eulerB->z - eulerA->z) / 360.0f);
-		}
-		else {
-			tmpZ0 = eulerA->z - 360.0f * this->GetRound((eulerA->z - eulerB->z) / 360.0f);
-		}
-		
-		//角度変化の大きさ
-		double s0 = ((double)eulerB->x - eulerA->x) * ((double)eulerB->x - eulerA->x) + 
-					((double)eulerB->y - eulerA->y) * ((double)eulerB->y - eulerA->y) + 
-					((double)eulerB->z - eulerA->z) * ((double)eulerB->z - eulerA->z);
-		double s1 = ((double)eulerB->x - tmpX0) * ((double)eulerB->x - tmpX0) + 
-					((double)eulerB->y - tmpY0) * ((double)eulerB->y - tmpY0) + 
-					((double)eulerB->z - tmpZ0) * ((double)eulerB->z - tmpZ0);
-
-		if (s0 <= s1) {
-			//そのまま
-		}
-		else {
-			eulerA->x = tmpX0;
-			eulerA->y = tmpY0;
-			eulerA->z = tmpZ0;
-		}
-
-	}
-	else {
-		//そのまま
-	}
-
-	////############################################################################################
-	////Q2EulXYZにaxisqを指定して呼び出した場合
-	////invaxisq * *this * axisqによって　１８０度分オイラー角が回転することがあるので対策
-	//// ただし　befframeが0フレームの場合には　１８０度分回転チェックはしない(１８０度回転を許す)
-	////############################################################################################
-	//if (notmodify180flag == 0) {
-	//	float thdeg = 165.0f;
-	//	if ((tmpX0 - eulerB->x) >= thdeg) {
-	//		tmpX0 -= 180.0f;
-	//	}
-	//	if ((eulerB->x - tmpX0) >= thdeg) {
-	//		tmpX0 += 180.0f;
-	//	}
-
-	//	if ((tmpY0 - eulerB->y) >= thdeg) {
-	//		tmpY0 -= 180.0f;
-	//	}
-	//	if ((eulerB->y - tmpY0) >= thdeg) {
-	//		tmpY0 += 180.0f;
-	//	}
-
-	//	if ((tmpZ0 - eulerB->z) >= thdeg) {
-	//		tmpZ0 -= 180.0f;
-	//	}
-	//	if ((eulerB->z - tmpZ0) >= thdeg) {
-	//		tmpZ0 += 180.0f;
-	//	}
-	//}
-
-
-	return 0;
-}
 
 
 int CQuaternion::ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfirstbone, int isendbone, int notmodifyflag)
@@ -4585,6 +4509,9 @@ int CQuaternion::GetRound(float srcval)
 	//}
 
 }
+
+
+
 //
 int CQuaternion::CalcFBXEulXYZ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag)
 {
@@ -5229,6 +5156,124 @@ double ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* psrc2)
 
 	return retval;
 }
+
+int ChaGetRoundThreshold(float srcval, float degth)
+{
+	//GetRound()では　180度以上のずれを１回転で補正していた
+	//ChaGetRoundThreshold()では　１回転よりどれだけ小さい角度で一回転とみなすか(使う側で足すのは３６０度単位なので姿勢は変わらない)を指定する(軸ごとに)
+
+	float th360;
+	th360 = degth / 360.0f;
+
+	if (srcval > 0.0f) {
+		return (int)(srcval + th360);
+	}
+	else {
+		return (int)(srcval - th360);
+	}
+
+}
+
+
+int ChaModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notmodify180flag, float throundX, float throundY, float throundZ)
+{
+	//#########################################################
+	// 2022/12/04
+	//+-180dgreeに制限せずに　オイラー角を連続させるための関数
+	//#########################################################
+
+	//###########################################################################################
+	//2023/02/04
+	//当たり前のことだが　XYZEul(180, 0, 180)とXYZEul(0, 0, 0)は違う姿勢
+	//360度のプラスマイナスは有りだが　180度のプラスマイナスは　違う姿勢にすること
+	//ノイズ対策として+-180度は有り得るが
+	//同じ姿勢の別表現としての+-180度は　XYZEul(0, 180, 0)をXYZEul(180, 0, 180)にする以外に思いつかない
+	//360のプラスマイナスに戻して　後処理として補正を行う
+	//###########################################################################################
+
+
+	float tmpX0, tmpY0, tmpZ0;
+	if (notmodify180flag == 0) {
+		if (eulerA->x >= 0.0f) {
+			tmpX0 = eulerA->x + 360.0f * ChaGetRoundThreshold((eulerB->x - eulerA->x) / 360.0f, throundX);
+		}
+		else {
+			tmpX0 = eulerA->x - 360.0f * ChaGetRoundThreshold((eulerA->x - eulerB->x) / 360.0f, throundX);
+		}
+		if (eulerA->y >= 0.0f) {
+			tmpY0 = eulerA->y + 360.0f * ChaGetRoundThreshold((eulerB->y - eulerA->y) / 360.0f, throundY);
+		}
+		else {
+			tmpY0 = eulerA->y - 360.0f * ChaGetRoundThreshold((eulerA->y - eulerB->y) / 360.0f, throundY);
+		}
+		if (eulerA->z >= 0.0f) {
+			tmpZ0 = eulerA->z + 360.0f * ChaGetRoundThreshold((eulerB->z - eulerA->z) / 360.0f, throundZ);
+		}
+		else {
+			tmpZ0 = eulerA->z - 360.0f * ChaGetRoundThreshold((eulerA->z - eulerB->z) / 360.0f, throundZ);
+		}
+
+
+		////角度変化の大きさ
+		//double s0 = ((double)eulerB->x - eulerA->x) * ((double)eulerB->x - eulerA->x) +
+		//	((double)eulerB->y - eulerA->y) * ((double)eulerB->y - eulerA->y) +
+		//	((double)eulerB->z - eulerA->z) * ((double)eulerB->z - eulerA->z);
+		//double s1 = ((double)eulerB->x - tmpX0) * ((double)eulerB->x - tmpX0) +
+		//	((double)eulerB->y - tmpY0) * ((double)eulerB->y - tmpY0) +
+		//	((double)eulerB->z - tmpZ0) * ((double)eulerB->z - tmpZ0);
+		//
+		//if (s0 <= s1) {
+		//	//そのまま
+		//}
+		//else {
+		//	eulerA->x = tmpX0;
+		//	eulerA->y = tmpY0;
+		//	eulerA->z = tmpZ0;
+		//}
+
+		eulerA->x = tmpX0;
+		eulerA->y = tmpY0;
+		eulerA->z = tmpZ0;
+
+	}
+	else {
+		//そのまま
+	}
+
+	////############################################################################################
+	////Q2EulXYZにaxisqを指定して呼び出した場合
+	////invaxisq * *this * axisqによって　１８０度分オイラー角が回転することがあるので対策
+	//// ただし　befframeが0フレームの場合には　１８０度分回転チェックはしない(１８０度回転を許す)
+	////############################################################################################
+	//if (notmodify180flag == 0) {
+	//	float thdeg = 165.0f;
+	//	if ((tmpX0 - eulerB->x) >= thdeg) {
+	//		tmpX0 -= 180.0f;
+	//	}
+	//	if ((eulerB->x - tmpX0) >= thdeg) {
+	//		tmpX0 += 180.0f;
+	//	}
+
+	//	if ((tmpY0 - eulerB->y) >= thdeg) {
+	//		tmpY0 -= 180.0f;
+	//	}
+	//	if ((eulerB->y - tmpY0) >= thdeg) {
+	//		tmpY0 += 180.0f;
+	//	}
+
+	//	if ((tmpZ0 - eulerB->z) >= thdeg) {
+	//		tmpZ0 -= 180.0f;
+	//	}
+	//	if ((eulerB->z - tmpZ0) >= thdeg) {
+	//		tmpZ0 += 180.0f;
+	//	}
+	//}
+
+
+	return 0;
+
+}
+
 
 
 //double ChaVector3LengthDbl(ChaVector3* v)

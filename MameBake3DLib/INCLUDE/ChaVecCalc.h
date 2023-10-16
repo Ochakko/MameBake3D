@@ -445,7 +445,9 @@ public:
 	//inout : srcdstq
 	int InOrder(CQuaternion* srcdstq);
 
-	int ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notmodify180flag);
+	//ChaModifyEuler360へ
+	//int ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notmodify180flag, float throundX, float throundY, float throundZ);
+	
 	int ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfirstbone, int isendbone, int notmodifyflag);
 
 private:
@@ -460,6 +462,9 @@ private:
 	//int ModifyEuler(ChaVector3* eulerA, ChaVector3* eulerB);
 	//int ModifyEulerXYZ(ChaVector3* eulerA, ChaVector3* eulerB, int isfirstbone, int isendbone, int notmodifyflag);//publicに移動
 	int GetRound(float srcval);
+
+	//ChaGetRoundThreshold()へ
+	//int GetRoundThreshold(float srcval, float degth);
 
 	float QuaternionLimitPhai(float srcphai);
 	double QuaternionLimitPhai(double srcphai);
@@ -478,6 +483,12 @@ ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat);
 
 double ChaVector3LengthDbl(ChaVector3* psrc);
 double ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* psrc2);
+
+
+//以下２つ　CQuaternionの外に出したが　計算用クラスのメンバ関数にする予定　（マルチスレッド準備）
+int ChaModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notmodify180flag, float throundX, float throundY, float throundZ);
+int ChaGetRoundThreshold(float srcval, float degth);
+
 
 //float ChaVector3LengthDbl(ChaVector3* psrc);
 void ChaVector3Normalize(ChaVector3* pdst, const ChaVector3* psrc);
@@ -569,6 +580,9 @@ extern ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat);
 
 extern double ChaVector3LengthDbl(ChaVector3* psrc);
 extern double ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* psrc2);
+
+extern int ChaModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notmodify180flag, float throundX, float throundY, float throundZ);
+extern int GetRoundThreshold(float srcval, float degth);
 
 //extern float ChaVector3LengthDbl(ChaVector3* psrc);
 extern void ChaVector3Normalize(ChaVector3* pdst, const ChaVector3* psrc);

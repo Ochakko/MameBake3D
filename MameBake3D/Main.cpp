@@ -20342,7 +20342,7 @@ int SetConvBone(int cbno)
 	//				s_convbonemap[modelbone] = 0;
 	//			}
 	//			s_bvhbone[cbno]->setName(L"NotSet");
-
+	//
 	//			swprintf_s(strmes, 1024, L"convbone : sel bvh bone : curbone NULL !!!");
 	//			::DSMessageBox(NULL, strmes, L"check", MB_OK);
 	//		}
@@ -20350,7 +20350,7 @@ int SetConvBone(int cbno)
 	//			swprintf_s(strmes, 1024, L"%s", curbone->GetWBoneName());
 	//			s_bvhbone[cbno]->setName(strmes);
 	//			s_bvhbone_bone[cbno] = curbone;
-
+	//
 	//			CBone* modelbone = s_modelbone_bone[cbno];
 	//			if (modelbone){
 	//				s_convbonemap[modelbone] = curbone;
