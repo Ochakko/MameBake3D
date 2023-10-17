@@ -5638,7 +5638,7 @@ int ChaCalcFunc::IKTargetVec(CModel* srcmodel, bool limitdegflag, CEditRange* er
 			const int calccountmax = 30;
 			for (calccount = 0; calccount < calccountmax; calccount++) {
 				int maxlevel = 0;
-				IKRotateForIKTarget(srcmodel, limitdegflag, erptr, srcmotid, srcbone->GetBoneNo(),
+				IKRotateForIKTarget(srcmodel, limitdegflag, erptr, srcbone->GetBoneNo(), srcmotid,
 					iktargetpos, maxlevel, srcframe, postflag);
 			}
 		}
