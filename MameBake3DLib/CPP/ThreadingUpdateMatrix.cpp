@@ -95,10 +95,11 @@ int CThreadingUpdateMatrix::ThreadFunc()
 
 					if (m_model && (m_model->GetInView() == true)) {
 						//EnterCriticalSection(&m_CritSection);//再入防止 呼び出し側で処理終了を待つので不要
-						if ((m_bonenum >= 0) || (m_bonenum <= MAXBONEUPDATE)) {
+						if (!m_bonevec.empty()) {
+							int bonenum = (int)m_bonevec.size();
 							int bonecount;
-							for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
-								CBone* curbone = m_bonelist[bonecount];
+							for (bonecount = 0; bonecount < bonenum; bonecount++) {
+								CBone* curbone = m_bonevec[bonecount];
 								if (curbone) {
 									bool callingbythread = true;
 									curbone->UpdateMatrix(m_limitdegflag, motid, frame, &wmat, &vpmat, callingbythread);
@@ -144,11 +145,11 @@ int CThreadingUpdateMatrix::ThreadFunc()
 				{
 					if (m_model && (m_model->GetInView() == true)) {
 						EnterCriticalSection(&m_CritSection);
-						if ((m_bonenum >= 0) || (m_bonenum <= MAXBONEUPDATE)) {
-
+						if (!m_bonevec.empty()) {
+							int bonenum = (int)m_bonevec.size();
 							int bonecount;
-							for (bonecount = 0; bonecount < m_bonenum; bonecount++) {
-								CBone* curbone = m_bonelist[bonecount];
+							for (bonecount = 0; bonecount < bonenum; bonecount++) {
+								CBone* curbone = m_bonevec[bonecount];
 								if (curbone) {
 									bool callingbythread = true;
 									curbone->UpdateMatrix(m_limitdegflag, motid, frame, &wmat, &vpmat, callingbythread);
@@ -190,8 +191,7 @@ int CThreadingUpdateMatrix::ThreadFunc()
 
 int CThreadingUpdateMatrix::ClearBoneList()
 {
-	m_bonenum = 0;
-	ZeroMemory(m_bonelist, sizeof(CBone*) * MAXBONEUPDATE);
+	m_bonevec.clear();
 
 	return 0;
 }
@@ -200,23 +200,17 @@ int CThreadingUpdateMatrix::SetModel(CModel* srcmodel)
 	m_model = srcmodel;
 	return 0;
 }
-int CThreadingUpdateMatrix::SetBoneList(int srcindex, CBone* srcbone)
+int CThreadingUpdateMatrix::AddBoneList(CBone* srcbone)
 {
-	if ((srcindex < 0) || (srcindex >= MAXBONEUPDATE)) {
-		_ASSERT(0);
-		return -1;
+	if (srcbone) {
+		m_bonevec.push_back(srcbone);
+		return 0;
 	}
-
-	if (srcindex != m_bonenum) {
+	else {
 		_ASSERT(0);
-		return -1;
+		return 1;
 	}
-
-	m_bonelist[srcindex] = srcbone;
-
-	m_bonenum++;
-
-	return m_bonenum;
+	//return m_bonevec.size();
 }
 
 void CThreadingUpdateMatrix::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix* srcwmat, ChaMatrix* srcvpmat)
@@ -234,7 +228,7 @@ void CThreadingUpdateMatrix::UpdateMatrix(bool limitdegflag, int srcmotid, doubl
 	//## g_limitdegflag == true　の場合にはローカルの計算だけ並列化
 	//####################################################################
 
-	if (m_bonenum > 0) {
+	if (!m_bonevec.empty()) {
 		EnterCriticalSection(&m_CritSection);
 		motid = srcmotid;
 		frame = srcframe;

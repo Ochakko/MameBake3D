@@ -4844,24 +4844,36 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 	getbychain = onaddmotion;
 
 
+	//if (getbychain == false) {
+	//	//get by indexed のフラグ指定の場合にもindexedの準備が出来ていない場合はget by chainで取得する
+	//	if (srcbone->GetInitIndexedMotionPointSize() <= srcmotid) {//エントリーがまだ無いとき
+	//		getbychain = true;
+	//	}
+	//	else {
+	//		getbychain = srcbone->ExistInitIndexedMotionPoint(srcmotid);
+	//	}
+	//}
+	//if (getbychain == false) {
+	//	//indexのframe長のチェック
+	//	mpmapleng = srcbone->GetIndexedMotionPointFrameLeng(srcmotid);
+	//	if ((mpmapleng <= 0) || (curframeindex >= mpmapleng)) {// ##### 2023/10/17_1  "&&" になっていた #####
+	//		getbychain = true;
+	//	}
+	//}
+
+
+	std::vector<CMotionPoint*> mpvec;
+	mpvec.clear();
+	srcbone->GetIndexedMotionPointVec(srcmotid, mpvec);
 	if (getbychain == false) {
-
-		//get by indexed のフラグ指定の場合にもindexedの準備が出来ていない場合はget by chainで取得する
-
-		if (srcbone->GetInitIndexedMotionPointSize() <= srcmotid) {//エントリーがまだ無いとき
+		if (mpvec.empty()) {
 			getbychain = true;
 		}
 		else {
-			getbychain = srcbone->ExistInitIndexedMotionPoint(srcmotid);
-		}
-	}
-
-	if (getbychain == false) {
-		//indexのframe長のチェック
-
-		mpmapleng = srcbone->GetInitIndexedMotionPointFrameLeng(srcmotid);
-		if ((mpmapleng <= 0) && (curframeindex >= mpmapleng)) {
-			getbychain = true;
+			mpmapleng = (int)mpvec.size();
+			if ((mpmapleng <= 0) || (curframeindex >= mpmapleng)) {
+				getbychain = true;
+			}
 		}
 	}
 
@@ -4934,12 +4946,15 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 
 		//CMotionPoint* testmp = (itrvecmpmap->second)[curframeindex];
 
+
 		if (curframeindex < mpmapleng) {
-			*ppbef = srcbone->GetInitIndexedMotionPoint(srcmotid, curframeindex);
+			//*ppbef = srcbone->GetIndexedMotionPoint(srcmotid, curframeindex);
+			*ppbef = mpvec[curframeindex];
 		}
 		else {
 			if (mpmapleng >= 1) {
-				*ppbef = srcbone->GetInitIndexedMotionPoint(srcmotid, mpmapleng - 1);
+				//*ppbef = srcbone->GetIndexedMotionPoint(srcmotid, mpmapleng - 1);
+				*ppbef = mpvec[mpmapleng - 1];
 			}
 			else {
 				*ppbef = 0;
@@ -4965,11 +4980,13 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 
 
 			if (nextframeindex < mpmapleng) {
-				*ppnext = srcbone->GetInitIndexedMotionPoint(srcmotid, nextframeindex);
+				//*ppnext = srcbone->GetIndexedMotionPoint(srcmotid, nextframeindex);
+				*ppnext = mpvec[nextframeindex];
 			}
 			else {
 				if (mpmapleng >= 1) {
-					*ppnext = srcbone->GetInitIndexedMotionPoint(srcmotid, mpmapleng - 1);
+					//*ppnext = srcbone->GetIndexedMotionPoint(srcmotid, mpmapleng - 1);
+					*ppnext = mpvec[mpmapleng - 1];
 				}
 				else {
 					*ppnext = 0;

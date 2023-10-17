@@ -5,11 +5,12 @@
 #include <ThreadingBase.h>
 #include <ChaVecCalc.h>
 
+#include <vector>
 
 //ÉXÉåÉbÉhÇPÇ¬ÇÃèÍçáÇ‡Ç†ÇÈÇÃÇ≈512Ç‹Ç≈Ç…ÇµÇΩ
 //#define MAXBONEUPDATE	256
 //#define MAXBONEUPDATE	512
-#define MAXBONEUPDATE	1024
+//#define MAXBONEUPDATE	1024
 
 class CModel;
 class CBone;
@@ -26,7 +27,7 @@ public:
 
 	int ClearBoneList();
 	int SetModel(CModel* srcmodel);
-	int SetBoneList(int srcindex, CBone* srcbone);
+	int AddBoneList(CBone* srcbone);
 	void UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
 	//bool IsFinished();
 
@@ -45,8 +46,9 @@ private:
 	//LONG m_start_state;
 	CModel* m_model;
 
-	int m_bonenum;
-	CBone* m_bonelist[MAXBONEUPDATE];
+	//int m_bonenum;
+	//CBone* m_bonelist[MAXBONEUPDATE];
+	std::vector<CBone*> m_bonevec;
 
 	int motid;
 	double frame;

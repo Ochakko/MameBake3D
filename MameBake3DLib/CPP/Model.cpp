@@ -17277,7 +17277,7 @@ int CModel::CreateBoneUpdateMatrix()
 		if (curbone && (curbone->IsSkeleton() || curbone->IsCamera())) {
 			CThreadingUpdateMatrix* curupdate = m_boneupdatematrix + threadcount;
 
-			curupdate->SetBoneList(bonenointhread, curbone);
+			curupdate->AddBoneList(curbone);
 
 			//threadcount++;
 			//threadcount = (threadcount % g_UpdateMatrixThreads);

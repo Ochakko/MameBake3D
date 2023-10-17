@@ -8828,22 +8828,24 @@ void s_dummyfunc()
 
 					//vert endedge
 					edgeindex = endedge;
-					if ((edgeindex >= 0) && (edgeindex < key.size())) {
-						keytime = key[edgeindex]->time;
-						ey0 = (int)((parent->maxeul - key[edgeindex]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
-						ey1 = ey0 + DOT_SIZE_Y;
-						ex0 = (int)((keytime - startTime) * timeSize) + x1;
-						ex1 = ex0 + DOT_SIZE_X;
-						if (ex0 >= x1) {
-							//MoveToEx(hdcM->hDC, ex0, y0, NULL);
-							//MoveToEx(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, (parent->LABEL_SIZE_Y * 2), NULL);
-							if (g_4kresolution) {
-								MoveToEx(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, (parent->LABEL_SIZE_Y * 4), NULL);
+					if (startedge != endedge) {//2023/10/17 1フレーム長選択時にはendedgeの垂直線は描かない
+						if ((edgeindex >= 0) && (edgeindex < key.size())) {
+							keytime = key[edgeindex]->time;
+							ey0 = (int)((parent->maxeul - key[edgeindex]->value) / eulrange * ((double)y1 - (double)y0) + (double)y2);
+							ey1 = ey0 + DOT_SIZE_Y;
+							ex0 = (int)((keytime - startTime) * timeSize) + x1;
+							ex1 = ex0 + DOT_SIZE_X;
+							if (ex0 >= x1) {
+								//MoveToEx(hdcM->hDC, ex0, y0, NULL);
+								//MoveToEx(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, (parent->LABEL_SIZE_Y * 2), NULL);
+								if (g_4kresolution) {
+									MoveToEx(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, (parent->LABEL_SIZE_Y * 4), NULL);
+								}
+								else {
+									MoveToEx(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, (parent->LABEL_SIZE_Y * 3), NULL);
+								}
+								LineTo(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, y1);
 							}
-							else {
-								MoveToEx(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, (parent->LABEL_SIZE_Y * 3), NULL);
-							}							
-							LineTo(hdcM->hDC, ex0 + AXIS_CURSOR_SIZE * 2, y1);
 						}
 					}
 				}

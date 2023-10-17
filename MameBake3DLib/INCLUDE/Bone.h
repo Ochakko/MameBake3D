@@ -739,7 +739,7 @@ public: //accesser
 		}
 		return getbychain;
 	}
-	int GetInitIndexedMotionPointFrameLeng(int srcmotid)
+	int GetIndexedMotionPointFrameLeng(int srcmotid)
 	{
 		int mpmapleng = 0;
 		std::map<int, std::vector<CMotionPoint*>>::iterator itrvecmpmap;
@@ -753,7 +753,20 @@ public: //accesser
 		}
 		return mpmapleng;
 	}
-	CMotionPoint* GetInitIndexedMotionPoint(int srcmotid, int srcframeindex)
+
+	void GetIndexedMotionPointVec(int srcmotid, std::vector<CMotionPoint*>& dstvec)
+	{
+		std::map<int, std::vector<CMotionPoint*>>::iterator itrvecmpmap;
+		itrvecmpmap = m_indexedmotionpoint.find(srcmotid);
+		if (itrvecmpmap == m_indexedmotionpoint.end()) {
+			dstvec.clear();
+		}
+		else {
+			dstvec = itrvecmpmap->second;
+		}
+	}
+
+	CMotionPoint* GetIndexedMotionPoint(int srcmotid, int srcframeindex)
 	{
 		CMotionPoint* retmp = 0;
 		std::map<int, std::vector<CMotionPoint*>>::iterator itrvecmpmap;

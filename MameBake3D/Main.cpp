@@ -10257,7 +10257,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		//ReleaseCapture();
 
 
-
+		bool ikdoneflag = false;
 		int ikframenum = 0;
 		double startframe = 1.0;
 		double endframe = 1.0;
@@ -10282,6 +10282,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 					if (oldcursor != NULL) {
 						SetCursor(oldcursor);
 					}
+					ikdoneflag = true;
 				}
 				else if ((s_pickinfo.buttonflag == PICK_X) ||
 					(s_pickinfo.buttonflag == PICK_Y) ||
@@ -10300,6 +10301,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 					if (oldcursor != NULL) {
 						SetCursor(oldcursor);
 					}
+					ikdoneflag = true;
 				}
 			}
 			else if ((s_ikkind == 1) && (editmotionflag >= 0)) {
@@ -10313,6 +10315,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 					if (oldcursor != NULL) {
 						SetCursor(oldcursor);
 					}
+					ikdoneflag = true;
 				}
 				else if ((s_pickinfo.buttonflag == PICK_X) ||
 					(s_pickinfo.buttonflag == PICK_Y) ||
@@ -10330,6 +10333,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 					if (oldcursor != NULL) {
 						SetCursor(oldcursor);
 					}
+					ikdoneflag = true;
 				}
 			}
 
@@ -10357,6 +10361,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				if (oldcursor != NULL) {
 					SetCursor(oldcursor);
 				}
+				ikdoneflag = true;
 			}
 		}
 
@@ -10379,7 +10384,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 		HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-		if (s_model) {
+		if (s_model && ikdoneflag) {
 			//2023/10/16
 			//befeul.currentframeeulでオイラーは計算されている状態
 			// ！！！！！　g_underIKRot = falseとした後で　！！！！！
@@ -10425,7 +10430,8 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 			//2023/02/04
 			//LimitEulにチェックを入れて編集したモーション部分を　角度制限無しの姿勢にベイクする
-			if ((g_limitdegflag == true) && (s_editmotionflag >= 0)) {
+			//if ((g_limitdegflag == true) && (s_editmotionflag >= 0)) {
+			if ((g_limitdegflag == true) && ikdoneflag) {
 				bool allframeflag = false;
 				bool setcursorflag = true;
 				bool onpasteflag = false;
@@ -10451,7 +10457,8 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			s_ikcnt = 0;
 			s_onragdollik = 0;
 
-			if ((s_editmotionflag >= 0) || (g_btsimurecflag == true)) {
+			//if ((s_editmotionflag >= 0) || (g_btsimurecflag == true)) {
+			if (ikdoneflag || (g_btsimurecflag == true)) {
 				PrepairUndo();//３Dウインドウでの編集後状態保存を想定		
 			}
 
