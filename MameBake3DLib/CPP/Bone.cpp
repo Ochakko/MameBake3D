@@ -60,6 +60,10 @@ extern bool g_wmatDirectSetFlag;
 extern bool g_underRetargetFlag;
 extern int g_previewFlag;
 */
+
+extern CRITICAL_SECTION g_CritSection_FbxSdk;
+
+
 //global
 void InitCustomRig(CUSTOMRIG* dstcr, CBone* parentbone, int rigno);
 int IsValidCustomRig(CModel* srcmodel, CUSTOMRIG srccr, CBone* parentbone);
@@ -4233,204 +4237,8 @@ int CBone::GetNotModify180Flag(int srcmotid, double srcframe)
 ChaVector3 CBone::CalcLocalEulXYZ(bool limitdegflag, int axiskind,
 	int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul)
 {
-	//###################################################################################################################
-	//2022/12/17
-	//この関数の呼び出し元でLimitEul()をする
-	//Parentの姿勢に関しては計算済のGetParent()->GetWorldMat()を使用 : curwmに掛かっているのはLimitedではないparentwm
-	//モーション全体のオイラー角計算し直しは　この関数ではなく　UpdateMatrixを使用
-	//###################################################################################################################
-
-	double roundingframe = RoundingTime(srcframe);
-
-
-	//for debug
-	//if ((roundingframe == 2.0) && (g_limitdegflag == true) && (strstr(GetBoneName(), "Root") != 0)) {
-	//	_ASSERT(0);
-	//}
-
-
-	//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
-
-	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-	BEFEUL befeul;
-	befeul.Init();
-
-
-	if (IsNotSkeleton() && IsNotCamera() && IsNotNull()) {
-		return cureul;
-	}
-	if (!GetParModel()) {
-		_ASSERT(0);
-		return cureul;
-	}
-
-
-	const WCHAR* bonename = GetWBoneName();
-	//if (wcscmp(bonename, L"RootNode") == 0){
-	//	return cureul;//!!!!!!!!!!!!!!!!!!!!!!!!
-	//}
-
-	if (befeulkind == BEFEUL_BEFFRAME){
-		//1つ前のフレームのEULはすでに計算されていると仮定する。
-		bool limitdegOnLimitEul = false;//2023/02/07 befeulはunlimited. 何回転もする場合にオーバー１８０度の角度で制限するために.
-		befeul = GetBefEul(limitdegOnLimitEul, srcmotid, roundingframe);
-	}
-	else if ((befeulkind == BEFEUL_DIRECT) && directbefeul){
-		befeul.befframeeul = *directbefeul;
-		befeul.currentframeeul = *directbefeul;
-	}
-
-	int isfirstbone = 0;
-	int isendbone = 0;
-
-
-	CBone* parentbone = GetParent(false);//!!!!!!!!!!
-
-
-	if (parentbone && parentbone->IsSkeleton()) {
-		isfirstbone = 0;
-	}
-	else {
-		isfirstbone = 1;
-	}
-
-	if (GetChild(false) && GetChild(false)->IsSkeleton()) {
-		if (GetChild(false)->GetChild(false) && GetChild(false)->GetChild(false)->IsSkeleton()) {
-			isendbone = 0;
-		}
-		else {
-			isendbone = 1;
-		}
-	}
-	else {
-		isendbone = 1;
-	}
-
-
-
-	int notmodify180flag = GetNotModify180Flag(srcmotid, roundingframe);
-	CQuaternion axisq;
-	axisq.RotationMatrix(GetNodeMat());
-
-	CQuaternion eulq;
-
-	if (IsSkeleton()) {
-
-		//###########################
-		//skeletonの場合
-		//###########################
-		CMotionPoint* curmp = 0;
-		curmp = GetMotionPoint(srcmotid, roundingframe);
-		if (curmp) {
-			ChaMatrix curwm;
-			curwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
-
-			if (parentbone) {
-				isfirstbone = 0;
-
-				ChaMatrix parentwm, eulmat;
-
-				//parentがeNullの場合はある
-				if (parentbone->IsSkeleton()) {
-					parentwm = parentbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-					eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
-				}
-				else if (parentbone->IsNull() || parentbone->IsCamera()) {
-					//2023/05/16 eNullにもIdentity以外のNodeMatが設定されたため修正
-					//parentwm = ChaMatrixInv(parentbone->GetNodeMat()) * parentbone->GetENullMatrix();//ENullMatrixにはNodeMatが掛かっている
-					
-					//2023/06/26 書き出し時にworldmat (InvNodeMat * EvaluateGlobalTransform)にenullの　回転の　影響は入っていない? NodeMatに入っている？　？？？
-					//モデルのeNullをY180度回転したモデルの読み書き読み書き読みテストで確認
-					//下記のように変更しないと　eNullをY180度回転したモデルの読み書き読み時にオイラー角表現が変質し　読み書き読み書き読みテストで　モデル向きが反対を向く
-					//eulq = ChaMatrix2Q(curwm);
-
-
-
-
-					//2023/06/29 eNullもアニメーション可能にしたので
-					//GetENullMatrixを修正してCalcEnullMatReqで計算するようにしたところが2023/06/26から変わったところ
-					//SetWorldMat()時には　回転計算用のローカル行列取得時に　parenetがeNullの場合関してもGetWorldMat[invNode * CalcENullMat]を使用
-					//移動計算時には　CalcFbxLocalMatrix内にて　parentがeNullの場合　GetENullMatrixを使用
-					//
-					//nullの　回転の　影響は入っていない? NodeMatに入っている？に関して
-					//eNullがアニメーションしない場合には　eNullの初期行列はNodeMatに含まれる　eNullのアニメーション分はInvNode * ENullMat = Indentityとなる
-					//eNullがアニメーションする場合には　eNullのアニメーション分はInvNode * ENullMat != Indentityとなり後ろに掛ける　
-					//補足：NodeMatはジョイントの位置である　NodeMatを途中で変えることはジョイント位置を途中で変えることであり　通常NodeMatは変えない
-					parentwm = parentbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-					eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
-				}
-				else {
-					eulq = ChaMatrix2Q(curwm);
-				}
-			}
-			else {
-				isfirstbone = 1;
-				eulq = ChaMatrix2Q(curwm);
-			}
-		}
-		else {
-			//_ASSERT(0);
-			eulq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-		}
-
-		eulq.Q2EulXYZusingQ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
-
-	}
-	else if(IsCamera()){
-		
-		//########################
-		//カメラの場合
-		//########################
-
-		if (GetParModel() && GetParModel()->IsCameraLoaded()) {
-
-			cureul = GetParModel()->CalcCameraFbxEulXYZ(srcmotid, roundingframe);
-			//####  rotorder注意  #####
-		}
-		else {
-			_ASSERT(0);
-			cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-		}
-
-	}
-	else if (IsNull()) {
-
-		//###########
-		//eNullの場合
-		//###########
-
-		if (GetFbxNodeOnLoad()) {
-			FbxTime fbxtime;
-			fbxtime.SetSecondDouble(roundingframe / 30.0);
-			FbxVector4 orgfbxeul = GetFbxNodeOnLoad()->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
-			cureul = ChaVector3(orgfbxeul, false);
-			//####  rotorder注意  #####
-		}
-		else {
-			return cureul;
-		}
-	}
-	else {
-		return cureul;
-	}
-
-	return cureul;
-
-
-	//CMotionPoint* curmp;
-	//curmp = GetMotionPoint(srcmotid, roundingframe);
-	//if (curmp){
-	//	ChaVector3 oldeul = curmp->GetLocalEul();
-	//	if (IsSameEul(oldeul, cureul) == 0){
-	//		return cureul;
-	//	}
-	//	else{
-	//		return oldeul;
-	//	}
-	//}
-	//else{
-	//	return cureul;
-	//}
+	ChaCalcFunc chacalcfunc;
+	return chacalcfunc.CalcLocalEulXYZ(this, limitdegflag, axiskind, srcmotid, srcframe, befeulkind, directbefeul);
 }
 
 //ChaVector3 CBone::CalcLocalLimitedEulXYZ(int srcmotid, double srcframe)
@@ -6292,20 +6100,30 @@ ChaMatrix CBone::GetWorldMat(bool limitdegflag,
 		//return ChaMatrixInv(GetNodeMat()) * GetENullMatrix(srcframe);//!!!!!!!!!!!!
 
 		//return ChaMatrixInv(GetNodeMat()) * GetTransformMat(srcframe, true);
+
+		EnterCriticalSection(&g_CritSection_FbxSdk);
+		ChaMatrix retmat = ChaMatrixInv(GetNodeMat()) * GetTransformMat(0.0, true);//!!!!!  1.2.0.26
+		LeaveCriticalSection(&g_CritSection_FbxSdk);
+		return retmat;
 		//return ChaMatrixInv(GetNodeMat()) * GetTransformMat(0.0, true);//!!!!!  1.2.0.26
 
 		//2023/06/27
 		//CalcLocalEulXYZ()の検証で　ParentがeNullのときには　parentwmはIdentityにするべきだったので　それに合わせる
-		curmat.SetIdentity();
-		return curmat;
+		//curmat.SetIdentity();
+		//return curmat;
 	}
 	else if (IsCamera()) {
 		//bool multInvNodeMat = true;
 		//return GetParModel()->GetCameraTransformMat(srcmotid, srcframe, g_cameraInheritMode, multInvNodeMat);
 		//return ChaMatrixInv(GetNodeMat()) * GetTransformMat(0.0, true);//2023/07/05 Cameraの子供のスキンメッシュの形が　読み書き読み書き読みテストで形崩れしないように
 
-		curmat.SetIdentity();
-		return curmat;
+		EnterCriticalSection(&g_CritSection_FbxSdk);
+		ChaMatrix retmat = ChaMatrixInv(GetNodeMat()) * GetTransformMat(0.0, true);//!!!!!  1.2.0.26
+		LeaveCriticalSection(&g_CritSection_FbxSdk);
+		return retmat;
+
+		//curmat.SetIdentity();
+		//return curmat;
 	}
 	else if (IsSkeleton()) {
 		if (srcmp) {

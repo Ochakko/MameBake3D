@@ -37,6 +37,7 @@ class CEditRange;
 class CThreadingLoadFbx;
 class CThreadingUpdateMatrix;
 class CThreadingPostIK;
+class CThreadingCalcEul;
 class CNodeOnLoad;
 
 typedef struct funcmpparams
@@ -824,6 +825,7 @@ public:
 	void CalcBoneEulReq(bool limitdegflag, CBone* curbone, int srcmotid, double srcframe);
 	void CalcBoneEulReq(bool limitdegflag, CBone* curbone, int srcmotid, double startframe, double endframe);
 
+
 	int RigControl(bool limitdegflag, int depthcnt, CEditRange* erptr, 
 		int srcboneno, int uvno, float srcdelta, CUSTOMRIG ikcustomrig, int buttonflag);
 	int RigControlUnderRig(bool limitdegflag, int depthcnt, CEditRange* erptr,
@@ -877,7 +879,12 @@ public:
 	void WaitPostIKFinished();
 	int SetPostIKFrame(double srcstart, double srcend);
 	
-	
+	int CreateCalcEulThreads();
+	int DestroyCalcEulThreads();
+	void WaitCalcEulFinished();
+
+
+
 	//int GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread = false);//CThreadingLoadFbxからも呼ぶ CBoneに移動
 
 	void InitMPReq(bool limitdegflag, CBone* curbone, int srcmotid, double curframe);
@@ -2109,9 +2116,11 @@ private:
 	CThreadingUpdateMatrix* m_boneupdatematrix;
 	CThreadingLoadFbx* m_LoadFbxAnim;
 	CThreadingPostIK* m_PostIKThreads;
+	CThreadingCalcEul* m_CalcEulThreads;
 	int m_creatednum_boneupdatematrix;//スレッド数の変化に対応。作成済の数。処理用。
 	int m_creatednum_loadfbxanim;//スレッド数の変化に対応。作成済の数。処理用。
-	int m_postikthreadsnum;
+	int m_postikthreadsnum;//4
+	int m_calceulthreadsnum;//4
 
 	std::map<int, MOTINFO*> m_motinfo;//モーションのプロパティをモーションIDから検索できるようにしたmap。
 	MOTINFO* m_curmotinfo;//m_motinfoの中の現在再生中のMOTINFOへのポインタ。

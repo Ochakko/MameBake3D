@@ -1275,6 +1275,7 @@ int g_submenuwidth = 32;
 HWND g_filterdlghwnd = 0;
 
 CRITICAL_SECTION g_CritSection_GetGP;
+CRITICAL_SECTION g_CritSection_FbxSdk;
 
 static int DispToolTip();
 static int CreateToolTip(POINT ptCursor, WCHAR* srctext);
@@ -4199,6 +4200,7 @@ void InitApp()
 
 	InitializeCriticalSection(&s_CritSection_LTimeline);
 	InitializeCriticalSection(&g_CritSection_GetGP);
+	InitializeCriticalSection(&g_CritSection_FbxSdk);
 
 	InitCommonControls();
 
@@ -8164,6 +8166,7 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 
 	DeleteCriticalSection(&s_CritSection_LTimeline);
 	DeleteCriticalSection(&g_CritSection_GetGP);
+	DeleteCriticalSection(&g_CritSection_FbxSdk);
 
 }
 
@@ -10392,19 +10395,7 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 			MOTINFO* curmi = s_model->GetCurMotInfo();
 			if (curmi) {
-				CBone* lastparent = 0;
-				//if (s_editmotionflag >= 0) {
-				//	lastparent = s_model->GetBoneByID(s_editmotionflag);
-				//}
-				//if (!lastparent) {
-					lastparent = s_model->GetTopBone(false);
-				//}
-
-				//全フレーム計算し直す　モーション切り替えでOnAnimMenuが呼ばれた後にも　オイラー角の連続性が同じになるように
-				double startframe0 = 1.0;
-				double endframe0 = curmi->frameleng - 1.0;
-
-				s_model->CalcBoneEulReq(g_limitdegflag, lastparent, curmi->motid, startframe0, endframe0);
+				s_model->CalcBoneEul(g_limitdegflag, curmi->motid);
 			}
 		}
 

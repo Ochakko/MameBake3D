@@ -74,6 +74,7 @@
 #include <ThreadingLoadFbx.h>
 #include <ThreadingUpdateMatrix.h>
 #include <ThreadingPostIK.h>
+#include <ThreadingCalcEul.h>
 
 #include <NodeOnLoad.h>
 
@@ -513,10 +514,11 @@ int CModel::InitParams()
 	m_boneupdatematrix = 0;
 	m_LoadFbxAnim = 0;
 	m_PostIKThreads = 0;
+	m_CalcEulThreads = 0;
 	m_creatednum_boneupdatematrix = 0;//スレッド数の変化に対応。作成済の数。処理用。
 	m_creatednum_loadfbxanim = 0;//スレッド数の変化に対応。作成済の数。処理用。
 	m_postikthreadsnum = 4;//固定
-
+	m_calceulthreadsnum = 4;//固定
 
 	m_loadbonecount = 0;
 
@@ -612,6 +614,8 @@ int CModel::DestroyObjs()
 	WaitUpdateMatrixFinished();
 	DestroyLoadFbxAnim();
 	WaitLoadFbxAnimFinished();
+	DestroyCalcEulThreads();
+	WaitCalcEulFinished();
 	DestroyPostIKThreads();
 	WaitPostIKFinished();
 	DeleteCriticalSection(&m_CritSection_Node);//スレッド終了よりも後
@@ -1063,6 +1067,7 @@ _ASSERT(m_bonelist[0]);
 
 
 	CreateBoneUpdateMatrix();
+	CreateCalcEulThreads();
 	CreatePostIKThreads();
 
 
@@ -11283,16 +11288,18 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 								bool postflag = true;
 								bool fromiktarget = false;
 
-								int updatecount;
-								for (updatecount = 0; updatecount < m_postikthreadsnum; updatecount++) {
-									CThreadingPostIK* curupdate = m_PostIKThreads + updatecount;
-									curupdate->IKRotateOneFrame(this, limitdegflag, erptr,
-										keyno,
-										parentbone, parentbone,
-										m_curmotinfo->motid, startframe, applyframe,
-										rotq0, keynum1flag, postflag, fromiktarget);
+								if (m_PostIKThreads) {
+									int updatecount;
+									for (updatecount = 0; updatecount < m_postikthreadsnum; updatecount++) {
+										CThreadingPostIK* curupdate = m_PostIKThreads + updatecount;
+										curupdate->IKRotateOneFrame(this, limitdegflag, erptr,
+											keyno,
+											parentbone, parentbone,
+											m_curmotinfo->motid, startframe, applyframe,
+											rotq0, keynum1flag, postflag, fromiktarget);
+									}
+									WaitPostIKFinished();
 								}
-								WaitPostIKFinished();
 
 
 								//double curframe;
@@ -14448,16 +14455,18 @@ int CModel::IKRotateAxisDeltaPostIK(
 							bool postflag = true;
 							bool fromiktarget = false;
 
-							int updatecount;
-							for (updatecount = 0; updatecount < m_postikthreadsnum; updatecount++) {
-								CThreadingPostIK* curupdate = m_PostIKThreads + updatecount;
-								curupdate->IKRotateOneFrame(this, limitdegflag, erptr,
-									keyno, 
-									aplybone, aplybone,
-									m_curmotinfo->motid, startframe, applyframe,
-									localq, keynum1flag, postflag, fromiktarget);
+							if (m_PostIKThreads) {
+								int updatecount;
+								for (updatecount = 0; updatecount < m_postikthreadsnum; updatecount++) {
+									CThreadingPostIK* curupdate = m_PostIKThreads + updatecount;
+									curupdate->IKRotateOneFrame(this, limitdegflag, erptr,
+										keyno,
+										aplybone, aplybone,
+										m_curmotinfo->motid, startframe, applyframe,
+										localq, keynum1flag, postflag, fromiktarget);
+								}
+								WaitPostIKFinished();
 							}
-							WaitPostIKFinished();
 
 							//int keyno = 0;
 							//double curframe;
@@ -16106,29 +16115,17 @@ int CModel::CalcBoneEul(bool limitdegflag, int srcmotid)
 	if (GetNoBoneFlag() == true) {
 		return 0;
 	}
+	
+	//ChaCalcFunc chacalcfunc;
+	//chacalcfunc.CalcBoneEul(this, limitdegflag, srcmotid);
 
-
-	if (srcmotid >= 0){
-		MOTINFO* mi = GetMotInfo(srcmotid);
-		if (mi){
-			double frame;
-			for (frame = 0.0; frame < mi->frameleng; frame += 1.0){
-			//for (frame = 1.0; frame < mi->frameleng; frame += 1.0) {//0frameは計算スキップ
-				CalcBoneEulReq(limitdegflag, GetTopBone(false), mi->motid, frame);
-			}
+	if (m_CalcEulThreads) {
+		int updatecount;
+		for (updatecount = 0; updatecount < m_calceulthreadsnum; updatecount++) {
+			CThreadingCalcEul* curupdate = m_CalcEulThreads + updatecount;
+			curupdate->CalcBoneEul(this, limitdegflag, srcmotid);
 		}
-	}
-	else{
-		map<int, MOTINFO*>::iterator itrmi;
-		for (itrmi = m_motinfo.begin(); itrmi != m_motinfo.end(); itrmi++){
-			MOTINFO* chkmi = itrmi->second;
-			if (chkmi) {
-				int motid = chkmi->motid;
-				if (motid > 0) {
-					CalcBoneEul(limitdegflag, motid);
-				}
-			}
-		}
+		WaitCalcEulFinished();
 	}
 
 	return 0;
@@ -17347,6 +17344,92 @@ void CModel::WaitUpdateMatrixFinished()
 
 }
 
+int CModel::CreateCalcEulThreads()
+{
+	DestroyCalcEulThreads();
+	Sleep(100);
+
+
+	if (m_bonelist[0] == NULL) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	m_CalcEulThreads = new CThreadingCalcEul[m_calceulthreadsnum];
+	if (!m_CalcEulThreads) {
+		_ASSERT(0);
+		return 1;
+	}
+	int createno;
+	for (createno = 0; createno < m_calceulthreadsnum; createno++) {
+		CThreadingCalcEul* curupdate = m_CalcEulThreads + createno;
+		curupdate->ClearBoneList();
+		curupdate->CreateThread((DWORD)(1 << createno));
+
+		curupdate->SetModel(this);
+	}
+
+
+
+	int threadcount = 0;
+	int bonecount;
+	int bonenum = (int)m_bonelist.size();
+
+	for (bonecount = 0; bonecount < bonenum; bonecount++) {
+		CBone* curbone = m_bonelist[bonecount];
+		if (curbone && curbone->IsSkeleton()) {
+			CThreadingCalcEul* curupdate = m_CalcEulThreads + threadcount;
+
+			curupdate->AddBoneList(curbone);
+
+			threadcount++;
+			if (threadcount >= m_calceulthreadsnum) {
+				threadcount = 0;
+			}
+		}
+	}
+
+}
+int CModel::DestroyCalcEulThreads()
+{
+	if (m_CalcEulThreads) {
+		delete[] m_CalcEulThreads;
+	}
+	m_CalcEulThreads = 0;
+
+	return 0;
+
+}
+void CModel::WaitCalcEulFinished()
+{
+	if (m_CalcEulThreads != NULL) {
+
+		bool yetflag = true;
+		while (yetflag == true) {
+			int finishedcount = 0;
+			int updatecount;
+			for (updatecount = 0; updatecount < m_calceulthreadsnum; updatecount++) {
+				CThreadingCalcEul* curupdate = m_CalcEulThreads + updatecount;
+				if (curupdate->IsFinished()) {
+					finishedcount++;
+				}
+			}
+
+			if (finishedcount == m_calceulthreadsnum) {
+				yetflag = false;
+				return;
+			}
+			else {
+				//__nop();
+				//__nop();
+				//__nop();
+				//__nop();
+			}
+		}
+	}
+
+}
 
 int CModel::CreatePostIKThreads()
 {
@@ -17461,6 +17544,12 @@ void CModel::WaitPostIKFinished()
 
 int CModel::SetPostIKFrame(double srcstart, double srcend)
 {
+	if (!m_PostIKThreads) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
 	int updatecount;
 	for (updatecount = 0; updatecount < m_postikthreadsnum; updatecount++) {
 		CThreadingPostIK* curupdate = m_PostIKThreads + updatecount;

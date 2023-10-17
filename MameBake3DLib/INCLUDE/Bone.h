@@ -726,18 +726,21 @@ public: //accesser
 	}
 	bool ExistInitIndexedMotionPoint(int srcmotid)
 	{
-		bool getbychain = false;
+		bool existflag = false;
 		std::map<int, bool>::iterator itrinitflag;
 		itrinitflag = m_initindexedmotionpoint.find(srcmotid);//initflag
 		if (itrinitflag == m_initindexedmotionpoint.end()) {//エントリーがまだ無いとき
-			getbychain = true;
+			existflag = false;
 		}
 		else {
 			if (itrinitflag->second == false) {//初期化フラグがfalseのとき　
-				getbychain = true;
+				existflag = false;
+			}
+			else {
+				existflag = true;
 			}
 		}
-		return getbychain;
+		return existflag;
 	}
 	int GetIndexedMotionPointFrameLeng(int srcmotid)
 	{
@@ -749,7 +752,7 @@ public: //accesser
 			return 0;
 		}
 		else {
-			mpmapleng = (int)(itrvecmpmap->second).size();
+			mpmapleng = (int)itrvecmpmap->second.size();
 		}
 		return mpmapleng;
 	}

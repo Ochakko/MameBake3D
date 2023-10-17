@@ -532,6 +532,12 @@ public:
 		ChaVector3* dstaxis, float* dstrotrad);
 
 
+	int CalcBoneEul(CModel* srcmodel, bool limitdegflag, int srcmotid);
+	int CalcBoneEulOne(CModel* srcmodel, bool limitdegflag, CBone* curbone, int srcmotid, double startframe, double endframe);
+	ChaVector3 CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int axiskind,
+		int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul);
+
+
 };
 
 

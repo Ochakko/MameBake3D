@@ -73,8 +73,18 @@
 	UpdateMatrix用のスレッドクラスのCBone*メンバを　配列からvectorへ変更
 
 
-	###　予定　###
-	次の予定としては　CalcBoneEul()もマルチスレッド化してみる
+   2023/10/17_3
+	IK操作の並列化による高速化の続き
+		CalcBoneEul( IK終了後に呼ばれる ) もマルチスレッド化
+
+		マルチスレッドとHighRpm
+			PostIKスレッドはIK時には常にHighRpm
+			UpdateMatrixとCalcBoneEulは　GUIのHighRpmチェックボックスに依存
+
+		速くなる余地
+			FbxSdkの関数は排他的に呼び出している
+			eNullとeCameraの処理についてFbxSdkを呼び出している
+			自前のデータとして読み込んでおいて処理をすればその部分についても並列化可能
 
 
 
