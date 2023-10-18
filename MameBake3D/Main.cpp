@@ -28494,8 +28494,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 
 					//g_limitdegflagに関わらず　既存モーションの制限無しの姿勢を元に設定
-					s_model->AdditiveCurrentToAngleLimit();//内部で全フレーム分処理
-
+					s_model->AdditiveCurrentToAngleLimit(0);//内部で全フレーム分処理
 
 					//ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeulはこれより後で呼ばれるUpdateAfterEditAngleLimitで
 					//g_limitdegflag = s_savelimitdegflag;
@@ -28528,19 +28527,18 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				MOTINFO* curmi;
 				curmi = s_model->GetCurMotInfo();
 				if (curmi) {
+					bool savelimitflag = g_limitdegflag;
+
 					s_changelimitangleFlag = true;
 					PrepairUndo();//全フレーム変更の前に全フレーム保存
-
 
 					//長いフレームの処理は数秒時間がかかることがあるので砂時計カーソルにする
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-
-					//s_savelimitdegflag = g_limitdegflag;
-					//ChangeLimitDegFlag(false, true, true);
-					//g_limitdegflag = false;
-					//if (s_LimitDegCheckBox) {
-					//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
+					//if (savelimitflag == true) {
+					//	//2023/10/18 制限角度キャプチャは　limitdegflag = falseにした状態で働く
+					//	s_savelimitdegflag = true;
+					//	ChangeLimitDegFlag(false, true, true);
 					//}
 
 					//モーションからの設定の前に　まずはゼロ初期化する
@@ -28551,8 +28549,12 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					//g_limitdegflagに関わらず　既存モーションの制限無しの姿勢を元に設定
 					s_model->AdditiveAllMotionsToAngleLimit();//内部で全モーション全フレーム分処理
 
-
 					//ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeulはこれより後で呼ばれるUpdateAfterEditAngleLimitで
+					//if (savelimitflag == true) {
+					//	//処理後に元に戻す
+					//	s_savelimitdegflag = false;
+					//	ChangeLimitDegFlag(true, true, true);
+					//}
 
 					bool setcursorflag = false;
 					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, setcursorflag);
@@ -28625,7 +28627,6 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				s_changelimitangleFlag = true;
 				PrepairUndo();//全フレーム変更の前に全フレーム保存
 
-
 				s_model->AngleLimitReplace180to170(s_anglelimitbone);//2022/12/05 curbone引数追加
 
 				UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
@@ -28647,30 +28648,21 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 				MOTINFO* curmi;
 				curmi = s_model->GetCurMotInfo();
 				if (curmi) {
-					s_changelimitangleFlag = true;
-					PrepairUndo();//全フレーム変更の前に全フレーム保存
+					bool savelimitflag = g_limitdegflag;
 
+					////s_changelimitangleFlag = true;
+					////PrepairUndo();//全フレーム変更の前に全フレーム保存
 
 					//長いフレームの処理は数秒時間がかかることがあるので砂時計カーソルにする
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-					s_savelimitdegflag = g_limitdegflag;
-					ChangeLimitDegFlag(false, true, true);
+					bool excludebt = true;
+					s_model->ResetAngleLimit(excludebt, 0);
+					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
 
-					int curmotid;
-					double curmotleng;
-					curmotid = curmi->motid;
-					curmotleng = curmi->frameleng;
+					s_model->AdditiveCurrentToAngleLimit(s_anglelimitbone);//2022/12/05 curbone引数追加
 
-					double curframe;
-					for (curframe = 1.0; curframe < curmotleng; curframe += 1.0) {
-						s_model->SetMotionFrame(curframe);
-						ChaMatrix tmpwm = s_model->GetWorldMat();
-						s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
-						s_model->AdditiveCurrentToAngleLimit(s_anglelimitbone);//2022/12/05 curbone引数追加
-					}
-
-					ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeulはこれより後で呼ばれるUpdateAfterEditAngleLimitで
+					//ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeulはこれより後で呼ばれるUpdateAfterEditAngleLimitで
 
 					bool setcursorflag = false;
 					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, setcursorflag);
@@ -28678,7 +28670,6 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					bool updateonlycheckeul = false;
 					AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
 					UpdateWindow(s_anglelimitdlg);
-
 
 					//カーソルを元に戻す
 					SetCursor(oldcursor);
@@ -29081,6 +29072,11 @@ int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 			ClearLimitedWM(s_model);
 			CopyWorldToLimitedWorld(s_model);
 			ApplyNewLimitsToWM(s_model);
+
+			MOTINFO* curmi = s_model->GetCurMotInfo();
+			if (curmi) {
+				s_model->CalcBoneEul(g_limitdegflag, curmi->motid);
+			}
 		}
 
 		//if (g_limitdegflag == true) {

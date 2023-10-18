@@ -16116,17 +16116,17 @@ int CModel::CalcBoneEul(bool limitdegflag, int srcmotid)
 		return 0;
 	}
 	
-	//ChaCalcFunc chacalcfunc;
-	//chacalcfunc.CalcBoneEul(this, limitdegflag, srcmotid);
+	ChaCalcFunc chacalcfunc;
+	chacalcfunc.CalcBoneEul(this, limitdegflag, srcmotid);
 
-	if (m_CalcEulThreads) {
-		int updatecount;
-		for (updatecount = 0; updatecount < m_calceulthreadsnum; updatecount++) {
-			CThreadingCalcEul* curupdate = m_CalcEulThreads + updatecount;
-			curupdate->CalcBoneEul(this, limitdegflag, srcmotid);
-		}
-		WaitCalcEulFinished();
-	}
+	//if (m_CalcEulThreads) {
+	//	int updatecount;
+	//	for (updatecount = 0; updatecount < m_calceulthreadsnum; updatecount++) {
+	//		CThreadingCalcEul* curupdate = m_CalcEulThreads + updatecount;
+	//		curupdate->CalcBoneEul(this, limitdegflag, srcmotid);
+	//	}
+	//	WaitCalcEulFinished();
+	//}
 
 	return 0;
 }

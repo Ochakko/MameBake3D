@@ -7947,7 +7947,10 @@ int CBone::AdditiveCurrentToAngleLimit()
 
 				//2023/01/28
 				//currentもparentも　制限角度無しで計算する必要有
-				calceul = GetUnlimitedLocalEul(curmotid, curframe);
+				//calceul = GetUnlimitedLocalEul(curmotid, curframe);
+				bool limitdegflag = false;
+				//calceul = GetLocalEul(limitdegflag, curmotid, curframe, 0);
+				calceul = CalcLocalEulXYZ(limitdegflag, -1, curmotid, curframe, BEFEUL_BEFFRAME);
 
 				cureul[0] = calceul.x;
 				cureul[1] = calceul.y;
@@ -7972,8 +7975,20 @@ int CBone::AdditiveCurrentToAngleLimit()
 				//2023/01/28
 				//実角度ギリギリをintに丸めて制限をかけると　可動部分が制限に引っ掛かることがあったので対応
 				float tempmax, tempmin;
-				tempmax = maxeul[axiskind2] + 2.0f;
-				tempmin = mineul[axiskind2] - 2.0f;
+				if (maxeul[axiskind2] >= 0.0f) {
+					tempmax = maxeul[axiskind2] + 2.0f;
+				}
+				else {
+					tempmax = maxeul[axiskind2] - 2.0f;
+				}
+				if (mineul[axiskind2] >= 0.0f) {
+					tempmin = mineul[axiskind2] - 2.0f;
+				}
+				else {
+					tempmin = mineul[axiskind2] + 2.0f;
+				}
+
+
 				if (tempmax > 0.0f) {
 					m_anglelimit.upper[axiskind2] = (int)(tempmax + 0.0001f);
 				}
@@ -8045,7 +8060,11 @@ int CBone::AdditiveAllMotionsToAngleLimit()
 
 						//2023/01/28
 						//currentもparentも　制限角度無しで計算する必要有
-						calceul = GetUnlimitedLocalEul(curmotid, curframe);
+						//calceul = GetUnlimitedLocalEul(curmotid, curframe);
+						bool limitdegflag = false;
+						//calceul = GetLocalEul(limitdegflag, curmotid, curframe, 0);
+						calceul = CalcLocalEulXYZ(limitdegflag, -1, curmotid, curframe, BEFEUL_BEFFRAME);
+
 
 						cureul[0] = calceul.x;
 						cureul[1] = calceul.y;
@@ -8073,8 +8092,20 @@ int CBone::AdditiveAllMotionsToAngleLimit()
 				//2023/01/28
 				//実角度ギリギリをintに丸めて制限をかけると　可動部分が制限に引っ掛かることがあったので対応
 				float tempmax, tempmin;
-				tempmax = maxeul[axiskind2] + 2.0f;
-				tempmin = mineul[axiskind2] - 2.0f;
+				if (maxeul[axiskind2] >= 0.0f) {
+					tempmax = maxeul[axiskind2] + 2.0f;
+				}
+				else {
+					tempmax = maxeul[axiskind2] - 2.0f;
+				}
+				if (mineul[axiskind2] >= 0.0f) {
+					tempmin = mineul[axiskind2] - 2.0f;
+				}
+				else {
+					tempmin = mineul[axiskind2] + 2.0f;
+				}
+
+
 				if (tempmax > 0.0f) {
 					m_anglelimit.upper[axiskind2] = (int)(tempmax + 0.0001f);
 				}

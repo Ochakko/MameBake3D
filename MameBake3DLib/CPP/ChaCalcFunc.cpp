@@ -1780,7 +1780,7 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 				srcbone->SetWorldMatFromEulAndScaleAndTra(limitdegflag, inittraflag0, setchildflag,
 					saveworldmat, neweul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflag有り!!!!
 				//curmp->SetBefWorldMat(saveworldmat);
-				srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, neweul, curmp);
+				//srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, neweul, curmp);//<---SetWorldMatFromEulAnd...内でする
 				if (limitdegflag == true) {
 					curmp->SetCalcLimitedWM(2);
 				}
@@ -1798,7 +1798,7 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 					//子ジョイントへの波及は　SetWorldMatFromEulAndScaleAndTra内でしている
 					srcbone->SetWorldMatFromEulAndScaleAndTra(limitdegflag, inittraflag0, setchildflag,
 						saveworldmat, limiteul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflag有り!!!!
-					srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, limiteul, curmp);
+					//srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, limiteul, curmp);//<---SetWorldMatFromEulAnd...内でする
 					if (limitdegflag == true) {
 						curmp->SetCalcLimitedWM(2);
 					}
@@ -1820,7 +1820,7 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 						//子ジョイントへの波及は　SetWorldMatFromEulAndScaleAndTra内でしている
 						srcbone->SetWorldMatFromEulAndScaleAndTra(limitdegflag, inittraflag0, setchildflag,
 							saveworldmat, limiteul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflag有り!!!!
-						srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, limiteul, curmp);
+						//srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, limiteul, curmp);//<---SetWorldMatFromEulAnd...内でする
 						if (limitdegflag == true) {
 							curmp->SetCalcLimitedWM(2);
 						}
@@ -1978,7 +1978,12 @@ int ChaCalcFunc::SetWorldMatFromEulAndScaleAndTra(CBone* srcbone, bool limitdegf
 	if (curmp) {
 		//curmp->SetBefWorldMat(curmp->GetWorldMat());
 		srcbone->SetWorldMat(limitdegflag, srcmotid, roundingframe, newmat, curmp);
-		srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, srceul, curmp);
+		
+		//srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, srceul, curmp);
+		//2023/10/18 befframeをみてオイラー角を計算し直す
+		ChaVector3 neweul = srcbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+		srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, neweul, curmp);
+
 		if (limitdegflag == true) {
 			curmp->SetCalcLimitedWM(2);
 		}
