@@ -238,17 +238,22 @@ typedef struct tag_anglelimmit
 	bool applyeul[AXIS_MAX];
 	float chkeul[AXIS_MAX];
 
-	tag_anglelimmit() {
+	void Init()
+	{
 		ZeroMemory(limitoff, sizeof(int) * AXIS_MAX);
 		ZeroMemory(via180flag, sizeof(int) * AXIS_MAX);
 		boneaxiskind = BONEAXIS_CURRENT;
 		int axisno;
 		for (axisno = 0; axisno < AXIS_MAX; axisno++) {
-			lower[axisno] = -2;
-			upper[axisno] = 2;
+			lower[axisno] = -180;
+			upper[axisno] = 180;
 			applyeul[axisno] = false;
 			chkeul[axisno] = 0.0f;
 		}
+	};
+
+	tag_anglelimmit() {
+		Init();
 	};
 }ANGLELIMIT;
 

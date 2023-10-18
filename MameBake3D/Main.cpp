@@ -4866,8 +4866,8 @@ void InitApp()
 
 	s_anglelimitbone = 0;
 	s_anglelimitdlg = 0;
-	InitAngleLimit(&s_anglelimit);
-	InitAngleLimit(&s_anglelimitcopy);
+	s_anglelimit.Init();
+	s_anglelimitcopy.Init();
 
 	s_lightsforeditdlg = 0;
 
@@ -26000,7 +26000,7 @@ int Bone2AngleLimit()
 	}
 	else {
 		_ASSERT(0);
-		InitAngleLimit(&s_anglelimit);
+		s_anglelimit.Init();
 	}
 
 	////setcheckflag == 0のときにはチェックボックスの状態を変えずに復元する

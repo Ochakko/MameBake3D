@@ -539,6 +539,8 @@ public:
 	ChaVector3 LimitEul(ChaVector3 srceul);
 	//void SetBefWorldMatReq(int srcmotid, double srcframe);
 
+	void InitAngleLimit();
+	void SetAngleLimitOff();
 	int ResetAngleLimit(int srcval);
 	int AngleLimitReplace180to170();
 	int AdditiveCurrentToAngleLimit();
@@ -648,7 +650,6 @@ private:
 	//void CalcFirstAxisMatX();
 	//void CalcFirstAxisMatZ();
 
-	void InitAngleLimit();
 	float LimitAngle(enum tag_axiskind srckind, float srcval);
 	int SwapAngleLimitUpperLowerIfRev();
 	int InitCustomRig();
@@ -1159,25 +1160,15 @@ public: //accesser
 	//	return m_firstaxismatZ;
 	//};
 
-	CMotionPoint* GetMotionPoint(int srcmotid, double srcframe, bool onaddmotion = false){
-		//ë∂ç›Ç∑ÇÈÇ∆Ç´ÇæÇØï‘Ç∑ÅB
-		CMotionPoint* pbef = 0;
-		CMotionPoint* pnext = 0;
-		int existflag = 0;
-		GetBefNextMP(srcmotid, srcframe, &pbef, &pnext, &existflag, onaddmotion);
-		if (existflag == 1){
-			return pbef;
-		}
-		else{
-			return 0;
-		}
-	};
+	CMotionPoint* GetMotionPoint(int srcmotid, double srcframe, bool onaddmotion = false);
+
 
 
 	//ChaMatrix GetENullMatrix(double srctime);
 	//void CalcEnullMatReq(double srctime, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat);//parentï˚å¸Ç÷åvéZ
 	ChaMatrix GetTransformMat(double srctime, bool forceanimflag);
 	ChaMatrix CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcframe);
+
 
 	ANGLELIMIT GetAngleLimit(bool limitdegflag, int getchkflag);
 	void SetAngleLimit(bool limitdegflag, ANGLELIMIT srclimit);

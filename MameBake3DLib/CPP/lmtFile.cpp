@@ -356,7 +356,7 @@ int CLmtFile::ReadBone(bool limitdegflag, XMLIOBUF* xmliobuf, CModel* srcmodel)
 		return 0;
 	}
 
-	InitAngleLimit(&m_anglelimit);
+	m_anglelimit.Init();
 
 
 	char boneaxistype[256] = { 0 };

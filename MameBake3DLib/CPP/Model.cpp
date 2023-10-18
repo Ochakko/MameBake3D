@@ -47,7 +47,7 @@
 
 #include <MotionPoint.h>
 //#include <quaternion.h>
-#include <ChaVecCalc.h>
+//#include <ChaVecCalc.h>//TheadingCalcEul.hでChaCalcFunc.hからChaVecCalc.hはインクルート
 
 #include <Collision.h>
 #include <EngName.h>
@@ -17389,8 +17389,9 @@ int CModel::CreateCalcEulThreads()
 			}
 		}
 	}
-
+	return 0;
 }
+
 int CModel::DestroyCalcEulThreads()
 {
 	if (m_CalcEulThreads) {

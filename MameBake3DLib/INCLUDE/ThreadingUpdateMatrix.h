@@ -3,7 +3,8 @@
 
 
 #include <ThreadingBase.h>
-#include <ChaVecCalc.h>
+//#include <ChaVecCalc.h>
+#include <ChaCalcFunc.h>
 
 #include <vector>
 
