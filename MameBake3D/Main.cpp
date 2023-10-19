@@ -10390,10 +10390,16 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 		if (s_model && ikdoneflag) {
-			//2023/10/16
-			//befeul.currentframeeulでオイラーは計算されている状態
+			//############################################################################################################
+			//2023/10/16 - 2023/10/19
+			//マルチスレッドのコンテクストを　揃っている情報と要求される計算順序によって決めた
+			//親のボーンの姿勢を使う階層順の計算では　フレーム番号単位のマルチスレッド
+			//全ボーンの姿勢が揃った後で　前のフレームの姿勢を元にオイラー角を計算する際には　ボーンごとのマルチスレッド
+			// 
+			//befeul.currentframeeulでオイラーは　フレーム番号ごとのマルチスレッドで計算されている状態
 			// ！！！！！　g_underIKRot = falseとした後で　！！！！！
-			//後処理として　befeul.befframeeulで計算し直す
+			//後処理として　befeul.befframeeulで　ボーンごとのマルチスレッドで計算して正しいオイラーにする
+			//############################################################################################################
 			MOTINFO* curmi = s_model->GetCurMotInfo();
 			if (curmi) {
 				s_model->CalcBoneEul(g_limitdegflag, curmi->motid);

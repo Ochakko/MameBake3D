@@ -2119,8 +2119,15 @@ private:
 	CThreadingCalcEul* m_CalcEulThreads;
 	int m_creatednum_boneupdatematrix;//スレッド数の変化に対応。作成済の数。処理用。
 	int m_creatednum_loadfbxanim;//スレッド数の変化に対応。作成済の数。処理用。
-	int m_postikthreadsnum;//4
-	int m_calceulthreadsnum;//4
+
+
+	//2023/10/19
+	//threadsnumをCoef.hの定数に移動し　4から8に変更　CPUコアの数に応じて調整
+	//#define POSTIK_THREADSNUM		8
+	//#define CALCEUL_THREADSNUM	8
+	//int m_postikthreadsnum;//4
+	//int m_calceulthreadsnum;//4
+
 
 	std::map<int, MOTINFO*> m_motinfo;//モーションのプロパティをモーションIDから検索できるようにしたmap。
 	MOTINFO* m_curmotinfo;//m_motinfoの中の現在再生中のMOTINFOへのポインタ。

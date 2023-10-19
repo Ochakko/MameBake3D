@@ -1979,10 +1979,17 @@ int ChaCalcFunc::SetWorldMatFromEulAndScaleAndTra(CBone* srcbone, bool limitdegf
 		//curmp->SetBefWorldMat(curmp->GetWorldMat());
 		srcbone->SetWorldMat(limitdegflag, srcmotid, roundingframe, newmat, curmp);
 		
+		//#######################################################################################################################
+		//2023/10/19
+		//何回転もIKする際の正しいオイラー角は　CalcLocalEulXYZで計算するが　1000フレーム全ボーンIK３回転で３０秒くらい遅くなる
+		//Main.cppのPostIK呼び出しの後で　CalcBoneEul()を呼び出してまとめて正しいオイラー角に直すことにした
+		//よってここではSetLocalEul(srceul)で良い
+		//#######################################################################################################################
 		srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, srceul, curmp);
 		//2023/10/18 befframeをみてオイラー角を計算し直す
 		//ChaVector3 neweul = srcbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 		//srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, neweul, curmp);
+
 
 		if (limitdegflag == true) {
 			curmp->SetCalcLimitedWM(2);

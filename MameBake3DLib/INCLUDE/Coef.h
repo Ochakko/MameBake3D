@@ -1,4 +1,4 @@
-#ifndef COEFH
+ï»¿#ifndef COEFH
 #define		COEFH
 
 #include <Windows.h>
@@ -23,6 +23,13 @@ class CMQOMaterial;
 #define ALIGNED		_declspec(align(16))
 #define	u_long	unsigned long
 
+
+//2023/10/19 è¨ˆç®—ã«ä½¿ã†ã‚¹ãƒ¬ãƒƒãƒ‰ã®æ•°ã€€CPUã‚³ã‚¢ã®æ•°ã«å¿œã˜ã¦èª¿æ•´
+#define POSTIK_THREADSNUM	8
+#define CALCEUL_THREADSNUM	8
+
+
+
 #define EDITRANGEHISTORYNUM	10000
 
 #define COLIGROUPNUM	10
@@ -34,20 +41,20 @@ class CMQOMaterial;
 
 #define MAXDISPGROUPNUM	20
 
-//lightnum‚ÌÅ‘å”‚ÍƒVƒF[ƒ_[(Media/Shader/Ochakko.fx)‚Ì•ÏX‚à•K—v‚Æ‚·‚é‚Ì‚Å’ˆÓ
+//lightnumã®æœ€å¤§æ•°ã¯ã‚·ã‚§ãƒ¼ãƒ€ãƒ¼(Media/Shader/Ochakko.fx)ã®å¤‰æ›´ã‚‚å¿…è¦ã¨ã™ã‚‹ã®ã§æ³¨æ„
 #define LIGHTNUMMAX		8
 
 #define LIGHTSLOTNUM	8
 
 
-//”z—ñ’·‚ª256@–¼‘O‚Í255•¶š‚Ü‚Å
+//é…åˆ—é•·ãŒ256ã€€åå‰ã¯255æ–‡å­—ã¾ã§
 #define JOINTNAMELENG	256	
 
 #define RIGPOSINDEXMAX	30
 #define RIGMULTINDEXMAX	12	
 
 
-// * 100‚¾‚ÆOpenFile()ŠÖ”‚ÌƒXƒ^ƒbƒNƒTƒCƒY‚ª‘å‚«‚·‚¬‚ÄŒx‚ªo‚é‚Ì‚Å * 32‚É•ÏX
+// * 100ã ã¨OpenFile()é–¢æ•°ã®ã‚¹ã‚¿ãƒƒã‚¯ã‚µã‚¤ã‚ºãŒå¤§ãã™ãã¦è­¦å‘ŠãŒå‡ºã‚‹ã®ã§ * 32ã«å¤‰æ›´
 //#define MULTIPATH	(MAX_PATH * 100)
 #define MULTIPATH	(MAX_PATH * 32)
 
@@ -65,7 +72,7 @@ class CMQOMaterial;
 
 #define UNDOMAX 999
 
-//bone‚²‚Æ‚ÌRIG”z—ñ’·
+//boneã”ã¨ã®RIGé…åˆ—é•·
 #define MAXRIGNUM	10
 #define MAXRIGELEMNUM	5
 
@@ -311,17 +318,17 @@ enum {
 typedef struct tag_customrig
 {
 	int useflag;//0 : free, 1 : rental, 2 : valid and in use
-	int rigno;//CUSTOMRIG‚ğ”z—ñ‚Å‚Â‘¤‚Ì‚½‚ß‚ÌCUSTOMRIG‚Ìindex
+	int rigno;//CUSTOMRIGã‚’é…åˆ—ã§æŒã¤å´ã®ãŸã‚ã®CUSTOMRIGã®index
 	int rigboneno;
 	int elemnum;
 	WCHAR rigname[256];
 	RIGELEM rigelem[MAXRIGELEMNUM];
-	int dispaxis;//‘€ì—pƒIƒuƒWƒFƒNƒg•\¦êŠi²j ver1.0.0.19‚©‚ç
-	int disporder;//‘€ì—pƒIƒuƒWƒFƒNƒg•\¦êŠi”Ô–Új ver1.0.0.19‚©‚ç
-	bool posinverse;//‘€ì—pƒIƒuƒWƒFƒNƒgˆÊ’uƒ}ƒCƒiƒXˆÊ’uƒtƒ‰ƒO@ver1.0.0.19‚©‚ç
-	int shapemult;//‘€ì—pƒIƒuƒWƒFƒNƒgŒ`ó•\¦”{—¦ƒCƒ“ƒfƒbƒNƒX@ver1.2.0.14 RC2‚©‚ç
-	int shapekind;//RIGSHAPE_SPHERE, RIGSHAPE_RINGX, RIGSHAPE_RINGY, RIGSHAPE_RINGZ@ver1.2.0.14 RC3‚©‚ç
-	int rigcolor;//RIGCOLOR_RED, RIGCOLOR_GREEN, RIGCOLOR_BLUE@ver1.2.0.14 RC3‚©‚ç
+	int dispaxis;//æ“ä½œç”¨ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆè¡¨ç¤ºå ´æ‰€ï¼ˆè»¸ï¼‰ ver1.0.0.19ã‹ã‚‰
+	int disporder;//æ“ä½œç”¨ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆè¡¨ç¤ºå ´æ‰€ï¼ˆç•ªç›®ï¼‰ ver1.0.0.19ã‹ã‚‰
+	bool posinverse;//æ“ä½œç”¨ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆä½ç½®ãƒã‚¤ãƒŠã‚¹ä½ç½®ãƒ•ãƒ©ã‚°ã€€ver1.0.0.19ã‹ã‚‰
+	int shapemult;//æ“ä½œç”¨ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆå½¢çŠ¶è¡¨ç¤ºå€ç‡ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã€€ver1.2.0.14 RC2ã‹ã‚‰
+	int shapekind;//RIGSHAPE_SPHERE, RIGSHAPE_RINGX, RIGSHAPE_RINGY, RIGSHAPE_RINGZã€€ver1.2.0.14 RC3ã‹ã‚‰
+	int rigcolor;//RIGCOLOR_RED, RIGCOLOR_GREEN, RIGCOLOR_BLUEã€€ver1.2.0.14 RC3ã‹ã‚‰
 
 	void Init() {
 		useflag = 0;
@@ -353,8 +360,8 @@ typedef struct tag_hinfo
 	float height;
 
 	tag_hinfo() {
-		minh = FLT_MAX;//—LŒø’l‚Å’u‚«Š·‚í‚é‚æ‚¤‚ÉMAX
-		maxh = -FLT_MAX;//—LŒø’l‚Å’u‚«Š·‚í‚é‚æ‚¤‚ÉMIN(-MAX)
+		minh = FLT_MAX;//æœ‰åŠ¹å€¤ã§ç½®ãæ›ã‚ã‚‹ã‚ˆã†ã«MAX
+		maxh = -FLT_MAX;//æœ‰åŠ¹å€¤ã§ç½®ãæ›ã‚ã‚‹ã‚ˆã†ã«MIN(-MAX)
 		height = 0.0f;
 	};
 }HINFO;
@@ -497,7 +504,7 @@ typedef struct tag_motinfo
 	double curframe;
 	double speed;
 	int loopflag;
-	int fbxanimno;//fbxƒtƒ@ƒCƒ‹‚Ì’†‚Å‰½”Ô–Ú‚Ìƒ‚[ƒVƒ‡ƒ“‚Æ‚µ‚Ä“Ç‚İ‚ñ‚¾‚©@0‚©‚çn‚Ü‚é”Ô†
+	int fbxanimno;//fbxãƒ•ã‚¡ã‚¤ãƒ«ã®ä¸­ã§ä½•ç•ªç›®ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã¨ã—ã¦èª­ã¿è¾¼ã‚“ã ã‹ã€€0ã‹ã‚‰å§‹ã¾ã‚‹ç•ªå·
 	bool cameramotion;
 
 	tag_motinfo() {
@@ -523,9 +530,9 @@ typedef struct tag_infelem
 	int boneno;
 	int kind;//CALCMODE_*
 	float userrate;//
-	float orginf;//CALCMODE_*‚ÅŒvZ‚µ‚½’lB
-	float dispinf;//@orginf[] * userrate[]Anormalizeflag‚ª‚P‚Ì‚Æ‚«‚ÍA³‹K‰»‚·‚éB
-	int isadditive;//‰e‹¿“x‚Ì³‹K‰»–³‚µB
+	float orginf;//CALCMODE_*ã§è¨ˆç®—ã—ãŸå€¤ã€‚
+	float dispinf;//ã€€orginf[] * userrate[]ã€normalizeflagãŒï¼‘ã®ã¨ãã¯ã€æ­£è¦åŒ–ã™ã‚‹ã€‚
+	int isadditive;//å½±éŸ¿åº¦ã®æ­£è¦åŒ–ç„¡ã—ã€‚
 
 	void Init() {
 		boneno = 0;
@@ -808,7 +815,7 @@ typedef struct tag_brushstate
 
 
 // error code
-// d3dapp.h ‚©‚çˆÚ“®B
+// d3dapp.h ã‹ã‚‰ç§»å‹•ã€‚
 
 #ifndef D3DAPPERR_NODIRECT3D
 enum APPMSGTYPE { MSG_NONE, MSGERR_APPMUSTEXIT, MSGWARN_SWITCHEDTOREF };
@@ -902,16 +909,16 @@ enum {
 #define D3DFVF_LVERTEX (D3DFVF_XYZ | D3DFVF_DIFFUSE)
 
 
-//		mottype : motno ‚Ì§Œä•û–@B
+//		mottype : motno ã®åˆ¶å¾¡æ–¹æ³•ã€‚
 enum _motiontype {
 	MOTIONTYPENONE,
 
-	MOTION_STOP, // motionno ŒÅ’èB
-	MOTION_CLAMP, // motionno ‚ª@max‚É’B‚µ‚½‚çA‚»‚Ì‚Ü‚Ü‚»‚±‚ÅŒÅ’èB
-	MOTION_ROUND, //		Å‰‚É–ß‚é
-	MOTION_INV,	//			‹t•ûŒü‚Éi‚ŞB
+	MOTION_STOP, // motionno å›ºå®šã€‚
+	MOTION_CLAMP, // motionno ãŒã€€maxã«é”ã—ãŸã‚‰ã€ãã®ã¾ã¾ãã“ã§å›ºå®šã€‚
+	MOTION_ROUND, //		æœ€åˆã«æˆ»ã‚‹
+	MOTION_INV,	//			é€†æ–¹å‘ã«é€²ã‚€ã€‚
 	MOTION_JUMP,
-	//MOTION_BIV, // —‚¿’…‚¢‚½‚çAƒoƒCƒuƒŒ[ƒVƒ‡ƒ“‚à’Ç‰ÁB 
+	//MOTION_BIV, // è½ã¡ç€ã„ãŸã‚‰ã€ãƒã‚¤ãƒ–ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ã‚‚è¿½åŠ ã€‚ 
 
 	MOTIONTYPEMAX
 };

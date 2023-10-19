@@ -517,8 +517,6 @@ int CModel::InitParams()
 	m_CalcEulThreads = 0;
 	m_creatednum_boneupdatematrix = 0;//スレッド数の変化に対応。作成済の数。処理用。
 	m_creatednum_loadfbxanim = 0;//スレッド数の変化に対応。作成済の数。処理用。
-	m_postikthreadsnum = 4;//固定
-	m_calceulthreadsnum = 4;//固定
 
 	m_loadbonecount = 0;
 
@@ -11290,7 +11288,7 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 
 								if (m_PostIKThreads) {
 									int updatecount;
-									for (updatecount = 0; updatecount < m_postikthreadsnum; updatecount++) {
+									for (updatecount = 0; updatecount < POSTIK_THREADSNUM; updatecount++) {
 										CThreadingPostIK* curupdate = m_PostIKThreads + updatecount;
 										curupdate->IKRotateOneFrame(this, limitdegflag, erptr,
 											keyno,
@@ -14457,7 +14455,7 @@ int CModel::IKRotateAxisDeltaPostIK(
 
 							if (m_PostIKThreads) {
 								int updatecount;
-								for (updatecount = 0; updatecount < m_postikthreadsnum; updatecount++) {
+								for (updatecount = 0; updatecount < POSTIK_THREADSNUM; updatecount++) {
 									CThreadingPostIK* curupdate = m_PostIKThreads + updatecount;
 									curupdate->IKRotateOneFrame(this, limitdegflag, erptr,
 										keyno,
@@ -16122,7 +16120,7 @@ int CModel::CalcBoneEul(bool limitdegflag, int srcmotid)
 	if (m_CalcEulThreads) {
 		g_underCalcEul = true;//2023/10/19
 		int updatecount;
-		for (updatecount = 0; updatecount < m_calceulthreadsnum; updatecount++) {
+		for (updatecount = 0; updatecount < CALCEUL_THREADSNUM; updatecount++) {
 			CThreadingCalcEul* curupdate = m_CalcEulThreads + updatecount;
 			curupdate->CalcBoneEul(this, limitdegflag, srcmotid);
 		}
@@ -17370,13 +17368,13 @@ int CModel::CreateCalcEulThreads()
 	}
 
 
-	m_CalcEulThreads = new CThreadingCalcEul[m_calceulthreadsnum];
+	m_CalcEulThreads = new CThreadingCalcEul[CALCEUL_THREADSNUM];
 	if (!m_CalcEulThreads) {
 		_ASSERT(0);
 		return 1;
 	}
 	int createno;
-	for (createno = 0; createno < m_calceulthreadsnum; createno++) {
+	for (createno = 0; createno < CALCEUL_THREADSNUM; createno++) {
 		CThreadingCalcEul* curupdate = m_CalcEulThreads + createno;
 		curupdate->ClearBoneList();
 		curupdate->CreateThread((DWORD)(1 << createno));
@@ -17398,7 +17396,7 @@ int CModel::CreateCalcEulThreads()
 			curupdate->AddBoneList(curbone);
 
 			threadcount++;
-			if (threadcount >= m_calceulthreadsnum) {
+			if (threadcount >= CALCEUL_THREADSNUM) {
 				threadcount = 0;
 			}
 		}
@@ -17424,14 +17422,14 @@ void CModel::WaitCalcEulFinished()
 		while (yetflag == true) {
 			int finishedcount = 0;
 			int updatecount;
-			for (updatecount = 0; updatecount < m_calceulthreadsnum; updatecount++) {
+			for (updatecount = 0; updatecount < CALCEUL_THREADSNUM; updatecount++) {
 				CThreadingCalcEul* curupdate = m_CalcEulThreads + updatecount;
 				if (curupdate->IsFinished()) {
 					finishedcount++;
 				}
 			}
 
-			if (finishedcount == m_calceulthreadsnum) {
+			if (finishedcount == CALCEUL_THREADSNUM) {
 				yetflag = false;
 				return;
 			}
@@ -17459,13 +17457,13 @@ int CModel::CreatePostIKThreads()
 	}
 
 
-	m_PostIKThreads = new CThreadingPostIK[m_postikthreadsnum];
+	m_PostIKThreads = new CThreadingPostIK[POSTIK_THREADSNUM];
 	if (!m_PostIKThreads) {
 		_ASSERT(0);
 		return 1;
 	}
 	int createno;
-	for (createno = 0; createno < m_postikthreadsnum; createno++) {
+	for (createno = 0; createno < POSTIK_THREADSNUM; createno++) {
 		CThreadingPostIK* curupdate = m_PostIKThreads + createno;
 		curupdate->ClearFrameList();
 		curupdate->CreateThread((DWORD)(1 << createno));
@@ -17534,14 +17532,14 @@ void CModel::WaitPostIKFinished()
 		while (yetflag == true) {
 			int finishedcount = 0;
 			int updatecount;
-			for (updatecount = 0; updatecount < m_postikthreadsnum; updatecount++) {
+			for (updatecount = 0; updatecount < POSTIK_THREADSNUM; updatecount++) {
 				CThreadingPostIK* curupdate = m_PostIKThreads + updatecount;
 				if (curupdate->IsFinished()) {
 					finishedcount++;
 				}
 			}
 
-			if (finishedcount == m_postikthreadsnum) {
+			if (finishedcount == POSTIK_THREADSNUM) {
 				yetflag = false;
 				return;
 			}
@@ -17566,7 +17564,7 @@ int CModel::SetPostIKFrame(double srcstart, double srcend)
 
 
 	int updatecount;
-	for (updatecount = 0; updatecount < m_postikthreadsnum; updatecount++) {
+	for (updatecount = 0; updatecount < POSTIK_THREADSNUM; updatecount++) {
 		CThreadingPostIK* curupdate = m_PostIKThreads + updatecount;
 		curupdate->ClearFrameList();
 	}
@@ -17580,7 +17578,7 @@ int CModel::SetPostIKFrame(double srcstart, double srcend)
 		curupdate->AddFramenoList(setframe);
 
 		threadcount++;
-		if (threadcount >= m_postikthreadsnum) {
+		if (threadcount >= POSTIK_THREADSNUM) {
 			threadcount = 0;
 		}
 	}
