@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include <windows.h>
 #include <math.h>
 
@@ -68,16 +68,16 @@ int ChaCalcFunc::ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notm
 {
 	//#########################################################
 	// 2022/12/04
-	//+-180dgree‚É§ŒÀ‚¹‚¸‚É@ƒIƒCƒ‰[Šp‚ğ˜A‘±‚³‚¹‚é‚½‚ß‚ÌŠÖ”
+	//+-180dgreeã«åˆ¶é™ã›ãšã«ã€€ã‚ªã‚¤ãƒ©ãƒ¼è§’ã‚’é€£ç¶šã•ã›ã‚‹ãŸã‚ã®é–¢æ•°
 	//#########################################################
 
 	//###########################################################################################
 	//2023/02/04
-	//“–‚½‚è‘O‚Ì‚±‚Æ‚¾‚ª@XYZEul(180, 0, 180)‚ÆXYZEul(0, 0, 0)‚Íˆá‚¤p¨
-	//360“x‚Ìƒvƒ‰ƒXƒ}ƒCƒiƒX‚Í—L‚è‚¾‚ª@180“x‚Ìƒvƒ‰ƒXƒ}ƒCƒiƒX‚Í@ˆá‚¤p¨‚É‚·‚é‚±‚Æ
-	//ƒmƒCƒY‘Îô‚Æ‚µ‚Ä+-180“x‚Í—L‚è“¾‚é‚ª
-	//“¯‚¶p¨‚Ì•Ê•\Œ»‚Æ‚µ‚Ä‚Ì+-180“x‚Í@XYZEul(0, 180, 0)‚ğXYZEul(180, 0, 180)‚É‚·‚éˆÈŠO‚Év‚¢‚Â‚©‚È‚¢
-	//360‚Ìƒvƒ‰ƒXƒ}ƒCƒiƒX‚É–ß‚µ‚Ä@Œãˆ—‚Æ‚µ‚Ä•â³‚ğs‚¤
+	//å½“ãŸã‚Šå‰ã®ã“ã¨ã ãŒã€€XYZEul(180, 0, 180)ã¨XYZEul(0, 0, 0)ã¯é•ã†å§¿å‹¢
+	//360åº¦ã®ãƒ—ãƒ©ã‚¹ãƒã‚¤ãƒŠã‚¹ã¯æœ‰ã‚Šã ãŒã€€180åº¦ã®ãƒ—ãƒ©ã‚¹ãƒã‚¤ãƒŠã‚¹ã¯ã€€é•ã†å§¿å‹¢ã«ã™ã‚‹ã“ã¨
+	//ãƒã‚¤ã‚ºå¯¾ç­–ã¨ã—ã¦+-180åº¦ã¯æœ‰ã‚Šå¾—ã‚‹ãŒ
+	//åŒã˜å§¿å‹¢ã®åˆ¥è¡¨ç¾ã¨ã—ã¦ã®+-180åº¦ã¯ã€€XYZEul(0, 180, 0)ã‚’XYZEul(180, 0, 180)ã«ã™ã‚‹ä»¥å¤–ã«æ€ã„ã¤ã‹ãªã„
+	//360ã®ãƒ—ãƒ©ã‚¹ãƒã‚¤ãƒŠã‚¹ã«æˆ»ã—ã¦ã€€å¾Œå‡¦ç†ã¨ã—ã¦è£œæ­£ã‚’è¡Œã†
 	//###########################################################################################
 
 
@@ -103,7 +103,7 @@ int ChaCalcFunc::ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notm
 		}
 
 
-		////Šp“x•Ï‰»‚Ì‘å‚«‚³
+		////è§’åº¦å¤‰åŒ–ã®å¤§ãã•
 		//double s0 = ((double)eulerB->x - eulerA->x) * ((double)eulerB->x - eulerA->x) +
 		//	((double)eulerB->y - eulerA->y) * ((double)eulerB->y - eulerA->y) +
 		//	((double)eulerB->z - eulerA->z) * ((double)eulerB->z - eulerA->z);
@@ -112,7 +112,7 @@ int ChaCalcFunc::ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notm
 		//	((double)eulerB->z - tmpZ0) * ((double)eulerB->z - tmpZ0);
 		//
 		//if (s0 <= s1) {
-		//	//‚»‚Ì‚Ü‚Ü
+		//	//ãã®ã¾ã¾
 		//}
 		//else {
 		//	eulerA->x = tmpX0;
@@ -125,13 +125,13 @@ int ChaCalcFunc::ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notm
 		eulerA->z = tmpZ0;
 	}
 	else {
-		//‚»‚Ì‚Ü‚Ü
+		//ãã®ã¾ã¾
 	}
 
 	////############################################################################################
-	////Q2EulXYZ‚Éaxisq‚ğw’è‚µ‚ÄŒÄ‚Ño‚µ‚½ê‡
-	////invaxisq * *this * axisq‚É‚æ‚Á‚Ä@‚P‚W‚O“x•ªƒIƒCƒ‰[Šp‚ª‰ñ“]‚·‚é‚±‚Æ‚ª‚ ‚é‚Ì‚Å‘Îô
-	//// ‚½‚¾‚µ@befframe‚ª0ƒtƒŒ[ƒ€‚Ìê‡‚É‚Í@‚P‚W‚O“x•ª‰ñ“]ƒ`ƒFƒbƒN‚Í‚µ‚È‚¢(‚P‚W‚O“x‰ñ“]‚ğ‹–‚·)
+	////Q2EulXYZã«axisqã‚’æŒ‡å®šã—ã¦å‘¼ã³å‡ºã—ãŸå ´åˆ
+	////invaxisq * *this * axisqã«ã‚ˆã£ã¦ã€€ï¼‘ï¼˜ï¼åº¦åˆ†ã‚ªã‚¤ãƒ©ãƒ¼è§’ãŒå›è»¢ã™ã‚‹ã“ã¨ãŒã‚ã‚‹ã®ã§å¯¾ç­–
+	//// ãŸã ã—ã€€befframeãŒ0ãƒ•ãƒ¬ãƒ¼ãƒ ã®å ´åˆã«ã¯ã€€ï¼‘ï¼˜ï¼åº¦åˆ†å›è»¢ãƒã‚§ãƒƒã‚¯ã¯ã—ãªã„(ï¼‘ï¼˜ï¼åº¦å›è»¢ã‚’è¨±ã™)
 	////############################################################################################
 	//if (notmodify180flag == 0) {
 	//	float thdeg = 165.0f;
@@ -164,8 +164,8 @@ int ChaCalcFunc::ModifyEuler360(ChaVector3* eulerA, ChaVector3* eulerB, int notm
 }
 int ChaCalcFunc::GetRoundThreshold(float srcval, float degth)
 {
-	//GetRound()‚Å‚Í@180“xˆÈã‚Ì‚¸‚ê‚ğ‚P‰ñ“]‚Å•â³‚µ‚Ä‚¢‚½
-	//ChaGetRoundThreshold()‚Å‚Í@‚P‰ñ“]‚æ‚è‚Ç‚ê‚¾‚¯¬‚³‚¢Šp“x‚Åˆê‰ñ“]‚Æ‚İ‚È‚·‚©(g‚¤‘¤‚Å‘«‚·‚Ì‚Í‚R‚U‚O“x’PˆÊ‚È‚Ì‚Åp¨‚Í•Ï‚í‚ç‚È‚¢)‚ğw’è‚·‚é(²‚²‚Æ‚É)
+	//GetRound()ã§ã¯ã€€180åº¦ä»¥ä¸Šã®ãšã‚Œã‚’ï¼‘å›è»¢ã§è£œæ­£ã—ã¦ã„ãŸ
+	//ChaGetRoundThreshold()ã§ã¯ã€€ï¼‘å›è»¢ã‚ˆã‚Šã©ã‚Œã ã‘å°ã•ã„è§’åº¦ã§ä¸€å›è»¢ã¨ã¿ãªã™ã‹(ä½¿ã†å´ã§è¶³ã™ã®ã¯ï¼“ï¼–ï¼åº¦å˜ä½ãªã®ã§å§¿å‹¢ã¯å¤‰ã‚ã‚‰ãªã„)ã‚’æŒ‡å®šã™ã‚‹(è»¸ã”ã¨ã«)
 
 	float th360;
 	th360 = degth / 360.0f;
@@ -212,12 +212,12 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 
 	int curframeindex = IntTime(srcframe);
 	int nextframeindex = curframeindex + 1;
-	int mpmapleng = 0;//2022/11/01 STL‚Ìsize()‚Íd‚¢‚ç‚µ‚¢‚Ì‚Å•Ï”‚É‘ã“ü‚µ‚Äg‚¢‚Ü‚í‚µ
+	int mpmapleng = 0;//2022/11/01 STLã®size()ã¯é‡ã„ã‚‰ã—ã„ã®ã§å¤‰æ•°ã«ä»£å…¥ã—ã¦ä½¿ã„ã¾ã‚ã—
 
 	*existptr = 0;
 
 	if ((srcmotid <= 0) || (srcmotid > srcbone->GetMotionKeySize())) {
-		//AddMotionPoint‚©‚çŒÄ‚Î‚ê‚é‚Æ‚«‚É’Ê‚éê‡‚Í³í
+		//AddMotionPointã‹ã‚‰å‘¼ã°ã‚Œã‚‹ã¨ãã«é€šã‚‹å ´åˆã¯æ­£å¸¸
 		*ppbef = 0;
 		*ppnext = 0;
 		//_ASSERT(0);
@@ -246,8 +246,8 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 
 
 	//if (getbychain == false) {
-	//	//get by indexed ‚Ìƒtƒ‰ƒOw’è‚Ìê‡‚É‚àindexed‚Ì€”õ‚ªo—ˆ‚Ä‚¢‚È‚¢ê‡‚Íget by chain‚Åæ“¾‚·‚é
-	//	if (srcbone->GetInitIndexedMotionPointSize() <= srcmotid) {//ƒGƒ“ƒgƒŠ[‚ª‚Ü‚¾–³‚¢‚Æ‚«
+	//	//get by indexed ã®ãƒ•ãƒ©ã‚°æŒ‡å®šã®å ´åˆã«ã‚‚indexedã®æº–å‚™ãŒå‡ºæ¥ã¦ã„ãªã„å ´åˆã¯get by chainã§å–å¾—ã™ã‚‹
+	//	if (srcbone->GetInitIndexedMotionPointSize() <= srcmotid) {//ã‚¨ãƒ³ãƒˆãƒªãƒ¼ãŒã¾ã ç„¡ã„ã¨ã
 	//		getbychain = true;
 	//	}
 	//	else {
@@ -255,9 +255,9 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 	//	}
 	//}
 	//if (getbychain == false) {
-	//	//index‚Ìframe’·‚Ìƒ`ƒFƒbƒN
+	//	//indexã®frameé•·ã®ãƒã‚§ãƒƒã‚¯
 	//	mpmapleng = srcbone->GetIndexedMotionPointFrameLeng(srcmotid);
-	//	if ((mpmapleng <= 0) || (curframeindex >= mpmapleng)) {// ##### 2023/10/17_1  "&&" ‚É‚È‚Á‚Ä‚¢‚½ #####
+	//	if ((mpmapleng <= 0) || (curframeindex >= mpmapleng)) {// ##### 2023/10/17_1  "&&" ã«ãªã£ã¦ã„ãŸ #####
 	//		getbychain = true;
 	//	}
 	//}
@@ -281,25 +281,25 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 
 	if (getbychain == true) {
 		//#ifdef USE_CACHE_ONGETMOTIONPOINT__
-		//		//ƒLƒƒƒbƒVƒ…‚ğƒ`ƒFƒbƒN‚·‚é
+		//		//ã‚­ãƒ£ãƒƒã‚·ãƒ¥ã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹
 		//		if ((srcmotid >= 1) && (srcmotid <= MAXMOTIONNUM) && m_cachebefmp[srcmotid - 1] &&
 		//			((m_cachebefmp[srcmotid - 1])->GetUseFlag() == 1) &&
 		//			//((m_cachebefmp[srcmotid - 1])->GetFrame() <= (srcframe + 0.0001))) {
 		//			((m_cachebefmp[srcmotid - 1])->GetFrame() <= ((double)curframeindex + 0.0001))) {//2022/12/26
-		//			//‚‘¬‰»‚Ì‚½‚ß“r’†‚©‚ç‚ÌŒŸõ‚É‚·‚é
+		//			//é«˜é€ŸåŒ–ã®ãŸã‚é€”ä¸­ã‹ã‚‰ã®æ¤œç´¢ã«ã™ã‚‹
 		//			pcur = m_cachebefmp[srcmotid - 1];
 		//		}
 		//#endif
 
 		while (pcur) {
 
-			if (IsJustEqualTime(pcur->GetFrame(), srcframe)) {//ƒWƒƒƒXƒg”»’è@ƒWƒƒƒXƒg‚Ìê‡•âŠÔ–³‚µ
-				//if ((pcur->GetFrame() >= ((double)curframeindex - 0.0001)) && (pcur->GetFrame() <= ((double)curframeindex + 0.0001))) {//2022/12/26 ‚±‚ê‚Å‚Í•âŠÔ‚ªŒø‚©‚È‚¢
+			if (IsJustEqualTime(pcur->GetFrame(), srcframe)) {//ã‚¸ãƒ£ã‚¹ãƒˆåˆ¤å®šã€€ã‚¸ãƒ£ã‚¹ãƒˆã®å ´åˆè£œé–“ç„¡ã—
+				//if ((pcur->GetFrame() >= ((double)curframeindex - 0.0001)) && (pcur->GetFrame() <= ((double)curframeindex + 0.0001))) {//2022/12/26 ã“ã‚Œã§ã¯è£œé–“ãŒåŠ¹ã‹ãªã„
 				*existptr = 1;
 				pbef = pcur;
 				break;
 			}
-			else if (pcur->GetFrame() > srcframe) {//‰ß‚¬‚Ä‚µ‚Ü‚Á‚½ê‡
+			else if (pcur->GetFrame() > srcframe) {//éãã¦ã—ã¾ã£ãŸå ´åˆ
 				//else if (pcur->GetFrame() > ((double)curframeindex + 0.0001)) {//2022/12/26
 				*existptr = 0;
 				break;
@@ -310,7 +310,7 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 				pcur = pcur->GetNext();
 			}
 		}
-		*ppbef = pbef;//‰ß‚¬‚Ä‚µ‚Ü‚Á‚½‚P‚Â‘O‚Ìƒ‚[ƒVƒ‡ƒ“ƒ|ƒCƒ“ƒg‚ğƒZƒbƒg
+		*ppbef = pbef;//éãã¦ã—ã¾ã£ãŸï¼‘ã¤å‰ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãƒã‚¤ãƒ³ãƒˆã‚’ã‚»ãƒƒãƒˆ
 
 		if (*existptr) {
 			*ppnext = pbef->GetNext();
@@ -323,10 +323,10 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 	else {
 
 		//### 2022/11/01 ################
-		//Å‰‚Ì•û‚Åƒ`ƒFƒbƒNÏ‚È‚Ì‚Å•s—v
+		//æœ€åˆã®æ–¹ã§ãƒã‚§ãƒƒã‚¯æ¸ˆãªã®ã§ä¸è¦
 		//###############################
 		//if ((srcmotid <= 0) || (srcmotid > m_indexedmotionpoint.size())) {
-		//	//AddMotionPoint‚©‚çŒÄ‚Î‚ê‚é‚Æ‚«‚É’Ê‚éê‡‚Í³í
+		//	//AddMotionPointã‹ã‚‰å‘¼ã°ã‚Œã‚‹ã¨ãã«é€šã‚‹å ´åˆã¯æ­£å¸¸
 		//	*ppbef = 0;
 		//	*ppnext = 0;
 		//	//_ASSERT(0);
@@ -367,11 +367,11 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 			//if ((mpframe >= ((double)curframeindex - 0.0001)) && (mpframe <= ((double)curframeindex + 0.0001))) {
 
 			//2023/08/02
-			//•âŠÔŒvZ‚É‚Í
-			//GetBefNextMP‚É‚Í(m_curmp)ˆÈŠO‚Ìê‡@’[”İ‚è‚ÌŠÔ‚ğ“n‚·@just‚ÌŒvZ‚à’[”İ‚è‚Å‚·‚é
-			//if•ª‚ğˆÈ‰º‚Ì‚æ‚¤‚É‚µ‚È‚¢‚Æ@ƒ‚[ƒVƒ‡ƒ“‚É‚æ‚Á‚Ä‚Í@0.007”{‘¬‚È‚Ç‚ÅƒJƒNƒJƒN‚·‚é@•ÏX‘O‚Å‚àƒ‚[ƒVƒ‡ƒ“ŠÔ‚ª‚½‚Ü‚½‚Üint‚Ìê‡‚É‚ÍŠŠ‚ç‚©‚¾‚Á‚½
-			//ã‚Ì‚Í•âŠÔŒvZ‚Ì˜b@ƒ‚[ƒVƒ‡ƒ“‚ÌƒL[‚ÌŠÔ‚Íint‚É‘µ‚¦‚ÄƒŠƒTƒ“ƒvƒŠƒ“ƒO‚µ‚Ä“Ç‚İ‚ñ‚Å‚¢‚é
-			//ƒ‚[ƒVƒ‡ƒ“ƒf[ƒ^‚ğƒCƒ“ƒfƒbƒNƒX‰»‚µ‚Ä‚¢‚È‚¢ê‡‚ÌŠŠ‚ç‚©ˆ—‚ÌC³‚Í@ã‚Ì•û‚ÌƒR[ƒh‚Å2022/12/26‚ÉC³Ï@¡‰ñ‚ÌC³‚ÍƒCƒ“ƒfƒbƒNƒX‰»‚³‚ê‚½ƒf[ƒ^‚É‚Â‚¢‚Ä‚ÌC³
+			//è£œé–“è¨ˆç®—æ™‚ã«ã¯
+			//GetBefNextMPã«ã¯(m_curmp)ä»¥å¤–ã®å ´åˆã€€ç«¯æ•°åœ¨ã‚Šã®æ™‚é–“ã‚’æ¸¡ã™ã€€justã®è¨ˆç®—ã‚‚ç«¯æ•°åœ¨ã‚Šã§ã™ã‚‹
+			//ifåˆ†ã‚’ä»¥ä¸‹ã®ã‚ˆã†ã«ã—ãªã„ã¨ã€€ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã«ã‚ˆã£ã¦ã¯ã€€0.007å€é€Ÿãªã©ã§ã‚«ã‚¯ã‚«ã‚¯ã™ã‚‹ã€€å¤‰æ›´å‰ã§ã‚‚ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³æ™‚é–“ãŒãŸã¾ãŸã¾intã®å ´åˆã«ã¯æ»‘ã‚‰ã‹ã ã£ãŸ
+			//ä¸Šã®ã¯è£œé–“è¨ˆç®—æ™‚ã®è©±ã€€ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ã‚­ãƒ¼ã®æ™‚é–“ã¯intã«æƒãˆã¦ãƒªã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°ã—ã¦èª­ã¿è¾¼ã‚“ã§ã„ã‚‹
+			//ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ãƒ‡ãƒ¼ã‚¿ã‚’ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹åŒ–ã—ã¦ã„ãªã„å ´åˆã®æ»‘ã‚‰ã‹å‡¦ç†ã®ä¿®æ­£ã¯ã€€ä¸Šã®æ–¹ã®ã‚³ãƒ¼ãƒ‰ã§2022/12/26ã«ä¿®æ­£æ¸ˆã€€ä»Šå›ã®ä¿®æ­£ã¯ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹åŒ–ã•ã‚ŒãŸãƒ‡ãƒ¼ã‚¿ã«ã¤ã„ã¦ã®ä¿®æ­£
 			if (IsJustEqualTime(mpframe, srcframe)) {
 				*existptr = 1;
 			}
@@ -459,9 +459,9 @@ int ChaCalcFunc::IKRotateOneFrame(CModel* srcmodel, int limitdegflag, CEditRange
 		//	parentbone, parentbone,
 		//	&qForRot, &qForHipsRot);
 
-		//IKTraget‚Ìê‡‚É‚Í
-		//0.080‚Å‚ñ‚Å@™X‚É‹ß‚Ã‚¯‚é
-		//‹ß‚Ã‚«‚ª‘«‚è‚È‚¢ê‡‚Í@ˆ—Œã‚É@ConstExecuteƒ{ƒ^ƒ“‚ğ‰Ÿ‚·
+		//IKTragetã®å ´åˆã«ã¯
+		//0.080ã§åˆ»ã‚“ã§ã€€å¾ã€…ã«è¿‘ã¥ã‘ã‚‹
+		//è¿‘ã¥ããŒè¶³ã‚Šãªã„å ´åˆã¯ã€€å‡¦ç†å¾Œã«ã€€ConstExecuteãƒœã‚¿ãƒ³ã‚’æŠ¼ã™
 		CQuaternion endq;
 		CQuaternion curqForRot;
 		CQuaternion curqForHipsRot;
@@ -606,19 +606,19 @@ int ChaCalcFunc::CalcQForRot(bool limitdegflag, bool calcaplyflag,
 	curparrotq.RotationMatrix(curparrotmat);
 
 
-	//ˆÓ–¡FRotBoneQReq()‚Érotq‚ğ“n‚µ@currentworldmat‚ÌŒã‚ë‚É@invpivot * rotq * pivot‚ğŠ|‚¯‚é
-	//‚Â‚Ü‚è@A = currentworldmat, B = localq.MakeRotMatX()‚Æ‚·‚é‚Æ A * (invA * B * A)
+	//æ„å‘³ï¼šRotBoneQReq()ã«rotqã‚’æ¸¡ã—ã€€currentworldmatã®å¾Œã‚ã«ã€€invpivot * rotq * pivotã‚’æ›ã‘ã‚‹
+	//ã¤ã¾ã‚Šã€€A = currentworldmat, B = localq.MakeRotMatX()ã¨ã™ã‚‹ã¨ A * (invA * B * A)
 	ChaMatrix transmat2ForRot;
 	ChaMatrix transmat2ForHipsRot;
 
-	//hispˆÚ“®‚Í‚¤‚Ü‚­‚¢‚­‚ª@‰ñ“]‚ª‚¨‚©‚µ‚¢ @hipsˆÈŠO‚Í—Ç‚¢
+	//hispç§»å‹•ã¯ã†ã¾ãã„ããŒã€€å›è»¢ãŒãŠã‹ã—ã„ ã€€hipsä»¥å¤–ã¯è‰¯ã„
 	//transmat2 = invcurparrotmat * aplyparrotmat * localq.MakeRotMatX() * invaplyparrotmat * curparrotmat;//bef
 
-	//hips‰ñ“]‚Í‚¤‚Ü‚­‚¢‚­‚ª@ˆÚ“®‚ª‚¨‚©‚µ‚¢
+	//hipså›è»¢ã¯ã†ã¾ãã„ããŒã€€ç§»å‹•ãŒãŠã‹ã—ã„
 	//transmat2 = localq.MakeRotMatX();//for hips edit
 
 	//####################################################################
-	//ToDo : RotQBoneReq2()‚ğì‚Á‚Ä@ˆø”‚Æ‚µ‚Äã‹L‚Q‚Â‚Ì‰ñ“]î•ñ‚ğ“n‚·
+	//ToDo : RotQBoneReq2()ã‚’ä½œã£ã¦ã€€å¼•æ•°ã¨ã—ã¦ä¸Šè¨˜ï¼’ã¤ã®å›è»¢æƒ…å ±ã‚’æ¸¡ã™
 	//####################################################################
 
 	if (calcaplyflag == true) {
@@ -650,7 +650,7 @@ bool ChaCalcFunc::CalcAxisAndRotForIKRotateAxis(CModel* srcmodel, int limitdegfl
 
 	//########################################################
 	//2023/03/24
-	//modelÀ•WŒn‚ÅŒvZFmodel‚ÌWorldMat‚Ì‰e‹¿‚ğ–³‚­‚µ‚ÄŒvZ
+	//modelåº§æ¨™ç³»ã§è¨ˆç®—ï¼šmodelã®WorldMatã®å½±éŸ¿ã‚’ç„¡ãã—ã¦è¨ˆç®—
 	//########################################################
 
 
@@ -720,15 +720,15 @@ int ChaCalcFunc::RotAndTraBoneQReq(CBone* srcbone, bool limitdegflag, int* onlyc
 	CQuaternion qForRot, CQuaternion qForHipsRot, bool fromiktarget)
 {
 	//######################################
-	//IK—p.@Retarget‚ÍRotBoneQReq()‚ğg—p
-	//hips‚Ítanim‚ğ qForHipsRot ‚Å‰ñ“]‚·‚é
-	//hipsˆÈŠO‚Ítanim‚ğ qForRot@‚Å‰ñ“]‚·‚é
+	//IKç”¨.ã€€Retargetã¯RotBoneQReq()ã‚’ä½¿ç”¨
+	//hipsã¯tanimã‚’ qForHipsRot ã§å›è»¢ã™ã‚‹
+	//hipsä»¥å¤–ã¯tanimã‚’ qForRotã€€ã§å›è»¢ã™ã‚‹
 	//######################################
 
 	//###################################################################
-	//onlycheckptr != NULL‚Ìê‡‚É‚Í
-	//SetWorldMat‚ğonlycheck‚ÅŒÄ‚Ño‚µ‚Ä@‰ñ“]‰Â”\‚©‚Ç‚¤‚©‚¾‚¯‚ğ’²‚×‚é
-	//‰‰ñŒÄ‚Ño‚µ‚ÌCBone‚É‘Î‚µ‚Ä‚¾‚¯ƒ`ƒFƒbƒN‚ğ‚µ‚Ä@’¼‚¿‚ÉƒŠƒ^[ƒ“‚·‚é
+	//onlycheckptr != NULLã®å ´åˆã«ã¯
+	//SetWorldMatã‚’onlycheckã§å‘¼ã³å‡ºã—ã¦ã€€å›è»¢å¯èƒ½ã‹ã©ã†ã‹ã ã‘ã‚’èª¿ã¹ã‚‹
+	//åˆå›å‘¼ã³å‡ºã—æ™‚ã®CBoneã«å¯¾ã—ã¦ã ã‘ãƒã‚§ãƒƒã‚¯ã‚’ã—ã¦ã€€ç›´ã¡ã«ãƒªã‚¿ãƒ¼ãƒ³ã™ã‚‹
 	//###################################################################
 
 	if (!srcbone) {
@@ -758,13 +758,13 @@ int ChaCalcFunc::RotAndTraBoneQReq(CBone* srcbone, bool limitdegflag, int* onlyc
 	currentnewwm.SetIdentity();
 	currentbefwm = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 
-	//‰‰ñŒÄ‚Ño‚µ
+	//åˆå›å‘¼ã³å‡ºã—
 	bool ishipsjoint;
 	ishipsjoint = srcbone->IsHipsBone();
 
 
 	ChaMatrix currentwm;
-	//limitedworldmat = GetLimitedWorldMat(srcmotid, srcframe);//‚±‚±‚ğGetLimitedWorldMat‚É‚·‚é‚Æ‚P‰ñ–Ú‚ÌIK‚ª—‚ê‚éB‚Q‰ñ–Ú‚ÌIKˆÈ~‚ÍOKB
+	//limitedworldmat = GetLimitedWorldMat(srcmotid, srcframe);//ã“ã“ã‚’GetLimitedWorldMatã«ã™ã‚‹ã¨ï¼‘å›ç›®ã®IKãŒä¹±ã‚Œã‚‹ã€‚ï¼’å›ç›®ã®IKä»¥é™ã¯OKã€‚
 	currentwm = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 	ChaMatrix parentwm;
 	CQuaternion parentq;
@@ -780,7 +780,7 @@ int ChaCalcFunc::RotAndTraBoneQReq(CBone* srcbone, bool limitdegflag, int* onlyc
 		invparentq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 	}
 
-	//Get startframeframe traanim : SRT•Û‘¶‚ÍCModel::IKRotate* ‚©‚çŒÄ‚Ño‚·CBone::SaveSRT()‚Ås‚Á‚Ä‚¢‚é
+	//Get startframeframe traanim : SRTä¿å­˜ã¯CModel::IKRotate* ã‹ã‚‰å‘¼ã³å‡ºã™CBone::SaveSRT()ã§è¡Œã£ã¦ã„ã‚‹
 	//ChaVector3 startframetraanim = ChaVector3(0.0f, 0.0f, 0.0f);
 	ChaMatrix startframetraanimmat;
 	startframetraanimmat.SetIdentity();
@@ -793,7 +793,7 @@ int ChaCalcFunc::RotAndTraBoneQReq(CBone* srcbone, bool limitdegflag, int* onlyc
 			rmat0.SetIdentity();
 			tmat0.SetIdentity();
 			tanimmat0.SetIdentity();
-			//CModel::IKRotate* ‚©‚çŒÄ‚Ño‚µ‚½CBone::SaveSRT()‚Å•Û‘¶‚µ‚½SRT‚ğæ“¾
+			//CModel::IKRotate* ã‹ã‚‰å‘¼ã³å‡ºã—ãŸCBone::SaveSRT()ã§ä¿å­˜ã—ãŸSRTã‚’å–å¾—
 			startframemp->GetSaveSRTandTraAnim(&smat0, &rmat0, &tmat0, &tanimmat0);
 			startframetraanimmat = tanimmat0;
 		}
@@ -812,14 +812,14 @@ int ChaCalcFunc::RotAndTraBoneQReq(CBone* srcbone, bool limitdegflag, int* onlyc
 
 	//###########################################################################################################
 	//2022/12/29 Memo
-	//Hips‚Ì‚Æ‚«‚É‚Í@’Ç‰Á•ª‚Ì‰ñ“]‚ğŒã‚ë‚©‚çŠ|‚¯‚é
-	//‚»‚ÌÛ‚ÉTraAnim‚æ‚è‚àŒã‚ë‚©‚çŠ|‚¯‚é‚±‚Æ‚É‚æ‚è TraAnim‚ğ‰ñ“]‚·‚é
+	//Hipsã®ã¨ãã«ã¯ã€€è¿½åŠ åˆ†ã®å›è»¢ã‚’å¾Œã‚ã‹ã‚‰æ›ã‘ã‚‹
+	//ãã®éš›ã«TraAnimã‚ˆã‚Šã‚‚å¾Œã‚ã‹ã‚‰æ›ã‘ã‚‹ã“ã¨ã«ã‚ˆã‚Š TraAnimã‚’å›è»¢ã™ã‚‹
 	// 
-	//HipsˆÈŠO‚Ì‚É‚Í@qForRot‚Ì“à—e‚ÉƒgƒŠƒbƒN‚ª‚ ‚Á‚Ä@’Ç‰Á•ª‚Ì‰ñ“]‚ğ "À¿“I‚É‚Í"‘O‚©‚çŠ|‚¯‚Ä‚¢‚é
-	//‚±‚Ìê‡@TraAnim‚¾‚¯‚ğ•Ê“r‰ñ“]‚µ‚ÄƒZƒbƒg‚·‚é•K—v‚ª‚ ‚é
+	//Hipsä»¥å¤–ã®æ™‚ã«ã¯ã€€qForRotã®å†…å®¹ã«ãƒˆãƒªãƒƒã‚¯ãŒã‚ã£ã¦ã€€è¿½åŠ åˆ†ã®å›è»¢ã‚’ "å®Ÿè³ªçš„ã«ã¯"å‰ã‹ã‚‰æ›ã‘ã¦ã„ã‚‹
+	//ã“ã®å ´åˆã€€TraAnimã ã‘ã‚’åˆ¥é€”å›è»¢ã—ã¦ã‚»ãƒƒãƒˆã™ã‚‹å¿…è¦ãŒã‚ã‚‹
 	// 
-	//‚È‚º@HipsˆÈŠO‚Ì‚ÉHips‚Æ“¯‚¶ƒVƒ“ƒvƒ‹‚È®‚ğg‚¦‚È‚¢‚©‚Æ‚¢‚¤‚Æ
-	//‘Ì‘S‘Ì‚ğ‰ñ“]‚µ‚½‚È‚Ç‚É@‘Ì‚É‘Î‚·‚é‰ñ“]‚ÌŒü‚«‚ğˆÛ‚·‚é•K—v‚ª‚ ‚é‚Ì‚Å@Œã‚ë‚©‚çŠ|‚¯‚é‚±‚Æ‚ªo—ˆ‚È‚¢‚½‚ß
+	//ãªãœã€€Hipsä»¥å¤–ã®æ™‚ã«Hipsã¨åŒã˜ã‚·ãƒ³ãƒ—ãƒ«ãªå¼ã‚’ä½¿ãˆãªã„ã‹ã¨ã„ã†ã¨
+	//ä½“å…¨ä½“ã‚’å›è»¢ã—ãŸæ™‚ãªã©ã«ã€€ä½“ã«å¯¾ã™ã‚‹å›è»¢ã®å‘ãã‚’ç¶­æŒã™ã‚‹å¿…è¦ãŒã‚ã‚‹ã®ã§ã€€å¾Œã‚ã‹ã‚‰æ›ã‘ã‚‹ã“ã¨ãŒå‡ºæ¥ãªã„ãŸã‚
 	//###########################################################################################################
 
 
@@ -832,11 +832,11 @@ int ChaCalcFunc::RotAndTraBoneQReq(CBone* srcbone, bool limitdegflag, int* onlyc
 
 		//#############################################################################################################################
 		//2022/12/27
-		//hisp‚É‚Â‚¢‚Ä@ˆÚ“®‚à‰ñ“]‚·‚é‚É‚Í@‚É‚Â‚¢‚Ä
-		//InvCurNodeTra * curS * curR * CurNodeTra * TAnim * ParentWM ‚É‘Î‚µ‚Ä@‰ñ“]qForHipsRot‚ğ‰Á‚¦@curTAnim‚à‰ñ“]‚·‚é‚É‚Í
-		//ƒCƒ[ƒW‚Æ‚µ‚Ä‚Í@curwm‚Ìe‚ÌˆÊ’u‚É@qForHipsRotˆ—‚ğ‰Á‚¦‚éƒCƒ[ƒW
-		//ÀÛ‚É‚Í
-		//curTAnim‚ÆCurNodeTra‚Í—¼•û‚Æ‚àˆÚ“®¬•ª‚Ì‚İ‚Å‚ ‚é‚©‚ç‰ÂŠ·‚Å‚ ‚é‚©‚ç
+		//hispã«ã¤ã„ã¦ã€€ç§»å‹•ã‚‚å›è»¢ã™ã‚‹ã«ã¯ã€€ã«ã¤ã„ã¦
+		//InvCurNodeTra * curS * curR * CurNodeTra * TAnim * ParentWM ã«å¯¾ã—ã¦ã€€å›è»¢qForHipsRotã‚’åŠ ãˆã€€curTAnimã‚‚å›è»¢ã™ã‚‹ã«ã¯
+		//ã‚¤ãƒ¡ãƒ¼ã‚¸ã¨ã—ã¦ã¯ã€€curwmã®è¦ªã®ä½ç½®ã«ã€€qForHipsRotå‡¦ç†ã‚’åŠ ãˆã‚‹ã‚¤ãƒ¡ãƒ¼ã‚¸
+		//å®Ÿéš›ã«ã¯
+		//curTAnimã¨CurNodeTraã¯ä¸¡æ–¹ã¨ã‚‚ç§»å‹•æˆåˆ†ã®ã¿ã§ã‚ã‚‹ã‹ã‚‰å¯æ›ã§ã‚ã‚‹ã‹ã‚‰
 		//(InvCurNodeTra * curS * curR * TAnim * CurNodeTra) * InvCurNodeTra * qForHipsRot * CurNodeTra * ParentWM
 		//currentwm * InvCurNode * qForHipsRot * CurNodeTra * ParentWM
 		//#############################################################################################################################
@@ -855,9 +855,9 @@ int ChaCalcFunc::RotAndTraBoneQReq(CBone* srcbone, bool limitdegflag, int* onlyc
 				srcmotid, roundingframe, newwm, onlycheckflag, fromiktarget);
 			*onlycheckptr = ismovable;
 			//if (ismovable == 0) {
-			//	return curmp;// not movable‚Ìê‡‚Í@ˆó‚ğ•t‚¯‚Ä@’¼‚¿‚ÉƒŠƒ^[ƒ“‚·‚é
+			//	return curmp;// not movableã®å ´åˆã¯ã€€å°ã‚’ä»˜ã‘ã¦ã€€ç›´ã¡ã«ãƒªã‚¿ãƒ¼ãƒ³ã™ã‚‹
 			//}
-			return ismovable;//onlycheckptr != NULL‚Ìê‡‚Í@‰‰ñŒÄ‚Ño‚µ‚Åmovableƒ`ƒFƒbƒN‚µ‚Ä’¼‚¿‚ÉƒŠƒ^[ƒ“
+			return ismovable;//onlycheckptr != NULLã®å ´åˆã¯ã€€åˆå›å‘¼ã³å‡ºã—ã§movableãƒã‚§ãƒƒã‚¯ã—ã¦ç›´ã¡ã«ãƒªã‚¿ãƒ¼ãƒ³
 		}
 		else {
 			bool directsetflag = false;
@@ -872,11 +872,11 @@ int ChaCalcFunc::RotAndTraBoneQReq(CBone* srcbone, bool limitdegflag, int* onlyc
 	else {
 
 		//###############################################
-		//other joints !!!! traanim‚ğ qForRot ‚Å‰ñ“]‚·‚é
+		//other joints !!!! traanimã‚’ qForRot ã§å›è»¢ã™ã‚‹
 		//###############################################
 
 
-			////ˆÈ‰º‚Rs@hips‚Æ“¯‚¶‚æ‚¤‚É‚·‚é‚Æ@traanim‚ªİ’è‚µ‚Ä‚ ‚éƒWƒ‡ƒCƒ“ƒg‚Å@‰ñ“]²‚ªƒ}ƒjƒsƒ…ƒŒ[ƒ^‚Æ‡‚í‚È‚¢
+			////ä»¥ä¸‹ï¼“è¡Œã€€hipsã¨åŒã˜ã‚ˆã†ã«ã™ã‚‹ã¨ã€€traanimãŒè¨­å®šã—ã¦ã‚ã‚‹ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã§ã€€å›è»¢è»¸ãŒãƒãƒ‹ãƒ”ãƒ¥ãƒ¬ãƒ¼ã‚¿ã¨åˆã‚ãªã„
 			//newwm = currentwm * ChaMatrixInv(parentwm) *
 			//	ChaMatrixInv(ChaMatrixTra(GetNodeMat())) * ChaMatrixInv(startframetraanimmat) * qForRot.MakeRotMatX() * ChaMatrixTra(GetNodeMat()) * startframetraanimmat *
 			//	parentwm;
@@ -885,12 +885,12 @@ int ChaCalcFunc::RotAndTraBoneQReq(CBone* srcbone, bool limitdegflag, int* onlyc
 
 		//########################################################################
 		//2023/01/14
-		//w‚ÌRig‚ÅƒeƒXƒg‚µ‚½‚Æ‚±‚ë §ŒÀŠp“x—L‚è‚Ìê‡‚É@traanim‚ª•s³‚É‚È‚Á‚½
-		//‚Q’iŠK‚É•ª‚¯‚ÄŒvZ‚·‚é‚±‚Æ‚É‚æ‚è‰ğŒˆ
+		//æŒ‡ã®Rigã§ãƒ†ã‚¹ãƒˆã—ãŸã¨ã“ã‚ åˆ¶é™è§’åº¦æœ‰ã‚Šã®å ´åˆã«ã€€traanimãŒä¸æ­£ã«ãªã£ãŸ
+		//ï¼’æ®µéšã«åˆ†ã‘ã¦è¨ˆç®—ã™ã‚‹ã“ã¨ã«ã‚ˆã‚Šè§£æ±º
 		//########################################################################
 
 		//#############################################################
-		//‚Q’iŠKˆ—‚Ì‚P’i–ÚF‰ñ“]‚¾‚¯‚ğ•ÏX‚µ‚ÄŠm’è‚·‚é‚½‚ß‚Ì@‚P’i–Ú
+		//ï¼’æ®µéšå‡¦ç†ã®ï¼‘æ®µç›®ï¼šå›è»¢ã ã‘ã‚’å¤‰æ›´ã—ã¦ç¢ºå®šã™ã‚‹ãŸã‚ã®ã€€ï¼‘æ®µç›®
 		//#############################################################
 			////calc new local rot
 		ChaMatrix newlocalrotmatForRot;
@@ -903,20 +903,20 @@ int ChaCalcFunc::RotAndTraBoneQReq(CBone* srcbone, bool limitdegflag, int* onlyc
 		newlocalrotmatForRot = srcbone->CalcNewLocalRotMatFromQofIK(limitdegflag, srcmotid, roundingframe, qForRot, &smatForRot, &rmatForRot, &tanimmatForRot);
 
 		ChaMatrix newtanimmatrotated;
-		newtanimmatrotated = tanimmatForRot;//‚P’i–Ú‚Å‚Í@traanim‚ğ ‰ñ“]‚µ‚È‚¢
+		newtanimmatrotated = tanimmatForRot;//ï¼‘æ®µç›®ã§ã¯ã€€traanimã‚’ å›è»¢ã—ãªã„
 
-		////	//traanim‚ğ ‰ñ“]‚µ‚È‚¢‚Æ‚«
+		////	//traanimã‚’ å›è»¢ã—ãªã„ã¨ã
 		////	newlocalrotmatForHipsRot = newlocalrotmatForRot;
 		////	newtanimmatrotated = tanimmatForRot;
 
 
-		//#### SRTAnim‚©‚çƒ[ƒJƒ‹s—ñ‘g‚İ—§‚Ä ####
+		//#### SRTAnimã‹ã‚‰ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—çµ„ã¿ç«‹ã¦ ####
 		ChaMatrix newlocalmat;
 		newlocalmat = ChaMatrixFromSRTraAnim(true, true, srcbone->GetNodeMat(),
 			&smatForRot, &newlocalrotmatForRot, &newtanimmatrotated);//ForRot
-		//newwm = newlocalmat * parentwmForRot;//global‚É‚·‚é
+		//newwm = newlocalmat * parentwmForRot;//globalã«ã™ã‚‹
 		if (srcbone->GetParent(false)) {
-			newwm = newlocalmat * parentwm;//global‚É‚·‚é
+			newwm = newlocalmat * parentwm;//globalã«ã™ã‚‹
 		}
 		else {
 			newwm = newlocalmat;
@@ -929,29 +929,29 @@ int ChaCalcFunc::RotAndTraBoneQReq(CBone* srcbone, bool limitdegflag, int* onlyc
 				srcmotid, roundingframe, newwm, onlycheckflag, fromiktarget);
 			*onlycheckptr = ismovable;
 			//if (ismovable == 0) {
-			//	return curmp;// not movable‚Ìê‡‚Í@ˆó‚ğ•t‚¯‚Ä@’¼‚¿‚ÉƒŠƒ^[ƒ“‚·‚é
+			//	return curmp;// not movableã®å ´åˆã¯ã€€å°ã‚’ä»˜ã‘ã¦ã€€ç›´ã¡ã«ãƒªã‚¿ãƒ¼ãƒ³ã™ã‚‹
 			//}
 
 
-			//onlycheck‚Ìê‡‚Í@‚±‚±‚Ü‚Å
+			//onlycheckã®å ´åˆã¯ã€€ã“ã“ã¾ã§
 			return ismovable;
 
 		}
 		else {
 			bool directsetflag = false;
 			int onlycheckflag = 0;
-			int setchildflag = 1;//2023/02/12 ‚Q’i–Ú‚Ì‘O‚ÉÄ‹A‚·‚é•K—v
+			int setchildflag = 1;//2023/02/12 ï¼’æ®µç›®ã®å‰ã«å†å¸°ã™ã‚‹å¿…è¦
 			ismovable = srcbone->SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag,
 				srcmotid, roundingframe, newwm, onlycheckflag, fromiktarget);
 		}
 		currentnewwm = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 
 		////#####################################################################################################
-		////‚Q’iŠKˆ—‚Ì‚Q’i–ÚFŠp“x§ŒÀƒIƒ“ƒIƒt‚ğl—¶‚µ@‰ñ“]‚ğŠm’è‚³‚¹‚½Œã@ˆÚ“®ƒAƒjƒ‚ğ‰ñ“]‚·‚é‚½‚ß‚Ì@‚Q’i–Ú
+		////ï¼’æ®µéšå‡¦ç†ã®ï¼’æ®µç›®ï¼šè§’åº¦åˆ¶é™ã‚ªãƒ³ã‚ªãƒ•ã‚’è€ƒæ…®ã—ã€€å›è»¢ã‚’ç¢ºå®šã•ã›ãŸå¾Œã€€ç§»å‹•ã‚¢ãƒ‹ãƒ¡ã‚’å›è»¢ã™ã‚‹ãŸã‚ã®ã€€ï¼’æ®µç›®
 		////#####################################################################################################
 
 
-			//2023/01/22 §ŒÀŠp“x‚Æˆê‚Ég‚¤‚Æ@‘€ì‚²‚Æ‚ÉŒë·‚ª’~Ï‚·‚é‚Ì‚Å@ƒIƒvƒVƒ‡ƒ“‚É‚µ‚½
+			//2023/01/22 åˆ¶é™è§’åº¦ã¨ä¸€ç·’ã«ä½¿ã†ã¨ã€€æ“ä½œã”ã¨ã«èª¤å·®ãŒè“„ç©ã™ã‚‹ã®ã§ã€€ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã«ã—ãŸ
 		if ((ismovable == 1) && g_rotatetanim) {
 			////calc new local rot
 			ChaMatrix tmplocalmat;
@@ -969,23 +969,23 @@ int ChaCalcFunc::RotAndTraBoneQReq(CBone* srcbone, bool limitdegflag, int* onlyc
 			GetSRTandTraAnim(tmplocalmat, srcbone->GetNodeMat(), &smatForRot2, &rmatForRot2, &tmatForRot2, &tanimmatForRot2);
 
 
-			//‚Q’i–Ú‚Å‚Í@Šm’è‚µ‚½‰ñ“]‚É‚æ‚ètraanim‚ğ‰ñ“]‚·‚é
+			//ï¼’æ®µç›®ã§ã¯ã€€ç¢ºå®šã—ãŸå›è»¢ã«ã‚ˆã‚Štraanimã‚’å›è»¢ã™ã‚‹
 			ChaMatrix newtanimmatrotated2;
 			newtanimmatrotated2 = srcbone->CalcNewLocalTAnimMatFromSRTraAnim(rmatForRot2,
 				smatForRot, rmatForRot, tanimmatForRot, ChaMatrixTraVec(startframetraanimmat));
 
-			////	//traanim‚ğ ‰ñ“]‚µ‚È‚¢‚Æ‚«
+			////	//traanimã‚’ å›è»¢ã—ãªã„ã¨ã
 			////	newlocalrotmatForHipsRot = newlocalrotmatForRot;
 			////	newtanimmatrotated = tanimmatForRot;
 
 
-			//#### SRTAnim‚©‚çƒ[ƒJƒ‹s—ñ‘g‚İ—§‚Ä ####
+			//#### SRTAnimã‹ã‚‰ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—çµ„ã¿ç«‹ã¦ ####
 			ChaMatrix newlocalmat2;
 			newlocalmat2 = ChaMatrixFromSRTraAnim(true, true, srcbone->GetNodeMat(),
 				&smatForRot, &rmatForRot2, &newtanimmatrotated2);//ForRot
-			//newwm = newlocalmat * parentwmForRot;//global‚É‚·‚é
+			//newwm = newlocalmat * parentwmForRot;//globalã«ã™ã‚‹
 			if (srcbone->GetParent(false)) {
-				newwm = newlocalmat2 * parentwm;//global‚É‚·‚é
+				newwm = newlocalmat2 * parentwm;//globalã«ã™ã‚‹
 			}
 			else {
 				newwm = newlocalmat2;
@@ -1003,7 +1003,7 @@ int ChaCalcFunc::RotAndTraBoneQReq(CBone* srcbone, bool limitdegflag, int* onlyc
 
 	curmp->SetAbsMat(srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
 
-	//2023/02/12 setchildflag = 1‚Åˆ—‚·‚é‚±‚Æ‚É
+	//2023/02/12 setchildflag = 1ã§å‡¦ç†ã™ã‚‹ã“ã¨ã«
 	//if (ismovable == 1) {
 	//	if (m_child && curmp) {
 	//		bool setbroflag2 = true;
@@ -1033,7 +1033,7 @@ int ChaCalcFunc::IKTargetVec(CModel* srcmodel, bool limitdegflag, CEditRange* er
 	for (targetno = 0; targetno < iktargetbonevecsize; targetno++) {
 		CBone* srcbone = srcmodel->GetIKTargetBone(targetno);
 		if (srcbone && srcbone->IsSkeleton() && srcbone->GetParent(false) && srcbone->GetIKTargetFlag()) {
-			ChaVector3 iktargetpos = srcbone->GetIKTargetPos();//modelÀ•WŒn
+			ChaVector3 iktargetpos = srcbone->GetIKTargetPos();//modelåº§æ¨™ç³»
 			int calccount;
 			const int calccountmax = 30;
 			for (calccount = 0; calccount < calccountmax; calccount++) {
@@ -1100,7 +1100,7 @@ int ChaCalcFunc::IKRotateForIKTarget(CModel* srcmodel, bool limitdegflag, CEditR
 
 
 	//For IKTraget
-	//ƒJƒƒ‰²‰ñ“]‚ÆƒJƒƒ‰²‚É‚’¼‚È²‰ñ“]‚Æ@‚Q‰ñÀs‚·‚é
+	//ã‚«ãƒ¡ãƒ©è»¸å›è»¢ã¨ã‚«ãƒ¡ãƒ©è»¸ã«å‚ç›´ãªè»¸å›è»¢ã¨ã€€ï¼’å›å®Ÿè¡Œã™ã‚‹
 	int calcnum = 3;
 
 	int calccnt;
@@ -1116,20 +1116,20 @@ int ChaCalcFunc::IKRotateForIKTarget(CModel* srcmodel, bool limitdegflag, CEditR
 		while (curbone && lastpar && lastpar->GetParent(false) && ((maxlevel == 0) || (levelcnt < maxlevel)))
 		{
 
-			//IKTarget()‚Åƒtƒ‰ƒO‚ªƒŠƒZƒbƒg‚³‚ê‚é‚Ì‚Å@ƒ‹[ƒvæ“ª‚Å@ƒZƒbƒg‚µ’¼‚µ
+			//IKTarget()ã§ãƒ•ãƒ©ã‚°ãŒãƒªã‚»ãƒƒãƒˆã•ã‚Œã‚‹ã®ã§ã€€ãƒ«ãƒ¼ãƒ—å…ˆé ­ã§ã€€ã‚»ãƒƒãƒˆã—ç›´ã—
 			//g_underIKRot = true;
 
 			//CBone* parentbone = curbone->GetParent();
 			CBone* parentbone = lastpar->GetParent(false);
 			if (parentbone && parentbone->IsSkeleton() && (curbone->GetJointFPos() != parentbone->GetJointFPos())) {
-				//UpdateMatrix(limitdegflag, &m_matWorld, &m_matVP);//curmpXV
+				//UpdateMatrix(limitdegflag, &m_matWorld, &m_matVP);//curmpæ›´æ–°
 
 				CRigidElem* curre = srcmodel->GetRigidElem(lastpar->GetBoneNo());
 				if (curre && (curre->GetForbidRotFlag() != 0)) {
 
 					//_ASSERT(0);
 
-					//‰ñ“]‹Ö~‚Ìê‡ˆ—‚ğƒXƒLƒbƒv
+					//å›è»¢ç¦æ­¢ã®å ´åˆå‡¦ç†ã‚’ã‚¹ã‚­ãƒƒãƒ—
 					if (parentbone) {
 						lastpar = parentbone;
 					}
@@ -1183,11 +1183,11 @@ int ChaCalcFunc::IKRotateForIKTarget(CModel* srcmodel, bool limitdegflag, CEditR
 
 					//parentbone->SaveSRT(limitdegflag, m_curmotinfo->motid, startframe, endframe);
 					// 
-					//•Û‘¶Œ‹‰Ê‚Í@CBone::RotAndTraBoneQReq‚É‚¨‚¢‚Ä‚µ‚©g‚Á‚Ä‚¨‚ç‚¸@startframe‚µ‚©g‚Á‚Ä‚¢‚È‚¢
+					//ä¿å­˜çµæœã¯ã€€CBone::RotAndTraBoneQReqã«ãŠã„ã¦ã—ã‹ä½¿ã£ã¦ãŠã‚‰ãšã€€startframeã—ã‹ä½¿ã£ã¦ã„ãªã„
 					parentbone->SaveSRT(limitdegflag, srcmotid, startframe);
 
 
-					//IKRotate‚Í•Ç‚·‚èIK‚Ås‚¤‚Ì‚Å@‰ñ“]‰Â”\‚©‚Ç‚¤‚©‚Ìƒ`ƒFƒbƒN‚Í‚±‚±‚Å‚Í‚µ‚È‚¢
+					//IKRotateã¯å£ã™ã‚ŠIKã§è¡Œã†ã®ã§ã€€å›è»¢å¯èƒ½ã‹ã©ã†ã‹ã®ãƒã‚§ãƒƒã‚¯ã¯ã“ã“ã§ã¯ã—ãªã„
 
 
 					int keyno = 0;
@@ -1201,7 +1201,7 @@ int ChaCalcFunc::IKRotateForIKTarget(CModel* srcmodel, bool limitdegflag, CEditR
 					keyno++;
 
 					//if (g_applyendflag == 1) {
-					//	//curmotinfo->curframe‚©‚çÅŒã‚Ü‚Åcurmotinfo->curframe‚Ìp¨‚ğ“K—p
+					//	//curmotinfo->curframeã‹ã‚‰æœ€å¾Œã¾ã§curmotinfo->curframeã®å§¿å‹¢ã‚’é©ç”¨
 					//	int tolast;
 					//	for (tolast = (int)m_curmotinfo->curframe + 1; tolast < m_curmotinfo->frameleng; tolast++) {
 					//		(m_bonelist[0])->PasteRotReq(limitdegflag, m_curmotinfo->motid, m_curmotinfo->curframe, tolast);
@@ -1214,10 +1214,10 @@ int ChaCalcFunc::IKRotateForIKTarget(CModel* srcmodel, bool limitdegflag, CEditR
 			if (parentbone) {
 				lastpar = parentbone;
 
-				//ƒRƒ“ƒXƒgƒŒƒCƒ“ƒg—p‰ñ“]‚à@IKStop‚Å~‚ß‚é•K—v—L
-				//‘Ì‚Ì’†S‚Ü‚Å‰ñ“]‚ğ“`‚¦‚½•û‚ª@ƒRƒ“ƒXƒgƒŒƒCƒ“ƒg‚µ‚â‚·‚¢‚ª
-				//shoulder‚ÌIKStop‚Å‰ñ“]‚ğ~‚ß‚È‚¢ê‡
-				//‰Eè‚Æ¶è‚ÌƒRƒ“ƒXƒgƒŒƒCƒ“ƒg‡”Ô‚É‚æ‚è@‚Ç‚¿‚ç‚©‚É‚µ‚©S‘©‚Å‚«‚È‚­‚È‚é
+				//ã‚³ãƒ³ã‚¹ãƒˆãƒ¬ã‚¤ãƒ³ãƒˆç”¨å›è»¢ã‚‚ã€€IKStopã§æ­¢ã‚ã‚‹å¿…è¦æœ‰
+				//ä½“ã®ä¸­å¿ƒã¾ã§å›è»¢ã‚’ä¼ãˆãŸæ–¹ãŒã€€ã‚³ãƒ³ã‚¹ãƒˆãƒ¬ã‚¤ãƒ³ãƒˆã—ã‚„ã™ã„ãŒ
+				//shoulderã®IKStopã§å›è»¢ã‚’æ­¢ã‚ãªã„å ´åˆ
+				//å³æ‰‹ã¨å·¦æ‰‹ã®ã‚³ãƒ³ã‚¹ãƒˆãƒ¬ã‚¤ãƒ³ãƒˆé †ç•ªã«ã‚ˆã‚Šã€€ã©ã¡ã‚‰ã‹ã«ã—ã‹æ‹˜æŸã§ããªããªã‚‹
 				//check ikstopflag
 				if (parentbone->GetIKStopFlag()) {
 					break;
@@ -1230,7 +1230,7 @@ int ChaCalcFunc::IKRotateForIKTarget(CModel* srcmodel, bool limitdegflag, CEditR
 			//currate = (float)pow((double)g_ikrate, (double)g_ikfirst * (double)levelcnt);
 		}
 
-		//â‘Îƒ‚[ƒh‚Ìê‡
+		//çµ¶å¯¾ãƒ¢ãƒ¼ãƒ‰ã®å ´åˆ
 		if ((calccnt == calcnum) && g_absikflag && lastpar) {
 			AdjustBoneTra(srcmodel, limitdegflag, erptr, lastpar, srcmotid);
 		}
@@ -1295,7 +1295,7 @@ int ChaCalcFunc::AdjustBoneTra(CModel* srcmodel, bool limitdegflag, CEditRange* 
 					tmplist.push_back(tmpki);
 					tmper.SetRange(tmplist, curframe);
 					//FKBoneTra( 0, &tmper, lastpar->GetBoneNo(), diffpos );
-					FKBoneTra(srcmodel, limitdegflag, 1, &tmper, lastpar->GetBoneNo(), srcmotid, diffpos);//2022/11/07 FKBoneTra“à‚Åframeno loop‚µ‚È‚¢‚æ‚¤‚É@onlyoneflag = 1
+					FKBoneTra(srcmodel, limitdegflag, 1, &tmper, lastpar->GetBoneNo(), srcmotid, diffpos);//2022/11/07 FKBoneTraå†…ã§frameno loopã—ãªã„ã‚ˆã†ã«ã€€onlyoneflag = 1
 				}
 			}
 			keyno++;
@@ -1343,7 +1343,7 @@ int ChaCalcFunc::FKBoneTra(CModel* srcmodel, bool limitdegflag, int onlyoneflag,
 	double firstframe = 0.0;
 
 	ChaMatrix dummyparentwm;
-	dummyparentwm.SetIdentity();//ReqŠÖ”‚ÌÅ‰‚ÌŒÄ‚Ño‚µ‚Í@Identity‚ğ“n‚¹‚Î‚æ‚¢
+	dummyparentwm.SetIdentity();//Reqé–¢æ•°ã®æœ€åˆã®å‘¼ã³å‡ºã—æ™‚ã¯ã€€Identityã‚’æ¸¡ã›ã°ã‚ˆã„
 
 	if (keynum >= 2) {
 		//float changerate = 1.0f / (float)(endframe - startframe + 1);
@@ -1471,9 +1471,9 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 
 	//###################################################################################################################
 	//2022/12/17
-	//‚±‚ÌŠÖ”‚ÌŒÄ‚Ño‚µŒ³‚ÅLimitEul()‚ğ‚·‚é
-	//Parent‚Ìp¨‚ÉŠÖ‚µ‚Ä‚ÍŒvZÏ‚ÌGetParent()->GetWorldMat()‚ğg—p : curwm‚ÉŠ|‚©‚Á‚Ä‚¢‚é‚Ì‚ÍLimited‚Å‚Í‚È‚¢parentwm
-	//ƒ‚[ƒVƒ‡ƒ“‘S‘Ì‚ÌƒIƒCƒ‰[ŠpŒvZ‚µ’¼‚µ‚Í@‚±‚ÌŠÖ”‚Å‚Í‚È‚­@UpdateMatrix‚ğg—p
+	//ã“ã®é–¢æ•°ã®å‘¼ã³å‡ºã—å…ƒã§LimitEul()ã‚’ã™ã‚‹
+	//Parentã®å§¿å‹¢ã«é–¢ã—ã¦ã¯è¨ˆç®—æ¸ˆã®GetParent()->GetWorldMat()ã‚’ä½¿ç”¨ : curwmã«æ›ã‹ã£ã¦ã„ã‚‹ã®ã¯Limitedã§ã¯ãªã„parentwm
+	//ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³å…¨ä½“ã®ã‚ªã‚¤ãƒ©ãƒ¼è§’è¨ˆç®—ã—ç›´ã—ã¯ã€€ã“ã®é–¢æ•°ã§ã¯ãªãã€€UpdateMatrixã‚’ä½¿ç”¨
 	//###################################################################################################################
 
 	double roundingframe = RoundingTime(srcframe);
@@ -1507,13 +1507,13 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 	//}
 
 	if (befeulkind == BEFEUL_BEFFRAME) {
-		//1‚Â‘O‚ÌƒtƒŒ[ƒ€‚ÌEUL‚Í‚·‚Å‚ÉŒvZ‚³‚ê‚Ä‚¢‚é‚Æ‰¼’è‚·‚éB
-		//bool limitdegOnLimitEul = false;//2023/02/07 befeul‚Íunlimited. ‰½‰ñ“]‚à‚·‚éê‡‚ÉƒI[ƒo[‚P‚W‚O“x‚ÌŠp“x‚Å§ŒÀ‚·‚é‚½‚ß‚É.
+		//1ã¤å‰ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã®EULã¯ã™ã§ã«è¨ˆç®—ã•ã‚Œã¦ã„ã‚‹ã¨ä»®å®šã™ã‚‹ã€‚
+		//bool limitdegOnLimitEul = false;//2023/02/07 befeulã¯unlimited. ä½•å›è»¢ã‚‚ã™ã‚‹å ´åˆã«ã‚ªãƒ¼ãƒãƒ¼ï¼‘ï¼˜ï¼åº¦ã®è§’åº¦ã§åˆ¶é™ã™ã‚‹ãŸã‚ã«.
 		//befeul = srcbone->GetBefEul(limitdegOnLimitEul, srcmotid, roundingframe);
 
 		//2023/10/18
-		//limitdeg true‚Ì‚Æ‚«‚Ì‚½‚ß‚É@limitdegflag‚Í‚»‚Ì‚Ü‚Ü“n‚·•K—v
-		//‚P‚W‚O“xƒI[ƒo[‘Îô‚Æ‚µ‚Ä‚Í@PostIK‚ÌŒã‚É@CalcBoneEul‚ğŒÄ‚Ô
+		//limitdeg trueã®ã¨ãã®ãŸã‚ã«ã€€limitdegflagã¯ãã®ã¾ã¾æ¸¡ã™å¿…è¦
+		//ï¼‘ï¼˜ï¼åº¦ã‚ªãƒ¼ãƒãƒ¼å¯¾ç­–ã¨ã—ã¦ã¯ã€€PostIKã®å¾Œã«ã€€CalcBoneEulã‚’å‘¼ã¶
 		befeul = srcbone->GetBefEul(limitdegflag, srcmotid, roundingframe);
 
 	}
@@ -1559,7 +1559,7 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 	if (srcbone->IsSkeleton()) {
 
 		//###########################
-		//skeleton‚Ìê‡
+		//skeletonã®å ´åˆ
 		//###########################
 		CMotionPoint* curmp = 0;
 		curmp = srcbone->GetMotionPoint(srcmotid, roundingframe);
@@ -1572,32 +1572,32 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 
 				ChaMatrix parentwm, eulmat;
 
-				//parent‚ªeNull‚Ìê‡‚Í‚ ‚é
+				//parentãŒeNullã®å ´åˆã¯ã‚ã‚‹
 				if (parentbone->IsSkeleton()) {
 					parentwm = parentbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 					eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
 				}
 				else if (parentbone->IsNull() || parentbone->IsCamera()) {
-					//2023/05/16 eNull‚É‚àIdentityˆÈŠO‚ÌNodeMat‚ªİ’è‚³‚ê‚½‚½‚ßC³
-					//parentwm = ChaMatrixInv(parentbone->GetNodeMat()) * parentbone->GetENullMatrix();//ENullMatrix‚É‚ÍNodeMat‚ªŠ|‚©‚Á‚Ä‚¢‚é
+					//2023/05/16 eNullã«ã‚‚Identityä»¥å¤–ã®NodeMatãŒè¨­å®šã•ã‚ŒãŸãŸã‚ä¿®æ­£
+					//parentwm = ChaMatrixInv(parentbone->GetNodeMat()) * parentbone->GetENullMatrix();//ENullMatrixã«ã¯NodeMatãŒæ›ã‹ã£ã¦ã„ã‚‹
 
-					//2023/06/26 ‘‚«o‚µ‚Éworldmat (InvNodeMat * EvaluateGlobalTransform)‚Éenull‚Ì@‰ñ“]‚Ì@‰e‹¿‚Í“ü‚Á‚Ä‚¢‚È‚¢? NodeMat‚É“ü‚Á‚Ä‚¢‚éH@HHH
-					//ƒ‚ƒfƒ‹‚ÌeNull‚ğY180“x‰ñ“]‚µ‚½ƒ‚ƒfƒ‹‚Ì“Ç‚İ‘‚«“Ç‚İ‘‚«“Ç‚İƒeƒXƒg‚ÅŠm”F
-					//‰º‹L‚Ì‚æ‚¤‚É•ÏX‚µ‚È‚¢‚Æ@eNull‚ğY180“x‰ñ“]‚µ‚½ƒ‚ƒfƒ‹‚Ì“Ç‚İ‘‚«“Ç‚İ‚ÉƒIƒCƒ‰[Šp•\Œ»‚ª•Ï¿‚µ@“Ç‚İ‘‚«“Ç‚İ‘‚«“Ç‚İƒeƒXƒg‚Å@ƒ‚ƒfƒ‹Œü‚«‚ª”½‘Î‚ğŒü‚­
+					//2023/06/26 æ›¸ãå‡ºã—æ™‚ã«worldmat (InvNodeMat * EvaluateGlobalTransform)ã«enullã®ã€€å›è»¢ã®ã€€å½±éŸ¿ã¯å…¥ã£ã¦ã„ãªã„? NodeMatã«å…¥ã£ã¦ã„ã‚‹ï¼Ÿã€€ï¼Ÿï¼Ÿï¼Ÿ
+					//ãƒ¢ãƒ‡ãƒ«ã®eNullã‚’Y180åº¦å›è»¢ã—ãŸãƒ¢ãƒ‡ãƒ«ã®èª­ã¿æ›¸ãèª­ã¿æ›¸ãèª­ã¿ãƒ†ã‚¹ãƒˆã§ç¢ºèª
+					//ä¸‹è¨˜ã®ã‚ˆã†ã«å¤‰æ›´ã—ãªã„ã¨ã€€eNullã‚’Y180åº¦å›è»¢ã—ãŸãƒ¢ãƒ‡ãƒ«ã®èª­ã¿æ›¸ãèª­ã¿æ™‚ã«ã‚ªã‚¤ãƒ©ãƒ¼è§’è¡¨ç¾ãŒå¤‰è³ªã—ã€€èª­ã¿æ›¸ãèª­ã¿æ›¸ãèª­ã¿ãƒ†ã‚¹ãƒˆã§ã€€ãƒ¢ãƒ‡ãƒ«å‘ããŒåå¯¾ã‚’å‘ã
 					//eulq = ChaMatrix2Q(curwm);
 
 
 
 
-					//2023/06/29 eNull‚àƒAƒjƒ[ƒVƒ‡ƒ“‰Â”\‚É‚µ‚½‚Ì‚Å
-					//GetENullMatrix‚ğC³‚µ‚ÄCalcEnullMatReq‚ÅŒvZ‚·‚é‚æ‚¤‚É‚µ‚½‚Æ‚±‚ë‚ª2023/06/26‚©‚ç•Ï‚í‚Á‚½‚Æ‚±‚ë
-					//SetWorldMat()‚É‚Í@‰ñ“]ŒvZ—p‚Ìƒ[ƒJƒ‹s—ñæ“¾‚É@parenet‚ªeNull‚Ìê‡ŠÖ‚µ‚Ä‚àGetWorldMat[invNode * CalcENullMat]‚ğg—p
-					//ˆÚ“®ŒvZ‚É‚Í@CalcFbxLocalMatrix“à‚É‚Ä@parent‚ªeNull‚Ìê‡@GetENullMatrix‚ğg—p
+					//2023/06/29 eNullã‚‚ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å¯èƒ½ã«ã—ãŸã®ã§
+					//GetENullMatrixã‚’ä¿®æ­£ã—ã¦CalcEnullMatReqã§è¨ˆç®—ã™ã‚‹ã‚ˆã†ã«ã—ãŸã¨ã“ã‚ãŒ2023/06/26ã‹ã‚‰å¤‰ã‚ã£ãŸã¨ã“ã‚
+					//SetWorldMat()æ™‚ã«ã¯ã€€å›è»¢è¨ˆç®—ç”¨ã®ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—å–å¾—æ™‚ã«ã€€parenetãŒeNullã®å ´åˆé–¢ã—ã¦ã‚‚GetWorldMat[invNode * CalcENullMat]ã‚’ä½¿ç”¨
+					//ç§»å‹•è¨ˆç®—æ™‚ã«ã¯ã€€CalcFbxLocalMatrixå†…ã«ã¦ã€€parentãŒeNullã®å ´åˆã€€GetENullMatrixã‚’ä½¿ç”¨
 					//
-					//null‚Ì@‰ñ“]‚Ì@‰e‹¿‚Í“ü‚Á‚Ä‚¢‚È‚¢? NodeMat‚É“ü‚Á‚Ä‚¢‚éH‚ÉŠÖ‚µ‚Ä
-					//eNull‚ªƒAƒjƒ[ƒVƒ‡ƒ“‚µ‚È‚¢ê‡‚É‚Í@eNull‚Ì‰Šús—ñ‚ÍNodeMat‚ÉŠÜ‚Ü‚ê‚é@eNull‚ÌƒAƒjƒ[ƒVƒ‡ƒ“•ª‚ÍInvNode * ENullMat = Indentity‚Æ‚È‚é
-					//eNull‚ªƒAƒjƒ[ƒVƒ‡ƒ“‚·‚éê‡‚É‚Í@eNull‚ÌƒAƒjƒ[ƒVƒ‡ƒ“•ª‚ÍInvNode * ENullMat != Indentity‚Æ‚È‚èŒã‚ë‚ÉŠ|‚¯‚é@
-					//•â‘«FNodeMat‚ÍƒWƒ‡ƒCƒ“ƒg‚ÌˆÊ’u‚Å‚ ‚é@NodeMat‚ğ“r’†‚Å•Ï‚¦‚é‚±‚Æ‚ÍƒWƒ‡ƒCƒ“ƒgˆÊ’u‚ğ“r’†‚Å•Ï‚¦‚é‚±‚Æ‚Å‚ ‚è@’ÊíNodeMat‚Í•Ï‚¦‚È‚¢
+					//nullã®ã€€å›è»¢ã®ã€€å½±éŸ¿ã¯å…¥ã£ã¦ã„ãªã„? NodeMatã«å…¥ã£ã¦ã„ã‚‹ï¼Ÿã«é–¢ã—ã¦
+					//eNullãŒã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã—ãªã„å ´åˆã«ã¯ã€€eNullã®åˆæœŸè¡Œåˆ—ã¯NodeMatã«å«ã¾ã‚Œã‚‹ã€€eNullã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³åˆ†ã¯InvNode * ENullMat = Indentityã¨ãªã‚‹
+					//eNullãŒã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã™ã‚‹å ´åˆã«ã¯ã€€eNullã®ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³åˆ†ã¯InvNode * ENullMat != Indentityã¨ãªã‚Šå¾Œã‚ã«æ›ã‘ã‚‹ã€€
+					//è£œè¶³ï¼šNodeMatã¯ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®ä½ç½®ã§ã‚ã‚‹ã€€NodeMatã‚’é€”ä¸­ã§å¤‰ãˆã‚‹ã“ã¨ã¯ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆä½ç½®ã‚’é€”ä¸­ã§å¤‰ãˆã‚‹ã“ã¨ã§ã‚ã‚Šã€€é€šå¸¸NodeMatã¯å¤‰ãˆãªã„
 					parentwm = parentbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 					eulq = ChaMatrix2Q(ChaMatrixInv(parentwm)) * ChaMatrix2Q(curwm);
 				}
@@ -1621,14 +1621,14 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 	else if (srcbone->IsCamera()) {
 
 		//########################
-		//ƒJƒƒ‰‚Ìê‡
+		//ã‚«ãƒ¡ãƒ©ã®å ´åˆ
 		//########################
 
 		if (srcbone->GetParModel() && srcbone->GetParModel()->IsCameraLoaded()) {
 
 			EnterCriticalSection(&g_CritSection_FbxSdk);
 			cureul = srcbone->GetParModel()->CalcCameraFbxEulXYZ(srcmotid, roundingframe);
-			//####  rotorder’ˆÓ  #####
+			//####  rotorderæ³¨æ„  #####
 			LeaveCriticalSection(&g_CritSection_FbxSdk);
 
 		}
@@ -1641,7 +1641,7 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 	else if (srcbone->IsNull()) {
 
 		//###########
-		//eNull‚Ìê‡
+		//eNullã®å ´åˆ
 		//###########
 
 		if (srcbone->GetFbxNodeOnLoad()) {
@@ -1650,7 +1650,7 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 			fbxtime.SetSecondDouble(roundingframe / 30.0);
 			FbxVector4 orgfbxeul = srcbone->GetFbxNodeOnLoad()->EvaluateLocalRotation(fbxtime, FbxNode::eSourcePivot, true, true);
 			cureul = ChaVector3(orgfbxeul, false);
-			//####  rotorder’ˆÓ  #####
+			//####  rotorderæ³¨æ„  #####
 			LeaveCriticalSection(&g_CritSection_FbxSdk);
 		}
 		else {
@@ -1704,13 +1704,13 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 		return 0;
 	}
 
-	curmp->SetCalcLimitedWM(0);//2023/01/14 limited@ƒtƒ‰ƒO@ƒŠƒZƒbƒg
+	curmp->SetCalcLimitedWM(0);//2023/01/14 limitedã€€ãƒ•ãƒ©ã‚°ã€€ãƒªã‚»ãƒƒãƒˆ
 
 
 	int ismovable = 0;
 
 
-	//•ÏX‘O‚ğ•Û‘¶
+	//å¤‰æ›´å‰ã‚’ä¿å­˜
 	ChaMatrix saveworldmat;
 	ChaVector3 saveeul;
 	saveworldmat = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
@@ -1725,11 +1725,11 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 		beflocalmat.SetIdentity();
 		newlocalmat.SetIdentity();
 		if (srcbone->GetParent(false)) {
-			//eNull‚àƒAƒjƒ[ƒVƒ‡ƒ“‰Â”\
-			//GetENullMatrix‚ğC³‚µ‚ÄCalcEnullMatReq‚ÅŒvZ‚·‚é‚æ‚¤‚É‚µ‚½‚Æ‚±‚ë‚ª2023/06/26‚©‚ç•Ï‚í‚Á‚½‚Æ‚±‚ë
-			//SetWorldMat()‚É‚Í@‰ñ“]ŒvZ—p‚Ìƒ[ƒJƒ‹s—ñæ“¾‚É@parenet‚ªeNull‚Ìê‡ŠÖ‚µ‚Ä‚àGetWorldMat[invNode * CalcENullMat]‚ğg—p
-			//Fbx‰ñ“]ŒvZ‚É‚Í@CalcLocalEulXYZ()“à‚É‚Ä@parent‚ªeNull‚Ìê‡@invNode * CalcENullMat‚ğg—p
-			//FbxˆÚ“®ŒvZ‚É‚Í@CalcFbxLocalMatrix“à‚É‚Ä@parent‚ªeNull‚Ìê‡@GetENullMatrix‚ğg—p
+			//eNullã‚‚ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å¯èƒ½
+			//GetENullMatrixã‚’ä¿®æ­£ã—ã¦CalcEnullMatReqã§è¨ˆç®—ã™ã‚‹ã‚ˆã†ã«ã—ãŸã¨ã“ã‚ãŒ2023/06/26ã‹ã‚‰å¤‰ã‚ã£ãŸã¨ã“ã‚
+			//SetWorldMat()æ™‚ã«ã¯ã€€å›è»¢è¨ˆç®—ç”¨ã®ãƒ­ãƒ¼ã‚«ãƒ«è¡Œåˆ—å–å¾—æ™‚ã«ã€€parenetãŒeNullã®å ´åˆé–¢ã—ã¦ã‚‚GetWorldMat[invNode * CalcENullMat]ã‚’ä½¿ç”¨
+			//Fbxå›è»¢è¨ˆç®—æ™‚ã«ã¯ã€€CalcLocalEulXYZ()å†…ã«ã¦ã€€parentãŒeNullã®å ´åˆã€€invNode * CalcENullMatã‚’ä½¿ç”¨
+			//Fbxç§»å‹•è¨ˆç®—æ™‚ã«ã¯ã€€CalcFbxLocalMatrixå†…ã«ã¦ã€€parentãŒeNullã®å ´åˆã€€GetENullMatrixã‚’ä½¿ç”¨
 			ChaMatrix befparentwm;
 			befparentwm = srcbone->GetParent(false)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
 			beflocalmat = saveworldmat * ChaMatrixInv(befparentwm);
@@ -1762,7 +1762,7 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 
 
 		//if (g_limitdegflag == true) {
-		if ((limitdegflag == true) && (srcbone->GetBtForce() == 0)) {//2023/01/28 •¨—ƒVƒ~ƒ…‚Í@©‘O‚Å‚Í§ŒÀ‚µ‚È‚¢
+		if ((limitdegflag == true) && (srcbone->GetBtForce() == 0)) {//2023/01/28 ç‰©ç†ã‚·ãƒŸãƒ¥ã¯ã€€è‡ªå‰ã§ã¯åˆ¶é™ã—ãªã„
 			ismovable = srcbone->ChkMovableEul(neweul);
 		}
 		else {
@@ -1776,29 +1776,29 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 		if (onlycheck == 0) {
 			if (ismovable == 1) {
 				int inittraflag0 = 0;
-				//qƒWƒ‡ƒCƒ“ƒg‚Ö‚Ì”g‹y‚Í@SetWorldMatFromEulAndScaleAndTra“à‚Å‚µ‚Ä‚¢‚é
+				//å­ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã¸ã®æ³¢åŠã¯ã€€SetWorldMatFromEulAndScaleAndTraå†…ã§ã—ã¦ã„ã‚‹
 				srcbone->SetWorldMatFromEulAndScaleAndTra(limitdegflag, inittraflag0, setchildflag,
-					saveworldmat, neweul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflag—L‚è!!!!
+					saveworldmat, neweul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflagæœ‰ã‚Š!!!!
 				//curmp->SetBefWorldMat(saveworldmat);
-				//srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, neweul, curmp);//<---SetWorldMatFromEulAnd...“à‚Å‚·‚é
+				//srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, neweul, curmp);//<---SetWorldMatFromEulAnd...å†…ã§ã™ã‚‹
 				if (limitdegflag == true) {
 					curmp->SetCalcLimitedWM(2);
 				}
 			}
 			else {
-				if ((g_wallscrapingikflag == 1) || (fromiktarget == true)) {//PosConstraint—p‚Ì‰ñ“]‚É‚Í@©“®‚Å•Ç‚·‚èˆ—‚ğ‚·‚é
+				if ((g_wallscrapingikflag == 1) || (fromiktarget == true)) {//PosConstraintç”¨ã®å›è»¢æ™‚ã«ã¯ã€€è‡ªå‹•ã§å£ã™ã‚Šå‡¦ç†ã‚’ã™ã‚‹
 					//############################################
-					//@—V‚Ñ•t‚«ƒŠƒ~ƒeƒbƒhIK
+					//ã€€éŠã³ä»˜ããƒªãƒŸãƒ†ãƒƒãƒ‰IK
 					//############################################
 					ChaVector3 limiteul;
-					bool limitdegOnLimitEul1 = false;//2023/02/07 befeul‚Íunlimited. ‰½‰ñ“]‚à‚·‚éê‡‚ÉƒI[ƒo[‚P‚W‚O“x‚ÌŠp“x‚Å§ŒÀ‚·‚é‚½‚ß‚É.
+					bool limitdegOnLimitEul1 = false;//2023/02/07 befeulã¯unlimited. ä½•å›è»¢ã‚‚ã™ã‚‹å ´åˆã«ã‚ªãƒ¼ãƒãƒ¼ï¼‘ï¼˜ï¼åº¦ã®è§’åº¦ã§åˆ¶é™ã™ã‚‹ãŸã‚ã«.
 					//limiteul = LimitEul(neweul, GetBefEul(limitdegOnLimitEul1, srcmotid, roundingframe));
 					limiteul = srcbone->LimitEul(neweul);
 					int inittraflag0 = 0;
-					//qƒWƒ‡ƒCƒ“ƒg‚Ö‚Ì”g‹y‚Í@SetWorldMatFromEulAndScaleAndTra“à‚Å‚µ‚Ä‚¢‚é
+					//å­ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã¸ã®æ³¢åŠã¯ã€€SetWorldMatFromEulAndScaleAndTraå†…ã§ã—ã¦ã„ã‚‹
 					srcbone->SetWorldMatFromEulAndScaleAndTra(limitdegflag, inittraflag0, setchildflag,
-						saveworldmat, limiteul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflag—L‚è!!!!
-					//srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, limiteul, curmp);//<---SetWorldMatFromEulAnd...“à‚Å‚·‚é
+						saveworldmat, limiteul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflagæœ‰ã‚Š!!!!
+					//srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, limiteul, curmp);//<---SetWorldMatFromEulAnd...å†…ã§ã™ã‚‹
 					if (limitdegflag == true) {
 						curmp->SetCalcLimitedWM(2);
 					}
@@ -1813,14 +1813,14 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 					}
 					else {
 						ChaVector3 limiteul;
-						bool limitdegOnLimitEul2 = false;//2023/02/07 befeul‚Íunlimited. ‰½‰ñ“]‚à‚·‚éê‡‚ÉƒI[ƒo[‚P‚W‚O“x‚ÌŠp“x‚Å§ŒÀ‚·‚é‚½‚ß‚É.
+						bool limitdegOnLimitEul2 = false;//2023/02/07 befeulã¯unlimited. ä½•å›è»¢ã‚‚ã™ã‚‹å ´åˆã«ã‚ªãƒ¼ãƒãƒ¼ï¼‘ï¼˜ï¼åº¦ã®è§’åº¦ã§åˆ¶é™ã™ã‚‹ãŸã‚ã«.
 						//limiteul = LimitEul(neweul, GetBefEul(limitdegOnLimitEul2, srcmotid, roundingframe));
 						limiteul = srcbone->LimitEul(neweul);
 						int inittraflag0 = 0;
-						//qƒWƒ‡ƒCƒ“ƒg‚Ö‚Ì”g‹y‚Í@SetWorldMatFromEulAndScaleAndTra“à‚Å‚µ‚Ä‚¢‚é
+						//å­ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã¸ã®æ³¢åŠã¯ã€€SetWorldMatFromEulAndScaleAndTraå†…ã§ã—ã¦ã„ã‚‹
 						srcbone->SetWorldMatFromEulAndScaleAndTra(limitdegflag, inittraflag0, setchildflag,
-							saveworldmat, limiteul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflag—L‚è!!!!
-						//srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, limiteul, curmp);//<---SetWorldMatFromEulAnd...“à‚Å‚·‚é
+							saveworldmat, limiteul, befscalevec, ChaMatrixTraVec(newtanimmat), srcmotid, roundingframe);//setchildflagæœ‰ã‚Š!!!!
+						//srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, limiteul, curmp);//<---SetWorldMatFromEulAnd...å†…ã§ã™ã‚‹
 						if (limitdegflag == true) {
 							curmp->SetCalcLimitedWM(2);
 						}
@@ -1829,7 +1829,7 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 			}
 		}
 		else {
-			//only check : ‰¼ƒZƒbƒg‚µ‚Ä‚¢‚½‚Ì‚ğŒ³‚É–ß‚·
+			//only check : ä»®ã‚»ãƒƒãƒˆã—ã¦ã„ãŸã®ã‚’å…ƒã«æˆ»ã™
 			srcbone->SetWorldMat(limitdegflag, srcmotid, roundingframe, saveworldmat, curmp);
 			srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, saveeul, curmp);
 		}
@@ -1857,7 +1857,7 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 			}
 		}
 		else {
-			//only check : ‰¼ƒZƒbƒg‚µ‚Ä‚¢‚½‚Ì‚ğŒ³‚É–ß‚·
+			//only check : ä»®ã‚»ãƒƒãƒˆã—ã¦ã„ãŸã®ã‚’å…ƒã«æˆ»ã™
 			srcbone->SetWorldMat(limitdegflag, srcmotid, roundingframe, saveworldmat, curmp);
 			srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, saveeul, curmp);
 		}
@@ -1917,7 +1917,7 @@ int ChaCalcFunc::SetWorldMatFromEulAndScaleAndTra(CBone* srcbone, bool limitdegf
 	}
 
 
-	//anglelimit‚ğ‚µ‚½Œã‚ÌƒIƒCƒ‰[Šp‚ª“n‚³‚ê‚éBanglelimit‚ÍCBone::SetWorldMat‚Åˆ—‚·‚éB
+	//anglelimitã‚’ã—ãŸå¾Œã®ã‚ªã‚¤ãƒ©ãƒ¼è§’ãŒæ¸¡ã•ã‚Œã‚‹ã€‚anglelimitã¯CBone::SetWorldMatã§å‡¦ç†ã™ã‚‹ã€‚
 	//if (!m_child) {
 	//	return 0;
 	//}
@@ -1931,11 +1931,11 @@ int ChaCalcFunc::SetWorldMatFromEulAndScaleAndTra(CBone* srcbone, bool limitdegf
 
 
 	ChaMatrix newscalemat;
-	newscalemat.SetIdentity();//2023/02/12 ”²‚¯—‚¿‚Ä‚½
+	newscalemat.SetIdentity();//2023/02/12 æŠœã‘è½ã¡ã¦ãŸ
 	ChaMatrixScaling(&newscalemat, srcscale.x, srcscale.y, srcscale.z);//!!!!!!!!!!!!  new scale
 	ChaMatrix newtramat;
 	ChaMatrixIdentity(&newtramat);
-	ChaMatrixTranslation(&newtramat, srctra.x, srctra.y, srctra.z);//TraAnim‚ğ‚»‚Ì‚Ü‚Ü
+	ChaMatrixTranslation(&newtramat, srctra.x, srctra.y, srctra.z);//TraAnimã‚’ãã®ã¾ã¾
 
 	CMotionPoint* curmp;
 	curmp = srcbone->GetMotionPoint(srcmotid, roundingframe);
@@ -1979,10 +1979,10 @@ int ChaCalcFunc::SetWorldMatFromEulAndScaleAndTra(CBone* srcbone, bool limitdegf
 		//curmp->SetBefWorldMat(curmp->GetWorldMat());
 		srcbone->SetWorldMat(limitdegflag, srcmotid, roundingframe, newmat, curmp);
 		
-		//srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, srceul, curmp);
-		//2023/10/18 befframe‚ğ‚İ‚ÄƒIƒCƒ‰[Šp‚ğŒvZ‚µ’¼‚·
-		ChaVector3 neweul = srcbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
-		srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, neweul, curmp);
+		srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, srceul, curmp);
+		//2023/10/18 befframeã‚’ã¿ã¦ã‚ªã‚¤ãƒ©ãƒ¼è§’ã‚’è¨ˆç®—ã—ç›´ã™
+		//ChaVector3 neweul = srcbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+		//srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, neweul, curmp);
 
 		if (limitdegflag == true) {
 			curmp->SetCalcLimitedWM(2);
@@ -2010,7 +2010,7 @@ CMotionPoint* ChaCalcFunc::GetMotionPoint(CBone* srcbone, int srcmotid, double s
 		return 0;
 	}
 
-	//‘¶İ‚·‚é‚Æ‚«‚¾‚¯•Ô‚·B
+	//å­˜åœ¨ã™ã‚‹ã¨ãã ã‘è¿”ã™ã€‚
 	CMotionPoint* pbef = 0;
 	CMotionPoint* pnext = 0;
 	int existflag = 0;
@@ -2050,13 +2050,13 @@ ChaMatrix ChaCalcFunc::GetWorldMat(CBone* srcbone, bool limitdegflag,
 		//return GetENullMatrix();
 
 		//2023/05/09
-		//CalcLocalEulXYZ‚Ìƒ[ƒJƒ‹ŒvZ•”•ªƒƒ‚‚Ì——R‚É‚æ‚è@eNull‚ÌWorldMat‚ÍIdentity‚ğ•Ô‚·‚±‚Æ‚É‚·‚é
-		//‚½‚¾‚µ@fbx‚Ìscale‚Ætrao—Í‚Ìes—ñ‚Æ‚µ‚Ä‚ÍGetENullMatrix()‚ğg‚¤(CalcFbxLocalMatrix()QÆ)
-		//Rot‚Ætra,scale‚Ìˆá‚¢‚Í@Rot‚ÍNodeMat–³‚µ‚Åƒ[ƒJƒ‹ŒvZ‚µ‚Ä²‚Æ‚µ‚ÄNodeMat‚ğw’è@tra,scale‚Íƒ[ƒJƒ‹ŒvZ‚ÉNodeMat‚ğŠ|‚¯‚é
+		//CalcLocalEulXYZã®ãƒ­ãƒ¼ã‚«ãƒ«è¨ˆç®—éƒ¨åˆ†ãƒ¡ãƒ¢ã®ç†ç”±ã«ã‚ˆã‚Šã€€eNullã®WorldMatã¯Identityã‚’è¿”ã™ã“ã¨ã«ã™ã‚‹
+		//ãŸã ã—ã€€fbxã®scaleã¨traå‡ºåŠ›æ™‚ã®è¦ªè¡Œåˆ—ã¨ã—ã¦ã¯GetENullMatrix()ã‚’ä½¿ã†(CalcFbxLocalMatrix()å‚ç…§)
+		//Rotã¨tra,scaleã®é•ã„ã¯ã€€Rotã¯NodeMatç„¡ã—ã§ãƒ­ãƒ¼ã‚«ãƒ«è¨ˆç®—ã—ã¦è»¸ã¨ã—ã¦NodeMatã‚’æŒ‡å®šã€€tra,scaleã¯ãƒ­ãƒ¼ã‚«ãƒ«è¨ˆç®—æ™‚ã«NodeMatã‚’æ›ã‘ã‚‹
 		//return curmat;
 
 
-		//2023/05/16 eNull‚ÌNodeMat‚ªIdentity‚Å‚Í‚È‚­‚È‚Á‚½‚½‚ß
+		//2023/05/16 eNullã®NodeMatãŒIdentityã§ã¯ãªããªã£ãŸãŸã‚
 		//return ChaMatrixInv(GetNodeMat()) * GetENullMatrix(srcframe);//!!!!!!!!!!!!
 
 		//return ChaMatrixInv(GetNodeMat()) * GetTransformMat(srcframe, true);
@@ -2068,14 +2068,14 @@ ChaMatrix ChaCalcFunc::GetWorldMat(CBone* srcbone, bool limitdegflag,
 		//return ChaMatrixInv(GetNodeMat()) * GetTransformMat(0.0, true);//!!!!!  1.2.0.26
 
 		//2023/06/27
-		//CalcLocalEulXYZ()‚ÌŒŸØ‚Å@Parent‚ªeNull‚Ì‚Æ‚«‚É‚Í@parentwm‚ÍIdentity‚É‚·‚é‚×‚«‚¾‚Á‚½‚Ì‚Å@‚»‚ê‚É‡‚í‚¹‚é
+		//CalcLocalEulXYZ()ã®æ¤œè¨¼ã§ã€€ParentãŒeNullã®ã¨ãã«ã¯ã€€parentwmã¯Identityã«ã™ã‚‹ã¹ãã ã£ãŸã®ã§ã€€ãã‚Œã«åˆã‚ã›ã‚‹
 		//curmat.SetIdentity();
 		//return curmat;
 	}
 	else if (srcbone->IsCamera()) {
 		//bool multInvNodeMat = true;
 		//return GetParModel()->GetCameraTransformMat(srcmotid, srcframe, g_cameraInheritMode, multInvNodeMat);
-		//return ChaMatrixInv(GetNodeMat()) * GetTransformMat(0.0, true);//2023/07/05 Camera‚Ìq‹Ÿ‚ÌƒXƒLƒ“ƒƒbƒVƒ…‚ÌŒ`‚ª@“Ç‚İ‘‚«“Ç‚İ‘‚«“Ç‚İƒeƒXƒg‚ÅŒ`•ö‚ê‚µ‚È‚¢‚æ‚¤‚É
+		//return ChaMatrixInv(GetNodeMat()) * GetTransformMat(0.0, true);//2023/07/05 Cameraã®å­ä¾›ã®ã‚¹ã‚­ãƒ³ãƒ¡ãƒƒã‚·ãƒ¥ã®å½¢ãŒã€€èª­ã¿æ›¸ãèª­ã¿æ›¸ãèª­ã¿ãƒ†ã‚¹ãƒˆã§å½¢å´©ã‚Œã—ãªã„ã‚ˆã†ã«
 
 		EnterCriticalSection(&g_CritSection_FbxSdk);
 		ChaMatrix retmat = ChaMatrixInv(srcbone->GetNodeMat()) * srcbone->GetTransformMat(0.0, true);//!!!!!  1.2.0.26
@@ -2123,7 +2123,7 @@ ChaMatrix ChaCalcFunc::GetWorldMat(CBone* srcbone, bool limitdegflag,
 	}
 	else {
 		curmat.SetIdentity();
-		return curmat;//!!!!!!!!!!!!  Skeleton‚Å‚àNull‚Å‚àCamera‚Å‚à–³‚¢ê‡@identity‚ğ•Ô‚·
+		return curmat;//!!!!!!!!!!!!  Skeletonã§ã‚‚Nullã§ã‚‚Cameraã§ã‚‚ç„¡ã„å ´åˆã€€identityã‚’è¿”ã™
 	}
 
 }
@@ -2152,7 +2152,7 @@ ChaVector3 ChaCalcFunc::LimitEul(CBone* srcbone, ChaVector3 srceul)
 	tmpeul.z = LimitAngle(srcbone, AXIS_Z, srceul.z);
 
 
-	//‰½‰ñ“]‚à‚·‚éê‡‚É@ƒˆ‚ÉŠp“x‚Å§ŒÀ‚·‚é‚½‚ß‚ÉƒRƒƒ“ƒgƒAƒEƒg
+	//ä½•å›è»¢ã‚‚ã™ã‚‹å ´åˆã«ã€€ç´”ç²‹ã«è§’åº¦ã§åˆ¶é™ã™ã‚‹ãŸã‚ã«ã‚³ãƒ¡ãƒ³ãƒˆã‚¢ã‚¦ãƒˆ
 	//CQuaternion calcq;
 	//calcq.ModifyEuler360(&tmpeul, &srcbefeul, 0);
 
@@ -2194,7 +2194,7 @@ float ChaCalcFunc::LimitAngle(CBone* srcbone, enum tag_axiskind srckind, float s
 		cmpvallower = srcval;
 
 		if (abs(tmpanglelimit.upper[srckind] - tmpanglelimit.lower[srckind]) > EULLIMITPLAY) {
-			//ƒŠƒ~ƒbƒg•t‹ß‚Å‚àIK‚ª“®‚­‚½‚ß‚É‚Í—V‚Ñ‚Ì•”•ª‚ª•K—v
+			//ãƒªãƒŸãƒƒãƒˆä»˜è¿‘ã§ã‚‚IKãŒå‹•ããŸã‚ã«ã¯éŠã³ã®éƒ¨åˆ†ãŒå¿…è¦
 
 			if (cmpvalupper > tmpanglelimit.upper[srckind]) {
 				newval = min(cmpvalupper, (float)(tmpanglelimit.upper[srckind] - EULLIMITPLAY));
@@ -2204,7 +2204,7 @@ float ChaCalcFunc::LimitAngle(CBone* srcbone, enum tag_axiskind srckind, float s
 			}
 		}
 		else {
-			//lower‚Æupper‚ÌŠÔ‚ªEULLIMITPLAY‚æ‚è¬‚³‚¢‚Æ‚«
+			//lowerã¨upperã®é–“ãŒEULLIMITPLAYã‚ˆã‚Šå°ã•ã„ã¨ã
 
 			if (cmpvalupper > tmpanglelimit.upper[srckind]) {
 				newval = (float)(tmpanglelimit.upper[srckind]);
@@ -2271,7 +2271,7 @@ ChaVector3 ChaCalcFunc::GetLocalEul(CBone* srcbone, bool limitdegflag, int srcmo
 	}
 
 	//2023/04/28
-	if (srcbone->IsNotSkeleton() && srcbone->IsNotCamera()) {//2023/06/05 eCamera‘Î‰
+	if (srcbone->IsNotSkeleton() && srcbone->IsNotCamera()) {//2023/06/05 eCameraå¯¾å¿œ
 		return reteul;
 	}
 
@@ -2282,10 +2282,10 @@ ChaVector3 ChaCalcFunc::GetLocalEul(CBone* srcbone, bool limitdegflag, int srcmo
 		}
 		else {
 			//2023/01/31
-			//g_limitdegflag == true‚Ìê‡
+			//g_limitdegflag == trueã®å ´åˆ
 			//GetWorldMat-->GetLimitedWorldMat-->CalcLocalEulAndSetLImitedEul
 			//-->GetLocalEul(-->GetLimitedWorldMat)
-			//ã‹L‚Ì‚æ‚¤‚ÉŒÄ‚Î‚ê‚é‚Ì‚Å@‚±‚ÌŠÖ”GetLocalEul“à‚ÅGetLimitedWorldMat‚ğŒÄ‚Ño‚·‚±‚Æ‚Ío—ˆ‚È‚¢
+			//ä¸Šè¨˜ã®ã‚ˆã†ã«å‘¼ã°ã‚Œã‚‹ã®ã§ã€€ã“ã®é–¢æ•°GetLocalEulå†…ã§GetLimitedWorldMatã‚’å‘¼ã³å‡ºã™ã“ã¨ã¯å‡ºæ¥ãªã„
 
 			//if (srcmp->GetCalcLimitedWM() == 2) {
 			//	reteul = srcmp->GetLimitedLocalEul();
@@ -2306,10 +2306,10 @@ ChaVector3 ChaCalcFunc::GetLocalEul(CBone* srcbone, bool limitdegflag, int srcmo
 			}
 			else {
 				//2023/01/31
-				//g_limitdegflag == true‚Ìê‡
+				//g_limitdegflag == trueã®å ´åˆ
 				//GetWorldMat-->GetLimitedWorldMat-->CalcLocalEulAndSetLImitedEul
 				//-->GetLocalEul(-->GetLimitedWorldMat)
-				//ã‹L‚Ì‚æ‚¤‚ÉŒÄ‚Î‚ê‚é‚Ì‚Å@‚±‚ÌŠÖ”GetLocalEul“à‚ÅGetLimitedWorldMat‚ğŒÄ‚Ño‚·‚±‚Æ‚Ío—ˆ‚È‚¢
+				//ä¸Šè¨˜ã®ã‚ˆã†ã«å‘¼ã°ã‚Œã‚‹ã®ã§ã€€ã“ã®é–¢æ•°GetLocalEulå†…ã§GetLimitedWorldMatã‚’å‘¼ã³å‡ºã™ã“ã¨ã¯å‡ºæ¥ãªã„
 
 				//if (curmp->GetCalcLimitedWM() == 2) {
 				//	reteul = curmp->GetLimitedLocalEul();
@@ -2333,7 +2333,7 @@ ChaVector3 ChaCalcFunc::GetLocalEul(CBone* srcbone, bool limitdegflag, int srcmo
 int ChaCalcFunc::ChkMovableEul(CBone* srcbone, ChaVector3 srceul)
 {
 
-	//2023/01/10 : –‘OŒvZ‚µ‚Ä‚¨‚«‚½‚¢ê‡‚È‚Ç‚ª‚ ‚é‚Ì‚Å@ˆÈ‰º‚Rs‚ÌğŒ‚Í‚±‚ÌŠÖ”‚ÌŒÄ‚Ño‚µŒ³‚Ås‚¤
+	//2023/01/10 : äº‹å‰è¨ˆç®—ã—ã¦ãŠããŸã„å ´åˆãªã©ãŒã‚ã‚‹ã®ã§ã€€ä»¥ä¸‹ï¼“è¡Œã®æ¡ä»¶ã¯ã“ã®é–¢æ•°ã®å‘¼ã³å‡ºã—å…ƒã§è¡Œã†
 	//if (g_limitdegflag == false){
 	//	return 1;//movable
 	//}
@@ -2373,7 +2373,7 @@ int ChaCalcFunc::ChkMovableEul(CBone* srcbone, ChaVector3 srceul)
 			}
 			//}
 			//else {
-			//	//180“xü(-180“xü)‚ğ‰z‚¦‚é‚æ‚¤‚É“®‚­ê‡
+			//	//180åº¦ç·š(-180åº¦ç·š)ã‚’è¶Šãˆã‚‹ã‚ˆã†ã«å‹•ãå ´åˆ
 			//	if ((m_anglelimit.lower[axiskind] <= (int)chkval[axiskind]) && (m_anglelimit.upper[axiskind] >= (int)chkval[axiskind])) {
 			//		dontmove++;
 			//	}

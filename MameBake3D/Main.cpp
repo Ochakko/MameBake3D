@@ -4407,6 +4407,7 @@ void InitApp()
 	g_refposstep = 10;
 	g_refalpha = 50;
 
+	g_underloading = false;
 	g_underIKRot = false;
 	g_underIKRotApplyFrame = false;
 	g_fpsforce30 = false;
@@ -4415,6 +4416,7 @@ void InitApp()
 	s_smoothBefRetarget = false;
 
 	g_underWriteFbx = false;
+	g_underCalcEul = false;
 
 
 	g_VSync = false;
@@ -10392,7 +10394,6 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			//befeul.currentframeeulでオイラーは計算されている状態
 			// ！！！！！　g_underIKRot = falseとした後で　！！！！！
 			//後処理として　befeul.befframeeulで計算し直す
-
 			MOTINFO* curmi = s_model->GetCurMotInfo();
 			if (curmi) {
 				s_model->CalcBoneEul(g_limitdegflag, curmi->motid);
@@ -28490,7 +28491,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					//モーションからの設定の前に　まずはゼロ初期化する
 					bool excludebt = true;
 					s_model->ResetAngleLimit(excludebt, 0);
-					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
+					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, false);
 
 
 					//g_limitdegflagに関わらず　既存モーションの制限無しの姿勢を元に設定
@@ -28502,8 +28503,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
 					//}
 
-					bool setcursorflag = false;
-					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, setcursorflag);
+					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, false);
 
 					bool updateonlycheckeul = false;
 					AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);
@@ -28544,7 +28544,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					//モーションからの設定の前に　まずはゼロ初期化する
 					bool excludebt = true;
 					s_model->ResetAngleLimit(excludebt, 0);
-					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
+					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, false);
 
 					//g_limitdegflagに関わらず　既存モーションの制限無しの姿勢を元に設定
 					s_model->AdditiveAllMotionsToAngleLimit();//内部で全モーション全フレーム分処理
@@ -28556,8 +28556,7 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 					//	ChangeLimitDegFlag(true, true, true);
 					//}
 
-					bool setcursorflag = false;
-					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, setcursorflag);
+					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, false);
 
 					//s_model->SetMotionFrame(1.0);
 					//ChaMatrix tmpwm = s_model->GetWorldMat();
@@ -28658,14 +28657,13 @@ LRESULT CALLBACK AngleLimitDlgProc2(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp
 
 					bool excludebt = true;
 					s_model->ResetAngleLimit(excludebt, 0);
-					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM);
+					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, false);
 
 					s_model->AdditiveCurrentToAngleLimit(s_anglelimitbone);//2022/12/05 curbone引数追加
 
 					//ChangeLimitDegFlag(s_savelimitdegflag, true, false);//updateeulはこれより後で呼ばれるUpdateAfterEditAngleLimitで
 
-					bool setcursorflag = false;
-					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, setcursorflag);
+					UpdateAfterEditAngleLimit(eLIM2BONE_BONE2LIM, false);
 
 					bool updateonlycheckeul = false;
 					AngleLimit2Dlg(s_anglelimitdlg, updateonlycheckeul);

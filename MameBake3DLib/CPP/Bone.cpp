@@ -7949,8 +7949,8 @@ int CBone::AdditiveCurrentToAngleLimit()
 				//currentもparentも　制限角度無しで計算する必要有
 				//calceul = GetUnlimitedLocalEul(curmotid, curframe);
 				bool limitdegflag = false;
-				//calceul = GetLocalEul(limitdegflag, curmotid, curframe, 0);
-				calceul = CalcLocalEulXYZ(limitdegflag, -1, curmotid, curframe, BEFEUL_BEFFRAME);
+				calceul = GetLocalEul(limitdegflag, curmotid, curframe, 0);
+				//calceul = CalcLocalEulXYZ(limitdegflag, -1, curmotid, curframe, BEFEUL_BEFFRAME);
 
 				cureul[0] = calceul.x;
 				cureul[1] = calceul.y;
@@ -8062,8 +8062,8 @@ int CBone::AdditiveAllMotionsToAngleLimit()
 						//currentもparentも　制限角度無しで計算する必要有
 						//calceul = GetUnlimitedLocalEul(curmotid, curframe);
 						bool limitdegflag = false;
-						//calceul = GetLocalEul(limitdegflag, curmotid, curframe, 0);
-						calceul = CalcLocalEulXYZ(limitdegflag, -1, curmotid, curframe, BEFEUL_BEFFRAME);
+						calceul = GetLocalEul(limitdegflag, curmotid, curframe, 0);
+						//calceul = CalcLocalEulXYZ(limitdegflag, -1, curmotid, curframe, BEFEUL_BEFFRAME);
 
 
 						cureul[0] = calceul.x;

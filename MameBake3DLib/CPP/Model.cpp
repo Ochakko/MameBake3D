@@ -16116,17 +16116,19 @@ int CModel::CalcBoneEul(bool limitdegflag, int srcmotid)
 		return 0;
 	}
 	
-	ChaCalcFunc chacalcfunc;
-	chacalcfunc.CalcBoneEul(this, limitdegflag, srcmotid);
+	//ChaCalcFunc chacalcfunc;
+	//chacalcfunc.CalcBoneEul(this, limitdegflag, srcmotid);
 
-	//if (m_CalcEulThreads) {
-	//	int updatecount;
-	//	for (updatecount = 0; updatecount < m_calceulthreadsnum; updatecount++) {
-	//		CThreadingCalcEul* curupdate = m_CalcEulThreads + updatecount;
-	//		curupdate->CalcBoneEul(this, limitdegflag, srcmotid);
-	//	}
-	//	WaitCalcEulFinished();
-	//}
+	if (m_CalcEulThreads) {
+		g_underCalcEul = true;//2023/10/19
+		int updatecount;
+		for (updatecount = 0; updatecount < m_calceulthreadsnum; updatecount++) {
+			CThreadingCalcEul* curupdate = m_CalcEulThreads + updatecount;
+			curupdate->CalcBoneEul(this, limitdegflag, srcmotid);
+		}
+		WaitCalcEulFinished();
+		g_underCalcEul = false;//2023/10/19
+	}
 
 	return 0;
 }
@@ -17061,23 +17063,29 @@ int CModel::CopyWorldToLimitedWorld()
 int CModel::AdditiveCurrentToAngleLimit(CBone* srcbone)
 {
 
-	if (!srcbone) {
-		map<int, CBone*>::iterator itrbone;
-		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
-			CBone* curbone = itrbone->second;
-			//if (curbone) {
-	//物理シミュ用のボーンの制限角度は上書きしないことにした
-	//物理シミュ以外のボーンの制限角度を変えるたびに　何回も物理シミュボーンの設定をやり直すのが非常に手間だから
-			if (curbone && (curbone->GetBtForce() == 0) && (curbone->IsSkeleton())) {
-				curbone->AdditiveCurrentToAngleLimit();
-			}
-		}
-	}
-	else {
+	MOTINFO* curmi = GetCurMotInfo();
+	if (curmi) {
+		bool calclimitdegflag = false;
+		CalcBoneEul(calclimitdegflag, curmi->motid);
+
+		if (!srcbone) {
+			map<int, CBone*>::iterator itrbone;
+			for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+				CBone* curbone = itrbone->second;
+				//if (curbone) {
 		//物理シミュ用のボーンの制限角度は上書きしないことにした
 		//物理シミュ以外のボーンの制限角度を変えるたびに　何回も物理シミュボーンの設定をやり直すのが非常に手間だから
-		if (srcbone && (srcbone->GetBtForce() == 0) && (srcbone->IsSkeleton())) {
-			srcbone->AdditiveCurrentToAngleLimit();
+				if (curbone && (curbone->GetBtForce() == 0) && (curbone->IsSkeleton())) {
+					curbone->AdditiveCurrentToAngleLimit();
+				}
+			}
+		}
+		else {
+			//物理シミュ用のボーンの制限角度は上書きしないことにした
+			//物理シミュ以外のボーンの制限角度を変えるたびに　何回も物理シミュボーンの設定をやり直すのが非常に手間だから
+			if (srcbone && (srcbone->GetBtForce() == 0) && (srcbone->IsSkeleton())) {
+				srcbone->AdditiveCurrentToAngleLimit();
+			}
 		}
 	}
 	return 0;
@@ -17085,14 +17093,20 @@ int CModel::AdditiveCurrentToAngleLimit(CBone* srcbone)
 
 int CModel::AdditiveAllMotionsToAngleLimit()
 {
-	map<int, CBone*>::iterator itrbone;
-	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
-		CBone* curbone = itrbone->second;
-		//if (curbone) {
-	//物理シミュ用のボーンの制限角度は上書きしないことにした
-	//物理シミュ以外のボーンの制限角度を変えるたびに　何回も物理シミュボーンの設定をやり直すのが非常に手間だから
-		if (curbone && (curbone->GetBtForce() == 0) && (curbone->IsSkeleton())) {
-			curbone->AdditiveAllMotionsToAngleLimit();
+	MOTINFO* curmi = GetCurMotInfo();
+	if (curmi) {
+		bool calclimitdegflag = false;
+		CalcBoneEul(calclimitdegflag, curmi->motid);
+
+		map<int, CBone*>::iterator itrbone;
+		for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+			CBone* curbone = itrbone->second;
+			//if (curbone) {
+		//物理シミュ用のボーンの制限角度は上書きしないことにした
+		//物理シミュ以外のボーンの制限角度を変えるたびに　何回も物理シミュボーンの設定をやり直すのが非常に手間だから
+			if (curbone && (curbone->GetBtForce() == 0) && (curbone->IsSkeleton())) {
+				curbone->AdditiveAllMotionsToAngleLimit();
+			}
 		}
 	}
 
