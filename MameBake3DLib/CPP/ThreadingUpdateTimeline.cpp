@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 //#include <stdafx.h>
 
 #include <stdio.h>
@@ -79,14 +79,14 @@ int CThreadingUpdateTimeline::ThreadFunc()
 	while (InterlockedAdd(&m_exit_state, 0) != 1) {
 
 		if ((g_HighRpmMode == true) && 
-			((g_previewFlag != 0) || (g_underIKRot == true))) {//ƒvƒŒƒrƒ…[’†@‚Ü‚½‚Í@IK‰ñ“]’†@‚¾‚¯
+			((g_previewFlag != 0) || (g_underIKRot == true))) {//ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼ä¸­ã€€ã¾ãŸã¯ã€€IKå›è»¢ä¸­ã€€ã ã‘
 
 			//###########################
-			// ‚‰ñ“]ƒ‚[ƒh@: High rpm
+			// é«˜å›è»¢ãƒ¢ãƒ¼ãƒ‰ã€€: High rpm
 			//###########################
 
 			if (InterlockedAdd(&m_start_state, 0) == 1) {
-				if (InterlockedAdd(&m_exit_state, 0) != 1) {//I—¹‚µ‚Ä‚¢‚È‚¢ê‡
+				if (InterlockedAdd(&m_exit_state, 0) != 1) {//çµ‚äº†ã—ã¦ã„ãªã„å ´åˆ
 					EnterCriticalSection(&m_CritSection);
 					if (m_timelinecursor) {
 						(m_timelinecursor)(m_mbuttonflag, m_newframe);
@@ -111,7 +111,7 @@ int CThreadingUpdateTimeline::ThreadFunc()
 		else {
 
 			//############################
-			// eco ƒ‚[ƒh
+			// eco ãƒ¢ãƒ¼ãƒ‰
 			//############################
 
 			DWORD dwWaitResult = WaitForSingleObject(m_hEvent, INFINITE);
@@ -150,7 +150,7 @@ int CThreadingUpdateTimeline::ThreadFunc()
 void CThreadingUpdateTimeline::UpdateTimeline(int (*srctimelinecursor)(int mbuttonflag, double newframe), int srcmbuttonflag, double srcnewframe)
 {
 
-	//I—¹‚ğ‘Ò‚½‚¸‚ÉŒÄ‚Ô‚æ‚¤‚ÈƒNƒŠƒeƒBƒJƒ‹‚ÈŒvZ‚Å‚Í‚È‚¢‚±‚Æ‚ğ‘O’ñ‚ÉAÀs’†‚Ìê‡‚Í‰½‚à‚µ‚È‚¢‚ÅƒŠƒ^[ƒ“‚·‚é
+	//çµ‚äº†ã‚’å¾…ãŸãšã«å‘¼ã¶ã‚ˆã†ãªã‚¯ãƒªãƒ†ã‚£ã‚«ãƒ«ãªè¨ˆç®—ã§ã¯ãªã„ã“ã¨ã‚’å‰æã«ã€å®Ÿè¡Œä¸­ã®å ´åˆã¯ä½•ã‚‚ã—ãªã„ã§ãƒªã‚¿ãƒ¼ãƒ³ã™ã‚‹
 	if (InterlockedAdd(&m_start_state, 0) == 1) {
 		return;
 	}

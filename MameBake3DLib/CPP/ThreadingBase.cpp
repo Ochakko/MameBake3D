@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 //#include <stdafx.h>
 
 #include <stdio.h>
@@ -59,7 +59,7 @@ void CThreadingBase::DestroyObjs()
 	if (m_hEvent != NULL) {
 		SetEvent(m_hEvent);
 	}
-	InterlockedExchange(&m_start_state, 1L);//ŒvŽZ‚µ‚È‚¢‚ÆŠÖ”‚ðI—¹‚Å‚«‚È‚¢‚±‚Æ‚à‚ ‚é
+	InterlockedExchange(&m_start_state, 1L);//è¨ˆç®—ã—ãªã„ã¨é–¢æ•°ã‚’çµ‚äº†ã§ããªã„ã“ã¨ã‚‚ã‚ã‚‹
 
 	//Sleep(10);
 	if (m_hExitEvent != NULL) {
@@ -75,6 +75,11 @@ void CThreadingBase::DestroyObjs()
 	if (m_hExitEvent != NULL) {
 		CloseHandle(m_hExitEvent);
 		m_hExitEvent = NULL;
+	}
+
+	if (m_hthread && (m_hthread != INVALID_HANDLE_VALUE)) {
+		CloseHandle(m_hthread);
+		m_hthread = INVALID_HANDLE_VALUE;
 	}
 }
 int CThreadingBase::CreateThread(DWORD affinitymask)
@@ -108,10 +113,10 @@ int CThreadingBase::CreateThread(DWORD affinitymask)
 	}
 
 
-	//WiatFor‚µ‚È‚¢ê‡‚É‚Íæ‚É•Â‚¶‚Ä‚àOK
-	if (m_hthread && (m_hthread != INVALID_HANDLE_VALUE)) {
-		CloseHandle(m_hthread);
-	}
+	////WiatForã—ãªã„å ´åˆã«ã¯å…ˆã«é–‰ã˜ã¦ã‚‚OK
+	//if (m_hthread && (m_hthread != INVALID_HANDLE_VALUE)) {
+	//	CloseHandle(m_hthread);
+	//}
 
 	return 0;
 
@@ -152,11 +157,11 @@ int CThreadingBase::ThreadFunc()
 	//	//if (g_HighRpmMode == true) {
 
 	//		//###########################
-	//		// ‚‰ñ“]ƒ‚[ƒh@: High rpm
+	//		// é«˜å›žè»¢ãƒ¢ãƒ¼ãƒ‰ã€€: High rpm
 	//		//###########################
 
 	//	if (InterlockedAdd(&m_start_state, 0) == 1) {
-	//		if (InterlockedAdd(&m_exit_state, 0) != 1) {//I—¹‚µ‚Ä‚¢‚È‚¢ê‡
+	//		if (InterlockedAdd(&m_exit_state, 0) != 1) {//çµ‚äº†ã—ã¦ã„ãªã„å ´åˆ
 	//			EnterCriticalSection(&m_CritSection);
 	//			if (m_model) {
 	//				if ((m_bonenum >= 0) || (m_bonenum <= MAXLOADFBXANIMBONE)) {
@@ -197,7 +202,7 @@ int CThreadingBase::ThreadFunc()
 	//	//else {
 
 	//	//	//############################
-	//	//	// eco ƒ‚[ƒh
+	//	//	// eco ãƒ¢ãƒ¼ãƒ‰
 	//	//	//############################
 
 	//	//	DWORD dwWaitResult = WaitForSingleObject(m_hEvent, INFINITE);
@@ -289,7 +294,7 @@ bool CThreadingBase::IsFinished()
 //
 //
 //	//####################################################################
-//	//## g_limitdegflag == true@‚Ìê‡‚É‚Íƒ[ƒJƒ‹‚ÌŒvŽZ‚¾‚¯•À—ñ‰»
+//	//## g_limitdegflag == trueã€€ã®å ´åˆã«ã¯ãƒ­ãƒ¼ã‚«ãƒ«ã®è¨ˆç®—ã ã‘ä¸¦åˆ—åŒ–
 //	//####################################################################
 //
 //	if ((m_bonenum > 0) && (GetScene()) && (GetModel())) {

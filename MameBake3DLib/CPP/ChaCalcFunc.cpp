@@ -1305,6 +1305,7 @@ int ChaCalcFunc::AdjustBoneTra(CModel* srcmodel, bool limitdegflag, CEditRange* 
 	return 0;
 }
 
+
 int ChaCalcFunc::FKBoneTra(CModel* srcmodel, bool limitdegflag, int onlyoneflag, CEditRange* erptr,
 	int srcboneno, int srcmotid, ChaVector3 addtra, double onlyoneframe)
 {
@@ -1413,6 +1414,188 @@ int ChaCalcFunc::FKBoneTra(CModel* srcmodel, bool limitdegflag, int onlyoneflag,
 
 	return curbone->GetBoneNo();
 }
+
+
+int ChaCalcFunc::FKBoneTraOneFrame(CModel* srcmodel, bool limitdegflag, CEditRange* erptr,
+	int srcboneno, int srcmotid, double srcframe, ChaVector3 addtra)
+{
+
+	if (!srcmodel || (srcboneno < 0)) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	CBone* firstbone = srcmodel->GetBoneByID(srcboneno);
+	if (!firstbone) {
+		_ASSERT(0);
+		return 1;
+	}
+	if (firstbone->IsNotSkeleton()) {
+		return 1;
+	}
+
+	CBone* curbone = firstbone;
+	srcmodel->SetBefEditMatFK(limitdegflag, erptr, curbone);
+
+	CBone* lastpar = firstbone->GetParent(false);
+
+	int keynum;
+	double startframe, endframe, applyframe;
+	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
+
+
+	//########### applyframeは　Post処理しない ###########
+	if (RoundingTime(srcframe) == RoundingTime(applyframe)) {
+		return 0;
+	}
+
+
+	curbone = firstbone;
+	double firstframe = 0.0;
+
+	ChaMatrix dummyparentwm;
+	dummyparentwm.SetIdentity();//Req関数の最初の呼び出し時は　Identityを渡せばよい
+
+	if (keynum >= 2) {
+		//float changerate = 1.0f / (float)(endframe - startframe + 1);
+
+		int keyno = 0;
+		double curframe = srcframe;
+		//for (curframe = startframe; curframe <= endframe; curframe += 1.0) {
+			double changerate;
+			//if( curframe <= applyframe ){
+			//	changerate = 1.0 / (applyframe - startframe + 1);
+			//}else{
+			//	changerate = 1.0 / (endframe - applyframe + 1);
+			//}
+			changerate = (double)(*(g_motionbrush_value + (int)curframe));
+
+
+			//if (keyno == 0) {
+			//	firstframe = curframe;
+			//}
+			if (g_absikflag == 0) {
+				if (g_slerpoffflag == 0) {
+					//double currate2;
+					//if( curframe <= applyframe ){
+					//	currate2 = changerate * (curframe - startframe + 1);
+					//}else{
+					//	currate2 = changerate * (endframe - curframe + 1);
+					//}
+					//ChaVector3 curtra;
+					//curtra = addtra * (float)currate2;
+					ChaVector3 curtra;
+					curtra = addtra * (float)changerate;
+
+					//currate2 = changerate * keyno;
+					//ChaVector3 curtra;
+					//curtra = (1.0 - currate2) * addtra;
+
+					curbone->AddBoneTraReq(limitdegflag, 0, srcmotid, curframe, curtra, dummyparentwm, dummyparentwm);
+				}
+				else {
+					curbone->AddBoneTraReq(limitdegflag, 0, srcmotid, curframe, addtra, dummyparentwm, dummyparentwm);
+				}
+			}
+			else {
+				if (keyno == 0) {
+					curbone->AddBoneTraReq(limitdegflag, 0, srcmotid, curframe, addtra, dummyparentwm, dummyparentwm);
+				}
+				else {
+					curbone->SetAbsMatReq(limitdegflag, 0, srcmotid, curframe, firstframe);
+				}
+			}
+
+			bool postflag = false;
+			IKTargetVec(srcmodel, limitdegflag, erptr, srcmotid, curframe, postflag);
+
+
+			keyno++;
+
+		//}
+	}
+	//else {
+	//	curbone->AddBoneTraReq(limitdegflag, 0, srcmotid, startframe, addtra, dummyparentwm, dummyparentwm);
+	//	bool postflag = false;
+	//	IKTargetVec(srcmodel, limitdegflag, erptr, srcmotid, startframe, postflag);
+	//}
+
+
+	return curbone->GetBoneNo();
+}
+
+CMotionPoint* ChaCalcFunc::AddBoneTraReq(CBone* srcbone, bool limitdegflag, CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra, ChaMatrix befparentwm, ChaMatrix newparentwm)
+{
+	if (!srcbone) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	double roundingframe = RoundingTime(srcframe);
+
+	//2023/04/28
+	if (srcbone->IsNotSkeleton()) {
+		//_ASSERT(0);
+		return 0;
+	}
+
+	int existflag = 0;
+	//CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
+	//if( !curmp || !existflag ){
+	CMotionPoint* curmp = srcbone->GetMotionPoint(srcmotid, roundingframe);
+	if (!curmp) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	ChaMatrix currentbefwm;
+	ChaMatrix currentnewwm;
+	currentbefwm.SetIdentity();
+	currentnewwm.SetIdentity();
+	currentbefwm = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+
+
+	bool infooutflag = false;
+
+	//curmp->SetBefWorldMat( curmp->GetWorldMat() );
+	if (parmp) {
+		//ChaMatrix invbefpar;
+		//ChaMatrix tmpparbefwm = parmp->GetBefWorldMat();//!!!!!!! 2022/12/23 引数にするべき
+		//ChaMatrixInverse( &invbefpar, NULL, &tmpparbefwm );
+		//ChaMatrix tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat();
+		ChaMatrix tmpmat = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp) * ChaMatrixInv(befparentwm) * newparentwm;
+		bool directsetflag = true;
+		int onlycheck = 0;
+		bool fromiktarget = false;
+		srcbone->SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, tmpmat, onlycheck, fromiktarget);
+
+		currentnewwm = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+	}
+	else {
+		ChaMatrix tramat;
+		tramat.SetIdentity();//2023/02/12
+		ChaMatrixTranslation(&tramat, srctra.x, srctra.y, srctra.z);
+		ChaMatrix tmpmat = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp) * tramat;
+		bool directsetflag = true;
+		int onlycheck = 0;
+		bool fromiktarget = false;
+		srcbone->SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, tmpmat, onlycheck, fromiktarget);
+
+		currentnewwm = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+	}
+
+	curmp->SetAbsMat(srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
+
+	if (srcbone->GetChild(false)) {
+		srcbone->GetChild(false)->AddBoneTraReq(limitdegflag, curmp, srcmotid, roundingframe, srctra, currentbefwm, currentnewwm);
+	}
+	if (srcbone->GetBrother(false) && parmp) {
+		srcbone->GetBrother(false)->AddBoneTraReq(limitdegflag, parmp, srcmotid, roundingframe, srctra, befparentwm, newparentwm);
+	}
+	return curmp;
+
+}
+
 
 
 int ChaCalcFunc::CalcBoneEul(CModel* srcmodel, bool limitdegflag, int srcmotid)
@@ -1842,8 +2025,14 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 		if (onlycheck == 0) {
 			srcbone->SetWorldMat(limitdegflag, srcmotid, roundingframe, srcmat, curmp);
 
-			ChaVector3 neweul = srcbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
-			srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, neweul, curmp);
+			//#####################################################################################################
+			//2023/10/19
+			//PostIK処理の際には　後からCalcBoneEul()を呼ぶので　ここではeulの計算を省略してみる(処理高速化のため)
+			//#####################################################################################################
+			if ((g_underIKRotApplyFrame == true) || (g_underIKRot == false)) {
+				ChaVector3 neweul = srcbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+				srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, neweul, curmp);
+			}
 			if (limitdegflag == true) {
 				curmp->SetCalcLimitedWM(2);
 			}

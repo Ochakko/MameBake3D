@@ -237,6 +237,9 @@
     <ClCompile Include="..\CPP\ChaCalcFunc.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
+    <ClCompile Include="..\CPP\ThreadingFKTra.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h">
@@ -1335,6 +1338,9 @@
       <Filter>disp4</Filter>
     </ClInclude>
     <ClInclude Include="..\INCLUDE\ChaCalcFunc.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\ThreadingFKTra.h">
       <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>

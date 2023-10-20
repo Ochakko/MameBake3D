@@ -2621,71 +2621,11 @@ int CBone::SetCurrentRigidElem( std::string curname )
 }
 
 
-CMotionPoint* CBone::AddBoneTraReq(bool limitdegflag, CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra, ChaMatrix befparentwm, ChaMatrix newparentwm)
+CMotionPoint* CBone::AddBoneTraReq(bool limitdegflag, CMotionPoint* parmp, int srcmotid, double srcframe, 
+	ChaVector3 srctra, ChaMatrix befparentwm, ChaMatrix newparentwm)
 {
-	double roundingframe = RoundingTime(srcframe);
-
-	//2023/04/28
-	if (IsNotSkeleton()) {
-		//_ASSERT(0);
-		return 0;
-	}
-
-	int existflag = 0;
-	//CMotionPoint* curmp = AddMotionPoint( srcmotid, srcframe, &existflag );
-	//if( !curmp || !existflag ){
-	CMotionPoint* curmp = GetMotionPoint(srcmotid, roundingframe);
-	if (!curmp) {
-		_ASSERT(0);
-		return 0;
-	}
-
-	ChaMatrix currentbefwm;
-	ChaMatrix currentnewwm;
-	currentbefwm.SetIdentity();
-	currentnewwm.SetIdentity();
-	currentbefwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-
-
-	bool infooutflag = false;
-
-	//curmp->SetBefWorldMat( curmp->GetWorldMat() );
-	if (parmp) {
-		//ChaMatrix invbefpar;
-		//ChaMatrix tmpparbefwm = parmp->GetBefWorldMat();//!!!!!!! 2022/12/23 引数にするべき
-		//ChaMatrixInverse( &invbefpar, NULL, &tmpparbefwm );
-		//ChaMatrix tmpmat = curmp->GetWorldMat() * invbefpar * parmp->GetWorldMat();
-		ChaMatrix tmpmat = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp) * ChaMatrixInv(befparentwm) * newparentwm;
-		bool directsetflag = true;
-		int onlycheck = 0;
-		bool fromiktarget = false;
-		SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, tmpmat, onlycheck, fromiktarget);
-
-		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-	}
-	else {
-		ChaMatrix tramat;
-		tramat.SetIdentity();//2023/02/12
-		ChaMatrixTranslation(&tramat, srctra.x, srctra.y, srctra.z);
-		ChaMatrix tmpmat = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp) * tramat;
-		bool directsetflag = true;
-		int onlycheck = 0;
-		bool fromiktarget = false;
-		SetWorldMat(limitdegflag, directsetflag, infooutflag, 0, srcmotid, roundingframe, tmpmat, onlycheck, fromiktarget);
-
-		currentnewwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-	}
-
-	curmp->SetAbsMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
-
-	if (GetChild(false)) {
-		GetChild(false)->AddBoneTraReq(limitdegflag, curmp, srcmotid, roundingframe, srctra, currentbefwm, currentnewwm);
-	}
-	if (GetBrother(false) && parmp) {
-		GetBrother(false)->AddBoneTraReq(limitdegflag, parmp, srcmotid, roundingframe, srctra, befparentwm, newparentwm);
-	}
-	return curmp;
-
+	ChaCalcFunc chacalcfunc;
+	return chacalcfunc.AddBoneTraReq(this, limitdegflag, parmp, srcmotid, srcframe, srctra, befparentwm, newparentwm);
 }
 
 

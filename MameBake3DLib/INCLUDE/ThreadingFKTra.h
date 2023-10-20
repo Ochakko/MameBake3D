@@ -1,5 +1,5 @@
-﻿#ifndef THREADINGPOSTIKH
-#define THREADINGPOSTIKH
+﻿#ifndef THREADINGFKTRAH
+#define THREADINGFKTRAH
 
 
 #include <ThreadingBase.h>
@@ -17,11 +17,11 @@
 class CModel;
 class CBone;
 
-class CThreadingPostIK : public CThreadingBase
+class CThreadingFKTra : public CThreadingBase
 {
 public:
-	CThreadingPostIK();
-	virtual ~CThreadingPostIK();
+	CThreadingFKTra();
+	virtual ~CThreadingFKTra();
 
 	//int CreateThread();
 	virtual int InitParams();
@@ -30,10 +30,8 @@ public:
 	int ClearFrameList();
 	int SetModel(CModel* srcmodel);
 	int AddFramenoList(double srcframeno);
-	void IKRotateOneFrame(CModel* srcmodel, int srclimitdegflag, CEditRange* srcerptr,
-		int srckeyno, CBone* srcrotbone, CBone* srcparentbone,
-		int srcmotid, double srcstartframe, double srcapplyframe,
-		CQuaternion srcrotq0, bool srckeynum1flag, bool srcpostflag, bool srcfromiktarget);
+	void FKBoneTraOneFrame(CModel* srcmodel, bool srclimitdegflag, CEditRange* srcerptr,
+		int srcboneno, int srcmotid, ChaVector3 srcaddtra);
 
 private:
 	//static unsigned __stdcall ThreadFuncCaller(LPVOID lpThreadParam);
@@ -52,16 +50,9 @@ private:
 
 	int limitdegflag;
 	CEditRange* erptr;
-	int keyno;
-	CBone* rotbone;
-	CBone* parentbone;
+	int boneno;
 	int motid;
-	double startframe;
-	double applyframe;
-	CQuaternion rotq0;
-	bool keynum1flag;
-	bool postflag;
-	bool fromiktarget;
+	ChaVector3 addtra;
 
 	std::vector<double> m_framenovec;
 };

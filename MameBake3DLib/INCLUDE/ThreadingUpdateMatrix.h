@@ -1,4 +1,4 @@
-#ifndef THREADINGUPDATEMATRIXH
+﻿#ifndef THREADINGUPDATEMATRIXH
 #define THREADINGUPDATEMATRIXH
 
 
@@ -8,7 +8,7 @@
 
 #include <vector>
 
-//�X���b�h�P�̏ꍇ������̂�512�܂łɂ���
+//スレッド１つの場合もあるので512までにした
 //#define MAXBONEUPDATE	256
 //#define MAXBONEUPDATE	512
 //#define MAXBONEUPDATE	1024
@@ -39,8 +39,8 @@ private:
 
 private:
 	//CRITICAL_SECTION m_CritSection_UpdateMatrix;
-	//HANDLE m_hEvent; //�蓮���Z�b�g�C�x���g
-	//HANDLE m_hExitEvent; //�蓮���Z�b�g�C�x���g
+	//HANDLE m_hEvent; //手動リセットイベント
+	//HANDLE m_hExitEvent; //手動リセットイベント
 
 	//HANDLE m_hthread;
 	//LONG m_exit_state;

@@ -1,4 +1,4 @@
-#ifndef THREADINGUPDATETIMELINEH
+ï»¿#ifndef THREADINGUPDATETIMELINEH
 #define THREADINGUPDATETIMELINEH
 
 
@@ -26,8 +26,8 @@ private:
 
 private:
 	//CRITICAL_SECTION m_CritSection_UpdateMatrix;
-	//HANDLE m_hEvent; //Žè“®ƒŠƒZƒbƒgƒCƒxƒ“ƒg
-	//HANDLE m_hExitEvent; //Žè“®ƒŠƒZƒbƒgƒCƒxƒ“ƒg
+	//HANDLE m_hEvent; //æ‰‹å‹•ãƒªã‚»ãƒƒãƒˆã‚¤ãƒ™ãƒ³ãƒˆ
+	//HANDLE m_hExitEvent; //æ‰‹å‹•ãƒªã‚»ãƒƒãƒˆã‚¤ãƒ™ãƒ³ãƒˆ
 
 	//HANDLE m_hthread;
 	//LONG m_exit_state;

@@ -16,7 +16,7 @@
 #include <Model.h>
 #include <Bone.h>
 #include <MotionPoint.h>
-#include <ChaVecCalc.h>
+#include <ChaCalcFunc.h>
 
 #define DBGH
 #include <dbg.h>
@@ -35,7 +35,7 @@
 //for __nop()
 #include <intrin.h>
 
-#include <ThreadingPostIK.h>
+#include <ThreadingFKTra.h>
 #include <GlobalVar.h>
 
 using namespace std;
@@ -43,45 +43,46 @@ using namespace std;
 extern int g_previewFlag;
 
 
-CThreadingPostIK::CThreadingPostIK()
+CThreadingFKTra::CThreadingFKTra()
 {
 	InitParams();
 }
-int CThreadingPostIK::InitParams()
+int CThreadingFKTra::InitParams()
 {
 	CThreadingBase::InitParams();
 
 	m_model = 0;
 
+	int limitdegflag;
+	CEditRange* erptr;
+	int boneno;
+	int motid;
+	ChaVector3 addtra;
+
+
 	limitdegflag = 0;
 	erptr = 0;
-	keyno = 0;
-	rotbone = 0;
-	parentbone = 0;
+	boneno = 0;
 	motid = 0;
-	startframe = 0.0;
-	applyframe = 0.0;
-	rotq0.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
-	keynum1flag = false;
-	postflag = true;
-	fromiktarget = false;
+	addtra = ChaVector3(0.0f, 0.0f, 0.0);
+
 
 	ClearFrameList();
 
 	return 0;
 }
-CThreadingPostIK::~CThreadingPostIK()
+CThreadingFKTra::~CThreadingFKTra()
 {
 	DestroyObjs();
 }
 
-void CThreadingPostIK::DestroyObjs()
+void CThreadingFKTra::DestroyObjs()
 {
 	CThreadingBase::DestroyObjs();
 	ClearFrameList();
 }
 
-int CThreadingPostIK::ThreadFunc()
+int CThreadingFKTra::ThreadFunc()
 {
 	m_hExitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	if (m_hExitEvent == NULL) {
@@ -95,8 +96,7 @@ int CThreadingPostIK::ThreadFunc()
 		//	((g_previewFlag != 0) || (g_underIKRot == true))) {//プレビュー中　または　IK回転中　だけ
 
 
-
-		if ((g_underIKRot == true) && (g_underIKRotApplyFrame == false)) {
+		if (g_underPostFKTra == true) {
 		
 			//###########################
 			// 高回転モード　: High rpm
@@ -112,22 +112,11 @@ int CThreadingPostIK::ThreadFunc()
 							int frameindex;
 							for (frameindex = 0; frameindex < framenum; frameindex++) {
 								ChaCalcFunc chacalcfunc;
-								double curframe = m_framenovec[frameindex];
-								if (curframe != applyframe) {
-									int dummykeyno;
-									if (curframe == 0.0) {
-										dummykeyno = 0;
-									}
-									else {
-										dummykeyno = 1;
-									}
 
-									chacalcfunc.IKRotateOneFrame(m_model, limitdegflag, erptr,
-										dummykeyno,
-										rotbone, parentbone,
-										motid, curframe, startframe, applyframe,
-										rotq0, keynum1flag, postflag, fromiktarget);
-								}
+								double curframe = m_framenovec[frameindex];
+								chacalcfunc.FKBoneTraOneFrame(m_model, limitdegflag, erptr,
+									boneno, motid, curframe, addtra);
+
 							}
 						}
 					}
@@ -174,23 +163,11 @@ int CThreadingPostIK::ThreadFunc()
 							int frameindex;
 							for (frameindex = 0; frameindex < framenum; frameindex++) {
 								ChaCalcFunc chacalcfunc;
+
 								double curframe = m_framenovec[frameindex];
+								chacalcfunc.FKBoneTraOneFrame(m_model, limitdegflag, erptr,
+									boneno, motid, curframe, addtra);
 
-								if (curframe != applyframe) {
-									int dummykeyno;
-									if (curframe == 0.0) {
-										dummykeyno = 0;
-									}
-									else {
-										dummykeyno = 1;
-									}
-
-									chacalcfunc.IKRotateOneFrame(m_model, limitdegflag, erptr,
-										dummykeyno,
-										rotbone, parentbone,
-										motid, curframe, startframe, applyframe,
-										rotq0, keynum1flag, postflag, fromiktarget);
-								}
 							}
 						}
 						InterlockedExchange(&m_start_state, 0L);
@@ -224,13 +201,13 @@ int CThreadingPostIK::ThreadFunc()
 }
 
 
-int CThreadingPostIK::ClearFrameList()
+int CThreadingFKTra::ClearFrameList()
 {
 	m_framenovec.clear();
 
 	return 0;
 }
-int CThreadingPostIK::SetModel(CModel* srcmodel)
+int CThreadingFKTra::SetModel(CModel* srcmodel)
 {
 	if (!srcmodel) {
 		_ASSERT(0);
@@ -239,7 +216,7 @@ int CThreadingPostIK::SetModel(CModel* srcmodel)
 	m_model = srcmodel;
 	return 0;
 }
-int CThreadingPostIK::AddFramenoList(double srcframeno)
+int CThreadingFKTra::AddFramenoList(double srcframeno)
 {
 	if (srcframeno < 0.0) {
 		_ASSERT(0);
@@ -250,10 +227,8 @@ int CThreadingPostIK::AddFramenoList(double srcframeno)
 	return 0;
 }
 
-void CThreadingPostIK::IKRotateOneFrame(CModel* srcmodel, int srclimitdegflag, CEditRange* srcerptr,
-	int srckeyno, CBone* srcrotbone, CBone* srcparentbone,
-	int srcmotid, double srcstartframe, double srcapplyframe,
-	CQuaternion srcrotq0, bool srckeynum1flag, bool srcpostflag, bool srcfromiktarget)
+void CThreadingFKTra::FKBoneTraOneFrame(CModel* srcmodel, bool srclimitdegflag, CEditRange* srcerptr,
+	int srcboneno, int srcmotid, ChaVector3 srcaddtra)
 {
 
 	if (!m_model) {
@@ -268,16 +243,9 @@ void CThreadingPostIK::IKRotateOneFrame(CModel* srcmodel, int srclimitdegflag, C
 
 		limitdegflag = srclimitdegflag;
 		erptr = srcerptr;
-		keyno = srckeyno;
-		rotbone = srcrotbone;
-		parentbone = srcparentbone;
+		boneno = srcboneno;
 		motid = srcmotid;
-		startframe = srcstartframe;
-		applyframe = srcapplyframe;
-		rotq0 = srcrotq0;
-		keynum1flag = srckeynum1flag;
-		postflag = srcpostflag;
-		fromiktarget = srcfromiktarget;
+		addtra = srcaddtra;
 
 		LeaveCriticalSection(&m_CritSection);
 		InterlockedExchange(&m_start_state, 1L);

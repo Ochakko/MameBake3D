@@ -74,6 +74,7 @@
 #include <ThreadingLoadFbx.h>
 #include <ThreadingUpdateMatrix.h>
 #include <ThreadingPostIK.h>
+#include <ThreadingFKTra.h>
 #include <ThreadingCalcEul.h>
 
 #include <NodeOnLoad.h>
@@ -515,6 +516,7 @@ int CModel::InitParams()
 	m_LoadFbxAnim = 0;
 	m_PostIKThreads = 0;
 	m_CalcEulThreads = 0;
+	m_FKTraThreads = 0;
 	m_creatednum_boneupdatematrix = 0;//スレッド数の変化に対応。作成済の数。処理用。
 	m_creatednum_loadfbxanim = 0;//スレッド数の変化に対応。作成済の数。処理用。
 
@@ -616,6 +618,9 @@ int CModel::DestroyObjs()
 	WaitCalcEulFinished();
 	DestroyPostIKThreads();
 	WaitPostIKFinished();
+	DestroyFKTraThreads();
+	WaitFKTraFinished();
+
 	DeleteCriticalSection(&m_CritSection_Node);//スレッド終了よりも後
 
 
@@ -1067,6 +1072,7 @@ _ASSERT(m_bonelist[0]);
 	CreateBoneUpdateMatrix();
 	CreateCalcEulThreads();
 	CreatePostIKThreads();
+	CreateFKTraThreads();
 
 
 	ChaMatrix firstmeshmat;
@@ -15249,6 +15255,10 @@ int CModel::FKBoneTraPostFK(
 	double startframe, endframe, applyframe;
 	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 
+
+	SetFKTraFrame(RoundingTime(startframe), RoundingTime(endframe));//2023/10/20
+
+
 	curbone = firstbone;
 	double firstframe = 0.0;
 
@@ -15264,21 +15274,14 @@ int CModel::FKBoneTraPostFK(
 			bool lessthanthflag = currotrec.lessthanthflag;
 
 			if (keynum >= 2) {
-				int keyno = 0;
-				double curframe;
-				for (curframe = RoundingTime(startframe); curframe <= RoundingTime(endframe); curframe += 1.0) {
-					if (curframe != RoundingTime(applyframe)) {
-						if (keyno == 0) {
-							firstframe = curframe;
-						}
-
-						double changerate = (double)(*(g_motionbrush_value + (int)curframe));
-						ChaVector3 currenttranslation = translation * changerate;
-
-						curbone->AddBoneTraReq(limitdegflag, 0, m_curmotinfo->motid, curframe,
-							currenttranslation, dummyparentwm, dummyparentwm);
+				if (m_FKTraThreads) {
+					int updatecount;
+					for (updatecount = 0; updatecount < POSTFKTRA_THREADSNUM; updatecount++) {
+						CThreadingFKTra* curupdate = m_FKTraThreads + updatecount;
+						curupdate->FKBoneTraOneFrame(this, limitdegflag, erptr,
+							curbone->GetBoneNo(), m_curmotinfo->motid, translation);
 					}
-					keyno++;
+					WaitFKTraFinished();
 				}
 			}
 			//else {
@@ -16118,7 +16121,7 @@ int CModel::CalcBoneEul(bool limitdegflag, int srcmotid)
 	//chacalcfunc.CalcBoneEul(this, limitdegflag, srcmotid);
 
 	if (m_CalcEulThreads) {
-		g_underCalcEul = true;//2023/10/19
+		g_underCalcEul = true;//2023/10/19 このフラグが立っている間だけ　CalcEulスレッドがHighRpmになる
 		int updatecount;
 		for (updatecount = 0; updatecount < CALCEUL_THREADSNUM; updatecount++) {
 			CThreadingCalcEul* curupdate = m_CalcEulThreads + updatecount;
@@ -17586,6 +17589,108 @@ int CModel::SetPostIKFrame(double srcstart, double srcend)
 	return 0;
 }
 
+int CModel::CreateFKTraThreads()
+{
+
+	DestroyFKTraThreads();
+	Sleep(100);
+
+
+	if (m_bonelist[0] == NULL) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	m_FKTraThreads = new CThreadingFKTra[POSTFKTRA_THREADSNUM];
+	if (!m_FKTraThreads) {
+		_ASSERT(0);
+		return 1;
+	}
+	int createno;
+	for (createno = 0; createno < POSTFKTRA_THREADSNUM; createno++) {
+		CThreadingFKTra* curupdate = m_FKTraThreads + createno;
+		curupdate->ClearFrameList();
+		curupdate->CreateThread((DWORD)(1 << createno));
+
+		curupdate->SetModel(this);
+	}
+
+	return 0;
+}
+
+int CModel::DestroyFKTraThreads()
+{
+
+	if (m_FKTraThreads) {
+		delete[] m_FKTraThreads;
+	}
+	m_FKTraThreads = 0;
+
+	return 0;
+}
+
+void CModel::WaitFKTraFinished()
+{
+	if (m_FKTraThreads != NULL) {
+
+		bool yetflag = true;
+		while (yetflag == true) {
+			int finishedcount = 0;
+			int updatecount;
+			for (updatecount = 0; updatecount < POSTFKTRA_THREADSNUM; updatecount++) {
+				CThreadingFKTra* curupdate = m_FKTraThreads + updatecount;
+				if (curupdate->IsFinished()) {
+					finishedcount++;
+				}
+			}
+
+			if (finishedcount == POSTFKTRA_THREADSNUM) {
+				yetflag = false;
+				return;
+			}
+			else {
+				//__nop();
+				//__nop();
+				//__nop();
+				//__nop();
+			}
+		}
+
+	}
+
+}
+
+int CModel::SetFKTraFrame(double srcstart, double srcend)
+{
+	if (!m_FKTraThreads) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	int updatecount;
+	for (updatecount = 0; updatecount < POSTFKTRA_THREADSNUM; updatecount++) {
+		CThreadingFKTra* curupdate = m_FKTraThreads + updatecount;
+		curupdate->ClearFrameList();
+	}
+
+
+	double setframe;
+	int threadcount = 0;
+	for (setframe = RoundingTime(srcstart); setframe <= RoundingTime(srcend); setframe += 1.0) {
+		CThreadingFKTra* curupdate = m_FKTraThreads + threadcount;
+
+		curupdate->AddFramenoList(setframe);
+
+		threadcount++;
+		if (threadcount >= POSTFKTRA_THREADSNUM) {
+			threadcount = 0;
+		}
+	}
+
+	return 0;
+}
 
 void CModel::InitMPReq(bool limitdegflag, CBone* curbone, int srcmotid, double curframe)
 {

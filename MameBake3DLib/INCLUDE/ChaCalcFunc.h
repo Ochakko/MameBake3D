@@ -42,7 +42,13 @@ public:
 
 
 	int FKBoneTra(CModel* srcmodel, bool limitdegflag, int onlyoneflag, CEditRange* erptr,
-		int srcboneno, int srcmotid, ChaVector3 addtra, double onlyoneframe = 0.0);
+		int srcboneno, int srcmotid, ChaVector3 addtra, double onlyonefarme = 0.0);
+
+	//for threading
+	int FKBoneTraOneFrame(CModel* srcmodel, bool limitdegflag, CEditRange* erptr,
+		int srcboneno, int srcmotid, double srcframe, ChaVector3 addtra);
+
+	CMotionPoint* AddBoneTraReq(CBone* srcbone, bool limitdegflag, CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra, ChaMatrix befparentwm, ChaMatrix newparentwm);
 
 
 	int CalcQForRot(bool limitdegflag, bool calcaplyflag,

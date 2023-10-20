@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 //#include <stdafx.h>
 
 #include <stdio.h>
@@ -84,17 +84,17 @@ int CThreadingUpdateMatrix::ThreadFunc()
 	while (InterlockedAdd(&m_exit_state, 0) != 1) {
 
 		if ((g_HighRpmMode == true) && 
-			((g_previewFlag != 0) || (g_underIKRot == true))) {//ƒvƒŒƒrƒ…[’†@‚Ü‚½‚Í@IK‰ñ“]’†@‚¾‚¯
+			((g_previewFlag != 0) || (g_underIKRot == true))) {//ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼ä¸­ã€€ã¾ãŸã¯ã€€IKå›è»¢ä¸­ã€€ã ã‘
 
 			//###########################
-			// ‚‰ñ“]ƒ‚[ƒh@: High rpm
+			// é«˜å›è»¢ãƒ¢ãƒ¼ãƒ‰ã€€: High rpm
 			//###########################
 
-			if (InterlockedAdd(&m_start_state, 0) == 1) {//ŒvZŠJn–½—ß‚ğƒLƒƒƒbƒ`
-				if (InterlockedAdd(&m_exit_state, 0) != 1) {//ƒXƒŒƒbƒh‚ªI—¹‚µ‚Ä‚¢‚È‚¢ê‡
+			if (InterlockedAdd(&m_start_state, 0) == 1) {//è¨ˆç®—é–‹å§‹å‘½ä»¤ã‚’ã‚­ãƒ£ãƒƒãƒ
+				if (InterlockedAdd(&m_exit_state, 0) != 1) {//ã‚¹ãƒ¬ãƒƒãƒ‰ãŒçµ‚äº†ã—ã¦ã„ãªã„å ´åˆ
 
 					if (m_model && (m_model->GetInView() == true)) {
-						//EnterCriticalSection(&m_CritSection);//Ä“ü–h~ ŒÄ‚Ño‚µ‘¤‚Åˆ—I—¹‚ğ‘Ò‚Â‚Ì‚Å•s—v
+						//EnterCriticalSection(&m_CritSection);//å†å…¥é˜²æ­¢ å‘¼ã³å‡ºã—å´ã§å‡¦ç†çµ‚äº†ã‚’å¾…ã¤ã®ã§ä¸è¦
 						if (!m_bonevec.empty()) {
 							int bonenum = (int)m_bonevec.size();
 							int bonecount;
@@ -112,13 +112,13 @@ int CThreadingUpdateMatrix::ThreadFunc()
 					//LeaveCriticalSection(&m_CritSection);
 				}
 				else {
-					//ƒXƒŒƒbƒhI—¹ƒtƒ‰ƒO‚ª—§‚Á‚Ä‚¢‚½ê‡
+					//ã‚¹ãƒ¬ãƒƒãƒ‰çµ‚äº†ãƒ•ãƒ©ã‚°ãŒç«‹ã£ã¦ã„ãŸå ´åˆ
 					InterlockedExchange(&m_start_state, 0L);
 				}
 			}
 			else {
 
-				//ŒvZ‚ÍI—¹‚µ‚Ä‚¢‚ÄŒvZ–½—ß‘Ò‚¿ó‘Ô
+				//è¨ˆç®—ã¯çµ‚äº†ã—ã¦ã„ã¦è¨ˆç®—å‘½ä»¤å¾…ã¡çŠ¶æ…‹
 
 				//__nop();
 				//Sleep(0);
@@ -132,12 +132,12 @@ int CThreadingUpdateMatrix::ThreadFunc()
 		else {
 
 			//############################
-			// eco ƒ‚[ƒh
+			// eco ãƒ¢ãƒ¼ãƒ‰
 			//############################
 
 			DWORD dwWaitResult = WaitForSingleObject(m_hEvent, INFINITE);
 			ResetEvent(m_hEvent);
-			if (InterlockedAdd(&m_exit_state, 0) != 1) {//ƒXƒŒƒbƒh‚ªI—¹‚µ‚Ä‚¢‚È‚¢ê‡
+			if (InterlockedAdd(&m_exit_state, 0) != 1) {//ã‚¹ãƒ¬ãƒƒãƒ‰ãŒçµ‚äº†ã—ã¦ã„ãªã„å ´åˆ
 				switch (dwWaitResult)
 				{
 					// Event object was signaled
@@ -175,7 +175,7 @@ int CThreadingUpdateMatrix::ThreadFunc()
 				}
 			}
 			else {
-				//ƒXƒŒƒbƒhI—¹ƒtƒ‰ƒO‚ª—§‚Á‚Ä‚¢‚½ê‡
+				//ã‚¹ãƒ¬ãƒƒãƒ‰çµ‚äº†ãƒ•ãƒ©ã‚°ãŒç«‹ã£ã¦ã„ãŸå ´åˆ
 				InterlockedExchange(&m_start_state, 0L);
 			}
 		}
@@ -225,7 +225,7 @@ void CThreadingUpdateMatrix::UpdateMatrix(bool limitdegflag, int srcmotid, doubl
 
 
 	//####################################################################
-	//## g_limitdegflag == true@‚Ìê‡‚É‚Íƒ[ƒJƒ‹‚ÌŒvZ‚¾‚¯•À—ñ‰»
+	//## g_limitdegflag == trueã€€ã®å ´åˆã«ã¯ãƒ­ãƒ¼ã‚«ãƒ«ã®è¨ˆç®—ã ã‘ä¸¦åˆ—åŒ–
 	//####################################################################
 
 	if (!m_bonevec.empty()) {

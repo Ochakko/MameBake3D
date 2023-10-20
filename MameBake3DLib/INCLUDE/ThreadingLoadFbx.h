@@ -1,4 +1,4 @@
-#ifndef THREADINGLOADFBXH
+ï»¿#ifndef THREADINGLOADFBXH
 #define THREADINGLOADFBXH
 
 #include <ThreadingBase.h>
@@ -57,8 +57,8 @@ private:
 
 private:
 	//CRITICAL_SECTION m_CritSection;
-	//HANDLE m_hEvent; //Žè“®ƒŠƒZƒbƒgƒCƒxƒ“ƒg
-	//HANDLE m_hExitEvent; //Žè“®ƒŠƒZƒbƒgƒCƒxƒ“ƒg
+	//HANDLE m_hEvent; //æ‰‹å‹•ãƒªã‚»ãƒƒãƒˆã‚¤ãƒ™ãƒ³ãƒˆ
+	//HANDLE m_hExitEvent; //æ‰‹å‹•ãƒªã‚»ãƒƒãƒˆã‚¤ãƒ™ãƒ³ãƒˆ
 
 	//HANDLE m_hthread;
 	//LONG m_exit_state;

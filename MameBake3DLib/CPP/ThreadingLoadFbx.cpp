@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 //#include <stdafx.h>
 
 #include <stdio.h>
@@ -87,13 +87,13 @@ int CThreadingLoadFbx::ThreadFunc()
 		//if (g_HighRpmMode == true) {
 
 			//###########################
-			// ‚‰ñ“]ƒ‚[ƒh@: High rpm
+			// é«˜å›žè»¢ãƒ¢ãƒ¼ãƒ‰ã€€: High rpm
 			//###########################
 
 		if (InterlockedAdd(&m_start_state, 0) == 1) {
-			if (InterlockedAdd(&m_exit_state, 0) != 1) {//I—¹‚µ‚Ä‚¢‚È‚¢ê‡
+			if (InterlockedAdd(&m_exit_state, 0) != 1) {//çµ‚äº†ã—ã¦ã„ãªã„å ´åˆ
 
-				//EnterCriticalSection(&m_CritSection);//ŒÄ‚Ño‚µ‘¤‚Åˆ—I—¹‚ð‘Ò‚Â‚Ì‚Å•s—v
+				//EnterCriticalSection(&m_CritSection);//å‘¼ã³å‡ºã—å´ã§å‡¦ç†çµ‚äº†ã‚’å¾…ã¤ã®ã§ä¸è¦
 				if (m_model) {
 					if ((m_bonenum >= 0) || (m_bonenum <= MAXLOADFBXANIMBONE)) {
 						//CBone* firstbone = m_bonelist[0];
@@ -132,7 +132,7 @@ int CThreadingLoadFbx::ThreadFunc()
 		//else {
 
 		//	//############################
-		//	// eco ƒ‚[ƒh
+		//	// eco ãƒ¢ãƒ¼ãƒ‰
 		//	//############################
 
 		//	DWORD dwWaitResult = WaitForSingleObject(m_hEvent, INFINITE);
@@ -214,7 +214,7 @@ void CThreadingLoadFbx::LoadFbxAnim(int srcanimno, int srcmotid, double srcaniml
 
 
 	//####################################################################
-	//## g_limitdegflag == true@‚Ìê‡‚É‚Íƒ[ƒJƒ‹‚ÌŒvŽZ‚¾‚¯•À—ñ‰»
+	//## g_limitdegflag == trueã€€ã®å ´åˆã«ã¯ãƒ­ãƒ¼ã‚«ãƒ«ã®è¨ˆç®—ã ã‘ä¸¦åˆ—åŒ–
 	//####################################################################
 
 	if ((m_bonenum > 0) && (GetScene()) && (GetModel())) {

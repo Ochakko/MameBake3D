@@ -107,6 +107,7 @@ bool g_underIKRotApplyFrame = false;
 bool g_fpsforce30 = false;
 bool g_underWriteFbx = false;
 bool g_underCalcEul = false;
+bool g_underPostFKTra = false;
 
 int	g_numthread = 3;
 
@@ -321,7 +322,7 @@ extern bool g_underIKRotApplyFrame;
 extern bool g_fpsforce30;
 extern bool g_underWriteFbx;
 extern bool g_underCalcEul;
-
+extern bool g_underPostFKTra;
 
 extern int	g_numthread;
 extern double g_btcalccnt;

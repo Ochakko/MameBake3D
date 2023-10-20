@@ -38,6 +38,7 @@ class CThreadingLoadFbx;
 class CThreadingUpdateMatrix;
 class CThreadingPostIK;
 class CThreadingCalcEul;
+class CThreadingFKTra;
 class CNodeOnLoad;
 
 typedef struct funcmpparams
@@ -878,7 +879,12 @@ public:
 	int DestroyPostIKThreads();
 	void WaitPostIKFinished();
 	int SetPostIKFrame(double srcstart, double srcend);
-	
+
+	int CreateFKTraThreads();
+	int DestroyFKTraThreads();
+	void WaitFKTraFinished();
+	int SetFKTraFrame(double srcstart, double srcend);
+
 	int CreateCalcEulThreads();
 	int DestroyCalcEulThreads();
 	void WaitCalcEulFinished();
@@ -2117,6 +2123,7 @@ private:
 	CThreadingLoadFbx* m_LoadFbxAnim;
 	CThreadingPostIK* m_PostIKThreads;
 	CThreadingCalcEul* m_CalcEulThreads;
+	CThreadingFKTra* m_FKTraThreads;
 	int m_creatednum_boneupdatematrix;//スレッド数の変化に対応。作成済の数。処理用。
 	int m_creatednum_loadfbxanim;//スレッド数の変化に対応。作成済の数。処理用。
 

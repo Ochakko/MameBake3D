@@ -4417,7 +4417,7 @@ void InitApp()
 
 	g_underWriteFbx = false;
 	g_underCalcEul = false;
-
+	g_underPostFKTra = false;
 
 	g_VSync = false;
 	g_fpskind = 0;
@@ -10313,9 +10313,13 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				if (s_pickinfo.buttonflag == PICK_CENTER) {
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
+					g_underPostFKTra = true;
+					
 					s_model->FKBoneTraPostFK(g_limitdegflag,
 						&s_editrange, s_curboneno);
 					s_editmotionflag = s_curboneno;
+					
+					g_underPostFKTra = false;
 
 					if (oldcursor != NULL) {
 						SetCursor(oldcursor);
@@ -10330,10 +10334,14 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 					(s_pickinfo.buttonflag == PICK_SPA_Z)) {
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
+					g_underPostFKTra = true; 
+					
 					s_model->FKBoneTraAxisPostFK(
 						g_limitdegflag,
 						&s_editrange, s_curboneno);
 					s_editmotionflag = s_curboneno;
+
+					g_underPostFKTra = false;
 
 					if (oldcursor != NULL) {
 						SetCursor(oldcursor);
