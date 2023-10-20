@@ -13378,6 +13378,10 @@ int CModel::RigControlPostRig(bool limitdegflag, int depthcnt,
 	double startframe, endframe, applyframe;
 	erptr->GetRange(&keynum, &startframe, &endframe, &applyframe);
 
+
+	SetPostIKFrame(RoundingTime(startframe), RoundingTime(endframe));//2023/10/20
+
+
 	double roundingstartframe, roundingendframe, roundingapplyframe;
 	roundingstartframe = RoundingTime(startframe);
 	roundingendframe = RoundingTime(endframe);
@@ -13480,19 +13484,21 @@ int CModel::RigControlPostRig(bool limitdegflag, int depthcnt,
 						if (lessthanthflag == false) {
 							if (keynum >= 2) {
 								int keyno = 0;
-								double curframe;
-								for (curframe = roundingstartframe; curframe <= roundingendframe; curframe += 1.0) {
-									if (curframe != roundingapplyframe) {
-										bool keynum1flag = false;
-										bool postflag = true;
-										bool fromiktarget = false;
-										chacalcfunc.IKRotateOneFrame(this, limitdegflag, erptr,
-											keyno, 
+								bool keynum1flag = false;
+								bool postflag = true;
+								bool fromiktarget = false;
+
+								if (m_PostIKThreads) {
+									int updatecount;
+									for (updatecount = 0; updatecount < POSTIK_THREADSNUM; updatecount++) {
+										CThreadingPostIK* curupdate = m_PostIKThreads + updatecount;
+										curupdate->IKRotateOneFrame(this, limitdegflag, erptr,
+											keyno,
 											curbone, aplybone,
-											m_curmotinfo->motid, curframe, roundingstartframe, roundingapplyframe,
+											m_curmotinfo->motid, startframe, applyframe,
 											localq, keynum1flag, postflag, fromiktarget);
 									}
-									keyno++;
+									WaitPostIKFinished();
 								}
 							}
 						}
@@ -14360,7 +14366,7 @@ int CModel::IKRotateAxisDeltaPostIK(
 	}
 
 
-	SetPostIKFrame(startframe, endframe);//2023/10/17
+	SetPostIKFrame(RoundingTime(startframe), RoundingTime(endframe));//2023/10/17
 
 
 	bool ishipsjoint = false;
