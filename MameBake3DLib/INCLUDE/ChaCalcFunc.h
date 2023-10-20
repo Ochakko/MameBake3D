@@ -81,6 +81,15 @@ public:
 	CMotionPoint* GetMotionPoint(CBone* srcbone, int srcmotid, double srcframe, bool onaddmotion = false);
 	ChaMatrix GetWorldMat(CBone* srcbone, bool limitdegflag, int srcmotid, double srcframe, CMotionPoint* srcmp, ChaVector3* dsteul = 0);
 
+	int CopyWorldToLimitedWorldOne(CModel* srcmodel, CBone* srcbone, int srcmotid, double srcframe);
+	void CopyWorldToLimitedWorldReq(CModel* srcmodel, CBone* srcbone, int srcmotid, double srcframe);
+	int CopyWorldToLimitedWorld(CBone* srcbone, int srcmotid, double srcframe);
+	void UpdateCurrentWM(CBone* srcbone, bool limitdegflag, int srcmotid, double srcframe,
+		ChaMatrix newwm);
+	void UpdateParentWMReq(CBone* srcbone, bool limitdegflag, bool setbroflag, int srcmotid, double srcframe,
+		ChaMatrix oldparentwm, ChaMatrix newparentwm);
+
+
 private:
 	float LimitAngle(CBone* srcbone, enum tag_axiskind srckind, float srcval);
 

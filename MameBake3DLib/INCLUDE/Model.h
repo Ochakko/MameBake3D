@@ -39,6 +39,7 @@ class CThreadingUpdateMatrix;
 class CThreadingPostIK;
 class CThreadingCalcEul;
 class CThreadingFKTra;
+class CThreadingCopyW2LW;
 class CNodeOnLoad;
 
 typedef struct funcmpparams
@@ -884,6 +885,12 @@ public:
 	int DestroyFKTraThreads();
 	void WaitFKTraFinished();
 	int SetFKTraFrame(double srcstart, double srcend);
+
+	int CreateCopyW2LWThreads();
+	int DestroyCopyW2LWThreads();
+	void WaitCopyW2LWFinished();
+	int SetCopyW2LWFrame(double srcstart, double srcend);
+
 
 	int CreateCalcEulThreads();
 	int DestroyCalcEulThreads();
@@ -2124,6 +2131,7 @@ private:
 	CThreadingPostIK* m_PostIKThreads;
 	CThreadingCalcEul* m_CalcEulThreads;
 	CThreadingFKTra* m_FKTraThreads;
+	CThreadingCopyW2LW* m_CopyW2LWThreads;
 	int m_creatednum_boneupdatematrix;//スレッド数の変化に対応。作成済の数。処理用。
 	int m_creatednum_loadfbxanim;//スレッド数の変化に対応。作成済の数。処理用。
 

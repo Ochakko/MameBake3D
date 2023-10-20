@@ -35,7 +35,7 @@
 //for __nop()
 #include <intrin.h>
 
-#include <ThreadingFKTra.h>
+#include <ThreadingCopyW2LW.h>
 #include <GlobalVar.h>
 
 using namespace std;
@@ -43,39 +43,37 @@ using namespace std;
 extern int g_previewFlag;
 
 
-CThreadingFKTra::CThreadingFKTra()
+CThreadingCopyW2LW::CThreadingCopyW2LW()
 {
 	InitParams();
 }
-int CThreadingFKTra::InitParams()
+int CThreadingCopyW2LW::InitParams()
 {
 	CThreadingBase::InitParams();
 
 	m_model = 0;
 
-	limitdegflag = 0;
-	erptr = 0;
-	boneno = 0;
+	pbone = 0;
 	motid = 0;
-	addtra = ChaVector3(0.0f, 0.0f, 0.0);
-
+	startframe = 1.0;
+	endframe = 1.0;
 
 	ClearFrameList();
 
 	return 0;
 }
-CThreadingFKTra::~CThreadingFKTra()
+CThreadingCopyW2LW::~CThreadingCopyW2LW()
 {
 	DestroyObjs();
 }
 
-void CThreadingFKTra::DestroyObjs()
+void CThreadingCopyW2LW::DestroyObjs()
 {
 	CThreadingBase::DestroyObjs();
 	ClearFrameList();
 }
 
-int CThreadingFKTra::ThreadFunc()
+int CThreadingCopyW2LW::ThreadFunc()
 {
 	m_hExitEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	if (m_hExitEvent == NULL) {
@@ -107,9 +105,7 @@ int CThreadingFKTra::ThreadFunc()
 								ChaCalcFunc chacalcfunc;
 
 								double curframe = m_framenovec[frameindex];
-								chacalcfunc.FKBoneTraOneFrame(m_model, limitdegflag, erptr,
-									boneno, motid, curframe, addtra);
-
+								chacalcfunc.CopyWorldToLimitedWorldOne(m_model, pbone, motid, curframe);
 							}
 						}
 					}
@@ -158,9 +154,7 @@ int CThreadingFKTra::ThreadFunc()
 								ChaCalcFunc chacalcfunc;
 
 								double curframe = m_framenovec[frameindex];
-								chacalcfunc.FKBoneTraOneFrame(m_model, limitdegflag, erptr,
-									boneno, motid, curframe, addtra);
-
+								chacalcfunc.CopyWorldToLimitedWorldOne(m_model, pbone, motid, curframe);
 							}
 						}
 						InterlockedExchange(&m_start_state, 0L);
@@ -194,13 +188,13 @@ int CThreadingFKTra::ThreadFunc()
 }
 
 
-int CThreadingFKTra::ClearFrameList()
+int CThreadingCopyW2LW::ClearFrameList()
 {
 	m_framenovec.clear();
 
 	return 0;
 }
-int CThreadingFKTra::SetModel(CModel* srcmodel)
+int CThreadingCopyW2LW::SetModel(CModel* srcmodel)
 {
 	if (!srcmodel) {
 		_ASSERT(0);
@@ -209,7 +203,7 @@ int CThreadingFKTra::SetModel(CModel* srcmodel)
 	m_model = srcmodel;
 	return 0;
 }
-int CThreadingFKTra::AddFramenoList(double srcframeno)
+int CThreadingCopyW2LW::AddFramenoList(double srcframeno)
 {
 	if (srcframeno < 0.0) {
 		_ASSERT(0);
@@ -220,8 +214,7 @@ int CThreadingFKTra::AddFramenoList(double srcframeno)
 	return 0;
 }
 
-void CThreadingFKTra::FKBoneTraOneFrame(CModel* srcmodel, bool srclimitdegflag, CEditRange* srcerptr,
-	int srcboneno, int srcmotid, ChaVector3 srcaddtra)
+void CThreadingCopyW2LW::CopyWorldToLimitedWorld(CBone* srcbone, int srcmotid, double srcstartframe, double srcendframe)
 {
 
 	if (!m_model) {
@@ -234,11 +227,10 @@ void CThreadingFKTra::FKBoneTraOneFrame(CModel* srcmodel, bool srclimitdegflag, 
 	if (!m_framenovec.empty()) {
 		EnterCriticalSection(&m_CritSection);
 
-		limitdegflag = srclimitdegflag;
-		erptr = srcerptr;
-		boneno = srcboneno;
+		pbone = srcbone;
 		motid = srcmotid;
-		addtra = srcaddtra;
+		startframe = srcstartframe;
+		endframe = srcendframe;
 
 		LeaveCriticalSection(&m_CritSection);
 		InterlockedExchange(&m_start_state, 1L);

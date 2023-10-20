@@ -15222,6 +15222,11 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 			if (g_limitdegflag == true) {
 				ClearLimitedWM(s_model);
 				CopyWorldToLimitedWorld(s_model);
+				MOTINFO* curmi = s_model->GetCurMotInfo();
+				if (curmi) {
+					//unlimtedの計算
+					s_model->CalcBoneEul(false, curmi->motid);//2023/10/20 CopyWorldToLimitedWorldの後　ApplyNewLimitsToWMよりも前
+				}
 				ApplyNewLimitsToWM(s_model);
 			}
 
@@ -20795,6 +20800,11 @@ int RetargetMotion()
 
 	if (g_limitdegflag == true) {
 		CopyWorldToLimitedWorld(s_model);
+		MOTINFO* curmi = s_model->GetCurMotInfo();
+		if (curmi) {
+			//unlimtedの計算
+			s_model->CalcBoneEul(false, curmi->motid);//2023/10/20 CopyWorldToLimitedWorldの後　ApplyNewLimitsToWMよりも前
+		}
 		ApplyNewLimitsToWM(s_model);
 	}
 
@@ -27118,15 +27128,18 @@ int CopyWorldToLimitedWorld(CModel* srcmodel)
 
 	if (srcmodel) {
 		ChaMatrix tmpwm = srcmodel->GetWorldMat();
-		MOTINFO* curmi = srcmodel->GetCurMotInfo();
-		if (curmi) {
-			double curframe;
-			//for (curframe = 0.0; curframe < curmi->frameleng; curframe += 1.0) {
-			for (curframe = 1.0; curframe < curmi->frameleng; curframe += 1.0) {
-				srcmodel->SetMotionFrame(curframe);
-				srcmodel->CopyWorldToLimitedWorldReq(srcmodel->GetTopBone(false), curmi->motid, curframe);
-			}
-		}
+		//MOTINFO* curmi = srcmodel->GetCurMotInfo();
+		//if (curmi) {
+		//	double curframe;
+		//	//for (curframe = 0.0; curframe < curmi->frameleng; curframe += 1.0) {
+		//	for (curframe = 1.0; curframe < curmi->frameleng; curframe += 1.0) {
+		//		srcmodel->SetMotionFrame(curframe);
+		//		srcmodel->CopyWorldToLimitedWorldReq(srcmodel->GetTopBone(false), curmi->motid, curframe);
+		//	}
+		//}
+
+		srcmodel->CopyWorldToLimitedWorld();//2023/10/20 MultiThreading
+
 
 		if (s_owpLTimeline) {
 			double curframe = s_owpLTimeline->getCurrentTime();
@@ -27228,6 +27241,11 @@ int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag)//default :
 	if (s_model) {
 		ClearLimitedWM(s_model);
 		CopyWorldToLimitedWorld(s_model);
+		MOTINFO* curmi = s_model->GetCurMotInfo();
+		if (curmi) {
+			//unlimitedの計算
+			s_model->CalcBoneEul(false, curmi->motid);//2023/10/20 CopyWorldToLimitedWorldの後　ApplyNewLimitsToWMよりも前
+		}
 		ApplyNewLimitsToWM(s_model);
 	}
 
@@ -29083,12 +29101,13 @@ int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 		if (s_model) {
 			ClearLimitedWM(s_model);
 			CopyWorldToLimitedWorld(s_model);
-			ApplyNewLimitsToWM(s_model);
-
 			MOTINFO* curmi = s_model->GetCurMotInfo();
 			if (curmi) {
-				s_model->CalcBoneEul(g_limitdegflag, curmi->motid);
+				//unlimtedの計算
+				s_model->CalcBoneEul(false, curmi->motid);//2023/10/20 CopyWorldToLimitedWorldの後　ApplyNewLimitsToWMよりも前
 			}
+			ApplyNewLimitsToWM(s_model);
+
 		}
 
 		//if (g_limitdegflag == true) {
@@ -31945,6 +31964,10 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 		bool setcursorflag = false;
 		bool onpasteflag = true;
 		CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
+		//MOTINFO* curmi = s_model->GetCurMotInfo();
+		//if (curmi) {
+		//	s_model->CalcBoneEul(g_limitdegflag, curmi->motid);//2023/10/20 CopyWorldToLimitedWorldの後　ApplyNewLimitsToWMよりも前
+		//}
 		ApplyNewLimitsToWM(s_model);
 	}
 

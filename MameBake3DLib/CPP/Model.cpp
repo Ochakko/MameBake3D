@@ -75,6 +75,7 @@
 #include <ThreadingUpdateMatrix.h>
 #include <ThreadingPostIK.h>
 #include <ThreadingFKTra.h>
+#include <ThreadingCopyW2LW.h>
 #include <ThreadingCalcEul.h>
 
 #include <NodeOnLoad.h>
@@ -517,6 +518,7 @@ int CModel::InitParams()
 	m_PostIKThreads = 0;
 	m_CalcEulThreads = 0;
 	m_FKTraThreads = 0;
+	m_CopyW2LWThreads = 0;
 	m_creatednum_boneupdatematrix = 0;//スレッド数の変化に対応。作成済の数。処理用。
 	m_creatednum_loadfbxanim = 0;//スレッド数の変化に対応。作成済の数。処理用。
 
@@ -620,7 +622,10 @@ int CModel::DestroyObjs()
 	WaitPostIKFinished();
 	DestroyFKTraThreads();
 	WaitFKTraFinished();
+	DestroyCopyW2LWThreads();
+	WaitCopyW2LWFinished();
 
+	
 	DeleteCriticalSection(&m_CritSection_Node);//スレッド終了よりも後
 
 
@@ -1073,6 +1078,7 @@ _ASSERT(m_bonelist[0]);
 	CreateCalcEulThreads();
 	CreatePostIKThreads();
 	CreateFKTraThreads();
+	CreateCopyW2LWThreads();
 
 
 	ChaMatrix firstmeshmat;
@@ -2432,19 +2438,8 @@ void CModel::CopyLimitedWorldToWorldReq(CBone* srcbone, int srcmotid, double src
 
 void CModel::CopyWorldToLimitedWorldReq(CBone* srcbone, int srcmotid, double srcframe)
 {
-	if (srcbone) {
-
-		if (srcbone->IsSkeleton()) {
-			srcbone->CopyWorldToLimitedWorld(srcmotid, srcframe);
-		}
-
-		if (srcbone->GetChild(false)) {
-			CopyWorldToLimitedWorldReq(srcbone->GetChild(false), srcmotid, srcframe);
-		}
-		if (srcbone->GetBrother(false)) {
-			CopyWorldToLimitedWorldReq(srcbone->GetBrother(false), srcmotid, srcframe);
-		}
-	}
+	ChaCalcFunc chacalcfunc;
+	chacalcfunc.CopyWorldToLimitedWorldReq(this, srcbone, srcmotid, srcframe);
 }
 
 
@@ -17053,13 +17048,18 @@ int CModel::CopyWorldToLimitedWorld()
 		return 0;
 	}
 
-	ChaMatrix tmpwm = GetWorldMat();
 	MOTINFO* curmi = GetCurMotInfo();
 	if (curmi) {
-		double curframe;
-		//for (curframe = 0.0; curframe < curmi->frameleng; curframe += 1.0) {
-		for (curframe = 1.0; curframe < curmi->frameleng; curframe += 1.0) {
-			CopyWorldToLimitedWorldReq(GetTopBone(false), curmi->motid, curframe);
+
+		SetCopyW2LWFrame(RoundingTime(1.0), RoundingTime(curmi->frameleng - 1.0));//2023/10/20
+
+		if (m_FKTraThreads) {
+			int updatecount;
+			for (updatecount = 0; updatecount < COPYW2LW_THREADSNUM; updatecount++) {
+				CThreadingCopyW2LW* curupdate = m_CopyW2LWThreads + updatecount;
+				curupdate->CopyWorldToLimitedWorld(GetTopBone(false), curmi->motid, 1.0, RoundingTime(curmi->frameleng - 1.0));
+			}
+			WaitFKTraFinished();
 		}
 	}
 
@@ -17697,6 +17697,112 @@ int CModel::SetFKTraFrame(double srcstart, double srcend)
 
 	return 0;
 }
+
+int CModel::CreateCopyW2LWThreads()
+{
+
+	DestroyCopyW2LWThreads();
+	Sleep(100);
+
+
+	if (m_bonelist[0] == NULL) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	m_CopyW2LWThreads = new CThreadingCopyW2LW[COPYW2LW_THREADSNUM];
+	if (!m_CopyW2LWThreads) {
+		_ASSERT(0);
+		return 1;
+	}
+	int createno;
+	for (createno = 0; createno < COPYW2LW_THREADSNUM; createno++) {
+		CThreadingCopyW2LW* curupdate = m_CopyW2LWThreads + createno;
+		curupdate->ClearFrameList();
+		curupdate->CreateThread((DWORD)(1 << createno));
+
+		curupdate->SetModel(this);
+	}
+
+	return 0;
+}
+
+int CModel::DestroyCopyW2LWThreads()
+{
+
+	if (m_CopyW2LWThreads) {
+		delete[] m_CopyW2LWThreads;
+	}
+	m_CopyW2LWThreads = 0;
+
+	return 0;
+}
+
+void CModel::WaitCopyW2LWFinished()
+{
+	if (m_CopyW2LWThreads != NULL) {
+
+		bool yetflag = true;
+		while (yetflag == true) {
+			int finishedcount = 0;
+			int updatecount;
+			for (updatecount = 0; updatecount < COPYW2LW_THREADSNUM; updatecount++) {
+				CThreadingCopyW2LW* curupdate = m_CopyW2LWThreads + updatecount;
+				if (curupdate->IsFinished()) {
+					finishedcount++;
+				}
+			}
+
+			if (finishedcount == COPYW2LW_THREADSNUM) {
+				yetflag = false;
+				return;
+			}
+			else {
+				//__nop();
+				//__nop();
+				//__nop();
+				//__nop();
+			}
+		}
+
+	}
+
+}
+
+int CModel::SetCopyW2LWFrame(double srcstart, double srcend)
+{
+	if (!m_CopyW2LWThreads) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	int updatecount;
+	for (updatecount = 0; updatecount < COPYW2LW_THREADSNUM; updatecount++) {
+		CThreadingCopyW2LW* curupdate = m_CopyW2LWThreads + updatecount;
+		curupdate->ClearFrameList();
+	}
+
+
+	double setframe;
+	int threadcount = 0;
+	for (setframe = RoundingTime(srcstart); setframe <= RoundingTime(srcend); setframe += 1.0) {
+		CThreadingCopyW2LW* curupdate = m_CopyW2LWThreads + threadcount;
+
+		curupdate->AddFramenoList(setframe);
+
+		threadcount++;
+		if (threadcount >= COPYW2LW_THREADSNUM) {
+			threadcount = 0;
+		}
+	}
+
+	return 0;
+}
+
+
+
 
 void CModel::InitMPReq(bool limitdegflag, CBone* curbone, int srcmotid, double curframe)
 {

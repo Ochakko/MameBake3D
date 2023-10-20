@@ -232,6 +232,7 @@
     <ClCompile Include="..\CPP\TexElem.cpp" />
     <ClCompile Include="..\CPP\ThreadingBase.cpp" />
     <ClCompile Include="..\CPP\ThreadingCalcEul.cpp" />
+    <ClCompile Include="..\CPP\ThreadingCopyW2LW.cpp" />
     <ClCompile Include="..\CPP\ThreadingFKTra.cpp" />
     <ClCompile Include="..\CPP\ThreadingLoadFbx.cpp" />
     <ClCompile Include="..\CPP\ThreadingPostIK.cpp" />
@@ -606,6 +607,7 @@
     <ClInclude Include="..\INCLUDE\TexElem.h" />
     <ClInclude Include="..\INCLUDE\ThreadingBase.h" />
     <ClInclude Include="..\INCLUDE\ThreadingCalcEul.h" />
+    <ClInclude Include="..\INCLUDE\ThreadingCopyW2LW.h" />
     <ClInclude Include="..\INCLUDE\ThreadingFKTra.h" />
     <ClInclude Include="..\INCLUDE\ThreadingLoadFbx.h" />
     <ClInclude Include="..\INCLUDE\ThreadingPostIK.h" />

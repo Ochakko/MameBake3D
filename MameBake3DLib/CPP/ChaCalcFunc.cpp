@@ -2584,3 +2584,228 @@ int ChaCalcFunc::ChkMovableEul(CBone* srcbone, ChaVector3 srceul)
 		return 1;//movable
 	}
 }
+
+
+int ChaCalcFunc::CopyWorldToLimitedWorldOne(CModel* srcmodel, CBone* srcbone, int srcmotid, double srcframe)
+{
+	if (!srcmodel && !srcbone) {
+		return 0;
+	}
+
+	if (srcmodel->GetNoBoneFlag() == true) {
+		return 0;
+	}
+
+	CopyWorldToLimitedWorldReq(srcmodel, srcbone, srcmotid, srcframe);
+
+	return 0;
+
+
+}
+
+void ChaCalcFunc::CopyWorldToLimitedWorldReq(CModel* srcmodel, CBone* srcbone, int srcmotid, double srcframe)
+{
+	if (!srcmodel) {
+		_ASSERT(0);
+		return;
+	}
+
+	if (srcbone) {
+
+		if (srcbone->IsSkeleton()) {
+			srcbone->CopyWorldToLimitedWorld(srcmotid, srcframe);
+		}
+
+		if (srcbone->GetChild(false)) {
+			CopyWorldToLimitedWorldReq(srcmodel, srcbone->GetChild(false), srcmotid, srcframe);
+		}
+		if (srcbone->GetBrother(false)) {
+			CopyWorldToLimitedWorldReq(srcmodel, srcbone->GetBrother(false), srcmotid, srcframe);
+		}
+	}
+}
+
+int ChaCalcFunc::CopyWorldToLimitedWorld(CBone* srcbone, int srcmotid, double srcframe)
+{
+	if (!srcbone) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	double roundingframe = RoundingTime(srcframe);
+
+	//2023/04/28 2023/05/23
+	if (srcbone->IsNotSkeleton() && srcbone->IsNotCamera()) {
+		return 0;
+	}
+
+	CMotionPoint* curmp;
+	curmp = srcbone->GetMotionPoint(srcmotid, roundingframe);
+	if (curmp) {
+		ChaMatrix currentwm;
+		currentwm = curmp->GetWorldMat();
+
+		ChaMatrix newwm;
+		newwm.SetIdentity();
+		if (srcbone->GetParent(false)) {
+			if (srcbone->GetParent(false)->IsSkeleton()) {
+				ChaMatrix unlimitedlocal;
+				ChaMatrix parentunlimited;
+				ChaMatrix parentlimited;
+				unlimitedlocal.SetIdentity();
+				parentunlimited.SetIdentity();
+				parentlimited.SetIdentity();
+
+				parentunlimited = srcbone->GetParent(false)->GetWorldMat(false, srcmotid, roundingframe, 0);
+				parentlimited = srcbone->GetParent(false)->GetWorldMat(true, srcmotid, roundingframe, 0);
+
+				unlimitedlocal = currentwm * ChaMatrixInv(parentunlimited);
+				newwm = unlimitedlocal * parentlimited;
+			}
+			else if (srcbone->GetParent(false)->IsNull() || srcbone->GetParent(false)->IsCamera()) {
+				newwm = currentwm;
+			}
+			else {
+				_ASSERT(0);
+				newwm = currentwm;
+			}
+		}
+		else {
+			newwm = currentwm;
+		}
+
+		//bool limitdegflag = true;
+		//bool directsetflag = false;
+		////bool directsetflag = true;//2023/02/08 copyなのでdirectset.
+		//bool infooutflag = false;
+		//int setchildflag = 1;//setchildflagは directsetflag == falseのときしか働かない
+		//SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, newwm);
+
+		bool limitdegflag = true;
+		srcbone->UpdateCurrentWM(limitdegflag, srcmotid, roundingframe, newwm);
+
+	}
+	else {
+		_ASSERT(0);
+		return 1;
+	}
+
+	return 0;
+
+
+}
+
+void ChaCalcFunc::UpdateCurrentWM(CBone* srcbone, bool limitdegflag, int srcmotid, double srcframe,
+	ChaMatrix newwm)
+{
+	if (!srcbone) {
+		_ASSERT(0);
+		return;
+	}
+
+
+	//directsetで　ツリーの姿勢を更新　再帰
+
+	double roundingframe = RoundingTime(srcframe);
+
+	//2023/04/28 2023/05/23
+	if (srcbone->IsNotSkeleton() && srcbone->IsNotCamera()) {
+		return;
+	}
+
+
+	ChaMatrix befwm;
+	befwm.SetIdentity();
+	befwm = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+
+	//ChaMatrix befparentwm;
+	//befparentwm.SetIdentity();
+	//if (GetParent(false)) {
+	//	befparentwm = GetParent(false)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+	//}
+	//else {
+	//	befparentwm.SetIdentity();
+	//}
+
+	bool directsetflag = true;//directset !!!
+	bool infooutflag = false;
+	int setchildflag = 0;
+	int onlycheck = 0;
+	bool fromiktarget = false;
+	srcbone->SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag,
+		srcmotid, roundingframe, newwm, onlycheck, fromiktarget);
+
+	CMotionPoint* curmp = srcbone->GetMotionPoint(srcmotid, roundingframe);
+	if (curmp) {
+		curmp->SetAbsMat(srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
+	}
+
+
+	if (srcbone->GetChild(false)) {
+		bool setbroflag2 = true;
+		UpdateParentWMReq(srcbone->GetChild(false), limitdegflag, setbroflag2, srcmotid, roundingframe,
+			befwm, newwm);
+	}
+	//if (GetBrother() && (setbroflag == true)) {
+	//	GetBrother()->UpdateParentWMReq(limitdegflag, setbroflag, srcmotid, roundingframe,
+	//		befparentwm, befparentwm);
+	//}
+}
+
+void ChaCalcFunc::UpdateParentWMReq(CBone* srcbone, bool limitdegflag, bool setbroflag, int srcmotid, double srcframe,
+	ChaMatrix oldparentwm, ChaMatrix newparentwm)
+{
+	if (!srcbone) {
+		_ASSERT(0);
+		return;
+	}
+
+	//directsetで　parentの姿勢を更新　再帰
+
+	double roundingframe = RoundingTime(srcframe);
+
+	ChaMatrix currentbefwm;
+	ChaMatrix currentnewwm;
+	currentbefwm.SetIdentity();
+	currentnewwm.SetIdentity();
+
+	if (srcbone->IsSkeleton() || srcbone->IsCamera()) {//2023/05/23
+		currentbefwm = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+		currentnewwm = currentbefwm * ChaMatrixInv(oldparentwm) * newparentwm;
+
+
+		bool directsetflag = true;//directset !!!
+		bool infooutflag = false;
+		int setchildflag = 0;
+		int onlycheck = 0;
+		bool fromiktarget = false;
+		srcbone->SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag,
+			srcmotid, roundingframe, currentnewwm, onlycheck, fromiktarget);
+
+		CMotionPoint* curmp = srcbone->GetMotionPoint(srcmotid, roundingframe);
+		if (curmp) {
+			curmp->SetAbsMat(srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
+		}
+	}
+	else if (srcbone->IsNull()) {
+		currentbefwm = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+		currentnewwm = currentbefwm * ChaMatrixInv(oldparentwm) * newparentwm;
+	}
+	else {
+		_ASSERT(0);
+		currentbefwm = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+		currentnewwm = currentbefwm * ChaMatrixInv(oldparentwm) * newparentwm;
+	}
+
+
+	if (srcbone->GetChild(false)) {
+		bool setbroflag2 = true;
+		UpdateParentWMReq(srcbone->GetChild(false), limitdegflag, setbroflag2, srcmotid, roundingframe,
+			currentbefwm, currentnewwm);
+	}
+	if (srcbone->GetBrother(false) && (setbroflag == true)) {
+		UpdateParentWMReq(srcbone->GetBrother(false), limitdegflag, setbroflag, srcmotid, roundingframe,
+			oldparentwm, newparentwm);
+	}
+
+}
