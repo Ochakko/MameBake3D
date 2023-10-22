@@ -17061,6 +17061,13 @@ int CModel::CopyWorldToLimitedWorld()
 			}
 			WaitFKTraFinished();
 		}
+
+
+		//unlimtedの計算
+		//2023/10/21 CopyW2LWは前フレーム姿勢を考慮していないマルチスレッド　CalcBoneEul()で前フレーム考慮マルチスレッドによる後処理
+		//CopyW2LWとCalcBoneEulはセットで呼び出す
+		CalcBoneEul(false, curmi->motid);
+
 	}
 
 	return 0;

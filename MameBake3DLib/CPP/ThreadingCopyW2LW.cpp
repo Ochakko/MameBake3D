@@ -87,7 +87,7 @@ int CThreadingCopyW2LW::ThreadFunc()
 		//	((g_previewFlag != 0) || (g_underIKRot == true))) {//プレビュー中　または　IK回転中　だけ
 
 
-		if (g_underPostFKTra == true) {
+		if (0) {
 		
 			//###########################
 			// 高回転モード　: High rpm

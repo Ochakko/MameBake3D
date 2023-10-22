@@ -3395,6 +3395,7 @@ static int InitMpFromTool();
 //static void InitMPReq(CBone* curbone, double curframe);
 static int InitMpByEul(int initmode, CBone* curbone, int srcmotid, double srcframe);
 static void InitMpByEulReq(int initmode, CBone* curbone, int srcmotid, double srcframe, bool broflag);
+static void InitMpByEulEndJointReq(int initmode, CBone* curbone, int srcmotid, double srcframe, bool broflag);
 
 static void SkipJointMarkReq(int srcstate, CBone* srcbone, bool setbrotherflag);
 
@@ -9177,11 +9178,11 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 			}
 		}
 		//else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_INITMPFROMTOOL)) && (menuid <= (ID_RMENU_0 + 3 * 3 + MENUOFFSET_INITMPFROMTOOL))) {
-		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_INITMPFROMTOOL)) && (menuid <= (ID_RMENU_0 + 3 * 4 + MENUOFFSET_INITMPFROMTOOL))) {//### 2022/07/04
+		else if ((menuid >= (ID_RMENU_0 + MENUOFFSET_INITMPFROMTOOL)) && (menuid <= (ID_RMENU_0 + 4 * 4 + MENUOFFSET_INITMPFROMTOOL))) {//### 2022/07/04
 			if (s_model) {
-				int subid = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) / 4;//4 * 3 / 4 --> 0, 1, 2
+				int subid = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) / 4;//4 * 3 / 4 --> 0, 1, 2, 3 : submenu
 							//int initmode = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) - subid * 4;//0, 1, 2, 3
-				int initmode = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) % 4;//0, 1, 2, 3 //### 2022/07/04
+				int initmode = (menuid - ID_RMENU_0 - MENUOFFSET_INITMPFROMTOOL) % 4;//0, 1, 2, 3 //### 2022/07/04 : subsubmenu
 				MOTINFO* mi = s_model->GetCurMotInfo();
 				if (mi) {
 					s_copymotvec.clear();
@@ -9227,6 +9228,17 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 								double curframe = itrcp->time;
 								bool broflag = false;
 								InitMpByEulReq(initmode, opebone, mi->motid, curframe, broflag);//opebone req
+								updatejointno = opebone->GetBoneNo();
+							}
+						}
+					}
+					else if (subid == 3) {//deeperEndJoint
+						if (opebone) {
+							list<KeyInfo>::iterator itrcp;
+							for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
+								double curframe = itrcp->time;
+								bool broflag = false;
+								InitMpByEulEndJointReq(initmode, opebone, mi->motid, curframe, broflag);//opebone req
 								updatejointno = opebone->GetBoneNo();
 							}
 						}
@@ -15222,11 +15234,6 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 			if (g_limitdegflag == true) {
 				ClearLimitedWM(s_model);
 				CopyWorldToLimitedWorld(s_model);
-				MOTINFO* curmi = s_model->GetCurMotInfo();
-				if (curmi) {
-					//unlimtedの計算
-					s_model->CalcBoneEul(false, curmi->motid);//2023/10/20 CopyWorldToLimitedWorldの後　ApplyNewLimitsToWMよりも前
-				}
 				ApplyNewLimitsToWM(s_model);
 			}
 
@@ -20800,11 +20807,6 @@ int RetargetMotion()
 
 	if (g_limitdegflag == true) {
 		CopyWorldToLimitedWorld(s_model);
-		MOTINFO* curmi = s_model->GetCurMotInfo();
-		if (curmi) {
-			//unlimtedの計算
-			s_model->CalcBoneEul(false, curmi->motid);//2023/10/20 CopyWorldToLimitedWorldの後　ApplyNewLimitsToWMよりも前
-		}
 		ApplyNewLimitsToWM(s_model);
 	}
 
@@ -27241,11 +27243,6 @@ int UpdateAfterEditAngleLimit(int limit2boneflag, bool setcursorflag)//default :
 	if (s_model) {
 		ClearLimitedWM(s_model);
 		CopyWorldToLimitedWorld(s_model);
-		MOTINFO* curmi = s_model->GetCurMotInfo();
-		if (curmi) {
-			//unlimitedの計算
-			s_model->CalcBoneEul(false, curmi->motid);//2023/10/20 CopyWorldToLimitedWorldの後　ApplyNewLimitsToWMよりも前
-		}
 		ApplyNewLimitsToWM(s_model);
 	}
 
@@ -29101,11 +29098,6 @@ int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 		if (s_model) {
 			ClearLimitedWM(s_model);
 			CopyWorldToLimitedWorld(s_model);
-			MOTINFO* curmi = s_model->GetCurMotInfo();
-			if (curmi) {
-				//unlimtedの計算
-				s_model->CalcBoneEul(false, curmi->motid);//2023/10/20 CopyWorldToLimitedWorldの後　ApplyNewLimitsToWMよりも前
-			}
 			ApplyNewLimitsToWM(s_model);
 
 		}
@@ -31433,6 +31425,9 @@ int OnFrameToolWnd()
 
 	if (s_retargetguiFlag) {
 		if (s_model && s_model->GetCurMotInfo()) {
+
+			HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
 			s_savelimitdegflag = g_limitdegflag;
 			ChangeLimitDegFlag(false, true, true);
 			s_saveretargetmodel = s_curmodelmenuindex;//終了時にOnModelMenuを呼ぶために保存
@@ -31441,6 +31436,10 @@ int OnFrameToolWnd()
 
 			ChangeLimitDegFlag(s_savelimitdegflag, true, true);
 			OnModelMenu(true, s_saveretargetmodel, 1);
+
+			if (oldcursor) {
+				SetCursor(oldcursor);
+			}
 		}
 
 		s_retargetguiFlag = false;
@@ -38072,8 +38071,8 @@ int InitMpFromTool()
 	GetCursorPos(&pt);
 
 
-	CRMenuMain* rsubmenu[3];
-	ZeroMemory(rsubmenu, sizeof(CRMenuMain*) * 3);
+	CRMenuMain* rsubmenu[4];
+	ZeroMemory(rsubmenu, sizeof(CRMenuMain*) * 4);
 
 	int menunum;
 	menunum = GetMenuItemCount(submenu);
@@ -38084,15 +38083,15 @@ int InitMpFromTool()
 	}
 	//s_customrigmenuindex.clear();
 
-	int subnum = 3;
+	int subnum = 4;
 	int subsubnum = 4;
 	int setmenuid;
 
-	WCHAR strinitmpsub[3][32] = { L"AllBones", L"SelectedOne", L"Deeper" };
+	WCHAR strinitmpsub[4][32] = { L"AllBones", L"SelectedOne", L"Deeper", L"DeeperEndJoint"};
 	WCHAR strinitmpsubsub[4][32] = { L"InitRotAndPosAndScale", L"InitRot", L"InitPos", L"InitScale" };
 
 	int subno;
-	for (subno = 0; subno < 3; subno++) {
+	for (subno = 0; subno < 4; subno++) {
 		setmenuid = ID_RMENU_0 + subno * 4 + MENUOFFSET_INITMPFROMTOOL;
 
 		rsubmenu[subno] = new CRMenuMain(IDR_RMENU);
@@ -38128,7 +38127,7 @@ int InitMpFromTool()
 	int menuid;
 	menuid = rmenu->TrackPopupMenu(pt);
 
-	for (subno = 0; subno < 3; subno++) {
+	for (subno = 0; subno < 4; subno++) {
 		CRMenuMain* delsubmenu = rsubmenu[subno];
 		if (delsubmenu) {
 			delete delsubmenu;
@@ -38219,6 +38218,31 @@ void InitMpByEulReq(int initmode, CBone* curbone, int srcmotid, double srcframe,
 		InitMpByEulReq(initmode, curbone->GetBrother(false), srcmotid, srcframe, broflag);
 	}
 }
+
+void InitMpByEulEndJointReq(int initmode, CBone* curbone, int srcmotid, double srcframe, bool broflag)
+{
+	if (!curbone) {
+		return;
+	}
+
+	//#################################
+	//2023/10/22 DeeperEndJoint
+	//子供階層の内　endjointだけをInit
+	//#################################
+
+	if (curbone->IsSkeleton() && !curbone->GetChild(false)) {
+		InitMpByEul(initmode, curbone, srcmotid, srcframe);
+	}
+
+	if (curbone->GetChild(false)) {
+		bool broflag2 = true;
+		InitMpByEulEndJointReq(initmode, curbone->GetChild(false), srcmotid, srcframe, broflag2);
+	}
+	if (curbone->GetBrother(false) && (broflag == true)) {
+		InitMpByEulEndJointReq(initmode, curbone->GetBrother(false), srcmotid, srcframe, broflag);
+	}
+}
+
 
 /// CustomRigDlg
 int DispCustomRigDlg(int rigno)

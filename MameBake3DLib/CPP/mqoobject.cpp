@@ -2059,7 +2059,9 @@ int CMQOObject::AddInfBone( int srcboneno, int srcvno, float srcweight, int isad
 		}
 		ibptr = m_pm4->GetInfBone() + srcvno;
 	}else{
-		_ASSERT( 0 );
+		if (GetName() && (strstr(GetName(), "ND_") == 0)) {//*ND_*の名前は　影響度用のダミーオブジェクト
+			_ASSERT(0);
+		}
 	}
 	if( ibptr ){
 		INFELEM ie;
