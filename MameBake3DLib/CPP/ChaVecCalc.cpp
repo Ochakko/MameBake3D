@@ -136,82 +136,82 @@ __forceinline __m128 Mat2MulAdj(__m128 vec1, __m128 vec2)
 double vecDotVec(ChaVector3* vec1, ChaVector3* vec2)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.vecDotVec(vec1, vec2);
+	return chacalcfunc.ccfvecDotVec(vec1, vec2);
 }
 
 double lengthVec(ChaVector3* vec)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.lengthVec(vec);
+	return chacalcfunc.ccflengthVec(vec);
 }
 
 double aCos(double dot)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.aCos(dot);
+	return chacalcfunc.ccfaCos(dot);
 }
 
 int vec3RotateY(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.vec3RotateY(dstvec, deg, srcvec);
+	return chacalcfunc.ccfvec3RotateY(dstvec, deg, srcvec);
 }
 int vec3RotateX(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.vec3RotateX(dstvec, deg, srcvec);
+	return chacalcfunc.ccfvec3RotateX(dstvec, deg, srcvec);
 }
 int vec3RotateZ(ChaVector3* dstvec, float deg, ChaVector3* srcvec)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.vec3RotateZ(dstvec, deg, srcvec);
+	return chacalcfunc.ccfvec3RotateZ(dstvec, deg, srcvec);
 }
 
 int IsInitRot(ChaMatrix srcmat)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.IsInitRot(srcmat);
+	return chacalcfunc.ccfIsInitRot(srcmat);
 }
 
 int IsInitMat(ChaMatrix srcmat)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.IsInitMat(srcmat);
+	return chacalcfunc.ccfIsInitMat(srcmat);
 }
 
 int IsSameMat(ChaMatrix srcmat1, ChaMatrix srcmat2)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.IsSameMat(srcmat1, srcmat2);
+	return chacalcfunc.ccfIsSameMat(srcmat1, srcmat2);
 }
 
 int IsSameEul(ChaVector3 srceul1, ChaVector3 srceul2)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.IsSameEul(srceul1, srceul2);
+	return chacalcfunc.ccfIsSameEul(srceul1, srceul2);
 }
 
 bool IsJustEqualTime(double srctime1, double srctime2)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.IsJustEqualTime(srctime1, srctime2);
+	return chacalcfunc.ccfIsJustEqualTime(srctime1, srctime2);
 }
 
 double RoundingTime(double srctime)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.RoundingTime(srctime);
+	return chacalcfunc.ccfRoundingTime(srctime);
 }
 int IntTime(double srctime)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.IntTime(srctime);
+	return chacalcfunc.ccfIntTime(srctime);
 }
 
 bool IsEqualRoundingTime(double srctime1, double srctime2)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.IsEqualRoundingTime(srctime1, srctime2);
+	return chacalcfunc.ccfIsEqualRoundingTime(srctime1, srctime2);
 }
 
 
@@ -219,7 +219,7 @@ bool IsEqualRoundingTime(double srctime1, double srctime2)
 double VecLength(ChaVector3 srcvec)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.VecLength(srcvec);
+	return chacalcfunc.ccfVecLength(srcvec);
 }
 
 
@@ -227,43 +227,43 @@ double VecLength(ChaVector3 srcvec)
 void GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, ChaVector3* tvecptr)
 {
 	ChaCalcFunc chacalcfunc;
-	chacalcfunc.GetSRTMatrix(srcmat, svecptr, rmatptr, tvecptr);
+	chacalcfunc.ccfGetSRTMatrix(srcmat, svecptr, rmatptr, tvecptr);
 }
 
 void GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr)
 {
 	ChaCalcFunc chacalcfunc;
-	chacalcfunc.GetSRTMatrix2(srcmat, smatptr, rmatptr, tmatptr);
+	chacalcfunc.ccfGetSRTMatrix2(srcmat, smatptr, rmatptr, tmatptr);
 }
 
 void GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr, ChaMatrix* tanimmatptr)
 {
 	ChaCalcFunc chacalcfunc;
-	chacalcfunc.GetSRTandTraAnim(srcmat, srcnodemat, smatptr, rmatptr, tmatptr, tanimmatptr);
+	chacalcfunc.ccfGetSRTandTraAnim(srcmat, srcnodemat, smatptr, rmatptr, tmatptr, tanimmatptr);
 }
 
 ChaMatrix ChaMatrixFromSRT(bool sflag, bool tflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctmat)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixFromSRT(sflag, tflag, srcnodemat, srcsmat, srcrmat, srctmat);
+	return chacalcfunc.ccfChaMatrixFromSRT(sflag, tflag, srcnodemat, srcsmat, srcrmat, srctmat);
 }
 
 ChaMatrix ChaMatrixKeepScale(ChaMatrix srcmat, ChaVector3 srcsvec)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixKeepScale(srcmat, srcsvec);
+	return chacalcfunc.ccfChaMatrixKeepScale(srcmat, srcsvec);
 }
 
 ChaMatrix ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctanimmat)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixFromSRTraAnim(sflag, tanimflag, srcnodemat, srcsmat, srcrmat, srctanimmat);
+	return chacalcfunc.ccfChaMatrixFromSRTraAnim(sflag, tanimflag, srcnodemat, srcsmat, srcrmat, srctanimmat);
 }
 
 ChaMatrix GetS0RTMatrix(ChaMatrix srcmat)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.GetS0RTMatrix(srcmat);
+	return chacalcfunc.ccfGetS0RTMatrix(srcmat);
 }
 
 
@@ -272,31 +272,31 @@ ChaMatrix GetS0RTMatrix(ChaMatrix srcmat)
 ChaMatrix TransZeroMat(ChaMatrix srcmat)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.TransZeroMat(srcmat);
+	return chacalcfunc.ccfTransZeroMat(srcmat);
 }
 
 ChaMatrix ChaMatrixFromFbxAMatrix(FbxAMatrix srcmat)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixFromFbxAMatrix(srcmat);
+	return chacalcfunc.ccfChaMatrixFromFbxAMatrix(srcmat);
 }
 
 ChaMatrix ChaMatrixFromBtMat3x3(btMatrix3x3* srcmat3x3)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixFromBtMat3x3(srcmat3x3);
+	return chacalcfunc.ccfChaMatrixFromBtMat3x3(srcmat3x3);
 }
 
 ChaMatrix ChaMatrixFromBtTransform(btMatrix3x3* srcmat3x3, btVector3* srcpivot)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixFromBtTransform(srcmat3x3, srcpivot);
+	return chacalcfunc.ccfChaMatrixFromBtTransform(srcmat3x3, srcpivot);
 }
 
 ChaMatrix ChaMatrixInv(ChaMatrix srcmat)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixInv(srcmat);
+	return chacalcfunc.ccfChaMatrixInv(srcmat);
 }
 
 
@@ -3076,13 +3076,21 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* r
 
 	ChaVector3 validbefeul;//2023/10/14
 	//if (g_underIKRotApplyFrame == true) {//2023/10/14
-	if (g_underIKRot == true) {//2023/10/16 IK処理のframe単位のマルチスレッド化の準備としてcurrentframeで計算　後処理でbefframeで計算
-		validbefeul = befeul.currentframeeul;
+	//if (g_underIKRot == true) {//2023/10/16 IK処理のframe単位のマルチスレッド化の準備としてcurrentframeで計算　後処理でbefframeで計算
+	if ((g_underIKRot == true) || (g_underRetargetFlag == true)) {//2023/10/23 リターゲットもフレーム単位のマルチスレッド化したので　currentframeulを使う
+			validbefeul = befeul.currentframeeul;
 	}
 	else {
 		validbefeul = befeul.befframeeul;
 	}
 
+
+	//#######################################################################################################
+	//マルチスレッドのリターゲット時(befeul = 0.0(InitMp)時)には　modify180をしない　後処理でmodify180をする
+	//#######################################################################################################
+	if (g_underRetargetFlag == true) {//2023/10/23
+		notmodify180flag = 1;
+	}
 
 
 	EQ.Rotate(&targetVec, axisXVec);
@@ -3245,8 +3253,7 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* r
 		tmpX1 = tmpX0;
 		
 		//if (g_underRetargetFlag == false) {
-		if ((g_underIKRot == false) || (g_x180flag == true)) {		
-
+		if ((g_underIKRot == false) || (g_x180flag == true)) {
 			//if((g_underRetargetFlag == true) || (g_x180flag == true)) {
 			//if ((notmodify180flag == 0) && (isendbone != 0)) {
 			if (notmodify180flag == 0) {
@@ -3847,7 +3854,7 @@ void CQuaternion::MakeFromD3DXMat(ChaMatrix eulmat)
 CQuaternion QMakeFromBtMat3x3(btMatrix3x3* eulmat)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.QMakeFromBtMat3x3(eulmat);
+	return chacalcfunc.ccfQMakeFromBtMat3x3(eulmat);
 }
 
 
@@ -3855,117 +3862,117 @@ CQuaternion QMakeFromBtMat3x3(btMatrix3x3* eulmat)
 void ChaMatrixIdentity(ChaMatrix* pdst)
 {
 	ChaCalcFunc chacalcfunc;
-	chacalcfunc.ChaMatrixIdentity(pdst);
+	chacalcfunc.ccfChaMatrixIdentity(pdst);
 }
 
 CQuaternion ChaMatrix2Q(ChaMatrix srcmat)//ChaMatrixを受け取って　CQuaternionを返す
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrix2Q(srcmat);
+	return chacalcfunc.ccfChaMatrix2Q(srcmat);
 }
 
 ChaMatrix ChaMatrixRot(ChaMatrix srcmat)//回転成分だけの行列にする
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixRot(srcmat);
+	return chacalcfunc.ccfChaMatrixRot(srcmat);
 }
 
 ChaMatrix ChaMatrixScale(ChaMatrix srcmat)//スケール成分だけの行列にする
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixScale(srcmat);
+	return chacalcfunc.ccfChaMatrixScale(srcmat);
 }
 
 ChaMatrix ChaMatrixTra(ChaMatrix srcmat)//移動成分だけの行列にする
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixTra(srcmat);
+	return chacalcfunc.ccfChaMatrixTra(srcmat);
 }
 
 ChaVector3 ChaMatrixScaleVec(ChaMatrix srcmat)//スケール成分のベクトルを取得
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixScaleVec(srcmat);
+	return chacalcfunc.ccfChaMatrixScaleVec(srcmat);
 
 }
 ChaVector3 ChaMatrixRotVec(ChaMatrix srcmat, int notmodify180flag)//回転成分のベクトルを取得
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixRotVec(srcmat, notmodify180flag);
+	return chacalcfunc.ccfChaMatrixRotVec(srcmat, notmodify180flag);
 }
 ChaVector3 ChaMatrixTraVec(ChaMatrix srcmat)//移動成分のベクトルを取得
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixTraVec(srcmat);
+	return chacalcfunc.ccfChaMatrixTraVec(srcmat);
 }
 
 void ChaMatrixNormalizeRot(ChaMatrix* pdst)
 {
 	ChaCalcFunc chacalcfunc;
-	chacalcfunc.ChaMatrixNormalizeRot(pdst);
+	chacalcfunc.ccfChaMatrixNormalizeRot(pdst);
 }
 
 void ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc)
 {
 	ChaCalcFunc chacalcfunc;
-	chacalcfunc.ChaMatrixInverse(pdst, pdet, psrc);
+	chacalcfunc.ccfChaMatrixInverse(pdst, pdet, psrc);
 }
 
 
 void ChaMatrixTranslation(ChaMatrix* pdst, float srcx, float srcy, float srcz)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixTranslation(pdst, srcx, srcy, srcz);
+	chacalcfunc.ccfChaMatrixTranslation(pdst, srcx, srcy, srcz);
 }
 
 void ChaMatrixTranspose(ChaMatrix* pdst, ChaMatrix* psrc)
 {
 	ChaCalcFunc chacalcfunc;
-	chacalcfunc.ChaMatrixTranspose(pdst, psrc);
+	chacalcfunc.ccfChaMatrixTranspose(pdst, psrc);
 }
 
 double ChaVector3LengthDbl(ChaVector3* v)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaVector3LengthDbl(v);
+	return chacalcfunc.ccfChaVector3LengthDbl(v);
 }
 
 double ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* psrc2)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaVector3DotDbl(psrc1, psrc2);
+	return chacalcfunc.ccfChaVector3DotDbl(psrc1, psrc2);
 }
 
 void ChaVector3Normalize(ChaVector3* pdst, const ChaVector3* psrc)
 {
 
 	ChaCalcFunc chacalcfunc;
-	chacalcfunc.ChaVector3Normalize(pdst, psrc);
+	chacalcfunc.ccfChaVector3Normalize(pdst, psrc);
 }
 
 float ChaVector3Dot(const ChaVector3* psrc1, const ChaVector3* psrc2)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaVector3Dot(psrc1, psrc2);
+	return chacalcfunc.ccfChaVector3Dot(psrc1, psrc2);
 }
 
 void ChaVector3Cross(ChaVector3* pdst, const ChaVector3* psrc1, const ChaVector3* psrc2)
 {
 	ChaCalcFunc chacalcfunc;
-	chacalcfunc.ChaVector3Cross(pdst, psrc1, psrc2);
+	chacalcfunc.ccfChaVector3Cross(pdst, psrc1, psrc2);
 }
 
 
 void ChaVector3TransformCoord(ChaVector3* dstvec, ChaVector3* srcvec, ChaMatrix* srcmat)
 {
 	ChaCalcFunc chacalcfunc;
-	chacalcfunc.ChaVector3TransformCoord(dstvec, srcvec, srcmat);
+	chacalcfunc.ccfChaVector3TransformCoord(dstvec, srcvec, srcmat);
 }
 
 ChaVector3* ChaVector3TransformNormal(ChaVector3 *dstvec, const ChaVector3* srcvec, const ChaMatrix* srcmat)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaVector3TransformNormal(dstvec, srcvec, srcmat);
+	return chacalcfunc.ccfChaVector3TransformNormal(dstvec, srcvec, srcmat);
 }
 
 
@@ -3973,37 +3980,37 @@ ChaVector3* ChaVector3TransformNormal(ChaVector3 *dstvec, const ChaVector3* srcv
 double ChaVector3LengthSq(ChaVector3* psrc)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaVector3LengthSq(psrc);
+	return chacalcfunc.ccfChaVector3LengthSq(psrc);
 }
 
 void ChaMatrixRotationAxis(ChaMatrix* pdst, ChaVector3* srcaxis, float srcrad)
 {
 	ChaCalcFunc chacalcfunc;
-	chacalcfunc.ChaMatrixRotationAxis(pdst, srcaxis, srcrad);
+	chacalcfunc.ccfChaMatrixRotationAxis(pdst, srcaxis, srcrad);
 }
 
 void ChaMatrixScaling(ChaMatrix* pdst, float srcx, float srcy, float srcz)
 {
 	ChaCalcFunc chacalcfunc;
-	chacalcfunc.ChaMatrixScaling(pdst, srcx, srcy, srcz);
+	chacalcfunc.ccfChaMatrixScaling(pdst, srcx, srcy, srcz);
 }
 
 void ChaMatrixLookAtRH(ChaMatrix* dstviewmat, ChaVector3* camEye, ChaVector3* camtar, ChaVector3* camUpVec)
 {
 	ChaCalcFunc chacalcfunc;
-	chacalcfunc.ChaMatrixLookAtRH(dstviewmat, camEye, camtar, camUpVec);
+	chacalcfunc.ccfChaMatrixLookAtRH(dstviewmat, camEye, camtar, camUpVec);
 }
 
 ChaMatrix* ChaMatrixOrthoOffCenterRH(ChaMatrix* pOut, float l, float r, float t, float b, float zn, float zf) 
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixOrthoOffCenterRH(pOut, l, r, t, b, zn, zf);
+	return chacalcfunc.ccfChaMatrixOrthoOffCenterRH(pOut, l, r, t, b, zn, zf);
 }
 
 ChaMatrix* ChaMatrixPerspectiveFovRH(ChaMatrix* pOut, float fovY, float Aspect, float zn, float zf)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixPerspectiveFovRH(pOut, fovY, Aspect, zn, zf);
+	return chacalcfunc.ccfChaMatrixPerspectiveFovRH(pOut, fovY, Aspect, zn, zf);
 }
 
 
@@ -4011,63 +4018,63 @@ ChaMatrix* ChaMatrixPerspectiveFovRH(ChaMatrix* pOut, float fovY, float Aspect, 
 const ChaMatrix* ChaMatrixRotationQuaternion(ChaMatrix* dstmat, CQuaternion* srcq)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixRotationQuaternion(dstmat, srcq);
+	return chacalcfunc.ccfChaMatrixRotationQuaternion(dstmat, srcq);
 }
 
 ChaMatrix* ChaMatrixRotationYawPitchRoll(ChaMatrix* pOut, float srcyaw, float srcpitch, float srcroll)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixRotationYawPitchRoll(pOut, srcyaw, srcpitch, srcroll);
+	return chacalcfunc.ccfChaMatrixRotationYawPitchRoll(pOut, srcyaw, srcpitch, srcroll);
 }
 
 ChaMatrix* ChaMatrixRotationX(ChaMatrix* pOut, float srcrad)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixRotationX(pOut, srcrad);
+	return chacalcfunc.ccfChaMatrixRotationX(pOut, srcrad);
 }
 
 ChaMatrix* ChaMatrixRotationY(ChaMatrix* pOut, float srcrad)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixRotationY(pOut, srcrad);
+	return chacalcfunc.ccfChaMatrixRotationY(pOut, srcrad);
 }
 
 ChaMatrix* ChaMatrixRotationZ(ChaMatrix* pOut, float srcrad)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixRotationZ(pOut, srcrad);
+	return chacalcfunc.ccfChaMatrixRotationZ(pOut, srcrad);
 }
 
 void CQuaternionIdentity(CQuaternion* dstq)
 {
 	ChaCalcFunc chacalcfunc;
-	chacalcfunc.CQuaternionIdentity(dstq);
+	chacalcfunc.ccfCQuaternionIdentity(dstq);
 }
 
 CQuaternion CQuaternionInv(CQuaternion srcq)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.CQuaternionInv(srcq);
+	return chacalcfunc.ccfCQuaternionInv(srcq);
 }
 
 
 ChaMatrix MakeRotMatFromChaMatrix(ChaMatrix srcmat)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.MakeRotMatFromChaMatrix(srcmat);
+	return chacalcfunc.ccfMakeRotMatFromChaMatrix(srcmat);
 }
 
 ChaMatrix ChaMatrixTranspose(ChaMatrix srcmat)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.ChaMatrixTranspose(srcmat);
+	return chacalcfunc.ccfChaMatrixTranspose(srcmat);
 }
 
 
 ChaMatrix CalcAxisMatX(ChaVector3 vecx, ChaVector3 srcpos, ChaMatrix srcmat)
 {
 	ChaCalcFunc chacalcfunc;
-	return chacalcfunc.CalcAxisMatX(vecx, srcpos, srcmat);
+	return chacalcfunc.ccfCalcAxisMatX(vecx, srcpos, srcmat);
 }
 
 

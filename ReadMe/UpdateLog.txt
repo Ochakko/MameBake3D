@@ -1,3 +1,75 @@
+2023/10/23
+    EditMot 1.2.0.27 RC1(リリース候補１)
+
+    １８０度以上のIK操作が出来るように
+	マウスドラッグ時とドラッグ後の処理に分けてからうまくいっていなかったのを修正
+	オイラー角を綺麗に！
+
+    並列化による処理の高速化
+	IK操作, FK操作, Rig操作, リターゲット処理高速化
+	マルチスレッドで高速化
+
+    １８０度裏返り対策を追加
+	リターゲット時
+	IK時
+
+    オイラー具ラグにカレント数値表示
+	軸に目線を飛ばして目分割しなくても数値が分かる
+
+    DoubleWidthスライダー
+	スライダーを操作しやすく    
+
+    不具合修正
+	スクロールに関するパネルの表示の不具合修正
+	ウインドウ小で起動時にパネルが移動できなかったのを修正
+	LimitEulオン時の制限角度キャプチャ修正
+
+
+
+
+　おちゃっこLAB
+	https://ochakkolab.jp/
+
+　YouTubeチャンネル
+	https://www.youtube.com/@ochakkolab
+
+	動画　モーキャプでポーズtoポーズ　ver.1.2.0.25
+		https://youtu.be/e6XSIv3hiJI
+
+	動画　モーキャプを滑らかにコピペ編集 ver.1.2.0.25
+		https://youtu.be/A8E1K5UXOaM
+
+	動画　モーキャプ編集ツール　1.2.0.24 (2023/09)
+		https://youtu.be/LEbueHtc57Q
+
+	動画　0.07倍速でパンチしたら物理はどうなるんだろう？
+		https://youtu.be/gKuLzPDt-cc
+
+	動画　【小人】小人制御の物理【ドリブン】
+		https://youtu.be/SRoi8Ds9NYI
+
+	動画　いろいろ直った物理でボクシングの動画	
+		https://youtu.be/Zr7fT1gsCl4
+
+	動画　作り直した位置コンストレイント
+		https://youtu.be/8p13H6MGQZ8
+
+	動画　変な風には曲がらない位置コンストレイント
+		https://youtu.be/9Xt8cxjByeA
+
+	動画　制限角度をキャプチャーする
+		https://youtu.be/mkkpo5cmLBs
+
+	動画　モーキャプの動きを盛れ！
+		https://youtu.be/DV9gYsgDzz0
+
+
+
+
+
+
+
+
 2023/10/15
     EditMot 1.2.0.27　に向けて
 
@@ -197,41 +269,6 @@
 
 
 
-　おちゃっこLAB
-	https://ochakkolab.jp/
-
-　YouTubeチャンネル
-	https://www.youtube.com/@ochakkolab
-
-	動画　モーキャプでポーズtoポーズ　ver.1.2.0.25
-		https://youtu.be/e6XSIv3hiJI
-
-	動画　モーキャプを滑らかにコピペ編集 ver.1.2.0.25
-		https://youtu.be/A8E1K5UXOaM
-
-	動画　モーキャプ編集ツール　1.2.0.24 (2023/09)
-		https://youtu.be/LEbueHtc57Q
-
-	動画　0.07倍速でパンチしたら物理はどうなるんだろう？
-		https://youtu.be/gKuLzPDt-cc
-
-	動画　【小人】小人制御の物理【ドリブン】
-		https://youtu.be/SRoi8Ds9NYI
-
-	動画　いろいろ直った物理でボクシングの動画	
-		https://youtu.be/Zr7fT1gsCl4
-
-	動画　作り直した位置コンストレイント
-		https://youtu.be/8p13H6MGQZ8
-
-	動画　変な風には曲がらない位置コンストレイント
-		https://youtu.be/9Xt8cxjByeA
-
-	動画　制限角度をキャプチャーする
-		https://youtu.be/mkkpo5cmLBs
-
-	動画　モーキャプの動きを盛れ！
-		https://youtu.be/DV9gYsgDzz0
 
 
 

@@ -1093,7 +1093,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 
 #include <EGPFile.h>
 
-#include <Retarget.h>
+//#include <Retarget.h>//<--- CModelとChaCalcFuncが吸収
 
 #include "DSUpdateUnderTracking.h"
 #include "PluginElem.h"
@@ -4419,6 +4419,7 @@ void InitApp()
 	g_underWriteFbx = false;
 	g_underCalcEul = false;
 	g_underPostFKTra = false;
+	g_underInitMp = false;
 
 	g_VSync = false;
 	g_fpskind = 0;
@@ -13664,17 +13665,21 @@ int InitCurMotion(int selectflag, double expandmotion)
 				else if (expandmotion > 0) {//モーション長を長くした際に、長くなった分の初期化をする
 					double oldframeleng = expandmotion;
 
-					//if (topbone) {
-						//topbone->ResizeIndexedMotionPointReq(curmi->motid, motleng);
+					//////if (topbone) {
+					////	//topbone->ResizeIndexedMotionPointReq(curmi->motid, motleng);
+					//////}
+
+					//double frame;
+					//for (frame = oldframeleng; frame < motleng; frame += 1.0) {
+					//	if (topbone) {
+					//		s_model->SetMotionFrame(frame);
+					//		s_model->InitMPReq(limitdegflag, topbone, curmi->motid, frame);
+					//	}
 					//}
 
-					double frame;
-					for (frame = oldframeleng; frame < motleng; frame += 1.0) {
-						if (topbone) {
-							s_model->SetMotionFrame(frame);
-							s_model->InitMPReq(limitdegflag, topbone, curmi->motid, frame);
-						}
-					}
+					s_model->InitMpFrame(limitdegflag, curmi->motid, oldframeleng, motleng - 1.0);
+
+
 					int errorcount = 0;
 					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(false),
 						curmi->motid, motleng, &errorcount);
@@ -13683,13 +13688,16 @@ int InitCurMotion(int selectflag, double expandmotion)
 					}
 				}
 				else {
-					double frame;
-					for (frame = 0.0; frame < motleng; frame += 1.0) {
-						if (topbone) {
-							s_model->SetMotionFrame(frame);
-							s_model->InitMPReq(limitdegflag, topbone, curmi->motid, frame);
-						}
-					}
+					//double frame;
+					//for (frame = 0.0; frame < motleng; frame += 1.0) {
+					//	if (topbone) {
+					//		s_model->SetMotionFrame(frame);
+					//		s_model->InitMPReq(limitdegflag, topbone, curmi->motid, frame);
+					//	}
+					//}
+
+					s_model->InitMpFrame(limitdegflag, curmi->motid, 0.0, motleng - 1.0);
+
 					int errorcount = 0;
 					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(false),
 						curmi->motid, motleng, &errorcount);
@@ -14918,7 +14926,7 @@ int AddMotion(const WCHAR* wfilename, double srcmotleng)
 
 	//2023/02/11
 	//OnAnimMenuよりも前 : OnAnimMenu()-->CalcBoneEulよりも前
-	InitCurMotion(0, 0);
+	//InitCurMotion(0, 0);//2023/10/23 大分前からInitMPReq()はCModel::AddMotionから呼ばれるようになったので不要
 
 	int selindex = (int)s_tlarray.size() - 1;
 	CallF(OnAnimMenu(true, selindex), return 1);
@@ -19853,7 +19861,9 @@ int CreateConvBoneWnd()
 					if (s_bvhbone[cbno]) {
 						s_bvhbone_bone[cbno] = 0;
 						s_convbonemap[curbone] = 0;
+#ifndef NDEBUG
 						DbgOut(L"convbone %d : (%s,  %s)\n", cbno, wbonename, bvhbonename);
+#endif
 					}
 					else {
 						_ASSERT(0);
@@ -19869,7 +19879,9 @@ int CreateConvBoneWnd()
 			}
 			listno++;
 		}
+#ifndef NDEBUG
 		DbgOut(L"\n\n");
+#endif
 		if (cbno != s_convbonenum) {
 			_ASSERT(0);
 			return 1;
@@ -20789,6 +20801,7 @@ int RetargetMotion()
 
 	if (!s_convbone_model || !s_convbone_bvh) {
 		return 0;
+		return 0;
 	}
 
 	if (s_model != s_convbone_model) {
@@ -20796,7 +20809,7 @@ int RetargetMotion()
 		return 1;
 	}
 
-	int result = MameBake3DLibRetarget::Retarget(s_convbone_model, s_convbone_bvh, s_matVP, s_convbonemap, AddMotion, InitCurMotion);//Retarget.h, Retarget.cpp
+	int result = s_convbone_model->Retarget(s_convbone_bvh, s_matVP, s_convbonemap, AddMotion);
 	if (result) {
 		_ASSERT(0);
 		g_underRetargetFlag = false;

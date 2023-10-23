@@ -1813,6 +1813,7 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 			cureul = srcbone->GetParModel()->CalcCameraFbxEulXYZ(srcmotid, roundingframe);
 			//####  rotorder注意  #####
 			LeaveCriticalSection(&g_CritSection_FbxSdk);
+			cureul = ChaVector3(0.0f, 0.0f, 0.0f);
 
 		}
 		else {
@@ -1835,6 +1836,7 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 			cureul = ChaVector3(orgfbxeul, false);
 			//####  rotorder注意  #####
 			LeaveCriticalSection(&g_CritSection_FbxSdk);
+			return cureul;
 		}
 		else {
 			return cureul;
@@ -2257,29 +2259,29 @@ ChaMatrix ChaCalcFunc::GetWorldMat(CBone* srcbone, bool limitdegflag,
 
 		//return ChaMatrixInv(GetNodeMat()) * GetTransformMat(srcframe, true);
 
-		EnterCriticalSection(&g_CritSection_FbxSdk);
-		ChaMatrix retmat = ChaMatrixInv(srcbone->GetNodeMat()) * srcbone->GetTransformMat(0.0, true);//!!!!!  1.2.0.26
-		LeaveCriticalSection(&g_CritSection_FbxSdk);
-		return retmat;
-		//return ChaMatrixInv(GetNodeMat()) * GetTransformMat(0.0, true);//!!!!!  1.2.0.26
+		//EnterCriticalSection(&g_CritSection_FbxSdk);
+		//ChaMatrix retmat = ChaMatrixInv(srcbone->GetNodeMat()) * srcbone->GetTransformMat(0.0, true);//!!!!!  1.2.0.26
+		//LeaveCriticalSection(&g_CritSection_FbxSdk);
+		//return retmat;
+		////return ChaMatrixInv(GetNodeMat()) * GetTransformMat(0.0, true);//!!!!!  1.2.0.26
 
 		//2023/06/27
 		//CalcLocalEulXYZ()の検証で　ParentがeNullのときには　parentwmはIdentityにするべきだったので　それに合わせる
-		//curmat.SetIdentity();
-		//return curmat;
+		curmat.SetIdentity();
+		return curmat;
 	}
 	else if (srcbone->IsCamera()) {
 		//bool multInvNodeMat = true;
 		//return GetParModel()->GetCameraTransformMat(srcmotid, srcframe, g_cameraInheritMode, multInvNodeMat);
 		//return ChaMatrixInv(GetNodeMat()) * GetTransformMat(0.0, true);//2023/07/05 Cameraの子供のスキンメッシュの形が　読み書き読み書き読みテストで形崩れしないように
 
-		EnterCriticalSection(&g_CritSection_FbxSdk);
-		ChaMatrix retmat = ChaMatrixInv(srcbone->GetNodeMat()) * srcbone->GetTransformMat(0.0, true);//!!!!!  1.2.0.26
-		LeaveCriticalSection(&g_CritSection_FbxSdk);
-		return retmat;
+		//EnterCriticalSection(&g_CritSection_FbxSdk);
+		//ChaMatrix retmat = ChaMatrixInv(srcbone->GetNodeMat()) * srcbone->GetTransformMat(0.0, true);//!!!!!  1.2.0.26
+		//LeaveCriticalSection(&g_CritSection_FbxSdk);
+		//return retmat;
 
-		//curmat.SetIdentity();
-		//return curmat;
+		curmat.SetIdentity();
+		return curmat;
 	}
 	else if (srcbone->IsSkeleton()) {
 		if (srcmp) {
@@ -2811,11 +2813,1122 @@ void ChaCalcFunc::UpdateParentWMReq(CBone* srcbone, bool limitdegflag, bool setb
 }
 
 
+void ChaCalcFunc::RetargetReq(CModel* srcmodel, CModel* srcbvhmodel, CBone* modelbone,
+	double srcframe, CBone* befbvhbone, float hrate, std::map<CBone*, CBone*>& sconvbonemap)
+{
+	if (!srcmodel || !srcbvhmodel) {
+		return;
+	}
+
+	if (!modelbone) {
+		_ASSERT(0);
+		return;
+	}
+
+	CBone* bvhbone = sconvbonemap[modelbone];
+	if (bvhbone) {
+		ConvBoneRotation(srcmodel, srcbvhmodel, 1, modelbone, bvhbone, srcframe, befbvhbone, hrate);
+	}
+
+	//2023/03/27 コメントアウト : 対応bvhboneが無い場合は　InitMPの姿勢のままにする
+	//else {
+	//	ConvBoneRotation(srcmodel, srcbvhmodel, 0, modelbone, 0, srcframe, befbvhbone, hrate);
+	//}
+
+
+	if (modelbone->GetChild(true)) {
+		if (bvhbone) {
+			RetargetReq(srcmodel, srcbvhmodel, modelbone->GetChild(true), srcframe, bvhbone, hrate, sconvbonemap);
+		}
+		else {
+			RetargetReq(srcmodel, srcbvhmodel, modelbone->GetChild(true), srcframe, befbvhbone, hrate, sconvbonemap);
+		}
+	}
+	if (modelbone->GetBrother(true)) {
+		//if (bvhbone){
+		//	ConvBoneConvertReq(modelbone->GetBrother(true), srcframe, bvhbone, hrate);
+		//}
+		//else{
+		RetargetReq(srcmodel, srcbvhmodel, modelbone->GetBrother(true), srcframe, befbvhbone, hrate, sconvbonemap);
+		//}
+	}
+
+}
+
+int ChaCalcFunc::ConvBoneRotation(CModel* srcmodel, CModel* srcbvhmodel, int selfflag,
+	CBone* srcbone, CBone* bvhbone, double srcframe, CBone* befbvhbone, float hrate)
+{
+
+	//retargetは　unlimitedに対して行い　unlimitedにセットする
+	bool limitdegflag = false;
+
+
+	//2023/03/27 : 対応bvhboneが無い場合には　InitMPの姿勢のままにする
+	if (!bvhbone) {
+		return 0;
+	}
+
+
+
+	if (selfflag && !bvhbone) {
+		_ASSERT(0);
+		return 1;
+	}
+	if ((selfflag == 0) && !befbvhbone) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	if (!srcmodel || !srcbvhmodel || !srcbone) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	//###################################################################
+	//2023/02/02
+	//GetCurMp().GetWorldMatには　例外的にモデルのworldmatが掛かっている
+	//アニメ姿勢の計算には　GetCurMp().GetAnimMat()を使用
+	//###################################################################
+
+
+	double roundingframe = RoundingTime(srcframe);
+
+	MOTINFO* bvhmi;
+	int bvhmotid;
+	bvhmi = srcbvhmodel->GetCurMotInfo();
+	if (!bvhmi) {
+		_ASSERT(0);
+		return 1;
+	}
+	bvhmotid = bvhmi->motid;//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+	bool onaddmotion = true;//for getbychain
+	CMotionPoint* bvhmp = 0;
+	if (bvhbone) {
+		//bvhmp = bvhbone->GetCurMp();
+		bvhmp = bvhbone->GetMotionPoint(bvhmi->motid, roundingframe);
+		if (!bvhmp) {
+			_ASSERT(0);
+			return 0;
+		}
+	}
+	else {
+		//bvhmp = befbvhbone->GetCurMp();
+		return 0;
+	}
+
+
+	MOTINFO* modelmi = srcmodel->GetCurMotInfo();
+	if (modelmi) {
+		int modelmotid = modelmi->motid;
+		CMotionPoint modelmp;
+		CMotionPoint* pmodelmp = 0;
+		pmodelmp = srcbone->GetMotionPoint(modelmotid, roundingframe, onaddmotion);
+		if (pmodelmp) {
+			modelmp = *pmodelmp;
+		}
+		else {
+			_ASSERT(0);
+			return 1;
+		}
+
+		CMotionPoint modelparmp;
+		CMotionPoint* pmodelparmp = 0;
+		if (srcbone->GetParent(true)) {
+			pmodelparmp = srcbone->GetParent(true)->GetMotionPoint(modelmotid, roundingframe, onaddmotion);
+			if (pmodelparmp) {
+				modelparmp = *pmodelparmp;
+			}
+		}
+
+
+		int curboneno = srcbone->GetBoneNo();
+
+
+		CQuaternion rotq;
+		ChaVector3 traanim;
+
+		if (bvhbone) {
+			//ChaMatrix curbvhmat;
+			//ChaMatrix bvhmat;
+			//bvhmat = bvhmp.GetWorldMat();
+
+			//ChaMatrix modelinit, invmodelinit;
+			//modelinit = modelmp.GetWorldMat();
+			//invmodelinit = modelmp.GetInvWorldMat();
+
+			CBone* modelfirstbone = 0;
+			CBone* modeltopbone = srcmodel->GetTopBone();
+			CBone* modelhipsbone = 0;
+			if (modeltopbone) {
+				srcmodel->GetHipsBoneReq(modeltopbone, &modelhipsbone);
+				if (modelhipsbone) {
+					modelfirstbone = modelhipsbone;
+				}
+				else {
+					modelfirstbone = modeltopbone;
+				}
+			}
+
+			CBone* bvhfirstbone = 0;
+			CBone* bvhtopbone = srcbvhmodel->GetTopBone();
+			CBone* bvhhipsbone = 0;
+			if (bvhtopbone) {
+				srcbvhmodel->GetHipsBoneReq(bvhtopbone, &bvhhipsbone);
+				if (bvhhipsbone) {
+					bvhfirstbone = bvhhipsbone;
+				}
+				else {
+					bvhfirstbone = bvhtopbone;
+				}
+			}
+
+
+			//if (srcbone == srcmodel->GetTopBone()) {//モデル側の最初のボーンの処理時
+			//if (modelfirstbone && (srcbone == modelfirstbone)) {//モデル側の最初のボーンの処理時
+
+			//	//firsthipbvhmatとfirsthipmodelmatは　この関数の参照引数　一度セットして使いまわす
+			//	
+			//	//#######################################################################################
+			//	//2022/12/21 ver1.1.0.10へ向けて
+			//	//式10033と前提条件を合わせる
+			//	//bvh側の0フレーム姿勢がIdentityになるように　InvFirstMat * NodeMat を掛ける
+			//	//#######################################################################################
+			//	firsthipbvhmat = ChaMatrixInv(bvhbone->GetFirstMat()) * bvhbone->GetNodeMat() * bvhmp.GetAnimMat();
+			//	firsthipbvhmat.data[MATI_41] = 0.0f;
+			//	firsthipbvhmat.data[MATI_42] = 0.0f;
+			//	firsthipbvhmat.data[MATI_43] = 0.0f;
+
+			//	firsthipmodelmat = modelmp.GetWorldMat();
+			//	firsthipmodelmat.data[MATI_41] = 0.0f;
+			//	firsthipmodelmat.data[MATI_42] = 0.0f;
+			//	firsthipmodelmat.data[MATI_43] = 0.0f;
+			//}
+
+
+			//#########################################################################################
+			//2023/03/26 ver1.2.0.18へ向けて
+			//bvh側model側　両方とも０フレームにアニメが在っても　リターゲットがうまくいくように　修正
+			//#########################################################################################
+			ChaMatrix bvhparentmat, modelparentmat;
+			bvhparentmat.SetIdentity();
+			modelparentmat.SetIdentity();
+			if (bvhbone->GetParent(true)) {
+				bvhparentmat = ChaMatrixInv(bvhbone->GetParent(true)->GetWorldMat(false, bvhmotid, 0.0, 0)) * bvhbone->GetParent(true)->GetWorldMat(false, bvhmotid, roundingframe, 0);
+			}
+			else {
+				//bvhparentmat.SetIdentity();
+				bvhparentmat = ChaMatrixInv(bvhbone->GetWorldMat(false, bvhmotid, 0.0, 0)) * bvhbone->GetWorldMat(false, bvhmotid, roundingframe, 0);
+			}
+			if (srcbone->GetParent(true)) {
+				modelparentmat = ChaMatrixInv(srcbone->GetParent(true)->GetWorldMat(false, modelmotid, 0.0, 0)) * srcbone->GetParent(true)->GetWorldMat(false, modelmotid, roundingframe, 0);
+			}
+			else {
+				//modelparentmat.SetIdentity();
+				modelparentmat = ChaMatrixInv(srcbone->GetWorldMat(false, modelmotid, 0.0, 0)) * srcbone->GetWorldMat(false, modelmotid, roundingframe, 0);
+			}
+
+
+			//curbvhmat = bvhbone->GetInvFirstMat() * invmodelinit * bvhmat;
+			//curbvhmat = bvhbone->GetInvFirstMat() * sinvfirsthipmat * invmodelinit * bvhmat;
+			//curbvhmat = sinvfirsthipmat * bvhbone->GetInvFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//1.0.0.26になる前までの式。初期姿勢の変換にbvhの全体回転sfirsthipmatを考慮する。
+
+			//#############################################################################################################################
+			//1.0.0.26からは
+			//bvhは読み込み時に０フレームアニメがIdentityになるように読み込む。model側はInvJonitPos * AnimMatのように読み込むようにした。
+			//model側は０フレーム編集に対応した。
+			//以上の変更に対応するためにretargetの数式も修正。
+			//#############################################################################################################################
+
+			//###################################################################################################################
+			//1.0.0.27からは０フレームアニメの編集に対応。
+			//０フレームに対応可能なのは非bvhのモデル。非bvhの場合、０フレームアニメがIdentityになるようには読まない。
+			//非bvhの場合にはBindPoseと0フレームアニメの両方が存在する。よって０フレームアニメの編集をして書き出しても正常。
+			//一方、bvhの場合、０フレームアニメがIdentityになるように読み込む。そのためリターゲットの数式が簡略化される。
+			//###################################################################################################################
+			//curbvhmat = sinvfirsthipmat * srcbone->GetFirstMat() * sfirsthipmat * invmodelinit * bvhmat;//式10027_1 うまく行く
+
+			////####################################################################################
+			////式10027_1の行列掛け算部分をクォータニオンにしてジンバルロックが起こりにくくしてみる
+			////####################################################################################
+
+
+			//FirstMatについて
+			//SetFirstMatは　CBone::InitMP　で行う。InitMPはCModel::AddMotionから呼ばれる。
+			//InitMPは最初のモーションの０フレームアニメで新規モーションの全フレームを初期化する。
+
+
+			////##############################################################################################################################
+			////式10032(1033も)  bvh側の０フレーム対応とmodel側の０フレーム対応を修正して　合体！！
+			//// 前提１：リターゲット条件は bvh側とmodel側の見かけ上のポーズが同じであること
+			//// 前提２：bvh側は０フレーム姿勢がidentity(０フレームにアニメが付いる場合はジョイント位置に落とし込み姿勢はidentity). 
+			//// 前提３：model側は０フレームにアニメ成分を残している
+			//// 前提２と前提３については　fbxの読み込み方をそのようにしてある(bvh側にはバインドポーズが無いことが多いからこのようにしてある)
+			////##############################################################################################################################
+
+			if (modelfirstbone && bvhfirstbone) {
+
+				//#######################################################################################
+				//2022/12/21 ver1.1.0.10へ向けて
+				//式10033と前提条件を合わせる
+				//bvh側の0フレーム姿勢がIdentityになるように　InvFirstMat * NodeMat を掛ける
+				//#######################################################################################
+				ChaMatrix offsetforbvhmat, offsetformodelmat;
+				//offsetforbvhmat = ChaMatrixInv(bvhbone->GetFirstMat()) * bvhbone->GetNodeMat();
+				//offsetformodelmat.SetIdentity();
+
+				//#########################################################################################
+				//2023/03/26 ver1.2.0.18へ向けて
+				//bvh側model側　両方とも０フレームにアニメが在っても　リターゲットがうまくいくように　修正
+				//#########################################################################################
+				offsetforbvhmat = ChaMatrixInv(bvhbone->GetWorldMat(false, bvhmotid, 0.0, 0));
+				offsetformodelmat = ChaMatrixInv(srcbone->GetWorldMat(false, modelmotid, 0.0, 0));
+
+
+				//######
+				//model
+				//######
+					//model parent
+				CQuaternion modelparentQ, invmodelparentQ;
+				modelparentQ.RotationMatrix(modelparentmat);
+				invmodelparentQ.RotationMatrix(ChaMatrixInv(modelparentmat));
+
+				//model current
+				ChaMatrix invmodelcurrentmat;
+				CQuaternion invmodelQ;
+				invmodelcurrentmat = ChaMatrixInv(offsetformodelmat * modelmp.GetWorldMat());
+				invmodelQ.RotationMatrix(invmodelcurrentmat);
+
+				//model zeroframe anim
+				ChaMatrix zeroframemodelmat;
+				CQuaternion zeroframemodelQ;
+				zeroframemodelmat = offsetformodelmat * srcbone->GetCurrentZeroFrameMat(limitdegflag, 1);
+				zeroframemodelQ.RotationMatrix(zeroframemodelmat);
+
+
+				//######
+				//bvh
+				//######
+					//bvh parent
+				CQuaternion bvhparentQ, invbvhparentQ;
+				bvhparentQ.RotationMatrix(bvhparentmat);
+				invbvhparentQ.RotationMatrix(ChaMatrixInv(bvhparentmat));
+
+				//bvh current
+				ChaMatrix bvhcurrentmat;
+				CQuaternion bvhQ;
+				//bvhcurrentmat = offsetforbvhmat * bvhmp.GetAnimMat();
+				bvhcurrentmat = offsetforbvhmat * bvhmp->GetWorldMat();
+				bvhQ.RotationMatrix(bvhcurrentmat);
+
+
+				////bvh zeroframe anim
+				ChaMatrix zeroframebvhmat;
+				CQuaternion invzeroframebvhQ;
+				zeroframebvhmat = offsetforbvhmat * bvhbone->GetCurrentZeroFrameMat(limitdegflag, 1);
+				invzeroframebvhQ.RotationMatrix(ChaMatrixInv(zeroframebvhmat));
+
+
+				//10033準備の式
+					//ChaMatrix curbvhmat;
+					//curbvhmat =
+					//	(ChaMatrixInv(firsthipbvhmat) * ChaMatrixInv(bvhbone->GetCurrentZeroFrameMat(1)) * firsthipbvhmat) *
+					//	(ChaMatrixInv(firsthipmodelmat) * (ChaMatrixInv(modelmp.GetWorldMat()) * zeroframemodelmat) * firsthipmodelmat) *
+					//	bvhmp.GetWorldMat();//2022/10/30 テスト(bvh120, bvh121, Rokoko)済　OK
+					//
+					//補足：invhips * (inv)zeroframemat * hipsは　model座標系というかhips座標系のzeroframe姿勢の計算
+					// 
+					// 
+
+
+				//###############################################################################################
+				//2023/03/27 修正：　firsthipbvhmatはbvhparentmatに　firsthipmodelmatはmodelparentmatに置き換え
+				//hips座標系ではなく　parent座標系で計算
+				//###############################################################################################
+
+				//式10033 以下６行
+				ChaMatrix curbvhmat;
+				CQuaternion convQ;
+				convQ = bvhQ *
+					(invmodelparentQ * (zeroframemodelQ * invmodelQ) * modelparentQ) *
+					(invbvhparentQ * invzeroframebvhQ * bvhparentQ);
+				curbvhmat = convQ.MakeRotMatX();
+				//式10033
+				//2022/10/30テストの式をクォータニオン(及びクォータニオンの掛け算の順番)にして　ジンバルロックが起こり難いように
+
+
+				rotq.RotationMatrix(curbvhmat);//回転だけ採用する
+
+				//2023/03/26　補足
+				//FKRotate-->RotBoneQReqに回転を渡して　既存の姿勢にrotqを掛けることになる
+				//リターゲット結果の側(model側)のモーションは
+				//Identityではなく　最初のモーションの０フレームの姿勢で初期化しておく
+				//bvh側とmodel側の０フレームの見かけ上の姿勢が同じであることが　リターゲット条件
+				//０フレーム姿勢からの変化分を利用して　軸の違いなどを吸収して計算する
+
+
+
+
+				//traanim = bvhbone->CalcLocalTraAnim(bvhmotid, roundingframe);//移動はこちらから取得
+				//if (!bvhbone->GetParent(true)) {
+				//	ChaVector3 bvhbonepos = bvhbone->GetJointFPos();
+				//	ChaVector3 firstframebonepos = bvhbone->GetFirstFrameBonePos();
+				//	ChaVector3 firstdiff = firstframebonepos - bvhbonepos;
+				//	traanim -= firstdiff;
+				//}
+				//traanim = traanim * hrate;
+
+
+				//################################################################################
+				//2023/01/08
+				//Hipsジョイント以外のTraAnimも有効に
+				// 
+				//リターゲット条件は　modelとbvhの０フレームの見かけ上の姿勢が同じことであるから
+				//リターゲット時にTraAnimとして計算すべきは　０フレームからの変化分である
+				//################################################################################
+
+				ChaMatrix bvhsmat, bvhrmat, bvhtmat, bvhtanimmat;
+				ChaMatrix bvhsmat0, bvhrmat0, bvhtmat0, bvhtanimmat0;
+
+				//GetWorldMat() : limitedflagをゼロにしておく必要有 !!!!
+				if (bvhbone->GetParent(true)) {
+					ChaMatrix parentwm = bvhbone->GetParent(true)->GetWorldMat(limitdegflag, bvhmotid, roundingframe, 0);
+					//GetSRTandTraAnim(bvhmp.GetAnimMat() * ChaMatrixInv(parentwm), bvhbone->GetNodeMat(),
+					//	&bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
+					GetSRTandTraAnim(bvhmp->GetWorldMat() * ChaMatrixInv(parentwm), bvhbone->GetNodeMat(),
+						&bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
+
+					//calc 0 frame
+					ChaMatrix parentwm0 = bvhbone->GetParent(true)->GetWorldMat(limitdegflag, bvhmotid, 0.0, 0);
+					GetSRTandTraAnim(bvhbone->GetWorldMat(limitdegflag, bvhmotid, 0.0, 0) * ChaMatrixInv(parentwm0), bvhbone->GetNodeMat(),
+						&bvhsmat0, &bvhrmat0, &bvhtmat0, &bvhtanimmat0);
+				}
+				else {
+					//GetSRTandTraAnim(bvhmp.GetAnimMat(), bvhbone->GetNodeMat(),
+					//	&bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
+					GetSRTandTraAnim(bvhmp->GetWorldMat(), bvhbone->GetNodeMat(),
+						&bvhsmat, &bvhrmat, &bvhtmat, &bvhtanimmat);
+
+					//calc 0 frame
+					GetSRTandTraAnim(bvhbone->GetWorldMat(limitdegflag, bvhmotid, 0.0, 0), bvhbone->GetNodeMat(),
+						&bvhsmat0, &bvhrmat0, &bvhtmat0, &bvhtanimmat0);
+				}
+
+				traanim = ChaMatrixTraVec(bvhtanimmat) - ChaMatrixTraVec(bvhtanimmat0);//2023/01/08
+				traanim = traanim * hrate;
+			}
+			else {
+				rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+				traanim = ChaVector3(0.0f, 0.0f, 0.0f);
+			}
+		}
+		else {
+			//rotq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+			//traanim = ChaVector3(0.0f, 0.0f, 0.0f);
+
+			return 0;
+		}
+
+		bool onretarget = true;
+		if (bvhbone) {
+			int reqflag = 1;//!!!!!!!!! 編集結果を再帰的に子供に伝えるので　bvhboneが無い場合には処理をしないで良い
+			int traanimflag = 1;
+			srcmodel->FKRotate(limitdegflag, onretarget, reqflag, bvhbone,
+				traanimflag, traanim, roundingframe, curboneno, rotq);
+		}
+		else {
+			//srcmodel->FKRotate(limitdegflag, onretarget, 0, befbvhbone, 0, traanim, roundingframe, curboneno, rotq);
+			return 0;
+		}
+	}
+
+	return 0;
+}
+
+CBone* ChaCalcFunc::GetTopBone(CModel* srcmodel, bool excludenullflag)//default : excludenullflag = true
+{
+	if (!srcmodel) {
+		return 0;
+	}
+
+	CBone* ptopbone = 0;
+	GetTopBoneReq(srcmodel, srcmodel->DirectGetTopBone(), &ptopbone, excludenullflag);
+	return ptopbone;
+}
+void ChaCalcFunc::GetTopBoneReq(CModel* srcmodel, CBone* srcbone, CBone** pptopbone, bool excludenullflag)
+{
+	if (srcmodel && srcbone && pptopbone && !(*pptopbone)) {
+
+		if (excludenullflag == true) {
+			//if ((srcbone->IsSkeleton()) || (srcbone->GetType() == FBXBONE_ROOTNODE)) {
+			if (srcbone->IsSkeleton()) {//FBXBONE_ROOTNODEはここでは除外 　FBXBONE_ROOTNODEはGetRootNode()で取得するように
+				*pptopbone = srcbone;
+				return;
+			}
+		}
+		else {
+			*pptopbone = srcbone;
+			return;
+		}
+
+		if (!(*pptopbone)) {
+			if (srcbone->GetBrother(false)) {
+				GetTopBoneReq(srcmodel, srcbone->GetBrother(false), pptopbone, excludenullflag);
+			}
+			if (srcbone->GetChild(false))
+			{
+				GetTopBoneReq(srcmodel, srcbone->GetChild(false), pptopbone, excludenullflag);
+			}
+		}
+	}
+}
+
+
+
+void ChaCalcFunc::GetHipsBoneReq(CModel* srcmodel, CBone* srcbone, CBone** dstppbone)
+{
+	if (!srcmodel) {
+		return;
+	}
+
+	if (srcmodel->GetNoBoneFlag() == true) {
+		*dstppbone = 0;
+		return;
+	}
+
+
+	if (srcbone && dstppbone && !(*dstppbone)) {
+
+		if (srcbone->IsHipsBone()) {
+			*dstppbone = srcbone;
+			return;
+		}
+
+		if (!(*dstppbone)) {
+			if (srcbone->GetBrother(false)) {
+				GetHipsBoneReq(srcmodel, srcbone->GetBrother(false), dstppbone);
+			}
+			if (srcbone->GetChild(false)) {
+				GetHipsBoneReq(srcmodel, srcbone->GetChild(false), dstppbone);
+			}
+		}
+	}
+}
+
+int ChaCalcFunc::FKRotate(CModel* srcmodel, bool limitdegflag, bool onretarget, int reqflag,
+	CBone* bvhbone, int traflag, ChaVector3 traanim, double srcframe, int srcboneno,
+	CQuaternion rotq)
+{
+
+	if (!srcmodel) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	if (srcboneno < 0) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	//CBone* curbone = m_bonelist[srcboneno];
+	CBone* curbone = srcmodel->GetBoneByID(srcboneno);
+	if (!curbone) {
+		_ASSERT(0);
+		return 1;
+	}
+	if (curbone->IsNotSkeleton()) {
+		return 1;
+	}
+
+	MOTINFO* curmi = srcmodel->GetCurMotInfo();
+	if (!curmi) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	double roundingframe = RoundingTime(srcframe);
+
+	bool onaddmotion = true;//for getbychain
+	CBone* parentbone = curbone->GetParent(false);
+	CMotionPoint* parmp = 0;
+	if (parentbone && parentbone->IsSkeleton()) {
+		parmp = parentbone->GetMotionPoint(curmi->motid, roundingframe, onaddmotion);
+	}
+
+	if (reqflag == 1) {
+		ChaMatrix dummyparentwm;
+		dummyparentwm.SetIdentity();
+		bool infooutflag = true;
+		curbone->RotBoneQReq(limitdegflag, infooutflag, 0, curmi->motid, roundingframe, rotq, dummyparentwm, dummyparentwm,
+			bvhbone, traanim);// , setmatflag, psetmat, onretarget);
+	}
+	else if (bvhbone) {
+		ChaMatrix setmat = bvhbone->GetTmpMat();
+		curbone->RotBoneQOne(limitdegflag, parentbone, parmp, curmi->motid, roundingframe, setmat);
+	}
+
+	return curbone->GetBoneNo();
+}
+
+CMotionPoint* ChaCalcFunc::RotBoneQReq(CBone* srcbone, bool limitdegflag, bool infooutflag,
+	CBone* parentbone, int srcmotid, double srcframe,
+	CQuaternion rotq, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm,
+	CBone* bvhbone, ChaVector3 traanim)// , int setmatflag, ChaMatrix* psetmat, bool onretarget)
+{
+	if (!srcbone) {
+		_ASSERT(0);
+		return 0;
+	}
+
+
+	//##############################################################
+	//Retarget専用. IK用にはRotAndTraBoneQReq()を使用
+	//##############################################################
+
+	double roundingframe = RoundingTime(srcframe);
+
+	//2023/04/28
+	if (srcbone->IsNotSkeleton()) {
+		return 0;
+	}
+
+
+	CMotionPoint* curmp = srcbone->GetMotionPoint(srcmotid, roundingframe);
+	if (!curmp) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	ChaMatrix currentbefwm;
+	ChaMatrix currentnewwm;
+	currentbefwm.SetIdentity();
+	currentnewwm.SetIdentity();
+	currentbefwm = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+
+	//初回呼び出し
+
+	ChaMatrix newlocalrotmat;
+	ChaMatrix smat, rmat, tmat, tanimmat;
+	newlocalrotmat.SetIdentity();
+	smat.SetIdentity();
+	rmat.SetIdentity();
+	tmat.SetIdentity();
+	tanimmat.SetIdentity();
+	newlocalrotmat = srcbone->CalcNewLocalRotMatFromQofIK(limitdegflag, srcmotid, roundingframe, rotq, &smat, &rmat, &tanimmat);
+
+	//ChaMatrix newtanimmatrotated;
+	//newtanimmatrotated.SetIdentity();
+	//newtanimmatrotated = CalcNewLocalTAnimMatFromQofIK(srcmotid, roundingframe, newlocalrotmat, smat, rmat, tanimmat, parentwm);
+
+	ChaMatrix bvhtraanim;
+	bvhtraanim.SetIdentity();
+	bvhtraanim.SetTranslation(ChaMatrixTraVec(tanimmat) + traanim);//元のtanim + 引数traanim
+
+	//#### SRTAnimからローカル行列組み立て ####
+	ChaMatrix newlocalmat;
+	//newlocalmat = ChaMatrixFromSRTraAnim(true, true, GetNodeMat(), &smat, &newlocalrotmat, &newtanimmatrotated);
+	newlocalmat = ChaMatrixFromSRTraAnim(true, true, srcbone->GetNodeMat(), &smat, &newlocalrotmat, &bvhtraanim);
+	ChaMatrix newwm;
+	if (srcbone->GetParent(false)) {
+		ChaMatrix parentwm;
+		parentwm = srcbone->GetParent(false)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+		newwm = newlocalmat * parentwm;//globalにする
+	}
+	else {
+		newwm = newlocalmat;
+	}
+
+
+	bool directsetflag = false;
+	int setchildflag = 0;
+	int onlycheck = 0;
+	bool fromiktarget = false;
+	srcbone->SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag,
+		srcmotid, roundingframe, newwm, onlycheck, fromiktarget);
+
+	if (bvhbone) {
+		//bvhbone->SetTmpMat(tmpmat);
+		bvhbone->SetTmpMat(newwm);
+	}
+
+	currentnewwm = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+
+
+	curmp->SetAbsMat(srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp));
+
+
+	if (srcbone->GetChild(false) && curmp) {
+		bool setbroflag2 = true;
+		srcbone->GetChild(false)->UpdateParentWMReq(limitdegflag, setbroflag2, srcmotid, roundingframe,
+			currentbefwm, currentnewwm);
+	}
+	//if (GetBrother() && parentbone){
+	//	bool setbroflag3 = true;
+	//	GetBrother()->UpdateParentWMReq(limitdegflag, setbroflag3, srcmotid, roundingframe,
+	//		srcbefparentwm, srcnewparentwm);
+	//}
+	return curmp;
+}
+
+ChaMatrix ChaCalcFunc::CalcNewLocalRotMatFromQofIK(CBone* srcbone, bool limitdegflag, int srcmotid, double srcframe, 
+	CQuaternion qForRot, ChaMatrix* dstsmat, ChaMatrix* dstrmat, ChaMatrix* dsttanimmat)
+{
+
+	double roundingframe = RoundingTime(srcframe);
+
+	ChaMatrix newlocalrotmat;
+	newlocalrotmat.SetIdentity();
+	if (!srcbone || !dstsmat || !dstrmat || !dsttanimmat) {
+		_ASSERT(0);
+		return newlocalrotmat;
+	}
+
+	//2023/04/28
+	if (srcbone->IsNotSkeleton()) {
+		if (dstsmat) {
+			dstsmat->SetIdentity();
+		}
+		if (dstrmat) {
+			dstrmat->SetIdentity();
+		}
+		if (dsttanimmat) {
+			dsttanimmat->SetIdentity();
+		}
+
+		return newlocalrotmat;//!!!!!!!!!!!! return !!!!!!!!!!!!!!!!
+	}
+
+
+	ChaMatrix currentwm;
+	//limitedworldmat = GetLimitedWorldMat(srcmotid, roundingframe);//ここをGetLimitedWorldMatにすると１回目のIKが乱れる。２回目のIK以降はOK。
+	currentwm = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+	ChaMatrix localmat;
+	ChaMatrix parentwm;
+	localmat.SetIdentity();
+	parentwm.SetIdentity();
+	CQuaternion parentq;
+	CQuaternion invparentq;
+	if (srcbone->GetParent(false)) {
+		parentwm = srcbone->GetParent(false)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+		parentq.RotationMatrix(parentwm);
+		invparentq.RotationMatrix(ChaMatrixInv(parentwm));
+		localmat = currentwm * ChaMatrixInv(parentwm);
+	}
+	else {
+		parentwm.SetIdentity();
+		parentq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		invparentq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+		localmat = currentwm;
+	}
+
+	ChaMatrix smat, rmat, tmat, tanimmat;
+	//ChaMatrix zeroposmat;
+	//zeroposmat.SetIdentity();
+	GetSRTandTraAnim(localmat, srcbone->GetNodeMat(), &smat, &rmat, &tmat, &tanimmat);//#### ローカル行列をSRTTAnim分解 ####
+	//GetSRTandTraAnim(localmat, zeroposmat, &smat, &rmat, &tmat, &tanimmat);//#### ローカル行列をSRTTAnim分解 ####
+
+
+	CQuaternion curq, newq;
+	curq.RotationMatrix(rmat);
+
+	CQuaternion globalq;
+	globalq = parentq * curq;
+	CQuaternion newglobalq;
+	newglobalq = qForRot * globalq;//########### 引数rotqはグローバル姿勢 ############
+	//newglobalq = globalq * rotq;
+	CQuaternion newlocalrotq;
+	newlocalrotq = invparentq * newglobalq;
+	newlocalrotmat = newlocalrotq.MakeRotMatX();
+
+
+	if (dstsmat) {
+		*dstsmat = smat;
+	}
+	if (dstrmat) {
+		*dstrmat = rmat;
+	}
+	if (dsttanimmat) {
+		*dsttanimmat = tanimmat;
+	}
+
+	return newlocalrotmat;
+}
+
+ChaMatrix ChaCalcFunc::GetCurrentZeroFrameMat(CBone* srcbone, bool limitdegflag, int updateflag)
+{
+	if (!srcbone) {
+		_ASSERT(0);
+		ChaMatrix inimat;
+		ChaMatrixIdentity(&inimat);
+		return inimat;
+	}
+
+	//ZeroFrameの編集前と編集後のポーズのdiffをとる必要がある場合に対応する
+	//updateflagが1の場合に最新情報。0の場合に前回の取得情報と同じものを返す。
+
+	//2023/04/28
+	if (srcbone->IsNotSkeleton()) {
+		ChaMatrix inimat;
+		ChaMatrixIdentity(&inimat);
+		return inimat;
+	}
+
+
+	//取得時に計算
+	
+	//m_firstgetflag = 1;
+	ChaMatrix firstgetmatrix = srcbone->GetWorldMat(limitdegflag, srcbone->GetCurMotID(), 0.0, 0);
+	srcbone->SetFirstGetMatrix(firstgetmatrix);
+	srcbone->SetInvFirstGetMatrix(ChaMatrixInv(firstgetmatrix));
+	
+	return firstgetmatrix;
+
+
+	//int inverseflag = 0;
+	//return GetCurrentZeroFrameMatFunc(limitdegflag, updateflag, inverseflag);
+
+}
+
+
+
+int ChaCalcFunc::InitMP(CBone* srcbone, bool limitdegflag, int srcmotid, double srcframe)
+{
+	if (!srcbone) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	//###########################################################
+	//InitMP 初期姿勢。リターゲットの初期姿勢に関わる。 
+	//最初のモーション(firstmotid)の worldmat(firstanim)で初期化
+	//###########################################################
+
+	if (!srcbone->GetParModel()) {
+		return 0;
+	}
+	//2023/04/28
+	if (srcbone->IsNotSkeleton()) {
+		return 0;
+	}
+
+
+
+	double roundingframe = RoundingTime(srcframe);
+
+	//この関数は処理に時間が掛かる
+	//CModel読み込み中で　読み込み中のモーション数が０以外の場合には　InitMPする必要は無い(モーションの値で上書きする)ので　リターンする
+	//
+	//2022/11/08
+	//ただし　RootまたはReferenceが含まれる名前のボーンは　読み込み時に追加することがあるので　RootとReferenceについてはここではリターンしない
+	if ((strstr(srcbone->GetBoneName(), "Root") == 0) && (strstr(srcbone->GetBoneName(), "Reference") == 0) &&
+		(srcbone->GetParModel()->GetLoadedFlag() == false) && (srcbone->GetParModel()->GetLoadingMotionCount() > 0)) {//2022/10/20
+		return 0;
+	}
+
+	////firstmpが無い場合のダミーの初期化モーションポイント
+	////初期化されたworldmatがあれば良い
+	CMotionPoint initmp;
+	initmp.InitParams();
+
+
+	////１つ目のモーションを削除する場合もあるので　motid = 1決め打ちは出来ない　2022/09/13
+	////CMotionPoint* firstmp = GetMotionPoint(1, 0.0);//motid == 1は１つ目のモーション
+
+	int firstmotid = 1;
+	MOTINFO* firstmi = srcbone->GetParModel()->GetFirstValidMotInfo();//１つ目のモーションを削除済の場合に対応
+	if (!firstmi) {
+		//MotionPointが無い場合にもいても　想定している使い方として　MOTINFOはAddされた状態でRetargetは呼ばれる
+		//よってここを通る場合は　想定外エラー
+		_ASSERT(0);
+		return 1;
+	}
+	else {
+		firstmotid = firstmi->motid;
+	}
+
+
+	CMotionPoint* firstmp = 0;
+	if ((srcbone->GetParModel()->GetLoadedFlag() == false) && (srcbone->GetParModel()->GetLoadingMotionCount() <= 0)) {
+		//Motionが１つも無いfbx読み込みのフォロー
+		//読み込み中で　fbxにモーションが無い場合　モーションポイントを作成する　それ以外の場合で　モーションポイントが無い場合はエラー
+		firstmp = &initmp;
+	}
+	else {
+		firstmp = srcbone->GetMotionPoint(firstmotid, 0.0);
+	}
+
+	if (!firstmp && ((strstr(srcbone->GetBoneName(), "Root") != 0) || (strstr(srcbone->GetBoneName(), "Reference") != 0))) {
+		//2022/11/08
+		//RootまたはReferenceが含まれる名前のボーンは　読み込み時に追加することがある
+		//RootとReferenceボーンの内　モーションポイントが無い場合についても　ここで対応
+
+		firstmp = &initmp;
+	}
+
+
+	ChaMatrix matforinit;
+	matforinit.SetIdentity();
+
+
+	//###############
+	//set matforinit 2023/05/15
+	//###############
+	//if (srcbone->GetParModel()->GetLoadingMotionCount() <= 1) {
+	if (srcbone->IsNotSkeleton() && (srcbone->GetParModel()->GetLoadingMotionCount() <= 1)) {//2023/10/23 skeleton以外の場合
+		FbxNode* pNode = srcbone->GetFbxNodeOnLoad();
+		if (pNode) {
+
+			EnterCriticalSection(&g_CritSection_FbxSdk);//!!!!!!!!!
+			FbxAMatrix lGlobalSRT;
+			FbxTime time0;
+			time0.SetSecondDouble(0.0);
+			lGlobalSRT = pNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);//current animation
+			ChaMatrix chaGlobalSRT;
+			chaGlobalSRT = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+			matforinit = (ChaMatrixInv(srcbone->GetNodeMat()) * chaGlobalSRT);
+			//matforinit = chaGlobalSRT;
+			//matforinit = ChaMatrixInv(GetNodeMat());
+			LeaveCriticalSection(&g_CritSection_FbxSdk);//!!!!!!!!!
+		}
+		else {
+			_ASSERT(0);
+			matforinit.SetIdentity();
+		}
+
+		//matforinit = firstmp->GetWorldMat();
+		////matforinit.SetIdentity();
+	}
+	else {
+		matforinit = firstmp->GetWorldMat();
+	}
+
+	//###########
+	//for debug
+	//###########
+	//if ((srcmotid == 1) && (srcframe == 0.0)) {
+	//	char strdbg[1024] = { 0 };
+	//	WCHAR wstrdbg[1024] = { 0L };
+	//	sprintf_s(strdbg, 1024, "InitMP firstanim firstframe : (%s)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n",
+	//		srcbone->GetBoneName(),
+	//		matforinit.data[MATI_11], matforinit.data[MATI_12], matforinit.data[MATI_13], matforinit.data[MATI_14],
+	//		matforinit.data[MATI_21], matforinit.data[MATI_22], matforinit.data[MATI_23], matforinit.data[MATI_24],
+	//		matforinit.data[MATI_31], matforinit.data[MATI_32], matforinit.data[MATI_33], matforinit.data[MATI_34],
+	//		matforinit.data[MATI_41], matforinit.data[MATI_42], matforinit.data[MATI_43], matforinit.data[MATI_44]
+	//	);
+	//	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
+	//	DbgOut(wstrdbg);
+	//}
+
+	//SetFirstMat(firstanim);//リターゲット時のbvhbone->GetFirstMatで効果
+
+	CMotionPoint* curmp = srcbone->GetMotionPoint(srcmotid, roundingframe);
+	if (!curmp) {
+		int existflag = 0;
+		curmp = srcbone->AddMotionPoint(srcmotid, roundingframe, &existflag);
+	}
+	if (curmp) {
+
+		////SetWorldMat(srcmotid, roundingframe, firstanim, curmp);
+		//curmp->SetWorldMat(firstanim);
+		//curmp->SetLimitedWM(firstanim);
+
+		curmp->SetWorldMat(matforinit);
+		curmp->SetLimitedWM(matforinit);
+
+
+		//SetInitMat(xmat);
+		////オイラー角初期化
+		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+		int paraxsiflag = 1;
+		
+		
+		//cureul = CalcLocalEulXYZ(0, paraxsiflag, 1, 0.0, BEFEUL_ZERO);
+		//cureul = srcbone->CalcLocalEulXYZ(0, paraxsiflag, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+		cureul = firstmp->GetLocalEul();//2023/10/23
+
+
+		////１つ目のモーションを削除する場合もあるので　motid = 1決め打ちは出来ない　2022/09/13
+		////ChaVector3 cureul = GetLocalEul(firstmotid, 0.0, 0);//motid == 1は１つ目のモーション
+		////SetLocalEul(srcmotid, roundingframe, cureul, curmp);
+		//ChaVector3 cureul = firstmp->GetLocalEul();
+
+		curmp->SetLocalEul(cureul);
+		curmp->SetLimitedLocalEul(cureul);
+		//if (limitdegflag == true) {
+		curmp->SetCalcLimitedWM(2);
+		//}
+
+
+		//2023/02/11
+		//GetFbxAnimのif((animno == 0) && (srcframe == 0.0))を通らなかったRootジョイント用の初期化
+		if ((srcmotid == firstmotid) && (roundingframe == 0.0)) {
+			ChaMatrix firstmat;
+			firstmat = srcbone->GetNodeMat() * matforinit;
+			srcbone->SetFirstMat(firstmat);
+		}
+
+	}
+
+
+	////###################################################################################		
+	////InitMP 初期姿勢。２つ目以降のモーションの初期姿勢。リターゲットの初期姿勢に関わる。
+	////###################################################################################
+	//if (newmp && (srcmotid != 1)) {
+	//	ChaMatrix xmat = GetFirstMat();
+	//	newmp->SetWorldMat(xmat);
+	//	//SetInitMat(xmat);
+	//	////オイラー角初期化
+	//	ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+	//	int paraxsiflag = 1;
+	//	cureul = CalcLocalEulXYZ(paraxsiflag, srcmotid, roundingframe, BEFEUL_ZERO);
+	//	SetLocalEul(srcmotid, roundingframe, cureul);
+	//}
+
+
+
+	//ChaMatrix parfirstmat, invparfirstmat;
+	//ChaMatrixIdentity(&parfirstmat);
+	//ChaMatrixIdentity(&invparfirstmat);
+	//if (parentbone) {
+	//	double zeroframe = 0.0;
+	//	int existz = 0;
+	//	CMotionPoint* parmp = parentbone->AddMotionPoint(motid, zeroframe, &existz);
+	//	if (existz && parmp) {
+	//		parfirstmat = parmp->GetWorldMat();//!!!!!!!!!!!!!! この時点ではm_matWorldが掛かっていないから後で修正必要かも？？
+	//		ChaMatrixInverse(&invparfirstmat, NULL, &parfirstmat);
+	//	}
+	//	else {
+	//		ChaMatrixIdentity(&parfirstmat);
+	//		ChaMatrixIdentity(&invparfirstmat);
+	//	}
+	//}
+
+	//double framecnt;
+	//for (framecnt = 0.0; framecnt < animleng; framecnt += 1.0) {
+	//	double frame = framecnt;
+
+	//	ChaMatrix mvmat;
+	//	ChaMatrixIdentity(&mvmat);
+
+	//	CMotionPoint* pcurmp = 0;
+	//	bool onaddmotion = true;
+	//	pcurmp = curbone->GetMotionPoint(motid, frame, onaddmotion);
+	//	if (!pcurmp) {
+	//		int exist2 = 0;
+	//		CMotionPoint* newmp = curbone->AddMotionPoint(motid, frame, &exist2);
+	//		if (!newmp) {
+	//			_ASSERT(0);
+	//			return;
+	//		}
+
+	//		if (parentbone) {
+	//			int exist3 = 0;
+	//			CMotionPoint* parmp = parentbone->AddMotionPoint(motid, frame, &exist3);
+	//			ChaMatrix tmpmat = parentbone->GetInvFirstMat() * parmp->GetWorldMat();//!!!!!!!!!!!!!!!!!! endjointはこれでうまく行くが、floatと分岐が不動になる。
+	//			//newmp->SetBefWorldMat(tmpmat);
+	//			newmp->SetWorldMat(tmpmat);//anglelimit無し
+
+	//			//オイラー角初期化
+	//			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+	//			int paraxiskind = -1;//2021/11/18
+	//			//int isfirstbone = 0;
+	//			cureul = curbone->CalcLocalEulXYZ(paraxiskind, motid, (double)framecnt, BEFEUL_ZERO);
+	//			curbone->SetLocalEul(motid, (double)framecnt, cureul);
+
+	//		}
+	//	}
+	//}
+
+
+	return 0;
+}
+
+int ChaCalcFunc::InitMP(CModel* srcmodel, bool limitdegflag, CBone* curbone, int srcmotid, double curframe)
+{
+	if (!srcmodel) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	//CMotionPoint* pcurmp = 0;
+	//pcurmp = curbone->GetMotionPoint(GetCurMotInfo()->motid, curframe);
+
+	//if (pcurmp) {
+
+	//	//pcurmp->SetBefWorldMat(pcurmp->GetWorldMat());
+
+	//	ChaMatrix xmat = curbone->GetFirstMat();
+	//	pcurmp->SetWorldMat(xmat);
+	//	curbone->SetInitMat(xmat);
+
+	//}
+	//else {
+	//	CMotionPoint* curmp3 = 0;
+	//	int existflag3 = 0;
+	//	curmp3 = curbone->AddMotionPoint(GetCurMotInfo()->motid, curframe, &existflag3);
+	//	if (!curmp3) {
+	//		_ASSERT(0);
+	//		return 1;
+	//	}
+	//	ChaMatrix xmat = curbone->GetFirstMat();
+	//	curmp3->SetWorldMat(xmat);
+	//	curbone->SetInitMat(xmat);
+	//	//_ASSERT( 0 );
+	//}
+
+	////オイラー角初期化
+	//ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+	//int paraxsiflag = 1;
+	////int isfirstbone = 0;
+	//cureul = curbone->CalcLocalEulXYZ(paraxsiflag, GetCurMotInfo()->motid, curframe, BEFEUL_ZERO);
+	//curbone->SetLocalEul(GetCurMotInfo()->motid, curframe, cureul);
+
+
+	if ((srcmodel->GetNoBoneFlag() == false) && curbone && (curbone->IsSkeleton())) {
+		InitMP(curbone, limitdegflag, srcmotid, curframe);
+	}
+
+
+	return 0;
+}
+
+void ChaCalcFunc::InitMPReq(CModel* srcmodel, bool limitdegflag, CBone* curbone, int srcmotid, double curframe)
+{
+	if (!srcmodel) {
+		_ASSERT(0);
+		return;
+	}
+
+	if (!curbone) {
+		return;
+	}
+	if (srcmodel->GetNoBoneFlag() == true) {
+		return;
+	}
+
+	if (curbone->IsSkeleton()) {
+		InitMP(srcmodel, limitdegflag, curbone, srcmotid, curframe);
+	}
+
+	if (curbone->GetChild(false)) {
+		InitMPReq(srcmodel, limitdegflag, curbone->GetChild(false), srcmotid, curframe);
+	}
+	if (curbone->GetBrother(false)) {
+		InitMPReq(srcmodel, limitdegflag, curbone->GetBrother(false), srcmotid, curframe);
+	}
+}
+
+
+
 //#################################################################
 //Following Functions are Called From GlobalFunctions at ChaVecCalc
 //#################################################################
 
-CQuaternion ChaCalcFunc::QMakeFromBtMat3x3(btMatrix3x3* eulmat)
+CQuaternion ChaCalcFunc::ccfQMakeFromBtMat3x3(btMatrix3x3* eulmat)
 {
 	CQuaternion retq;
 	retq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
@@ -2849,7 +3962,7 @@ CQuaternion ChaCalcFunc::QMakeFromBtMat3x3(btMatrix3x3* eulmat)
 
 }
 
-void ChaCalcFunc::ChaMatrixIdentity(ChaMatrix* pdst)
+void ChaCalcFunc::ccfChaMatrixIdentity(ChaMatrix* pdst)
 {
 	if (!pdst) {
 		return;
@@ -2875,14 +3988,14 @@ void ChaCalcFunc::ChaMatrixIdentity(ChaMatrix* pdst)
 	pdst->data[MATI_44] = 1.0f;
 }
 
-CQuaternion ChaCalcFunc::ChaMatrix2Q(ChaMatrix srcmat)//ChaMatrixを受け取って　CQuaternionを返す
+CQuaternion ChaCalcFunc::ccfChaMatrix2Q(ChaMatrix srcmat)//ChaMatrixを受け取って　CQuaternionを返す
 {
 	CQuaternion retq;
 	retq.RotationMatrix(srcmat);
 	return retq;
 }
 
-ChaMatrix ChaCalcFunc::ChaMatrixRot(ChaMatrix srcmat)//回転成分だけの行列にする
+ChaMatrix ChaCalcFunc::ccfChaMatrixRot(ChaMatrix srcmat)//回転成分だけの行列にする
 {
 	ChaMatrix retmat;
 	retmat.SetIdentity();
@@ -2911,7 +4024,7 @@ ChaMatrix ChaCalcFunc::ChaMatrixRot(ChaMatrix srcmat)//回転成分だけの行�
 
 }
 
-ChaMatrix ChaCalcFunc::ChaMatrixScale(ChaMatrix srcmat)//スケール成分だけの行列にする
+ChaMatrix ChaCalcFunc::ccfChaMatrixScale(ChaMatrix srcmat)//スケール成分だけの行列にする
 {
 	ChaMatrix retmat;
 	retmat.SetIdentity();
@@ -2933,7 +4046,7 @@ ChaMatrix ChaCalcFunc::ChaMatrixScale(ChaMatrix srcmat)//スケール成分だ�
 	return retmat;
 }
 
-ChaMatrix ChaCalcFunc::ChaMatrixTra(ChaMatrix srcmat)//移動成分だけの行列にする
+ChaMatrix ChaCalcFunc::ccfChaMatrixTra(ChaMatrix srcmat)//移動成分だけの行列にする
 {
 	ChaMatrix retmat;
 	retmat.SetIdentity();
@@ -2945,7 +4058,7 @@ ChaMatrix ChaCalcFunc::ChaMatrixTra(ChaMatrix srcmat)//移動成分だけの行�
 	return retmat;
 }
 
-ChaVector3 ChaCalcFunc::ChaMatrixScaleVec(ChaMatrix srcmat)//スケール成分のベクトルを取得
+ChaVector3 ChaCalcFunc::ccfChaMatrixScaleVec(ChaMatrix srcmat)//スケール成分のベクトルを取得
 {
 	ChaVector3 rotx, roty, rotz;
 	rotx = ChaVector3(srcmat.data[MATI_11], srcmat.data[MATI_12], srcmat.data[MATI_13]);
@@ -2964,7 +4077,7 @@ ChaVector3 ChaCalcFunc::ChaMatrixScaleVec(ChaMatrix srcmat)//スケール成分�
 
 	return retvec;
 }
-ChaVector3 ChaCalcFunc::ChaMatrixRotVec(ChaMatrix srcmat, int notmodify180flag)//回転成分のベクトルを取得
+ChaVector3 ChaCalcFunc::ccfChaMatrixRotVec(ChaMatrix srcmat, int notmodify180flag)//回転成分のベクトルを取得
 {
 	//ローカルオイラー角を取得するためには
 	//srcmatには　GetNodeMat * GetWorldMat * Inv(GetParent()->GetWorldMat) * Inv(GetParent()->GetNodeMat) を渡す
@@ -2985,7 +4098,7 @@ ChaVector3 ChaCalcFunc::ChaMatrixRotVec(ChaMatrix srcmat, int notmodify180flag)/
 
 	return reteul;
 }
-ChaVector3 ChaCalcFunc::ChaMatrixTraVec(ChaMatrix srcmat)//移動成分のベクトルを取得
+ChaVector3 ChaCalcFunc::ccfChaMatrixTraVec(ChaMatrix srcmat)//移動成分のベクトルを取得
 {
 	ChaVector3 rettra;
 	rettra.x = srcmat.data[MATI_41];
@@ -2995,7 +4108,7 @@ ChaVector3 ChaCalcFunc::ChaMatrixTraVec(ChaMatrix srcmat)//移動成分のベク
 	return rettra;
 }
 
-void ChaCalcFunc::ChaMatrixNormalizeRot(ChaMatrix* pdst)
+void ChaCalcFunc::ccfChaMatrixNormalizeRot(ChaMatrix* pdst)
 {
 	if (!pdst) {
 		return;
@@ -3146,7 +4259,7 @@ void ChaCalcFunc::ChaMatrixNormalizeRot(ChaMatrix* pdst)
 //	}
 //}
 
-void ChaCalcFunc::ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc)
+void ChaCalcFunc::ccfChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix* psrc)
 {
 	if (!pdst || !psrc) {
 		return;
@@ -3243,7 +4356,7 @@ void ChaCalcFunc::ChaMatrixInverse(ChaMatrix* pdst, float* pdet, const ChaMatrix
 }
 
 
-void ChaCalcFunc::ChaMatrixTranslation(ChaMatrix* pdst, float srcx, float srcy, float srcz)
+void ChaCalcFunc::ccfChaMatrixTranslation(ChaMatrix* pdst, float srcx, float srcy, float srcz)
 {
 	if (!pdst) {
 		return;
@@ -3254,7 +4367,7 @@ void ChaCalcFunc::ChaMatrixTranslation(ChaMatrix* pdst, float srcx, float srcy, 
 	pdst->data[MATI_43] = srcz;
 }
 
-void ChaCalcFunc::ChaMatrixTranspose(ChaMatrix* pdst, ChaMatrix* psrc)
+void ChaCalcFunc::ccfChaMatrixTranspose(ChaMatrix* pdst, ChaMatrix* psrc)
 {
 	if (!pdst || !psrc) {
 		_ASSERT(0);
@@ -3325,7 +4438,7 @@ void ChaCalcFunc::ChaMatrixTranspose(ChaMatrix* pdst, ChaMatrix* psrc)
 
 }
 
-double ChaCalcFunc::ChaVector3LengthDbl(ChaVector3* v)
+double ChaCalcFunc::ccfChaVector3LengthDbl(ChaVector3* v)
 {
 	if (!v) {
 		return 0.0f;
@@ -3344,7 +4457,7 @@ double ChaCalcFunc::ChaVector3LengthDbl(ChaVector3* v)
 
 }
 
-double ChaCalcFunc::ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* psrc2)
+double ChaCalcFunc::ccfChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* psrc2)
 {
 	if (!psrc1 || !psrc2) {
 		return 0.0f;
@@ -3357,7 +4470,7 @@ double ChaCalcFunc::ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* 
 
 
 
-//double ChaCalcFunc::ChaVector3LengthDbl(ChaVector3* v)
+//double ChaCalcFunc::ccfChaVector3LengthDbl(ChaVector3* v)
 //{
 //	if (!v){
 //		return 0.0f;
@@ -3376,7 +4489,7 @@ double ChaCalcFunc::ChaVector3DotDbl(const ChaVector3* psrc1, const ChaVector3* 
 //
 //}
 
-void ChaCalcFunc::ChaVector3Normalize(ChaVector3* pdst, const ChaVector3* psrc) {
+void ChaCalcFunc::ccfChaVector3Normalize(ChaVector3* pdst, const ChaVector3* psrc) {
 	if (!pdst || !psrc) {
 		return;
 	}
@@ -3438,7 +4551,7 @@ void ChaCalcFunc::ChaVector3Normalize(ChaVector3* pdst, const ChaVector3* psrc) 
 	}
 }
 
-float ChaCalcFunc::ChaVector3Dot(const ChaVector3* psrc1, const ChaVector3* psrc2)
+float ChaCalcFunc::ccfChaVector3Dot(const ChaVector3* psrc1, const ChaVector3* psrc2)
 {
 	if (!psrc1 || !psrc2) {
 		return 0.0f;
@@ -3448,7 +4561,7 @@ float ChaCalcFunc::ChaVector3Dot(const ChaVector3* psrc1, const ChaVector3* psrc
 
 }
 
-void ChaCalcFunc::ChaVector3Cross(ChaVector3* pdst, const ChaVector3* psrc1, const ChaVector3* psrc2)
+void ChaCalcFunc::ccfChaVector3Cross(ChaVector3* pdst, const ChaVector3* psrc1, const ChaVector3* psrc2)
 {
 	if (!pdst || !psrc1 || !psrc2) {
 		return;
@@ -3467,7 +4580,7 @@ void ChaCalcFunc::ChaVector3Cross(ChaVector3* pdst, const ChaVector3* psrc1, con
 }
 
 
-void ChaCalcFunc::ChaVector3TransformCoord(ChaVector3* dstvec, ChaVector3* srcvec, ChaMatrix* srcmat)
+void ChaCalcFunc::ccfChaVector3TransformCoord(ChaVector3* dstvec, ChaVector3* srcvec, ChaMatrix* srcmat)
 {
 	if (!dstvec || !srcvec || !srcmat) {
 		return;
@@ -3558,7 +4671,7 @@ pM
 
 この関数は、ベクトル pV のベクトル法線(x, y, z, 0) を行列 pM でトランスフォームする。
 */
-ChaVector3* ChaCalcFunc::ChaVector3TransformNormal(ChaVector3* dstvec, const ChaVector3* srcvec, const ChaMatrix* srcmat)
+ChaVector3* ChaCalcFunc::ccfChaVector3TransformNormal(ChaVector3* dstvec, const ChaVector3* srcvec, const ChaMatrix* srcmat)
 {
 	if (!dstvec || !srcvec || !srcmat) {
 		return NULL;
@@ -3587,7 +4700,7 @@ ChaVector3* ChaCalcFunc::ChaVector3TransformNormal(ChaVector3* dstvec, const Cha
 
 
 
-double ChaCalcFunc::ChaVector3LengthSq(ChaVector3* psrc)
+double ChaCalcFunc::ccfChaVector3LengthSq(ChaVector3* psrc)
 {
 	if (!psrc) {
 		return 0.0f;
@@ -3597,7 +4710,7 @@ double ChaCalcFunc::ChaVector3LengthSq(ChaVector3* psrc)
 }
 
 
-void ChaCalcFunc::ChaMatrixRotationAxis(ChaMatrix* pdst, ChaVector3* srcaxis, float srcrad)
+void ChaCalcFunc::ccfChaMatrixRotationAxis(ChaMatrix* pdst, ChaVector3* srcaxis, float srcrad)
 {
 	if (!pdst) {
 		return;
@@ -3609,7 +4722,7 @@ void ChaCalcFunc::ChaMatrixRotationAxis(ChaMatrix* pdst, ChaVector3* srcaxis, fl
 
 }
 
-void ChaCalcFunc::ChaMatrixScaling(ChaMatrix* pdst, float srcx, float srcy, float srcz)
+void ChaCalcFunc::ccfChaMatrixScaling(ChaMatrix* pdst, float srcx, float srcy, float srcz)
 {
 	if (!pdst) {
 		return;
@@ -3620,7 +4733,7 @@ void ChaCalcFunc::ChaMatrixScaling(ChaMatrix* pdst, float srcx, float srcy, floa
 	pdst->data[MATI_33] = srcz;
 }
 
-void ChaCalcFunc::ChaMatrixLookAtRH(ChaMatrix* dstviewmat, ChaVector3* camEye, ChaVector3* camtar, ChaVector3* camUpVec)
+void ChaCalcFunc::ccfChaMatrixLookAtRH(ChaMatrix* dstviewmat, ChaVector3* camEye, ChaVector3* camtar, ChaVector3* camUpVec)
 {
 	/*
 	zaxis = normal(Eye - At)
@@ -3691,7 +4804,7 @@ FLOAT zf
 (l+r)/(l-r)  (t+b)/(b-t)  zn/(zn-zf)  1
 */
 
-ChaMatrix* ChaCalcFunc::ChaMatrixOrthoOffCenterRH(ChaMatrix* pOut, float l, float r, float t, float b, float zn, float zf)
+ChaMatrix* ChaCalcFunc::ccfChaMatrixOrthoOffCenterRH(ChaMatrix* pOut, float l, float r, float t, float b, float zn, float zf)
 {
 	if (!pOut) {
 		return NULL;
@@ -3747,7 +4860,7 @@ w is the view space width. It is calculated from
 w = h / Aspect.
 */
 
-ChaMatrix* ChaCalcFunc::ChaMatrixPerspectiveFovRH(ChaMatrix* pOut, float fovY, float Aspect, float zn, float zf)
+ChaMatrix* ChaCalcFunc::ccfChaMatrixPerspectiveFovRH(ChaMatrix* pOut, float fovY, float Aspect, float zn, float zf)
 {
 	if (!pOut) {
 		return NULL;
@@ -3796,7 +4909,7 @@ ChaMatrix* ChaCalcFunc::ChaMatrixPerspectiveFovRH(ChaMatrix* pOut, float fovY, f
 
 
 
-const ChaMatrix* ChaCalcFunc::ChaMatrixRotationQuaternion(ChaMatrix* dstmat, CQuaternion* srcq)
+const ChaMatrix* ChaCalcFunc::ccfChaMatrixRotationQuaternion(ChaMatrix* dstmat, CQuaternion* srcq)
 {
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
@@ -3829,7 +4942,7 @@ Roll
 
 トランスフォームの順序は、最初にロール、次にピッチ、最後にヨーである。これは、オブジェクトのローカル座標軸を基準として、z 軸の周囲での回転、x 軸の周囲での回転、y 軸の周囲での回転と同じになる。
 */
-ChaMatrix* ChaCalcFunc::ChaMatrixRotationYawPitchRoll(ChaMatrix* pOut, float srcyaw, float srcpitch, float srcroll)
+ChaMatrix* ChaCalcFunc::ccfChaMatrixRotationYawPitchRoll(ChaMatrix* pOut, float srcyaw, float srcpitch, float srcroll)
 {
 	if (!pOut) {
 		return NULL;
@@ -3851,7 +4964,7 @@ ChaMatrix* ChaCalcFunc::ChaMatrixRotationYawPitchRoll(ChaMatrix* pOut, float src
 	return pOut;
 }
 
-ChaMatrix* ChaCalcFunc::ChaMatrixRotationX(ChaMatrix* pOut, float srcrad)
+ChaMatrix* ChaCalcFunc::ccfChaMatrixRotationX(ChaMatrix* pOut, float srcrad)
 {
 	if (!pOut) {
 		return NULL;
@@ -3865,7 +4978,7 @@ ChaMatrix* ChaCalcFunc::ChaMatrixRotationX(ChaMatrix* pOut, float srcrad)
 	return pOut;
 }
 
-ChaMatrix* ChaCalcFunc::ChaMatrixRotationY(ChaMatrix* pOut, float srcrad)
+ChaMatrix* ChaCalcFunc::ccfChaMatrixRotationY(ChaMatrix* pOut, float srcrad)
 {
 	if (!pOut) {
 		return NULL;
@@ -3879,7 +4992,7 @@ ChaMatrix* ChaCalcFunc::ChaMatrixRotationY(ChaMatrix* pOut, float srcrad)
 	return pOut;
 }
 
-ChaMatrix* ChaCalcFunc::ChaMatrixRotationZ(ChaMatrix* pOut, float srcrad)
+ChaMatrix* ChaCalcFunc::ccfChaMatrixRotationZ(ChaMatrix* pOut, float srcrad)
 {
 	if (!pOut) {
 		return NULL;
@@ -3893,7 +5006,7 @@ ChaMatrix* ChaCalcFunc::ChaMatrixRotationZ(ChaMatrix* pOut, float srcrad)
 	return pOut;
 }
 
-void ChaCalcFunc::CQuaternionIdentity(CQuaternion* dstq)
+void ChaCalcFunc::ccfCQuaternionIdentity(CQuaternion* dstq)
 {
 	if (!dstq) {
 		return;
@@ -3905,7 +5018,7 @@ void ChaCalcFunc::CQuaternionIdentity(CQuaternion* dstq)
 
 }
 
-CQuaternion ChaCalcFunc::CQuaternionInv(CQuaternion srcq)
+CQuaternion ChaCalcFunc::ccfCQuaternionInv(CQuaternion srcq)
 {
 	CQuaternion invq;
 	srcq.inv(&invq);
@@ -3913,14 +5026,14 @@ CQuaternion ChaCalcFunc::CQuaternionInv(CQuaternion srcq)
 }
 
 
-ChaMatrix ChaCalcFunc::MakeRotMatFromChaMatrix(ChaMatrix srcmat)
+ChaMatrix ChaCalcFunc::ccfMakeRotMatFromChaMatrix(ChaMatrix srcmat)
 {
 	CQuaternion tmpq;
 	tmpq.MakeFromD3DXMat(srcmat);
 	return tmpq.MakeRotMatX();
 }
 
-ChaMatrix ChaCalcFunc::ChaMatrixTranspose(ChaMatrix srcmat)
+ChaMatrix ChaCalcFunc::ccfChaMatrixTranspose(ChaMatrix srcmat)
 {
 	ChaMatrix tmpmat = srcmat;
 	ChaMatrix retmat;
@@ -3951,7 +5064,7 @@ ChaMatrix ChaCalcFunc::ChaMatrixTranspose(ChaMatrix srcmat)
 }
 
 
-ChaMatrix ChaCalcFunc::CalcAxisMatX(ChaVector3 vecx, ChaVector3 srcpos, ChaMatrix srcmat)
+ChaMatrix ChaCalcFunc::ccfCalcAxisMatX(ChaVector3 vecx, ChaVector3 srcpos, ChaMatrix srcmat)
 {
 	ChaMatrix retmat;
 	retmat.SetIdentity();
@@ -4008,12 +5121,12 @@ ChaMatrix ChaCalcFunc::CalcAxisMatX(ChaVector3 vecx, ChaVector3 srcpos, ChaMatri
 
 //BoneProp
 
-double ChaCalcFunc::vecDotVec(ChaVector3* vec1, ChaVector3* vec2)
+double ChaCalcFunc::ccfvecDotVec(ChaVector3* vec1, ChaVector3* vec2)
 {
 	return ((double)vec1->x * (double)vec2->x + (double)vec1->y * (double)vec2->y + (double)vec1->z * (double)vec2->z);
 }
 
-double ChaCalcFunc::lengthVec(ChaVector3* vec)
+double ChaCalcFunc::ccflengthVec(ChaVector3* vec)
 {
 	double mag;
 	double leng;
@@ -4028,7 +5141,7 @@ double ChaCalcFunc::lengthVec(ChaVector3* vec)
 	return leng;
 }
 
-double ChaCalcFunc::aCos(double dot)
+double ChaCalcFunc::ccfaCos(double dot)
 {
 	if (dot > 1.0)
 		dot = 1.0;
@@ -4044,7 +5157,7 @@ double ChaCalcFunc::aCos(double dot)
 	return degree;
 }
 
-int ChaCalcFunc::vec3RotateY(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
+int ChaCalcFunc::ccfvec3RotateY(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 {
 
 	int ret;
@@ -4065,7 +5178,7 @@ int ChaCalcFunc::vec3RotateY(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 
 	return 0;
 }
-int ChaCalcFunc::vec3RotateX(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
+int ChaCalcFunc::ccfvec3RotateX(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 {
 
 	int ret;
@@ -4087,7 +5200,7 @@ int ChaCalcFunc::vec3RotateX(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 
 	return 0;
 }
-int ChaCalcFunc::vec3RotateZ(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
+int ChaCalcFunc::ccfvec3RotateZ(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 {
 
 	int ret;
@@ -4256,7 +5369,7 @@ int ChaCalcFunc::vec3RotateZ(ChaVector3* dstvec, double deg, ChaVector3* srcvec)
 //	return 0;
 //}
 
-int ChaCalcFunc::IsInitRot(ChaMatrix srcmat)
+int ChaCalcFunc::ccfIsInitRot(ChaMatrix srcmat)
 {
 	int retval = 0;
 
@@ -4288,14 +5401,14 @@ int ChaCalcFunc::IsInitRot(ChaMatrix srcmat)
 	return retval;
 }
 
-int ChaCalcFunc::IsInitMat(ChaMatrix srcmat)
+int ChaCalcFunc::ccfIsInitMat(ChaMatrix srcmat)
 {
 	ChaMatrix mat1;
 	mat1.SetIdentity();
 	return IsSameMat(srcmat, mat1);
 }
 
-int ChaCalcFunc::IsSameMat(ChaMatrix srcmat1, ChaMatrix srcmat2)
+int ChaCalcFunc::ccfIsSameMat(ChaMatrix srcmat1, ChaMatrix srcmat2)
 {
 
 	int retval = 0;
@@ -4316,7 +5429,7 @@ int ChaCalcFunc::IsSameMat(ChaMatrix srcmat1, ChaMatrix srcmat2)
 	return retval;
 }
 
-int ChaCalcFunc::IsSameEul(ChaVector3 srceul1, ChaVector3 srceul2)
+int ChaCalcFunc::ccfIsSameEul(ChaVector3 srceul1, ChaVector3 srceul2)
 {
 	int retval = 0;
 
@@ -4368,7 +5481,7 @@ int ChaCalcFunc::IsSameEul(ChaVector3 srceul1, ChaVector3 srceul2)
 
 
 
-bool ChaCalcFunc::IsJustEqualTime(double srctime1, double srctime2)
+bool ChaCalcFunc::ccfIsJustEqualTime(double srctime1, double srctime2)
 {
 	double difftime = srctime1 - srctime2;
 	if ((difftime >= -0.0001) && (difftime <= 0.0001)) {
@@ -4379,23 +5492,23 @@ bool ChaCalcFunc::IsJustEqualTime(double srctime1, double srctime2)
 	}
 }
 
-double ChaCalcFunc::RoundingTime(double srctime)
+double ChaCalcFunc::ccfRoundingTime(double srctime)
 {
 	return (double)((int)(srctime + 0.0001));
 }
-int ChaCalcFunc::IntTime(double srctime)
+int ChaCalcFunc::ccfIntTime(double srctime)
 {
 	return (int)(srctime + 0.0001);
 }
 
-bool ChaCalcFunc::IsEqualRoundingTime(double srctime1, double srctime2)
+bool ChaCalcFunc::ccfIsEqualRoundingTime(double srctime1, double srctime2)
 {
 	return (RoundingTime(srctime1) == RoundingTime(srctime2));
 }
 
 
 
-double ChaCalcFunc::VecLength(ChaVector3 srcvec)
+double ChaCalcFunc::ccfVecLength(ChaVector3 srcvec)
 {
 	double tmpval = (double)srcvec.x * (double)srcvec.x + (double)srcvec.y * (double)srcvec.y + (double)srcvec.z * (double)srcvec.z;
 	if (tmpval > 0.0) {
@@ -4408,7 +5521,7 @@ double ChaCalcFunc::VecLength(ChaVector3 srcvec)
 
 
 
-void ChaCalcFunc::GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, ChaVector3* tvecptr)
+void ChaCalcFunc::ccfGetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix* rmatptr, ChaVector3* tvecptr)
 {
 	if (!svecptr || !rmatptr || !tvecptr) {
 		_ASSERT(0);
@@ -4545,7 +5658,7 @@ void ChaCalcFunc::GetSRTMatrix(ChaMatrix srcmat, ChaVector3* svecptr, ChaMatrix*
 
 }
 
-void ChaCalcFunc::GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr)
+void ChaCalcFunc::ccfGetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr)
 {
 	if (!smatptr || !rmatptr || !tmatptr) {
 		return;
@@ -4569,7 +5682,7 @@ void ChaCalcFunc::GetSRTMatrix2(ChaMatrix srcmat, ChaMatrix* smatptr, ChaMatrix*
 	*tmatptr = tmat;
 }
 
-void ChaCalcFunc::GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr, ChaMatrix* tanimmatptr)
+void ChaCalcFunc::ccfGetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaMatrix* smatptr, ChaMatrix* rmatptr, ChaMatrix* tmatptr, ChaMatrix* tanimmatptr)
 {
 	//###################
 	//For Local Posture
@@ -4606,7 +5719,7 @@ void ChaCalcFunc::GetSRTandTraAnim(ChaMatrix srcmat, ChaMatrix srcnodemat, ChaMa
 	return;
 }
 
-ChaMatrix ChaCalcFunc::ChaMatrixFromSRT(bool sflag, bool tflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctmat)
+ChaMatrix ChaCalcFunc::ccfChaMatrixFromSRT(bool sflag, bool tflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctmat)
 {
 	//###################
 	//For Local Posture
@@ -4667,7 +5780,7 @@ ChaMatrix ChaCalcFunc::ChaMatrixFromSRT(bool sflag, bool tflag, ChaMatrix srcnod
 
 }
 
-ChaMatrix ChaCalcFunc::ChaMatrixKeepScale(ChaMatrix srcmat, ChaVector3 srcsvec)
+ChaMatrix ChaCalcFunc::ccfChaMatrixKeepScale(ChaMatrix srcmat, ChaVector3 srcsvec)
 {
 	ChaVector3 vecx, vecy, vecz;
 	double lenx, leny, lenz;
@@ -4733,7 +5846,7 @@ ChaMatrix ChaCalcFunc::ChaMatrixKeepScale(ChaMatrix srcmat, ChaVector3 srcsvec)
 	return retmat;
 }
 
-ChaMatrix ChaCalcFunc::ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctanimmat)
+ChaMatrix ChaCalcFunc::ccfChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMatrix srcnodemat, ChaMatrix* srcsmat, ChaMatrix* srcrmat, ChaMatrix* srctanimmat)
 {
 	//###################
 	//For Local Posture
@@ -4802,7 +5915,7 @@ ChaMatrix ChaCalcFunc::ChaMatrixFromSRTraAnim(bool sflag, bool tanimflag, ChaMat
 
 }
 
-ChaMatrix ChaCalcFunc::GetS0RTMatrix(ChaMatrix srcmat)
+ChaMatrix ChaCalcFunc::ccfGetS0RTMatrix(ChaMatrix srcmat)
 {
 	//拡大縮小を初期化したRT行列を返す
 	ChaMatrix retm;
@@ -4851,7 +5964,7 @@ ChaMatrix ChaCalcFunc::GetS0RTMatrix(ChaMatrix srcmat)
 
 
 
-ChaMatrix ChaCalcFunc::TransZeroMat(ChaMatrix srcmat)
+ChaMatrix ChaCalcFunc::ccfTransZeroMat(ChaMatrix srcmat)
 {
 	ChaMatrix retmat;
 	retmat = srcmat;
@@ -4862,7 +5975,7 @@ ChaMatrix ChaCalcFunc::TransZeroMat(ChaMatrix srcmat)
 	return retmat;
 }
 
-ChaMatrix ChaCalcFunc::ChaMatrixFromFbxAMatrix(FbxAMatrix srcmat)
+ChaMatrix ChaCalcFunc::ccfChaMatrixFromFbxAMatrix(FbxAMatrix srcmat)
 {
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
@@ -4891,7 +6004,7 @@ ChaMatrix ChaCalcFunc::ChaMatrixFromFbxAMatrix(FbxAMatrix srcmat)
 
 }
 
-ChaMatrix ChaCalcFunc::ChaMatrixFromBtMat3x3(btMatrix3x3* srcmat3x3)
+ChaMatrix ChaCalcFunc::ccfChaMatrixFromBtMat3x3(btMatrix3x3* srcmat3x3)
 {
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
@@ -4921,7 +6034,7 @@ ChaMatrix ChaCalcFunc::ChaMatrixFromBtMat3x3(btMatrix3x3* srcmat3x3)
 	return retmat;
 }
 
-ChaMatrix ChaCalcFunc::ChaMatrixFromBtTransform(btMatrix3x3* srcmat3x3, btVector3* srcpivot)
+ChaMatrix ChaCalcFunc::ccfChaMatrixFromBtTransform(btMatrix3x3* srcmat3x3, btVector3* srcpivot)
 {
 	ChaMatrix retmat;
 	ChaMatrixIdentity(&retmat);
@@ -4953,7 +6066,7 @@ ChaMatrix ChaCalcFunc::ChaMatrixFromBtTransform(btMatrix3x3* srcmat3x3, btVector
 	return retmat;
 }
 
-ChaMatrix ChaCalcFunc::ChaMatrixInv(ChaMatrix srcmat)
+ChaMatrix ChaCalcFunc::ccfChaMatrixInv(ChaMatrix srcmat)
 {
 	ChaMatrix retmat;
 	retmat.SetIdentity();

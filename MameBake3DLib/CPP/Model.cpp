@@ -77,6 +77,8 @@
 #include <ThreadingFKTra.h>
 #include <ThreadingCopyW2LW.h>
 #include <ThreadingCalcEul.h>
+#include <ThreadingRetarget.h>
+#include <ThreadingInitMp.h>
 
 #include <NodeOnLoad.h>
 
@@ -337,6 +339,7 @@ static FbxAnimEvaluator* s_animevaluator = 0;
 #define MAMEBAKE3DLIBGLOBALVAR
 #include <GlobalVar.h>
 
+extern LONG g_retargetbatchflag;
 extern bool g_btsimurecflag;
 
 extern CRITICAL_SECTION g_CritSection_GetGP;
@@ -519,6 +522,8 @@ int CModel::InitParams()
 	m_CalcEulThreads = 0;
 	m_FKTraThreads = 0;
 	m_CopyW2LWThreads = 0;
+	m_RetargetThreads = 0;
+	m_InitMpThreads = 0;
 	m_creatednum_boneupdatematrix = 0;//スレッド数の変化に対応。作成済の数。処理用。
 	m_creatednum_loadfbxanim = 0;//スレッド数の変化に対応。作成済の数。処理用。
 
@@ -624,6 +629,10 @@ int CModel::DestroyObjs()
 	WaitFKTraFinished();
 	DestroyCopyW2LWThreads();
 	WaitCopyW2LWFinished();
+	DestroyRetargetThreads();
+	WaitRetargetFinished();
+	DestroyInitMpThreads();
+	WaitInitMpFinished();
 
 	
 	DeleteCriticalSection(&m_CritSection_Node);//スレッド終了よりも後
@@ -1079,7 +1088,8 @@ _ASSERT(m_bonelist[0]);
 	CreatePostIKThreads();
 	CreateFKTraThreads();
 	CreateCopyW2LWThreads();
-
+	CreateRetargetThreads();
+	CreateInitMpThreads();
 
 	ChaMatrix firstmeshmat;
 	firstmeshmat.SetIdentity();
@@ -14977,44 +14987,10 @@ int CModel::FKRotate(bool limitdegflag, bool onretarget, int reqflag,
 	CBone* bvhbone, int traflag, ChaVector3 traanim, double srcframe, int srcboneno, 
 	CQuaternion rotq)//, int setmatflag, ChaMatrix* psetmat)
 {
-
-	if( srcboneno < 0 ){
-		_ASSERT( 0 );
-		return 1;
-	}
-
-	CBone* curbone = m_bonelist[ srcboneno ];
-	if( !curbone ){
-		_ASSERT( 0 );
-		return 1;
-	}
-	if (curbone->IsNotSkeleton()) {
-		return 1;
-	}
-
-
-	double roundingframe = RoundingTime(srcframe);
-
-	bool onaddmotion = true;//for getbychain
-	CBone* parentbone = curbone->GetParent(false);
-	CMotionPoint* parmp = 0;
-	if (parentbone && parentbone->IsSkeleton()){
-		parmp = parentbone->GetMotionPoint(m_curmotinfo->motid, roundingframe, onaddmotion);
-	}
-
-	if (reqflag == 1){
-		ChaMatrix dummyparentwm;
-		dummyparentwm.SetIdentity();
-		bool infooutflag = true;
-		curbone->RotBoneQReq(limitdegflag, infooutflag, 0, m_curmotinfo->motid, roundingframe, rotq, dummyparentwm, dummyparentwm,
-			bvhbone, traanim);// , setmatflag, psetmat, onretarget);
-	}
-	else if(bvhbone){
-		ChaMatrix setmat = bvhbone->GetTmpMat();
-		curbone->RotBoneQOne(limitdegflag, parentbone, parmp, m_curmotinfo->motid, roundingframe, setmat);
-	}
-
-	return curbone->GetBoneNo();
+	ChaCalcFunc chacalcfunc;
+	return chacalcfunc.FKRotate(this, limitdegflag, onretarget, reqflag,
+		bvhbone, traflag, traanim, srcframe, srcboneno,
+		rotq);
 }
 
 int CModel::FKBoneTraAxisUnderFK(
@@ -17602,6 +17578,252 @@ int CModel::SetPostIKFrame(double srcstart, double srcend)
 	return 0;
 }
 
+int CModel::CreateInitMpThreads()
+{
+
+	DestroyInitMpThreads();
+	Sleep(100);
+
+
+	if (m_bonelist[0] == NULL) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	m_InitMpThreads = new CThreadingInitMp[INITMP_THREADSNUM];
+	if (!m_InitMpThreads) {
+		_ASSERT(0);
+		return 1;
+	}
+	int createno;
+	for (createno = 0; createno < INITMP_THREADSNUM; createno++) {
+		CThreadingInitMp* curupdate = m_InitMpThreads + createno;
+		curupdate->ClearFrameList();
+		curupdate->CreateThread((DWORD)(1 << createno));
+
+		curupdate->SetModel(this);
+	}
+
+	//int threadcount = 0;
+	//int befthreadcount = 0;
+	//int bonenointhread = 0;
+	//int bonecount;
+	//int bonenum = (int)m_bonelist.size();
+	//int maxbonenuminthread = bonenum / g_UpdateMatrixThreads + 1;
+
+
+
+	//for (bonecount = 0; bonecount < bonenum; bonecount++) {
+	//	CBone* curbone = m_bonelist[bonecount];
+	//	if (curbone && (curbone->IsSkeleton() || curbone->IsCamera())) {
+	//		CThreadingUpdateMatrix* curupdate = m_boneupdatematrix + threadcount;
+
+	//		curupdate->SetBoneList(bonenointhread, curbone);
+
+	//		//threadcount++;
+	//		//threadcount = (threadcount % g_UpdateMatrixThreads);
+	//		//if (threadcount == 0) {
+	//		//	bonenointhread++;
+	//		//}
+
+
+	//		threadcount = bonecount / maxbonenuminthread;
+
+	//		if (threadcount == befthreadcount) {
+	//			bonenointhread++;
+	//		}
+	//		else {
+	//			bonenointhread = 0;
+	//		}
+
+	//		befthreadcount = threadcount;
+	//	}
+	//}
+
+	//m_creatednum_boneupdatematrix = g_UpdateMatrixThreads;
+
+
+	return 0;
+}
+
+int CModel::DestroyInitMpThreads()
+{
+
+	if (m_InitMpThreads) {
+		delete[] m_InitMpThreads;
+	}
+	m_InitMpThreads = 0;
+
+	return 0;
+}
+
+void CModel::WaitInitMpFinished()
+{
+	if (m_InitMpThreads != NULL) {
+
+		bool yetflag = true;
+		while (yetflag == true) {
+			int finishedcount = 0;
+			int updatecount;
+			for (updatecount = 0; updatecount < INITMP_THREADSNUM; updatecount++) {
+				CThreadingInitMp* curupdate = m_InitMpThreads + updatecount;
+				if (curupdate->IsFinished()) {
+					finishedcount++;
+				}
+			}
+
+			if (finishedcount == INITMP_THREADSNUM) {
+				yetflag = false;
+				return;
+			}
+			else {
+				//__nop();
+				//__nop();
+				//__nop();
+				//__nop();
+			}
+		}
+
+	}
+
+}
+
+int CModel::SetInitMpFrame(double srcstart, double srcend)
+{
+	if (!m_InitMpThreads) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	int updatecount;
+	for (updatecount = 0; updatecount < INITMP_THREADSNUM; updatecount++) {
+		CThreadingInitMp* curupdate = m_InitMpThreads + updatecount;
+		curupdate->ClearFrameList();
+	}
+
+
+	double setframe;
+	int threadcount = 0;
+	for (setframe = RoundingTime(srcstart); setframe <= RoundingTime(srcend); setframe += 1.0) {
+		CThreadingInitMp* curupdate = m_InitMpThreads + threadcount;
+
+		curupdate->AddFramenoList(setframe);
+
+		threadcount++;
+		if (threadcount >= INITMP_THREADSNUM) {
+			threadcount = 0;
+		}
+	}
+
+	return 0;
+}
+
+int CModel::CreateRetargetThreads()
+{
+
+	DestroyRetargetThreads();
+	Sleep(100);
+
+
+	if (m_bonelist[0] == NULL) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	m_RetargetThreads = new CThreadingRetarget[RETARGET_THREADSNUM];
+	if (!m_RetargetThreads) {
+		_ASSERT(0);
+		return 1;
+	}
+	int createno;
+	for (createno = 0; createno < RETARGET_THREADSNUM; createno++) {
+		CThreadingRetarget* curupdate = m_RetargetThreads + createno;
+		curupdate->ClearFrameList();
+		curupdate->CreateThread((DWORD)(1 << createno));
+
+		curupdate->SetModel(this);
+	}
+
+	return 0;
+}
+
+int CModel::DestroyRetargetThreads()
+{
+
+	if (m_RetargetThreads) {
+		delete[] m_RetargetThreads;
+	}
+	m_RetargetThreads = 0;
+
+	return 0;
+}
+
+void CModel::WaitRetargetFinished()
+{
+	if (m_RetargetThreads != NULL) {
+
+		bool yetflag = true;
+		while (yetflag == true) {
+			int finishedcount = 0;
+			int updatecount;
+			for (updatecount = 0; updatecount < RETARGET_THREADSNUM; updatecount++) {
+				CThreadingRetarget* curupdate = m_RetargetThreads + updatecount;
+				if (curupdate->IsFinished()) {
+					finishedcount++;
+				}
+			}
+
+			if (finishedcount == RETARGET_THREADSNUM) {
+				yetflag = false;
+				return;
+			}
+			else {
+				//__nop();
+				//__nop();
+				//__nop();
+				//__nop();
+			}
+		}
+
+	}
+
+}
+
+int CModel::SetRetargetFrame(double srcstart, double srcend)
+{
+	if (!m_RetargetThreads) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	int updatecount;
+	for (updatecount = 0; updatecount < RETARGET_THREADSNUM; updatecount++) {
+		CThreadingRetarget* curupdate = m_RetargetThreads + updatecount;
+		curupdate->ClearFrameList();
+	}
+
+
+	double setframe;
+	int threadcount = 0;
+	for (setframe = RoundingTime(srcstart); setframe <= RoundingTime(srcend); setframe += 1.0) {
+		CThreadingRetarget* curupdate = m_RetargetThreads + threadcount;
+
+		curupdate->AddFramenoList(setframe);
+
+		threadcount++;
+		if (threadcount >= RETARGET_THREADSNUM) {
+			threadcount = 0;
+		}
+	}
+
+	return 0;
+}
+
+
 int CModel::CreateFKTraThreads()
 {
 
@@ -17809,33 +18031,61 @@ int CModel::SetCopyW2LWFrame(double srcstart, double srcend)
 }
 
 
+int CModel::InitMpFrame(bool limitdegflag, int srcmotid, double srcstartframe, double srcendframe)
+{
+	if (!GetTopBone(false)) {
+		return 0;
+	}
+
+	g_underInitMp = true;//!!!!!!!!!!!!!!!!!!
+	
+	MOTINFO* curmi = GetMotInfo(srcmotid);
+	if (curmi) {
+		double startframe = RoundingTime(srcstartframe);
+		double endframe = RoundingTime(srcendframe);
+		
+		
+		//double curframe;
+		//for (curframe = startframe; curframe <= endframe; curframe += 1.0) {
+		//	InitMPReq(limitdegflag, GetTopBone(false), srcmotid, curframe);
+		//}
+
+
+		//###################
+		//マルチスレッド処理
+		//###################
+		SetInitMpFrame(RoundingTime(startframe), RoundingTime(endframe));//2023/10/17
+		if (m_InitMpThreads) {
+			int updatecount;
+			for (updatecount = 0; updatecount < INITMP_THREADSNUM; updatecount++) {
+				CThreadingInitMp* curupdate = m_InitMpThreads + updatecount;
+				curupdate->InitMPReq(limitdegflag, GetTopBone(false), srcmotid);
+			}
+			WaitInitMpFinished();
+		}
+	}
+	
+	g_underInitMp = false;//!!!!!!!!!!!!!!!!!!
+	
+
+	return 0;
+}
 
 
 void CModel::InitMPReq(bool limitdegflag, CBone* curbone, int srcmotid, double curframe)
 {
-	if (!curbone) {
-		return;
-	}
-	if (GetNoBoneFlag() == true) {
-		return;
-	}
-
-	if (curbone->IsSkeleton()) {
-		InitMP(limitdegflag, curbone, srcmotid, curframe);
-	}
-
-	if (curbone->GetChild(false)) {
-		InitMPReq(limitdegflag, curbone->GetChild(false), srcmotid, curframe);
-	}
-	if (curbone->GetBrother(false)) {
-		InitMPReq(limitdegflag, curbone->GetBrother(false), srcmotid, curframe);
-	}
+	ChaCalcFunc chacalcfunc;
+	chacalcfunc.InitMPReq(this, limitdegflag, curbone, srcmotid, curframe);
 }
 
 
 
 int CModel::InitMP(bool limitdegflag, CBone* curbone, int srcmotid, double curframe)
 {
+	ChaCalcFunc chacalcfunc;
+	return chacalcfunc.InitMP(this, limitdegflag, curbone, srcmotid, curframe);
+
+
 	//CMotionPoint* pcurmp = 0;
 	//pcurmp = curbone->GetMotionPoint(GetCurMotInfo()->motid, curframe);
 
@@ -17916,29 +18166,8 @@ void CModel::GetRootOrReferenceReq(FbxNode* srcnode, FbxNode** dstppnode)
 
 void CModel::GetHipsBoneReq(CBone* srcbone, CBone** dstppbone)
 {
-
-	if (GetNoBoneFlag() == true) {
-		*dstppbone = 0;
-		return;
-	}
-
-
-	if (srcbone && dstppbone && !(*dstppbone)) {
-
-		if (srcbone->IsHipsBone()) {
-			*dstppbone = srcbone;
-			return;
-		}
-
-		if (!(*dstppbone)) {
-			if (srcbone->GetBrother(false)) {
-				GetHipsBoneReq(srcbone->GetBrother(false), dstppbone);
-			}
-			if (srcbone->GetChild(false)) {
-				GetHipsBoneReq(srcbone->GetChild(false), dstppbone);
-			}
-		}
-	}
+	ChaCalcFunc chacalcfunc;
+	chacalcfunc.GetHipsBoneReq(this, srcbone, dstppbone);
 }
 
 void CModel::CalcModelWorldMatOnLoad()
@@ -17964,36 +18193,13 @@ void CModel::CalcModelWorldMatOnLoad()
 
 CBone* CModel::GetTopBone(bool excludenullflag)//default : excludenullflag = true
 {
-	CBone* ptopbone = 0;
-	GetTopBoneReq(m_topbone, &ptopbone, excludenullflag);
-	return ptopbone;
+	ChaCalcFunc chacalcfunc;
+	return chacalcfunc.GetTopBone(this, excludenullflag);
 }
 void CModel::GetTopBoneReq(CBone* srcbone, CBone** pptopbone, bool excludenullflag)
 {
-	if (srcbone && pptopbone && !(*pptopbone)) {
-
-		if (excludenullflag == true) {
-			//if ((srcbone->IsSkeleton()) || (srcbone->GetType() == FBXBONE_ROOTNODE)) {
-			if (srcbone->IsSkeleton()) {//FBXBONE_ROOTNODEはここでは除外 　FBXBONE_ROOTNODEはGetRootNode()で取得するように
-				*pptopbone = srcbone;
-				return;
-			}
-		}
-		else {
-			*pptopbone = srcbone;
-			return;
-		}
-
-		if (!(*pptopbone)) {
-			if (srcbone->GetBrother(false)) {
-				GetTopBoneReq(srcbone->GetBrother(false), pptopbone, excludenullflag);
-			}
-			if (srcbone->GetChild(false))
-			{
-				GetTopBoneReq(srcbone->GetChild(false), pptopbone, excludenullflag);
-			}
-		}
-	}
+	ChaCalcFunc chacalcfunc;
+	chacalcfunc.GetTopBoneReq(this, srcbone, pptopbone, excludenullflag);
 }
 
 
@@ -18787,5 +18993,182 @@ int CModel::SetLaterTransparentVec(std::vector<std::wstring> srclatervec)
 //
 //}
 
+int CModel::Retarget(CModel* srcbvhmodel, ChaMatrix smatVP,
+	std::map<CBone*, CBone*>& sconvbonemap,
+	int (*srcAddMotionFunc)(const WCHAR* wfilename, double srcmotleng))
+{
+
+	//retargetは　unlimitedに対して行い　unlimitedにセットする
+	bool limitdegflag = false;
+
+	if (!srcbvhmodel || !srcAddMotionFunc) {
+		return 0;
+	}
+
+	g_underRetargetFlag = true;//!!!!!!!!!!!!
+
+	//MOTINFO* bvhmi = srcbvhmodel->GetMotInfoBegin()->second;
+	//if (!bvhmi) {
+	//	::MessageBox(NULL, L"motion of bvh is not found error.", L"error!!!", MB_OK);
+	//	g_underRetargetFlag = false;
+	//	return 1;
+	//}
+
+	//############################################################
+	//2023/08/14 : bvh側の全モーションに関してリターゲットループ
+	//############################################################
+	std::map<int, MOTINFO*>::iterator itrbvhmi;
+	for (itrbvhmi = srcbvhmodel->GetMotInfoBegin(); itrbvhmi != srcbvhmodel->GetMotInfoEnd(); itrbvhmi++) {
+		MOTINFO* bvhmi = itrbvhmi->second;
+		if (!bvhmi) {
+			//::MessageBox(NULL, L"motion of bvh is not found error.", L"error!!!", MB_OK);
+			//g_underRetargetFlag = false;
+			//return 1;
+			continue;
+		}
+
+		double motleng = bvhmi->frameleng;//2022/11/01
+		//double motleng = bvhmi->frameleng - 1.0;//2021/10/13
+		int bvhmotid = bvhmi->motid;//motion側のmotid
+		srcbvhmodel->SetCurrentMotion(bvhmotid);
+
+
+		//AddMotion内部でSetCurrentMotionされる
+		(srcAddMotionFunc)(0, motleng);//model側のaddmotion　model側のSetCurrentMotionもされる
+
+		//(srcInitCurMotionFunc)(0, 0);//CModel::AddMotionで初期化することにしたのでコメントアウト　2022/08/28
+
+
+		MOTINFO* modelmi = GetCurMotInfo();
+		CBone* modelbone;
+		if (modelmi) {
+			CBone* modeltopbone = GetTopBone();
+			CBone* modelhipsbone = 0;
+			if (!modeltopbone) {
+				::MessageBox(NULL, L"modelside bone is not found error.", L"error!!!", MB_OK);
+				g_underRetargetFlag = false;
+				return 1;
+			}
+			else {
+				GetHipsBoneReq(modeltopbone, &modelhipsbone);
+				if (modelhipsbone) {
+					modelbone = modelhipsbone;
+				}
+				else {
+					modelbone = modeltopbone;
+				}
+			}
+			//modelbone = srcmodel->GetTopBone();
+		}
+		else {
+			::MessageBox(NULL, L"modelside motion is not found error.", L"error!!!", MB_OK);
+			g_underRetargetFlag = false;
+			return 1;
+		}
+
+
+		CBone* bvhtopbone = 0;
+		CBone* bvhhipsbone = 0;
+		CBone* befbvhbone = 0;
+		bvhtopbone = srcbvhmodel->GetTopBone();
+		if (bvhtopbone) {
+			srcbvhmodel->GetHipsBoneReq(bvhtopbone, &bvhhipsbone);
+			if (bvhhipsbone) {
+				befbvhbone = bvhhipsbone;
+			}
+			else {
+				befbvhbone = bvhtopbone;
+			}
+		}
+		else {
+			::MessageBox(NULL, L"bvhside motion is not found error.", L"error!!!", MB_OK);
+			g_underRetargetFlag = false;
+			return 1;
+		}
+
+
+		HINFO bvhhi;
+		bvhhi.minh = 1e7;
+		bvhhi.maxh = -1e7;
+		bvhhi.height = 0.0f;
+		srcbvhmodel->SetFirstFrameBonePos(&bvhhi, befbvhbone);//hips指定
+
+		HINFO modelhi;
+		modelhi.minh = 1e7;
+		modelhi.maxh = -1e7;
+		modelhi.height = 0.0f;
+		SetFirstFrameBonePos(&modelhi, modelbone);//hips指定
+
+		float hrate;
+		if (bvhhi.height != 0.0f) {
+			hrate = modelhi.height / bvhhi.height;
+		}
+		else {
+			//hrate = 0.0f;
+			hrate = 1.0f;
+			_ASSERT(0);
+		}
+
+		//2023/02/08
+		if (fabs(hrate) <= 0.0001f) {
+			hrate = 1.0f;
+		}
+
+
+
+		////リターゲットマルチスレッド計算 2023/10/23
+		SetRetargetFrame(1.0, RoundingTime(motleng - 1.0));
+		if (m_RetargetThreads) {
+			int updatecount;
+			for (updatecount = 0; updatecount < RETARGET_THREADSNUM; updatecount++) {
+				CThreadingRetarget* curupdate = m_RetargetThreads + updatecount;
+		
+				curupdate->RetargetReqOne(limitdegflag, this, srcbvhmodel, modelbone,
+					bvhtopbone, hrate, sconvbonemap);
+			}
+			WaitRetargetFinished();
+		}
+
+
+		//double frame;
+		//////for (frame = 0.0; frame < motleng; frame += 1.0) {
+		//for (frame = 1.0; frame < motleng; frame += 1.0) {//2023/03/27 : 0フレームはInitMPの姿勢のままにする
+		//	if (modelbone) {
+		//		if (bvhtopbone) {
+		//			ChaCalcFunc chacalcfunc;
+		//			chacalcfunc.RetargetReq(this, srcbvhmodel, modelbone, frame, bvhtopbone, hrate, sconvbonemap);
+		//		}
+		//	}
+		//}
+
+
+		//###############################
+		// マルチスレッドの後処理
+		//前フレーム考慮のオイラー角計算
+		//###############################
+		if (modelmi) {
+			g_underRetargetFlag = false;//!!!!!!!!!!!!
+			CalcBoneEul(limitdegflag, modelmi->motid);
+			g_underRetargetFlag = true;//!!!!!!!!!!!!
+		}
+		
+
+		ChaMatrix tmpwm = GetWorldMat();
+		UpdateMatrix(limitdegflag, &tmpwm, &smatVP);
+
+
+	}
+
+
+	g_underRetargetFlag = false;//!!!!!!!!!!!!
+
+	//if (!g_retargetbatchflag) {
+	if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
+		::MessageBox(NULL, L"Finish of convertion.", L"check!!!", MB_OK);
+	}
+
+	return 0;
+
+}
 
 

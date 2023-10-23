@@ -215,7 +215,6 @@
     <ClCompile Include="..\CPP\OrgWindow.cpp" />
     <ClCompile Include="..\CPP\polymesh3.cpp" />
     <ClCompile Include="..\CPP\polymesh4.cpp" />
-    <ClCompile Include="..\CPP\Retarget.cpp" />
     <ClCompile Include="..\CPP\RetargetFile.cpp" />
     <ClCompile Include="..\CPP\RigFile.cpp" />
     <ClCompile Include="..\CPP\RigidElem.cpp" />
@@ -234,8 +233,10 @@
     <ClCompile Include="..\CPP\ThreadingCalcEul.cpp" />
     <ClCompile Include="..\CPP\ThreadingCopyW2LW.cpp" />
     <ClCompile Include="..\CPP\ThreadingFKTra.cpp" />
+    <ClCompile Include="..\CPP\ThreadingInitMp.cpp" />
     <ClCompile Include="..\CPP\ThreadingLoadFbx.cpp" />
     <ClCompile Include="..\CPP\ThreadingPostIK.cpp" />
+    <ClCompile Include="..\CPP\ThreadingRetarget.cpp" />
     <ClCompile Include="..\CPP\ThreadingUpdateMatrix.cpp" />
     <ClCompile Include="..\CPP\ThreadingUpdateTimeline.cpp" />
     <ClCompile Include="..\CPP\UndoMotion.cpp" />
@@ -597,7 +598,6 @@
     <ClInclude Include="..\INCLUDE\OrgWindow.h" />
     <ClInclude Include="..\INCLUDE\polymesh3.h" />
     <ClInclude Include="..\INCLUDE\polymesh4.h" />
-    <ClInclude Include="..\INCLUDE\Retarget.h" />
     <ClInclude Include="..\INCLUDE\RetargetFile.h" />
     <ClInclude Include="..\INCLUDE\RigFile.h" />
     <ClInclude Include="..\INCLUDE\RigidElem.h" />
@@ -609,8 +609,10 @@
     <ClInclude Include="..\INCLUDE\ThreadingCalcEul.h" />
     <ClInclude Include="..\INCLUDE\ThreadingCopyW2LW.h" />
     <ClInclude Include="..\INCLUDE\ThreadingFKTra.h" />
+    <ClInclude Include="..\INCLUDE\ThreadingInitMp.h" />
     <ClInclude Include="..\INCLUDE\ThreadingLoadFbx.h" />
     <ClInclude Include="..\INCLUDE\ThreadingPostIK.h" />
+    <ClInclude Include="..\INCLUDE\ThreadingRetarget.h" />
     <ClInclude Include="..\INCLUDE\ThreadingUpdateMatrix.h" />
     <ClInclude Include="..\INCLUDE\ThreadingUpdateTimeline.h" />
     <ClInclude Include="..\INCLUDE\UndoMotion.h" />

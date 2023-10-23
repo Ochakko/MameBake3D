@@ -1568,6 +1568,17 @@ public: //accesser
 		}
 	}
 
+	void SetFirstGetMatrix(ChaMatrix srcmat)
+	{
+		m_firstgetflag = 1;
+		m_firstgetmatrix = srcmat;
+	}
+	void SetInvFirstGetMatrix(ChaMatrix srcmat)
+	{
+		m_firstgetflag = 1;
+		m_invfirstgetmatrix = srcmat;
+	}
+
 
 private:
 	CRITICAL_SECTION m_CritSection_GetBefNext;

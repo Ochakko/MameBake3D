@@ -174,9 +174,6 @@
     <ClCompile Include="..\BTMANAGER\BPWorld.cpp">
       <Filter>BulletWorld</Filter>
     </ClCompile>
-    <ClCompile Include="..\CPP\Retarget.cpp">
-      <Filter>disp4</Filter>
-    </ClCompile>
     <ClCompile Include="..\CPP\ThreadingBase.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
@@ -241,6 +238,12 @@
       <Filter>disp4</Filter>
     </ClCompile>
     <ClCompile Include="..\CPP\ThreadingCopyW2LW.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CPP\ThreadingRetarget.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\CPP\ThreadingInitMp.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1286,9 +1289,6 @@
     <ClInclude Include="..\INCLUDE\MNLFile.h">
       <Filter>disp4</Filter>
     </ClInclude>
-    <ClInclude Include="..\INCLUDE\Retarget.h">
-      <Filter>disp4</Filter>
-    </ClInclude>
     <ClInclude Include="..\INCLUDE\ThreadingBase.h">
       <Filter>disp4</Filter>
     </ClInclude>
@@ -1347,6 +1347,12 @@
       <Filter>disp4</Filter>
     </ClInclude>
     <ClInclude Include="..\INCLUDE\ThreadingCopyW2LW.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\ThreadingRetarget.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\ThreadingInitMp.h">
       <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>

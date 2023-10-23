@@ -40,6 +40,8 @@ class CThreadingPostIK;
 class CThreadingCalcEul;
 class CThreadingFKTra;
 class CThreadingCopyW2LW;
+class CThreadingRetarget;
+class CThreadingInitMp;
 class CNodeOnLoad;
 
 typedef struct funcmpparams
@@ -881,6 +883,16 @@ public:
 	void WaitPostIKFinished();
 	int SetPostIKFrame(double srcstart, double srcend);
 
+	int CreateInitMpThreads();
+	int DestroyInitMpThreads();
+	void WaitInitMpFinished();
+	int SetInitMpFrame(double srcstart, double srcend);
+
+	int CreateRetargetThreads();
+	int DestroyRetargetThreads();
+	void WaitRetargetFinished();
+	int SetRetargetFrame(double srcstart, double srcend);
+
 	int CreateFKTraThreads();
 	int DestroyFKTraThreads();
 	void WaitFKTraFinished();
@@ -900,6 +912,7 @@ public:
 
 	//int GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread = false);//CThreadingLoadFbxからも呼ぶ CBoneに移動
 
+	int InitMpFrame(bool limitdegflag, int srcmotid, double srcstartframe, double srcendframe);
 	void InitMPReq(bool limitdegflag, CBone* curbone, int srcmotid, double curframe);
 	int InitMP(bool limitdegflag, CBone* curbone, int srcmotid, double curframe);
 
@@ -941,6 +954,10 @@ public:
 
 	int SetBefEditMat(bool limitdegflag, CEditRange* erptr, CBone* curbone, int maxlevel);
 	int SetBefEditMatFK(bool limitdegflag, CEditRange* erptr, CBone* curbone);
+
+	int Retarget(CModel* srcbvhmodel, ChaMatrix smatVP,
+		std::map<CBone*, CBone*>& sconvbonemap,
+		int (*srcAddMotionFunc)(const WCHAR* wfilename, double srcmotleng));
 
 private:
 	int InitParams();
@@ -1355,7 +1372,10 @@ public: //accesser
 	};
 
 
-
+	CBone* DirectGetTopBone()
+	{
+		return m_topbone;
+	}
 	CBone* GetTopBone(bool excludenullflag = true);
 	void GetTopBoneReq(CBone* srcbone, CBone** pptopbone, bool excludenullflag = true);
 	//CBone* GetTopBone() {
@@ -2132,6 +2152,8 @@ private:
 	CThreadingCalcEul* m_CalcEulThreads;
 	CThreadingFKTra* m_FKTraThreads;
 	CThreadingCopyW2LW* m_CopyW2LWThreads;
+	CThreadingRetarget* m_RetargetThreads;
+	CThreadingInitMp* m_InitMpThreads;
 	int m_creatednum_boneupdatematrix;//スレッド数の変化に対応。作成済の数。処理用。
 	int m_creatednum_loadfbxanim;//スレッド数の変化に対応。作成済の数。処理用。
 
