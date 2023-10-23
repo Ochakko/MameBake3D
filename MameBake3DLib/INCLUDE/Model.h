@@ -1281,6 +1281,8 @@ public: //accesser
 	//_Jointが付いている名前と付いていない名前の両方を検索
 	//#####################################################
 	CBone* FindBoneByName(std::string srcname) {//名前完全一致
+		bool srcwithsufix = false;
+
 		char bonename[256] = { 0 };
 		char bonename1[256];//_Joint有り
 		char bonename2[256];//_Joint無し
@@ -1288,10 +1290,14 @@ public: //accesser
 		strcpy_s(bonename, 256, srcname.c_str());
 		char* jointnameptr = strstr(bonename, "_Joint");
 		if (!jointnameptr) {
+			srcwithsufix = false;
+
 			sprintf_s(bonename1, 256, "%s_Joint", bonename);
 			strcpy_s(bonename2, 256, bonename);
 		}
 		else {
+			srcwithsufix = true;
+
 			strcpy_s(bonename1, 256, bonename);
 			strcpy_s(bonename2, 256, bonename);
 			int headleng = (int)(jointnameptr - bonename);
@@ -1299,9 +1305,19 @@ public: //accesser
 		}
 
 		CBone* retbone = 0;
-		retbone = GetBoneByName(bonename1);
-		if (!retbone) {
+
+		//2023/10/23 srcnameに一致する方を先に調べることで速くなる可能性
+		if (srcwithsufix == false) {
 			retbone = GetBoneByName(bonename2);
+			if (!retbone) {
+				retbone = GetBoneByName(bonename1);
+			}
+		}
+		else {
+			retbone = GetBoneByName(bonename1);
+			if (!retbone) {
+				retbone = GetBoneByName(bonename2);
+			}
 		}
 
 		return retbone;

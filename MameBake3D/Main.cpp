@@ -12215,17 +12215,17 @@ int RetargetFile(char* fbxpath)
 				//ノイズによって　180度裏返り機能の閾値を越えないようにする
 				//##############################################################################
 				s_model = newmodel;
-
+			
 				int saveFilterState = s_filterState;
 				double savestart = s_buttonselectstart;
 				double saveend = s_buttonselectend;
-
+			
 				s_filterState = 1;
 				s_buttonselectstart = 1.0;
 				s_buttonselectend = newmodel->GetCurMotInfo()->frameleng - 1.0;
-
+			
 				FilterNoDlg(false);
-
+			
 				s_filterState = saveFilterState;
 				s_buttonselectstart = savestart;
 				s_buttonselectend = saveend;
@@ -12342,7 +12342,9 @@ int RetargetBatch()
 
 
 	s_savelimitdegflag = g_limitdegflag;
-	ChangeLimitDegFlag(false, true, true);
+	//ChangeLimitDegFlag(false, true, true);//2023/10/23 1.2.0.27_RC2にて　コメントアウト
+	
+	
 	//g_limitdegflag = false;
 	//if (s_LimitDegCheckBox) {
 	//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -12418,7 +12420,9 @@ int RetargetBatch()
 			if (curlpidl)
 				CoTaskMemFree(curlpidl);
 
-			ChangeLimitDegFlag(s_savelimitdegflag, true, true);
+			//ChangeLimitDegFlag(s_savelimitdegflag, true, true);//2023/10/23 1.2.0.27_RC2にて　コメントアウト
+
+
 			//g_limitdegflag = s_savelimitdegflag;
 			//if (s_LimitDegCheckBox) {
 			//	s_LimitDegCheckBox->SetChecked(g_limitdegflag);
@@ -31442,12 +31446,12 @@ int OnFrameToolWnd()
 			HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 			s_savelimitdegflag = g_limitdegflag;
-			ChangeLimitDegFlag(false, true, true);
+			//ChangeLimitDegFlag(false, true, true);//2023/10/23　1.2.0.27_RC2にて コメントアウト
 			s_saveretargetmodel = s_curmodelmenuindex;//終了時にOnModelMenuを呼ぶために保存
 
 			RetargetMotion();
 
-			ChangeLimitDegFlag(s_savelimitdegflag, true, true);
+			//ChangeLimitDegFlag(s_savelimitdegflag, true, true);//2023/10/23　1.2.0.27_RC2にて コメントアウト
 			OnModelMenu(true, s_saveretargetmodel, 1);
 
 			if (oldcursor) {
@@ -32172,7 +32176,7 @@ int OnFrameBatchThread()
 
 
 		//2023/02/15
-		ChangeLimitDegFlag(s_savelimitdegflag, true, true);
+		//ChangeLimitDegFlag(s_savelimitdegflag, true, true);//2023/10/23 1.2.0.27_RC2にて　コメントアウト
 		OnModelMenu(true, s_saveretargetmodel, 1);
 	}
 
