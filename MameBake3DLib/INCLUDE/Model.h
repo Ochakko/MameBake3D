@@ -350,7 +350,7 @@ public:
 	void CopyWorldToLimitedWorldReq(CBone* srcbone, int srcmotid, double srcframe);
 	void CopyLimitedWorldToWorldReq(CBone* srcbone, int srcmotid, double srcframe);
 	int CopyLimitedWorldToWorldOne(CBone* srcbone, int srcmotid, double srcframe);
-	void ApplyNewLimitsToWMReq(CBone* srcbone, int srcmotid, double srcframe);
+	void ApplyNewLimitsToWMReq(CBone* srcbone, int srcmotid, double srcframe, ChaMatrix befeditparentmat);
 
 	void WaitUpdateMatrixFinished();
 	//void CalcWorldMatAfterThreadReq(CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
@@ -807,7 +807,7 @@ public:
 	int ResetBt();
 
 	int InitUndoMotion( int saveflag );
-	int SaveUndoMotion(bool limitdegflag, int curboneno, int curbaseno,
+	int SaveUndoMotion(bool LimitDegCheckBoxFlag, bool limitdegflag, int curboneno, int curbaseno,
 		CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate, bool allframeflag);
 	int RollBackUndoMotion(bool limitdegflag, HWND hmainwnd, int redoflag, 
 		int* curboneno, int* curbaseno, 

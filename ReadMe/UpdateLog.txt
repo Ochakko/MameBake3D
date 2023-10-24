@@ -4,6 +4,9 @@
 	RC2 : Retarget高速化(LimitEul自動オフと復元をやめ)
 	RC3 : TestフォルダのBoySportyとAutumnモデルの制限角度ファイル(*.lmt)更新
 	RC4 : ApplyNewLimitsToWMの再帰処理を最適化して高速化　影響度の計算し直しが関わる部分で大きく高速化
+	RC5 : RC4のリファクタリング
+	            LimitEulボタンオンオフ時にはモーション部分のアンドゥーをしないように
+	            
 
 
     １８０度以上のIK操作が出来るように

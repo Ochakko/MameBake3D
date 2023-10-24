@@ -863,10 +863,13 @@ int CBone::CopyWorldToLimitedWorld(int srcmotid, double srcframe)//制限角度�
 }
 
 
-int CBone::ApplyNewLimitsToWM(int srcmotid, double srcframe)
+int CBone::ApplyNewLimitsToWM(int srcmotid, double srcframe, ChaMatrix befeditparentmat)
 {
 	//2023/02/03
 	//この関数を実行する前に　limitedworldmatにworldmatをコピーしておく
+
+	ChaMatrix curwm;
+	curwm.SetIdentity();
 
 	double roundingframe = RoundingTime(srcframe);
 
@@ -876,50 +879,42 @@ int CBone::ApplyNewLimitsToWM(int srcmotid, double srcframe)
 	}
 
 
-	ChaMatrix curwm;
-	curwm.SetIdentity();
-
 	CMotionPoint* curmp;
 	curmp = GetMotionPoint(srcmotid, roundingframe);
 	if (curmp) {
 		
 		//2023/02/03 LimitEulにチェックが入っていない場合にも　limitedに対して操作
-		bool limitdegflag = true;
+		bool limitdegflag = true;//!!!!!!!!!!!!!
+
 		curwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
+
 		bool directsetflag = false;
 		int infooutflag = 0;
 
 
 		//2023/10/24
+		// 
 		//int setchildflag = 1;//<-- 必須 RootNodeの回転を絞り込めば分かる <--- 2023/10/24コメントアウト
+		// 
 		//この関数はCBone単体呼び出しでは使わない　RootのBoneから再帰的に全てのボーンに対して呼び出すはず　よってこのフラグを０にして高速化
 		//setchildflag = 0で正しく動かすには　１階層ごとにbefeditmatと新しいwmを考慮
-		int setchildflag = 0;
-		curmp->SetBefEditMat(curwm);
-		ChaMatrix parentbefeditmat;
+		//
+		int setchildflag = 0;//!!!!!!!!!!!!!
 		ChaMatrix parentmat;
 		if (GetParent(false)) {
 			CMotionPoint* parentmp = GetParent(false)->GetMotionPoint(srcmotid, roundingframe);
 			if (parentmp) {
-				parentbefeditmat = parentmp->GetBefEditMat();
 				parentmat = parentmp->GetLimitedWM();
+				curwm = curwm * ChaMatrixInv(befeditparentmat) * parentmat;
 
-				curwm = curwm * ChaMatrixInv(parentbefeditmat) * parentmat;
+				curmp->SetLimitedWM(curwm);//SetWorldMatから呼び出すCalcLocalEulXYZ()のために　新しいparentwmを反映したwmをセットしておく
 			}
-			else {
-				parentbefeditmat.SetIdentity();
-				parentmat.SetIdentity();
-			}
-		}
-		else {
-			parentbefeditmat.SetIdentity();
-			parentmat.SetIdentity();
 		}
 
 		int onlycheck = 0;
 		bool fromiktarget = false;
 		
-		SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, curwm, onlycheck, fromiktarget, &parentbefeditmat);
+		SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, curwm, onlycheck, fromiktarget);
 		
 		//curmp->SetLimitedWM(newwm);
 		//curmp->SetLimitedLocalEul(neweul);
@@ -4947,12 +4942,12 @@ ChaVector3 CBone::GetLocalEul(bool limitdegflag, int srcmotid, double srcframe, 
 
 int CBone::SetWorldMat(bool limitdegflag, bool directsetflag, 
 	bool infooutflag, int setchildflag, 
-	int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget, ChaMatrix* parentbefeditmat)
+	int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget)
 {
 	ChaCalcFunc chacalcfunc;
 	return chacalcfunc.SetWorldMat(this, limitdegflag, directsetflag,
 		infooutflag, setchildflag,
-		srcmotid, srcframe, srcmat, onlycheck, fromiktarget, parentbefeditmat);
+		srcmotid, srcframe, srcmat, onlycheck, fromiktarget);
 }
 
 int CBone::ChkMovableEul(ChaVector3 srceul)

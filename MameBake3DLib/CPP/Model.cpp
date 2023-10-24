@@ -2453,23 +2453,30 @@ void CModel::CopyWorldToLimitedWorldReq(CBone* srcbone, int srcmotid, double src
 }
 
 
-void CModel::ApplyNewLimitsToWMReq(CBone* srcbone, int srcmotid, double srcframe)
+void CModel::ApplyNewLimitsToWMReq(CBone* srcbone, int srcmotid, double srcframe, ChaMatrix befeditparentmat)
 {
 
 	//2023/02/03
 	//この関数を実行する前に　CopyWorldToLimitedWorldを実行しておく
 
+	double roundingframe = RoundingTime(srcframe);
+
 	if (srcbone) {
+		ChaMatrix befeditcurrentwm;
+		befeditcurrentwm.SetIdentity();
 
 		if (srcbone->IsSkeleton()) {
-			srcbone->ApplyNewLimitsToWM(srcmotid, srcframe);
+			bool limitdegflag = true;//!!!
+			befeditcurrentwm = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+
+			srcbone->ApplyNewLimitsToWM(srcmotid, roundingframe, befeditparentmat);
 		}
 
 		if (srcbone->GetChild(false)) {
-			ApplyNewLimitsToWMReq(srcbone->GetChild(false), srcmotid, srcframe);
+			ApplyNewLimitsToWMReq(srcbone->GetChild(false), srcmotid, roundingframe, befeditcurrentwm);
 		}
 		if (srcbone->GetBrother(false)) {
-			ApplyNewLimitsToWMReq(srcbone->GetBrother(false), srcmotid, srcframe);
+			ApplyNewLimitsToWMReq(srcbone->GetBrother(false), srcmotid, roundingframe, befeditparentmat);
 		}
 	}
 }
@@ -15691,7 +15698,7 @@ int CModel::InitUndoMotion( int saveflag )
 	return 0;
 }
 
-int CModel::SaveUndoMotion(bool limitdegflag, int curboneno, int curbaseno, CEditRange* srcer,
+int CModel::SaveUndoMotion(bool LimitDegCheckBoxFlag, bool limitdegflag, int curboneno, int curbaseno, CEditRange* srcer,
 	double srcapplyrate, BRUSHSTATE srcbrushstate, bool allframeflag)
 {
 	//saveによって次回のundo位置は変わる
@@ -15705,7 +15712,9 @@ int CModel::SaveUndoMotion(bool limitdegflag, int curboneno, int curbaseno, CEdi
 	int saveundoid = m_undo_writepoint;
 	m_undo_writepoint = GetNewUndoID();
 
-	int result = m_undomotion[m_undo_writepoint].SaveUndoMotion(limitdegflag, this, 
+
+	//2023/10/27 1.2.0.27 RC5 : LimitDegCheckBoxFlag == true時　つまり　LimitEulボタンのオンオフ時はモーションの保存をスキップ
+	int result = m_undomotion[m_undo_writepoint].SaveUndoMotion(LimitDegCheckBoxFlag, limitdegflag, this,
 		curboneno, curbaseno, srcer, srcapplyrate, srcbrushstate, allframeflag);
 	if (result == 1) {//result == 2はエラーにしない
 		_ASSERT(0);

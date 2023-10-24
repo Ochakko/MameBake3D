@@ -1,4 +1,4 @@
-#ifndef BONEH
+ï»¿#ifndef BONEH
 #define BONEH
 
 //class ID3D11Device;
@@ -36,8 +36,8 @@ typedef struct tag_ikrotrec
 	ChaVector3 targetpos;
 	CQuaternion rotq;
 
-	//rotq‚Ì‰ñ“]Šp“x‚ª1e-4‚æ‚è¬‚³‚¢ê‡‚Étrue. 
-	//ƒEƒFƒCƒg‚ª¬‚³‚¢ƒtƒŒ[ƒ€‚É‚¨‚¢‚Ä‚à@IKTarget‚ª‘–‚é‚æ‚¤‚É‹L˜^‚·‚é•K—v‚ª‚ ‚é
+	//rotqã®å›è»¢è§’åº¦ãŒ1e-4ã‚ˆã‚Šå°ã•ã„å ´åˆã«true. 
+	//ã‚¦ã‚§ã‚¤ãƒˆãŒå°ã•ã„ãƒ•ãƒ¬ãƒ¼ãƒ ã«ãŠã„ã¦ã‚‚ã€€IKTargetãŒèµ°ã‚‹ã‚ˆã†ã«è¨˜éŒ²ã™ã‚‹å¿…è¦ãŒã‚ã‚‹
 	bool lessthanthflag;
 
 	ChaMatrix applyframemat;
@@ -68,9 +68,9 @@ public:
 	static void DestroyColDisp();
 
 
-	ChaVector3 m_btparentpos;//Motion2Bt‚Ìƒ{[ƒ“‚ÌˆÊ’u(„‘Ìs—ñŒvZ—p)
-	ChaVector3 m_btchildpos;//Motion2Bt‚Ìƒ{[ƒ“‚ÌˆÊ’u(„‘Ìs—ñŒvZ—p)
-	ChaMatrix m_btdiffmat;//Motion2Bt‚Ìbtmat‚Ì•Ï‰»•ª(„‘Ìs—ñŒvZ—p)
+	ChaVector3 m_btparentpos;//Motion2Btæ™‚ã®ãƒœãƒ¼ãƒ³ã®ä½ç½®(å‰›ä½“è¡Œåˆ—è¨ˆç®—ç”¨)
+	ChaVector3 m_btchildpos;//Motion2Btæ™‚ã®ãƒœãƒ¼ãƒ³ã®ä½ç½®(å‰›ä½“è¡Œåˆ—è¨ˆç®—ç”¨)
+	ChaMatrix m_btdiffmat;//Motion2Btæ™‚ã®btmatã®å¤‰åŒ–åˆ†(å‰›ä½“è¡Œåˆ—è¨ˆç®—ç”¨)
 
 
 	CBone() {
@@ -82,50 +82,50 @@ public:
 /**
  * @fn
  * CBone
- * @breaf CBone‚ÌƒRƒ“ƒXƒgƒ‰ƒNƒ^B
- * @param (CModel* parmodel) IN eƒ{[ƒ“‚Ö‚Ìƒ|ƒCƒ“ƒ^‚ğw’è‚·‚éB
- * @return ‚È‚µB
+ * @breaf CBoneã®ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã€‚
+ * @param (CModel* parmodel) IN è¦ªãƒœãƒ¼ãƒ³ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return ãªã—ã€‚
  */
 	CBone( CModel* parmodel );
 
 /**
  * @fn
  * ~CBone
- * @breaf CBone‚ÌƒfƒXƒgƒ‰ƒNƒ^B
- * @return ‚È‚µB
+ * @breaf CBoneã®ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã€‚
+ * @return ãªã—ã€‚
  */
 	~CBone();
 
 /**
  * @fn 
  * SetName
- * @breaf ƒ{[ƒ“‚Ì–¼‘O‚ğİ’è‚·‚éB
- * @param (char* srcname) IN İ’è‚µ‚½‚¢ƒ{[ƒ“‚Ì–¼‘O‚ğw’è‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail char‚Ìƒ{[ƒ“‚Ì–¼‘O‚ÍWCHAR‚É•ÏŠ·‚³‚ê‚Äƒ{[ƒ“‚ÌUNICODE–¼‚àƒZƒbƒg‚³‚ê‚éB
+ * @breaf ãƒœãƒ¼ãƒ³ã®åå‰ã‚’è¨­å®šã™ã‚‹ã€‚
+ * @param (char* srcname) IN è¨­å®šã—ãŸã„ãƒœãƒ¼ãƒ³ã®åå‰ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail charã®ãƒœãƒ¼ãƒ³ã®åå‰ã¯WCHARã«å¤‰æ›ã•ã‚Œã¦ãƒœãƒ¼ãƒ³ã®UNICODEåã‚‚ã‚»ãƒƒãƒˆã•ã‚Œã‚‹ã€‚
  */
 	int SetName( const char* srcname );
 
 /**
  * @fn 
  * AddChild
- * @breaf ƒ{[ƒ“‚ÌŠK‘w\‘¢‚ğİ’è‚·‚éB
- * @param (CBone* childptr) IN q‹Ÿ‚É‚·‚éCBone‚Ìƒ|ƒCƒ“ƒ^‚ğw’è‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail q‹Ÿ‚ğw’è‚·‚é‚±‚Æ‚ÅŠK‘w‚ğİ’è‚·‚éBq‹Ÿ‚¾‚¯‚Å‚È‚­’í‚âq‹Ÿ‚Ìe‚Ìİ’è‚à‚·‚éB
+ * @breaf ãƒœãƒ¼ãƒ³ã®éšå±¤æ§‹é€ ã‚’è¨­å®šã™ã‚‹ã€‚
+ * @param (CBone* childptr) IN å­ä¾›ã«ã™ã‚‹CBoneã®ãƒã‚¤ãƒ³ã‚¿ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail å­ä¾›ã‚’æŒ‡å®šã™ã‚‹ã“ã¨ã§éšå±¤ã‚’è¨­å®šã™ã‚‹ã€‚å­ä¾›ã ã‘ã§ãªãå¼Ÿã‚„å­ä¾›ã®è¦ªã®è¨­å®šã‚‚ã™ã‚‹ã€‚
  */
 	int AddChild( CBone* childptr );
 
 /**
  * @fn 
  * UpdateMatrix
- * @breaf ƒ{[ƒ“‚ÌŒ»İ‚Ìp¨‚ğŒvZ‚·‚éB
- * @param (int srcmotid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (double srcframe) IN ƒ‚[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€iŠÔj‚ğw’è‚·‚éB
- * @param (ChaMatrix* wmat) IN ƒ[ƒ‹ƒhÀ•WŒn‚Ì•ÏŠ·s—ñ‚ğw’è‚·‚éB
- * @param (ChaMatrix* vpmat) IN ƒJƒƒ‰ƒvƒƒWƒFƒNƒVƒ‡ƒ“À•WŒn‚Ì•ÏŠ·s—ñ‚ğw’è‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail w’èƒ‚[ƒVƒ‡ƒ“‚Ìw’èŠÔ‚Ìp¨‚ğŒvZ‚·‚éBƒOƒ[ƒoƒ‹‚Èp¨‚ÌŒvZ‚Å‚ ‚éB
+ * @breaf ãƒœãƒ¼ãƒ³ã®ç¾åœ¨ã®å§¿å‹¢ã‚’è¨ˆç®—ã™ã‚‹ã€‚
+ * @param (int srcmotid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double srcframe) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ¬ãƒ¼ãƒ ï¼ˆæ™‚é–“ï¼‰ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (ChaMatrix* wmat) IN ãƒ¯ãƒ¼ãƒ«ãƒ‰åº§æ¨™ç³»ã®å¤‰æ›è¡Œåˆ—ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (ChaMatrix* vpmat) IN ã‚«ãƒ¡ãƒ©ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ã‚·ãƒ§ãƒ³åº§æ¨™ç³»ã®å¤‰æ›è¡Œåˆ—ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail æŒ‡å®šãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®æŒ‡å®šæ™‚é–“ã®å§¿å‹¢ã‚’è¨ˆç®—ã™ã‚‹ã€‚ã‚°ãƒ­ãƒ¼ãƒãƒ«ãªå§¿å‹¢ã®è¨ˆç®—ã§ã‚ã‚‹ã€‚
  */
 	int UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, bool callingbythread = false);
 	//int SwapCurrentMotionPoint();
@@ -144,12 +144,12 @@ public:
 /**
  * @fn
  * AddMotionPoint
- * @breaf w’èƒ‚[ƒVƒ‡ƒ“‚Ìw’èŠÔ‚ÉMotionPoint‚ğ’Ç‰Á‚·‚éB
- * @param (int srcmotid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (double srcframe) IN ƒ‚[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€iŠÔj‚ğw’è‚·‚éB
- * @param (int* existptr) OUT ’Ç‰Á‚·‚é‘O‚©‚çMotionPoint‚ª‘¶İ‚µ‚Ä‚¢‚½‚ç‚P‚ªƒZƒbƒg‚³‚ê‚éA‚»‚êˆÈŠO‚Ìê‡‚Í‚O‚ªƒZƒbƒg‚³‚ê‚éB
- * @return ¬Œ÷‚µ‚½‚ç’Ç‰Á‚µ‚½CMotionPoint‚Ìƒ|ƒCƒ“ƒ^A¸”s‚Í‚OB
- * @detail ’Ç‰Á‚µ‚½MotionPoint‚Ìp¨‚ÍIdentityó‘Ô‚Å‚ ‚éB
+ * @breaf æŒ‡å®šãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®æŒ‡å®šæ™‚é–“ã«MotionPointã‚’è¿½åŠ ã™ã‚‹ã€‚
+ * @param (int srcmotid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double srcframe) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ¬ãƒ¼ãƒ ï¼ˆæ™‚é–“ï¼‰ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int* existptr) OUT è¿½åŠ ã™ã‚‹å‰ã‹ã‚‰MotionPointãŒå­˜åœ¨ã—ã¦ã„ãŸã‚‰ï¼‘ãŒã‚»ãƒƒãƒˆã•ã‚Œã‚‹ã€ãã‚Œä»¥å¤–ã®å ´åˆã¯ï¼ãŒã‚»ãƒƒãƒˆã•ã‚Œã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰è¿½åŠ ã—ãŸCMotionPointã®ãƒã‚¤ãƒ³ã‚¿ã€å¤±æ•—æ™‚ã¯ï¼ã€‚
+ * @detail è¿½åŠ ã—ãŸMotionPointã®å§¿å‹¢ã¯IdentityçŠ¶æ…‹ã§ã‚ã‚‹ã€‚
  */
 	CMotionPoint* AddMotionPoint( int srcmotid, double srcframe, int* existptr );
 
@@ -157,101 +157,101 @@ public:
 /**
  * @fn
  * CalcFBXMotion
- * @breaf w’èƒ‚[ƒVƒ‡ƒ“‚Ìw’èŠÔ‚Ìƒ|[ƒY(CMotionPoint)‚ğŒvZ‚·‚éB
- * @param (int srcmotid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (double srcframe) IN ƒ‚[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€(ŠÔ)‚ğw’è‚·‚éB
- * @param (CMotionPoint* dstmpptr) OUT ŒvZ‚µ‚½p¨‚ªƒZƒbƒg‚³‚ê‚éB
- * @param (int* existptr) OUT w’èŠÔ‚¿‚å‚¤‚Ç‚Ìƒf[ƒ^‚ª‚ ‚ê‚Î‚PA‚È‚¯‚ê‚Î‚OB–³‚¢ê‡‚Í‘OŒã‚©‚çŒvZ‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf æŒ‡å®šãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®æŒ‡å®šæ™‚é–“ã®ãƒãƒ¼ã‚º(CMotionPoint)ã‚’è¨ˆç®—ã™ã‚‹ã€‚
+ * @param (int srcmotid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double srcframe) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ¬ãƒ¼ãƒ (æ™‚é–“)ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (CMotionPoint* dstmpptr) OUT è¨ˆç®—ã—ãŸå§¿å‹¢ãŒã‚»ãƒƒãƒˆã•ã‚Œã‚‹ã€‚
+ * @param (int* existptr) OUT æŒ‡å®šæ™‚é–“ã¡ã‚‡ã†ã©ã®ãƒ‡ãƒ¼ã‚¿ãŒã‚ã‚Œã°ï¼‘ã€ãªã‘ã‚Œã°ï¼ã€‚ç„¡ã„å ´åˆã¯å‰å¾Œã‹ã‚‰è¨ˆç®—ã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int CalcFBXMotion(bool limitdegflag, int srcmotid, double srcframe, CMotionPoint* dstmpptr, int* existptr);
 
 /**
  * @fn
  * CalcFBXFrame
- * @breaf w’èŠÔ‚Ì‘OŒã‚Ìp¨‚©‚çw’èŠÔ‚Ìp¨‚ğŒvZ‚·‚éB
- * @param (double srcframe) IN w’èŠÔB
- * @param (CMotionPoint* befptr) IN w’èŠÔ‚Ì’¼‘O‚Ìp¨B
- * @param (CMotionPoint* nextptr) IN w’èŠÔ‚Ì’¼Œã‚Ìp¨B
- * @param (int existflag) IN w’èŠÔ‚¿‚å‚¤‚Ç‚Ép¨ƒf[ƒ^‚ª‚ ‚é‚Æ‚«‚PB‚±‚Ì‚¿‚å‚¤‚Ç‚Ì‚Æ‚«‚Ìp¨‚Íbefptr‚É“ü‚Á‚Ä‚¢‚éB
- * @param (CMotionPoint* dstmpptr) OUT w’èŠÔ‚Ìp¨‚ªŒvZ‚³‚ê‚ÄƒZƒbƒg‚³‚ê‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail w’èŠÔ‚¿‚å‚¤‚Ç‚Éƒf[ƒ^‚ª‚ ‚Á‚½ê‡‚Í‚»‚ê‚ªŒ‹‰Ê‚É‚È‚éBbefptr‚ª‚È‚¢ê‡‚Ínextptr‚Ìp¨‚ªŒ‹‰Ê‚Æ‚È‚éBnextptr‚ª–³‚¢ê‡‚Íbefptr‚Ìp¨‚ªŒ‹‰Ê‚Æ‚È‚éBbef‚Ænext‚ª‚ ‚éê‡‚ÍüŒ`•âŠÔ‚·‚éB
+ * @breaf æŒ‡å®šæ™‚é–“ã®å‰å¾Œã®å§¿å‹¢ã‹ã‚‰æŒ‡å®šæ™‚é–“ã®å§¿å‹¢ã‚’è¨ˆç®—ã™ã‚‹ã€‚
+ * @param (double srcframe) IN æŒ‡å®šæ™‚é–“ã€‚
+ * @param (CMotionPoint* befptr) IN æŒ‡å®šæ™‚é–“ã®ç›´å‰ã®å§¿å‹¢ã€‚
+ * @param (CMotionPoint* nextptr) IN æŒ‡å®šæ™‚é–“ã®ç›´å¾Œã®å§¿å‹¢ã€‚
+ * @param (int existflag) IN æŒ‡å®šæ™‚é–“ã¡ã‚‡ã†ã©ã«å§¿å‹¢ãƒ‡ãƒ¼ã‚¿ãŒã‚ã‚‹ã¨ãï¼‘ã€‚ã“ã®æ™‚ã¡ã‚‡ã†ã©ã®ã¨ãã®å§¿å‹¢ã¯befptrã«å…¥ã£ã¦ã„ã‚‹ã€‚
+ * @param (CMotionPoint* dstmpptr) OUT æŒ‡å®šæ™‚é–“ã®å§¿å‹¢ãŒè¨ˆç®—ã•ã‚Œã¦ã‚»ãƒƒãƒˆã•ã‚Œã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail æŒ‡å®šæ™‚é–“ã¡ã‚‡ã†ã©ã«ãƒ‡ãƒ¼ã‚¿ãŒã‚ã£ãŸå ´åˆã¯ãã‚ŒãŒçµæœã«ãªã‚‹ã€‚befptrãŒãªã„å ´åˆã¯nextptrã®å§¿å‹¢ãŒçµæœã¨ãªã‚‹ã€‚nextptrãŒç„¡ã„å ´åˆã¯befptrã®å§¿å‹¢ãŒçµæœã¨ãªã‚‹ã€‚befã¨nextãŒã‚ã‚‹å ´åˆã¯ç·šå½¢è£œé–“ã™ã‚‹ã€‚
  */
 	int CalcFBXFrame(bool limitdegflag, double srcframe, CMotionPoint* befptr, CMotionPoint* nextptr, int existflag, CMotionPoint* dstmpptr);
 
 /**
  * @fn
  * GetBefNextMP
- * @breaf w’èƒ‚[ƒVƒ‡ƒ“‚Ìw’èŠÔ‚Ì’¼‘O‚Æ’¼Œã‚Ìp¨ƒf[ƒ^‚ğæ“¾‚·‚éB
- * @param (int srcmotid) IN ƒ‚[ƒVƒ‡ƒ“ID‚ğw’è‚·‚éB
- * @param (double srcframe) IN ƒ‚[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€iŠÔj‚ğw’è‚·‚éB
- * @param (CMotionPoint** ppbef) OUT ’¼‘O‚Ìp¨ƒf[ƒ^B
- * @param (CMotionPoint** ppnext) OUT ’¼Œã‚Ìp¨ƒf[ƒ^B
- * @param (int* existptr) OUT ŠÔ‚¿‚å‚¤‚Ç‚Ìƒf[ƒ^‚ª‚ ‚é‚Æ‚«‚É‚PB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail existptr‚Ì“à—e‚ª‚P‚Ì‚Æ‚«A‚¿‚å‚¤‚Ç‚ÌŠÔ‚Ìp¨‚Íppbef‚ÉƒZƒbƒg‚³‚ê‚éB
+ * @breaf æŒ‡å®šãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®æŒ‡å®šæ™‚é–“ã®ç›´å‰ã¨ç›´å¾Œã®å§¿å‹¢ãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—ã™ã‚‹ã€‚
+ * @param (int srcmotid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double srcframe) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ¬ãƒ¼ãƒ ï¼ˆæ™‚é–“ï¼‰ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (CMotionPoint** ppbef) OUT ç›´å‰ã®å§¿å‹¢ãƒ‡ãƒ¼ã‚¿ã€‚
+ * @param (CMotionPoint** ppnext) OUT ç›´å¾Œã®å§¿å‹¢ãƒ‡ãƒ¼ã‚¿ã€‚
+ * @param (int* existptr) OUT æ™‚é–“ã¡ã‚‡ã†ã©ã®ãƒ‡ãƒ¼ã‚¿ãŒã‚ã‚‹ã¨ãã«ï¼‘ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail existptrã®å†…å®¹ãŒï¼‘ã®ã¨ãã€ã¡ã‚‡ã†ã©ã®æ™‚é–“ã®å§¿å‹¢ã¯ppbefã«ã‚»ãƒƒãƒˆã•ã‚Œã‚‹ã€‚
  */
 	int GetBefNextMP( int srcmotid, double srcframe, CMotionPoint** ppbef, CMotionPoint** ppnext, int* existptr, bool onaddmotion = false );
 
 /**
  * @fn
  * DeleteMotion
- * @breaf w’è‚µ‚½ƒ‚[ƒVƒ‡ƒ“ID‚Ìƒ‚[ƒVƒ‡ƒ“‚ğíœ‚·‚éB
- * @param (int srcmotid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌIDB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail w’è‚µ‚½ƒ‚[ƒVƒ‡ƒ“‚Ìp¨ƒf[ƒ^‚ğíœ‚·‚éB
+ * @breaf æŒ‡å®šã—ãŸãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³IDã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å‰Šé™¤ã™ã‚‹ã€‚
+ * @param (int srcmotid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail æŒ‡å®šã—ãŸãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®å§¿å‹¢ãƒ‡ãƒ¼ã‚¿ã‚’å‰Šé™¤ã™ã‚‹ã€‚
  */
 	int DeleteMotion( int srcmotid );
 
 /**
  * @fn
  * DeleteMPOutOfRange
- * @breaf w’è‚µ‚½ƒ‚[ƒVƒ‡ƒ“‚Ì’·‚³‚ğ‚Í‚İo‚µ‚Ä‚¢‚é(ŠÔ‚ª‚Í‚İo‚µ‚Ä‚¢‚é)p¨ƒf[ƒ^‚ğíœ‚·‚éB
- * @param (int motid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (double srcleng) IN ƒ‚[ƒVƒ‡ƒ“‚Ì’·‚³(ŠÔ)‚ğw’è‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail ƒ‚[ƒVƒ‡ƒ“‚Ì’·‚³‚ğ•ÏX‚·‚é‚Æ‚«‚É”ÍˆÍŠO‚Ìp¨‚ğíœ‚·‚é‚½‚ß‚ÉŒÄ‚Î‚ê‚éB
+ * @breaf æŒ‡å®šã—ãŸãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®é•·ã•ã‚’ã¯ã¿å‡ºã—ã¦ã„ã‚‹(æ™‚é–“ãŒã¯ã¿å‡ºã—ã¦ã„ã‚‹)å§¿å‹¢ãƒ‡ãƒ¼ã‚¿ã‚’å‰Šé™¤ã™ã‚‹ã€‚
+ * @param (int motid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double srcleng) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®é•·ã•(æ™‚é–“)ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®é•·ã•ã‚’å¤‰æ›´ã™ã‚‹ã¨ãã«ç¯„å›²å¤–ã®å§¿å‹¢ã‚’å‰Šé™¤ã™ã‚‹ãŸã‚ã«å‘¼ã°ã‚Œã‚‹ã€‚
  */
 	int DeleteMPOutOfRange( int motid, double srcleng );
 
 /**
  * @fn
  * CalcRigidElemParams
- * @breaf „‘Ì•\¦—p‚Ìƒf[ƒ^‚ğ„‘Ì‚Ìƒpƒ‰ƒ[ƒ^‚É]‚Á‚ÄƒXƒP[ƒ‹‚·‚é‚½‚ß‚Ì•ÏŠ·s—ñ‚ğ‹‚ß‚ÄƒXƒP[ƒ‹‚·‚éB
- * @param (CBone* childbone) IN@„‘Ì‚ğw’è‚·‚é‚½‚ß‚Ìq‹Ÿƒ{[ƒ“B
- * @param (int setstartflag) IN@„‘ÌƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“ŠJn‚ÌŒÄ‚Ño‚µ‚É‚P‚ğƒZƒbƒg‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail „‘Ì‚ğƒ{[ƒ“‚ÌˆÊ’u‚É•\¦‚·‚é‚½‚ß‚ÉA„‘Ì•\¦—p‚ÌŒ`ó‚ğƒXƒP[ƒ‹‚·‚é‚½‚ß‚ÉŒÄ‚ÔB„‘Ì‚Íƒ{[ƒ“‚Ìq‹ŸƒWƒ‡ƒCƒ“ƒg‚Æ‚P‘Î‚P‚Å‘Î‰‚·‚é‚½‚ßAw’è‚Échildbone‚ğg‚¤B
+ * @breaf å‰›ä½“è¡¨ç¤ºç”¨ã®ãƒ‡ãƒ¼ã‚¿ã‚’å‰›ä½“ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã«å¾“ã£ã¦ã‚¹ã‚±ãƒ¼ãƒ«ã™ã‚‹ãŸã‚ã®å¤‰æ›è¡Œåˆ—ã‚’æ±‚ã‚ã¦ã‚¹ã‚±ãƒ¼ãƒ«ã™ã‚‹ã€‚
+ * @param (CBone* childbone) INã€€å‰›ä½“ã‚’æŒ‡å®šã™ã‚‹ãŸã‚ã®å­ä¾›ãƒœãƒ¼ãƒ³ã€‚
+ * @param (int setstartflag) INã€€å‰›ä½“ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³é–‹å§‹æ™‚ã®å‘¼ã³å‡ºã—æ™‚ã«ï¼‘ã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail å‰›ä½“ã‚’ãƒœãƒ¼ãƒ³ã®ä½ç½®ã«è¡¨ç¤ºã™ã‚‹ãŸã‚ã«ã€å‰›ä½“è¡¨ç¤ºç”¨ã®å½¢çŠ¶ã‚’ã‚¹ã‚±ãƒ¼ãƒ«ã™ã‚‹ãŸã‚ã«å‘¼ã¶ã€‚å‰›ä½“ã¯ãƒœãƒ¼ãƒ³ã®å­ä¾›ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã¨ï¼‘å¯¾ï¼‘ã§å¯¾å¿œã™ã‚‹ãŸã‚ã€æŒ‡å®šã«childboneã‚’ä½¿ã†ã€‚
  */
 	int CalcRigidElemParams( CBone* childbone, int setstartflag );
 
 /**
  * @fn
  * CalcAxisMat
- * @breaf ƒ{[ƒ“‚Ì²‚Ì‚½‚ß‚Ì•ÏŠ·s—ñ‚ğŒvZ‚·‚éB‰Šúó‘Ô‚ªX²‚ğŒü‚¢‚Ä‚¢‚é‚Æ‰¼’è‚µ‚ÄŒvZ‚·‚éB
- * @param (int firstflag) IN •ÏŠ·ŠJn‚Ìs—ñ‚ğ•Û‘¶‚µ‚½‚¢‚Æ‚«‚É‚P‚ğw’è‚·‚éB
- * @param (float delta) IN ‰ñ“]Šp“x‚ğ‚µ‚Ä‚¢‚·‚éBŒ»İ‚Í‚O‚Å‚µ‚©g—p‚µ‚Ä‚¢‚È‚¢B
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail ŒvZ‚µ‚½ƒf[ƒ^‚ÍAƒ{[ƒ“‚ÌˆÊ’u‚Éƒ}ƒjƒsƒ…ƒŒ[ƒ^‚ğ•\¦‚·‚é‚½‚ß‚Ì•ÏŠ·s—ñ‚Ég—p‚·‚éBŒ»İ‚ÍCalcAxisMatZŠÖ”‚Åƒ{[ƒ“‚Ì•ÏŠ·s—ñ‚ğŒvZ‚µ‚Ä‚¢‚éB
+ * @breaf ãƒœãƒ¼ãƒ³ã®è»¸ã®ãŸã‚ã®å¤‰æ›è¡Œåˆ—ã‚’è¨ˆç®—ã™ã‚‹ã€‚åˆæœŸçŠ¶æ…‹ãŒXè»¸ã‚’å‘ã„ã¦ã„ã‚‹ã¨ä»®å®šã—ã¦è¨ˆç®—ã™ã‚‹ã€‚
+ * @param (int firstflag) IN å¤‰æ›é–‹å§‹ã®è¡Œåˆ—ã‚’ä¿å­˜ã—ãŸã„ã¨ãã«ï¼‘ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (float delta) IN å›è»¢è§’åº¦ã‚’ã—ã¦ã„ã™ã‚‹ã€‚ç¾åœ¨ã¯ï¼ã§ã—ã‹ä½¿ç”¨ã—ã¦ã„ãªã„ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail è¨ˆç®—ã—ãŸãƒ‡ãƒ¼ã‚¿ã¯ã€ãƒœãƒ¼ãƒ³ã®ä½ç½®ã«ãƒãƒ‹ãƒ”ãƒ¥ãƒ¬ãƒ¼ã‚¿ã‚’è¡¨ç¤ºã™ã‚‹ãŸã‚ã®å¤‰æ›è¡Œåˆ—ã«ä½¿ç”¨ã™ã‚‹ã€‚ç¾åœ¨ã¯CalcAxisMatZé–¢æ•°ã§ãƒœãƒ¼ãƒ³ã®å¤‰æ›è¡Œåˆ—ã‚’è¨ˆç®—ã—ã¦ã„ã‚‹ã€‚
  */
 	//int CalcAxisMat( int firstflag, float delta );
-	//float CalcAxisMatX_Manipulator_T(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ƒ{[ƒ“²‚ªX²
-	//float CalcAxisMatX_Manipulator_NotT(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag, int buttonflag);//ƒ{[ƒ“²‚ªX²
+	//float CalcAxisMatX_Manipulator_T(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ãƒœãƒ¼ãƒ³è»¸ãŒXè»¸
+	//float CalcAxisMatX_Manipulator_NotT(int bindflag, CBone* childbone, ChaMatrix* dstmat, int setstartflag, int buttonflag);//ãƒœãƒ¼ãƒ³è»¸ãŒXè»¸
 	float CalcAxisMatX_Manipulator(bool limitdegflag, int srcboneaxis, int bindflag,
-		CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ƒ{[ƒ“²‚ªX²
+		CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ãƒœãƒ¼ãƒ³è»¸ãŒXè»¸
 	float CalcAxisMatX_RigidBody(bool limitdegflag, bool dir2xflag, int bindflag, 
-		CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ƒJƒvƒZƒ‹ƒf[ƒ^X²Œü‚«
+		CBone* childbone, ChaMatrix* dstmat, int setstartflag);//ã‚«ãƒ—ã‚»ãƒ«ãƒ‡ãƒ¼ã‚¿Xè»¸å‘ã
 	float CalcAxisMatX_NodeMat(CBone* childbone, ChaMatrix* dstmat);
 
 /**
  * @fn
  * CalcAxisMatZ
- * @breaf ƒ{[ƒ“‚Ìe‚Æq‹Ÿ‚ÌˆÊ’u‚ğw’è‚µ‚ÄA‚»‚Ì²‚Ì•ÏŠ·s—ñ‚ğŒvZ‚·‚éB
- * @param (ChaVector3* srccur) IN ƒ{[ƒ“‚Ìe‚ÌÀ•W‚ğw’è‚·‚éB
- * @param (ChaVector3* srcchil) IN ƒ{[ƒ“‚Ìq‹Ÿ‚ÌÀ•W‚ğw’è‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail ‰Šúó‘Ô‚ªZ²‚ğŒü‚¢‚Ä‚¢‚é‚Æ‰¼’è‚µ‚ÄŒvZ‚·‚éBƒ{[ƒ“‚ÌˆÊ’u‚Éƒ}ƒjƒsƒ…ƒŒ[ƒ^‚ğ•\¦‚·‚é‚½‚ß‚Ég—p‚·‚éB
+ * @breaf ãƒœãƒ¼ãƒ³ã®è¦ªã¨å­ä¾›ã®ä½ç½®ã‚’æŒ‡å®šã—ã¦ã€ãã®è»¸ã®å¤‰æ›è¡Œåˆ—ã‚’è¨ˆç®—ã™ã‚‹ã€‚
+ * @param (ChaVector3* srccur) IN ãƒœãƒ¼ãƒ³ã®è¦ªã®åº§æ¨™ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (ChaVector3* srcchil) IN ãƒœãƒ¼ãƒ³ã®å­ä¾›ã®åº§æ¨™ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail åˆæœŸçŠ¶æ…‹ãŒZè»¸ã‚’å‘ã„ã¦ã„ã‚‹ã¨ä»®å®šã—ã¦è¨ˆç®—ã™ã‚‹ã€‚ãƒœãƒ¼ãƒ³ã®ä½ç½®ã«ãƒãƒ‹ãƒ”ãƒ¥ãƒ¬ãƒ¼ã‚¿ã‚’è¡¨ç¤ºã™ã‚‹ãŸã‚ã«ä½¿ç”¨ã™ã‚‹ã€‚
  */
 	int CalcAxisMatZ( ChaVector3* srccur, ChaVector3* srcchil );
 
@@ -259,14 +259,14 @@ public:
 /**
  * @fn
  * CreateRigidElem
- * @breaf „‘ÌƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“—p‚Ìƒpƒ‰ƒ[ƒ^‚ğ•Û‚·‚éCRigidElem‚ğì¬‚·‚éBw’èƒ{[ƒ“‚ÉŠÖ‚·‚éCRigidElem‚ğì¬‚·‚éB
- * @param (CBone* parentbone) IN ©•ª©g‚Æ‚±‚±‚Åw’è‚·‚éeƒWƒ‡ƒCƒ“ƒg‚Å’è‹`‚³‚ê‚éƒ{[ƒ“‚ÉŠÖ‚·‚éCRigidElem‚ğì¬‚·‚éB
- * @param (int reflag) IN CRigidElem‚ğì¬‚·‚éê‡‚É‚PA‚µ‚È‚¢ê‡‚É‚O‚ğw’èB
- * @param (std::string rename) IN reflag‚ª‚P‚Ì‚Æ‚«Arefƒtƒ@ƒCƒ‹‚Ìƒtƒ@ƒCƒ‹–¼‚ğw’è‚·‚éB
- * @param (int impflag) IN ƒCƒ“ƒpƒ‹ƒX‚ğ—^‚¦‚é‚½‚ß‚Ìİ’è‚ğì¬‚·‚éê‡‚É‚PA‚µ‚È‚¢ê‡‚É‚O‚ğw’èB
- * @param (std::string impname) IN impflag‚ª‚P‚Ì‚Æ‚«Aimpƒtƒ@ƒCƒ‹‚Ìƒtƒ@ƒCƒ‹–¼‚ğw’è‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail ƒCƒ“ƒpƒ‹ƒXİ’èƒf[ƒ^‚àì¬‚·‚éB
+ * @breaf å‰›ä½“ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ç”¨ã®ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’ä¿æŒã™ã‚‹CRigidElemã‚’ä½œæˆã™ã‚‹ã€‚æŒ‡å®šãƒœãƒ¼ãƒ³ã«é–¢ã™ã‚‹CRigidElemã‚’ä½œæˆã™ã‚‹ã€‚
+ * @param (CBone* parentbone) IN è‡ªåˆ†è‡ªèº«ã¨ã“ã“ã§æŒ‡å®šã™ã‚‹è¦ªã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã§å®šç¾©ã•ã‚Œã‚‹ãƒœãƒ¼ãƒ³ã«é–¢ã™ã‚‹CRigidElemã‚’ä½œæˆã™ã‚‹ã€‚
+ * @param (int reflag) IN CRigidElemã‚’ä½œæˆã™ã‚‹å ´åˆã«ï¼‘ã€ã—ãªã„å ´åˆã«ï¼ã‚’æŒ‡å®šã€‚
+ * @param (std::string rename) IN reflagãŒï¼‘ã®ã¨ãã€refãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ•ã‚¡ã‚¤ãƒ«åã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int impflag) IN ã‚¤ãƒ³ãƒ‘ãƒ«ã‚¹ã‚’ä¸ãˆã‚‹ãŸã‚ã®è¨­å®šã‚’ä½œæˆã™ã‚‹å ´åˆã«ï¼‘ã€ã—ãªã„å ´åˆã«ï¼ã‚’æŒ‡å®šã€‚
+ * @param (std::string impname) IN impflagãŒï¼‘ã®ã¨ãã€impãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ•ã‚¡ã‚¤ãƒ«åã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail ã‚¤ãƒ³ãƒ‘ãƒ«ã‚¹è¨­å®šãƒ‡ãƒ¼ã‚¿ã‚‚ä½œæˆã™ã‚‹ã€‚
  */
 	//int CreateRigidElem( CBone* chil, int reflag, std::string rename, int impflag, std::string impname );
 	int CreateRigidElem(CBone* parentbone, int reflag, std::string rename, int impflag, std::string impname);
@@ -275,9 +275,9 @@ public:
 /**
  * @fn
  * SetCurrentRigidElem
- * @breaf ƒJƒŒƒ“ƒgİ’è‚Æ‚µ‚Äg—p‚·‚éRigidElem‚ğƒZƒbƒg‚·‚éB
- * @param (std::string curname) ƒJƒŒƒ“ƒg‚É‚µ‚½‚¢refƒtƒ@ƒCƒ‹‚Ì–¼‘O‚ğw’è‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ã‚«ãƒ¬ãƒ³ãƒˆè¨­å®šã¨ã—ã¦ä½¿ç”¨ã™ã‚‹RigidElemã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
+ * @param (std::string curname) ã‚«ãƒ¬ãƒ³ãƒˆã«ã—ãŸã„refãƒ•ã‚¡ã‚¤ãƒ«ã®åå‰ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int SetCurrentRigidElem( std::string curname );
 
@@ -285,13 +285,13 @@ public:
 /**
  * @fn
  * AddBoneTraReq
- * @breaf ƒ{[ƒ“‚Ìp¨‚ğw’èƒxƒNƒgƒ‹‚¾‚¯ˆÚ“®‚·‚éBq‹Ÿ•ûŒü‚ÉÄ‹A“I‚ÉŒvZ‚·‚éB
- * @param (CMotionPoint* parmp) IN ‚O‚ğw’è‚µ‚½‚Í©•ª‚Ìp¨‚ğŒvZ‚·‚éB‚OˆÈŠO‚Ìe‚ğw’è‚µ‚½ê‡‚Íq‹Ÿ•ûŒü‚Ép¨‚Ì•ÏX‚ğ“`‚¦‚Ä‚¢‚­B
- * @param (int srcmotid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (double srcframe) IN ƒ‚[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€iŠÔj‚ğw’è‚·‚éB
- * @param (ChaVector3 srctra) IN ˆÚ“®ƒxƒNƒgƒ‹‚ğw’è‚·‚éB
- * @return ŒvZ‚µ‚½p¨‚ğŠi”[‚µ‚½CMotionPoint‚Ìƒ|ƒCƒ“ƒ^‚ğ•Ô‚·‚ªÄ‹AŠÖ”‚Å‚ ‚é‚±‚Æ‚É’ˆÓBƒ|ƒCƒ“ƒ^‚Íƒ`ƒFƒCƒ“‚ÉƒZƒbƒg‚³‚ê‚½‚à‚Ì‚Å‚ ‚éB
- * @detail ‘z’è‚µ‚Ä‚¢‚ég‚¢•û‚Æ‚µ‚Ä‚ÍAŠO•”‚©‚ç‚ÌŒÄ‚Ño‚µ‚É‚Íparmp‚ğ‚O‚É‚·‚éB‚±‚ÌŠÖ”“à‚Å‚ÌÄ‹AŒÄ‚Ño‚µ‚Éparmp‚Ée‚ğƒZƒbƒg‚·‚éB
+ * @breaf ãƒœãƒ¼ãƒ³ã®å§¿å‹¢ã‚’æŒ‡å®šãƒ™ã‚¯ãƒˆãƒ«ã ã‘ç§»å‹•ã™ã‚‹ã€‚å­ä¾›æ–¹å‘ã«å†å¸°çš„ã«è¨ˆç®—ã™ã‚‹ã€‚
+ * @param (CMotionPoint* parmp) IN ï¼ã‚’æŒ‡å®šã—ãŸæ™‚ã¯è‡ªåˆ†ã®å§¿å‹¢ã‚’è¨ˆç®—ã™ã‚‹ã€‚ï¼ä»¥å¤–ã®è¦ªã‚’æŒ‡å®šã—ãŸå ´åˆã¯å­ä¾›æ–¹å‘ã«å§¿å‹¢ã®å¤‰æ›´ã‚’ä¼ãˆã¦ã„ãã€‚
+ * @param (int srcmotid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double srcframe) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ¬ãƒ¼ãƒ ï¼ˆæ™‚é–“ï¼‰ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (ChaVector3 srctra) IN ç§»å‹•ãƒ™ã‚¯ãƒˆãƒ«ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return è¨ˆç®—ã—ãŸå§¿å‹¢ã‚’æ ¼ç´ã—ãŸCMotionPointã®ãƒã‚¤ãƒ³ã‚¿ã‚’è¿”ã™ãŒå†å¸°é–¢æ•°ã§ã‚ã‚‹ã“ã¨ã«æ³¨æ„ã€‚ãƒã‚¤ãƒ³ã‚¿ã¯ãƒã‚§ã‚¤ãƒ³ã«ã‚»ãƒƒãƒˆã•ã‚ŒãŸã‚‚ã®ã§ã‚ã‚‹ã€‚
+ * @detail æƒ³å®šã—ã¦ã„ã‚‹ä½¿ã„æ–¹ã¨ã—ã¦ã¯ã€å¤–éƒ¨ã‹ã‚‰ã®å‘¼ã³å‡ºã—æ™‚ã«ã¯parmpã‚’ï¼ã«ã™ã‚‹ã€‚ã“ã®é–¢æ•°å†…ã§ã®å†å¸°å‘¼ã³å‡ºã—æ™‚ã«parmpã«è¦ªã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
  */
 	CMotionPoint* AddBoneTraReq(bool limitdegflag, CMotionPoint* parmp, int srcmotid, double srcframe, ChaVector3 srctra, ChaMatrix befparentwm, ChaMatrix newparentwm);
 
@@ -301,17 +301,17 @@ public:
 /**
  * @fn
  * RotBoneQReq
- * @breaf ƒ{[ƒ“‚Ìp¨‚ğw’èƒNƒH[ƒ^ƒjƒIƒ“‚Ì•ª‰ñ“]‚·‚éBq‹Ÿ•ûŒü‚ÉÄ‹A“I‚ÉŒvZ‚·‚éB
- * @param (CMotionPoint* parmp) IN ‚O‚ğw’è‚µ‚½‚Í©•ª‚Ìp¨‚ğŒvZ‚·‚éB‚OˆÈŠO‚Ìe‚ğw’è‚µ‚½ê‡‚Íq‹Ÿ•ûŒü‚Ép¨‚Ì•ÏX‚ğ“`‚¦‚Ä‚¢‚­B
- * @param (int srcmotid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (double srcframe) IN ƒ‚[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€iŠÔj‚ğw’è‚·‚éB
- * @param (CQuaternion rotq) IN ‰ñ“]‚Ì‚½‚ß‚ÌƒNƒH[ƒ^ƒjƒIƒ“‚ğw’è‚·‚éB
- * @return ŒvZ‚µ‚½p¨‚ğŠi”[‚µ‚½CMotionPoint‚Ìƒ|ƒCƒ“ƒ^‚ğ•Ô‚·‚ªÄ‹AŠÖ”‚Å‚ ‚é‚±‚Æ‚É’ˆÓBƒ|ƒCƒ“ƒ^‚Íƒ`ƒFƒCƒ“‚ÉƒZƒbƒg‚³‚ê‚½‚à‚Ì‚Å‚ ‚éB
- * @detail ‘z’è‚µ‚Ä‚¢‚ég‚¢•û‚Æ‚µ‚Ä‚ÍAŠO•”‚©‚ç‚ÌŒÄ‚Ño‚µ‚É‚Íparmp‚ğ‚O‚É‚·‚éB‚±‚ÌŠÖ”“à‚Å‚ÌÄ‹AŒÄ‚Ño‚µ‚Éparmp‚Ée‚ğƒZƒbƒg‚·‚éB
+ * @breaf ãƒœãƒ¼ãƒ³ã®å§¿å‹¢ã‚’æŒ‡å®šã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã®åˆ†å›è»¢ã™ã‚‹ã€‚å­ä¾›æ–¹å‘ã«å†å¸°çš„ã«è¨ˆç®—ã™ã‚‹ã€‚
+ * @param (CMotionPoint* parmp) IN ï¼ã‚’æŒ‡å®šã—ãŸæ™‚ã¯è‡ªåˆ†ã®å§¿å‹¢ã‚’è¨ˆç®—ã™ã‚‹ã€‚ï¼ä»¥å¤–ã®è¦ªã‚’æŒ‡å®šã—ãŸå ´åˆã¯å­ä¾›æ–¹å‘ã«å§¿å‹¢ã®å¤‰æ›´ã‚’ä¼ãˆã¦ã„ãã€‚
+ * @param (int srcmotid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double srcframe) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ¬ãƒ¼ãƒ ï¼ˆæ™‚é–“ï¼‰ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (CQuaternion rotq) IN å›è»¢ã®ãŸã‚ã®ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return è¨ˆç®—ã—ãŸå§¿å‹¢ã‚’æ ¼ç´ã—ãŸCMotionPointã®ãƒã‚¤ãƒ³ã‚¿ã‚’è¿”ã™ãŒå†å¸°é–¢æ•°ã§ã‚ã‚‹ã“ã¨ã«æ³¨æ„ã€‚ãƒã‚¤ãƒ³ã‚¿ã¯ãƒã‚§ã‚¤ãƒ³ã«ã‚»ãƒƒãƒˆã•ã‚ŒãŸã‚‚ã®ã§ã‚ã‚‹ã€‚
+ * @detail æƒ³å®šã—ã¦ã„ã‚‹ä½¿ã„æ–¹ã¨ã—ã¦ã¯ã€å¤–éƒ¨ã‹ã‚‰ã®å‘¼ã³å‡ºã—æ™‚ã«ã¯parmpã‚’ï¼ã«ã™ã‚‹ã€‚ã“ã®é–¢æ•°å†…ã§ã®å†å¸°å‘¼ã³å‡ºã—æ™‚ã«parmpã«è¦ªã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
  */
  //##########################################################
  //CBone::RotBoneQReq()
- //ˆø”rotq‚ÍƒOƒ[ƒoƒ‹‰ñ“]@ˆø”traanim‚Íƒ[ƒJƒ‹ˆÚ“®ƒAƒjƒ
+ //å¼•æ•°rotqã¯ã‚°ãƒ­ãƒ¼ãƒãƒ«å›è»¢ã€€å¼•æ•°traanimã¯ãƒ­ãƒ¼ã‚«ãƒ«ç§»å‹•ã‚¢ãƒ‹ãƒ¡
  //##########################################################
 	CMotionPoint* RotBoneQReq(bool limitdegflag, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe, 
 		CQuaternion rotq, ChaMatrix srcbefparentwm, ChaMatrix srcnewparentwm, 
@@ -319,11 +319,11 @@ public:
 	int RotAndTraBoneQReq(bool limitdegflag, int* onlycheckptr, double srcstartframe, bool infooutflag, CBone* parentbone, int srcmotid, double srcframe,
 		CQuaternion qForRot, CQuaternion qForHipsRot, bool fromiktarget);
 
-	//directset‚Å@parent‚Ìp¨‚ğXV@Ä‹A
+	//directsetã§ã€€parentã®å§¿å‹¢ã‚’æ›´æ–°ã€€å†å¸°
 	void UpdateParentWMReq(bool limitdegflag, bool setbroflag, int srcmotid, double srcframe,
 		ChaMatrix oldparentwm, ChaMatrix newparentwm);
 	
-	//directset‚Å@ƒcƒŠ[‚Ìp¨‚ğXV@Ä‹A
+	//directsetã§ã€€ãƒ„ãƒªãƒ¼ã®å§¿å‹¢ã‚’æ›´æ–°ã€€å†å¸°
 	void UpdateCurrentWM(bool limitdegflag, int srcmotid, double srcframe,
 		ChaMatrix newwm);
 
@@ -346,11 +346,11 @@ public:
 /**
  * @fn
  * PasteRotReq
- * @breaf srcframe‚Ìp¨‚ğdstframe‚Ìp¨‚Éƒy[ƒXƒg‚·‚éBq‹Ÿ•ûŒü‚ÉÄ‹A“I‚Éİ’è‚·‚éB
- * @param (int srcmotid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (double srcframe) IN ƒRƒs[Œ³‚ÌƒtƒŒ[ƒ€iŠÔj‚ğw’è‚·‚éB
- * @param (double dstframe) IN ƒRƒs[æ‚ÌƒtƒŒ[ƒ€‚ğw’è‚·‚éB
- * @return dst‚ÌCMotionPoint‚Ìƒ|ƒCƒ“ƒ^‚ğ•Ô‚·B‚½‚¾‚µÄ‹A“I‚É‚Å‚ ‚éB
+ * @breaf srcframeã®å§¿å‹¢ã‚’dstframeã®å§¿å‹¢ã«ãƒšãƒ¼ã‚¹ãƒˆã™ã‚‹ã€‚å­ä¾›æ–¹å‘ã«å†å¸°çš„ã«è¨­å®šã™ã‚‹ã€‚
+ * @param (int srcmotid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double srcframe) IN ã‚³ãƒ”ãƒ¼å…ƒã®ãƒ•ãƒ¬ãƒ¼ãƒ ï¼ˆæ™‚é–“ï¼‰ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double dstframe) IN ã‚³ãƒ”ãƒ¼å…ˆã®ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return dstã®CMotionPointã®ãƒã‚¤ãƒ³ã‚¿ã‚’è¿”ã™ã€‚ãŸã ã—å†å¸°çš„ã«ã§ã‚ã‚‹ã€‚
  */
 	void PasteRotReq(bool limitdegflag, int srcmotid, double srcframe, double dstframe );
 
@@ -358,13 +358,13 @@ public:
 /**
  * @fn
  * SetAbsMatReq
- * @breaf firstframe‚Ìp¨‚ğ‚»‚Ì‚Ü‚Üsrcframe‚É“K—p‚·‚éBq‹Ÿ•ûŒü‚ÉÄ‹A“I‚ÉÀs‚·‚éB
- * @param (int broflag) IN ‚±‚Ìƒ{[ƒ“‚ÌŒZ’íƒ{[ƒ“‚É‘Î‚µ‚Ä‚àˆ—‚ğ‚µ‚½‚¢ê‡‚Í‚P‚ğA‚»‚Ì‘¼‚Ìê‡‚Í‚O‚ğw’è‚·‚éB
- * @param (int srcmotid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (double srcframe) IN p¨‚ğ“K—p‚µ‚½‚¢ƒtƒŒ[ƒ€‚ğw’è‚·‚éB
- * @param (double firstframe) IN •ÒW‚ÌŠJnƒtƒŒ[ƒ€‚ğw’è‚·‚éB
- * @return •ÒW‚ª“K—p‚³‚ê‚½ƒ{[ƒ“‚ÌCMotionPoint‚Ìƒ|ƒCƒ“ƒ^‚ª•Ô‚³‚ê‚éB‚½‚¾‚µÄ‹A“I‚É‚Å‚ ‚éB
- * @detail ‚±‚ÌŠÖ”‚Íâ‘ÎIK‹@”\‚Æ‚µ‚ÄŒÄ‚Î‚ê‚éBâ‘ÎIK‚Æ‘Š‘ÎIK‚Ìà–¾‚ÍMain.cpp‚Ì–`“ª‚Ìà–¾‚ğ“Ç‚Ş‚±‚ÆB
+ * @breaf firstframeã®å§¿å‹¢ã‚’ãã®ã¾ã¾srcframeã«é©ç”¨ã™ã‚‹ã€‚å­ä¾›æ–¹å‘ã«å†å¸°çš„ã«å®Ÿè¡Œã™ã‚‹ã€‚
+ * @param (int broflag) IN ã“ã®ãƒœãƒ¼ãƒ³ã®å…„å¼Ÿãƒœãƒ¼ãƒ³ã«å¯¾ã—ã¦ã‚‚å‡¦ç†ã‚’ã—ãŸã„å ´åˆã¯ï¼‘ã‚’ã€ãã®ä»–ã®å ´åˆã¯ï¼ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int srcmotid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double srcframe) IN å§¿å‹¢ã‚’é©ç”¨ã—ãŸã„ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double firstframe) IN ç·¨é›†ã®é–‹å§‹ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return ç·¨é›†ãŒé©ç”¨ã•ã‚ŒãŸãƒœãƒ¼ãƒ³ã®CMotionPointã®ãƒã‚¤ãƒ³ã‚¿ãŒè¿”ã•ã‚Œã‚‹ã€‚ãŸã ã—å†å¸°çš„ã«ã§ã‚ã‚‹ã€‚
+ * @detail ã“ã®é–¢æ•°ã¯çµ¶å¯¾IKæ©Ÿèƒ½ã¨ã—ã¦å‘¼ã°ã‚Œã‚‹ã€‚çµ¶å¯¾IKã¨ç›¸å¯¾IKã®èª¬æ˜ã¯Main.cppã®å†’é ­ã®èª¬æ˜ã‚’èª­ã‚€ã“ã¨ã€‚
  */
 	CMotionPoint* SetAbsMatReq(bool limitdegflag, int broflag, int srcmotid, double srcframe, double firstframe);
 
@@ -372,12 +372,12 @@ public:
 /**
  * @fn
  * DeleteMotionKey
- * @breaf w’è‚µ‚½ƒ‚[ƒVƒ‡ƒ“ID‚Ìƒ‚[ƒVƒ‡ƒ“ƒL[‚ğíœ‚·‚éB
- * @param (int srcmotid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌIDB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail w’è‚µ‚½ƒ‚[ƒVƒ‡ƒ“‚Ìp¨ƒf[ƒ^‚ğíœ‚·‚éB
- * @detail DeleteMotion‚ªƒL[‚ğÁ‚µ‚½Œã‚Éƒ‚[ƒVƒ‡ƒ“‚ÌƒGƒ“ƒgƒŠ[‚ğíœ‚·‚é‚Ì‚É‘Î‚µA
- * @detail DestroyMotionKey‚ÍƒL[‚ğíœ‚µ‚½Œã‚Éƒ‚[ƒVƒ‡ƒ“‚ÌƒGƒ“ƒgƒŠ[‚ÉNULL‚ğƒZƒbƒg‚·‚éB
+ * @breaf æŒ‡å®šã—ãŸãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³IDã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã‚­ãƒ¼ã‚’å‰Šé™¤ã™ã‚‹ã€‚
+ * @param (int srcmotid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail æŒ‡å®šã—ãŸãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®å§¿å‹¢ãƒ‡ãƒ¼ã‚¿ã‚’å‰Šé™¤ã™ã‚‹ã€‚
+ * @detail DeleteMotionãŒã‚­ãƒ¼ã‚’æ¶ˆã—ãŸå¾Œã«ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ã‚¨ãƒ³ãƒˆãƒªãƒ¼ã‚’å‰Šé™¤ã™ã‚‹ã®ã«å¯¾ã—ã€
+ * @detail DestroyMotionKeyã¯ã‚­ãƒ¼ã‚’å‰Šé™¤ã—ãŸå¾Œã«ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ã‚¨ãƒ³ãƒˆãƒªãƒ¼ã«NULLã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
  */
 	int DestroyMotionKey( int srcmotid );
 
@@ -385,15 +385,15 @@ public:
 /**
  * @fn
  * AddBoneMotMark
- * @breaf p¨•ÒWƒ}[ƒN‚ğ•t‚¯‚éB
- * @param (int motid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (OrgWinGUI::OWP_Timeline* owpTimeline) IN ƒ^ƒCƒ€ƒ‰ƒCƒ“‚ğw’è‚·‚éB
- * @param (int curlineno) IN ƒ^ƒCƒ€ƒ‰ƒCƒ“‚Ìƒ‰ƒCƒ“”Ô†‚ğw’è‚·‚éB
- * @param (double startframe) IN •ÒWŠJnƒtƒŒ[ƒ€‚ğw’è‚·‚éB
- * @param (double endframe) IN •ÒWI—¹ƒtƒŒ[ƒ€‚ğw’è‚·‚éB
- * @param (int flag) IN ƒ}[ƒN‚ÉƒZƒbƒg‚·‚éƒtƒ‰ƒOB’Êí‚P‚ğw’èB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail p¨•ÒW‚ÌŠJn‚ÆI—¹‚Éƒ}[ƒN‚ğ•t‚¯A‚·‚Å‚É‚»‚ÌŠÔ‚Éƒ}[ƒN‚ª‚ ‚ê‚Î‚»‚ê‚ğÁ‚·B
+ * @breaf å§¿å‹¢ç·¨é›†ãƒãƒ¼ã‚¯ã‚’ä»˜ã‘ã‚‹ã€‚
+ * @param (int motid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (OrgWinGUI::OWP_Timeline* owpTimeline) IN ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int curlineno) IN ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®ãƒ©ã‚¤ãƒ³ç•ªå·ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double startframe) IN ç·¨é›†é–‹å§‹ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double endframe) IN ç·¨é›†çµ‚äº†ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int flag) IN ãƒãƒ¼ã‚¯ã«ã‚»ãƒƒãƒˆã™ã‚‹ãƒ•ãƒ©ã‚°ã€‚é€šå¸¸ï¼‘ã‚’æŒ‡å®šã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail å§¿å‹¢ç·¨é›†ã®é–‹å§‹æ™‚ã¨çµ‚äº†æ™‚ã«ãƒãƒ¼ã‚¯ã‚’ä»˜ã‘ã€ã™ã§ã«ãã®é–“ã«ãƒãƒ¼ã‚¯ãŒã‚ã‚Œã°ãã‚Œã‚’æ¶ˆã™ã€‚
  */
 	int AddBoneMotMark( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, int curlineno, double startframe, double endframe, int flag );
 
@@ -401,11 +401,11 @@ public:
 /**
  * @fn
  * CalcLocalInfo
- * @breaf w’èƒ‚[ƒVƒ‡ƒ“‚Ìw’èŠÔ‚Ìp¨‚©‚çƒ[ƒJƒ‹‚È‰ñ“]ƒNƒH[ƒ^ƒjƒIƒ“‚ÆˆÚ“®ƒxƒNƒgƒ‹‚ğŒvZ‚·‚éB
- * @param (int motid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (double frameno) IN ƒ‚[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€iŠÔj‚ğw’è‚·‚éB
- * @param (CMotionPoint* pdstmp) OUT ŒvZŒ‹‰Ê‚ğó‚¯æ‚éCMotionPoint‚Ìƒ|ƒCƒ“ƒ^‚ğw’è‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf æŒ‡å®šãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®æŒ‡å®šæ™‚é–“ã®å§¿å‹¢ã‹ã‚‰ãƒ­ãƒ¼ã‚«ãƒ«ãªå›è»¢ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³ã¨ç§»å‹•ãƒ™ã‚¯ãƒˆãƒ«ã‚’è¨ˆç®—ã™ã‚‹ã€‚
+ * @param (int motid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double frameno) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ¬ãƒ¼ãƒ ï¼ˆæ™‚é–“ï¼‰ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (CMotionPoint* pdstmp) OUT è¨ˆç®—çµæœã‚’å—ã‘å–ã‚‹CMotionPointã®ãƒã‚¤ãƒ³ã‚¿ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int CalcLocalInfo(bool limitdegflag, int motid, double frameno, CMotionPoint* pdstmp);
 	//int CalcCurrentLocalInfo(CMotionPoint* pdstmp);
@@ -415,21 +415,21 @@ public:
 /**
  * @fn
  * GetBoneNum
- * @breaf ‚±‚Ìƒ{[ƒ“‚ğe‚Æ‚·‚éƒ{[ƒ“‚Ì”‚ğæ“¾‚·‚éB
- * @return ƒ{[ƒ“‚Ì”B
- * @detail q‹Ÿ‚Æq‹Ÿ‚ÌŒZ’í‚Ì”‚Ì‡Œv‚ğ•Ô‚·B
+ * @breaf ã“ã®ãƒœãƒ¼ãƒ³ã‚’è¦ªã¨ã™ã‚‹ãƒœãƒ¼ãƒ³ã®æ•°ã‚’å–å¾—ã™ã‚‹ã€‚
+ * @return ãƒœãƒ¼ãƒ³ã®æ•°ã€‚
+ * @detail å­ä¾›ã¨å­ä¾›ã®å…„å¼Ÿã®æ•°ã®åˆè¨ˆã‚’è¿”ã™ã€‚
  */
 	int GetBoneNum();
 
 	/**
 	* @fn
 	* CalcAxisMatX_aft
-	* @breaf ƒ{[ƒ“‚Ì²‚Ì‚½‚ß‚Ì•ÏŠ·s—ñ‚ğŒvZ‚·‚éB‰Šúó‘Ô‚ªX²‚ğŒü‚¢‚Ä‚¢‚é‚Æ‰¼’è‚µ‚ÄŒvZ‚·‚éB
-	* @param (ChaVector3 curpos) IN ƒ{[ƒ“‚ÌˆÊ’uB
-	* @param (ChaVector3 childpos) IN q‹Ÿ‚Ìƒ{[ƒ“‚ÌˆÊ’uB
-	* @param (ChaMatrix* destmat) OUT •ÏŠ·s—ñ‚ğŠi”[‚·‚éƒf[ƒ^‚Ö‚Ìƒ|ƒCƒ“ƒ^B
-	* @return ¬Œ÷‚µ‚½‚ç‚OB
-	* @detail CalcAxisMatX‚©‚çŒÄ‚Î‚ê‚éB
+	* @breaf ãƒœãƒ¼ãƒ³ã®è»¸ã®ãŸã‚ã®å¤‰æ›è¡Œåˆ—ã‚’è¨ˆç®—ã™ã‚‹ã€‚åˆæœŸçŠ¶æ…‹ãŒXè»¸ã‚’å‘ã„ã¦ã„ã‚‹ã¨ä»®å®šã—ã¦è¨ˆç®—ã™ã‚‹ã€‚
+	* @param (ChaVector3 curpos) IN ãƒœãƒ¼ãƒ³ã®ä½ç½®ã€‚
+	* @param (ChaVector3 childpos) IN å­ä¾›ã®ãƒœãƒ¼ãƒ³ã®ä½ç½®ã€‚
+	* @param (ChaMatrix* destmat) OUT å¤‰æ›è¡Œåˆ—ã‚’æ ¼ç´ã™ã‚‹ãƒ‡ãƒ¼ã‚¿ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚
+	* @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+	* @detail CalcAxisMatXã‹ã‚‰å‘¼ã°ã‚Œã‚‹ã€‚
 	*/
 	//int CalcAxisMatX_aft(ChaVector3 curpos, ChaVector3 childpos, ChaMatrix* destmat);
 
@@ -444,7 +444,7 @@ public:
 	//ChaVector3 GetUnlimitedBefEul(int srcmotid, double srcframe);
 	int GetNotModify180Flag(int srcmotid, double srcframe);
 	ChaVector3 CalcLocalEulXYZ(bool limitdegflag, int axiskind, int srcmotid, double srcframe, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);//axiskind : BONEAXIS_*  or  -1(CBone::m_anglelimit.boneaxiskind)
-	//ChaVector3 CalcLocalUnlimitedEulXYZ(int srcmotid, double srcframe);//motion-->anglelimit—p
+	//ChaVector3 CalcLocalUnlimitedEulXYZ(int srcmotid, double srcframe);//motion-->anglelimitç”¨
 	//ChaVector3 CalcLocalLimitedEulXYZ(int srcmotid, double srcframe);
 	//ChaVector3 CalcCurrentLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
 	//ChaVector3 CalcBtLocalEulXYZ(int axiskind, tag_befeulkind befeulkind, ChaVector3* directbefeul = 0);
@@ -452,13 +452,13 @@ public:
 	//ChaMatrix CalcCurrentLocalRotMatFromEul(ChaVector3 srceul);
 	//ChaVector3 CalcLocalEulAndSetLimitedEul(int srcmotid, double srcframe);
 
-	//manipulators—ñ‚ÌŒvZ‚É‚Í@CalcAxisX_Manipulator()‚ğg‚¤
+	//manipulatorè¡Œåˆ—ã®è¨ˆç®—ã«ã¯ã€€CalcAxisX_Manipulator()ã‚’ä½¿ã†
 	//ChaMatrix CalcManipulatorMatrix(int settraflag, int multworld, int srcmotid, double srcframe);
 	//ChaMatrix CalcManipulatorPostureMatrix(int calccapsuleflag, int settraflag, int multworld, int calczeroframe);
 
 
 	ChaVector3 GetWorldPos(bool limitdegflag, int srcmotid, double srcframe);
-	//•âŠÔ–³‚µ
+	//è£œé–“ç„¡ã—
 	ChaMatrix GetWorldMat(bool limitdegflag, int srcmotid, double srcframe, CMotionPoint* srcmp, ChaVector3* dsteul = 0);
 	//ChaMatrix GetLimitedWorldMat(int srcmotid, double srcframe, ChaVector3* dstneweul = 0, int callingstate = 0);
 	ChaVector3 GetLocalEul(bool limitdegflag, int srcmotid, double srcframe, CMotionPoint* srcmp);
@@ -466,7 +466,7 @@ public:
 	ChaVector3 GetUnlimitedLocalEul(int srcmotid, double srcframe);
 	int SetWorldMat(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix srcmat, CMotionPoint* srcmp);
 	int SetWorldMat(bool limitdegflag, bool directsetflag, bool infooutflag, int setchildflag, 
-		int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget, ChaMatrix* parentbefeditmat = 0);
+		int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget);
 	int SetWorldMatFromEul(bool limitdegflag, int inittraflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag = 0);
 	int SetWorldMatFromEulAndScaleAndTra(bool limitdegflag, int inittraflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, ChaVector3 srcscale, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetWorldMatFromEulAndTra(bool limitdegflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe);
@@ -474,13 +474,13 @@ public:
 	int SetLocalEul(bool limitdegflag, int srcmotid, double srcframe, ChaVector3 srceul, CMotionPoint* srcmp);
 	//int SetLimitedLocalEul(int srcmotid, double srcframe, ChaVector3 srceul);
 
-	int CopyWorldToLimitedWorld(int srcmotid, double srcframe);//§ŒÀŠp“x–³‚µ‚Ìp¨‚ğ§ŒÀ—L‚è‚Ìp¨‚ÉƒRƒs[‚·‚é
-	int CopyLimitedWorldToWorld(int srcmotid, double srcframe);//§ŒÀŠp“x—L‚è‚Ìp¨‚ğ§ŒÀ–³‚µ‚Ìp¨‚ÉƒRƒs[‚·‚é
-	int ApplyNewLimitsToWM(int srcmotid, double srcframe);//§ŒÀŠp“x‚ğ•ÏX‚µ‚½Œã‚Ì@LimitedÄŒvZ
+	int CopyWorldToLimitedWorld(int srcmotid, double srcframe);//åˆ¶é™è§’åº¦ç„¡ã—ã®å§¿å‹¢ã‚’åˆ¶é™æœ‰ã‚Šã®å§¿å‹¢ã«ã‚³ãƒ”ãƒ¼ã™ã‚‹
+	int CopyLimitedWorldToWorld(int srcmotid, double srcframe);//åˆ¶é™è§’åº¦æœ‰ã‚Šã®å§¿å‹¢ã‚’åˆ¶é™ç„¡ã—ã®å§¿å‹¢ã«ã‚³ãƒ”ãƒ¼ã™ã‚‹
+	int ApplyNewLimitsToWM(int srcmotid, double srcframe, ChaMatrix befeditparentmat);//åˆ¶é™è§’åº¦ã‚’å¤‰æ›´ã—ãŸå¾Œã®ã€€Limitedå†è¨ˆç®—
 
 
 
-	//•âŠÔ—L‚è : Šo‚¦•ûƒƒ‚F@ŒvZÏ(Calclated)‚ÌLimitedWM‚ğ•âŠÔ‚·‚éŠÖ”‚Æ‚µ‚Än‚Ü‚è@‚»‚ÌŒã@–¢ŒvZ‚É‚à‘Î‰‚µ‚½
+	//è£œé–“æœ‰ã‚Š : è¦šãˆæ–¹ãƒ¡ãƒ¢ï¼šã€€è¨ˆç®—æ¸ˆ(Calclated)ã®LimitedWMã‚’è£œé–“ã™ã‚‹é–¢æ•°ã¨ã—ã¦å§‹ã¾ã‚Šã€€ãã®å¾Œã€€æœªè¨ˆç®—æ™‚ã«ã‚‚å¯¾å¿œã—ãŸ
 	ChaMatrix GetCurrentWorldMat(bool multmodelwm);
 	//ChaMatrix GetCurrentLimitedWorldMat();
 	//int GetCalclatedLimitedWM(int srcmotid, double srcframe, ChaMatrix* plimitedworldmat, CMotionPoint** pporgbefmp = 0, int callingstate = 0);
@@ -492,7 +492,7 @@ public:
 	//int CalcWorldMatAfterThread(int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
 	ChaVector3 CalcLocalTraAnim(bool limitdegflag, int srcmotid, double srcframe);
 	ChaVector3 CalcLocalScaleAnim(bool limitdegflag, int srcmotid, double srcframe);
-	ChaVector3 CalcFbxScaleAnim(bool limitdegflag, int srcmotid, double srcframe);//2022/09/12 fbx‘‚«o‚µê—p
+	ChaVector3 CalcFbxScaleAnim(bool limitdegflag, int srcmotid, double srcframe);//2022/09/12 fbxæ›¸ãå‡ºã—å°‚ç”¨
 	ChaMatrix CalcLocalScaleRotMat(bool limitdegflag, int rotcenterflag, int srcmotid, double srcframe);
 	ChaMatrix CalcLocalSymScaleRotMat(bool limitdegflag, int rotcenterflag, int srcmotid, double srcframe);
 	ChaVector3 CalcLocalSymScaleVec(bool limitdegflag, int srcmotid, double srcframe);
@@ -501,8 +501,8 @@ public:
 	ChaMatrix CalcSymXMat2(bool limitdegflag, int srcmotid, double srcframe, int symrootmode);
 	int PasteMotionPoint(bool limitdegflag, int srcmotid, double srcframe, CMotionPoint srcmp);
 
-	ChaVector3 CalcFBXEulXYZ(bool limitdegflag, int srcmotid, double srcframe);//2022/09/12 fbx‘‚«o‚µê—p
-	ChaVector3 CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe);//2022/09/12 fbx‘‚«o‚µê—p
+	ChaVector3 CalcFBXEulXYZ(bool limitdegflag, int srcmotid, double srcframe);//2022/09/12 fbxæ›¸ãå‡ºã—å°‚ç”¨
+	ChaVector3 CalcFBXTra(bool limitdegflag, int srcmotid, double srcframe);//2022/09/12 fbxæ›¸ãå‡ºã—å°‚ç”¨
 	int QuaternionInOrder(bool limitdegflag, int srcmotid, double srcframe, CQuaternion* srcdstq);
 	int CalcNewBtMat(CModel* srcmodel, CBone* childbone, ChaMatrix* dstmat, ChaVector3* dstpos);
 
@@ -514,7 +514,7 @@ public:
 	int SetCurrentMotion(int srcmotid, double animleng);
 	void ResetMotionCache();
 
-	ChaMatrix GetCurrentZeroFrameMat(bool limitdegflag, int updateflag);//current motion‚Ìframe 0‚Ìworldmat
+	ChaMatrix GetCurrentZeroFrameMat(bool limitdegflag, int updateflag);//current motionã®frame 0ã®worldmat
 	ChaMatrix GetCurrentZeroFrameInvMat(bool limitdegflag, int updateflag);
 
 
@@ -546,7 +546,7 @@ public:
 	int AngleLimitReplace180to170();
 	int AdditiveCurrentToAngleLimit();
 	int AdditiveAllMotionsToAngleLimit();
-	//int AdditiveToAngleLimit(ChaVector3 cureul);//ƒtƒ‹ƒtƒŒ[ƒ€ŒvZ‚µ‚ÄÅ‘åÅ¬‚ğƒZƒbƒg‚·‚é‚æ‚¤‚É•ÏX‚µ‚½‚½‚ß@‚±‚ÌŠÖ”‚Íg—p‚µ‚È‚¢
+	//int AdditiveToAngleLimit(ChaVector3 cureul);//ãƒ•ãƒ«ãƒ•ãƒ¬ãƒ¼ãƒ è¨ˆç®—ã—ã¦æœ€å¤§æœ€å°ã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã‚ˆã†ã«å¤‰æ›´ã—ãŸãŸã‚ã€€ã“ã®é–¢æ•°ã¯ä½¿ç”¨ã—ãªã„
 
 	int InitMP(bool limitdegflag, int srcmotid, double srcframelen);
 
@@ -557,19 +557,19 @@ private:
 /**
  * @fn
  * InitParams
- * @breaf ƒNƒ‰ƒXƒƒ“ƒo‚Ì‰Šú‰»‚ğ‚·‚éB
- * @return ‚OB
+ * @breaf ã‚¯ãƒ©ã‚¹ãƒ¡ãƒ³ãƒã®åˆæœŸåŒ–ã‚’ã™ã‚‹ã€‚
+ * @return ï¼ã€‚
  */
 	int InitParams();
 	int InitParamsForReUse(CModel* srcparmodel);
 
-	int SetParams(CModel* parmodel);//ƒRƒ“ƒXƒgƒ‰ƒNƒ^‚ÌInitParams‚Å‚Í‘«‚è‚È‚¢•”•ª
+	int SetParams(CModel* parmodel);//ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿ã®InitParamsã§ã¯è¶³ã‚Šãªã„éƒ¨åˆ†
 
 /**
  * @fn
  * DestroyObjs
- * @breaf ƒNƒ‰ƒX‚ÅƒAƒƒP[ƒg‚µ‚½ƒƒ‚ƒŠ‚ğŠJ•ú‚·‚éB
- * @return ‚OB
+ * @breaf ã‚¯ãƒ©ã‚¹ã§ã‚¢ãƒ­ã‚±ãƒ¼ãƒˆã—ãŸãƒ¡ãƒ¢ãƒªã‚’é–‹æ”¾ã™ã‚‹ã€‚
+ * @return ï¼ã€‚
  */
 	int DestroyObjs();
 
@@ -577,9 +577,9 @@ private:
 /**
  * @fn
  * CalcAxisMatX
- * @breaf ƒ{[ƒ“‚Ì²‚Ì‚½‚ß‚Ì•ÏŠ·s—ñ‚ğŒvZ‚·‚éBƒ{[ƒ“‚Ì²‚ğŒvZ‚µ‚ÄCalcAxisMatX_aft‚É“n‚µ‚ÄŒvZ‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail CalcAxisMat‚©‚çŒÄ‚Î‚ê‚éB
+ * @breaf ãƒœãƒ¼ãƒ³ã®è»¸ã®ãŸã‚ã®å¤‰æ›è¡Œåˆ—ã‚’è¨ˆç®—ã™ã‚‹ã€‚ãƒœãƒ¼ãƒ³ã®è»¸ã‚’è¨ˆç®—ã—ã¦CalcAxisMatX_aftã«æ¸¡ã—ã¦è¨ˆç®—ã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail CalcAxisMatã‹ã‚‰å‘¼ã°ã‚Œã‚‹ã€‚
  */
 	//int CalcAxisMatX();
 
@@ -590,46 +590,46 @@ private:
 /**
  * @fn
  * CalcAxisMatY
- * @breaf ƒ{[ƒ“‚Ì²‚Ì‚½‚ß‚Ì•ÏŠ·s—ñ‚ğŒvZ‚·‚éB‰Šúó‘Ô‚ªZ²‚ğŒü‚¢‚Ä‚¢‚é‚Æ‰¼’è‚µ‚ÄŒvZ‚·‚éB
- * @param (CBone* childbone) IN q‹Ÿ‚Ìƒ{[ƒ“B
- * @param (ChaMatrix* dstmat) OUT •ÏŠ·s—ñ‚ğŠi”[‚·‚éƒf[ƒ^‚Ö‚Ìƒ|ƒCƒ“ƒ^B
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ãƒœãƒ¼ãƒ³ã®è»¸ã®ãŸã‚ã®å¤‰æ›è¡Œåˆ—ã‚’è¨ˆç®—ã™ã‚‹ã€‚åˆæœŸçŠ¶æ…‹ãŒZè»¸ã‚’å‘ã„ã¦ã„ã‚‹ã¨ä»®å®šã—ã¦è¨ˆç®—ã™ã‚‹ã€‚
+ * @param (CBone* childbone) IN å­ä¾›ã®ãƒœãƒ¼ãƒ³ã€‚
+ * @param (ChaMatrix* dstmat) OUT å¤‰æ›è¡Œåˆ—ã‚’æ ¼ç´ã™ã‚‹ãƒ‡ãƒ¼ã‚¿ã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	//int CalcAxisMatY( CBone* childbone, ChaMatrix* dstmat );
 
 /**
  * @fn
  * CalcLocalAxisMat
- * @breaf ƒ[ƒJƒ‹‚Èƒ{[ƒ“²‚Ì•ÏŠ·s—ñ‚ğŒvZ‚·‚éB
- * @param (ChaMatrix motmat) IN ƒOƒ[ƒoƒ‹‚Èp¨s—ñB
- * @param (ChaMatrix axismatpar) IN ƒOƒ[ƒoƒ‹‚Èƒ{[ƒ“²•ÏŠ·s—ñBX²Šî€B
- * @param (ChaMatrix gaxisy) IN ƒOƒ[ƒoƒ‹‚Èƒ{[ƒ“²•ÏŠ·s—ñBY²Šî€B
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail ŒvZŒ‹‰Ê‚ÍGetAxisMatPar()‚Åæ“¾‚·‚éB
+ * @breaf ãƒ­ãƒ¼ã‚«ãƒ«ãªãƒœãƒ¼ãƒ³è»¸ã®å¤‰æ›è¡Œåˆ—ã‚’è¨ˆç®—ã™ã‚‹ã€‚
+ * @param (ChaMatrix motmat) IN ã‚°ãƒ­ãƒ¼ãƒãƒ«ãªå§¿å‹¢è¡Œåˆ—ã€‚
+ * @param (ChaMatrix axismatpar) IN ã‚°ãƒ­ãƒ¼ãƒãƒ«ãªãƒœãƒ¼ãƒ³è»¸å¤‰æ›è¡Œåˆ—ã€‚Xè»¸åŸºæº–ã€‚
+ * @param (ChaMatrix gaxisy) IN ã‚°ãƒ­ãƒ¼ãƒãƒ«ãªãƒœãƒ¼ãƒ³è»¸å¤‰æ›è¡Œåˆ—ã€‚Yè»¸åŸºæº–ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail è¨ˆç®—çµæœã¯GetAxisMatPar()ã§å–å¾—ã™ã‚‹ã€‚
  */
 	//int CalcLocalAxisMat( ChaMatrix motmat, ChaMatrix axismatpar, ChaMatrix gaxisy );
 
 /**
  * @fn
  * SetGroupNoByName
- * @breaf „‘Ì‚Ì‚ ‚½‚è”»’è—p‚ÌƒOƒ‹[ƒv”Ô†‚ğİ’è‚·‚éBƒ{[ƒ“‚Ì–¼‘O‚©‚ç”»’è‚µ‚Äİ’è‚·‚éB
- * @param (CRigidElem* curre) IN „‘Ì‚ÌCRigidElem‚Ö‚Ìƒ|ƒCƒ“ƒ^B
- * @param (CBone* childbone) IN ƒ{[ƒ“‚ÌCBone‚Ö‚Ìƒ|ƒCƒ“ƒ^B
- * @return ¬Œ÷‚µ‚½‚ç‚OB
- * @detail BT_‚ª–¼‘O‚É‚Â‚­‚à‚Ì‚É‚à„‘Ì—p‚ÌƒOƒ‹[ƒv”Ô†‚ª—^‚¦‚ç‚ê‚éB‚»‚êˆÈŠO‚ÌƒOƒ‹[ƒv”Ô†‚ÍAname_G_*** Œ`®‚Ì–¼‘O‚Åw’è‚Å‚«‚éB
+ * @breaf å‰›ä½“ã®ã‚ãŸã‚Šåˆ¤å®šç”¨ã®ã‚°ãƒ«ãƒ¼ãƒ—ç•ªå·ã‚’è¨­å®šã™ã‚‹ã€‚ãƒœãƒ¼ãƒ³ã®åå‰ã‹ã‚‰åˆ¤å®šã—ã¦è¨­å®šã™ã‚‹ã€‚
+ * @param (CRigidElem* curre) IN å‰›ä½“ã®CRigidElemã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚
+ * @param (CBone* childbone) IN ãƒœãƒ¼ãƒ³ã®CBoneã¸ã®ãƒã‚¤ãƒ³ã‚¿ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
+ * @detail BT_ãŒåå‰ã«ã¤ãã‚‚ã®ã«ã‚‚å‰›ä½“ç”¨ã®ã‚°ãƒ«ãƒ¼ãƒ—ç•ªå·ãŒä¸ãˆã‚‰ã‚Œã‚‹ã€‚ãã‚Œä»¥å¤–ã®ã‚°ãƒ«ãƒ¼ãƒ—ç•ªå·ã¯ã€name_G_*** å½¢å¼ã®åå‰ã§æŒ‡å®šã§ãã‚‹ã€‚
  */
 	int SetGroupNoByName( CRigidElem* curre, CBone* childbone );
 
 /**
  * @fn
  * AddBoneMarkIfNot
- * @breaf ƒ{[ƒ“‚Ì•ÒWƒ}[ƒN‚ğ•t‚¯‚éB
- * @param (int motid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (OrgWinGUI::OWP_Timeline* owpTimeline) IN ƒ^ƒCƒ€ƒ‰ƒCƒ“‚ğw’è‚·‚éB
- * @param (int curlineno) IN ƒ^ƒCƒ€ƒ‰ƒCƒ“‚Ìƒ‰ƒCƒ“”Ô†‚ğw’è‚·‚éB
- * @param (double curframe) IN ƒ‚[ƒVƒ‡ƒ“‚ÌƒtƒŒ[ƒ€‚ğw’è‚·‚éB
- * @param (int flag) IN ƒ}[ƒN‚ÉƒZƒbƒg‚·‚é’lA’Êí‚Í‚P‚ğw’è‚·‚éB
- * @return ¬Œ÷‚µ‚½‚ç‚OB
+ * @breaf ãƒœãƒ¼ãƒ³ã®ç·¨é›†ãƒãƒ¼ã‚¯ã‚’ä»˜ã‘ã‚‹ã€‚
+ * @param (int motid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (OrgWinGUI::OWP_Timeline* owpTimeline) IN ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int curlineno) IN ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®ãƒ©ã‚¤ãƒ³ç•ªå·ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double curframe) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®ãƒ•ãƒ¬ãƒ¼ãƒ ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int flag) IN ãƒãƒ¼ã‚¯ã«ã‚»ãƒƒãƒˆã™ã‚‹å€¤ã€é€šå¸¸ã¯ï¼‘ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @return æˆåŠŸã—ãŸã‚‰ï¼ã€‚
  */
 	int AddBoneMarkIfNot( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, int curlineno, double curframe, int flag );
 
@@ -637,13 +637,13 @@ private:
 /**
  * @fn
  * DelBoneMarkRange
- * @breaf w’è”ÍˆÍ“à‚Ì•ÒWƒ}[ƒN‚ğíœ‚·‚éB
- * @param (int motid) IN ƒ‚[ƒVƒ‡ƒ“‚ÌID‚ğw’è‚·‚éB
- * @param (OrgWinGUI::OWP_Timeline* owpTimeline) IN ƒ^ƒCƒ€ƒ‰ƒCƒ“‚ğw’è‚·‚éB
- * @param (int curlineno) IN ƒ^ƒCƒ€ƒ‰ƒCƒ“‚Ìƒ‰ƒCƒ“”Ô†‚ğw’è‚·‚éB
- * @param (double startframe) IN íœŠJnƒtƒŒ[ƒ€B
- * @param (double endframe) IN íœI—¹ƒtƒŒ[ƒ€B
- * @return –ß‚è’l‚Ìà–¾
+ * @breaf æŒ‡å®šç¯„å›²å†…ã®ç·¨é›†ãƒãƒ¼ã‚¯ã‚’å‰Šé™¤ã™ã‚‹ã€‚
+ * @param (int motid) IN ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®IDã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (OrgWinGUI::OWP_Timeline* owpTimeline) IN ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (int curlineno) IN ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®ãƒ©ã‚¤ãƒ³ç•ªå·ã‚’æŒ‡å®šã™ã‚‹ã€‚
+ * @param (double startframe) IN å‰Šé™¤é–‹å§‹ãƒ•ãƒ¬ãƒ¼ãƒ ã€‚
+ * @param (double endframe) IN å‰Šé™¤çµ‚äº†ãƒ•ãƒ¬ãƒ¼ãƒ ã€‚
+ * @return æˆ»ã‚Šå€¤ã®èª¬æ˜
  */
 	int DelBoneMarkRange( int motid, OrgWinGUI::OWP_Timeline* owpTimeline, int curlineno, double startframe, double endframe );
 
@@ -709,7 +709,7 @@ public: //accesser
 			return m_motionkey[srccookie - 1];
 		}
 		else {
-			//_ASSERT(0);//OnAddMotion‚Ì‚Æ‚«‚É‚Í—L‚è“¾‚é
+			//_ASSERT(0);//OnAddMotionã®ã¨ãã«ã¯æœ‰ã‚Šå¾—ã‚‹
 			return 0;
 		}
 	};
@@ -731,11 +731,11 @@ public: //accesser
 		bool existflag = false;
 		std::map<int, bool>::iterator itrinitflag;
 		itrinitflag = m_initindexedmotionpoint.find(srcmotid);//initflag
-		if (itrinitflag == m_initindexedmotionpoint.end()) {//ƒGƒ“ƒgƒŠ[‚ª‚Ü‚¾–³‚¢‚Æ‚«
+		if (itrinitflag == m_initindexedmotionpoint.end()) {//ã‚¨ãƒ³ãƒˆãƒªãƒ¼ãŒã¾ã ç„¡ã„ã¨ã
 			existflag = false;
 		}
 		else {
-			if (itrinitflag->second == false) {//‰Šú‰»ƒtƒ‰ƒO‚ªfalse‚Ì‚Æ‚«@
+			if (itrinitflag->second == false) {//åˆæœŸåŒ–ãƒ•ãƒ©ã‚°ãŒfalseã®ã¨ãã€€
 				existflag = false;
 			}
 			else {
@@ -1050,7 +1050,7 @@ public: //accesser
 
 
 	CModel* GetParModel(){ return m_parmodel; };
-	//void SetParModel( CModel* srcpar ){ m_parmodel = srcpar; };//parmodel‚²‚Æ‚Ìm_boneno‚É’ˆÓIII
+	//void SetParModel( CModel* srcpar ){ m_parmodel = srcpar; };//parmodelã”ã¨ã®m_bonenoã«æ³¨æ„ï¼ï¼ï¼
 
 	bool IsNull()
 	{
@@ -1166,7 +1166,7 @@ public: //accesser
 
 
 	//ChaMatrix GetENullMatrix(double srctime);
-	//void CalcEnullMatReq(double srctime, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat);//parent•ûŒü‚ÖŒvZ
+	//void CalcEnullMatReq(double srctime, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat);//parentæ–¹å‘ã¸è¨ˆç®—
 	ChaMatrix GetTransformMat(double srctime, bool forceanimflag);
 	ChaMatrix CalcFbxLocalMatrix(bool limitdegflag, int srcmotid, double srcframe);
 
@@ -1227,7 +1227,7 @@ public: //accesser
 		m_firstcalcrigid = srcflag;
 	};
 
-	//”ŠwŒvZ‚ÌIKTargetFlag‚É•ÏX
+	//æ•°å­¦è¨ˆç®—ã®IKTargetFlagã«å¤‰æ›´
 	//void SetPosConstraint(int srcval){
 	//	m_posconstraint = srcval;
 	//};
@@ -1386,7 +1386,7 @@ public: //accesser
 	}
 
 	//2023/02/16
-	//fbx‚Ì‰Šúp¨‚ÌƒWƒ‡ƒCƒ“ƒg‚ÌŒü‚«‚ğ‘‚«o‚·‚½‚ß‚É’Ç‰Á
+	//fbxã®åˆæœŸå§¿å‹¢ã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®å‘ãã‚’æ›¸ãå‡ºã™ãŸã‚ã«è¿½åŠ 
 	void SaveFbxNodePosture(FbxNode* pNode);
 	//void RestoreFbxNodePosture(FbxNode* pNode);
 	int CalcLocalNodePosture(bool bindposeflag, FbxNode* pNode, double srcframe, ChaMatrix* plocalnodemat, ChaMatrix* plocalnodeanimmat);
@@ -1607,9 +1607,9 @@ private:
 	char m_engbonename[256];
 	int m_curmotid;
 
-	int m_upkind;//m_gaxismatXparŒvZ‚Ìupvec
+	int m_upkind;//m_gaxismatXparè¨ˆç®—æ™‚ã®upvec
 
-	bool m_posefoundflag;//BindPose‚Ì’†‚É‚±‚Ìƒ{[ƒ“‚ÌˆÊ’uî•ñ‚ª‚ ‚Á‚½ê‡trueB
+	bool m_posefoundflag;//BindPoseã®ä¸­ã«ã“ã®ãƒœãƒ¼ãƒ³ã®ä½ç½®æƒ…å ±ãŒã‚ã£ãŸå ´åˆtrueã€‚
 
 
 	//ChaMatrix m_localS0;//local Scale at Frame0
@@ -1619,54 +1619,54 @@ private:
 	//ChaMatrix m_firstGlobalSRT;//globalSRT matrix at Frame0
 
 
-	ChaVector3 m_childworld;//ƒ{[ƒ“‚Ìq‹Ÿ‚Ìƒ‚[ƒVƒ‡ƒ“s—ñ“K—pŒã‚ÌÀ•WB
-	ChaVector3 m_childscreen;//ƒ{[ƒ“‚Ìq‹Ÿ‚ÌWVP“K—pŒã‚ÌÀ•WB
+	ChaVector3 m_childworld;//ãƒœãƒ¼ãƒ³ã®å­ä¾›ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³è¡Œåˆ—é©ç”¨å¾Œã®åº§æ¨™ã€‚
+	ChaVector3 m_childscreen;//ãƒœãƒ¼ãƒ³ã®å­ä¾›ã®WVPé©ç”¨å¾Œã®åº§æ¨™ã€‚
 
 
 
 
-	std::map<int, CMotionPoint*> m_motionkey;//m_motionkey[ ƒ‚[ƒVƒ‡ƒ“ID ]‚Åƒ‚[ƒVƒ‡ƒ“‚ÌÅ‰‚ÌƒtƒŒ[ƒ€‚Ìp¨‚ÉƒAƒNƒZƒX‚Å‚«‚éB
-	CMotionPoint m_curmp;//Œ»İ‚ÌWVP“K—pŒã‚Ìp¨ƒf[ƒ^B ### ŒvZÏ ###
-	//CMotionPoint m_calccurmp;////Œ»İ‚ÌWVP“K—pŒã‚Ìp¨ƒf[ƒ^B ### ŒvZ’† ###
-	//CMotionPoint m_befmp;//ˆê‰ñ‘O‚Ìp¨ƒf[ƒ^B
-	CMotionPoint* m_cachebefmp[MAXMOTIONNUM + 1];//motid‚²‚Æ‚ÌƒLƒƒƒbƒVƒ…
+	std::map<int, CMotionPoint*> m_motionkey;//m_motionkey[ ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ID ]ã§ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã®æœ€åˆã®ãƒ•ãƒ¬ãƒ¼ãƒ ã®å§¿å‹¢ã«ã‚¢ã‚¯ã‚»ã‚¹ã§ãã‚‹ã€‚
+	CMotionPoint m_curmp;//ç¾åœ¨ã®WVPé©ç”¨å¾Œã®å§¿å‹¢ãƒ‡ãƒ¼ã‚¿ã€‚ ### è¨ˆç®—æ¸ˆ ###
+	//CMotionPoint m_calccurmp;////ç¾åœ¨ã®WVPé©ç”¨å¾Œã®å§¿å‹¢ãƒ‡ãƒ¼ã‚¿ã€‚ ### è¨ˆç®—ä¸­ ###
+	//CMotionPoint m_befmp;//ä¸€å›å‰ã®å§¿å‹¢ãƒ‡ãƒ¼ã‚¿ã€‚
+	CMotionPoint* m_cachebefmp[MAXMOTIONNUM + 1];//motidã”ã¨ã®ã‚­ãƒ£ãƒƒã‚·ãƒ¥
 
 	//std::vector<CMotionPoint*> m_indexedmp;
 	std::map<int, std::vector<CMotionPoint*>> m_indexedmotionpoint;
 	std::map<int, bool> m_initindexedmotionpoint;
 	CMotionPoint m_dummymp;
 
-	CQuaternion m_axisq;//ƒ{[ƒ“‚Ì²‚ÌƒNƒH[ƒ^ƒjƒIƒ“•\Œ»B
-	ChaMatrix m_laxismat;//Zƒ{[ƒ“‚Ìaxismat
+	CQuaternion m_axisq;//ãƒœãƒ¼ãƒ³ã®è»¸ã®ã‚¯ã‚©ãƒ¼ã‚¿ãƒ‹ã‚ªãƒ³è¡¨ç¾ã€‚
+	ChaMatrix m_laxismat;//Zãƒœãƒ¼ãƒ³ã®axismat
 
-	//ChaMatrix m_gaxismatXpar;//Xƒ{[ƒ“‚ÌƒOƒ[ƒoƒ‹‚Ìaxismat
-	//ChaMatrix m_gaxismatYpar;//Yƒ{[ƒ“‚ÌƒOƒ[ƒoƒ‹‚Ìaxismat
-	//ChaMatrix m_axismat_par;//Xƒ{[ƒ“‚Ìƒ[ƒJƒ‹‚Ìaxismat
-	//ChaMatrix m_firstaxismatX;//‰Šúó‘Ô‚Å‚ÌXƒ{[ƒ“‚ÌƒOƒ[ƒoƒ‹axismat
-	//ChaMatrix m_firstaxismatZ;//‰Šúó‘Ô‚Å‚ÌZƒ{[ƒ“‚ÌƒOƒ[ƒoƒ‹axismat
+	//ChaMatrix m_gaxismatXpar;//Xãƒœãƒ¼ãƒ³ã®ã‚°ãƒ­ãƒ¼ãƒãƒ«ã®axismat
+	//ChaMatrix m_gaxismatYpar;//Yãƒœãƒ¼ãƒ³ã®ã‚°ãƒ­ãƒ¼ãƒãƒ«ã®axismat
+	//ChaMatrix m_axismat_par;//Xãƒœãƒ¼ãƒ³ã®ãƒ­ãƒ¼ã‚«ãƒ«ã®axismat
+	//ChaMatrix m_firstaxismatX;//åˆæœŸçŠ¶æ…‹ã§ã®Xãƒœãƒ¼ãƒ³ã®ã‚°ãƒ­ãƒ¼ãƒãƒ«axismat
+	//ChaMatrix m_firstaxismatZ;//åˆæœŸçŠ¶æ…‹ã§ã®Zãƒœãƒ¼ãƒ³ã®ã‚°ãƒ­ãƒ¼ãƒãƒ«axismat
 
 
-	//ChaMatrix m_startmat2;//ƒ[ƒ‹ƒhs—ñ‚ğ•Û‘¶‚µ‚Ä‚¨‚­‚Æ‚±‚ëB„‘ÌƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚ğn‚ß‚éÛ‚È‚Ç‚É•Û‘¶‚·‚éB
+	//ChaMatrix m_startmat2;//ãƒ¯ãƒ¼ãƒ«ãƒ‰è¡Œåˆ—ã‚’ä¿å­˜ã—ã¦ãŠãã¨ã“ã‚ã€‚å‰›ä½“ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ã‚’å§‹ã‚ã‚‹éš›ãªã©ã«ä¿å­˜ã™ã‚‹ã€‚
 
-	int m_getanimflag;//FBXƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚ŞÛ‚ÉƒAƒjƒ[ƒVƒ‡ƒ“‚ğ“Ç‚İ‚ñ‚¾‚ç‚PB
+	int m_getanimflag;//FBXãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿è¾¼ã‚€éš›ã«ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã‚’èª­ã¿è¾¼ã‚“ã ã‚‰ï¼‘ã€‚
 	
-	ChaMatrix m_nodemat;//ƒWƒ‡ƒCƒ“ƒg‚Ì‰ŠúˆÊ’u‚ğŒvZ‚·‚é‚Æ‚«‚Ég—p‚·‚éBFBX“Ç‚İ‚İ‚ÉƒZƒbƒg‚µ‚Äg—p‚·‚éB(0frameƒAƒjƒ–³‚µ)
-	ChaMatrix m_nodeanimmat;//ƒWƒ‡ƒCƒ“ƒg‚Ì‰ŠúˆÊ’u‚ğŒvZ‚·‚é‚Æ‚«‚Ég—p‚·‚éBFBX“Ç‚İ‚İ‚ÉƒZƒbƒg‚µ‚Äg—p‚·‚éB(0frameƒAƒjƒ—L‚è)
+	ChaMatrix m_nodemat;//ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®åˆæœŸä½ç½®ã‚’è¨ˆç®—ã™ã‚‹ã¨ãã«ä½¿ç”¨ã™ã‚‹ã€‚FBXèª­ã¿è¾¼ã¿æ™‚ã«ã‚»ãƒƒãƒˆã—ã¦ä½¿ç”¨ã™ã‚‹ã€‚(0frameã‚¢ãƒ‹ãƒ¡ç„¡ã—)
+	ChaMatrix m_nodeanimmat;//ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®åˆæœŸä½ç½®ã‚’è¨ˆç®—ã™ã‚‹ã¨ãã«ä½¿ç”¨ã™ã‚‹ã€‚FBXèª­ã¿è¾¼ã¿æ™‚ã«ã‚»ãƒƒãƒˆã—ã¦ä½¿ç”¨ã™ã‚‹ã€‚(0frameã‚¢ãƒ‹ãƒ¡æœ‰ã‚Š)
 
 	FbxAMatrix m_bindmat;//getpose bindpose
-	ChaMatrix m_firstmat;//ƒWƒ‡ƒCƒ“ƒg‚Ì‰ŠúˆÊ’u‚ğŒvZ‚·‚é‚Æ‚«‚Ég—p‚·‚éBFBX“Ç‚İ‚İ‚ÉƒZƒbƒg‚µ‚Äg—p‚·‚éB
-	ChaMatrix m_invfirstmat;//ƒWƒ‡ƒCƒ“ƒg‚Ì‰ŠúˆÊ’u‚ğŒvZ‚·‚é‚Æ‚«‚Ég—p‚·‚éBFBX“Ç‚İ‚İ‚ÉƒZƒbƒg‚µ‚Äg—p‚·‚éB
-	ChaVector3 m_jointfpos;//ƒWƒ‡ƒCƒ“ƒg‚Ì‰ŠúˆÊ’uB
-	ChaVector3 m_oldjointfpos;//ƒWƒ‡ƒCƒ“ƒg‰ŠúˆÊ’ui‹Œƒf[ƒ^ŒİŠ·j
-	ChaVector3 m_jointwpos;//FBX‚ÉƒAƒjƒ[ƒVƒ‡ƒ“‚ª“ü‚Á‚Ä‚¢‚È‚¢‚ÌƒWƒ‡ƒCƒ“ƒg‚Ì‰ŠúˆÊ’uB
-	FbxAMatrix m_globalpos;//ƒWƒ‡ƒCƒ“ƒg‚Ì‰ŠúˆÊ’u‚ğŒvZ‚·‚é‚Æ‚«‚Ég—p‚·‚éBFBX“Ç‚İ‚İ‚ÉƒZƒbƒg‚µ‚Äg—p‚·‚éB
+	ChaMatrix m_firstmat;//ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®åˆæœŸä½ç½®ã‚’è¨ˆç®—ã™ã‚‹ã¨ãã«ä½¿ç”¨ã™ã‚‹ã€‚FBXèª­ã¿è¾¼ã¿æ™‚ã«ã‚»ãƒƒãƒˆã—ã¦ä½¿ç”¨ã™ã‚‹ã€‚
+	ChaMatrix m_invfirstmat;//ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®åˆæœŸä½ç½®ã‚’è¨ˆç®—ã™ã‚‹ã¨ãã«ä½¿ç”¨ã™ã‚‹ã€‚FBXèª­ã¿è¾¼ã¿æ™‚ã«ã‚»ãƒƒãƒˆã—ã¦ä½¿ç”¨ã™ã‚‹ã€‚
+	ChaVector3 m_jointfpos;//ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®åˆæœŸä½ç½®ã€‚
+	ChaVector3 m_oldjointfpos;//ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆåˆæœŸä½ç½®ï¼ˆæ—§ãƒ‡ãƒ¼ã‚¿äº’æ›ï¼‰
+	ChaVector3 m_jointwpos;//FBXã«ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ãŒå…¥ã£ã¦ã„ãªã„æ™‚ã®ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®åˆæœŸä½ç½®ã€‚
+	FbxAMatrix m_globalpos;//ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®åˆæœŸä½ç½®ã‚’è¨ˆç®—ã™ã‚‹ã¨ãã«ä½¿ç”¨ã™ã‚‹ã€‚FBXèª­ã¿è¾¼ã¿æ™‚ã«ã‚»ãƒƒãƒˆã—ã¦ä½¿ç”¨ã™ã‚‹ã€‚
 	ChaMatrix m_initmat;
 	ChaMatrix m_invinitmat;
-	ChaMatrix m_tmpmat;//ˆêg—p–Ú“I
+	ChaMatrix m_tmpmat;//ä¸€æ™‚ä½¿ç”¨ç›®çš„
 	CQuaternion m_tmpq;
 	ChaMatrix m_tmpsymmat;
 
-	int m_defboneposkind;//FbxFile.cpp FbxSetDefaultBonePosReq()‚ÅƒZƒbƒg@BP‚Ì—L–³‚È‚Ç
+	int m_defboneposkind;//FbxFile.cpp FbxSetDefaultBonePosReq()ã§ã‚»ãƒƒãƒˆã€€BPã®æœ‰ç„¡ãªã©
 
 
 	//CQuaternion m_addlimitq;
@@ -1683,33 +1683,33 @@ private:
 	int m_initcustomrigflag;
 	CUSTOMRIG m_customrig[MAXRIGNUM];
 
-	//CBone*‚Íq‹ŸƒWƒ‡ƒCƒ“ƒg‚Ìƒ|ƒCƒ“ƒ^Bq‹Ÿ‚Ì”‚¾‚¯ƒGƒ“ƒgƒŠ[‚ª‚ ‚éB
+	//CBone*ã¯å­ä¾›ã‚¸ãƒ§ã‚¤ãƒ³ãƒˆã®ãƒã‚¤ãƒ³ã‚¿ã€‚å­ä¾›ã®æ•°ã ã‘ã‚¨ãƒ³ãƒˆãƒªãƒ¼ãŒã‚ã‚‹ã€‚
 	//std::map<CBone*, CRigidElem*> m_rigidelem;
 	std::string m_rigidelemname;
 
 
-	//m_remap‚ÍAjoint‚Ì–¼‘O‚ÅƒZƒbƒg‚·‚ê‚Îmap<string,CRigidElem*>‚ÅÏ‚ŞB
-	//–¼‘O‚ÅˆêˆÓ‚ÈRigidElem‚ğ‘I‘ğ‚·‚é‚½‚ß‚Éq‹Ÿ‚Ìƒ{[ƒ“‚Ì–¼‘O‚ğg—p‚·‚éB
-	//‚»‚Ì‚½‚ßq‹Ÿ‚Ìƒ{[ƒ“‚Ì–¼‘O‚ÆCRigidElem‚ÌƒZƒbƒg‚ğg‚¤B
-	//m_impmap‚É‚Â‚¢‚Ä‚à“¯—l‚Ì‚±‚Æ‚ª‚¢‚¦‚éB
-	std::map<std::string, std::map<CBone*, CRigidElem*>> m_remap;//map<İ’èƒtƒ@ƒCƒ‹–¼, map<q‹Ÿƒ{[ƒ“, „‘Ìİ’è>>
-	std::map<std::string, std::map<CBone*, ChaVector3>> m_impmap;//map<İ’èƒtƒ@ƒCƒ‹–¼, map<q‹Ÿƒ{[ƒ“, ƒCƒ“ƒpƒ‹ƒXİ’è>>
+	//m_remapã¯ã€jointã®åå‰ã§ã‚»ãƒƒãƒˆã™ã‚Œã°map<string,CRigidElem*>ã§æ¸ˆã‚€ã€‚
+	//åå‰ã§ä¸€æ„ãªRigidElemã‚’é¸æŠã™ã‚‹ãŸã‚ã«å­ä¾›ã®ãƒœãƒ¼ãƒ³ã®åå‰ã‚’ä½¿ç”¨ã™ã‚‹ã€‚
+	//ãã®ãŸã‚å­ä¾›ã®ãƒœãƒ¼ãƒ³ã®åå‰ã¨CRigidElemã®ã‚»ãƒƒãƒˆã‚’ä½¿ã†ã€‚
+	//m_impmapã«ã¤ã„ã¦ã‚‚åŒæ§˜ã®ã“ã¨ãŒã„ãˆã‚‹ã€‚
+	std::map<std::string, std::map<CBone*, CRigidElem*>> m_remap;//map<è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«å, map<å­ä¾›ãƒœãƒ¼ãƒ³, å‰›ä½“è¨­å®š>>
+	std::map<std::string, std::map<CBone*, ChaVector3>> m_impmap;//map<è¨­å®šãƒ•ã‚¡ã‚¤ãƒ«å, map<å­ä¾›ãƒœãƒ¼ãƒ³, ã‚¤ãƒ³ãƒ‘ãƒ«ã‚¹è¨­å®š>>
 
 
-	int m_btkinflag;//bullet kinematic flagB„‘ÌƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚ÌªŒ³‚Ìƒ{[ƒ“‚ªŒÅ’èƒ‚[ƒVƒ‡ƒ“‚É’Ç‚·‚éÛ‚Í‚O‚ğw’è‚·‚éB‚»‚Ì‘¼‚Í‚PB
-	int m_btforce;//bullet ‹­§ƒtƒ‰ƒOBƒ‚ƒfƒ‹‚Éİ’è‚³‚ê‚Ä‚¢‚ébtkinflag‚Å‚ ‚éBm_btkinflag‚ÍƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“ŠJn‚ÆI—¹‚Å•Ï‰»‚·‚é‚ªA‚±‚Ìƒtƒ‰ƒO‚Í“Ç‚İ‚İ‚Éİ’è‚³‚ê‚é‚à‚Ì‚Å‚ ‚éB
-	std::map<CBone*,CBtObject*> m_btobject;//CBtObject‚Íbullet‚Ì„‘ÌƒIƒuƒWƒFƒNƒg‚ğƒ‰ƒbƒv‚µ‚½ƒNƒ‰ƒX‚Å‚ ‚éBƒ{[ƒ“‚ÆCBtObject‚ÌmapB
+	int m_btkinflag;//bullet kinematic flagã€‚å‰›ä½“ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³ã®æ ¹å…ƒã®ãƒœãƒ¼ãƒ³ãŒå›ºå®šãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ã«è¿½éšã™ã‚‹éš›ã¯ï¼ã‚’æŒ‡å®šã™ã‚‹ã€‚ãã®ä»–ã¯ï¼‘ã€‚
+	int m_btforce;//bullet å¼·åˆ¶ãƒ•ãƒ©ã‚°ã€‚ãƒ¢ãƒ‡ãƒ«ã«è¨­å®šã•ã‚Œã¦ã„ã‚‹btkinflagã§ã‚ã‚‹ã€‚m_btkinflagã¯ã‚·ãƒŸãƒ¥ãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³é–‹å§‹ã¨çµ‚äº†ã§å¤‰åŒ–ã™ã‚‹ãŒã€ã“ã®ãƒ•ãƒ©ã‚°ã¯èª­ã¿è¾¼ã¿æ™‚ã«è¨­å®šã•ã‚Œã‚‹ã‚‚ã®ã§ã‚ã‚‹ã€‚
+	std::map<CBone*,CBtObject*> m_btobject;//CBtObjectã¯bulletã®å‰›ä½“ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆã‚’ãƒ©ãƒƒãƒ—ã—ãŸã‚¯ãƒ©ã‚¹ã§ã‚ã‚‹ã€‚ãƒœãƒ¼ãƒ³ã¨CBtObjectã®mapã€‚
 
-	//ƒ^ƒCƒ€ƒ‰ƒCƒ“‚Ìƒ‚[ƒVƒ‡ƒ“•ÒWƒ}[ƒN
-	//Å‰‚Ìint‚ÍmotidBŸ‚Ìmap‚Íframeno‚ÆXVƒtƒ‰ƒOBXVƒtƒ‰ƒO‚Í“Ç‚İ‚İ‚Ìƒ}[ƒN‚Í‚OA‚»‚êˆÈŒã‚Ì•ÒWƒ}[ƒN‚Í‚P‚É‚·‚é—\’èBF‚ğ•Ï‚¦‚é‚©‚àB
+	//ã‚¿ã‚¤ãƒ ãƒ©ã‚¤ãƒ³ã®ãƒ¢ãƒ¼ã‚·ãƒ§ãƒ³ç·¨é›†ãƒãƒ¼ã‚¯
+	//æœ€åˆã®intã¯motidã€‚æ¬¡ã®mapã¯framenoã¨æ›´æ–°ãƒ•ãƒ©ã‚°ã€‚æ›´æ–°ãƒ•ãƒ©ã‚°ã¯èª­ã¿è¾¼ã¿æ™‚ã®ãƒãƒ¼ã‚¯ã¯ï¼ã€ãã‚Œä»¥å¾Œã®ç·¨é›†ãƒãƒ¼ã‚¯ã¯ï¼‘ã«ã™ã‚‹äºˆå®šã€‚è‰²ã‚’å¤‰ãˆã‚‹ã‹ã‚‚ã€‚
 	std::map<int, std::map<double,int>> m_motmark;
 
 
 	CModel* m_parmodel;
 
-	int m_firstgetflag;//GetCurrentZeroFrameMat—p
-	ChaMatrix m_firstgetmatrix;//GetCurrentZeroFrameMat—p
-	ChaMatrix m_invfirstgetmatrix;//GetCurrentZeroFrameMat—p
+	int m_firstgetflag;//GetCurrentZeroFrameMatç”¨
+	ChaMatrix m_firstgetmatrix;//GetCurrentZeroFrameMatç”¨
+	ChaMatrix m_invfirstgetmatrix;//GetCurrentZeroFrameMatç”¨
 
 	bool m_tmpkinematic;
 
@@ -1718,8 +1718,8 @@ private:
 	double m_befupdatetime;
 
 
-	//ChaVector3 m_temporgeul;//§ŒÀŠp“x—L‚èA•À—ñ‰»‚ÌÛ‚Ìˆê’u‚«ê
-	//ChaVector3 m_tempneweul;//§ŒÀŠp“x—L‚èA•À—ñ‰»‚ÌÛ‚Ìˆê’u‚«ê
+	//ChaVector3 m_temporgeul;//åˆ¶é™è§’åº¦æœ‰ã‚Šã€ä¸¦åˆ—åŒ–ã®éš›ã®ä¸€æ™‚ç½®ãå ´
+	//ChaVector3 m_tempneweul;//åˆ¶é™è§’åº¦æœ‰ã‚Šã€ä¸¦åˆ—åŒ–ã®éš›ã®ä¸€æ™‚ç½®ãå ´
 
 	bool m_skipRenderBoneMark;
 
@@ -1727,7 +1727,7 @@ private:
 
 
 	//2023/02/16
-	//joint‚ÌŒü‚«‚Ì‘‚«o‚µ‚É‘Î‰‚·‚é‚½‚ßƒƒ“ƒo’Ç‰Á
+	//jointã®å‘ãã®æ›¸ãå‡ºã—ã«å¯¾å¿œã™ã‚‹ãŸã‚ãƒ¡ãƒ³ãƒè¿½åŠ 
 	FbxDouble3 m_fbxLclPos;
 	FbxDouble3 m_fbxRotOff;
 	FbxDouble3 m_fbxRotPiv;

@@ -23,7 +23,7 @@ public:
 	~CUndoMotion();
 
 	int ClearData();
-	int SaveUndoMotion(bool limitdegflag, CModel* pmodel, int curboneno, int curbaseno,
+	int SaveUndoMotion(bool LimitDegCheckBoxFlag, bool limitdegflag, CModel* pmodel, int curboneno, int curbaseno,
 		CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate, bool allframeflag);
 	int RollBackMotion(bool limitdegflag, CModel* pmodel, int* curboneno, int* curbaseno,
 		double* dststartframe, double* dstendframe, double* dstapplyrate, BRUSHSTATE* dstbrushstate);

@@ -8930,7 +8930,9 @@ void PrepairUndo()
 			else {
 				allframeflag = false;
 			}
-			s_model->SaveUndoMotion(g_limitdegflag, s_curboneno, s_curbaseno,
+
+			//2023/10/27 1.2.0.27 RC5 : s_LimitDegCheckBoxFlag == true時　つまり　LimitEulボタンのオンオフ時はモーションの保存をスキップ
+			s_model->SaveUndoMotion(s_LimitDegCheckBoxFlag, g_limitdegflag, s_curboneno, s_curbaseno,
 				&s_editrange, (double)g_applyrate, brushstate, allframeflag);
 
 			SetCursor(oldcursor);//カーソルを元に戻す
@@ -10290,71 +10292,100 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		g_underIKRotApplyFrame = false;
 		g_fpsforce30 = false;
 		int editmotionflag = s_editmotionflag;
-		if (s_oprigflag == 0) {
-			if ((s_ikkind == 0) && (editmotionflag >= 0)) {
-				if (s_pickinfo.buttonflag == PICK_CENTER) {
-					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
-					s_editmotionflag = s_model->IKRotatePostIK(g_limitdegflag,
-						&s_editrange, s_pickinfo.pickobjno, g_iklevel);
+		if ((s_undoFlag == false) && (s_redoFlag == false)) {
+			if (s_oprigflag == 0) {
+				if ((s_ikkind == 0) && (editmotionflag >= 0)) {
+					if (s_pickinfo.buttonflag == PICK_CENTER) {
+						HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+						s_editmotionflag = s_model->IKRotatePostIK(g_limitdegflag,
+							&s_editrange, s_pickinfo.pickobjno, g_iklevel);
 
-					if (oldcursor != NULL) {
-						SetCursor(oldcursor);
+						if (oldcursor != NULL) {
+							SetCursor(oldcursor);
+						}
+						ikdoneflag = true;
 					}
-					ikdoneflag = true;
-				}
-				else if ((s_pickinfo.buttonflag == PICK_X) ||
-					(s_pickinfo.buttonflag == PICK_Y) ||
-					(s_pickinfo.buttonflag == PICK_Z) ||
-					(s_pickinfo.buttonflag == PICK_SPA_X) ||
-					(s_pickinfo.buttonflag == PICK_SPA_Y) ||
-					(s_pickinfo.buttonflag == PICK_SPA_Z)) {
-					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+					else if ((s_pickinfo.buttonflag == PICK_X) ||
+						(s_pickinfo.buttonflag == PICK_Y) ||
+						(s_pickinfo.buttonflag == PICK_Z) ||
+						(s_pickinfo.buttonflag == PICK_SPA_X) ||
+						(s_pickinfo.buttonflag == PICK_SPA_Y) ||
+						(s_pickinfo.buttonflag == PICK_SPA_Z)) {
+						HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-					s_editmotionflag = s_model->IKRotateAxisDeltaPostIK(
-						g_limitdegflag,
-						&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno,
-						g_iklevel, s_ikcnt);
+						s_editmotionflag = s_model->IKRotateAxisDeltaPostIK(
+							g_limitdegflag,
+							&s_editrange, s_pickinfo.buttonflag, s_pickinfo.pickobjno,
+							g_iklevel, s_ikcnt);
 
 
-					if (oldcursor != NULL) {
-						SetCursor(oldcursor);
+						if (oldcursor != NULL) {
+							SetCursor(oldcursor);
+						}
+						ikdoneflag = true;
 					}
-					ikdoneflag = true;
 				}
+				else if ((s_ikkind == 1) && (editmotionflag >= 0)) {
+					if (s_pickinfo.buttonflag == PICK_CENTER) {
+						HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+						g_underPostFKTra = true;
+
+						s_model->FKBoneTraPostFK(g_limitdegflag,
+							&s_editrange, s_curboneno);
+						s_editmotionflag = s_curboneno;
+
+						g_underPostFKTra = false;
+
+						if (oldcursor != NULL) {
+							SetCursor(oldcursor);
+						}
+						ikdoneflag = true;
+					}
+					else if ((s_pickinfo.buttonflag == PICK_X) ||
+						(s_pickinfo.buttonflag == PICK_Y) ||
+						(s_pickinfo.buttonflag == PICK_Z) ||
+						(s_pickinfo.buttonflag == PICK_SPA_X) ||
+						(s_pickinfo.buttonflag == PICK_SPA_Y) ||
+						(s_pickinfo.buttonflag == PICK_SPA_Z)) {
+						HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
+
+						g_underPostFKTra = true;
+
+						s_model->FKBoneTraAxisPostFK(
+							g_limitdegflag,
+							&s_editrange, s_curboneno);
+						s_editmotionflag = s_curboneno;
+
+						g_underPostFKTra = false;
+
+						if (oldcursor != NULL) {
+							SetCursor(oldcursor);
+						}
+						ikdoneflag = true;
+					}
+				}
+
 			}
-			else if ((s_ikkind == 1) && (editmotionflag >= 0)) {
-				if (s_pickinfo.buttonflag == PICK_CENTER) {
+			else {
+				if (s_customrigbone && (s_customrigno >= 0) && (editmotionflag >= 0)) {
+
 					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-					g_underPostFKTra = true;
-					
-					s_model->FKBoneTraPostFK(g_limitdegflag,
-						&s_editrange, s_curboneno);
+					s_ikcustomrig = s_customrigbone->GetCustomRig(s_customrigno);
+					s_model->RigControlPostRig(g_limitdegflag,
+						0, &s_editrange, s_pickinfo.pickobjno,
+						0,
+						s_ikcustomrig, s_pickinfo.buttonflag);
+					ChaMatrix tmpwm = s_model->GetWorldMat();
+					s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
+					s_model->RigControlPostRig(g_limitdegflag,
+						0, &s_editrange, s_pickinfo.pickobjno,
+						1,
+						s_ikcustomrig, s_pickinfo.buttonflag);
+					tmpwm = s_model->GetWorldMat();
+					s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
 					s_editmotionflag = s_curboneno;
-					
-					g_underPostFKTra = false;
-
-					if (oldcursor != NULL) {
-						SetCursor(oldcursor);
-					}
-					ikdoneflag = true;
-				}
-				else if ((s_pickinfo.buttonflag == PICK_X) ||
-					(s_pickinfo.buttonflag == PICK_Y) ||
-					(s_pickinfo.buttonflag == PICK_Z) ||
-					(s_pickinfo.buttonflag == PICK_SPA_X) ||
-					(s_pickinfo.buttonflag == PICK_SPA_Y) ||
-					(s_pickinfo.buttonflag == PICK_SPA_Z)) {
-					HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
-
-					g_underPostFKTra = true; 
-					
-					s_model->FKBoneTraAxisPostFK(
-						g_limitdegflag,
-						&s_editrange, s_curboneno);
-					s_editmotionflag = s_curboneno;
-
-					g_underPostFKTra = false;
 
 					if (oldcursor != NULL) {
 						SetCursor(oldcursor);
@@ -10362,34 +10393,8 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 					ikdoneflag = true;
 				}
 			}
-
 		}
-		else {
-			if (s_customrigbone && (s_customrigno >= 0) && (editmotionflag >= 0)) {
 
-				HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
-
-				s_ikcustomrig = s_customrigbone->GetCustomRig(s_customrigno);
-				s_model->RigControlPostRig(g_limitdegflag,
-					0, &s_editrange, s_pickinfo.pickobjno,
-					0,
-					s_ikcustomrig, s_pickinfo.buttonflag);
-				ChaMatrix tmpwm = s_model->GetWorldMat();
-				s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
-				s_model->RigControlPostRig(g_limitdegflag,
-					0, &s_editrange, s_pickinfo.pickobjno,
-					1,
-					s_ikcustomrig, s_pickinfo.buttonflag);
-				tmpwm = s_model->GetWorldMat();
-				s_model->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
-				s_editmotionflag = s_curboneno;
-
-				if (oldcursor != NULL) {
-					SetCursor(oldcursor);
-				}
-				ikdoneflag = true;
-			}
-		}
 
 		g_underIKRot = false;
 
@@ -10410,22 +10415,6 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 		HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-		if (s_model && ikdoneflag) {
-			//############################################################################################################
-			//2023/10/16 - 2023/10/19
-			//マルチスレッドのコンテクストを　揃っている情報と要求される計算順序によって決めた
-			//親のボーンの姿勢を使う階層順の計算では　フレーム番号単位のマルチスレッド
-			//全ボーンの姿勢が揃った後で　前のフレームの姿勢を元にオイラー角を計算する際には　ボーンごとのマルチスレッド
-			// 
-			//befeul.currentframeeulでオイラーは　フレーム番号ごとのマルチスレッドで計算されている状態
-			// ！！！！！　g_underIKRot = falseとした後で　！！！！！
-			//後処理として　befeul.befframeeulで　ボーンごとのマルチスレッドで計算して正しいオイラーにする
-			//############################################################################################################
-			MOTINFO* curmi = s_model->GetCurMotInfo();
-			if (curmi) {
-				s_model->CalcBoneEul(g_limitdegflag, curmi->motid);
-			}
-		}
 
 		//2023/08/09
 		//自動フィルターは選択フレーム数が少ないときに動かなくなる　また　他の制限を満たしているジョイントの角度まで小さくなる
@@ -10446,6 +10435,23 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 
 		if ((s_undoFlag == false) && (s_redoFlag == false)) {
+
+			if (s_model && ikdoneflag) {
+				//############################################################################################################
+				//2023/10/16 - 2023/10/19
+				//マルチスレッドのコンテクストを　揃っている情報と要求される計算順序によって決めた
+				//親のボーンの姿勢を使う階層順の計算では　フレーム番号単位のマルチスレッド
+				//全ボーンの姿勢が揃った後で　前のフレームの姿勢を元にオイラー角を計算する際には　ボーンごとのマルチスレッド
+				// 
+				//befeul.currentframeeulでオイラーは　フレーム番号ごとのマルチスレッドで計算されている状態
+				// ！！！！！　g_underIKRot = falseとした後で　！！！！！
+				//後処理として　befeul.befframeeulで　ボーンごとのマルチスレッドで計算して正しいオイラーにする
+				//############################################################################################################
+				MOTINFO* curmi = s_model->GetCurMotInfo();
+				if (curmi) {
+					s_model->CalcBoneEul(g_limitdegflag, curmi->motid);
+				}
+			}
 
 			//2023/02/04
 			//LimitEulにチェックを入れて編集したモーション部分を　角度制限無しの姿勢にベイクする
@@ -27184,11 +27190,13 @@ int ApplyNewLimitsToWM(CModel* srcmodel)
 		ChaMatrix tmpwm = srcmodel->GetWorldMat();
 		MOTINFO* curmi = srcmodel->GetCurMotInfo();
 		if (curmi) {
+			ChaMatrix befeditparentmat;
+			befeditparentmat.SetIdentity();
 			double curframe2;
 			//for (curframe = 0.0; curframe < curmi->frameleng; curframe += 1.0) {
 			for (curframe2 = 1.0; curframe2 < curmi->frameleng; curframe2 += 1.0) {
 				srcmodel->SetMotionFrame(curframe2);
-				srcmodel->ApplyNewLimitsToWMReq(srcmodel->GetTopBone(false), curmi->motid, curframe2);
+				srcmodel->ApplyNewLimitsToWMReq(srcmodel->GetTopBone(false), curmi->motid, curframe2, befeditparentmat);
 				//srcmodel->UpdateMatrix(&tmpwm, &s_matVP);
 			}
 		}
@@ -29112,11 +29120,10 @@ int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 
 	if (updateeulflag) {
 
-		if (s_model) {
+		if (s_model && (g_limitdegflag == true)) {
 			ClearLimitedWM(s_model);
 			CopyWorldToLimitedWorld(s_model);
 			ApplyNewLimitsToWM(s_model);
-
 		}
 
 		//if (g_limitdegflag == true) {
@@ -29130,7 +29137,8 @@ int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 		//	}
 		//}
 
-		refreshEulerGraph();
+		//refreshEulerGraph();
+		UpdateEditedEuler();
 	}
 
 	//if (s_model && s_model->GetCurMotInfo()) {

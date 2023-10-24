@@ -1867,7 +1867,7 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 
 int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetflag,
 	bool infooutflag, int setchildflag,
-	int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget, ChaMatrix* parentbefeditmat)
+	int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget)
 {
 	double roundingframe = RoundingTime(srcframe);
 
@@ -1901,14 +1901,6 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 	saveworldmat = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
 	saveeul = srcbone->GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
 
-	////2023/10/24 再帰処理ごとに再帰処理が走るのをやめて　最適化
-	if (parentbefeditmat && srcbone->GetParent(false)) {
-		ChaMatrix currentparentmat = srcbone->GetParent(false)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-		saveworldmat = saveworldmat * ChaMatrixInv(*parentbefeditmat) * currentparentmat;
-	}
-
-
-
 
 	//if ((directsetflag == false) && (g_underRetargetFlag == false)){
 
@@ -1923,10 +1915,11 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 			//SetWorldMat()時には　回転計算用のローカル行列取得時に　parenetがeNullの場合関してもGetWorldMat[invNode * CalcENullMat]を使用
 			//Fbx回転計算時には　CalcLocalEulXYZ()内にて　parentがeNullの場合　invNode * CalcENullMatを使用
 			//Fbx移動計算時には　CalcFbxLocalMatrix内にて　parentがeNullの場合　GetENullMatrixを使用
-			ChaMatrix befparentwm;
-			befparentwm = srcbone->GetParent(false)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
-			beflocalmat = saveworldmat * ChaMatrixInv(befparentwm);
-			newlocalmat = srcmat * ChaMatrixInv(befparentwm);
+
+			ChaMatrix currentparentwm;
+			currentparentwm = srcbone->GetParent(false)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+			beflocalmat = saveworldmat * ChaMatrixInv(currentparentwm);
+			newlocalmat = srcmat * ChaMatrixInv(currentparentwm);
 		}
 		else {
 			beflocalmat = saveworldmat;

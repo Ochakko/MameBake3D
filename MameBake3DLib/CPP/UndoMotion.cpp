@@ -118,7 +118,7 @@ int CUndoMotion::DestroyObjs()
 }
 
 
-int CUndoMotion::SaveUndoMotion(bool limitdegflag, CModel* pmodel, int curboneno, int curbaseno,
+int CUndoMotion::SaveUndoMotion(bool LimitDegCheckBoxFlag, bool limitdegflag, CModel* pmodel, int curboneno, int curbaseno,
 	CEditRange* srcer, double srcapplyrate, BRUSHSTATE srcbrushstate, bool allframeflag)
 {
 	if (!pmodel) {
@@ -157,115 +157,153 @@ int CUndoMotion::SaveUndoMotion(bool limitdegflag, CModel* pmodel, int curboneno
 
 	int curmotid = curmi->motid;
 
-	map<int, CBone*>::iterator itrbone;
-	for( itrbone = pmodel->GetBoneListBegin(); itrbone != pmodel->GetBoneListEnd(); itrbone++ ){
-		CBone* curbone = itrbone->second;
-		//_ASSERT( curbone );
-		if (curbone && (curbone->IsSkeleton())){
-			
-			//####################
-			// ANGLELIMIT of bone
-			//####################
+	if (LimitDegCheckBoxFlag == false) {//2023/10/27 1.2.0.27 RC5 : LimitDegCheckBoxFlag == true時　つまり　LimitEulボタンのオンオフ時はモーションの保存をスキップ
 
-			int getchkflag = 1;
-			m_bone2limit[curbone] = curbone->GetAngleLimit(limitdegflag, getchkflag);
+		map<int, CBone*>::iterator itrbone;
+		for (itrbone = pmodel->GetBoneListBegin(); itrbone != pmodel->GetBoneListEnd(); itrbone++) {
+			CBone* curbone = itrbone->second;
+			//_ASSERT( curbone );
+			if (curbone && (curbone->IsSkeleton())) {
 
-			//###################
-			// first MotionPoint
-			//###################
-			double roundingstartframe, roundingendframe;
-			if (allframeflag == true) {
-				roundingstartframe = 1.0;
-				roundingendframe = RoundingTime(curmi->frameleng) - 1.0;
-			}
-			else {
-				roundingstartframe = RoundingTime(srcer->GetStartFrame());
-				roundingendframe = RoundingTime(srcer->GetEndFrame());
-			}
+				//####################
+				// ANGLELIMIT of bone
+				//####################
 
+				int getchkflag = 1;
+				m_bone2limit[curbone] = curbone->GetAngleLimit(limitdegflag, getchkflag);
 
-			CMotionPoint* firstsrcmp = curbone->GetMotionPoint(curmotid, roundingstartframe);
-			//CMotionPoint* firstsrcmp = curbone->GetMotionPoint(curmotid, 0.0);
-			if (!firstsrcmp) {
-				//_ASSERT(0);
-				return 2;
-			}
-			CMotionPoint* firstundomp = 0;
-			map<CBone*, CMotionPoint*>::iterator itrbone2mp;
-			itrbone2mp = m_bone2mp.find(curbone);
-			if (itrbone2mp != m_bone2mp.end()) {
-				firstundomp = itrbone2mp->second;
-			}
-			if (!firstundomp) {
-				firstundomp = CMotionPoint::GetNewMP();
-				if (!firstundomp) {
-					_ASSERT(0);
-					SetValidFlag(0);
-					return 1;
-				}
-				m_bone2mp[curbone] = firstundomp;
-			}
-			firstundomp->CopyMP(firstsrcmp);
-			firstundomp->SetUndoValidFlag(1);
-
-			//######################
-			// followed MotionPoint
-			//######################
-
-			CMotionPoint* befundomp = firstundomp;
-
-			double currenttime;
-			CMotionPoint* srcmp = firstsrcmp;
-			CMotionPoint* undomp = firstundomp;
-
-
-			for (currenttime = (roundingstartframe + 1.0); currenttime <= roundingendframe; currenttime += 1.0) {
-			//for (currenttime = 1.0; currenttime < (pmodel->GetCurMotInfo()->frameleng - 1.0); currenttime += 1.0) {
-				srcmp = curbone->GetMotionPoint(curmotid, (double)((int)(currenttime + 0.1)));
-				undomp = 0;
-				if (srcmp && befundomp) {
-					undomp = befundomp->GetNext();
-					if (!undomp) {
-						undomp = CMotionPoint::GetNewMP();
-						if (!undomp) {
-							_ASSERT(0);
-							SetValidFlag(0);
-							return 1;
-						}
-						befundomp->AddToNext(undomp);
-					}
-					undomp->CopyMP(srcmp);
-					undomp->SetUndoValidFlag(1);
+				//###################
+				// first MotionPoint
+				//###################
+				double roundingstartframe, roundingendframe;
+				if (allframeflag == true) {
+					roundingstartframe = 1.0;
+					roundingendframe = RoundingTime(curmi->frameleng) - 1.0;
 				}
 				else {
-					_ASSERT(0);
-					SetValidFlag(0);
-					return 1;
+					roundingstartframe = RoundingTime(srcer->GetStartFrame());
+					roundingendframe = RoundingTime(srcer->GetEndFrame());
 				}
 
-				befundomp = undomp;
-			}
 
-			if (undomp) {
-				undomp = undomp->GetNext();
-				while (undomp) {
-					undomp->SetUndoValidFlag(0);
+				CMotionPoint* firstsrcmp = curbone->GetMotionPoint(curmotid, roundingstartframe);
+				//CMotionPoint* firstsrcmp = curbone->GetMotionPoint(curmotid, 0.0);
+				if (!firstsrcmp) {
+					//_ASSERT(0);
+					return 2;
+				}
+				CMotionPoint* firstundomp = 0;
+				map<CBone*, CMotionPoint*>::iterator itrbone2mp;
+				itrbone2mp = m_bone2mp.find(curbone);
+				if (itrbone2mp != m_bone2mp.end()) {
+					firstundomp = itrbone2mp->second;
+				}
+				if (!firstundomp) {
+					firstundomp = CMotionPoint::GetNewMP();
+					if (!firstundomp) {
+						_ASSERT(0);
+						SetValidFlag(0);
+						return 1;
+					}
+					m_bone2mp[curbone] = firstundomp;
+				}
+				firstundomp->CopyMP(firstsrcmp);
+				firstundomp->SetUndoValidFlag(1);
+
+				//######################
+				// followed MotionPoint
+				//######################
+
+				CMotionPoint* befundomp = firstundomp;
+
+				double currenttime;
+				CMotionPoint* srcmp = firstsrcmp;
+				CMotionPoint* undomp = firstundomp;
+
+
+				for (currenttime = (roundingstartframe + 1.0); currenttime <= roundingendframe; currenttime += 1.0) {
+					//for (currenttime = 1.0; currenttime < (pmodel->GetCurMotInfo()->frameleng - 1.0); currenttime += 1.0) {
+					srcmp = curbone->GetMotionPoint(curmotid, (double)((int)(currenttime + 0.1)));
+					undomp = 0;
+					if (srcmp && befundomp) {
+						undomp = befundomp->GetNext();
+						if (!undomp) {
+							undomp = CMotionPoint::GetNewMP();
+							if (!undomp) {
+								_ASSERT(0);
+								SetValidFlag(0);
+								return 1;
+							}
+							befundomp->AddToNext(undomp);
+						}
+						undomp->CopyMP(srcmp);
+						undomp->SetUndoValidFlag(1);
+					}
+					else {
+						_ASSERT(0);
+						SetValidFlag(0);
+						return 1;
+					}
+
+					befundomp = undomp;
+				}
+
+				if (undomp) {
 					undomp = undomp->GetNext();
+					while (undomp) {
+						undomp->SetUndoValidFlag(0);
+						undomp = undomp->GetNext();
+					}
 				}
-			}
 
-			map<double, int> tmpmap;
-			curbone->GetMotMarkOfMap2(curmotid, tmpmap);
-			if ((int)tmpmap.size() > 0){
-				(m_bonemotmark[curbone]).clear();
-				m_bonemotmark[curbone] = tmpmap;
-			}
-			else{
-				(m_bonemotmark[curbone]).clear();
+				map<double, int> tmpmap;
+				curbone->GetMotMarkOfMap2(curmotid, tmpmap);
+				if ((int)tmpmap.size() > 0) {
+					(m_bonemotmark[curbone]).clear();
+					m_bonemotmark[curbone] = tmpmap;
+				}
+				else {
+					(m_bonemotmark[curbone]).clear();
+				}
 			}
 		}
 	}
+	else {
 
+		//##########################################################################################################################
+		//2023/10/27 1.2.0.27 RC5 : LimitDegCheckBoxFlag == true時　つまり　LimitEulボタンのオンオフ時はモーションの保存をスキップ
+		// 
+		//undomp->SetValidFlag(0)をする
+		//
+		//##########################################################################################################################
+		map<int, CBone*>::iterator itrbone;
+		for (itrbone = pmodel->GetBoneListBegin(); itrbone != pmodel->GetBoneListEnd(); itrbone++) {
+			CBone* curbone = itrbone->second;
+			//_ASSERT( curbone );
+			if (curbone && (curbone->IsSkeleton())) {
+
+				//####################
+				// ANGLELIMIT of bone
+				//####################
+				int getchkflag = 1;
+				m_bone2limit[curbone] = curbone->GetAngleLimit(limitdegflag, getchkflag);
+
+				CMotionPoint* firstundomp = 0;
+				map<CBone*, CMotionPoint*>::iterator itrbone2mp;
+				itrbone2mp = m_bone2mp.find(curbone);
+				if (itrbone2mp != m_bone2mp.end()) {
+					firstundomp = itrbone2mp->second;
+				}
+				if (firstundomp) {
+					CMotionPoint* undomp = firstundomp;
+					while (undomp) {
+						undomp->SetUndoValidFlag(0);
+						undomp = undomp->GetNext();
+					}
+				}
+			}
+		}
+	}
 /***
 	map<int, CMQOObject*>::iterator itrbase;
 	for( itrbase = pmodel->m_mbaseobject.begin(); itrbase != pmodel->m_mbaseobject.end(); itrbase++ ){
