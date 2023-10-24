@@ -465,7 +465,8 @@ public:
 	ChaVector3 GetLimitedLocalEul(int srcmotid, double srcframe);
 	ChaVector3 GetUnlimitedLocalEul(int srcmotid, double srcframe);
 	int SetWorldMat(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix srcmat, CMotionPoint* srcmp);
-	int SetWorldMat(bool limitdegflag, bool directsetflag, bool infooutflag, int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget);
+	int SetWorldMat(bool limitdegflag, bool directsetflag, bool infooutflag, int setchildflag, 
+		int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget, ChaMatrix* parentbefeditmat = 0);
 	int SetWorldMatFromEul(bool limitdegflag, int inittraflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, int srcmotid, double srcframe, int initscaleflag = 0);
 	int SetWorldMatFromEulAndScaleAndTra(bool limitdegflag, int inittraflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, ChaVector3 srcscale, ChaVector3 srctra, int srcmotid, double srcframe);
 	int SetWorldMatFromEulAndTra(bool limitdegflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, ChaVector3 srctra, int srcmotid, double srcframe);

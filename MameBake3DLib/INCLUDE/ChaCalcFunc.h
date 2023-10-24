@@ -75,7 +75,8 @@ public:
 	ChaVector3 LimitEul(CBone* srcbone, ChaVector3 srceul);
 
 	int SetWorldMat(CBone* srcbone, bool limitdegflag, int srcmotid, double srcframe, ChaMatrix srcmat, CMotionPoint* srcmp);
-	int SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetflag, bool infooutflag, int setchildflag, int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget);
+	int SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetflag, bool infooutflag, int setchildflag, 
+		int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget, ChaMatrix* parentbefeditmat = 0);
 	int SetWorldMatFromEulAndScaleAndTra(CBone* srcbone, bool limitdegflag, int inittraflag, int setchildflag, ChaMatrix befwm, ChaVector3 srceul, ChaVector3 srcscale, ChaVector3 srctra, int srcmotid, double srcframe);
 
 	CMotionPoint* GetMotionPoint(CBone* srcbone, int srcmotid, double srcframe, bool onaddmotion = false);

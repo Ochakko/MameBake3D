@@ -1867,7 +1867,7 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 
 int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetflag,
 	bool infooutflag, int setchildflag,
-	int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget)
+	int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget, ChaMatrix* parentbefeditmat)
 {
 	double roundingframe = RoundingTime(srcframe);
 
@@ -1900,6 +1900,14 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 	ChaVector3 saveeul;
 	saveworldmat = srcbone->GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
 	saveeul = srcbone->GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
+
+	////2023/10/24 再帰処理ごとに再帰処理が走るのをやめて　最適化
+	if (parentbefeditmat && srcbone->GetParent(false)) {
+		ChaMatrix currentparentmat = srcbone->GetParent(false)->GetWorldMat(limitdegflag, srcmotid, roundingframe, 0);
+		saveworldmat = saveworldmat * ChaMatrixInv(*parentbefeditmat) * currentparentmat;
+	}
+
+
 
 
 	//if ((directsetflag == false) && (g_underRetargetFlag == false)){

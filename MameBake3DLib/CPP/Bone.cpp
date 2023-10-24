@@ -888,10 +888,38 @@ int CBone::ApplyNewLimitsToWM(int srcmotid, double srcframe)
 		curwm = GetWorldMat(limitdegflag, srcmotid, roundingframe, curmp);
 		bool directsetflag = false;
 		int infooutflag = 0;
-		int setchildflag = 1;//<-- 必須 RootNodeの回転を絞り込めば分かる
+
+
+		//2023/10/24
+		//int setchildflag = 1;//<-- 必須 RootNodeの回転を絞り込めば分かる <--- 2023/10/24コメントアウト
+		//この関数はCBone単体呼び出しでは使わない　RootのBoneから再帰的に全てのボーンに対して呼び出すはず　よってこのフラグを０にして高速化
+		//setchildflag = 0で正しく動かすには　１階層ごとにbefeditmatと新しいwmを考慮
+		int setchildflag = 0;
+		curmp->SetBefEditMat(curwm);
+		ChaMatrix parentbefeditmat;
+		ChaMatrix parentmat;
+		if (GetParent(false)) {
+			CMotionPoint* parentmp = GetParent(false)->GetMotionPoint(srcmotid, roundingframe);
+			if (parentmp) {
+				parentbefeditmat = parentmp->GetBefEditMat();
+				parentmat = parentmp->GetLimitedWM();
+
+				curwm = curwm * ChaMatrixInv(parentbefeditmat) * parentmat;
+			}
+			else {
+				parentbefeditmat.SetIdentity();
+				parentmat.SetIdentity();
+			}
+		}
+		else {
+			parentbefeditmat.SetIdentity();
+			parentmat.SetIdentity();
+		}
+
 		int onlycheck = 0;
 		bool fromiktarget = false;
-		SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, curwm, onlycheck, fromiktarget);
+		
+		SetWorldMat(limitdegflag, directsetflag, infooutflag, setchildflag, srcmotid, roundingframe, curwm, onlycheck, fromiktarget, &parentbefeditmat);
 		
 		//curmp->SetLimitedWM(newwm);
 		//curmp->SetLimitedLocalEul(neweul);
@@ -4919,12 +4947,12 @@ ChaVector3 CBone::GetLocalEul(bool limitdegflag, int srcmotid, double srcframe, 
 
 int CBone::SetWorldMat(bool limitdegflag, bool directsetflag, 
 	bool infooutflag, int setchildflag, 
-	int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget)
+	int srcmotid, double srcframe, ChaMatrix srcmat, int onlycheck, bool fromiktarget, ChaMatrix* parentbefeditmat)
 {
 	ChaCalcFunc chacalcfunc;
 	return chacalcfunc.SetWorldMat(this, limitdegflag, directsetflag,
 		infooutflag, setchildflag,
-		srcmotid, srcframe, srcmat, onlycheck, fromiktarget);
+		srcmotid, srcframe, srcmat, onlycheck, fromiktarget, parentbefeditmat);
 }
 
 int CBone::ChkMovableEul(ChaVector3 srceul)

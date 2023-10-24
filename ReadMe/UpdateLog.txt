@@ -1,8 +1,9 @@
-2023/10/23
-    EditMot 1.2.0.27 RC3(リリース候補3)
+2023/10/24
+    EditMot 1.2.0.27 RC4(リリース候補4)
 
 	RC2 : Retarget高速化(LimitEul自動オフと復元をやめ)
 	RC3 : TestフォルダのBoySportyとAutumnモデルの制限角度ファイル(*.lmt)更新
+	RC4 : ApplyNewLimitsToWMの再帰処理を最適化して高速化　影響度の計算し直しが関わる部分で大きく高速化
 
 
     １８０度以上のIK操作が出来るように
