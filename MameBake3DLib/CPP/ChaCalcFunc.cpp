@@ -1637,6 +1637,17 @@ int ChaCalcFunc::CalcBoneEulOne(CModel* srcmodel, bool limitdegflag, CBone* curb
 		double srcframe;
 		for (srcframe = RoundingTime(startframe); srcframe <= RoundingTime(endframe); srcframe += 1.0) {
 			cureul = curbone->CalcLocalEulXYZ(limitdegflag, paraxiskind, srcmotid, srcframe, BEFEUL_BEFFRAME);
+			//curbone->SetLocalEul(limitdegflag, srcmotid, srcframe, cureul, 0);
+
+			//ChaVector3 srceul = curbone->GetLocalEul(limitdegflag, srcmotid, srcframe, 0);
+			BEFEUL befeul = curbone->GetBefEul(limitdegflag, srcmotid, srcframe);
+			int notmodify180flag = curbone->GetNotModify180Flag(srcmotid, srcframe);
+			ModifyEuler360(&cureul, &(befeul.befframeeul), notmodify180flag, 15.0f, 15.0f, 15.0f);
+			//ModifyEuler360(&srceul, &(befeul.befframeeul), notmodify180flag, 91.0f, 181.0f, 181.0f);
+			//ModifyEuler360(&srceul, &(befeul.befframeeul), notmodify180flag, 91.0f, 91.0f, 91.0f);
+			//ModifyEuler360(&srceul, &(befeul.befframeeul), notmodify180flag, 45.0f, 45.0f, 45.0f);
+			//ModifyEuler360(&srceul, &(befeul.befframeeul), notmodify180flag, 1.0f, 1.0f, 1.0f);
+			//ModifyEuler360(&srceul, &(befeul.befframeeul), notmodify180flag, 180.0f, 180.0f, 180.0f);
 			curbone->SetLocalEul(limitdegflag, srcmotid, srcframe, cureul, 0);
 		}
 	}
@@ -1697,8 +1708,18 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 		//2023/10/18
 		//limitdeg trueのときのために　limitdegflagはそのまま渡す必要
 		//１８０度オーバー対策としては　PostIKの後に　CalcBoneEulを呼ぶ
-		befeul = srcbone->GetBefEul(limitdegflag, srcmotid, roundingframe);
+		//befeul = srcbone->GetBefEul(limitdegflag, srcmotid, roundingframe);
 
+		//2023/10/25
+		//3回転して１回転の制限角度にする場合などに　制限中のはずの角度が小さい角度で評価されないように　&& 
+		//limitdeg trueのときにも　180度オーバーの角度で制限を掛ける
+		if (g_underCalcEul) {
+			befeul = srcbone->GetBefEul(limitdegflag, srcmotid, roundingframe);
+		}
+		else {
+			bool befeullimitdegflag = false;
+			befeul = srcbone->GetBefEul(befeullimitdegflag, srcmotid, roundingframe);
+		}
 	}
 	else if ((befeulkind == BEFEUL_DIRECT) && directbefeul) {
 		befeul.befframeeul = *directbefeul;
@@ -1999,9 +2020,18 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 					}
 					else {
 						ChaVector3 limiteul;
-						bool limitdegOnLimitEul2 = false;//2023/02/07 befeulはunlimited. 何回転もする場合にオーバー１８０度の角度で制限するために.
-						//limiteul = LimitEul(neweul, GetBefEul(limitdegOnLimitEul2, srcmotid, roundingframe));
-						limiteul = srcbone->LimitEul(neweul);
+						////bool limitdegOnLimitEul2 = false;//2023/02/07 befeulはunlimited. 何回転もする場合にオーバー１８０度の角度で制限するために.
+						////limiteul = LimitEul(neweul, GetBefEul(limitdegOnLimitEul2, srcmotid, roundingframe));
+
+						//limiteul = srcbone->LimitEul(neweul);<--- これだと壁すりになる
+
+						//############################################################################################################
+						//2023/10/25
+						//角度制限により動かさない場合にbefeul.befframeeulを使うので　ApplyNewLimitsToWM()はマルチスレッド化出来ない
+						//############################################################################################################
+						BEFEUL befeul = srcbone->GetBefEul(limitdegflag, srcmotid, roundingframe);
+						limiteul = befeul.befframeeul;//befframeeulをlimiteulとして使用する
+
 						int inittraflag0 = 0;
 						//子ジョイントへの波及は　SetWorldMatFromEulAndScaleAndTra内でしている
 						srcbone->SetWorldMatFromEulAndScaleAndTra(limitdegflag, inittraflag0, setchildflag,
@@ -2028,14 +2058,32 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 		if (onlycheck == 0) {
 			srcbone->SetWorldMat(limitdegflag, srcmotid, roundingframe, srcmat, curmp);
 
-			//#####################################################################################################
-			//2023/10/19
-			//PostIK処理の際には　後からCalcBoneEul()を呼ぶので　ここではeulの計算を省略してみる(処理高速化のため)
-			//#####################################################################################################
-			if ((g_underIKRotApplyFrame == true) || (g_underIKRot == false)) {
+			if (g_underCopyW2LW) {
+				//#########################
+				//2023/10/25
+				//コピー中はそのままセット
+				//#########################
+				bool unlimiteddegflag = false;
+				bool limiteddegflag = true;
+				ChaVector3 unlimitedeul = srcbone->GetLocalEul(unlimiteddegflag, srcmotid, roundingframe, curmp);
+				srcbone->SetLocalEul(limiteddegflag, srcmotid, roundingframe, unlimitedeul, curmp);
+			}
+			else {
 				ChaVector3 neweul = srcbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
 				srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, neweul, curmp);
 			}
+
+			//else if ((g_underIKRotApplyFrame == true) || (g_underIKRot == false)) {
+			//	ChaVector3 neweul = srcbone->CalcLocalEulXYZ(limitdegflag, -1, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+			//	srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, neweul, curmp);
+			//}
+			//else {
+			//	//#####################################################################################################
+			//	//2023/10/19
+			//	//PostIK処理の際には　後からCalcBoneEul()を呼ぶので　ここではeulの計算を省略してみる(処理高速化のため)
+			//	//#####################################################################################################
+			//}
+
 			if (limitdegflag == true) {
 				curmp->SetCalcLimitedWM(2);
 			}
@@ -3923,6 +3971,108 @@ void ChaCalcFunc::InitMPReq(CModel* srcmodel, bool limitdegflag, CBone* curbone,
 	}
 }
 
+BEFEUL ChaCalcFunc::GetBefEul(CBone* srcbone, bool limitdegflag, int srcmotid, double srcframe)
+{
+	double roundingframe = RoundingTime(srcframe);
+
+	BEFEUL befeul;
+	befeul.Init();
+
+	if (!srcbone) {
+		befeul.Init();
+		return befeul;
+	}
+
+
+	if (srcbone->IsNotSkeleton() && srcbone->IsNotCamera()) {
+		befeul.Init();
+		return befeul;
+	}
+
+	//###########
+	//bef frame
+	//###########
+	double befframe;
+	befframe = roundingframe - 1.0;
+	if (roundingframe <= 1.01) {
+		//roundingframe が0.0または1.0の場合 
+		CMotionPoint* curmp;
+		curmp = srcbone->GetMotionPoint(srcmotid, roundingframe);
+		if (curmp) {
+			befeul.befframeeul = srcbone->GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
+		}
+	}
+	else {
+		CMotionPoint* befmp;
+		befmp = srcbone->GetMotionPoint(srcmotid, befframe);
+		if (befmp) {
+			befeul.befframeeul = srcbone->GetLocalEul(limitdegflag, srcmotid, befframe, befmp);
+		}
+	}
+
+	//##############
+	//current frame
+	//##############
+	CMotionPoint* curmp;
+	curmp = srcbone->GetMotionPoint(srcmotid, roundingframe);
+	if (curmp) {
+		befeul.currentframeeul = srcbone->GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
+	}
+
+
+
+
+
+
+	////##############################################################################################
+	////2023/10/12
+	////モデル読込中と　リターゲット中と　ファイル書き出し中だけ　前のフレーム番号のオイラー角を取得
+	////それ以外の場合には　カレントフレームの編集前のオイラー角を取得
+	////このようにすることで　リターゲット中及びIK中の　１８０度裏返り問題が大きく緩和される
+	////(読込中とリターゲット中とファイル書き出し中がifの前半部分　IK中はelse部分)
+	////主にbvh121とbvh144でテスト
+	////##############################################################################################
+	//
+	//if ((g_underRetargetFlag == true) || 
+	//	(GetParModel() && GetParModel()->GetLoadedFlag() == false) || 
+	//	(g_underWriteFbx == true)) {
+	//
+	//	//1つ前のフレームのEULはすでに計算されていると仮定する。
+	//	double befframe;
+	//	befframe = roundingframe - 1.0;
+	//	if (roundingframe <= 1.01) {
+	//		//roundingframe が0.0または1.0の場合 
+	//		//befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	//		CMotionPoint* curmp;
+	//		curmp = GetMotionPoint(srcmotid, roundingframe);
+	//		if (curmp) {
+	//			befeul = GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
+	//		}
+	//	}
+	//	else {
+	//		CMotionPoint* befmp;
+	//		befmp = GetMotionPoint(srcmotid, befframe);
+	//		if (befmp) {
+	//			befeul = GetLocalEul(limitdegflag, srcmotid, befframe, befmp);
+	//		}
+	//	}
+	//}
+	//else {
+	//	CMotionPoint* curmp;
+	//	curmp = GetMotionPoint(srcmotid, roundingframe);
+	//	if (curmp) {
+	//		befeul = GetLocalEul(limitdegflag, srcmotid, roundingframe, curmp);
+	//	}
+	//}
+	//
+	////if (g_underIKRot == true) {
+	////	if (roundingframe <= 1.01) {
+	////		befeul = ChaVector3(0.0f, 0.0f, 0.0f);
+	////	}
+	////}
+
+	return befeul;
+}
 
 
 //#################################################################

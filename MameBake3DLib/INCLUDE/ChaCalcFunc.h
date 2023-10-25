@@ -70,6 +70,7 @@ public:
 	int ChkMovableEul(CBone* srcbone, ChaVector3 srceul);
 	int SetLocalEul(CBone* srcbone, bool limitdegflag, int srcmotid, double srcframe, ChaVector3 srceul, CMotionPoint* srcmp);
 	ChaVector3 GetLocalEul(CBone* srcbone, bool limitdegflag, int srcmotid, double srcframe, CMotionPoint* srcmp);
+	BEFEUL GetBefEul(CBone* srcbone, bool limitdegflag, int srcmotid, double srcframe);
 
 
 	ChaVector3 LimitEul(CBone* srcbone, ChaVector3 srceul);

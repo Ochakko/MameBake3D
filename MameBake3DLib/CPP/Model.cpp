@@ -2459,6 +2459,12 @@ void CModel::ApplyNewLimitsToWMReq(CBone* srcbone, int srcmotid, double srcframe
 	//2023/02/03
 	//この関数を実行する前に　CopyWorldToLimitedWorldを実行しておく
 
+	//###########################################################################################################
+	//2023/10/25
+	// SetWorldMat()内にて　directset == falseの部分で
+	//角度制限により動かさない場合にbefeul.befframeeulを使うので　ApplyNewLimitsToWM()はマルチスレッド化出来ない
+	//###########################################################################################################
+
 	double roundingframe = RoundingTime(srcframe);
 
 	if (srcbone) {
@@ -17038,13 +17044,18 @@ int CModel::CopyWorldToLimitedWorld()
 
 		SetCopyW2LWFrame(RoundingTime(1.0), RoundingTime(curmi->frameleng - 1.0));//2023/10/20
 
-		if (m_FKTraThreads) {
+		if (m_CopyW2LWThreads) {
+
+			g_underCopyW2LW = true;//!!!!!!
+
 			int updatecount;
 			for (updatecount = 0; updatecount < COPYW2LW_THREADSNUM; updatecount++) {
 				CThreadingCopyW2LW* curupdate = m_CopyW2LWThreads + updatecount;
 				curupdate->CopyWorldToLimitedWorld(GetTopBone(false), curmi->motid, 1.0, RoundingTime(curmi->frameleng - 1.0));
 			}
-			WaitFKTraFinished();
+			WaitCopyW2LWFinished();
+
+			g_underCopyW2LW = false;//!!!!!!
 		}
 
 

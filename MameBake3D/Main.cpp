@@ -4420,6 +4420,7 @@ void InitApp()
 	g_underCalcEul = false;
 	g_underPostFKTra = false;
 	g_underInitMp = false;
+	g_underCopyW2LW = false;
 
 	g_VSync = false;
 	g_fpskind = 0;
