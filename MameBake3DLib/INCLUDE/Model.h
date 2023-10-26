@@ -1250,6 +1250,29 @@ public: //accesser
 	};
 
 	CBone* GetBoneByName(std::string srcname ){
+
+		//2023/10/26 Joint有無について高速化
+		const char* pjoint = strstr(srcname.c_str(), "_Joint");
+		if (pjoint) {
+			size_t strjointlen = strlen(pjoint);
+			if (strjointlen == strlen("_Joint")) {
+				if (m_withStrJoint == 0) {
+					return 0;
+				}
+			}
+			else {
+				if (m_withoutStrJoint == 0) {
+					return 0;
+				}
+			}
+		}
+		else {
+			if (m_withoutStrJoint == 0) {
+				return 0;
+			}
+		}
+
+
 		std::map<std::string, CBone*>::iterator itrbone;
 		itrbone = m_bonename.find(srcname);
 		if (itrbone != m_bonename.end()) {
@@ -1308,15 +1331,24 @@ public: //accesser
 
 		//2023/10/23 srcnameに一致する方を先に調べることで速くなる可能性
 		if (srcwithsufix == false) {
-			retbone = GetBoneByName(bonename2);
+
+			if (m_withoutStrJoint > 0) {
+				retbone = GetBoneByName(bonename2);
+			}
 			if (!retbone) {
-				retbone = GetBoneByName(bonename1);
+				if (m_withStrJoint > 0) {
+					retbone = GetBoneByName(bonename1);
+				}
 			}
 		}
 		else {
-			retbone = GetBoneByName(bonename1);
+			if (m_withStrJoint > 0) {
+				retbone = GetBoneByName(bonename1);
+			}
 			if (!retbone) {
-				retbone = GetBoneByName(bonename2);
+				if (m_withoutStrJoint > 0) {
+					retbone = GetBoneByName(bonename2);
+				}
 			}
 		}
 
@@ -2273,6 +2305,14 @@ private:
 	int m_loadbonecount;//GetFbxAnim用
 
 	double m_enulltime;//SetShaderConstにおける　ボーンの無いメッシュアニメ enull evaluate用の時間
+
+
+	//2023/10/26
+	//GetBoneByName()の高速化のために　_Jointが名前に付いているジョイントと付いていないジョイントの数をセットしておく
+	// ０個のときに即座に０リターン
+	int m_withStrJoint;
+	int m_withoutStrJoint;
+
 
 };
 

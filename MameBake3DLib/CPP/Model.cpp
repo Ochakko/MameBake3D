@@ -604,6 +604,10 @@ int CModel::InitParams()
 
 	InitUndoMotion( 0 );
 
+	m_withStrJoint = 0;
+	m_withoutStrJoint = 0;
+
+
 	return 0;
 }
 
@@ -750,6 +754,8 @@ int CModel::DestroyAncObj()
 
 	m_bonename.clear();
 
+	m_withStrJoint = 0;
+	m_withoutStrJoint = 0;
 
 	map<CMQOObject*, FBXOBJ*>::iterator itrobjindex;
 	for (itrobjindex = m_fbxobj.begin(); itrobjindex != m_fbxobj.end(); itrobjindex++) {
@@ -3169,10 +3175,14 @@ int CModel::AddMotion(const char* srcname, const WCHAR* wfilename, double srclen
 	//Main.cppのInitCurMotion()から呼ばれるInitMPReqとCreateIndexedMotionPointReq
 
 	if (GetLoadedFlag() == true) {
-		double framecnt;
-		for (framecnt = 0.0; framecnt < srcleng; framecnt += 1.0) {
-			InitMPReq(limitdegflagOnAddMotion, GetTopBone(false), newid, framecnt);//motionpointが無い場合は作成も
-		}
+		//double framecnt;
+		//for (framecnt = 0.0; framecnt < srcleng; framecnt += 1.0) {
+		//	InitMPReq(limitdegflagOnAddMotion, GetTopBone(false), newid, framecnt);//motionpointが無い場合は作成も
+		//}
+		// 
+		//2023/10/26 マルチスレッド版を使う
+		InitMpFrame(limitdegflagOnAddMotion, newid, 0.0, srcleng - 1.0);
+
 
 		int errorcount = 0;
 		CreateIndexedMotionPointReq(GetTopBone(false), newid, srcleng, &errorcount);//2022/10/30
@@ -5519,6 +5529,24 @@ CBone* CModel::CreateNewFbxBone(FbxNodeAttribute::EType type, FbxNode* curnode, 
 	}
 	else if (type == FbxNodeAttribute::eSkeleton) {
 		newbone->SetType(FBXBONE_SKELETON);
+
+
+		//2023/10/26 GetBoneByName()高速化用
+		const char* pjoint = strstr(newbonename, "_Joint");
+		if (pjoint) {
+			size_t strjointlen = strlen(pjoint);
+			if (strjointlen == strlen("_Joint")) {
+				m_withStrJoint++;
+			}
+			else {
+				m_withoutStrJoint++;
+			}
+		}
+		else {
+			m_withoutStrJoint++;
+		}
+
+
 	}
 	else if (type == FbxNodeAttribute::eNull) {
 		newbone->SetType(FBXBONE_NULL);
