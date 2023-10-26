@@ -13665,14 +13665,21 @@ int InitCurMotion(int selectflag, double expandmotion)
 				//_ASSERT(0);
 
 				if (selectflag == 1) {//called from tool panel : init selected time range
+
+					bool firstflag = true;
+					double startframe = 0.0;
+					double endframe = 0.0;
 					list<KeyInfo>::iterator itrcp;
 					for (itrcp = s_copyKeyInfoList.begin(); itrcp != s_copyKeyInfoList.end(); itrcp++) {
-						double curframe = itrcp->time;
-						if (topbone) {
-							s_model->SetMotionFrame(curframe);
-							s_model->InitMPReq(limitdegflag, topbone, curmi->motid, curframe);
+						if (firstflag) {
+							startframe = itrcp->time;
+							firstflag = false;
 						}
+						endframe = itrcp->time;
 					}
+
+					s_model->InitMpFrame(limitdegflag, curmi->motid, topbone, startframe, endframe);
+
 				}
 				else if (expandmotion > 0) {//モーション長を長くした際に、長くなった分の初期化をする
 					double oldframeleng = expandmotion;
@@ -13689,7 +13696,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 					//	}
 					//}
 
-					s_model->InitMpFrame(limitdegflag, curmi->motid, oldframeleng, motleng - 1.0);
+					s_model->InitMpFrame(limitdegflag, curmi->motid, topbone, oldframeleng, motleng - 1.0);
 
 
 					int errorcount = 0;
@@ -13708,7 +13715,7 @@ int InitCurMotion(int selectflag, double expandmotion)
 					//	}
 					//}
 
-					s_model->InitMpFrame(limitdegflag, curmi->motid, 0.0, motleng - 1.0);
+					s_model->InitMpFrame(limitdegflag, curmi->motid, topbone, 0.0, motleng - 1.0);
 
 					int errorcount = 0;
 					s_model->CreateIndexedMotionPointReq(s_model->GetTopBone(false),

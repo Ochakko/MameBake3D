@@ -327,6 +327,7 @@ CBone::CBone( CModel* parmodel )// : m_curmp(), m_axisq()
 {
 	InitializeCriticalSection(&m_CritSection_AddMP);
 	InitializeCriticalSection(&m_CritSection_GetBefNext);
+	InitializeCriticalSection(&m_CritSection_GetBefNext2);
 	InitParams();
 	SetParams(parmodel);
 }
@@ -335,6 +336,7 @@ CBone::~CBone()
 {
 	DeleteCriticalSection(&m_CritSection_AddMP);
 	DeleteCriticalSection(&m_CritSection_GetBefNext);
+	DeleteCriticalSection(&m_CritSection_GetBefNext2);
 	DestroyObjs();
 }
 
@@ -7531,20 +7533,10 @@ int CBone::AdditiveCurrentToAngleLimit()
 				//2023/01/28
 				//実角度ギリギリをintに丸めて制限をかけると　可動部分が制限に引っ掛かることがあったので対応
 				float tempmax, tempmin;
-				if (maxeul[axiskind2] >= 0.0f) {
-					tempmax = maxeul[axiskind2] + 2.0f;
-				}
-				else {
-					tempmax = maxeul[axiskind2] - 2.0f;
-				}
-				if (mineul[axiskind2] >= 0.0f) {
-					tempmin = mineul[axiskind2] - 2.0f;
-				}
-				else {
-					tempmin = mineul[axiskind2] + 2.0f;
-				}
-
-
+				tempmax = maxeul[axiskind2] + 2.0f;//正か負かによらずmaxに足すのが正しい
+				tempmin = mineul[axiskind2] - 2.0f;//正か負かによらずminから引くのが正しい
+				//
+				//丸めには正負が関係する
 				if (tempmax > 0.0f) {
 					m_anglelimit.upper[axiskind2] = (int)(tempmax + 0.0001f);
 				}
@@ -7648,20 +7640,10 @@ int CBone::AdditiveAllMotionsToAngleLimit()
 				//2023/01/28
 				//実角度ギリギリをintに丸めて制限をかけると　可動部分が制限に引っ掛かることがあったので対応
 				float tempmax, tempmin;
-				if (maxeul[axiskind2] >= 0.0f) {
-					tempmax = maxeul[axiskind2] + 2.0f;
-				}
-				else {
-					tempmax = maxeul[axiskind2] - 2.0f;
-				}
-				if (mineul[axiskind2] >= 0.0f) {
-					tempmin = mineul[axiskind2] - 2.0f;
-				}
-				else {
-					tempmin = mineul[axiskind2] + 2.0f;
-				}
-
-
+				tempmax = maxeul[axiskind2] + 2.0f;//正か負かによらずmaxに足すのが正しい
+				tempmin = mineul[axiskind2] - 2.0f;//正か負かによらずminから引くのが正しい
+				//
+				//丸めには正負が関係する
 				if (tempmax > 0.0f) {
 					m_anglelimit.upper[axiskind2] = (int)(tempmax + 0.0001f);
 				}

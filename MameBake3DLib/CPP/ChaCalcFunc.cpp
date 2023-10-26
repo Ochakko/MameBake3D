@@ -186,7 +186,6 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 		return 1;
 	}
 
-	//EnterCriticalSection(&m_CritSection_GetBefNext);
 
 	//2023/04/28 2023/05/23
 	if (srcbone->IsNotSkeleton() && srcbone->IsNotCamera() && srcbone->IsNotNull()) {
@@ -221,7 +220,6 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 		*ppbef = 0;
 		*ppnext = 0;
 		//_ASSERT(0);
-		//LeaveCriticalSection(&m_CritSection_GetBefNext);
 		return 0;
 	}
 	else {
@@ -233,7 +231,6 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 			//	m_cachebefmp[srcmotid - 1] = NULL;
 			//}
 			////_ASSERT(0);
-			////LeaveCriticalSection(&m_CritSection_GetBefNext);
 			return 0;
 		}
 		else {
@@ -280,16 +277,18 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 
 
 	if (getbychain == true) {
-		//#ifdef USE_CACHE_ONGETMOTIONPOINT__
-		//		//キャッシュをチェックする
-		//		if ((srcmotid >= 1) && (srcmotid <= MAXMOTIONNUM) && m_cachebefmp[srcmotid - 1] &&
-		//			((m_cachebefmp[srcmotid - 1])->GetUseFlag() == 1) &&
-		//			//((m_cachebefmp[srcmotid - 1])->GetFrame() <= (srcframe + 0.0001))) {
-		//			((m_cachebefmp[srcmotid - 1])->GetFrame() <= ((double)curframeindex + 0.0001))) {//2022/12/26
-		//			//高速化のため途中からの検索にする
-		//			pcur = m_cachebefmp[srcmotid - 1];
-		//		}
-		//#endif
+#ifdef USE_CACHE_ONGETMOTIONPOINT__
+		EnterCriticalSection(&(srcbone->m_CritSection_GetBefNext));
+				//キャッシュをチェックする
+				if ((srcmotid >= 1) && (srcmotid <= MAXMOTIONNUM) && srcbone->GetMPCache(srcmotid - 1) &&
+					((srcbone->GetMPCache(srcmotid - 1))->GetUseFlag() == 1) &&
+					//((m_cachebefmp[srcmotid - 1])->GetFrame() <= (srcframe + 0.0001))) {
+					((srcbone->GetMPCache(srcmotid - 1))->GetFrame() <= ((double)curframeindex + 0.0001))) {//2022/12/26
+					//高速化のため途中からの検索にする
+					pcur = srcbone->GetMPCache(srcmotid - 1);
+				}
+		LeaveCriticalSection(&(srcbone->m_CritSection_GetBefNext));
+#endif
 
 		while (pcur) {
 
@@ -319,6 +318,50 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 			*ppnext = pcur;
 		}
 
+#ifdef USE_CACHE_ONGETMOTIONPOINT__
+		EnterCriticalSection(&(srcbone->m_CritSection_GetBefNext2));
+		//m_cachebefmp = pbef;
+		if ((srcmotid >= 1) && (srcmotid <= MAXMOTIONNUM)) {
+
+			if (*ppbef) {
+				//キャッシュはインデックス作成前の段階で　MotionPointへアクセスする場合に　高速化の助けになる
+				//InitMpFrame()のマルチスレッドからアクセスすることを想定して
+				//INITMP_THREADSNUM * 2個分prevへ遡ってからキャッシュへセットする
+				int threadno;
+				CMotionPoint* chkmp = *ppbef;
+				CMotionPoint* pcache = *ppbef;
+				for (threadno = 0; threadno < (INITMP_THREADSNUM * 3); threadno++) {//どのくらい異なる範囲からアクセスするかによる　(INITMP_THREADSNUM * 3)はとりあえずの値
+					if (chkmp) {
+						pcache = chkmp;
+					}
+					else {
+						break;
+					}
+					chkmp = chkmp->GetPrev();
+				}
+				srcbone->SetMPCache(srcmotid - 1, chkmp);
+			}
+			else {
+				srcbone->SetMPCache(srcmotid - 1, NULL);
+			}
+
+			//if (*ppbef) {
+			//	if ((*ppbef)->GetPrev()) {
+			//		m_cachebefmp[srcmotid - 1] = (*ppbef)->GetPrev();
+			//	}
+			//	else {
+			//		m_cachebefmp[srcmotid - 1] = (*ppbef);
+			//	}
+			//}
+			//else {
+			//	//m_cachebefmp[srcmotid - 1] = m_motionkey[srcmotid - 1];
+			//	m_cachebefmp[srcmotid - 1] = NULL;
+			//}
+		}
+		LeaveCriticalSection(&(srcbone->m_CritSection_GetBefNext2));
+#endif
+
+
 	}
 	else {
 
@@ -330,7 +373,6 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 		//	*ppbef = 0;
 		//	*ppnext = 0;
 		//	//_ASSERT(0);
-		//	//LeaveCriticalSection(&m_CritSection_GetBefNext);
 		//	return 0;
 		//}
 		//else {
@@ -339,7 +381,6 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 		//		*ppbef = 0;
 		//		*ppnext = 0;
 		//		//_ASSERT(0);
-		//		//LeaveCriticalSection(&m_CritSection_GetBefNext);
 		//		return 0;
 
 		//	}
@@ -400,29 +441,6 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 			*existptr = 0;
 		}
 	}
-
-
-	//#ifdef USE_CACHE_ONGETMOTIONPOINT__
-	//	//m_cachebefmp = pbef;
-	//	if ((srcmotid >= 1) && (srcmotid <= MAXMOTIONNUM)) {
-	//		if (*ppbef) {
-	//			if ((*ppbef)->GetPrev()) {
-	//				m_cachebefmp[srcmotid - 1] = (*ppbef)->GetPrev();
-	//			}
-	//			else {
-	//				m_cachebefmp[srcmotid - 1] = (*ppbef);
-	//			}
-	//		}
-	//		else {
-	//			//m_cachebefmp[srcmotid - 1] = m_motionkey[srcmotid - 1];
-	//			m_cachebefmp[srcmotid - 1] = NULL;
-	//		}
-	//	}
-	//#endif
-
-
-		//LeaveCriticalSection(&m_CritSection_GetBefNext);
-
 
 	return 0;
 }

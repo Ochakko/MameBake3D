@@ -912,7 +912,7 @@ public:
 
 	//int GetFBXAnim(int animno, FbxNode* pNode, int motid, double animleng, bool callingbythread = false);//CThreadingLoadFbxからも呼ぶ CBoneに移動
 
-	int InitMpFrame(bool limitdegflag, int srcmotid, double srcstartframe, double srcendframe);
+	int InitMpFrame(bool limitdegflag, int srcmotid, CBone* srcbone, double srcstartframe, double srcendframe);
 	void InitMPReq(bool limitdegflag, CBone* curbone, int srcmotid, double curframe);
 	int InitMP(bool limitdegflag, CBone* curbone, int srcmotid, double curframe);
 

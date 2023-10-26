@@ -76,6 +76,7 @@ public:
 	CBone() {
 		InitializeCriticalSection(&m_CritSection_AddMP);
 		InitializeCriticalSection(&m_CritSection_GetBefNext);
+		InitializeCriticalSection(&m_CritSection_GetBefNext2);
 		InitParams();
 	};
 
@@ -1580,9 +1581,33 @@ public: //accesser
 		m_invfirstgetmatrix = srcmat;
 	}
 
+	CMotionPoint* GetMPCache(int srcmotid)
+	{
+		if ((srcmotid >= 1) && (srcmotid <= MAXMOTIONNUM)) {//m_cachebefmp[MAXMOTIONPOINT + 1]
+			return m_cachebefmp[srcmotid - 1];
+		}
+		else {
+			_ASSERT(0);
+			return 0;
+		}
+	}
+	void SetMPCache(int srcmotid, CMotionPoint* srcmp)
+	{
+		if ((srcmotid >= 1) && (srcmotid <= MAXMOTIONNUM)) {//m_cachebefmp[MAXMOTIONPOINT + 1]
+			m_cachebefmp[srcmotid - 1] = srcmp;
+		}
+		else {
+			_ASSERT(0);
+			return;
+		}
+	}
+
+
+public:
+	CRITICAL_SECTION m_CritSection_GetBefNext;
+	CRITICAL_SECTION m_CritSection_GetBefNext2;
 
 private:
-	CRITICAL_SECTION m_CritSection_GetBefNext;
 	CRITICAL_SECTION m_CritSection_AddMP;
 
 	int m_useflag;//0: not use, 1: in use

@@ -3181,7 +3181,7 @@ int CModel::AddMotion(const char* srcname, const WCHAR* wfilename, double srclen
 		//}
 		// 
 		//2023/10/26 マルチスレッド版を使う
-		InitMpFrame(limitdegflagOnAddMotion, newid, 0.0, srcleng - 1.0);
+		InitMpFrame(limitdegflagOnAddMotion, newid, GetTopBone(false), 0.0, srcleng - 1.0);
 
 
 		int errorcount = 0;
@@ -17208,7 +17208,11 @@ int CModel::CreateLoadFbxAnim(FbxScene* pscene)
 	int bonenointhread = 0;
 	int bonecount;
 	int bonenum = (int)m_bonelist.size();
-	int maxbonenuminthread = bonenum / LOADFBXANIMTHREAD + 1;
+	//int maxbonenuminthread = bonenum / LOADFBXANIMTHREAD + 1;
+	int maxbonenuminthread = bonenum / LOADFBXANIMTHREAD;
+	if (maxbonenuminthread == 0) {
+		maxbonenuminthread = 1;
+	}
 
 	for (bonecount = 0; bonecount < bonenum; bonecount++) {
 		CBone* curbone = m_bonelist[bonecount];
@@ -17220,6 +17224,9 @@ int CModel::CreateLoadFbxAnim(FbxScene* pscene)
 				curupdate->SetBoneList(bonenointhread, curnode, curbone);
 
 				threadcount = bonecount / maxbonenuminthread;
+				if (threadcount >= LOADFBXANIMTHREAD) {
+					threadcount = LOADFBXANIMTHREAD - 1;//余りは全部　最終スレッドに任せる
+				}
 
 				if (threadcount == befthreadcount) {
 					bonenointhread++;
@@ -17317,9 +17324,11 @@ int CModel::CreateBoneUpdateMatrix()
 	int bonenointhread = 0;
 	int bonecount;
 	int bonenum = (int)m_bonelist.size();
-	int maxbonenuminthread = bonenum / g_UpdateMatrixThreads + 1;
-
-
+	//int maxbonenuminthread = bonenum / g_UpdateMatrixThreads + 1;
+	int maxbonenuminthread = bonenum / g_UpdateMatrixThreads;
+	if (maxbonenuminthread == 0) {
+		maxbonenuminthread = 1;
+	}
 
 	for (bonecount = 0; bonecount < bonenum; bonecount++) {
 		CBone* curbone = m_bonelist[bonecount];
@@ -17336,6 +17345,10 @@ int CModel::CreateBoneUpdateMatrix()
 
 
 			threadcount = bonecount / maxbonenuminthread;
+			if (threadcount >= g_UpdateMatrixThreads) {
+				threadcount = g_UpdateMatrixThreads - 1;//余りは全部　最終スレッドに任せる
+			}
+
 
 			if (threadcount == befthreadcount) {
 				bonenointhread++;
@@ -17424,9 +17437,33 @@ int CModel::CreateCalcEulThreads()
 
 
 
+	//int threadcount = 0;
+	//int bonecount;
+	//int bonenum = (int)m_bonelist.size();
+	//for (bonecount = 0; bonecount < bonenum; bonecount++) {
+	//	CBone* curbone = m_bonelist[bonecount];
+	//	if (curbone && curbone->IsSkeleton()) {
+	//		CThreadingCalcEul* curupdate = m_CalcEulThreads + threadcount;
+	//
+	//		curupdate->AddBoneList(curbone);
+	//
+	//		threadcount++;
+	//		if (threadcount >= CALCEUL_THREADSNUM) {
+	//			threadcount = 0;
+	//		}
+	//	}
+	//}
+
 	int threadcount = 0;
+	int befthreadcount = 0;
+	int bonenointhread = 0;
 	int bonecount;
 	int bonenum = (int)m_bonelist.size();
+	//int maxbonenuminthread = bonenum / g_UpdateMatrixThreads + 1;
+	int maxbonenuminthread = bonenum / CALCEUL_THREADSNUM;
+	if (maxbonenuminthread == 0) {
+		maxbonenuminthread = 1;
+	}
 
 	for (bonecount = 0; bonecount < bonenum; bonecount++) {
 		CBone* curbone = m_bonelist[bonecount];
@@ -17435,12 +17472,31 @@ int CModel::CreateCalcEulThreads()
 
 			curupdate->AddBoneList(curbone);
 
-			threadcount++;
+			//threadcount++;
+			//threadcount = (threadcount % g_UpdateMatrixThreads);
+			//if (threadcount == 0) {
+			//	bonenointhread++;
+			//}
+
+
+			threadcount = bonecount / maxbonenuminthread;
 			if (threadcount >= CALCEUL_THREADSNUM) {
-				threadcount = 0;
+				threadcount = CALCEUL_THREADSNUM - 1;//余りは全部　最終スレッドに任せる
 			}
+
+
+			if (threadcount == befthreadcount) {
+				bonenointhread++;
+			}
+			else {
+				bonenointhread = 0;
+			}
+
+			befthreadcount = threadcount;
 		}
 	}
+
+
 	return 0;
 }
 
@@ -17610,18 +17666,51 @@ int CModel::SetPostIKFrame(double srcstart, double srcend)
 	}
 
 
-	double setframe;
+	//double setframe;
+	//int threadcount = 0;
+	//for (setframe = RoundingTime(srcstart); setframe <= RoundingTime(srcend); setframe+= 1.0) {
+	//	CThreadingPostIK* curupdate = m_PostIKThreads + threadcount;
+	//
+	//	curupdate->AddFramenoList(setframe);
+	//
+	//	threadcount++;
+	//	if (threadcount >= POSTIK_THREADSNUM) {
+	//		threadcount = 0;
+	//	}
+	//}
+
 	int threadcount = 0;
-	for (setframe = RoundingTime(srcstart); setframe <= RoundingTime(srcend); setframe+= 1.0) {
+	int befthreadcount = 0;
+	int framenointhread = 0;
+	int framecount;
+	int framenum = IntTime(srcend) - IntTime(srcstart) + 1;
+	int maxframenuminthread = framenum / POSTIK_THREADSNUM;
+	if (maxframenuminthread == 0) {
+		maxframenuminthread = 1;
+	}
+
+	for (framecount = 0; framecount < framenum; framecount++) {
+		double curframe = (double)(framecount + IntTime(srcstart));
 		CThreadingPostIK* curupdate = m_PostIKThreads + threadcount;
 
-		curupdate->AddFramenoList(setframe);
+		curupdate->AddFramenoList(curframe);
 
-		threadcount++;
+		threadcount = framecount / maxframenuminthread;
 		if (threadcount >= POSTIK_THREADSNUM) {
-			threadcount = 0;
+			threadcount = POSTIK_THREADSNUM - 1;//余りは全部　最終スレッドに任せる
 		}
+
+		if (threadcount == befthreadcount) {
+			framenointhread++;
+		}
+		else {
+			framenointhread = 0;
+		}
+
+		befthreadcount = threadcount;
 	}
+
+
 
 	return 0;
 }
@@ -17752,18 +17841,51 @@ int CModel::SetInitMpFrame(double srcstart, double srcend)
 	}
 
 
-	double setframe;
+	//double setframe;
+	//int threadcount = 0;
+	//for (setframe = RoundingTime(srcstart); setframe <= RoundingTime(srcend); setframe += 1.0) {
+	//	CThreadingInitMp* curupdate = m_InitMpThreads + threadcount;
+	//
+	//	curupdate->AddFramenoList(setframe);
+	//
+	//	threadcount++;
+	//	if (threadcount >= INITMP_THREADSNUM) {
+	//		threadcount = 0;
+	//	}
+	//}
+
 	int threadcount = 0;
-	for (setframe = RoundingTime(srcstart); setframe <= RoundingTime(srcend); setframe += 1.0) {
+	int befthreadcount = 0;
+	int framenointhread = 0;
+	int framecount;
+	int framenum = IntTime(srcend) - IntTime(srcstart) + 1;
+	int maxframenuminthread = framenum / INITMP_THREADSNUM;
+	if (maxframenuminthread == 0) {
+		maxframenuminthread = 1;
+	}
+
+	for (framecount = 0; framecount < framenum; framecount++) {
+		double curframe = (double)(framecount + IntTime(srcstart));
 		CThreadingInitMp* curupdate = m_InitMpThreads + threadcount;
 
-		curupdate->AddFramenoList(setframe);
+		curupdate->AddFramenoList(curframe);
 
-		threadcount++;
+		threadcount = framecount / maxframenuminthread;
 		if (threadcount >= INITMP_THREADSNUM) {
-			threadcount = 0;
+			threadcount = INITMP_THREADSNUM - 1;//余りは全部　最終スレッドに任せる
 		}
+
+		if (threadcount == befthreadcount) {
+			framenointhread++;
+		}
+		else {
+			framenointhread = 0;
+		}
+
+		befthreadcount = threadcount;
 	}
+
+
 
 	return 0;
 }
@@ -17855,18 +17977,50 @@ int CModel::SetRetargetFrame(double srcstart, double srcend)
 	}
 
 
-	double setframe;
+	//double setframe;
+	//int threadcount = 0;
+	//for (setframe = RoundingTime(srcstart); setframe <= RoundingTime(srcend); setframe += 1.0) {
+	//	CThreadingRetarget* curupdate = m_RetargetThreads + threadcount;
+	//
+	//	curupdate->AddFramenoList(setframe);
+	//
+	//	threadcount++;
+	//	if (threadcount >= RETARGET_THREADSNUM) {
+	//		threadcount = 0;
+	//	}
+	//}
+
 	int threadcount = 0;
-	for (setframe = RoundingTime(srcstart); setframe <= RoundingTime(srcend); setframe += 1.0) {
+	int befthreadcount = 0;
+	int framenointhread = 0;
+	int framecount;
+	int framenum = IntTime(srcend) - IntTime(srcstart) + 1;
+	int maxframenuminthread = framenum / RETARGET_THREADSNUM;
+	if (maxframenuminthread == 0) {
+		maxframenuminthread = 1;
+	}
+
+	for (framecount = 0; framecount < framenum; framecount++) {
+		double curframe = (double)(framecount + IntTime(srcstart));
 		CThreadingRetarget* curupdate = m_RetargetThreads + threadcount;
 
-		curupdate->AddFramenoList(setframe);
+		curupdate->AddFramenoList(curframe);
 
-		threadcount++;
+		threadcount = framecount / maxframenuminthread;
 		if (threadcount >= RETARGET_THREADSNUM) {
-			threadcount = 0;
+			threadcount = RETARGET_THREADSNUM - 1;//余りは全部　最終スレッドに任せる
 		}
+
+		if (threadcount == befthreadcount) {
+			framenointhread++;
+		}
+		else {
+			framenointhread = 0;
+		}
+
+		befthreadcount = threadcount;
 	}
+
 
 	return 0;
 }
@@ -17959,17 +18113,48 @@ int CModel::SetFKTraFrame(double srcstart, double srcend)
 	}
 
 
-	double setframe;
+	//double setframe;
+	//int threadcount = 0;
+	//for (setframe = RoundingTime(srcstart); setframe <= RoundingTime(srcend); setframe += 1.0) {
+	//	CThreadingFKTra* curupdate = m_FKTraThreads + threadcount;
+	//
+	//	curupdate->AddFramenoList(setframe);
+	//
+	//	threadcount++;
+	//	if (threadcount >= POSTFKTRA_THREADSNUM) {
+	//		threadcount = 0;
+	//	}
+	//}
+
 	int threadcount = 0;
-	for (setframe = RoundingTime(srcstart); setframe <= RoundingTime(srcend); setframe += 1.0) {
+	int befthreadcount = 0;
+	int framenointhread = 0;
+	int framecount;
+	int framenum = IntTime(srcend) - IntTime(srcstart) + 1;
+	int maxframenuminthread = framenum / POSTFKTRA_THREADSNUM;
+	if (maxframenuminthread == 0) {
+		maxframenuminthread = 1;
+	}
+
+	for (framecount = 0; framecount < framenum; framecount++) {
+		double curframe = (double)(framecount + IntTime(srcstart));
 		CThreadingFKTra* curupdate = m_FKTraThreads + threadcount;
 
-		curupdate->AddFramenoList(setframe);
+		curupdate->AddFramenoList(curframe);
 
-		threadcount++;
+		threadcount = framecount / maxframenuminthread;
 		if (threadcount >= POSTFKTRA_THREADSNUM) {
-			threadcount = 0;
+			threadcount = POSTFKTRA_THREADSNUM - 1;//余りは全部　最終スレッドに任せる
 		}
+
+		if (threadcount == befthreadcount) {
+			framenointhread++;
+		}
+		else {
+			framenointhread = 0;
+		}
+
+		befthreadcount = threadcount;
 	}
 
 	return 0;
@@ -18062,26 +18247,59 @@ int CModel::SetCopyW2LWFrame(double srcstart, double srcend)
 	}
 
 
-	double setframe;
+	//double setframe;
+	//int threadcount = 0;
+	//for (setframe = RoundingTime(srcstart); setframe <= RoundingTime(srcend); setframe += 1.0) {
+	//	CThreadingCopyW2LW* curupdate = m_CopyW2LWThreads + threadcount;
+	//
+	//	curupdate->AddFramenoList(setframe);
+	//
+	//	threadcount++;
+	//	if (threadcount >= COPYW2LW_THREADSNUM) {
+	//		threadcount = 0;
+	//	}
+	//}
+
+
 	int threadcount = 0;
-	for (setframe = RoundingTime(srcstart); setframe <= RoundingTime(srcend); setframe += 1.0) {
+	int befthreadcount = 0;
+	int framenointhread = 0;
+	int framecount;
+	int framenum = IntTime(srcend) - IntTime(srcstart) + 1;
+	int maxframenuminthread = framenum / COPYW2LW_THREADSNUM;
+	if (maxframenuminthread == 0) {
+		maxframenuminthread = 1;
+	}
+
+	for (framecount = 0; framecount < framenum; framecount++) {
+		double curframe = (double)(framecount + IntTime(srcstart));
 		CThreadingCopyW2LW* curupdate = m_CopyW2LWThreads + threadcount;
 
-		curupdate->AddFramenoList(setframe);
+		curupdate->AddFramenoList(curframe);
 
-		threadcount++;
+		threadcount = framecount / maxframenuminthread;
 		if (threadcount >= COPYW2LW_THREADSNUM) {
-			threadcount = 0;
+			threadcount = COPYW2LW_THREADSNUM - 1;//余りは全部　最終スレッドに任せる
 		}
+
+		if (threadcount == befthreadcount) {
+			framenointhread++;
+		}
+		else {
+			framenointhread = 0;
+		}
+
+		befthreadcount = threadcount;
 	}
+
 
 	return 0;
 }
 
 
-int CModel::InitMpFrame(bool limitdegflag, int srcmotid, double srcstartframe, double srcendframe)
+int CModel::InitMpFrame(bool limitdegflag, int srcmotid, CBone* srcbone, double srcstartframe, double srcendframe)
 {
-	if (!GetTopBone(false)) {
+	if (!GetTopBone(false) || !srcbone) {
 		return 0;
 	}
 
@@ -18107,7 +18325,7 @@ int CModel::InitMpFrame(bool limitdegflag, int srcmotid, double srcstartframe, d
 			int updatecount;
 			for (updatecount = 0; updatecount < INITMP_THREADSNUM; updatecount++) {
 				CThreadingInitMp* curupdate = m_InitMpThreads + updatecount;
-				curupdate->InitMPReq(limitdegflag, GetTopBone(false), srcmotid);
+				curupdate->InitMPReq(limitdegflag, srcbone, srcmotid);
 			}
 			WaitInitMpFinished();
 		}
