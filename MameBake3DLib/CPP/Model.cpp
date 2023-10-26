@@ -3175,13 +3175,24 @@ int CModel::AddMotion(const char* srcname, const WCHAR* wfilename, double srclen
 	//Main.cppのInitCurMotion()から呼ばれるInitMPReqとCreateIndexedMotionPointReq
 
 	if (GetLoadedFlag() == true) {
-		//double framecnt;
-		//for (framecnt = 0.0; framecnt < srcleng; framecnt += 1.0) {
-		//	InitMPReq(limitdegflagOnAddMotion, GetTopBone(false), newid, framecnt);//motionpointが無い場合は作成も
-		//}
+
+		//####################################################################################################
+		//2023/10/27
+		//この部分においては　シングルスレッド版を使う
+		//ここで実行する時点においては　モーションポイントのインデックスが未作成
+		//インデックスが未作成の場合には GetBefNextMP()はキャッシュを参照しながら　チェインをたどる処理をする
+		//インデックス未作成時にマルチスレッド版を使うと　キャッシュヒット率が低い
+		//よって　ここでは　キャッシュ付きのシングルスレッド版を使う方が高速
+		//####################################################################################################
+		double framecnt;
+		for (framecnt = 0.0; framecnt < srcleng; framecnt += 1.0) {
+			InitMPReq(limitdegflagOnAddMotion, GetTopBone(false), newid, framecnt);//motionpointが無い場合は作成も
+		}
+
+
 		// 
 		//2023/10/26 マルチスレッド版を使う
-		InitMpFrame(limitdegflagOnAddMotion, newid, GetTopBone(false), 0.0, srcleng - 1.0);
+		//InitMpFrame(limitdegflagOnAddMotion, newid, GetTopBone(false), 0.0, srcleng - 1.0);
 
 
 		int errorcount = 0;
@@ -18310,7 +18321,7 @@ int CModel::InitMpFrame(bool limitdegflag, int srcmotid, CBone* srcbone, double 
 		double startframe = RoundingTime(srcstartframe);
 		double endframe = RoundingTime(srcendframe);
 		
-		
+
 		//double curframe;
 		//for (curframe = startframe; curframe <= endframe; curframe += 1.0) {
 		//	InitMPReq(limitdegflag, GetTopBone(false), srcmotid, curframe);

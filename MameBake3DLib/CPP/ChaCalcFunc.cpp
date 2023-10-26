@@ -280,15 +280,30 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 #ifdef USE_CACHE_ONGETMOTIONPOINT__
 		EnterCriticalSection(&(srcbone->m_CritSection_GetBefNext));
 				//キャッシュをチェックする
-				if ((srcmotid >= 1) && (srcmotid <= MAXMOTIONNUM) && srcbone->GetMPCache(srcmotid - 1) &&
-					((srcbone->GetMPCache(srcmotid - 1))->GetUseFlag() == 1) &&
-					//((m_cachebefmp[srcmotid - 1])->GetFrame() <= (srcframe + 0.0001))) {
-					((srcbone->GetMPCache(srcmotid - 1))->GetFrame() <= ((double)curframeindex + 0.0001))) {//2022/12/26
-					//高速化のため途中からの検索にする
-					pcur = srcbone->GetMPCache(srcmotid - 1);
-				}
+
+
+		if ((srcmotid >= 1) && (srcmotid <= MAXMOTIONNUM)) {
+			CMotionPoint* chkcache = srcbone->GetMPCache(srcmotid);//2023/10/27 引数としてはsrcmotid　内部で[srcmotid - 1]でデータ参照
+			if (chkcache &&
+				(chkcache->GetUseFlag() == 1) &&
+				//((m_cachebefmp[srcmotid - 1])->GetFrame() <= (srcframe + 0.0001))) {
+				(chkcache->GetFrame() <= ((double)curframeindex + 0.0001))) {//2022/12/26
+				//高速化のため途中からの検索にする
+				
+				pcur = chkcache;
+			}
+			else {
+				//上方でセットしたsrcbone->GetMotionKey(srcmotid);のまま
+				int dbgflag0 = 1;
+			}
+		}
 		LeaveCriticalSection(&(srcbone->m_CritSection_GetBefNext));
 #endif
+
+		if (!pcur) {
+			int dbgflag1 = 1;
+		}
+
 
 		while (pcur) {
 
@@ -327,10 +342,11 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 				//キャッシュはインデックス作成前の段階で　MotionPointへアクセスする場合に　高速化の助けになる
 				//InitMpFrame()のマルチスレッドからアクセスすることを想定して
 				//INITMP_THREADSNUM * 2個分prevへ遡ってからキャッシュへセットする
-				int threadno;
 				CMotionPoint* chkmp = *ppbef;
 				CMotionPoint* pcache = *ppbef;
-				for (threadno = 0; threadno < (INITMP_THREADSNUM * 3); threadno++) {//どのくらい異なる範囲からアクセスするかによる　(INITMP_THREADSNUM * 3)はとりあえずの値
+				int backno;
+				const int backnum = 2;
+				for (backno = 0; backno < backnum; backno++) {//どのくらい異なる範囲からアクセスするかによる　backnumはとりあえずの値
 					if (chkmp) {
 						pcache = chkmp;
 					}
@@ -339,10 +355,10 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 					}
 					chkmp = chkmp->GetPrev();
 				}
-				srcbone->SetMPCache(srcmotid - 1, chkmp);
+				srcbone->SetMPCache(srcmotid, chkmp);//2023/10/27 引数としてはsrcmotid　内部で[srcmotid - 1]でデータセット
 			}
 			else {
-				srcbone->SetMPCache(srcmotid - 1, NULL);
+				//srcbone->SetMPCache(srcmotid - 1, NULL);
 			}
 
 			//if (*ppbef) {
@@ -3725,6 +3741,9 @@ int ChaCalcFunc::InitMP(CBone* srcbone, bool limitdegflag, int srcmotid, double 
 	}
 	else {
 		firstmp = srcbone->GetMotionPoint(firstmotid, 0.0);
+		if (!firstmp) {
+			int dbgflag1 = 1;
+		}
 	}
 
 	if (!firstmp && ((strstr(srcbone->GetBoneName(), "Root") != 0) || (strstr(srcbone->GetBoneName(), "Reference") != 0))) {
@@ -3735,110 +3754,114 @@ int ChaCalcFunc::InitMP(CBone* srcbone, bool limitdegflag, int srcmotid, double 
 		firstmp = &initmp;
 	}
 
-
 	ChaMatrix matforinit;
 	matforinit.SetIdentity();
 
+	if (firstmp) {
 
-	//###############
-	//set matforinit 2023/05/15
-	//###############
-	//if (srcbone->GetParModel()->GetLoadingMotionCount() <= 1) {
-	if (srcbone->IsNotSkeleton() && (srcbone->GetParModel()->GetLoadingMotionCount() <= 1)) {//2023/10/23 skeleton以外の場合
-		FbxNode* pNode = srcbone->GetFbxNodeOnLoad();
-		if (pNode) {
+		//###############
+		//set matforinit 2023/05/15
+		//###############
+		//if (srcbone->GetParModel()->GetLoadingMotionCount() <= 1) {
+		if (srcbone->IsNotSkeleton() && (srcbone->GetParModel()->GetLoadingMotionCount() <= 1)) {//2023/10/23 skeleton以外の場合
+			FbxNode* pNode = srcbone->GetFbxNodeOnLoad();
+			if (pNode) {
 
-			EnterCriticalSection(&g_CritSection_FbxSdk);//!!!!!!!!!
-			FbxAMatrix lGlobalSRT;
-			FbxTime time0;
-			time0.SetSecondDouble(0.0);
-			lGlobalSRT = pNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);//current animation
-			ChaMatrix chaGlobalSRT;
-			chaGlobalSRT = ChaMatrixFromFbxAMatrix(lGlobalSRT);
-			matforinit = (ChaMatrixInv(srcbone->GetNodeMat()) * chaGlobalSRT);
-			//matforinit = chaGlobalSRT;
-			//matforinit = ChaMatrixInv(GetNodeMat());
-			LeaveCriticalSection(&g_CritSection_FbxSdk);//!!!!!!!!!
+				EnterCriticalSection(&g_CritSection_FbxSdk);//!!!!!!!!!
+				FbxAMatrix lGlobalSRT;
+				FbxTime time0;
+				time0.SetSecondDouble(0.0);
+				lGlobalSRT = pNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);//current animation
+				ChaMatrix chaGlobalSRT;
+				chaGlobalSRT = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+				matforinit = (ChaMatrixInv(srcbone->GetNodeMat()) * chaGlobalSRT);
+				//matforinit = chaGlobalSRT;
+				//matforinit = ChaMatrixInv(GetNodeMat());
+				LeaveCriticalSection(&g_CritSection_FbxSdk);//!!!!!!!!!
+			}
+			else {
+				_ASSERT(0);
+				matforinit.SetIdentity();
+			}
+
+			//matforinit = firstmp->GetWorldMat();
+			////matforinit.SetIdentity();
 		}
 		else {
-			_ASSERT(0);
-			matforinit.SetIdentity();
+			matforinit = firstmp->GetWorldMat();
 		}
 
-		//matforinit = firstmp->GetWorldMat();
-		////matforinit.SetIdentity();
-	}
-	else {
-		matforinit = firstmp->GetWorldMat();
-	}
-
-	//###########
-	//for debug
-	//###########
-	//if ((srcmotid == 1) && (srcframe == 0.0)) {
-	//	char strdbg[1024] = { 0 };
-	//	WCHAR wstrdbg[1024] = { 0L };
-	//	sprintf_s(strdbg, 1024, "InitMP firstanim firstframe : (%s)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n",
-	//		srcbone->GetBoneName(),
-	//		matforinit.data[MATI_11], matforinit.data[MATI_12], matforinit.data[MATI_13], matforinit.data[MATI_14],
-	//		matforinit.data[MATI_21], matforinit.data[MATI_22], matforinit.data[MATI_23], matforinit.data[MATI_24],
-	//		matforinit.data[MATI_31], matforinit.data[MATI_32], matforinit.data[MATI_33], matforinit.data[MATI_34],
-	//		matforinit.data[MATI_41], matforinit.data[MATI_42], matforinit.data[MATI_43], matforinit.data[MATI_44]
-	//	);
-	//	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
-	//	DbgOut(wstrdbg);
-	//}
-
-	//SetFirstMat(firstanim);//リターゲット時のbvhbone->GetFirstMatで効果
-
-	CMotionPoint* curmp = srcbone->GetMotionPoint(srcmotid, roundingframe);
-	if (!curmp) {
-		int existflag = 0;
-		curmp = srcbone->AddMotionPoint(srcmotid, roundingframe, &existflag);
-	}
-	if (curmp) {
-
-		////SetWorldMat(srcmotid, roundingframe, firstanim, curmp);
-		//curmp->SetWorldMat(firstanim);
-		//curmp->SetLimitedWM(firstanim);
-
-		curmp->SetWorldMat(matforinit);
-		curmp->SetLimitedWM(matforinit);
-
-
-		//SetInitMat(xmat);
-		////オイラー角初期化
-		ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
-		int paraxsiflag = 1;
-		
-		
-		//cureul = CalcLocalEulXYZ(0, paraxsiflag, 1, 0.0, BEFEUL_ZERO);
-		//cureul = srcbone->CalcLocalEulXYZ(0, paraxsiflag, srcmotid, roundingframe, BEFEUL_BEFFRAME);
-		cureul = firstmp->GetLocalEul();//2023/10/23
-
-
-		////１つ目のモーションを削除する場合もあるので　motid = 1決め打ちは出来ない　2022/09/13
-		////ChaVector3 cureul = GetLocalEul(firstmotid, 0.0, 0);//motid == 1は１つ目のモーション
-		////SetLocalEul(srcmotid, roundingframe, cureul, curmp);
-		//ChaVector3 cureul = firstmp->GetLocalEul();
-
-		curmp->SetLocalEul(cureul);
-		curmp->SetLimitedLocalEul(cureul);
-		//if (limitdegflag == true) {
-		curmp->SetCalcLimitedWM(2);
+		//###########
+		//for debug
+		//###########
+		//if ((srcmotid == 1) && (srcframe == 0.0)) {
+		//	char strdbg[1024] = { 0 };
+		//	WCHAR wstrdbg[1024] = { 0L };
+		//	sprintf_s(strdbg, 1024, "InitMP firstanim firstframe : (%s)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n",
+		//		srcbone->GetBoneName(),
+		//		matforinit.data[MATI_11], matforinit.data[MATI_12], matforinit.data[MATI_13], matforinit.data[MATI_14],
+		//		matforinit.data[MATI_21], matforinit.data[MATI_22], matforinit.data[MATI_23], matforinit.data[MATI_24],
+		//		matforinit.data[MATI_31], matforinit.data[MATI_32], matforinit.data[MATI_33], matforinit.data[MATI_34],
+		//		matforinit.data[MATI_41], matforinit.data[MATI_42], matforinit.data[MATI_43], matforinit.data[MATI_44]
+		//	);
+		//	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
+		//	DbgOut(wstrdbg);
 		//}
 
+		//SetFirstMat(firstanim);//リターゲット時のbvhbone->GetFirstMatで効果
 
-		//2023/02/11
-		//GetFbxAnimのif((animno == 0) && (srcframe == 0.0))を通らなかったRootジョイント用の初期化
-		if ((srcmotid == firstmotid) && (roundingframe == 0.0)) {
-			ChaMatrix firstmat;
-			firstmat = srcbone->GetNodeMat() * matforinit;
-			srcbone->SetFirstMat(firstmat);
+		CMotionPoint* curmp = srcbone->GetMotionPoint(srcmotid, roundingframe);
+		if (!curmp) {
+			int existflag = 0;
+			curmp = srcbone->AddMotionPoint(srcmotid, roundingframe, &existflag);
 		}
+		if (curmp) {
 
+			////SetWorldMat(srcmotid, roundingframe, firstanim, curmp);
+			//curmp->SetWorldMat(firstanim);
+			//curmp->SetLimitedWM(firstanim);
+
+			curmp->SetWorldMat(matforinit);
+			curmp->SetLimitedWM(matforinit);
+
+
+			//SetInitMat(xmat);
+			////オイラー角初期化
+			ChaVector3 cureul = ChaVector3(0.0f, 0.0f, 0.0f);
+			int paraxsiflag = 1;
+
+
+			//cureul = CalcLocalEulXYZ(0, paraxsiflag, 1, 0.0, BEFEUL_ZERO);
+			//cureul = srcbone->CalcLocalEulXYZ(0, paraxsiflag, srcmotid, roundingframe, BEFEUL_BEFFRAME);
+			cureul = firstmp->GetLocalEul();//2023/10/23
+
+
+			////１つ目のモーションを削除する場合もあるので　motid = 1決め打ちは出来ない　2022/09/13
+			////ChaVector3 cureul = GetLocalEul(firstmotid, 0.0, 0);//motid == 1は１つ目のモーション
+			////SetLocalEul(srcmotid, roundingframe, cureul, curmp);
+			//ChaVector3 cureul = firstmp->GetLocalEul();
+
+			curmp->SetLocalEul(cureul);
+			curmp->SetLimitedLocalEul(cureul);
+			//if (limitdegflag == true) {
+			curmp->SetCalcLimitedWM(2);
+			//}
+
+
+			//2023/02/11
+			//GetFbxAnimのif((animno == 0) && (srcframe == 0.0))を通らなかったRootジョイント用の初期化
+			if ((srcmotid == firstmotid) && (roundingframe == 0.0)) {
+				ChaMatrix firstmat;
+				firstmat = srcbone->GetNodeMat() * matforinit;
+				srcbone->SetFirstMat(firstmat);
+			}
+
+		}
 	}
-
+	else {
+		int dbgflag2 = 1;
+		return 1;
+	}
 
 	////###################################################################################		
 	////InitMP 初期姿勢。２つ目以降のモーションの初期姿勢。リターゲットの初期姿勢に関わる。
