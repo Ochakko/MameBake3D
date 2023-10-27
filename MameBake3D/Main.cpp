@@ -2302,11 +2302,12 @@ static CEditRange s_previewrange;
 #define MENUOFFSET_SETCONVBONE			(MENUOFFSET_SETCONVBONEBVH + 100)
 //#define MENUOFFSET_SETCONVBONE			(MENUOFFSET_SETCONVBONEBVH + 500)
 #define MENUOFFSET_INITMPFROMTOOL		(MENUOFFSET_SETCONVBONE + CONVBONEMAX)
-#define MENUOFFSET_BONERCLICK			(MENUOFFSET_INITMPFROMTOOL + 100)
-#define MENUOFFSET_GETSYMROOTMODE		(MENUOFFSET_BONERCLICK + 100)
+
+#define MENUOFFSET_GETSYMROOTMODE		(MENUOFFSET_INITMPFROMTOOL + 100)
 #define MENUOFFSET_INTERPOLATEFROMTOOL		(MENUOFFSET_GETSYMROOTMODE + 30)
 #define MENUOFFSET_FILTERFROMTOOL		(MENUOFFSET_INTERPOLATEFROMTOOL + 30)
 #define MENUOFFSET_CHECKSIMILARGROUP		(MENUOFFSET_FILTERFROMTOOL + 30)
+
 
 
 #define SPAXISNUM	3
@@ -2730,21 +2731,15 @@ static ChaVector4 s_lightdiffuseforshader[LIGHTNUMMAX];
 //--------------------------------------------------------------------------------------
 // UI control IDs
 //--------------------------------------------------------------------------------------
-#define ID_RMENU_PHYSICSCONSTRAINT	(ID_RMENU_0 - 100)
-//#define ID_RMENU_MASS0			(ID_RMENU_PHYSICSCONSTRAINT + 1)
-//#define ID_RMENU_EXCLUDE_MV		(ID_RMENU_PHYSICSCONSTRAINT + 2)
-//#define ID_RMENU_FORBIDROT_ONE	(ID_RMENU_PHYSICSCONSTRAINT + 3)
-//#define ID_RMENU_ENABLEROT_ONE	(ID_RMENU_PHYSICSCONSTRAINT + 4)
-//#define ID_RMENU_FORBIDROT_CHILDREN	(ID_RMENU_PHYSICSCONSTRAINT + 5)
-//#define ID_RMENU_ENABLEROT_CHILDREN	(ID_RMENU_PHYSICSCONSTRAINT + 6)
-//
-//#define ID_RMENU_MASS0_ON_ALL		(ID_RMENU_PHYSICSCONSTRAINT + 7)
-//#define ID_RMENU_MASS0_OFF_ALL		(ID_RMENU_PHYSICSCONSTRAINT + 8)
-//#define ID_RMENU_MASS0_ON_UPPER		(ID_RMENU_PHYSICSCONSTRAINT + 9)
-//#define ID_RMENU_MASS0_OFF_UPPER	(ID_RMENU_PHYSICSCONSTRAINT + 10)
-//#define ID_RMENU_MASS0_ON_LOWER		(ID_RMENU_PHYSICSCONSTRAINT + 11)
-//#define ID_RMENU_MASS0_OFF_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 12)
 
+
+//
+
+#define MENUOFFSET_BONERCLICK		20000
+//################################################
+//ID_RMENU_*は　MENUOFFSET_BONERCLICKを足して使う
+//################################################
+#define ID_RMENU_PHYSICSCONSTRAINT	(10)
 #define ID_RMENU_KINEMATIC_ON_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 13)
 #define ID_RMENU_KINEMATIC_OFF_LOWER	(ID_RMENU_PHYSICSCONSTRAINT + 14)
 
@@ -9072,6 +9067,12 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 
 		//else 
+
+
+
+		//if (menuid == (ID_RMENU_IKTARGET + MENUOFFSET_BONERCLICK)) {
+		//	int dbgflag1 = 1;
+		//}
 
 		if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONEBVH)) && (menuid < (ID_RMENU_0 + modelnum + MENUOFFSET_SETCONVBONEBVH))) {
 			int modelindex = menuid - ID_RMENU_0 - MENUOFFSET_SETCONVBONEBVH;
@@ -31402,6 +31403,9 @@ int OnFrameToolWnd()
 
 	if (s_pasteFlag) {
 
+		HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));//長いフレームの保存は数秒時間がかかることがあるので砂時計カーソルにする
+
+
 		//添付ファイルを読み取ってs_pastemotvecに格納する
 		s_pastemotvec.clear();
 		bool result;
@@ -31485,6 +31489,11 @@ int OnFrameToolWnd()
 
 		s_RboneAndPasteFlag = false;
 		s_pasteFlag = false;
+
+		if (oldcursor) {
+			SetCursor(oldcursor);
+		}
+
 	}
 
 	if (s_motpropFlag) {

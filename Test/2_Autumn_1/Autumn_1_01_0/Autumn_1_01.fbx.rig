@@ -313,10 +313,10 @@
       <BoneName>J_Bip_L_Hand</BoneName>
       <AxisU>Z</AxisU>
       <RateU>1.000000</RateU>
-      <EnableU>1</EnableU>
+      <EnableU>0</EnableU>
       <AxisV>Z</AxisV>
       <RateV>1.000000</RateV>
-      <EnableV>1</EnableV>
+      <EnableV>0</EnableV>
     </RigElem>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
@@ -324,10 +324,10 @@
       <BoneName>J_Bip_L_LowerArm</BoneName>
       <AxisU>Z</AxisU>
       <RateU>1.000000</RateU>
-      <EnableU>1</EnableU>
+      <EnableU>0</EnableU>
       <AxisV>Z</AxisV>
       <RateV>1.000000</RateV>
-      <EnableV>1</EnableV>
+      <EnableV>0</EnableV>
     </RigElem>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
@@ -729,10 +729,10 @@
       <BoneName>J_Bip_R_Hand</BoneName>
       <AxisU>Z</AxisU>
       <RateU>1.000000</RateU>
-      <EnableU>1</EnableU>
+      <EnableU>0</EnableU>
       <AxisV>Z</AxisV>
       <RateV>1.000000</RateV>
-      <EnableV>1</EnableV>
+      <EnableV>0</EnableV>
     </RigElem>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
@@ -740,10 +740,10 @@
       <BoneName>J_Bip_R_LowerArm</BoneName>
       <AxisU>Z</AxisU>
       <RateU>1.000000</RateU>
-      <EnableU>1</EnableU>
+      <EnableU>0</EnableU>
       <AxisV>Z</AxisV>
       <RateV>1.000000</RateV>
-      <EnableV>1</EnableV>
+      <EnableV>0</EnableV>
     </RigElem>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
@@ -1078,10 +1078,10 @@
       <BoneName>J_Bip_L_Foot</BoneName>
       <AxisU>Z</AxisU>
       <RateU>0.000000</RateU>
-      <EnableU>1</EnableU>
+      <EnableU>0</EnableU>
       <AxisV>Z</AxisV>
       <RateV>0.000000</RateV>
-      <EnableV>1</EnableV>
+      <EnableV>0</EnableV>
     </RigElem>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
@@ -1089,10 +1089,10 @@
       <BoneName>J_Bip_L_LowerLeg</BoneName>
       <AxisU>Z</AxisU>
       <RateU>0.000000</RateU>
-      <EnableU>1</EnableU>
+      <EnableU>0</EnableU>
       <AxisV>Z</AxisV>
       <RateV>0.000000</RateV>
-      <EnableV>1</EnableV>
+      <EnableV>0</EnableV>
     </RigElem>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
@@ -1258,10 +1258,10 @@
       <BoneName>J_Bip_R_Foot</BoneName>
       <AxisU>Z</AxisU>
       <RateU>0.000000</RateU>
-      <EnableU>1</EnableU>
+      <EnableU>0</EnableU>
       <AxisV>Z</AxisV>
       <RateV>0.000000</RateV>
-      <EnableV>1</EnableV>
+      <EnableV>0</EnableV>
     </RigElem>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
@@ -1269,10 +1269,10 @@
       <BoneName>J_Bip_R_LowerLeg</BoneName>
       <AxisU>Z</AxisU>
       <RateU>0.000000</RateU>
-      <EnableU>1</EnableU>
+      <EnableU>0</EnableU>
       <AxisV>Z</AxisV>
       <RateV>0.000000</RateV>
-      <EnableV>1</EnableV>
+      <EnableV>0</EnableV>
     </RigElem>
     <RigElem>
     <RigRigName>!noname!</RigRigName>
