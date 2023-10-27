@@ -1615,10 +1615,13 @@ static bool s_underdelmotion = false;
 static bool s_underselectmodel = false;
 static bool s_underselectcamera = false;
 static bool s_underselectmotion = false;
+static bool s_underdispmodel = false;
 static bool s_underfilteringbymenu = false;
 static int s_opeselectmodelcnt = -1;
 static int s_opeselectcameracnt = -1;
 static int s_opeselectmotioncnt = -1;
+static int s_opedispmodelcnt = -1;
+
 
 static int s_underanglelimithscroll = 0;
 
@@ -3243,6 +3246,7 @@ static int OnREMenu(int selindex, int callbymenu);
 static int OnRgdMenu(int selindex, int callbymenu);
 static int OnImpMenu(int selindex);
 static int OnDelModel(int delindex, bool ondelbutton = false);
+static int OnDispModel(int dispindex);
 static int OnDelAllModel();
 static int refreshModelPanel();
 //static int refreshMotionPanel();
@@ -4530,6 +4534,9 @@ void InitApp()
 	s_underselectmotion = false;
 	s_underfilteringbymenu = false;
 	s_underanglelimithscroll = 0;
+	s_underdispmodel = false;
+	s_opedispmodelcnt = -1;
+
 
 	s_dispanglelimit = false;
 	s_dispsampleui = true;
@@ -8211,7 +8218,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	VisibleUtDialog();
 
 
-	if (s_underdelmotion || s_underdelmodel || s_underselectmotion || s_underselectcamera || s_underselectmodel) {
+	if (s_underdelmotion || s_underdelmodel || s_underselectmotion || s_underselectcamera || s_underselectmodel || s_underdispmodel) {
 		OnFrameCloseFlag();
 		OnFrameToolWnd();
 
@@ -8725,7 +8732,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 	//if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0) &&
 	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_calclimitedwmflag, 0) == 0) &&
 		!s_underdelmodel && !s_underdelmotion && 
-		!s_underselectmodel && !s_underselectmotion && !s_underselectcamera) {
+		!s_underselectmodel && !s_underselectmotion && !s_underselectcamera && !s_underdispmodel) {
 
 		if (s_disponlyoneobj == false) {
 			OnRenderModel(pd3dImmediateContext);
@@ -13443,7 +13450,7 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 //::MessageBox(s_mainhwnd, L"check 2", L"check!!!", MB_OK);
 
 	//OnAnimMenuでCreateRigidElemを呼ぶ前に、default_ref.refを読む
-	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (skipdefref == 1)) {//プロジェクトファイルから呼ばれて、かつ、default_ref.refが存在する場合
+	if (skipdefref == 1) {//プロジェクトファイルから呼ばれて、かつ、default_ref.refが存在する場合
 		if (s_model->GetMotInfoSize() > 0) {
 			MOTINFO* firstmi = s_model->GetMotInfo(1);
 			if (firstmi) {
@@ -13532,59 +13539,58 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 
 	//::MessageBox(s_mainhwnd, L"check 5", L"check!!!", MB_OK);
 
-	if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
-		OnRgdMorphMenu(0);
+	OnRgdMorphMenu(0);
 
-		//	SetCapture( s_3dwnd );
+	//	SetCapture( s_3dwnd );
 
-		if (s_model && s_model->GetCurMotInfo()) {
-			s_curmotid = s_model->GetCurMotInfo()->motid;
-		}
-		else {
-			//_ASSERT(0);
-			s_curmotid = 0;
-		}
-
-
-		if (s_nowloading && s_3dwnd) {
-			OnRenderNowLoading();
-		}
-
-		if (s_model->GetOldAxisFlagAtLoading() == 0) {
-			CLmtFile lmtfile;
-			WCHAR lmtname[MAX_PATH];
-			swprintf_s(lmtname, MAX_PATH, L"%s.lmt", g_tmpmqopath);
-			char fbxcomment[MAX_PATH] = { 0 };
-			int chkretcomment;
-			chkretcomment = s_model->GetFbxComment(fbxcomment, MAX_PATH);
-			if (chkretcomment == 0) {
-				int chkret1;
-				chkret1 = lmtfile.LoadLmtFile(lmtname, s_model, fbxcomment);
-				//_ASSERT(chkret1 == 0);
-			}
-			WCHAR rigname[MAX_PATH] = { 0L };
-			swprintf_s(rigname, MAX_PATH, L"%s.rig", g_tmpmqopath);
-			CRigFile rigfile;
-			int chkret2;
-			chkret2 = rigfile.LoadRigFile(rigname, s_model);
-			//_ASSERT(chkret2 == 0);
-		}
-
-		//::MessageBox(s_mainhwnd, L"check 6", L"check!!!", MB_OK);
-
-
-		s_model->SetMotionSpeed(g_dspeed);
-
-		DispModelPanel();
-
-
-		//OnAnimMenuで呼ぶ
-		//if (skipdefref == 0) {
-		//	s_model->CreateBtObject(1);//初回
-		//	s_model->CalcBoneEul(-1);
-		//}
+	if (s_model && s_model->GetCurMotInfo()) {
+		s_curmotid = s_model->GetCurMotInfo()->motid;
 	}
-	
+	else {
+		//_ASSERT(0);
+		s_curmotid = 0;
+	}
+
+
+	if (s_nowloading && s_3dwnd) {
+		OnRenderNowLoading();
+	}
+
+	if (s_model->GetOldAxisFlagAtLoading() == 0) {
+		CLmtFile lmtfile;
+		WCHAR lmtname[MAX_PATH];
+		swprintf_s(lmtname, MAX_PATH, L"%s.lmt", g_tmpmqopath);
+		char fbxcomment[MAX_PATH] = { 0 };
+		int chkretcomment;
+		chkretcomment = s_model->GetFbxComment(fbxcomment, MAX_PATH);
+		if (chkretcomment == 0) {
+			int chkret1;
+			chkret1 = lmtfile.LoadLmtFile(lmtname, s_model, fbxcomment);
+			//_ASSERT(chkret1 == 0);
+		}
+		WCHAR rigname[MAX_PATH] = { 0L };
+		swprintf_s(rigname, MAX_PATH, L"%s.rig", g_tmpmqopath);
+		CRigFile rigfile;
+		int chkret2;
+		chkret2 = rigfile.LoadRigFile(rigname, s_model);
+		//_ASSERT(chkret2 == 0);
+	}
+
+	//::MessageBox(s_mainhwnd, L"check 6", L"check!!!", MB_OK);
+
+
+	s_model->SetMotionSpeed(g_dspeed);
+
+	DispModelPanel();
+
+
+	//OnAnimMenuで呼ぶ
+	//if (skipdefref == 0) {
+	//	s_model->CreateBtObject(1);//初回
+	//	s_model->CalcBoneEul(-1);
+	//}
+
+
 #ifndef NDEBUG
 	CallF(s_model->DbgDump(), return 0);
 #endif
@@ -13607,13 +13613,11 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 
 
 
-	if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
-		//2022/11/23
-		//VRoidの髪の毛ジョイントが多く　顔がみえなくなるので　読み込み時に自動的に　頭のジョイントマークをスキップ設定
-		CBone* vroidheadjoint = s_model->FindBoneByName("J_Bip_C_Head");
-		if (vroidheadjoint) {
-			SkipJointMarkReq(1, vroidheadjoint, false);
-		}
+	//2022/11/23
+	//VRoidの髪の毛ジョイントが多く　顔がみえなくなるので　読み込み時に自動的に　頭のジョイントマークをスキップ設定
+	CBone* vroidheadjoint = s_model->FindBoneByName("J_Bip_C_Head");
+	if (vroidheadjoint) {
+		SkipJointMarkReq(1, vroidheadjoint, false);
 	}
 
 
@@ -15278,7 +15282,7 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 
 
 			//2023/02/08
-			if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (g_limitdegflag == true)) {
+			if (g_limitdegflag == true) {
 				ClearLimitedWM(s_model);
 				CopyWorldToLimitedWorld(s_model);
 				ApplyNewLimitsToWM(s_model);
@@ -15288,16 +15292,14 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 		}
 	}
 
-	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && s_owpTimeline && dorefreshflag) {
+	if (s_owpTimeline && dorefreshflag) {
 		//タイムラインのキーを設定
 		refreshTimeline(*s_owpTimeline);
 		//s_owpTimeline->setCurrentTime( 0.0 );
 		s_owpTimeline->setCurrentTime(1.0);
 	}
 
-	if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {
-		OnSetMotSpeed();//2022/09/16
-	}
+	OnSetMotSpeed();//2022/09/16
 
 	//MOTINFO* curmi = s_model->GetCurMotInfo();
 	//if (curmi) {
@@ -15339,7 +15341,7 @@ int OnAnimMenu(bool dorefreshflag, int selindex, int saveundoflag)
 	s_underselectmotion = false;
 
 
-	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (s_model->GetInitAxisMatX() == 0)) {//OnAnimMenuに移動
+	if (s_model->GetInitAxisMatX() == 0) {//OnAnimMenuに移動
 		if (s_owpLTimeline) {
 			s_owpLTimeline->setCurrentTime(0.0, true);
 		}
@@ -15510,58 +15512,41 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 				GetCPTFileName(s_cptfilename);
 				s_copyhistorydlg.SetNames(s_model, s_cptfilename);
 			}
+		}
 
-			{
-				if (s_materialratedlgwnd) {
-					if (s_model) {
-						SetModel2MaterialRateDlg(s_model);
-					}
+		{
+			if (s_materialratedlgwnd) {
+				if (s_model) {
+					SetModel2MaterialRateDlg(s_model);
 				}
 			}
+		}
 
-			{
-				if (s_modelworldmatdlgwnd) {
-					if (s_model) {
-						SetModel2ModelWorldMatDlg(s_model);
-					}
+		{
+			if (s_modelworldmatdlgwnd) {
+				if (s_model) {
+					SetModel2ModelWorldMatDlg(s_model);
 				}
 			}
+		}
 
 
-			if (s_model) {
-				if (s_model->GetRigidElemInfoSize() > 0) {
-					int result1 = OnREMenu(0, 0);
-					if (result1) {
-						s_underselectmodel = false;
-						return 0;
-					}
-					int result2 = OnRgdMenu(0, 0);
-					if (result2) {
-						s_underselectmodel = false;
-						return 0;
-					}
-					int result3 = OnImpMenu(0);
-					if (result3) {
-						s_underselectmodel = false;
-						return 0;
-					}
+		if (s_model) {
+			if (s_model->GetRigidElemInfoSize() > 0) {
+				int result1 = OnREMenu(0, 0);
+				if (result1) {
+					s_underselectmodel = false;
+					return 0;
 				}
-				else {
-					int result1 = OnREMenu(-1, 0);
-					if (result1) {
-						s_underselectmodel = false;
-						return 0;
-					}
-					int result2 = OnRgdMenu(-1, 0);
-					if (result2) {
-						s_underselectmodel = false;
-						return 0;
-					}
-					int result3 = OnImpMenu(-1);
-					if (result3) {
-						s_underselectmodel = false;
-						return 0;
-					}
+				int result2 = OnRgdMenu(0, 0);
+				if (result2) {
+					s_underselectmodel = false;
+					return 0;
+				}
+				int result3 = OnImpMenu(0);
+				if (result3) {
+					s_underselectmodel = false;
+					return 0;
 				}
 			}
 			else {
@@ -15581,22 +15566,39 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 					return 0;
 				}
 			}
-
-
-			g_SampleUI.GetSlider(IDC_SPEED)->SetValue((int)(g_dspeed * 100.0f));
-			WCHAR sz[100];
-			swprintf_s(sz, 100, L"Speed: %0.4f", g_dspeed);
-			g_SampleUI.GetStatic(IDC_SPEED_STATIC)->SetText(sz);
-
-			//if (!g_bvh2fbxbatchflag && !g_motioncachebatchflag && !g_retargetbatchflag) {
-			//if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
-			if ((s_dispconvbone == true) &&
-				(InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
-				CreateConvBoneWnd();//!!!!!!!!!!!!! モデル選択変更によりリターゲットウインドウ作り直し
-			}
-
-			SetTimelineHasRigFlag();
 		}
+		else {
+			int result1 = OnREMenu(-1, 0);
+			if (result1) {
+				s_underselectmodel = false;
+				return 0;
+			}
+			int result2 = OnRgdMenu(-1, 0);
+			if (result2) {
+				s_underselectmodel = false;
+				return 0;
+			}
+			int result3 = OnImpMenu(-1);
+			if (result3) {
+				s_underselectmodel = false;
+				return 0;
+			}
+		}
+
+
+		g_SampleUI.GetSlider(IDC_SPEED)->SetValue((int)(g_dspeed * 100.0f));
+		WCHAR sz[100];
+		swprintf_s(sz, 100, L"Speed: %0.4f", g_dspeed);
+		g_SampleUI.GetStatic(IDC_SPEED_STATIC)->SetText(sz);
+
+		//if (!g_bvh2fbxbatchflag && !g_motioncachebatchflag && !g_retargetbatchflag) {
+		//if ((InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
+		if ((s_dispconvbone == true) &&
+			(InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_retargetbatchflag, 0) == 0)) {
+			CreateConvBoneWnd();//!!!!!!!!!!!!! モデル選択変更によりリターゲットウインドウ作り直し
+		}
+
+		SetTimelineHasRigFlag();
 
 		SetMainWindowTitle();
 
@@ -15821,6 +15823,22 @@ int OnDelMotion(int delmenuindex, bool ondelbutton)//default : ondelbutton = fal
 	DispCameraPanel();
 
 	//s_underdelmotion = false;
+
+	return 0;
+}
+
+int OnDispModel(int modelcnt)
+{
+	int mdlnum = (int)s_modelindex.size();
+	if ((mdlnum <= 0) || (modelcnt < 0) || (modelcnt >= mdlnum)) {
+		return 0;
+	}
+
+	CModel* dispmodel = s_modelindex[modelcnt].modelptr;
+	if (dispmodel && s_modelpanel.checkvec[modelcnt] && s_modelpanel.panel) {
+		dispmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
+		s_modelpanel.panel->callRewrite();
+	}
 
 	return 0;
 }
@@ -19013,17 +19031,19 @@ int CreateModelPanel()
 					if (s_model) {
 						if (modelcnt < s_modelindex.size()) {
 							CModel* curmodel = s_modelindex[modelcnt].modelptr;
-							if (curmodel) {
-								//s_modelpanel.checkvec[modelcnt]->setValue(!(s_modelpanel.checkvec[modelcnt]->getValue()));
-								curmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
+							if ((s_underdelmotion == false) && (s_opedelmotioncnt < 0) && //Motion削除と同時は禁止 
+								!s_underdelmodel && (s_opedelmodelcnt < 0) && 
+								curmodel && !s_underdispmodel) {
+
+								//ここでOnDelModelを呼ぶとOrgWindowの関数を実行中にparentWindowがNULLになるなどしてエラーになる.フラグを立ててループで呼ぶ
+								s_underdispmodel = true;
+								s_opedispmodelcnt = modelcnt;
 							}
 						}
-						if (s_modelpanel.panel) {
-							s_modelpanel.panel->callRewrite();
-						}
 					}
-					});
+				});
 			}
+
 
 			if (s_modelpanel.delbutton[modelcnt]) {
 				s_modelpanel.delbutton[modelcnt]->setButtonListener([modelcnt]() {
@@ -19045,7 +19065,7 @@ int CreateModelPanel()
 							}
 						}
 					}
-					});
+				});
 			}
 		}
 
@@ -19053,7 +19073,10 @@ int CreateModelPanel()
 			s_modelpanel.radiobutton->setSelectListener([]() {
 				if (s_model) {
 					int curindex = s_modelpanel.radiobutton->getSelectIndex();
-					if ((s_opeselectmodelcnt < 0) && !s_underselectmodel && (curindex >= 0) && (curindex < s_modelindex.size())) {
+					if ((s_opeselectmodelcnt < 0) && !s_underselectmodel && 
+						(s_underdelmotion == false) && (s_opedelmotioncnt < 0) &&
+						(curindex >= 0) && (curindex < s_modelindex.size())) {
+
 						//s_modelpanel.modelindex = curindex;
 						//OnModelMenu(true, s_modelpanel.modelindex, 1);
 						//s_modelpanel.panel->callRewrite();
@@ -19063,7 +19086,7 @@ int CreateModelPanel()
 						s_opeselectmodelcnt = curindex;
 					}
 				}
-				});
+			});
 		}
 
 		//if (s_firstmodelpanelpos) {
@@ -31185,6 +31208,16 @@ int OnFrameToolWnd()
 
 		s_opeselectmodelcnt = -1;
 	}
+
+	if ((s_opedispmodelcnt >= 0) && s_underdispmodel && s_modelpanel.panel) {
+		int modelcnt = s_opedispmodelcnt;
+		OnDispModel(modelcnt);
+
+		s_opedispmodelcnt = -1;
+		s_underdispmodel = false;
+	}
+
+
 	if ((s_opedelmotioncnt >= 0) && (s_underdelmotion == true)) {
 		int delmenuindex = s_opedelmotioncnt;
 		bool ondelbutton = true;
