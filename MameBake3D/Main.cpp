@@ -13486,6 +13486,9 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 				lastmotid = curmi->motid;
 				s_model->SetCurrentMotion(lastmotid);
 				//OnAddMotion(curmi->motid, (motno == 0));
+				// 
+				//Main.cppのOnAddMotion()は　メニューの追加のみ
+				//
 				OnAddMotion(curmi->motid, (motno == (motnum - 1)));//最後のモーション!!!!!! 2021/08/19
 
 				if (s_nowloading && s_3dwnd) {
@@ -13501,11 +13504,19 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 //::MessageBox(s_mainhwnd, L"check 4", L"check!!!", MB_OK);
 
 
+	//2023/10/27
+	// モーション無しのfbxを読み込んだ場合　motidは作成されるがモーションポイントは１つも無い
+	// そのために　motnum == 0のときに　AddMotion()を呼んで　InitMPする
+	// CModel::AddMotion()からInitMPが呼ばれるためには　GetLoadedFlag() == trueである必要
+	// よってモデルとアニメ読み込み後　かつ motnum == 0処理よりも前に　SetLoadedFlag(true)する必要
+	// 下方から移動
+	s_model->SetLoadedFlag(true);
+
 
 	//Handle a model not has motion.
 	int motnum = s_model->GetMotInfoSize();
 	if ((motnum == 0) && (s_model->GetNoBoneFlag() == false)) {
-		CallF(AddMotion(0), return 0);
+		CallF(AddMotion(0), return 0);//モーション無しfbxを読み込んだ場合のInitMP呼び出しでモーションポイント作成
 		s_modelindex[mindex].tlarray = s_tlarray;
 		s_modelindex[mindex].lineno2boneno = s_lineno2boneno;
 		s_modelindex[mindex].boneno2lineno = s_boneno2lineno;
@@ -13581,7 +13592,14 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 	g_dbgloadcnt++;
 
 	//s_model->DestroyScene();
-	s_model->SetLoadedFlag(true);
+
+	//2023/10/27
+	// モーション無しのfbxを読み込んだ場合　motidは作成されるがモーションポイントは１つも無い
+	// そのために　motnum == 0のときに　AddMotion()を呼んで　InitMPする
+	// CModel::AddMotion()からInitMPが呼ばれるためには　GetLoadedFlag() == trueである必要
+	// よってモデルとアニメ読み込み後　かつ motnum == 0処理よりも前に　SetLoadedFlag(true)する必要
+	// 上方へ移動
+	//s_model->SetLoadedFlag(true);
 
 	//ShowRigidWnd(true);
 
@@ -14945,7 +14963,7 @@ int AddMotion(const WCHAR* wfilename, double srcmotleng)
 
 	//2023/02/11
 	//OnAnimMenuよりも前 : OnAnimMenu()-->CalcBoneEulよりも前
-	//InitCurMotion(0, 0);//2023/10/23 大分前からInitMPReq()はCModel::AddMotionから呼ばれるようになったので不要
+	//InitCurMotion(0, 0);//2023/10/23 大分前からInitMPReq()はCModel::AddMotionから呼ばれるようになったので不要　2023/10/27 ただしGetLoadedFlag() == trueの必要
 
 	int selindex = (int)s_tlarray.size() - 1;
 	CallF(OnAnimMenu(true, selindex), return 1);

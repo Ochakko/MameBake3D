@@ -3732,90 +3732,92 @@ int ChaCalcFunc::InitMP(CBone* srcbone, bool limitdegflag, int srcmotid, double 
 		firstmotid = firstmi->motid;
 	}
 
-
-	CMotionPoint* firstmp = 0;
-	if ((srcbone->GetParModel()->GetLoadedFlag() == false) && (srcbone->GetParModel()->GetLoadingMotionCount() <= 0)) {
-		//Motionが１つも無いfbx読み込みのフォロー
-		//読み込み中で　fbxにモーションが無い場合　モーションポイントを作成する　それ以外の場合で　モーションポイントが無い場合はエラー
-		firstmp = &initmp;
+	CMotionPoint* curmp = srcbone->GetMotionPoint(srcmotid, roundingframe);
+	if (!curmp) {
+		//2023/10/27
+		//モーションの無いfbxを読み込んだ場合　ここではまだモーションポイントは１つも無い
+		//モーション無しfbxの最初のInitMP時にも　後方のfirstmpがNULLにならないためには　firstmpセットよりも前に　モーションポイントを作成する必要
+		int existflag = 0;
+		curmp = srcbone->AddMotionPoint(srcmotid, roundingframe, &existflag);
 	}
-	else {
-		firstmp = srcbone->GetMotionPoint(firstmotid, 0.0);
-		if (!firstmp) {
-			int dbgflag1 = 1;
-		}
-	}
+	if (curmp) {
 
-	if (!firstmp && ((strstr(srcbone->GetBoneName(), "Root") != 0) || (strstr(srcbone->GetBoneName(), "Reference") != 0))) {
-		//2022/11/08
-		//RootまたはReferenceが含まれる名前のボーンは　読み込み時に追加することがある
-		//RootとReferenceボーンの内　モーションポイントが無い場合についても　ここで対応
-
-		firstmp = &initmp;
-	}
-
-	ChaMatrix matforinit;
-	matforinit.SetIdentity();
-
-	if (firstmp) {
-
-		//###############
-		//set matforinit 2023/05/15
-		//###############
-		//if (srcbone->GetParModel()->GetLoadingMotionCount() <= 1) {
-		if (srcbone->IsNotSkeleton() && (srcbone->GetParModel()->GetLoadingMotionCount() <= 1)) {//2023/10/23 skeleton以外の場合
-			FbxNode* pNode = srcbone->GetFbxNodeOnLoad();
-			if (pNode) {
-
-				EnterCriticalSection(&g_CritSection_FbxSdk);//!!!!!!!!!
-				FbxAMatrix lGlobalSRT;
-				FbxTime time0;
-				time0.SetSecondDouble(0.0);
-				lGlobalSRT = pNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);//current animation
-				ChaMatrix chaGlobalSRT;
-				chaGlobalSRT = ChaMatrixFromFbxAMatrix(lGlobalSRT);
-				matforinit = (ChaMatrixInv(srcbone->GetNodeMat()) * chaGlobalSRT);
-				//matforinit = chaGlobalSRT;
-				//matforinit = ChaMatrixInv(GetNodeMat());
-				LeaveCriticalSection(&g_CritSection_FbxSdk);//!!!!!!!!!
-			}
-			else {
-				_ASSERT(0);
-				matforinit.SetIdentity();
-			}
-
-			//matforinit = firstmp->GetWorldMat();
-			////matforinit.SetIdentity();
+		CMotionPoint* firstmp = 0;
+		if ((srcbone->GetParModel()->GetLoadedFlag() == false) && (srcbone->GetParModel()->GetLoadingMotionCount() <= 0)) {
+			//Motionが１つも無いfbx読み込みのフォロー
+			//読み込み中で　fbxにモーションが無い場合　モーションポイントを作成する　それ以外の場合で　モーションポイントが無い場合はエラー
+			firstmp = &initmp;
 		}
 		else {
-			matforinit = firstmp->GetWorldMat();
+			firstmp = srcbone->GetMotionPoint(firstmotid, 0.0);
+			if (!firstmp) {
+				int dbgflag1 = 1;
+			}
 		}
 
-		//###########
-		//for debug
-		//###########
-		//if ((srcmotid == 1) && (srcframe == 0.0)) {
-		//	char strdbg[1024] = { 0 };
-		//	WCHAR wstrdbg[1024] = { 0L };
-		//	sprintf_s(strdbg, 1024, "InitMP firstanim firstframe : (%s)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n",
-		//		srcbone->GetBoneName(),
-		//		matforinit.data[MATI_11], matforinit.data[MATI_12], matforinit.data[MATI_13], matforinit.data[MATI_14],
-		//		matforinit.data[MATI_21], matforinit.data[MATI_22], matforinit.data[MATI_23], matforinit.data[MATI_24],
-		//		matforinit.data[MATI_31], matforinit.data[MATI_32], matforinit.data[MATI_33], matforinit.data[MATI_34],
-		//		matforinit.data[MATI_41], matforinit.data[MATI_42], matforinit.data[MATI_43], matforinit.data[MATI_44]
-		//	);
-		//	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
-		//	DbgOut(wstrdbg);
-		//}
+		if (!firstmp && ((strstr(srcbone->GetBoneName(), "Root") != 0) || (strstr(srcbone->GetBoneName(), "Reference") != 0))) {
+			//2022/11/08
+			//RootまたはReferenceが含まれる名前のボーンは　読み込み時に追加することがある
+			//RootとReferenceボーンの内　モーションポイントが無い場合についても　ここで対応
 
-		//SetFirstMat(firstanim);//リターゲット時のbvhbone->GetFirstMatで効果
-
-		CMotionPoint* curmp = srcbone->GetMotionPoint(srcmotid, roundingframe);
-		if (!curmp) {
-			int existflag = 0;
-			curmp = srcbone->AddMotionPoint(srcmotid, roundingframe, &existflag);
+			firstmp = &initmp;
 		}
-		if (curmp) {
+
+		ChaMatrix matforinit;
+		matforinit.SetIdentity();
+
+		if (firstmp) {
+			//###############
+			//set matforinit 2023/05/15
+			//###############
+			//if (srcbone->GetParModel()->GetLoadingMotionCount() <= 1) {
+			if (srcbone->IsNotSkeleton() && (srcbone->GetParModel()->GetLoadingMotionCount() <= 1)) {//2023/10/23 skeleton以外の場合
+				FbxNode* pNode = srcbone->GetFbxNodeOnLoad();
+				if (pNode) {
+
+					EnterCriticalSection(&g_CritSection_FbxSdk);//!!!!!!!!!
+					FbxAMatrix lGlobalSRT;
+					FbxTime time0;
+					time0.SetSecondDouble(0.0);
+					lGlobalSRT = pNode->EvaluateGlobalTransform(time0, FbxNode::eSourcePivot, true, true);//current animation
+					ChaMatrix chaGlobalSRT;
+					chaGlobalSRT = ChaMatrixFromFbxAMatrix(lGlobalSRT);
+					matforinit = (ChaMatrixInv(srcbone->GetNodeMat()) * chaGlobalSRT);
+					//matforinit = chaGlobalSRT;
+					//matforinit = ChaMatrixInv(GetNodeMat());
+					LeaveCriticalSection(&g_CritSection_FbxSdk);//!!!!!!!!!
+				}
+				else {
+					_ASSERT(0);
+					matforinit.SetIdentity();
+				}
+
+				//matforinit = firstmp->GetWorldMat();
+				////matforinit.SetIdentity();
+			}
+			else {
+				matforinit = firstmp->GetWorldMat();
+			}
+
+			//###########
+			//for debug
+			//###########
+			//if ((srcmotid == 1) && (srcframe == 0.0)) {
+			//	char strdbg[1024] = { 0 };
+			//	WCHAR wstrdbg[1024] = { 0L };
+			//	sprintf_s(strdbg, 1024, "InitMP firstanim firstframe : (%s)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n\t(%.3f, %.3f, %.3f, %.3f)\r\n",
+			//		srcbone->GetBoneName(),
+			//		matforinit.data[MATI_11], matforinit.data[MATI_12], matforinit.data[MATI_13], matforinit.data[MATI_14],
+			//		matforinit.data[MATI_21], matforinit.data[MATI_22], matforinit.data[MATI_23], matforinit.data[MATI_24],
+			//		matforinit.data[MATI_31], matforinit.data[MATI_32], matforinit.data[MATI_33], matforinit.data[MATI_34],
+			//		matforinit.data[MATI_41], matforinit.data[MATI_42], matforinit.data[MATI_43], matforinit.data[MATI_44]
+			//	);
+			//	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, strdbg, 1024, wstrdbg, 1024);
+			//	DbgOut(wstrdbg);
+			//}
+
+			//SetFirstMat(firstanim);//リターゲット時のbvhbone->GetFirstMatで効果
+
 
 			////SetWorldMat(srcmotid, roundingframe, firstanim, curmp);
 			//curmp->SetWorldMat(firstanim);
@@ -3855,12 +3857,10 @@ int ChaCalcFunc::InitMP(CBone* srcbone, bool limitdegflag, int srcmotid, double 
 				firstmat = srcbone->GetNodeMat() * matforinit;
 				srcbone->SetFirstMat(firstmat);
 			}
-
 		}
-	}
-	else {
-		int dbgflag2 = 1;
-		return 1;
+		else {
+			_ASSERT(0);
+		}
 	}
 
 	////###################################################################################		

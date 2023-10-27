@@ -3173,6 +3173,12 @@ int CModel::AddMotion(const char* srcname, const WCHAR* wfilename, double srclen
 	// 
 	//モーションを持たないfbxに対して　MotionPointを作成するのは　
 	//Main.cppのInitCurMotion()から呼ばれるInitMPReqとCreateIndexedMotionPointReq
+	// 
+	// 
+	//2023/10/27
+	//モーションを持たないfbxに対して　MotionPointを作成するのは　
+	//Main.cppのAddMotion()から呼ばれる　本関数(CModel::AddMotion())のInitMPReqとCreateIndexedMotionPointReq
+
 
 	if (GetLoadedFlag() == true) {
 
