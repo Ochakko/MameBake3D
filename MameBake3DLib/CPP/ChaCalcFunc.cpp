@@ -260,20 +260,39 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 	//}
 
 
-	std::vector<CMotionPoint*> mpvec;
-	mpvec.clear();
-	srcbone->GetIndexedMotionPointVec(srcmotid, mpvec);
-	if (getbychain == false) {
-		if (mpvec.empty()) {
-			getbychain = true;
-		}
-		else {
-			mpmapleng = (int)mpvec.size();
-			if ((mpmapleng <= 0) || (curframeindex >= mpmapleng)) {
-				getbychain = true;
-			}
-		}
+	//std::vector<CMotionPoint*> mpvec;
+	//mpvec.clear();
+	//srcbone->GetIndexedMotionPointVec(srcmotid, mpvec);
+	//if (getbychain == false) {
+	//	if (mpvec.empty()) {
+	//		getbychain = true;
+	//	}
+	//	else {
+	//		mpmapleng = (int)mpvec.size();
+	//		if ((mpmapleng <= 0) || (curframeindex >= mpmapleng)) {
+	//			getbychain = true;
+	//		}
+	//	}
+	//}
+
+
+	//2023/10/27　1.2.0.27 RC11
+	// 最適化
+	//indexedMotionPointの内　ここで使用するのは　モーションポイント３つだけ
+	//vector<>全てをコピーする必要は無い
+	CMotionPoint* pcurframemp = 0;
+	CMotionPoint* pnextframemp = 0;
+	CMotionPoint* pendframemp = 0;
+	mpmapleng = 0;
+	int result1 = srcbone->GetIndexedMotionPoint3(srcmotid, curframeindex, nextframeindex, &pcurframemp, &pnextframemp, &pendframemp, &mpmapleng);
+	if (result1 != 0) {//正常時0, エラー時1, empty時は2
+		getbychain = true;//index使用準備が出来ていないのでチェインを使用
 	}
+	else if ((mpmapleng <= 0) || (curframeindex >= mpmapleng)) {
+		getbychain = true;//index使用準備が出来ていないのでチェインを使用
+	}
+
+
 
 
 	if (getbychain == true) {
@@ -407,12 +426,14 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 
 		if (curframeindex < mpmapleng) {
 			//*ppbef = srcbone->GetIndexedMotionPoint(srcmotid, curframeindex);
-			*ppbef = mpvec[curframeindex];
+			//*ppbef = mpvec[curframeindex];
+			*ppbef = pcurframemp;
 		}
 		else {
 			if (mpmapleng >= 1) {
 				//*ppbef = srcbone->GetIndexedMotionPoint(srcmotid, mpmapleng - 1);
-				*ppbef = mpvec[mpmapleng - 1];
+				//*ppbef = mpvec[mpmapleng - 1];
+				*ppbef = pendframemp;
 			}
 			else {
 				*ppbef = 0;
@@ -439,12 +460,13 @@ int ChaCalcFunc::GetBefNextMP(CBone* srcbone, int srcmotid, double srcframe, CMo
 
 			if (nextframeindex < mpmapleng) {
 				//*ppnext = srcbone->GetIndexedMotionPoint(srcmotid, nextframeindex);
-				*ppnext = mpvec[nextframeindex];
+				//*ppnext = mpvec[nextframeindex];
+				*ppnext = pnextframemp;
 			}
 			else {
 				if (mpmapleng >= 1) {
 					//*ppnext = srcbone->GetIndexedMotionPoint(srcmotid, mpmapleng - 1);
-					*ppnext = mpvec[mpmapleng - 1];
+					*ppnext = pendframemp;
 				}
 				else {
 					*ppnext = 0;

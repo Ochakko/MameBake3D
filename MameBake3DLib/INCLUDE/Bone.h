@@ -787,6 +787,67 @@ public: //accesser
 		return retmp;
 	}
 
+	int GetIndexedMotionPoint3(int srcmotid, int curframeindex, int nextframeindex,
+		CMotionPoint** ppcurframemp, CMotionPoint** ppnextframemp, CMotionPoint** ppendframemp,
+		int* pmpvecsize)
+	{
+		if (!ppcurframemp || !ppnextframemp || !ppendframemp || !pmpvecsize) {
+			_ASSERT(0);
+			return 1;
+		}
+
+		*ppcurframemp = 0;
+		*ppnextframemp = 0;
+		*ppendframemp = 0;
+		*pmpvecsize = 0;
+
+		std::map<int, std::vector<CMotionPoint*>>::iterator itrvecmpmap;
+
+		itrvecmpmap = m_indexedmotionpoint.find(srcmotid);
+		if (itrvecmpmap == m_indexedmotionpoint.end()) {
+			return 1;//error
+		}
+		else {
+			if ((itrvecmpmap->second).empty()) {
+				return 2;//empty
+			}
+			else {
+				int vecsize = (int)(itrvecmpmap->second).size();
+				*pmpvecsize = vecsize;
+
+				if (vecsize >= 1) {
+					if ((curframeindex >= 0) && (curframeindex < vecsize)) {
+						*ppcurframemp = (itrvecmpmap->second)[curframeindex];
+					}
+					else if (curframeindex < 0) {
+						*ppcurframemp = (itrvecmpmap->second)[0];
+					}
+					else {
+						*ppcurframemp = (itrvecmpmap->second)[vecsize - 1];
+					}
+
+					if ((nextframeindex >= 0) && (nextframeindex < vecsize)) {
+						*ppnextframemp = (itrvecmpmap->second)[nextframeindex];
+					}
+					else if (nextframeindex < 0) {
+						*ppnextframemp = (itrvecmpmap->second)[0];
+					}
+					else {
+						*ppnextframemp = (itrvecmpmap->second)[vecsize - 1];
+					}
+
+					*ppendframemp = (itrvecmpmap->second)[vecsize - 1];
+
+					return 0;//success
+				}
+				else {
+					return 2;//empty
+				}
+			}
+		}
+	}
+
+
 	CMotionPoint GetCurMp(){ return m_curmp; };
 	void SetCurMp( CMotionPoint srcmp ){ m_curmp = srcmp; };
 
