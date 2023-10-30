@@ -26,7 +26,7 @@
 using namespace std;
 
 
-extern bool g_underIKRot;
+//extern bool g_underIKRot;
 //extern bool g_edgesmp;
 
 CMotFilter::CMotFilter()
@@ -214,21 +214,32 @@ int CMotFilter::CallFilterFunc(bool edgesmp, bool limitdegflag,
 
 	if (srcopekind == 1) {
 		//all joints
-		bool saveunderik = g_underIKRot;
-		g_underIKRot = true;
+		//bool saveunderik = g_underIKRot;
+		//g_underIKRot = true;
+		bool saveunderik = srcmodel->GetUnderIKRot();
+		srcmodel->SetUnderIKRot(true);
+
 		bool firstbroflag = false;
 		FilterReq(edgesmp, limitdegflag, srcmodel, 
 			srcmodel->GetTopBone(false), srcmotid, srcstartframe, srcendframe, firstbroflag);
-		g_underIKRot = saveunderik;
+		
+		//g_underIKRot = saveunderik;
+		srcmodel->SetUnderIKRot(saveunderik);
 	}
 	else if (srcopekind == 2) {
 		//selecting joint
 		if (srcbone->IsSkeleton()) {
-			bool saveunderik = g_underIKRot;
-			g_underIKRot = true;
+			//bool saveunderik = g_underIKRot;
+			//g_underIKRot = true;
+			bool saveunderik = srcmodel->GetUnderIKRot();
+			srcmodel->SetUnderIKRot(true);
+
 			int result = FilterFunc(edgesmp, limitdegflag,
 				srcmodel, srcbone, srcmotid, srcstartframe, srcendframe);
-			g_underIKRot = saveunderik;
+
+			//g_underIKRot = saveunderik;
+			srcmodel->SetUnderIKRot(saveunderik);
+
 			if (result != 0) {
 				_ASSERT(0);
 				return 1;//!!!!!!!!!!!!!
@@ -237,12 +248,17 @@ int CMotFilter::CallFilterFunc(bool edgesmp, bool limitdegflag,
 	}
 	else if (srcopekind == 3) {
 		//selecting joint and deeper
-		bool saveunderik = g_underIKRot;
-		g_underIKRot = true;
+		//bool saveunderik = g_underIKRot;
+		//g_underIKRot = true;
+		bool saveunderik = srcmodel->GetUnderIKRot();
+		srcmodel->SetUnderIKRot(true);
+
 		bool firstbroflag = false;
 		FilterReq(edgesmp, limitdegflag, 
 			srcmodel, srcbone, srcmotid, srcstartframe, srcendframe, firstbroflag);
-		g_underIKRot = saveunderik;
+
+		//g_underIKRot = saveunderik;
+		srcmodel->SetUnderIKRot(saveunderik);
 	}
 	else {
 		_ASSERT(0);

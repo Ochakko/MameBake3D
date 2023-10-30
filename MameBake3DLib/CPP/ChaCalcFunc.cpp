@@ -56,7 +56,7 @@ using namespace std;
 
 
 //extern bool g_wmatDirectSetFlag;//!!!!!!!!!!!!
-extern bool g_underIKRot;
+//extern bool g_underIKRot;
 extern bool g_x180flag;
 extern CRITICAL_SECTION g_CritSection_FbxSdk;
 
@@ -1717,7 +1717,10 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 		_ASSERT(0);
 		return ChaVector3(0.0f, 0.0f, 0.0f);
 	}
-
+	if (!srcbone->GetParModel()) {
+		_ASSERT(0);
+		return ChaVector3(0.0f, 0.0f, 0.0f);
+	}
 
 	//###################################################################################################################
 	//2022/12/17
@@ -1769,7 +1772,8 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 		//2023/10/25
 		//3回転して１回転の制限角度にする場合などに　制限中のはずの角度が小さい角度で評価されないように　&& 
 		//limitdeg trueのときにも　180度オーバーの角度で制限を掛ける
-		if (g_underCalcEul) {
+		//if (g_underCalcEul) {
+		if (srcbone && srcbone->GetParModel() && srcbone->GetParModel()->GetUnderCalcEul()) {
 			befeul = srcbone->GetBefEul(limitdegflag, srcmotid, roundingframe);
 		}
 		else {
@@ -1875,7 +1879,8 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 			eulq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
 		}
 
-		eulq.Q2EulXYZusingQ(&axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
+		eulq.Q2EulXYZusingQ(srcbone->GetParModel()->GetUnderIKRot(), srcbone->GetParModel()->GetUnderRetarget(),
+			&axisq, befeul, &cureul, isfirstbone, isendbone, notmodify180flag);
 
 	}
 	else if (srcbone->IsCamera()) {
@@ -2067,7 +2072,8 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 					}
 				}
 				else {
-					if (g_underIKRot == true) {
+					//if (g_underIKRot == true) {
+					if (srcbone->GetParModel() && srcbone->GetParModel()->GetUnderIKRot()) {
 						srcbone->SetWorldMat(limitdegflag, srcmotid, roundingframe, saveworldmat, curmp);
 						srcbone->SetLocalEul(limitdegflag, srcmotid, roundingframe, saveeul, curmp);
 						if (limitdegflag == true) {
@@ -2114,7 +2120,8 @@ int ChaCalcFunc::SetWorldMat(CBone* srcbone, bool limitdegflag, bool directsetfl
 		if (onlycheck == 0) {
 			srcbone->SetWorldMat(limitdegflag, srcmotid, roundingframe, srcmat, curmp);
 
-			if (g_underCopyW2LW) {
+			//if (g_underCopyW2LW) {
+			if (srcbone->GetParModel() && srcbone->GetParModel()->GetUnderCopyW2LW()) {
 				//#########################
 				//2023/10/25
 				//コピー中はそのままセット
@@ -4306,7 +4313,9 @@ ChaVector3 ChaCalcFunc::ccfChaMatrixRotVec(ChaMatrix srcmat, int notmodify180fla
 	int isendbone = 0;
 
 	CQuaternion eulq;
-	eulq.Q2EulXYZusingQ(0, befeul, &reteul, isfirstbone, isendbone, notmodify180flag);
+	bool underikrot = false;
+	bool underretarget = false;
+	eulq.Q2EulXYZusingQ(underikrot, underretarget, 0, befeul, &reteul, isfirstbone, isendbone, notmodify180flag);
 	//eulq.Q2EulXYZusingMat(ROTORDER_XYZ, 0, befeul, &reteul, isfirstbone, isendbone, notmodify180flag);
 
 

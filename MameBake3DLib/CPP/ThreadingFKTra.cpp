@@ -89,7 +89,8 @@ int CThreadingFKTra::ThreadFunc()
 		//	((g_previewFlag != 0) || (g_underIKRot == true))) {//プレビュー中　または　IK回転中　だけ
 
 
-		if (g_underPostFKTra == true) {
+		//if (g_underPostFKTra == true) {
+		if (m_model && m_model->GetUnderPostFKTra()) {
 		
 			//###########################
 			// 高回転モード　: High rpm

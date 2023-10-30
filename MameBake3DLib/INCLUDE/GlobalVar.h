@@ -102,14 +102,14 @@ ID3D11ShaderResourceView* g_presview = 0;
 
 bool g_underloading = false;
 int g_underselectingframe = 0;
-bool g_underIKRot = false;
-bool g_underIKRotApplyFrame = false;
+//bool g_underIKRot = false;
+//bool g_underIKRotApplyFrame = false;
 bool g_fpsforce30 = false;
 bool g_underWriteFbx = false;
-bool g_underCalcEul = false;
-bool g_underPostFKTra = false;
-bool g_underInitMp = false;
-bool g_underCopyW2LW = false;
+//bool g_underCalcEul = false;
+//bool g_underPostFKTra = false;
+//bool g_underInitMp = false;
+//bool g_underCopyW2LW = false;
 
 int	g_numthread = 3;
 
@@ -127,7 +127,7 @@ bool g_undereditrange = false;
 //bool g_limitdegflag = true;
 bool g_limitdegflag = false;
 //bool g_wmatDirectSetFlag = false;
-bool g_underRetargetFlag = false;
+//bool g_underRetargetFlag = false;
 
 float g_impscale = 1.0f;
 float g_initmass = 1.0f;
@@ -319,14 +319,14 @@ extern ID3D11ShaderResourceView* g_presview;
 
 extern bool g_underloading;
 extern int g_underselectingframe;
-extern bool g_underIKRot;
-extern bool g_underIKRotApplyFrame;
+//extern bool g_underIKRot;
+//extern bool g_underIKRotApplyFrame;
 extern bool g_fpsforce30;
 extern bool g_underWriteFbx;
-extern bool g_underCalcEul;
-extern bool g_underPostFKTra;
-extern bool g_underInitMp;
-extern bool g_underCopyW2LW;
+//extern bool g_underCalcEul;
+//extern bool g_underPostFKTra;
+//extern bool g_underInitMp;
+//extern bool g_underCopyW2LW;
 
 extern int	g_numthread;
 extern double g_btcalccnt;
@@ -339,7 +339,7 @@ extern bool g_undereditrange;
 
 extern bool g_limitdegflag;
 //extern bool g_wmatDirectSetFlag;
-extern bool g_underRetargetFlag;
+//extern bool g_underRetargetFlag;
 
 extern float g_impscale;
 extern float g_initmass;

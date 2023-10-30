@@ -4408,18 +4408,18 @@ void InitApp()
 	g_refalpha = 50;
 
 	g_underloading = false;
-	g_underIKRot = false;
-	g_underIKRotApplyFrame = false;
+	//g_underIKRot = false;
+	//g_underIKRotApplyFrame = false;
 	g_fpsforce30 = false;
-	g_underRetargetFlag = false;
+	//g_underRetargetFlag = false;
 	s_retargetguiFlag = false;
 	s_smoothBefRetarget = false;
 
 	g_underWriteFbx = false;
-	g_underCalcEul = false;
-	g_underPostFKTra = false;
-	g_underInitMp = false;
-	g_underCopyW2LW = false;
+	//g_underCalcEul = false;
+	//g_underPostFKTra = false;
+	//g_underInitMp = false;
+	//g_underCopyW2LW = false;
 
 	g_VSync = false;
 	g_fpskind = 0;
@@ -10091,8 +10091,10 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				s_pickinfo.buttonflag = spakind;
 				s_pickinfo.pickobjno = s_curboneno;
 
-				g_underIKRot = true;//2023/10/14 !!!!! 設定し忘れていた
-				g_underIKRotApplyFrame = true;//2023/10/14 !!!!! 設定し忘れていた
+				//g_underIKRot = true;//2023/10/14 !!!!! 設定し忘れていた
+				//g_underIKRotApplyFrame = true;//2023/10/14 !!!!! 設定し忘れていた
+				s_model->SetUnderIKRot(true);
+				s_model->SetUnderIKRotApplyFrame(true);
 
 
 				//} else if ((oprigdoneflag == 0) && (pickrigflag == 1)){
@@ -10127,8 +10129,10 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 						//}
 
 						s_pickinfo.buttonflag = PICK_CENTER;//!!!!!!!!!!!!!
-						g_underIKRot = true;
-						g_underIKRotApplyFrame = true;
+						//g_underIKRot = true;
+						//g_underIKRotApplyFrame = true;
+						s_model->SetUnderIKRot(true);
+						s_model->SetUnderIKRotApplyFrame(true);
 
 
 						//IK中は30fpsにする
@@ -10147,8 +10151,10 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 						bool pickring = false;
 						int pickmanipulator = PickManipulator(&s_pickinfo, pickring);
 						if (pickmanipulator >= 0) {
-							g_underIKRot = true;
-							g_underIKRotApplyFrame = true;
+							//g_underIKRot = true;
+							//g_underIKRotApplyFrame = true;
+							s_model->SetUnderIKRot(true);
+							s_model->SetUnderIKRotApplyFrame(true);
 
 							//IK中は30fpsにする
 							//IK中の描画回数が多いと　IKROTRECの保存数が多すぎて
@@ -10170,8 +10176,10 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 						s_pickinfo.pickobjno = savecurboneno;
 					}
 					else {
-						g_underIKRot = true;
-						g_underIKRotApplyFrame = true;
+						//g_underIKRot = true;
+						//g_underIKRotApplyFrame = true;
+						s_model->SetUnderIKRot(true);
+						s_model->SetUnderIKRotApplyFrame(true);
 
 						//IK中は30fpsにする
 						//IK中の描画回数が多いと　IKROTRECの保存数が多すぎて
@@ -10298,7 +10306,9 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 
 		//マウスによるIKとFKの後処理　applyframe以外のフレームの処理
-		g_underIKRotApplyFrame = false;
+		//g_underIKRotApplyFrame = false;
+		s_model->SetUnderIKRotApplyFrame(false);
+
 		g_fpsforce30 = false;
 		int editmotionflag = s_editmotionflag;
 		if ((s_undoFlag == false) && (s_redoFlag == false)) {
@@ -10338,13 +10348,15 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 					if (s_pickinfo.buttonflag == PICK_CENTER) {
 						HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-						g_underPostFKTra = true;
+						//g_underPostFKTra = true;
+						s_model->SetUnderPostFKTra(true);
 
 						s_model->FKBoneTraPostFK(g_limitdegflag,
 							&s_editrange, s_curboneno);
 						s_editmotionflag = s_curboneno;
 
-						g_underPostFKTra = false;
+						//g_underPostFKTra = false;
+						s_model->SetUnderPostFKTra(false);
 
 						if (oldcursor != NULL) {
 							SetCursor(oldcursor);
@@ -10359,14 +10371,16 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 						(s_pickinfo.buttonflag == PICK_SPA_Z)) {
 						HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
-						g_underPostFKTra = true;
+						//g_underPostFKTra = true;
+						s_model->SetUnderPostFKTra(true);
 
 						s_model->FKBoneTraAxisPostFK(
 							g_limitdegflag,
 							&s_editrange, s_curboneno);
 						s_editmotionflag = s_curboneno;
 
-						g_underPostFKTra = false;
+						//g_underPostFKTra = false;
+						s_model->SetUnderPostFKTra(false);
 
 						if (oldcursor != NULL) {
 							SetCursor(oldcursor);
@@ -10405,7 +10419,8 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 		}
 
 
-		g_underIKRot = false;
+		//g_underIKRot = false;
+		s_model->SetUnderIKRot(false);
 
 
 		s_wmlbuttonup = 1;//ゲームパッド用フラグ
@@ -17385,7 +17400,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				wfilename[0] = 0L;
 				WCHAR waFolderPath[MAX_PATH];
 				//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_PROGRAMS, 0);//これではAppDataのパスになってしまう
-				swprintf_s(waFolderPath, MAX_PATH, L"C:\\Program Files\\OchakkoLAB\\EditMot1.2.0.27\\Test\\");
+				swprintf_s(waFolderPath, MAX_PATH, L"C:\\Program Files\\OchakkoLAB\\EditMot1.2.0.28\\Test\\");
 				ofn.lpstrInitialDir = waFolderPath;
 				ofn.lpstrFile = wfilename;
 
@@ -17438,7 +17453,11 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				wcscpy_s(waFolderPath, MAX_PATH, g_basedir);
 				WCHAR* lasten = wcsrchr(waFolderPath, TEXT('\\'));
 				if (lasten) {
-					*lasten = 0L;
+					*lasten = 0L;//pathの最終文字としての'\\'
+					WCHAR* lasten2 = wcsrchr(waFolderPath, TEXT('\\'));
+					if (lasten2) {
+						*(lasten2 + 1) = 0L;//pathの最終文字は'\\'なので　+1
+					}
 				}
 				ofn.lpstrInitialDir = waFolderPath;
 				ofn.lpstrFile = wfilename;
@@ -20878,10 +20897,12 @@ int RetargetMotion()
 	int result = s_convbone_model->Retarget(s_convbone_bvh, s_matVP, s_convbonemap, AddMotion);
 	if (result) {
 		_ASSERT(0);
-		g_underRetargetFlag = false;
+		//g_underRetargetFlag = false;
+		s_convbone_model->SetUnderRetarget(false);
 		return 1;
 	}
-	g_underRetargetFlag = false;
+	//g_underRetargetFlag = false;
+	s_convbone_model->SetUnderRetarget(false);
 
 
 	if (g_limitdegflag == true) {
@@ -40298,7 +40319,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.27 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.28 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -48263,7 +48284,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.27 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.28 : No.%d : ", s_appcnt);
 
 
 	if (s_model) {

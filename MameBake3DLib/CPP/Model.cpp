@@ -480,6 +480,20 @@ int CModel::InitParams()
 	m_befinview = false;
 	m_bound.Init();
 
+
+	m_Under_CalcEul = false;
+	m_Under_CopyW2LW = false;
+	m_Under_PostFKTra = false;
+	m_Under_InitMP = false;
+	m_Under_LoadFbx = false;
+	//m_Under_PostIK = false;
+	m_Under_Retarget = false;
+	//m_Under_UpdateMatrix = false;
+	m_Under_UpdateTimeline = false;
+	m_Under_IKRot = false;
+	m_Under_IKRotApplyFrame = false;
+
+
 	m_vrmtexcount = 0;
 
 	m_iktargetbonevec.clear();
@@ -11356,6 +11370,7 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 								bool fromiktarget = false;
 
 								if (m_PostIKThreads) {
+									//SetUnderPostIK(true);
 									int updatecount;
 									for (updatecount = 0; updatecount < POSTIK_THREADSNUM; updatecount++) {
 										CThreadingPostIK* curupdate = m_PostIKThreads + updatecount;
@@ -11366,6 +11381,7 @@ int CModel::IKRotatePostIK(bool limitdegflag, CEditRange* erptr,
 											rotq0, keynum1flag, postflag, fromiktarget);
 									}
 									WaitPostIKFinished();
+									//SetUnderPostIK(false);
 								}
 
 
@@ -13552,6 +13568,7 @@ int CModel::RigControlPostRig(bool limitdegflag, int depthcnt,
 								bool fromiktarget = false;
 
 								if (m_PostIKThreads) {
+									//SetUnderPostIK(true);
 									int updatecount;
 									for (updatecount = 0; updatecount < POSTIK_THREADSNUM; updatecount++) {
 										CThreadingPostIK* curupdate = m_PostIKThreads + updatecount;
@@ -13562,6 +13579,7 @@ int CModel::RigControlPostRig(bool limitdegflag, int depthcnt,
 											localq, keynum1flag, postflag, fromiktarget);
 									}
 									WaitPostIKFinished();
+									//SetUnderPostIK(false);
 								}
 							}
 						}
@@ -14529,6 +14547,7 @@ int CModel::IKRotateAxisDeltaPostIK(
 							bool fromiktarget = false;
 
 							if (m_PostIKThreads) {
+								//SetUnderPostIK(true);
 								int updatecount;
 								for (updatecount = 0; updatecount < POSTIK_THREADSNUM; updatecount++) {
 									CThreadingPostIK* curupdate = m_PostIKThreads + updatecount;
@@ -14539,6 +14558,7 @@ int CModel::IKRotateAxisDeltaPostIK(
 										localq, keynum1flag, postflag, fromiktarget);
 								}
 								WaitPostIKFinished();
+								//SetUnderPostIK(false);
 							}
 
 							//int keyno = 0;
@@ -16158,14 +16178,16 @@ int CModel::CalcBoneEul(bool limitdegflag, int srcmotid)
 	//chacalcfunc.CalcBoneEul(this, limitdegflag, srcmotid);
 
 	if (m_CalcEulThreads) {
-		g_underCalcEul = true;//2023/10/19 このフラグが立っている間だけ　CalcEulスレッドがHighRpmになる
+		//g_underCalcEul = true;//2023/10/19 このフラグが立っている間だけ　CalcEulスレッドがHighRpmになる
+		SetUnderCalcEul(true);
 		int updatecount;
 		for (updatecount = 0; updatecount < CALCEUL_THREADSNUM; updatecount++) {
 			CThreadingCalcEul* curupdate = m_CalcEulThreads + updatecount;
 			curupdate->CalcBoneEul(this, limitdegflag, srcmotid);
 		}
 		WaitCalcEulFinished();
-		g_underCalcEul = false;//2023/10/19
+		//g_underCalcEul = false;//2023/10/19
+		SetUnderCalcEul(false);
 	}
 
 	return 0;
@@ -17091,7 +17113,8 @@ int CModel::CopyWorldToLimitedWorld()
 
 		if (m_CopyW2LWThreads) {
 
-			g_underCopyW2LW = true;//!!!!!!
+			//g_underCopyW2LW = true;//!!!!!!
+			SetUnderCopyW2LW(true);
 
 			int updatecount;
 			for (updatecount = 0; updatecount < COPYW2LW_THREADSNUM; updatecount++) {
@@ -17100,7 +17123,8 @@ int CModel::CopyWorldToLimitedWorld()
 			}
 			WaitCopyW2LWFinished();
 
-			g_underCopyW2LW = false;//!!!!!!
+			//g_underCopyW2LW = false;//!!!!!!
+			SetUnderCopyW2LW(false);
 		}
 
 
@@ -18320,7 +18344,7 @@ int CModel::InitMpFrame(bool limitdegflag, int srcmotid, CBone* srcbone, double 
 		return 0;
 	}
 
-	g_underInitMp = true;//!!!!!!!!!!!!!!!!!!
+	//g_underInitMp = true;//!!!!!!!!!!!!!!!!!!
 	
 	MOTINFO* curmi = GetMotInfo(srcmotid);
 	if (curmi) {
@@ -18339,16 +18363,18 @@ int CModel::InitMpFrame(bool limitdegflag, int srcmotid, CBone* srcbone, double 
 		//###################
 		SetInitMpFrame(RoundingTime(startframe), RoundingTime(endframe));//2023/10/17
 		if (m_InitMpThreads) {
+			SetUnderInitMP(true);
 			int updatecount;
 			for (updatecount = 0; updatecount < INITMP_THREADSNUM; updatecount++) {
 				CThreadingInitMp* curupdate = m_InitMpThreads + updatecount;
 				curupdate->InitMPReq(limitdegflag, srcbone, srcmotid);
 			}
 			WaitInitMpFinished();
+			SetUnderInitMP(false);
 		}
 	}
 	
-	g_underInitMp = false;//!!!!!!!!!!!!!!!!!!
+	//g_underInitMp = false;//!!!!!!!!!!!!!!!!!!
 	
 
 	return 0;
@@ -19288,7 +19314,8 @@ int CModel::Retarget(CModel* srcbvhmodel, ChaMatrix smatVP,
 		return 0;
 	}
 
-	g_underRetargetFlag = true;//!!!!!!!!!!!!
+	//g_underRetargetFlag = true;//!!!!!!!!!!!!
+	SetUnderRetarget(true);
 
 	//MOTINFO* bvhmi = srcbvhmodel->GetMotInfoBegin()->second;
 	//if (!bvhmi) {
@@ -19329,7 +19356,8 @@ int CModel::Retarget(CModel* srcbvhmodel, ChaMatrix smatVP,
 			CBone* modelhipsbone = 0;
 			if (!modeltopbone) {
 				::MessageBox(NULL, L"modelside bone is not found error.", L"error!!!", MB_OK);
-				g_underRetargetFlag = false;
+				//g_underRetargetFlag = false;
+				SetUnderRetarget(false);
 				return 1;
 			}
 			else {
@@ -19345,7 +19373,7 @@ int CModel::Retarget(CModel* srcbvhmodel, ChaMatrix smatVP,
 		}
 		else {
 			::MessageBox(NULL, L"modelside motion is not found error.", L"error!!!", MB_OK);
-			g_underRetargetFlag = false;
+			SetUnderRetarget(false);
 			return 1;
 		}
 
@@ -19365,7 +19393,7 @@ int CModel::Retarget(CModel* srcbvhmodel, ChaMatrix smatVP,
 		}
 		else {
 			::MessageBox(NULL, L"bvhside motion is not found error.", L"error!!!", MB_OK);
-			g_underRetargetFlag = false;
+			SetUnderRetarget(false);
 			return 1;
 		}
 
@@ -19430,9 +19458,9 @@ int CModel::Retarget(CModel* srcbvhmodel, ChaMatrix smatVP,
 		//前フレーム考慮のオイラー角計算
 		//###############################
 		if (modelmi) {
-			g_underRetargetFlag = false;//!!!!!!!!!!!!
+			SetUnderRetarget(false);//!!!!!!!!!!!!
 			CalcBoneEul(limitdegflag, modelmi->motid);
-			g_underRetargetFlag = true;//!!!!!!!!!!!!
+			SetUnderRetarget(true);//!!!!!!!!!!!!
 		}
 		
 
@@ -19443,7 +19471,7 @@ int CModel::Retarget(CModel* srcbvhmodel, ChaMatrix smatVP,
 	}
 
 
-	g_underRetargetFlag = false;//!!!!!!!!!!!!
+	SetUnderRetarget(false);//!!!!!!!!!!!!
 
 	//if (!g_retargetbatchflag) {
 	if (InterlockedAdd(&g_retargetbatchflag, 0) == 0) {

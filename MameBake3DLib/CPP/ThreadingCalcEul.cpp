@@ -81,7 +81,8 @@ int CThreadingCalcEul::ThreadFunc()
 		//	((g_previewFlag != 0) || (g_underIKRot == true))) {//プレビュー中　または　IK回転中　だけ
 
 
-		if (g_underCalcEul == true) {//2023/10/19
+		//if (g_underCalcEul == true) {//2023/10/19
+		if (m_model && m_model->GetUnderCalcEul()) {
 
 			//###########################
 			// 高回転モード　: High rpm

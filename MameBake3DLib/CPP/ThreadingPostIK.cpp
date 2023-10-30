@@ -96,7 +96,9 @@ int CThreadingPostIK::ThreadFunc()
 
 
 
-		if ((g_underIKRot == true) && (g_underIKRotApplyFrame == false)) {
+		//if ((g_underIKRot == true) && (g_underIKRotApplyFrame == false)) {
+		if (m_model && m_model->GetUnderIKRot() && (m_model->GetUnderIKRotApplyFrame() == false)) {
+		//if (m_model && m_model->GetUnderPostIK()) {
 		
 			//###########################
 			// 高回転モード　: High rpm

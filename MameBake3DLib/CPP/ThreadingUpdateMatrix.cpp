@@ -83,8 +83,12 @@ int CThreadingUpdateMatrix::ThreadFunc()
 
 	while (InterlockedAdd(&m_exit_state, 0) != 1) {
 
-		if ((g_HighRpmMode == true) && 
-			((g_previewFlag != 0) || (g_underIKRot == true))) {//プレビュー中　または　IK回転中　だけ
+		//if ((g_HighRpmMode == true) && 
+		//	((g_previewFlag != 0) || (g_underIKRot == true))) {//プレビュー中　または　IK回転中　だけ
+		if (m_model && (g_HighRpmMode == true) &&
+			((g_previewFlag != 0) || (m_model->GetUnderIKRot()))) {//プレビュー中　または　IK回転中　だけ
+
+
 
 			//###########################
 			// 高回転モード　: High rpm

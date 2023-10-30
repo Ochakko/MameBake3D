@@ -88,7 +88,8 @@ int CThreadingInitMp::ThreadFunc()
 
 
 
-		if (g_underInitMp == true) {
+		//if (g_underInitMp == true) {
+		if (m_model && m_model->GetUnderInitMP()) {
 		
 			//###########################
 			// 高回転モード　: High rpm

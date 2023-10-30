@@ -56,7 +56,7 @@ using namespace std;
 
 
 //extern bool g_wmatDirectSetFlag;//!!!!!!!!!!!!
-extern bool g_underIKRot;
+//extern bool g_underIKRot;
 extern bool g_x180flag;
 extern CRITICAL_SECTION g_CritSection_FbxSdk;
 
@@ -424,7 +424,9 @@ FbxDouble3 ChaVector3::ConvRotOrder2XYZ(EFbxRotationOrder rotorder)
 	int isfirstbone = 0;
 	int isendbone = 0;
 	int notmodify180flag = 1;
-	rotq.Q2EulXYZusingQ(0, befeul, &eulxyz, isfirstbone, isendbone, notmodify180flag);
+	bool underikrot = false;
+	bool underretarget = false;
+	rotq.Q2EulXYZusingQ(underikrot, underretarget, 0, befeul, &eulxyz, isfirstbone, isendbone, notmodify180flag);
 	//rotq.Q2EulXYZusingMat(0, 0, befeul, &eulxyz, isfirstbone, isendbone, notmodify180flag);
 
 	return FbxDouble3(eulxyz.x, eulxyz.y, eulxyz.z);
@@ -2971,7 +2973,8 @@ int CQuaternion::Q2EulXYZusingMat(int rotorder, CQuaternion* axisq, ChaVector3 b
 }
 
 
-int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag)
+int CQuaternion::Q2EulXYZusingQ(bool srcunderIKRot, bool srcunderRetarget, 
+	CQuaternion* axisq, BEFEUL befeul, ChaVector3* reteul, int isfirstbone, int isendbone, int notmodify180flag)
 {
 
 	//2022/12/16 ZEROVECLEN
@@ -3077,7 +3080,8 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* r
 	ChaVector3 validbefeul;//2023/10/14
 	//if (g_underIKRotApplyFrame == true) {//2023/10/14
 	//if (g_underIKRot == true) {//2023/10/16 IK処理のframe単位のマルチスレッド化の準備としてcurrentframeで計算　後処理でbefframeで計算
-	if ((g_underIKRot == true) || (g_underRetargetFlag == true)) {//2023/10/23 リターゲットもフレーム単位のマルチスレッド化したので　currentframeulを使う
+	//if ((g_underIKRot == true) || (g_underRetargetFlag == true)) {//2023/10/23 リターゲットもフレーム単位のマルチスレッド化したので　currentframeulを使う
+	if (srcunderIKRot || srcunderRetarget) {
 			validbefeul = befeul.currentframeeul;
 	}
 	else {
@@ -3088,7 +3092,8 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* r
 	//#######################################################################################################
 	//マルチスレッドのリターゲット時(befeul = 0.0(InitMp)時)には　modify180をしない　後処理でmodify180をする
 	//#######################################################################################################
-	if (g_underRetargetFlag == true) {//2023/10/23
+	//if (g_underRetargetFlag == true) {//2023/10/23
+	if (srcunderRetarget) {
 		notmodify180flag = 1;
 	}
 
@@ -3253,7 +3258,8 @@ int CQuaternion::Q2EulXYZusingQ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* r
 		tmpX1 = tmpX0;
 		
 		//if (g_underRetargetFlag == false) {
-		if ((g_underIKRot == false) || (g_x180flag == true)) {
+		//if ((g_underIKRot == false) || (g_x180flag == true)) {
+		if ((srcunderRetarget == false) || (g_x180flag == true)) {
 			//if((g_underRetargetFlag == true) || (g_x180flag == true)) {
 			//if ((notmodify180flag == 0) && (isendbone != 0)) {
 			if (notmodify180flag == 0) {
@@ -3756,7 +3762,9 @@ int CQuaternion::CalcFBXEulXYZ(CQuaternion* axisq, BEFEUL befeul, ChaVector3* re
 
 	ChaVector3 tmpeul(0.0f, 0.0f, 0.0f);
 	if (axisq || (IsInit() == 0)) {
-		Q2EulXYZusingQ(axisq, befeul, &tmpeul, isfirstbone, isendbone, notmodify180flag);
+		bool underikrot = false;
+		bool underretarget = false;
+		Q2EulXYZusingQ(underikrot, underretarget, axisq, befeul, &tmpeul, isfirstbone, isendbone, notmodify180flag);
 		//Q2EulXYZusingMat(ROTORDER_XYZ, axisq, befeul, &tmpeul, isfirstbone, isendbone, notmodify180flag);
 	}
 	else {

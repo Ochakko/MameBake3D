@@ -3794,7 +3794,8 @@ int CBone::GetNotModify180Flag(int srcmotid, double srcframe)
 	//rootjointを２回転する場合など　180度補正は必要(１フレームにつき165度までの変化しか出来ない制限は必要)
 	//しかし　bvh2fbxなど　１フレームにアニメが付いているデータでうまくいくようにするために　0フレームと１フレームは除外
 	int notmodify180flag = 1;
-	if (g_underIKRot == false) {
+	//if (g_underIKRot == false) {
+	if (GetParModel() && (GetParModel()->GetUnderIKRot() == false)) {
 		if (roundingframe <= 1.01) {
 			//0フレームと１フレームは　180度ずれチェックをしない
 			notmodify180flag = 1;

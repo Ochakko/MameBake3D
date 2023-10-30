@@ -350,7 +350,9 @@ int CBtObject::CreateObject(bool limitdegflag, int srcmotid, double srcframe, CB
 	CQuaternion axisq;
 	axisq.RotationMatrix(m_bone->GetNodeMat());
 	int notmodify180flag = 0;
-	startrotq.Q2EulXYZusingQ(&axisq, befeul, &starteul, 0, 0, notmodify180flag);
+	bool underikrot = false;
+	bool underretarget = false;
+	startrotq.Q2EulXYZusingQ(underikrot, underretarget, &axisq, befeul, &starteul, 0, 0, notmodify180flag);
 	m_bone->SetBtEul(starteul);
 
 
@@ -1181,7 +1183,9 @@ int CBtObject::SetBtMotion(bool limitdegflag, ChaMatrix curtraanim)
 	befeul.befframeeul = m_bone->GetBtEul();
 	CQuaternion axisq;
 	axisq.RotationMatrix(m_bone->GetNodeMat());
-	curlocalq.Q2EulXYZusingQ(&axisq, befeul, &cureul, 0, 0, notmodify180flag);
+	bool underikrot = false;
+	bool underretarget = false;
+	curlocalq.Q2EulXYZusingQ(underikrot, underretarget, &axisq, befeul, &cureul, 0, 0, notmodify180flag);
 
 
 	//if ((m_bone->GetBtFlag() == 0) && ((m_bone->GetTmpKinematic() == false) || (m_bone->GetMass0() == TRUE))) {

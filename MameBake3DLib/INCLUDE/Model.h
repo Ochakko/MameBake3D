@@ -2150,6 +2150,92 @@ public: //accesser
 		}
 	}
 
+
+	void SetUnderIKRot(bool srcflag)
+	{
+		m_Under_IKRot = srcflag;
+	}
+	bool GetUnderIKRot()
+	{
+		return m_Under_IKRot;
+	}
+	void SetUnderIKRotApplyFrame(bool srcflag)
+	{
+		m_Under_IKRotApplyFrame = srcflag;
+	}
+	bool GetUnderIKRotApplyFrame()
+	{
+		return m_Under_IKRotApplyFrame;
+	}
+	void SetUnderCalcEul(bool srcflag)
+	{
+		m_Under_CalcEul = srcflag;
+	}
+	bool GetUnderCalcEul()
+	{
+		return m_Under_CalcEul;
+	}
+	void SetUnderCopyW2LW(bool srcflag)
+	{
+		m_Under_CopyW2LW = srcflag;
+	}
+	bool GetUnderCopyW2LW()
+	{
+		return m_Under_CopyW2LW;
+	}
+	void SetUnderPostFKTra(bool srcflag)
+	{
+		m_Under_PostFKTra = srcflag;
+	}
+	bool GetUnderPostFKTra()
+	{
+		return m_Under_PostFKTra;
+	}
+	void SetUnderInitMP(bool srcflag)
+	{
+		m_Under_InitMP = srcflag;
+	}
+	bool GetUnderInitMP()
+	{
+		return m_Under_InitMP;
+	}
+	void SetUnderLoadFbx(bool srcflag)
+	{
+		m_Under_LoadFbx = srcflag;
+	}
+	bool GetUnderLoadFbx()
+	{
+		return m_Under_LoadFbx;
+	}
+	//void SetUnderPostIK(bool srcflag)
+	//{
+	//	m_Under_PostIK = srcflag;
+	//}
+	//bool GetUnderPostIK()
+	//{
+	//	return m_Under_PostIK;
+	//}
+	void SetUnderRetarget(bool srcflag)
+	{
+		m_Under_Retarget = srcflag;
+	}
+	bool GetUnderRetarget()
+	{
+		return m_Under_Retarget;
+	}
+	void SetUnderUpdateTimeline(bool srcflag)
+	{
+		m_Under_UpdateTimeline = srcflag;
+	}
+	bool GetUnderUpdateTimeline()
+	{
+		return m_Under_UpdateTimeline;
+	}
+	//m_Under_UpdateMatrix;
+
+
+
+
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
 	//FUNCMPPARAMS* m_armpparams[6];
@@ -2313,6 +2399,19 @@ private:
 	int m_withStrJoint;
 	int m_withoutStrJoint;
 
+
+	//For High Rpm Threading
+	bool m_Under_IKRot;
+	bool m_Under_IKRotApplyFrame;
+	bool m_Under_CalcEul;
+	bool m_Under_CopyW2LW;
+	bool m_Under_PostFKTra;
+	bool m_Under_InitMP;
+	bool m_Under_LoadFbx;
+	//bool m_Under_PostIK;
+	bool m_Under_Retarget;
+	//bool m_Under_UpdateMatrix;
+	bool m_Under_UpdateTimeline;
 
 };
 

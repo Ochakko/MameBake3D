@@ -90,8 +90,9 @@ int CThreadingRetarget::ThreadFunc()
 
 
 
-		if (g_underRetargetFlag == true) {
-		
+		//if (g_underRetargetFlag == true) {
+		if (m_model && m_model->GetUnderRetarget()) {
+
 			//###########################
 			// 高回転モード　: High rpm
 			//###########################
