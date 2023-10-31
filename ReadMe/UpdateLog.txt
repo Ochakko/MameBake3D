@@ -14,7 +14,7 @@
     2023/11/01_1
 	ChaSceneクラス新規
 		表示グループによる描画をモデルを越えて行った
-			model1のgroup1不透明-->model2のgroup2不透明--> ... --->model1のgroup1半透明-->model2のgroup2半透明-->...
+			model1のgroup1不透明-->model2のgroup1不透明--> ... --->model1のgroup2半透明-->model2のgroup2半透明-->...
 			モデルの描画順を変更しないでも　表示グループ設定だけで透過テクスチャ描画順を制御可能に
 		
     	予定
