@@ -183,6 +183,7 @@
     <ClCompile Include="..\CPP\CameraFbx.cpp" />
     <ClCompile Include="..\CPP\ChaCalcFunc.cpp" />
     <ClCompile Include="..\CPP\ChaFile.cpp" />
+    <ClCompile Include="..\CPP\ChaScene.cpp" />
     <ClCompile Include="..\CPP\ChaVecCalc.cpp" />
     <ClCompile Include="..\CPP\ChooseColorFile.cpp" />
     <ClCompile Include="..\CPP\ColDlg.cpp" />
@@ -561,6 +562,7 @@
     <ClInclude Include="..\INCLUDE\CameraFbx.h" />
     <ClInclude Include="..\INCLUDE\ChaCalcFunc.h" />
     <ClInclude Include="..\INCLUDE\ChaFile.h" />
+    <ClInclude Include="..\INCLUDE\ChaScene.h" />
     <ClInclude Include="..\INCLUDE\ChaVecCalc.h" />
     <ClInclude Include="..\INCLUDE\ChooseColorFile.h" />
     <ClInclude Include="..\INCLUDE\Coef.h" />

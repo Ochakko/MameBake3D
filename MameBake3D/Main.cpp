@@ -1020,6 +1020,7 @@ high rpmの効果はプレビュー時だけ(1.0.0.31からプレビュー時だ
 #include <Coef.h>
 #include "StructHistory.h"
 
+#include <ChaScene.h>
 #include <Model.h>
 #include <TexBank.h>
 #include <Bone.h>
@@ -2513,8 +2514,9 @@ static WindowPos s_camerapanelpos;
 static map<int, int> s_lineno2boneno;
 static map<int, int> s_boneno2lineno;
 
-static vector<MODELELEM> s_modelindex;
-static MODELBOUND	s_totalmb;
+static ChaScene* s_chascene = 0;
+//static vector<MODELELEM> s_modelindex;
+//static MODELBOUND	s_totalmb;
 static int s_curmodelmenuindex = -1;
 static int s_savemodelpanelshowposline = -1;
 static int s_savemotionpanelshowposline = -1;
@@ -3095,8 +3097,8 @@ static int OnFrameUpdateGround();
 static int OnFrameInitBtWorld();
 static int ToggleRig();
 //static void UpdateBtSimu(double nextframe, CModel* curmodel);
-static void SetKinematicToHand(CModel* srcmodel, bool srcflag);
-static void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone, bool srcflag);
+//static void SetKinematicToHand(CModel* srcmodel, bool srcflag);
+//static void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone, bool srcflag);
 static void DispProgressCalcLimitedWM();
 
 static int SetLightDirection();
@@ -3900,6 +3902,14 @@ INT WINAPI wWinMain(
 #define SPRETARGETSWNUM	2
 #define SPAIMBARNUM	5
 */
+
+	s_chascene = new ChaScene();
+	if (!s_chascene) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
 	CreateUtDialog();
 	int spgno;
 	for (spgno = 0; spgno < SPGUISWNUM; spgno++) {
@@ -4206,6 +4216,8 @@ void InitApp()
 
 	CBone::InitColDisp();
 
+	s_chascene = 0;
+
 	s_coldlg.InitParams();
 	s_selbonedlgmap.clear();
 
@@ -4327,6 +4339,7 @@ void InitApp()
 
 	{
 		s_model = NULL;
+		s_curmodelmenuindex = -1;
 		s_cameramodel = NULL;//2023/05/23
 		s_select = NULL;
 		s_select_posture = NULL;
@@ -4443,10 +4456,10 @@ void InitApp()
 	s_LimitDegCheckBoxFlag = false;
 	s_WallScrapingCheckBoxFlag = false;
 
-	s_totalmb.center = ChaVector3(0.0f, 0.0f, 0.0f);
-	s_totalmb.max = ChaVector3(5.0f, 5.0f, 5.0f);
-	s_totalmb.min = ChaVector3(-5.0f, -5.0f, -5.0f);
-	s_totalmb.r = (float)ChaVector3LengthDbl(&s_totalmb.max);
+	//s_totalmb.center = ChaVector3(0.0f, 0.0f, 0.0f);
+	//s_totalmb.max = ChaVector3(5.0f, 5.0f, 5.0f);
+	//s_totalmb.min = ChaVector3(-5.0f, -5.0f, -5.0f);
+	//s_totalmb.r = (float)ChaVector3LengthDbl(&s_totalmb.max);
 
 	s_undosprite = 0;
 	s_fpssprite = 0;
@@ -7087,21 +7100,10 @@ void CALLBACK OnD3D11DestroyDevice(void* pUserContext)
 	s_selbonedlgmap.clear();
 
 
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel) {
-			//FbxScene* pscene = curmodel->GetScene();
-			//if (pscene){
-			//	pscene->Destroy();
-			//}
-			//curmodel->DestroyScene();
-
-			delete curmodel;
-		}
+	if (s_chascene) {
+		delete s_chascene;
+		s_chascene = 0;
 	}
-
-	s_modelindex.clear();
 	s_model = 0;
 
 
@@ -8301,12 +8303,31 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		//###################
 		//Set Updated Params
 		//###################
+		//FLOAT fObjectRadius;
+		//if (s_chascene) {
+		//	g_vCenter = s_chascene->GetTotalModelBound().center;
+		//	fObjectRadius = s_chascene->GetTotalModelBound().r;
+		//}
+		//else {
+		//	_ASSERT(0);
+		//	g_vCenter = ChaVector3(0.0f, 0.0f, 0.0f);
+		//	fObjectRadius = 10.0f;
+		//}
+		//if (fObjectRadius < 0.1f) {
+		//	fObjectRadius = 10.0f;
+		//}
+		//g_Camera->SetProjParams(g_fovy, s_fAspectRatio, g_projnear, g_projfar);
+		//g_Camera->SetViewParamsWithUpVec(g_camEye.XMVECTOR(1.0f), g_camtargetpos.XMVECTOR(1.0f), g_cameraupdir.XMVECTOR(0.0f));
+		//g_Camera->SetRadius(fObjectRadius * 3.0f, fObjectRadius * 0.5f, fObjectRadius * 6.0f);
 		s_matWorld = ChaMatrix(g_Camera->GetWorldMatrix());
 		s_matView = ChaMatrix(g_Camera->GetViewMatrix());
 		s_matProj = ChaMatrix(g_Camera->GetProjMatrix());
 		s_matWorld.SetTranslationZero();
 		////s_matW = s_matWorld;
 		s_matVP = s_matView * s_matProj;
+
+
+
 		//int modelno;
 		//int modelnum = (int)s_modelindex.size();
 		//for (modelno = 0; modelno < modelnum; modelno++) {
@@ -9048,7 +9069,15 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 		WORD menuid;
 		menuid = LOWORD(wParam);
-		int modelnum = (int)s_modelindex.size();
+		int modelnum;
+		if (s_chascene) {
+			modelnum = s_chascene->GetModelNum();
+		}
+		else {
+			modelnum = 0;
+		}
+
+
 
 		//if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONEMODEL)) && (menuid < (ID_RMENU_0 + modelnum + MENUOFFSET_SETCONVBONEMODEL))) {
 		//	int modelindex = menuid - ID_RMENU_0 - MENUOFFSET_SETCONVBONEMODEL;
@@ -9076,23 +9105,27 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 		if ((menuid >= (ID_RMENU_0 + MENUOFFSET_SETCONVBONEBVH)) && (menuid < (ID_RMENU_0 + modelnum + MENUOFFSET_SETCONVBONEBVH))) {
 			int modelindex = menuid - ID_RMENU_0 - MENUOFFSET_SETCONVBONEBVH;
-			if ((modelindex >= 0) && (modelindex < s_modelindex.size())) {
-				s_convbone_bvh = s_modelindex[modelindex].modelptr;
-				WCHAR strmes[1024];
-				if (!s_convbone_bvh) {
-					swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
-					::DSMessageBox(NULL, strmes, L"check!!!", MB_OK);
-					s_maxboneno = 0;
-				}
-				else {
-					swprintf_s(strmes, 1024, L"%s", s_convbone_bvh->GetFileName());
-					s_cbselbvh->setName(strmes);
-					COLORREF importantcol = RGB(168, 129, 129);
-					s_cbselbvh->setTextColor(importantcol);
-					//s_maxboneno = s_convbone_bvh->GetBoneListSize();
-					//s_maxboneno = s_convbone_bvh->GetBoneForMotionSize();
-					s_maxboneno = s_convbone_bvh->GetMaxBoneNo();
-				}
+			if (s_chascene) {
+				s_convbone_bvh = s_chascene->GetModel(modelindex);
+			}
+			else {
+				s_convbone_bvh = 0;
+			}
+
+			WCHAR strmes[1024];
+			if (!s_convbone_bvh) {
+				swprintf_s(strmes, 1024, L"convbone : sel model : modelptr NULL !!!");
+				::DSMessageBox(NULL, strmes, L"check!!!", MB_OK);
+				s_maxboneno = 0;
+			}
+			else {
+				swprintf_s(strmes, 1024, L"%s", s_convbone_bvh->GetFileName());
+				s_cbselbvh->setName(strmes);
+				COLORREF importantcol = RGB(168, 129, 129);
+				s_cbselbvh->setTextColor(importantcol);
+				//s_maxboneno = s_convbone_bvh->GetBoneListSize();
+				//s_maxboneno = s_convbone_bvh->GetBoneForMotionSize();
+				s_maxboneno = s_convbone_bvh->GetMaxBoneNo();
 			}
 		}
 
@@ -10761,8 +10794,18 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 	//CBone* tmpbone;
 	WCHAR sz[100];
 	ChaVector3 weye;
-	float trastep = s_totalmb.r * 0.05f;
-	int modelnum = (int)s_modelindex.size();
+	float trastep;
+	int modelnum;
+	if (s_chascene) {
+		trastep = s_chascene->GetTotalModelBound().r * 0.05f;
+		modelnum = s_chascene->GetModelNum();
+	}
+	else {
+		trastep = 10.0f * 0.05f;
+		modelnum = 0;
+	}
+
+
 	//int modelno;
 	//int tmpikindex;
 
@@ -12222,8 +12265,8 @@ int RetargetFile(char* fbxpath)
 	pfind = strrchr(fbxpath, '\\');
 	if (pfind) {
 
-		if (s_modelindex.size() > 0) {
-			OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
+		if (s_chascene && (s_chascene->GetModelNum() > 0)) {
+			OnModelMenu(false, s_chascene->GetModelNum() - 1, 1);
 		}
 
 		unsigned int dirpathlen;
@@ -12876,8 +12919,8 @@ int OpenFile()
 			s_filterindex = 1;
 		}
 		else if (cmpfbx == 0) {
-			if (s_modelindex.size() > 0) {
-				OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
+			if (s_chascene && (s_chascene->GetModelNum() > 0)) {
+				OnModelMenu(false, s_chascene->GetModelNum() - 1, 1);
 			}
 			std::vector<std::string> ikstopname;
 			ikstopname.clear();
@@ -12891,9 +12934,10 @@ int OpenFile()
 			s_filterindex = 1;
 		}
 		else if (cmpmqo == 0) {
-			if (s_modelindex.size() > 0) {
-				OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
+			if (s_chascene && (s_chascene->GetModelNum() > 0)) {
+				OnModelMenu(false, s_chascene->GetModelNum() - 1, 1);
 			}
+
 			newmodel = OpenMQOFile();
 			if (newmodel) {
 				result = 0;
@@ -12955,9 +12999,10 @@ int OpenFile()
 			if (cmpfbx == 0) {
 				//WCHAR* nexttopchar = topchar + leng2 + 1;
 				//if (*nexttopchar != TEXT('\0')) {
-				if (s_modelindex.size() > 0) {
-					OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
+				if (s_chascene && (s_chascene->GetModelNum() > 0)) {
+					OnModelMenu(false, s_chascene->GetModelNum() - 1, 1);
 				}
+
 				std::vector<std::string> ikstopname;
 				ikstopname.clear();
 				newmodel = OpenFBXFile(false, true, 0, 1, ikstopname);
@@ -12975,9 +13020,10 @@ int OpenFile()
 				s_filterindex = 1;
 			}
 			else if (cmpmqo == 0) {
-				if (s_modelindex.size() > 0) {
-					OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
+				if (s_chascene && (s_chascene->GetModelNum() > 0)) {
+					OnModelMenu(false, s_chascene->GetModelNum() - 1, 1);
 				}
+
 				newmodel = OpenMQOFile();
 				if (newmodel) {
 					result = 0;
@@ -13064,10 +13110,9 @@ CModel* OpenMQOFile()
 			return 0;
 		}
 	}
-	if (s_model && (s_curmodelmenuindex >= 0) && (s_modelindex.empty() == 0)) {
-		s_modelindex[s_curmodelmenuindex].tlarray = s_tlarray;
-		s_modelindex[s_curmodelmenuindex].lineno2boneno = s_lineno2boneno;
-		s_modelindex[s_curmodelmenuindex].boneno2lineno = s_boneno2lineno;
+	if (s_model && (s_curmodelmenuindex >= 0) && s_chascene && (s_chascene->GetModelNum() != 0)) {
+		s_chascene->SetTimelineArray(s_curmodelmenuindex, s_tlarray);
+		s_chascene->SetLineno2Boneno(s_curmodelmenuindex, s_lineno2boneno, s_boneno2lineno);
 	}
 
 	DestroyTimeLine(1);
@@ -13097,11 +13142,19 @@ CModel* OpenMQOFile()
 	CallF(s_model->DbgDump(), return 0);
 
 	int mindex;
-	mindex = (int)s_modelindex.size();
+	if (s_chascene) {
+		mindex = s_chascene->GetModelNum();
+	}
+	else {
+		mindex = 0;
+	}
 	MODELELEM modelelem;
 	modelelem.modelptr = s_model;
 	modelelem.motmenuindex = 0;
-	s_modelindex.push_back(modelelem);
+	if (s_chascene) {
+		s_chascene->AddModelElem(modelelem);
+	}
+
 
 	//   CDXUTComboBox* pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
 	   //pComboBox->RemoveAllItems();
@@ -13128,9 +13181,13 @@ CModel* OpenMQOFile()
 
 	CallF(AddMotion(0), return 0);
 
-	s_modelindex[mindex].tlarray = s_tlarray;
-	s_modelindex[mindex].lineno2boneno = s_lineno2boneno;
-	s_modelindex[mindex].boneno2lineno = s_boneno2lineno;
+	if (s_chascene) {
+		s_chascene->SetTimelineArray(mindex, s_tlarray);
+		s_chascene->SetLineno2Boneno(mindex, s_lineno2boneno, s_boneno2lineno);
+	}
+	else {
+		_ASSERT(0);
+	}
 
 	//	CallF( OnModelMenu( mindex, 0 ), return 0 );
 
@@ -13143,15 +13200,10 @@ int SetCameraModel()
 {
 	s_cameramodel = 0;
 
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel) {
-			if ((g_endappflag == 0) && curmodel->IsCameraLoaded()) {
-				s_cameramodel = curmodel;//後から読み込んだモデルの中で　カメラがあれば　それを選ぶ
-			}
-		}
+	if (s_chascene) {
+		s_cameramodel = s_chascene->GetTheLastCameraModel();
 	}
+
 
 
 	//カメラモデルが無い場合には　スプライトスイッチもオフにしておく
@@ -13180,34 +13232,33 @@ void CalcTotalBound()
 
 	SetCameraModel();
 
-
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel) {
-			MODELBOUND mb;
-			curmodel->GetModelBound(&mb);
-			if (mb.r != 0.0f) {
-				AddModelBound(&s_totalmb, &mb);
-			}
-		}
+	if (s_chascene) {
+		s_chascene->CalcTotalModelBound();
 	}
+
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
 	}
 
 	FLOAT fObjectRadius;
-	g_vCenter = s_totalmb.center;
-	fObjectRadius = s_totalmb.r;
+	if (s_chascene) {
+		g_vCenter = s_chascene->GetTotalModelBound().center;
+		fObjectRadius = s_chascene->GetTotalModelBound().r;
+	}
+	else {
+		_ASSERT(0);
+		g_vCenter = ChaVector3(0.0f, 0.0f, 0.0f);
+		fObjectRadius = 10.0f;
+	}
 	if (fObjectRadius < 0.1f) {
 		fObjectRadius = 10.0f;
 	}
 
 	s_cammvstep = max(0.01f, min(500.0f, fObjectRadius));//2023/05/19
 
-	DbgOut(L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
-		s_totalmb.r, s_totalmb.center.x, s_totalmb.center.y, s_totalmb.center.z);
+	//DbgOut(L"fbx : totalmb : r %f, center (%f, %f, %f)\r\n",
+	//	s_totalmb.r, s_totalmb.center.x, s_totalmb.center.y, s_totalmb.center.z);
 
 	for (int i = 0; i < LIGHTNUMMAX; i++)
 		g_LightControl[i].SetRadius(fObjectRadius);
@@ -13306,11 +13357,12 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 			return 0;
 		}
 	}
-	if (s_model && (s_curmodelmenuindex >= 0) && (s_modelindex.empty() == 0)) {
-		s_modelindex[s_curmodelmenuindex].tlarray = s_tlarray;
-		s_modelindex[s_curmodelmenuindex].lineno2boneno = s_lineno2boneno;
-		s_modelindex[s_curmodelmenuindex].boneno2lineno = s_boneno2lineno;
+	if (s_model && (s_curmodelmenuindex >= 0) && s_chascene && (s_chascene->GetModelNum() != 0)) {
+		s_chascene->SetTimelineArray(s_curmodelmenuindex, s_tlarray);
+		s_chascene->SetLineno2Boneno(s_curmodelmenuindex, s_lineno2boneno, s_boneno2lineno);
 	}
+
+
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
@@ -13382,11 +13434,18 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 	}
 
 	int mindex;
-	mindex = (int)s_modelindex.size();
+	if (s_chascene) {
+		mindex = s_chascene->GetModelNum();
+	}
+	else {
+		mindex = 0;
+	}
 	MODELELEM modelelem;
 	modelelem.modelptr = s_model;
 	modelelem.motmenuindex = 0;
-	s_modelindex.push_back(modelelem);
+	if (s_chascene) {
+		s_chascene->AddModelElem(modelelem);
+	}
 
 	//   CDXUTComboBox* pComboBox = g_SampleUI.GetComboBox( IDC_COMBO_BONE );
 	   //pComboBox->RemoveAllItems();
@@ -13410,9 +13469,15 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 
 	//CalcTotalBound();//下で呼んでる
 
-	s_modelindex[mindex].tlarray = s_tlarray;
-	s_modelindex[mindex].lineno2boneno = s_lineno2boneno;
-	s_modelindex[mindex].boneno2lineno = s_boneno2lineno;
+	if (s_chascene) {
+		s_chascene->SetTimelineArray(mindex, s_tlarray);
+		s_chascene->SetLineno2Boneno(mindex, s_lineno2boneno, s_boneno2lineno);
+	}
+	else {
+		_ASSERT(0);
+	}
+
+
 
 	if (s_nowloading && s_3dwnd) {
 		OnRenderNowLoading();
@@ -13540,10 +13605,14 @@ CModel* OpenFBXFile(bool callfromcha, bool dorefreshtl, int skipdefref, int init
 	int motnum = s_model->GetMotInfoSize();
 	if ((motnum == 0) && (s_model->GetNoBoneFlag() == false)) {
 		CallF(AddMotion(0), return 0);//モーション無しfbxを読み込んだ場合のInitMP呼び出しでモーションポイント作成
-		s_modelindex[mindex].tlarray = s_tlarray;
-		s_modelindex[mindex].lineno2boneno = s_lineno2boneno;
-		s_modelindex[mindex].boneno2lineno = s_boneno2lineno;
-
+		if (s_chascene) {
+			s_chascene->SetTimelineArray(mindex, s_tlarray);
+			s_chascene->SetLineno2Boneno(mindex, s_lineno2boneno, s_boneno2lineno);
+		}
+		else {
+			_ASSERT(0);
+			return 0;
+		}
 	}
 
 
@@ -13859,8 +13928,8 @@ int AddTimeLine(int newmotid, bool dorefreshtl)
 
 			//2022/08/21
 			int currentmodelindex = FindModelIndex(s_model);
-			if (currentmodelindex >= 0) {
-				s_modelindex[currentmodelindex].tlarray = s_tlarray;//2022/08/19
+			if (s_chascene && (currentmodelindex >= 0)) {
+				s_chascene->SetTimelineArray(currentmodelindex, s_tlarray);
 			}
 
 			if (s_model) {
@@ -15402,10 +15471,9 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 	s_oprigflag = 0;
 
 	if (callbymenu == 1) {
-		if (s_model && (s_curmodelmenuindex >= 0) && (s_modelindex.empty() == 0)) {
-			s_modelindex[s_curmodelmenuindex].tlarray = s_tlarray;
-			s_modelindex[s_curmodelmenuindex].lineno2boneno = s_lineno2boneno;
-			s_modelindex[s_curmodelmenuindex].boneno2lineno = s_boneno2lineno;
+		if (s_model && (s_curmodelmenuindex >= 0) && s_chascene && (s_chascene->GetModelNum() != 0)) {
+			s_chascene->SetTimelineArray(s_curmodelmenuindex, s_tlarray);
+			s_chascene->SetLineno2Boneno(s_curmodelmenuindex, s_lineno2boneno, s_boneno2lineno);
 		}
 	}
 
@@ -15445,7 +15513,13 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 		return 0;//!!!!!!!!!
 	}
 
-	cMdlSets = (int)s_modelindex.size();
+	if (s_chascene) {
+		cMdlSets = s_chascene->GetModelNum();
+	}
+	else {
+		cMdlSets = 0;
+	}
+
 	if (cMdlSets <= 0) {
 		OrgWindowListenMouse(false);
 
@@ -15469,25 +15543,34 @@ int OnModelMenu(bool dorefreshtl, int selindex, int callbymenu)
 		return 0;//!!!!!!!!!!!!!!!!!!!
 	}
 	else {
-		WCHAR* wname;
+		const WCHAR* wname;
 		for (iMdlSet = 0; iMdlSet < cMdlSets; iMdlSet++)
 		{
-			wname = (WCHAR*)s_modelindex[iMdlSet].modelptr->GetFileName();
-
-			if (*wname != 0)
-				AppendMenu(s_modelmenu, MF_STRING, 61000 + iMdlSet, wname);
-			else
+			if (s_chascene) {
+				wname = s_chascene->GetModelFileName(iMdlSet);
+				if (*wname != 0)
+					AppendMenu(s_modelmenu, MF_STRING, 61000 + iMdlSet, wname);
+				else
+					AppendMenu(s_modelmenu, MF_STRING, 61000 + iMdlSet, L"<No Model Name>");
+			}
+			else {
 				AppendMenu(s_modelmenu, MF_STRING, 61000 + iMdlSet, L"<No Model Name>");
+			}
 		}
 
 		CheckMenuItem(s_mainmenu, 61000 + selindex, MF_CHECKED);
 
-		s_model = s_modelindex[selindex].modelptr;
-		if (s_model) {
-			s_tlarray = s_modelindex[selindex].tlarray;
-			s_motmenuindexmap[s_model] = s_modelindex[selindex].motmenuindex;
-			s_lineno2boneno = s_modelindex[selindex].lineno2boneno;
-			s_boneno2lineno = s_modelindex[selindex].boneno2lineno;
+		if (s_chascene) {
+			s_model = s_chascene->GetModel(selindex);
+		}
+		else {
+			_ASSERT(0);
+			s_model = 0;
+		}
+		if (s_model && s_chascene) {
+			s_chascene->GetTimelineArray(selindex, s_tlarray);
+			s_motmenuindexmap[s_model] = s_chascene->GetMotMenuIndex(selindex);
+			s_chascene->GetLineno2Boneno(selindex, s_lineno2boneno, s_boneno2lineno);
 
 			//s_dispobj = false;
 			DispObjPanel();
@@ -15824,8 +15907,8 @@ int OnDelMotion(int delmenuindex, bool ondelbutton)//default : ondelbutton = fal
 
 	//2022/09/13
 	int currentmodelindex = FindModelIndex(s_model);
-	if (currentmodelindex >= 0) {
-		s_modelindex[currentmodelindex].tlarray = s_tlarray;//2022/09/13
+	if (s_chascene && (currentmodelindex >= 0)) {
+		s_chascene->SetTimelineArray(currentmodelindex, s_tlarray);
 	}
 
 
@@ -15845,12 +15928,24 @@ int OnDelMotion(int delmenuindex, bool ondelbutton)//default : ondelbutton = fal
 
 int OnDispModel(int modelcnt)
 {
-	int mdlnum = (int)s_modelindex.size();
+	int mdlnum;
+	if (s_chascene) {
+		mdlnum = s_chascene->GetModelNum();
+	}
+	else {
+		mdlnum = 0;
+	}
 	if ((mdlnum <= 0) || (modelcnt < 0) || (modelcnt >= mdlnum)) {
 		return 0;
 	}
 
-	CModel* dispmodel = s_modelindex[modelcnt].modelptr;
+	CModel* dispmodel;
+	if (s_chascene) {
+		dispmodel = s_chascene->GetModel(modelcnt);
+	}
+	else {
+		dispmodel = 0;
+	}
 	if (dispmodel && s_modelpanel.checkvec[modelcnt] && s_modelpanel.panel) {
 		dispmodel->SetModelDisp(s_modelpanel.checkvec[modelcnt]->getValue());
 		s_modelpanel.panel->callRewrite();
@@ -15862,8 +15957,14 @@ int OnDispModel(int modelcnt)
 int OnDelModel(int delmenuindex, bool ondelbutton)//default : ondelbutton == false
 {
 	//s_underdelmodel = true;
+	if (!s_chascene) {
+		_ASSERT(0);
+		return 0;
+	}
 
-	int mdlnum = (int)s_modelindex.size();
+
+	int mdlnum;
+	mdlnum = s_chascene->GetModelNum();
 	if ((mdlnum <= 0) || (delmenuindex < 0) || (delmenuindex >= mdlnum)) {
 		//s_underdelmodel = false;
 		return 0;
@@ -15876,56 +15977,11 @@ int OnDelModel(int delmenuindex, bool ondelbutton)//default : ondelbutton == fal
 	}
 
 
-	CModel* delmodel = s_modelindex[delmenuindex].modelptr;
-	if (delmodel) {
-		//map<CModel*, int>::iterator itrbonecnt;
-		//itrbonecnt = g_bonecntmap.find(delmodel);
-		//if (itrbonecnt != g_bonecntmap.end()){
-		//	g_bonecntmap.erase(itrbonecnt);
-		//}
-
-		delmodel->WaitUpdateMatrixFinished();//2022/08/18
-
-		CBone::OnDelModel(delmodel);
-
-		//FbxScene* pscene = delmodel->GetScene();
-		//if (pscene){
-		//	pscene->Destroy();
-		//}
-		delete delmodel;
-	}
-
-
-	//vector<MODELELEM> tmpmodelindex;
-	//tmpmodelindex = s_modelindex;
-	//s_modelindex.clear();
-	//int modelno;
-	//int setmodelcount = 0;
-	//for (modelno = 0; modelno < mdlnum; modelno++) {
-	//	if (modelno != delmenuindex) {
-	//		s_modelindex[setmodelcount] = tmpmodelindex[modelno];
-	//		setmodelcount++;
-	//	}
-	//}
-	int mdlno;
-	//for( mdlno = delmenuindex; mdlno < (mdlnum - 1); mdlno++ ){
-	//	s_modelindex[ mdlno ].tlarray.clear();
-	//	s_modelindex[ mdlno ].boneno2lineno.clear();
-	//	s_modelindex[ mdlno ].lineno2boneno.clear();
-
-	//	s_modelindex[ mdlno ] = s_modelindex[ mdlno + 1 ];
-	//}
-	std::vector<MODELELEM>::iterator itrmodel = s_modelindex.begin();
-	for (mdlno = 0; mdlno < delmenuindex; mdlno++) {
-		itrmodel++;
-	}
-	s_modelindex.erase(itrmodel);
-	//s_modelindex.pop_back();
+	s_chascene->DelModel(delmenuindex);
 
 	SetCameraModel();
 
-
-	if (s_modelindex.empty()) {
+	if (s_chascene->ModelEmpty()) {
 		s_curboneno = -1;
 		s_model = 0;
 		s_curmodelmenuindex = -1;
@@ -15937,15 +15993,12 @@ int OnDelModel(int delmenuindex, bool ondelbutton)//default : ondelbutton == fal
 	}
 	else {
 		s_curboneno = -1;
-		s_model = s_modelindex[0].modelptr;
+		s_model = s_chascene->GetModel(0);
 		if (s_model) {
-			s_motmenuindexmap[s_model] = s_modelindex[0].motmenuindex;
-			//s_modelindex[0].motmenuindex = 0;
-			//s_motmenuindexmap[s_model] = s_modelindex[0].motmenuindex;
+			s_motmenuindexmap[s_model] = s_chascene->GetMotMenuIndex(0);
 		}
-		s_tlarray = s_modelindex[0].tlarray;
-		s_lineno2boneno = s_modelindex[0].lineno2boneno;
-		s_boneno2lineno = s_modelindex[0].boneno2lineno;
+		s_chascene->GetTimelineArray(0, s_tlarray);
+		s_chascene->GetLineno2Boneno(0, s_lineno2boneno, s_boneno2lineno);
 	}
 
 	OnModelMenu(true, 0, 0);
@@ -15963,38 +16016,17 @@ int OnDelModel(int delmenuindex, bool ondelbutton)//default : ondelbutton == fal
 
 int OnDelAllModel()
 {
-	int mdlnum = (int)s_modelindex.size();
-	if (mdlnum <= 0) {
+	if (!s_chascene) {
+		_ASSERT(0);
 		return 0;
-	}
-
-	//g_bonecntmap.clear();
-
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* delmodel = itrmodel->modelptr;
-		if (delmodel) {
-			delmodel->WaitUpdateMatrixFinished();//2022/08/18
-			CBone::OnDelModel(delmodel);
-
-			FbxScene* pscene = delmodel->GetScene();
-			//if (pscene){
-			//	pscene->Destroy();
-			//}
-			delete delmodel;
-		}
-		itrmodel->tlarray.clear();
-		itrmodel->boneno2lineno.clear();
-		itrmodel->lineno2boneno.clear();
 	}
 
 	OrgWindowListenMouse(false);
 
-	s_modelindex.clear();
+	s_chascene->DelAllModel();
 
 	//SetCameraModel();
 	s_cameramodel = 0;//2023/06/02
-
 
 	s_curboneno = -1;
 	s_model = 0;
@@ -16014,41 +16046,7 @@ int OnDelAllModel()
 
 
 
-int AddModelBound(MODELBOUND* mb, MODELBOUND* addmb)
-{
-	ChaVector3 newmin = mb->min;
-	ChaVector3 newmax = mb->max;
 
-	if (newmin.x > addmb->min.x) {
-		newmin.x = addmb->min.x;
-	}
-	if (newmin.y > addmb->min.y) {
-		newmin.y = addmb->min.y;
-	}
-	if (newmin.z > addmb->min.z) {
-		newmin.z = addmb->min.z;
-	}
-
-	if (newmax.x < addmb->max.x) {
-		newmax.x = addmb->max.x;
-	}
-	if (newmax.y < addmb->max.y) {
-		newmax.y = addmb->max.y;
-	}
-	if (newmax.z < addmb->max.z) {
-		newmax.z = addmb->max.z;
-	}
-
-	mb->center = (newmin + newmax) * 0.5f;
-	mb->min = newmin;
-	mb->max = newmax;
-
-	ChaVector3 diff;
-	diff = mb->center - newmin;
-	mb->r = (float)ChaVector3LengthDbl(&diff);
-
-	return 0;
-}
 
 
 int refreshModelPanel()
@@ -18834,10 +18832,14 @@ int CreateModelPanel()
 		return 0;
 	}
 
-
 	DestroyModelPanel();
 
-	int modelnum = (int)s_modelindex.size();
+	if (!s_chascene) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	int modelnum = s_chascene->GetModelNum();
 	//if (modelnum <= 0) {
 	//	return 0;
 	//}
@@ -18916,21 +18918,24 @@ int CreateModelPanel()
 		if (modelnum > 0) {
 
 			for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
-				CModel* curmodel = s_modelindex[modelcnt].modelptr;
-				_ASSERT(curmodel);
-
-				if (modelcnt == 0) {
-					bool limitnamelen = true;
-					s_modelpanel.radiobutton = new OWP_RadioButton(curmodel->GetFileName(), limitnamelen);
-					if (!s_modelpanel.radiobutton) {
-						_ASSERT(0);
-						return 1;
+				CModel* curmodel = s_chascene->GetModel(modelcnt);
+				if (curmodel) {
+					if (modelcnt == 0) {
+						bool limitnamelen = true;
+						s_modelpanel.radiobutton = new OWP_RadioButton(curmodel->GetFileName(), limitnamelen);
+						if (!s_modelpanel.radiobutton) {
+							_ASSERT(0);
+							return 1;
+						}
+					}
+					else {
+						if (s_modelpanel.radiobutton) {
+							s_modelpanel.radiobutton->addLine(curmodel->GetFileName());
+						}
 					}
 				}
 				else {
-					if (s_modelpanel.radiobutton) {
-						s_modelpanel.radiobutton->addLine(curmodel->GetFileName());
-					}
+					_ASSERT(0);
 				}
 			}
 
@@ -18954,7 +18959,7 @@ int CreateModelPanel()
 
 
 			for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
-				CModel* curmodel = s_modelindex[modelcnt].modelptr;
+				CModel* curmodel = s_chascene->GetModel(modelcnt);
 				if (curmodel) {
 					OWP_CheckBoxA* owpCheckBox = new OWP_CheckBoxA(L"Show/Hide", curmodel->GetModelDisp());
 					if (owpCheckBox) {
@@ -19048,9 +19053,9 @@ int CreateModelPanel()
 		for (modelcnt = 0; modelcnt < modelnum; modelcnt++) {
 			if (s_modelpanel.checkvec[modelcnt]) {
 				s_modelpanel.checkvec[modelcnt]->setButtonListener([modelcnt]() {
-					if (s_model) {
-						if (modelcnt < s_modelindex.size()) {
-							CModel* curmodel = s_modelindex[modelcnt].modelptr;
+					if (s_model && s_chascene) {
+						if (modelcnt < s_chascene->GetModelNum()) {
+							CModel* curmodel = s_chascene->GetModel(modelcnt);
 							if ((s_underdelmotion == false) && (s_opedelmotioncnt < 0) && //Motion削除と同時は禁止 
 								!s_underdelmodel && (s_opedelmodelcnt < 0) && 
 								curmodel && !s_underdispmodel) {
@@ -19067,9 +19072,9 @@ int CreateModelPanel()
 
 			if (s_modelpanel.delbutton[modelcnt]) {
 				s_modelpanel.delbutton[modelcnt]->setButtonListener([modelcnt]() {
-					if (s_model) {
-						if ((modelcnt < s_modelindex.size()) && (s_modelindex.size() >= 2)) {//全部消すときはメインメニューから
-							CModel* curmodel = s_modelindex[modelcnt].modelptr;
+					if (s_model && s_chascene) {
+						if ((modelcnt < s_chascene->GetModelNum()) && (s_chascene->GetModelNum() >= 2)) {//全部消すときはメインメニューから
+							CModel* curmodel = s_chascene->GetModel(modelcnt);
 							if ((s_underdelmotion == false) && (s_opedelmotioncnt < 0) && //Motion削除と同時は禁止 
 								(s_opedelmodelcnt < 0) && curmodel && !s_underdelmodel) {
 								s_underdelmodel = true;
@@ -19091,11 +19096,11 @@ int CreateModelPanel()
 
 		if (s_modelpanel.radiobutton) {
 			s_modelpanel.radiobutton->setSelectListener([]() {
-				if (s_model) {
+				if (s_model && s_chascene) {
 					int curindex = s_modelpanel.radiobutton->getSelectIndex();
 					if ((s_opeselectmodelcnt < 0) && !s_underselectmodel && 
 						(s_underdelmotion == false) && (s_opedelmotioncnt < 0) &&
-						(curindex >= 0) && (curindex < s_modelindex.size())) {
+						(curindex >= 0) && (curindex < s_chascene->GetModelNum())) {
 
 						//s_modelpanel.modelindex = curindex;
 						//OnModelMenu(true, s_modelpanel.modelindex, 1);
@@ -19199,7 +19204,12 @@ int CreateCameraPanel()
 
 	DestroyCameraPanel();
 
-	int modelnum = (int)s_modelindex.size();
+	if (!s_chascene) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	int modelnum = s_chascene->GetModelNum();
 	//if (modelnum <= 0) {
 	//	return 0;
 	//}
@@ -19512,7 +19522,13 @@ int CreateMotionPanel()
 
 	DestroyMotionPanel();
 
-	int modelnum = (int)s_modelindex.size();
+
+	if (!s_chascene) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	int modelnum = s_chascene->GetModelNum();
 	//if (modelnum <= 0) {
 	//	return 0;
 	//}
@@ -20319,7 +20335,14 @@ int CreateConvBoneWnd()
 
 int SetConvBoneBvh()
 {
-	int modelnum = (int)s_modelindex.size();
+
+	if (!s_chascene) {
+		_ASSERT(0);
+		return 0;
+	}
+
+	int modelnum = s_chascene->GetModelNum();
+
 	if (modelnum <= 0) {
 		return 0;
 	}
@@ -20358,7 +20381,7 @@ int SetConvBoneBvh()
 
 	int modelno;
 	for (modelno = 0; modelno < modelnum; modelno++) {
-		CModel* curmodel = s_modelindex[modelno].modelptr;
+		CModel* curmodel = s_chascene->GetModel(modelno);
 		if (curmodel) {
 			const WCHAR* modelname = curmodel->GetFileName();
 			if (modelname) {
@@ -20412,7 +20435,12 @@ int SetConvBone(int cbno)
 {
 	s_bvhbone_cbno = cbno;
 
-	int modelnum = (int)s_modelindex.size();
+	if (!s_chascene) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	int modelnum = s_chascene->GetModelNum();
 	if (modelnum <= 0) {
 		return 0;
 	}
@@ -21049,15 +21077,12 @@ int OnAddMotion(int srcmotid, bool dorefreshtl)
 
 int StopBt()
 {
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel) {
-			curmodel->BulletSimulationStop();
-			SetKinematicToHand(curmodel, false);
-		}
+	if (!s_chascene) {
+		_ASSERT(0);
+		return 0;
 	}
 
+	s_chascene->StopBt();
 
 
 	//g_previewFlag = 0;
@@ -21078,7 +21103,7 @@ int StopBt()
 
 int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 {
-	if (!s_model || !curmodel) {
+	if (!s_model || !curmodel || !s_chascene) {
 		return 0;
 	}
 
@@ -21102,14 +21127,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 		//プレビューを止めないとtimelineはスタートフレームになるが姿勢がスタートフレームにならない。
 		//flag == 0で呼ぶとシミュが動かない。
 
-		vector<MODELELEM>::iterator itrmodel;
-		for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-			CModel* pmodel = itrmodel->modelptr;
-			if (pmodel) {
-				//全モデルシミュ停止
-				pmodel->BulletSimulationStop();
-			}
-		}
+		s_chascene->StopBt();
 
 		g_previewFlag = 0;//!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -21171,10 +21189,10 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 	}
 
 
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* pmodel = itrmodel->modelptr;
-
+	int modelnum = s_chascene->GetModelNum();
+	int modelcount;
+	for (modelcount = 0; modelcount < modelnum; modelcount++) {
+		CModel* pmodel = s_chascene->GetModel(modelcount);
 
 		if (pmodel) {
 
@@ -21444,16 +21462,7 @@ int StartBt(CModel* curmodel, BOOL isfirstmodel, int flag, int btcntzero)
 
 
 	//全モデルシミュ開始
-	vector<MODELELEM>::iterator itrmodel4;
-	for (itrmodel4 = s_modelindex.begin(); itrmodel4 != s_modelindex.end(); itrmodel4++) {
-		CModel* pmodel4 = itrmodel4->modelptr;
-		if (pmodel4) {
-			pmodel4->BulletSimulationStop();
-			SetKinematicToHand(pmodel4, false);
-
-			pmodel4->BulletSimulationStart();
-		}
-	}
+	s_chascene->StartBt();
 
 
 	return 0;
@@ -21741,11 +21750,11 @@ int SetGpWndParams()
 
 int SaveProject()
 {
-	if (!s_bpWorld) {
+	if (!s_bpWorld || !s_chascene) {
 		return 0;
 	}
 
-	if (s_modelindex.empty()) {
+	if (s_chascene->ModelEmpty()) {
 		return 0;
 	}
 
@@ -21763,9 +21772,11 @@ int SaveProject()
 	HCURSOR oldcursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
 
 
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
+	int modelnum = s_chascene->GetModelNum();
+	int modelcount;
+	for (modelcount = 0; modelcount < modelnum; modelcount++) {
+		CModel* curmodel = s_chascene->GetModel(modelcount);
+
 		if (curmodel && s_owpLTimeline && s_owpEulerGraph) {
 			s_owpLTimeline->setCurrentTime(0.0, true);
 			s_owpEulerGraph->setCurrentTime(0.0, false);
@@ -21784,9 +21795,11 @@ int SaveProject()
 	WCHAR saveprojpath[MAX_PATH] = { 0L };
 	swprintf_s(saveprojpath, MAX_PATH, L"%s\\%s\\%s.cha", s_projectdir, s_projectname, s_projectname);
 
+	vector<MODELELEM> writemodelindex;
+	s_chascene->GetModelIndex(writemodelindex);
 	CChaFile chafile;
 	int result = chafile.WriteChaFile(g_bakelimiteulonsave, s_bpWorld, s_projectdir, s_projectname,
-		s_modelindex, (float)g_dspeed, s_selbonedlgmap);
+		writemodelindex, (float)g_dspeed, s_selbonedlgmap);
 	if (result) {
 		::MessageBox(s_mainhwnd, L"保存に失敗しました。", L"Error", MB_OK);
 		if (oldcursor) {
@@ -22140,7 +22153,7 @@ int OnSetMotSpeed()
 	//s_model->GetCurMotInfo()->speed = s_model->GetTmpMotSpeed();//!!!!!!!!!!!!!!!!!!!
 	//g_dspeed = s_model->GetTmpMotSpeed();
 
-	if (!s_model) {
+	if (!s_model || !s_chascene) {
 		return 0;
 	}
 	if (!s_model->GetCurMotInfo()) {
@@ -22158,11 +22171,7 @@ int OnSetMotSpeed()
 	//モーションが変わってもスライダー指定のスピードを維持するようにする
 	//g_dspeed = s_model->GetCurMotInfo()->speed;
 	g_dspeed = s_model->GetTmpMotSpeed();
-	size_t modelno;
-	size_t modelnum = s_modelindex.size();
-	for (modelno = 0; modelno < modelnum; modelno++) {
-		s_modelindex[modelno].modelptr->SetMotionSpeed(g_dspeed);
-	}
+	s_chascene->SetMotionSpeed(-1, g_dspeed);
 
 
 	g_SampleUI.GetSlider(IDC_SPEED)->SetValue((int)(g_dspeed * 100.0f));
@@ -25554,7 +25563,7 @@ int SetLTimelineMark(int curboneno)
 
 int ExportFBXFile()
 {
-	if (!s_model || !s_owpLTimeline) {
+	if (!s_model || !s_owpLTimeline || !s_chascene) {
 		_ASSERT(0);
 		return 0;
 	}
@@ -25562,21 +25571,8 @@ int ExportFBXFile()
 	g_previewFlag = 0;
 	s_owpLTimeline->setCurrentTime(0.0, true);
 
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel && curmodel->GetCurMotInfo()) {
-			curmodel->SetMotionFrame(0.0);
-		}
-	}
-
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel) {
-			ChaMatrix tmpwm = curmodel->GetWorldMat();
-			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
-		}
-	}
+	s_chascene->UpdateMatrixModels(g_limitdegflag, &s_matVP, 0.0);
+	
 
 	WCHAR filename[MAX_PATH] = { 0L };
 	OPENFILENAME ofn1;
@@ -25675,7 +25671,7 @@ int ExportFBXFile()
 
 int ExportBntFile()
 {
-	if (!s_model || !s_owpLTimeline) {
+	if (!s_model || !s_owpLTimeline || !s_chascene) {
 		_ASSERT(0);
 		return 0;
 	}
@@ -25683,21 +25679,8 @@ int ExportBntFile()
 	g_previewFlag = 0;
 	s_owpLTimeline->setCurrentTime(0.0, true);
 
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel && curmodel->GetCurMotInfo()) {
-			curmodel->SetMotionFrame(0.0);
-		}
-	}
+	s_chascene->UpdateMatrixModels(g_limitdegflag, &s_matVP, 0.0);
 
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel) {
-			ChaMatrix tmpwm = curmodel->GetWorldMat();
-			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
-		}
-	}
 
 
 	WCHAR filename[MAX_PATH] = { 0L };
@@ -25748,11 +25731,11 @@ int ExportBntFile()
 	//char fbxpath[MAX_PATH] = {0};
 	//WideCharToMultiByte( CP_UTF8, 0, filename, -1, fbxpath, MAX_PATH, NULL, NULL );	
 
-	if (s_modelindex.empty()) {
+	if (s_chascene->ModelEmpty()) {
 		_ASSERT(0);
 		return 0;
 	}
-	MODELELEM wme = s_modelindex[0];
+	MODELELEM wme = s_chascene->GetModelElem(0);
 	CModel* curmodel = wme.modelptr;
 	if (!curmodel) {
 		return 0;
@@ -29826,17 +29809,12 @@ int OnFramePreviewCamera(double srcnextframe)
 {
 	double nextcameraframe = 0.0;
 
-
-
-	//eNull用の時間は　カメラの時間と同じとする　(とりあえず)
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel) {
-			curmodel->SetENullTime(srcnextframe);
-		}
+	if (!s_chascene) {
+		return 0;
 	}
 
+	//eNull用の時間は　カメラの時間と同じとする　(とりあえず)
+	s_chascene->SetENullTime(-1, srcnextframe);
 
 
 	if (g_cameraanimmode != 0) {//2023/05/29 2023/06/04
@@ -29900,6 +29878,10 @@ int OnFramePreviewCamera(double srcnextframe)
 
 int OnFramePreviewStop()
 {
+	if (!s_chascene) {
+		return 0;
+	}
+
 	double currenttime;
 	if (s_owpTimeline) {
 		currenttime = s_owpLTimeline->getCurrentTime();
@@ -29908,23 +29890,7 @@ int OnFramePreviewStop()
 		currenttime = 0.0;
 	}
 	
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel) {
-			if (curmodel->GetCurMotInfo()) {
-				curmodel->SetMotionFrame(currenttime);
-
-				ChaMatrix tmpwm = curmodel->GetWorldMat();
-				curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
-			}
-			else {
-				//モーションが無い場合にもChkInViewを呼ぶためにUpdateMatrix呼び出しは必要
-				ChaMatrix tmpwm = curmodel->GetWorldMat();
-				curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
-			}
-		}
-	}
+	s_chascene->UpdateMatrixModels(g_limitdegflag, &s_matVP, currenttime);
 
 	//s_tum.UpdateMatrix(s_modelindex, &s_matVP);//ブロッキング
 
@@ -29933,6 +29899,10 @@ int OnFramePreviewStop()
 
 int OnFramePreviewNormal(double nextframe, double difftime, int endflag, int loopstartflag)
 {
+	if (!s_chascene) {
+		return 0;
+	}
+
 
 	//if (g_previewFlag != 0) {
 	//	if (s_savepreviewFlag == 0) {
@@ -29957,23 +29927,7 @@ int OnFramePreviewNormal(double nextframe, double difftime, int endflag, int loo
 	//	g_previewFlag = 0;
 	//}
 
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
-		if (curmodel){
-			if (curmodel->GetCurMotInfo()) {
-				curmodel->SetMotionFrame(nextframe);
-
-				ChaMatrix tmpwm = curmodel->GetWorldMat();
-				curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
-			}
-			else {
-				//2023/08/26 モーションが無い場合にもChkInViewを呼ぶためにUpdateMatrix呼び出しは必要
-				ChaMatrix tmpwm = curmodel->GetWorldMat();
-				curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
-			}
-		}
-	}
+	s_chascene->UpdateMatrixModels(g_limitdegflag, &s_matVP, nextframe);
 
 #ifndef SKIP_EULERGRAPH__
 	if (s_owpTimeline) {
@@ -30020,7 +29974,7 @@ int OnFramePreviewNormal(double nextframe, double difftime, int endflag, int loo
 
 int OnFramePreviewBt(double nextframe, double difftime, int endflag, int loopstartflag)
 {
-	if (!s_model) {
+	if (!s_model || !s_chascene) {
 		return 0;
 	}
 
@@ -30069,10 +30023,12 @@ int OnFramePreviewBt(double nextframe, double difftime, int endflag, int loopsta
 	INITTERM = max(10, (int)(s_avrgfps * 0.1));
 
 	bool recstopflag = false;
-	vector<MODELELEM>::iterator itrmodel;
 	BOOL firstmodelflag = TRUE;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
+
+	int modelnum = s_chascene->GetModelNum();
+	int modelcount;
+	for (modelcount = 0; modelcount < modelnum; modelcount++) {
+		CModel* curmodel = s_chascene->GetModel(modelcount);
 		if (curmodel) {
 
 			if (curmodel->GetBtCnt() <= INITTERM) {
@@ -30162,50 +30118,31 @@ int OnFramePreviewBt(double nextframe, double difftime, int endflag, int loopsta
 	else {
 		s_bpWorld->clientMoveAndDisplay();
 
-		for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-			CModel* curmodel = itrmodel->modelptr;
-			//if (curmodel) {
+		int modelcount2;
+		for (modelcount2 = 0; modelcount2 < modelnum; modelcount2++) {
+			CModel* curmodel = s_chascene->GetModel(modelcount2);
 			if (curmodel && (curmodel->GetBtCnt() != 0)) {
-				if (curmodel){
-					if (curmodel->GetCurMotInfo()) {
-						//curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
-						ChaMatrix tmpwm = curmodel->GetWorldMat();
-						curmodel->SetBtMotion(g_limitdegflag, 0, 0, nextframe, &tmpwm, &s_matVP);//第一引数は物理IK用
+				if (curmodel->GetCurMotInfo()) {
+					//curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
+					ChaMatrix tmpwm = curmodel->GetWorldMat();
+					curmodel->SetBtMotion(g_limitdegflag, 0, 0, nextframe, &tmpwm, &s_matVP);//第一引数は物理IK用
 
-						//60 x 60 frames limit : 60 sec limit
-						if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
-							s_rectime = (double)((int)s_reccnt);
-							s_model->PhysIKRec(g_limitdegflag, s_rectime);
-							s_reccnt++;
-						}
-					}
-					else {
-						//モーションが無い場合にもChkInViewを呼ぶためにUpdateMatrix呼び出しは必要
-						ChaMatrix tmpwm = curmodel->GetWorldMat();
-						curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
+					//60 x 60 frames limit : 60 sec limit
+					if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
+						s_rectime = (double)((int)s_reccnt);
+						s_model->PhysIKRec(g_limitdegflag, s_rectime);
+						s_reccnt++;
 					}
 				}
+				else {
+					//モーションが無い場合にもChkInViewを呼ぶためにUpdateMatrix呼び出しは必要
+					ChaMatrix tmpwm = curmodel->GetWorldMat();
+					curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
+				}
 			}
+			//s_tum.SetBtMotion(OnFramePreviewBtAftFunc, s_modelindex, *pnextframe);
 		}
-
-		//s_tum.SetBtMotion(OnFramePreviewBtAftFunc, s_modelindex, *pnextframe);
-
 	}
-
-	//if (s_anglelimitdlg) {
-	//	UpdateEditedEuler();
-	//	//s_tum.UpdateEditedEuler(UpdateEditedEuler);//非ブロッキング
-	//}
-
-
-	//playerButtonのonefpsボタン
-	//if (s_onefps == 1) {
-	//	Sleep(1000);//1fps
-	//}
-	//else if (s_onefps == 2) {
-	//	Sleep(500);//2fps
-	//}
-
 
 	return 0;
 }
@@ -30570,7 +30507,7 @@ int GetCurrentBoneFromTimeline(int* dstboneno)
 
 int TimelineCursorToMotion()
 {
-	if (s_owpTimeline && s_model && s_model->GetCurMotInfo()) {
+	if (s_chascene && s_owpTimeline && s_model && s_model->GetCurMotInfo()) {
 
 		GetCurrentBoneFromTimeline(&s_curboneno);
 
@@ -30578,13 +30515,7 @@ int TimelineCursorToMotion()
 		if (g_previewFlag == 0) {//underchecking
 			double curframe = s_owpTimeline->getCurrentTime();// 選択時刻
 
-			vector<MODELELEM>::iterator itrmodel;
-			for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-				CModel* curmodel = itrmodel->modelptr;
-				if (curmodel && curmodel->GetCurMotInfo()) {
-					curmodel->SetMotionFrame(curframe);
-				}
-			}
+			s_chascene->SetMotionFrame(-1, curframe);
 		}
 	}
 	return 0;
@@ -30720,15 +30651,8 @@ int OnFrameTimeLineWnd()
 		if (s_owpLTimeline) {
 			s_owpLTimeline->setCurrentTime(s_buttonselectstart, false);
 		}
-		vector<MODELELEM>::iterator itrmodel;
-		for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-			CModel* curmodel = itrmodel->modelptr;
-			if (curmodel && curmodel->GetCurMotInfo()) {
-				curmodel->SetMotionFrame(s_buttonselectstart);
-				//curmodel->UpdateMatrix(&s_matWorld, &s_matVP);
-				ChaMatrix tmpwm = curmodel->GetWorldMat();
-				curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);//2021/12/21
-			}
+		if (s_chascene) {
+			s_chascene->UpdateMatrixModels(g_limitdegflag, &s_matVP, s_buttonselectstart);
 		}
 
 		Bone2AngleLimit();
@@ -30859,16 +30783,10 @@ int OnFrameTimeLineWnd()
 	if (s_LcursorFlag) {
 		OnTimeLineCursor();
 
-		if (s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
+		if (s_chascene && s_owpLTimeline && s_model && s_model->GetCurMotInfo()) {
 			if (g_previewFlag == 0) {//underchecking
 				double curframe = s_owpLTimeline->getCurrentTime();// 選択時刻
-				vector<MODELELEM>::iterator itrmodel;
-				for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-					CModel* curmodel = itrmodel->modelptr;
-					if (curmodel && curmodel->GetCurMotInfo()) {
-						curmodel->SetMotionFrame(curframe);
-					}
-				}
+				s_chascene->SetMotionFrame(-1, curframe);
 			}
 		}
 
@@ -32233,8 +32151,8 @@ int OnFrameBatchThread()
 		InterlockedExchange(&s_befbvh2fbxnum, 0);
 		InterlockedExchange(&s_befbvh2fbxcnt, 0);
 
-		if (s_modelindex.size() > 0) {
-			OnModelMenu(false, (int)s_modelindex.size() - 1, 1);
+		if (s_chascene && (s_chascene->GetModelNum() > 0)) {
+			OnModelMenu(false, s_chascene->GetModelNum() - 1, 1);
 		}
 	}
 
@@ -37120,59 +37038,32 @@ int OnRenderModel(ID3D11DeviceContext* pd3dImmediateContext)
 		return 0;
 	}
 
-	if (!s_model) {
+	if (!s_model || !s_chascene) {
 		return 0;
 	}
 
 
-	int rendercount;
-	for (rendercount = 0; rendercount < 2; rendercount++) {
-		bool withalpha;
-		if (rendercount == 0) {
-			withalpha = false;
+	int lightflag = 1;
+	ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
+	int btflag = 0;
+	if ((g_previewFlag != 4) && (g_previewFlag != 5)) {
+		btflag = 0;
+	}
+	else {
+		if (g_previewFlag == 4) {
+			btflag = 1;
 		}
 		else {
-			withalpha = true;
-		}
-
-		vector<MODELELEM>::iterator itrmodel;
-		for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-			CModel* curmodel = itrmodel->modelptr;
-
-			//if (curmodel && curmodel->GetLoadedFlag() && curmodel->GetModelDisp()){
-			if (curmodel && curmodel->m_loadedflag && curmodel->m_modeldisp) {//curmodelが作成途中の場合を考えて、先頭から２つのpublicデータメンバーを参照する
-				int lightflag = 1;
-				ChaVector4 diffusemult = ChaVector4(1.0f, 1.0f, 1.0f, 1.0f);
-				int btflag = 0;
-				if ((g_previewFlag != 4) && (g_previewFlag != 5)) {
-					btflag = 0;
-				}
-				else {
-					if (g_previewFlag == 4) {
-						btflag = 1;
-					}
-					else {
-						//previewFlag == 5
-						if ((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))) {
-							btflag = 2;//2022/07/09
-						}
-					}
-				}
-
-				if (curmodel == s_model) {
-					//render reference pose
-					if (s_sprefpos.state) {
-						OnRenderRefPose(pd3dImmediateContext, s_model);
-					}
-					else {
-						curmodel->OnRender(withalpha, pd3dImmediateContext, g_lightflag, diffusemult, btflag);
-					}
-				}
-				else {
-					curmodel->OnRender(withalpha, pd3dImmediateContext, g_lightflag, diffusemult, btflag);
-				}
+			//previewFlag == 5
+			if ((s_curboneno >= 0) && ((s_onragdollik != 0) || (s_physicskind == 0))) {
+				btflag = 2;//2022/07/09
 			}
 		}
+	}
+
+	s_chascene->RenderModels(pd3dImmediateContext, lightflag, diffusemult, btflag);
+	if (s_sprefpos.state) {
+		OnRenderRefPose(pd3dImmediateContext, s_model);
 	}
 
 	return 0;
@@ -37263,12 +37154,14 @@ int OnRenderBoneMark(ID3D11DeviceContext* pd3dImmediateContext)
 			//}
 		}
 		else {
-			vector<MODELELEM>::iterator itrme;
-			for (itrme = s_modelindex.begin(); itrme != s_modelindex.end(); itrme++) {
-				MODELELEM curme = *itrme;
-				CModel* curmodel = curme.modelptr;
-				curmodel->RenderBoneMark(g_limitdegflag,
-					pd3dImmediateContext, s_bmark, s_bcircle, 0, s_curboneno);
+			int modelnum = s_chascene->GetModelNum();
+			int modelcount;
+			for (modelcount = 0; modelcount < modelnum; modelcount++) {
+				CModel* curmodel = s_chascene->GetModel(modelcount);
+				if (curmodel) {
+					curmodel->RenderBoneMark(g_limitdegflag,
+						pd3dImmediateContext, s_bmark, s_bcircle, 0, s_curboneno);
+				}
 			}
 		}
 	}
@@ -37980,7 +37873,10 @@ void SkipJointMarkReq(int srcstate, CBone* srcbone, bool setbrotherflag)
 
 int FilterFromTool()
 {
-	int modelnum = (int)s_modelindex.size();
+	if (!s_chascene) {
+		return 0;
+	}
+	int modelnum = s_chascene->GetModelNum();
 	if (modelnum <= 0) {
 		return 0;
 	}
@@ -38066,7 +37962,10 @@ int FilterFromTool()
 
 int InterpolateFromTool()
 {
-	int modelnum = (int)s_modelindex.size();
+	if (!s_chascene) {
+		return 0;
+	}
+	int modelnum = s_chascene->GetModelNum();
 	if (modelnum <= 0) {
 		return 0;
 	}
@@ -38152,7 +38051,10 @@ int InterpolateFromTool()
 
 int InitMpFromTool()
 {
-	int modelnum = (int)s_modelindex.size();
+	if (!s_chascene) {
+		return 0;
+	}
+	int modelnum = s_chascene->GetModelNum();
 	if (modelnum <= 0) {
 		return 0;
 	}
@@ -39413,7 +39315,10 @@ int GetSymRootMode()
 	};
 	*/
 
-	int modelnum = (int)s_modelindex.size();
+	if (!s_chascene) {
+		return 0;
+	}
+	int modelnum = s_chascene->GetModelNum();
 	if (modelnum <= 0) {
 		return 0;
 	}
@@ -42694,7 +42599,7 @@ void DSSelectCharactor()
 		return;
 	}
 
-	if (!s_model) {
+	if (!s_model || !s_chascene) {
 		//モデル読み込み前は処理しないでリターン
 		return;
 	}
@@ -42721,8 +42626,7 @@ void DSSelectCharactor()
 
 	//L1 Button Up（L2, R2 not pushed）
 	if ((accelflag != 0) && (curbuttonup >= 1)) {
-		int modelnum;
-		modelnum = (int)s_modelindex.size();
+		int modelnum = s_chascene->GetModelNum();
 		if (modelnum > 0) {
 			int nextmodelindex;
 			nextmodelindex = s_curmodelmenuindex + 1;
@@ -48287,18 +48191,18 @@ void SetMainWindowTitle()
 	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.28 : No.%d : ", s_appcnt);
 
 
-	if (s_model) {
+	if (s_model && s_chascene) {
 		//WCHAR strcharactor[MAX_PATH * 3] = { 0L };
 		WCHAR strindexedcharactor[MAX_PATH * 3] = { 0L };
 		char strmotionA[MAX_PATH * 3] = { 0 };
 		WCHAR strmotionW[MAX_PATH * 3] = { 0 };
 		WCHAR strrefW[MAX_PATH * 3] = { 0 };
 
-		int modelnum = (int)s_modelindex.size();
+		int modelnum = s_chascene->GetModelNum();
 
 		if ((modelnum >= 1) && (s_curmodelmenuindex >= 0) && (s_curmodelmenuindex < modelnum)) {
 			CModel* curmodel;
-			curmodel = s_modelindex[s_curmodelmenuindex].modelptr;
+			curmodel = s_chascene->GetModel(s_curmodelmenuindex);
 			if (curmodel) {
 				swprintf_s(strindexedcharactor, MAX_PATH * 3, L"%d : %s", s_curmodelmenuindex, curmodel->GetFileName());
 				wcscat_s(strmaintitle, (MAX_PATH * 3), strindexedcharactor);
@@ -48331,52 +48235,12 @@ void SetMainWindowTitle()
 
 }
 
-void SetKinematicToHand(CModel* srcmodel, bool srcflag)
-{
-	if (!srcmodel) {
-		return;
-	}
-	if (!srcmodel->GetTopBone()) {
-		return;
-	}
-
-	SetKinematicToHandReq(srcmodel, srcmodel->GetTopBone(false), srcflag);
-}
-
-
-void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone, bool srcflag)
-{
-	if (!srcmodel) {
-		return;
-	}
-	if (!srcbone) {
-		return;
-	}
-
-	const char* pbonename = (const char*)srcbone->GetBoneName();
-	const char* phandpat1 = strstr(pbonename, "Elbow_branch");
-	const char* phandpat2 = strstr(pbonename, "Hand");
-
-	if (srcbone->IsSkeleton()) {
-		if ((phandpat1 || phandpat2) && (srcbone->IsSkeleton())) {
-			srcmodel->SetKinematicTmpLower(srcbone, srcflag);
-		}
-	}
-
-	if (srcbone->GetChild(false)) {
-		SetKinematicToHandReq(srcmodel, srcbone->GetChild(false), srcflag);
-	}
-	if (srcbone->GetBrother(false)) {
-		SetKinematicToHandReq(srcmodel, srcbone->GetBrother(false), srcflag);
-	}
-
-}
 
 void OnGUIEventSpeed()
 {
-	int modelnum;
-	modelnum = (int)s_modelindex.size();
-	int modelno;
+	if (!s_chascene) {
+		return;
+	}
 
 	RollbackCurBoneNo();
 	g_dspeed = (float)((double)g_SampleUI.GetSlider(IDC_SPEED)->GetValue() * 0.010);
@@ -48388,10 +48252,8 @@ void OnGUIEventSpeed()
 
 	//SetMotionSpeed() : モーションごとのスピード
 	//SetTmpMotSpeed() : モーションが変わってもスライダー指定のスピード
-	for (modelno = 0; modelno < modelnum; modelno++) {
-		s_modelindex[modelno].modelptr->SetTmpMotSpeed((float)g_dspeed);
-		s_modelindex[modelno].modelptr->SetMotionSpeed((float)g_dspeed);
-	}
+
+	s_chascene->SetMotionSpeed(-1, g_dspeed);
 
 	WCHAR sz[100] = { 0L };
 	swprintf_s(sz, 100, L"Speed: %0.4f", g_dspeed);
@@ -50796,9 +50658,14 @@ int SetShowPosTime()
 
 int ChangeUpdateMatrixThreads()
 {
-	vector<MODELELEM>::iterator itrmodel;
-	for (itrmodel = s_modelindex.begin(); itrmodel != s_modelindex.end(); itrmodel++) {
-		CModel* curmodel = itrmodel->modelptr;
+	if (!s_chascene) {
+		return 0;
+	}
+
+	int modelnum = s_chascene->GetModelNum();
+	int modelcount;
+	for (modelcount = 0; modelcount < modelnum; modelcount++) {
+		CModel* curmodel = s_chascene->GetModel(modelcount);
 		if (curmodel) {
 			curmodel->CreateBoneUpdateMatrix();
 		}
@@ -50809,18 +50676,18 @@ int ChangeUpdateMatrixThreads()
 
 int FindModelIndex(CModel* srcmodel)
 {
-	if (!srcmodel) {
+	if (!srcmodel || !s_chascene) {
 		return -1;
 	}
 
-	int modelnum = (int)s_modelindex.size();
+	int modelnum = s_chascene->GetModelNum();
 	if (modelnum <= 0) {
 		return -1;
 	}
 
 	int modelno;
 	for (modelno = 0; modelno < modelnum; modelno++) {
-		MODELELEM curme = s_modelindex[modelno];
+		MODELELEM curme = s_chascene->GetModelElem(modelno);
 		if (curme.modelptr == srcmodel) {
 			return modelno;//!!!!!!!!!!!!!!
 		}

@@ -425,12 +425,17 @@ typedef struct tag_modelelem
 	std::map<int, int> lineno2boneno;
 	std::map<int, int> boneno2lineno;
 
-	tag_modelelem() {
+	void Init()
+	{
 		modelptr = 0;
 		tlarray.clear();
 		motmenuindex = 0;
 		lineno2boneno.clear();
 		boneno2lineno.clear();
+	};
+
+	tag_modelelem() {
+		Init();
 	};
 }MODELELEM;
 

@@ -246,6 +246,9 @@
     <ClCompile Include="..\CPP\ThreadingInitMp.cpp">
       <Filter>disp4</Filter>
     </ClCompile>
+    <ClCompile Include="..\CPP\ChaScene.cpp">
+      <Filter>disp4</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BTMANAGER\BPWorld.h">
@@ -1353,6 +1356,9 @@
       <Filter>disp4</Filter>
     </ClInclude>
     <ClInclude Include="..\INCLUDE\ThreadingInitMp.h">
+      <Filter>disp4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\INCLUDE\ChaScene.h">
       <Filter>disp4</Filter>
     </ClInclude>
   </ItemGroup>

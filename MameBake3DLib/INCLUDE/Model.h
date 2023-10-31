@@ -340,7 +340,7 @@ public:
  * @param (ChaMatrix* vpmat) IN View * Projection変換行列。
  * @return 成功したら０。
  */
-	int UpdateMatrix(bool limitdegflag, ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinished = false );
+	int UpdateMatrix(bool limitdegflag, ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinished = false);
 	void UpdateMatrixReq(bool limitdegflag, CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
 	int ChkInView();
 	//int SwapCurrentMotionPoint();
@@ -2102,6 +2102,7 @@ public: //accesser
 			return m_dispgroupON[srcgroupindex];
 		}
 		else {
+			_ASSERT(0);
 			return false;
 		}
 	}
@@ -2114,6 +2115,45 @@ public: //accesser
 			_ASSERT(0);
 		}
 	}
+	bool DispGroupEmpty(int srcgroupindex)
+	{
+		if ((srcgroupindex >= 0) && (srcgroupindex < MAXDISPGROUPNUM)) {
+			return (m_dispgroup[srcgroupindex]).empty();
+		}
+		else {
+			_ASSERT(0);
+			return true;
+		}
+	}
+	int GetDispGroupSize(int srcgroupindex)
+	{
+		if ((srcgroupindex >= 0) && (srcgroupindex < MAXDISPGROUPNUM)) {
+			return (int)m_dispgroup[srcgroupindex].size();
+		}
+		else {
+			_ASSERT(0);
+			return 0;
+		}		
+	}
+	CMQOObject* GetDispGroupMQOObject(int srcgroupindex, int srcelemno)
+	{
+		if ((srcgroupindex >= 0) && (srcgroupindex < MAXDISPGROUPNUM)) {
+			int elemnum = (int)m_dispgroup[srcgroupindex].size();
+			if ((srcelemno >= 0) && (srcelemno < elemnum)) {
+				return (m_dispgroup[srcgroupindex])[srcelemno].mqoobject;
+			}
+			else {
+				_ASSERT(0);
+				return 0;
+			}
+		}
+		else {
+			_ASSERT(0);
+			return 0;
+		}
+	}
+
+
 
 	void AddLaterTransparent(std::string srctexname)
 	{
