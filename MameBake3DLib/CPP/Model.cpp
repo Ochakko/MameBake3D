@@ -2279,7 +2279,8 @@ void CModel::Motion2BtReq( CBtObject* srcbto )
 //	return 0;
 //}
 
-int CModel::UpdateMatrix(bool limitdegflag, ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinished) // default : needwaitfinished = false
+int CModel::UpdateMatrix(bool limitdegflag, ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinished, int updateslot) 
+// default : needwaitfinished = false, updateslot = 0
 {
 	m_matWorld = *wmat;
 	m_matVP = *vpmat;
@@ -2330,12 +2331,13 @@ int CModel::UpdateMatrix(bool limitdegflag, ChaMatrix* wmat, ChaMatrix* vpmat, b
 		int updatecount;
 		for (updatecount = 0; updatecount < m_creatednum_boneupdatematrix; updatecount++) {
 			CThreadingUpdateMatrix* curupdate = m_boneupdatematrix + updatecount;
-			curupdate->UpdateMatrix(limitdegflag, curmotid, curframe, wmat, vpmat);
+			curupdate->UpdateMatrix(limitdegflag, curmotid, curframe, wmat, vpmat, updateslot);
 		}
 
-		////if (needwaitfinished) {//<--- この方式は角度制限を有効にしたときに顕著にぎくしゃくするのでやめた
+		if (needwaitfinished) {
 			WaitUpdateMatrixFinished();
-		////}
+		}
+		
 
 		//if (g_limitdegflag == true) {
 		//	CalcWorldMatAfterThreadReq(m_topbone, curmotid, curframe, wmat, vpmat);//curframe : 時間補間有り
@@ -8657,7 +8659,8 @@ int CModel::SetBtMotion(bool limitdegflag, CBone* srcbone, int ragdollflag,
 						(curbone2->GetParent(false)->GetTmpKinematic() == true)) {
 
 						//parentがkinematicの場合　worldmat, limitedworldmatをセット
-						CMotionPoint tmpmp2 = curbone2->GetParent(false)->GetCurMp();//motid, curframeを参照してもうなくいかない。GetCurMpを使う。
+						bool calcslotflag = true;
+						CMotionPoint tmpmp2 = curbone2->GetParent(false)->GetCurMp(calcslotflag);//motid, curframeを参照してもうなくいかない。GetCurMpを使う。
 						if (limitdegflag == false) {
 							curbone2->SetBtMat(tmpmp2.GetWorldMat());
 						}
@@ -8672,7 +8675,8 @@ int CModel::SetBtMotion(bool limitdegflag, CBone* srcbone, int ragdollflag,
 					}
 				}
 				else {
-					CMotionPoint tmpmp4 = curbone2->GetCurMp();//motid, curframeを参照してもうなくいかない。GetCurMpを使う。
+					bool calcslotflag = true;
+					CMotionPoint tmpmp4 = curbone2->GetCurMp(calcslotflag);//motid, curframeを参照してもうなくいかない。GetCurMpを使う。
 					//curbone2->SetBtMat(tmpmp4.GetWorldMat());
 					if (limitdegflag == false) {
 						curbone2->SetBtMat(tmpmp4.GetWorldMat());

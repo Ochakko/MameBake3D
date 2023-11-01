@@ -29,7 +29,7 @@ public:
 	int ClearBoneList();
 	int SetModel(CModel* srcmodel);
 	int AddBoneList(CBone* srcbone);
-	void UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
+	void UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, int srcupdateslot = 0);
 	//bool IsFinished();
 
 private:
@@ -56,6 +56,7 @@ private:
 	ChaMatrix wmat;
 	ChaMatrix vpmat;
 	bool m_limitdegflag;
+	int updateslot;
 };
 
 

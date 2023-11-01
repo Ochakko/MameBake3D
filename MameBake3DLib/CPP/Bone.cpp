@@ -353,7 +353,9 @@ int CBone::InitParams()
 
 	m_fbxnodeonload = 0;//2022/11/01
 
-	m_curmp.InitParams();
+	m_curmp[0].InitParams();
+	m_curmp[1].InitParams();
+	m_updateslot = 0;
 	//m_calccurmp.InitParams();
 	m_axisq.InitParams();
 
@@ -678,7 +680,9 @@ int CBone::AddChild( CBone* childptr )
 }
 
 
-int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, bool callingbythread)
+int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, 
+	ChaMatrix* wmat, ChaMatrix* vpmat, bool callingbythread, int updateslot)
+	//default : callingbythread = false, updateslot = 0
 {
 	if (!wmat || !vpmat) {
 		_ASSERT(0);
@@ -690,6 +694,8 @@ int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMat
 	if (GetParModel() && (GetParModel()->GetInView() == false)) {
 		return 0;
 	}
+
+	m_updateslot = updateslot;
 
 
 	//2023/01/18 注意書修正
@@ -714,9 +720,9 @@ int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMat
 			//###################################
 			//補間のためにroundingframeではない
 			//###################################
-			CallF(CalcFBXMotion(limitdegflag, srcmotid, srcframe, &m_curmp, &existflag), return 1);
+			CallF(CalcFBXMotion(limitdegflag, srcmotid, srcframe, &(m_curmp[updateslot]), &existflag), return 1);
 			//newworldmat = m_curmp.GetWorldMat();// **wmat;
-			newworldmat = GetWorldMat(limitdegflag, srcmotid, roundingframe, &m_curmp);
+			newworldmat = GetWorldMat(limitdegflag, srcmotid, roundingframe, &(m_curmp[updateslot]));
 
 			//2023/02/03
 			//計算済を取得して補間するだけなので　m_curmp以外にはセットしない
@@ -739,16 +745,16 @@ int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMat
 
 		//2023/02/02
 		//modelのworldmatが掛かっていないアニメ姿勢も保存　GetCurrent..., CalcCurrent...用
-			m_curmp.SetAnimMat(newworldmat);
+			m_curmp[updateslot].SetAnimMat(newworldmat);
 
 
 		//modelのworldmatを掛ける
 			//skinmeshの変換の際にはシェーダーでg_hmWorldは掛けない　すでにg_hmWorldが掛かっている必要有
 			ChaMatrix tmpmat = newworldmat * *wmat; // !!!!!!!!!!!!!!!!!!!!!!!!!!!
-			SetWorldMat(limitdegflag, srcmotid, roundingframe, tmpmat, &m_curmp);//roundingframe!!!!
+			SetWorldMat(limitdegflag, srcmotid, roundingframe, tmpmat, &(m_curmp[updateslot]));//roundingframe!!!!
 
 			if (limitdegflag == true) {
-				m_curmp.SetCalcLimitedWM(2);
+				m_curmp[updateslot].SetCalcLimitedWM(2);
 			}
 
 			ChaVector3 jpos = GetJointFPos();
@@ -758,14 +764,14 @@ int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMat
 		}
 		else {
 			_ASSERT(0);
-			m_curmp.InitParams();
-			m_curmp.SetWorldMat(*wmat);
-			m_curmp.SetFrame(roundingframe);
-			SetWorldMat(limitdegflag, srcmotid, roundingframe, *wmat, &m_curmp);//roundingframe!!!!
+			m_curmp[updateslot].InitParams();
+			m_curmp[updateslot].SetWorldMat(*wmat);
+			m_curmp[updateslot].SetFrame(roundingframe);
+			SetWorldMat(limitdegflag, srcmotid, roundingframe, *wmat, &(m_curmp[updateslot]));//roundingframe!!!!
 		}
 
 		if (m_parmodel && (m_parmodel->GetBtCnt() == 0)) {//2022/08/18 add checking m_parmodel
-			SetBtMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, &m_curmp));
+			SetBtMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, &(m_curmp[updateslot])));
 		}
 	}
 	else{
@@ -2386,7 +2392,8 @@ int CBone::CalcRigidElemParams( CBone* childbone, int setstartflag )
 		//	childbone->SetNodeMat(bmmat);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		//}
 
-		childbone->SetBtMat(childbone->GetCurMp().GetWorldMat());//!!!!!!!!!!!!!btmatの初期値
+		bool calcslotflag = true;
+		childbone->SetBtMat(childbone->GetCurMp(calcslotflag).GetWorldMat());//!!!!!!!!!!!!!btmatの初期値
 	}
 
 

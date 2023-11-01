@@ -58,7 +58,8 @@ public:
 		}
 	};
 
-	int UpdateMatrixModels(bool limitdegflag, ChaMatrix* vpmat, double srcframe, bool needwaitfinished = false);
+	int UpdateMatrixModels(bool limitdegflag, ChaMatrix* vpmat, double srcframe);
+	int WaitUpdateThreads();
 	int RenderModels(ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int btflag = 0);
 
 
@@ -228,6 +229,9 @@ private:
 	MODELBOUND	m_totalmb;
 	int m_curmodelmenuindex;
 
+
+	int m_totalupdatethreadsnum;
+	int m_updateslot;
 };
 
 

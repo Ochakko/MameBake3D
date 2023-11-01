@@ -13,6 +13,8 @@
 #include <windows.h>
 #include <crtdbg.h>
 
+#include <GlobalVar.h>
+
 #include <ChaScene.h>
 #include <Model.h>
 #include <polymesh3.h>
@@ -120,6 +122,8 @@ void ChaScene::InitParams()
 
 	m_curmodelmenuindex = -1;
 
+	m_totalupdatethreadsnum = 0;
+	m_updateslot = 0;
 }
 void ChaScene::DestroyObjs()
 {
@@ -141,9 +145,19 @@ void ChaScene::DestroyObjs()
 
 }
 
-int ChaScene::UpdateMatrixModels(bool limitdegflag, ChaMatrix* vpmat, double srcframe, bool needwaitfinished)
+int ChaScene::UpdateMatrixModels(bool limitdegflag, ChaMatrix* vpmat, double srcframe)
 {
+	if (g_changeUpdateThreadsNum) {
+		//アップデート用スレッド数を変更中
+		return 0;
+	}
+
 	if (!m_modelindex.empty()) {
+
+		m_updateslot = (int)(!(m_updateslot != 0));
+		m_totalupdatethreadsnum = 0;
+
+		bool needwaitflag = false;
 		int modelnum = (int)m_modelindex.size();
 		int modelindex;
 		for (modelindex = 0; modelindex < modelnum; modelindex++) {
@@ -153,15 +167,55 @@ int ChaScene::UpdateMatrixModels(bool limitdegflag, ChaMatrix* vpmat, double src
 					curmodel->SetMotionFrame(srcframe);
 
 					ChaMatrix wmat = curmodel->GetWorldMat();
-					curmodel->UpdateMatrix(limitdegflag, &wmat, vpmat, needwaitfinished);
+					curmodel->UpdateMatrix(limitdegflag, &wmat, vpmat, needwaitflag, m_updateslot);
 				}
 				else {
 					//モーションが無い場合にもChkInViewを呼ぶためにUpdateMatrix呼び出しは必要
 					ChaMatrix tmpwm = curmodel->GetWorldMat();
-					curmodel->UpdateMatrix(limitdegflag, &tmpwm, vpmat, needwaitfinished);
+					curmodel->UpdateMatrix(limitdegflag, &tmpwm, vpmat, needwaitflag, m_updateslot);
 				}
+				m_totalupdatethreadsnum += curmodel->GetThreadingUpdateMatrixNum();
 			}
 		}
+
+		//#########################################################################################
+		//2023/11/01
+		//姿勢データをダブルバッファ化した
+		// m_updateslotで計算中と描画用を識別
+		// 
+		//ここで姿勢計算スレッドを Not Wait
+		//待たずにそのまま　Render関数を呼び　Render関数の終わりでアップデートスレッドを待って同期
+		//Renderはm_updateslotとは違う側の計算済のデータを参照する
+		//#########################################################################################
+
+
+		//int donethreadingnum = 0;
+		//bool yetflag = true;
+		//while (donethreadingnum < totalupdatethreadsnum) {
+		//
+		//	donethreadingnum = 0;
+		//
+		//	int modelindex2;
+		//	for (modelindex2 = 0; modelindex2 < modelnum; modelindex2++) {
+		//		CModel* curmodel = m_modelindex[modelindex2].modelptr;
+		//		if (curmodel) {
+		//			if (curmodel->GetThreadingUpdateMatrix() != NULL) {
+		//
+		//				int finishedcount = 0;
+		//				int updatecount;
+		//				for (updatecount = 0; updatecount < curmodel->GetThreadingUpdateMatrixNum(); updatecount++) {
+		//					CThreadingUpdateMatrix* curupdate = curmodel->GetThreadingUpdateMatrix() + updatecount;
+		//					if (curupdate->IsFinished()) {
+		//						donethreadingnum++;
+		//					}
+		//				}
+		//			}
+		//			else {
+		//				_ASSERT(0);
+		//			}
+		//		}
+		//	}
+		//}
 	}
 
 	return 0;
@@ -169,6 +223,13 @@ int ChaScene::UpdateMatrixModels(bool limitdegflag, ChaMatrix* vpmat, double src
 
 int ChaScene::RenderModels(ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int btflag)
 {
+
+	if (g_changeUpdateThreadsNum) {
+		//アップデート用スレッド数を変更中
+		return 0;
+	}
+
+
 	//####################################################################################
 	//2023/10/31
 	//全モデルを横断して　DispGourpのグループ番号順に描画
@@ -187,6 +248,8 @@ int ChaScene::RenderModels(ID3D11DeviceContext* pd3dImmediateContext, int lightf
 		int modelindex;
 		int renderindex;
 
+
+		//int renderslot = (int)(!(m_updateslot != 0));
 
 		for (renderindex = 0; renderindex < 2; renderindex++) {
 
@@ -266,10 +329,66 @@ int ChaScene::RenderModels(ID3D11DeviceContext* pd3dImmediateContext, int lightf
 				}
 			}
 		}
+
+
+		//#########################################################################################################################
+		//2023/11/01
+		//姿勢データをダブルバッファ化した
+		// m_updateslotで計算中と描画用を識別
+		// 
+		//UpdateMatrixModels()関数はスレッド終了を待たずに　Render関数を呼び　Render関数の終わりでアップデートスレッドを待って同期
+		//Renderはm_updateslotとは違う側の計算済のデータを参照する
+		//#########################################################################################################################
+
+		WaitUpdateThreads();//!!!!!!!!!!!!!!!!
+
+
 	}
 
 	return 0;
 }
+
+int ChaScene::WaitUpdateThreads()
+{
+	if (g_changeUpdateThreadsNum) {
+		//アップデート用スレッド数を変更中
+		return 0;
+	}
+
+
+	int modelnum = (int)m_modelindex.size();
+
+	int donethreadingnum = 0;
+	bool yetflag = true;
+	while (donethreadingnum < m_totalupdatethreadsnum) {
+
+		donethreadingnum = 0;
+
+		int modelindex2;
+		for (modelindex2 = 0; modelindex2 < modelnum; modelindex2++) {
+			CModel* curmodel = m_modelindex[modelindex2].modelptr;
+			if (curmodel) {
+				if (curmodel->GetThreadingUpdateMatrix() != NULL) {
+
+					int finishedcount = 0;
+					int updatecount;
+					for (updatecount = 0; updatecount < curmodel->GetThreadingUpdateMatrixNum(); updatecount++) {
+						CThreadingUpdateMatrix* curupdate = curmodel->GetThreadingUpdateMatrix() + updatecount;
+						if (curupdate->IsFinished()) {
+							donethreadingnum++;
+						}
+					}
+				}
+				else {
+					_ASSERT(0);
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
 
 CModel* ChaScene::GetTheLastCameraModel()
 {
@@ -351,10 +470,10 @@ const WCHAR* ChaScene::GetModelFileName(int srcmodelindex)
 	}
 	else if ((srcmodelindex >= 0) && (srcmodelindex < m_modelindex.size())) {
 		if (m_modelindex[srcmodelindex].modelptr) {
-
+			return m_modelindex[srcmodelindex].modelptr->GetFileName();
 		}
 		else {
-			return m_modelindex[srcmodelindex].modelptr->GetFileName();
+			return 0;
 		}
 	}
 	else {

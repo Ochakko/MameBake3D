@@ -128,7 +128,8 @@ public:
  * @return 成功したら０。
  * @detail 指定モーションの指定時間の姿勢を計算する。グローバルな姿勢の計算である。
  */
-	int UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat, bool callingbythread = false);
+	int UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe, 
+		ChaMatrix* wmat, ChaMatrix* vpmat, bool callingbythread = false, int updateslot = 0);
 	//int SwapCurrentMotionPoint();
 
 
@@ -848,8 +849,18 @@ public: //accesser
 	}
 
 
-	CMotionPoint GetCurMp(){ return m_curmp; };
-	void SetCurMp( CMotionPoint srcmp ){ m_curmp = srcmp; };
+	CMotionPoint GetCurMp(bool calcslotflag = false) {
+		if (calcslotflag == false) {
+			//計算済のm_curmpを取得する場合
+			int renderslot = (int)(!(m_updateslot != 0));
+			return m_curmp[renderslot];
+		}
+		else {
+			//姿勢の計算中にGetCurMpする場合
+			return m_curmp[m_updateslot];
+		}
+	};
+	void SetCurMp( CMotionPoint srcmp ){ m_curmp[m_updateslot] = srcmp; };
 
 	//CMotionPoint GetBefMp(){ return m_befmp; };
 	//void SetBefMp(CMotionPoint srcmp){ m_befmp = srcmp; };
@@ -1712,7 +1723,8 @@ private:
 
 
 	std::map<int, CMotionPoint*> m_motionkey;//m_motionkey[ モーションID ]でモーションの最初のフレームの姿勢にアクセスできる。
-	CMotionPoint m_curmp;//現在のWVP適用後の姿勢データ。 ### 計算済 ###
+	CMotionPoint m_curmp[2];//現在のWVP適用後の姿勢データ。 ### 計算済 ###
+	int m_updateslot;
 	//CMotionPoint m_calccurmp;////現在のWVP適用後の姿勢データ。 ### 計算中 ###
 	//CMotionPoint m_befmp;//一回前の姿勢データ。
 	CMotionPoint* m_cachebefmp[MAXMOTIONNUM + 1];//motidごとのキャッシュ

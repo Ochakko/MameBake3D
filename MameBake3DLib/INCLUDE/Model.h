@@ -340,7 +340,7 @@ public:
  * @param (ChaMatrix* vpmat) IN View * Projection変換行列。
  * @return 成功したら０。
  */
-	int UpdateMatrix(bool limitdegflag, ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinished = false);
+	int UpdateMatrix(bool limitdegflag, ChaMatrix* wmat, ChaMatrix* vpmat, bool needwaitfinished = true, int updateslot = 0);
 	void UpdateMatrixReq(bool limitdegflag, CBone* srcbone, int srcmotid, double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat);
 	int ChkInView();
 	//int SwapCurrentMotionPoint();
@@ -2273,6 +2273,14 @@ public: //accesser
 	}
 	//m_Under_UpdateMatrix;
 
+	CThreadingUpdateMatrix* GetThreadingUpdateMatrix()
+	{
+		return m_boneupdatematrix;
+	}
+	int GetThreadingUpdateMatrixNum()
+	{
+		return m_creatednum_boneupdatematrix;
+	}
 
 
 

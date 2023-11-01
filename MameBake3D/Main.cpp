@@ -4433,6 +4433,7 @@ void InitApp()
 	//g_underPostFKTra = false;
 	//g_underInitMp = false;
 	//g_underCopyW2LW = false;
+	g_changeUpdateThreadsNum = false;
 
 	g_VSync = false;
 	g_fpskind = 0;
@@ -50662,6 +50663,11 @@ int ChangeUpdateMatrixThreads()
 		return 0;
 	}
 
+
+	s_chascene->WaitUpdateThreads();
+
+	g_changeUpdateThreadsNum = true;
+
 	int modelnum = s_chascene->GetModelNum();
 	int modelcount;
 	for (modelcount = 0; modelcount < modelnum; modelcount++) {
@@ -50670,6 +50676,8 @@ int ChangeUpdateMatrixThreads()
 			curmodel->CreateBoneUpdateMatrix();
 		}
 	}
+
+	g_changeUpdateThreadsNum = false;
 
 	return 0;
 }
