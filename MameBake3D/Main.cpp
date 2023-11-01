@@ -29645,6 +29645,7 @@ int OnFrameUtCheckBox()
 
 
 	if (s_changeupdatethreadsFlag) {
+
 		ChangeUpdateMatrixThreads();
 		s_changeupdatethreadsFlag = false;
 	}
@@ -50663,10 +50664,10 @@ int ChangeUpdateMatrixThreads()
 		return 0;
 	}
 
-
-	s_chascene->WaitUpdateThreads();
-
 	g_changeUpdateThreadsNum = true;
+	StopBt();
+
+	//SleepEx(30, false);
 
 	int modelnum = s_chascene->GetModelNum();
 	int modelcount;
@@ -50678,6 +50679,7 @@ int ChangeUpdateMatrixThreads()
 	}
 
 	g_changeUpdateThreadsNum = false;
+
 
 	return 0;
 }

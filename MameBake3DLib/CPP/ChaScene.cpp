@@ -350,11 +350,11 @@ int ChaScene::RenderModels(ID3D11DeviceContext* pd3dImmediateContext, int lightf
 
 int ChaScene::WaitUpdateThreads()
 {
-	if (g_changeUpdateThreadsNum) {
-		//アップデート用スレッド数を変更中
-		return 0;
-	}
-
+	//待つ必要有　コメントアウト
+	//if (g_changeUpdateThreadsNum) {
+	//	//アップデート用スレッド数を変更中
+	//	return 0;
+	//}
 
 	int modelnum = (int)m_modelindex.size();
 

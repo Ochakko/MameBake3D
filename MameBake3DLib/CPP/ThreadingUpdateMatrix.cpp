@@ -105,7 +105,7 @@ int CThreadingUpdateMatrix::ThreadFunc()
 							int bonecount;
 							for (bonecount = 0; bonecount < bonenum; bonecount++) {
 								CBone* curbone = m_bonevec[bonecount];
-								if (curbone) {
+								if (curbone && (g_changeUpdateThreadsNum == false)) {
 									bool callingbythread = true;
 									curbone->UpdateMatrix(m_limitdegflag, motid, frame, &wmat, &vpmat, callingbythread, updateslot);
 								}
@@ -155,7 +155,7 @@ int CThreadingUpdateMatrix::ThreadFunc()
 							int bonecount;
 							for (bonecount = 0; bonecount < bonenum; bonecount++) {
 								CBone* curbone = m_bonevec[bonecount];
-								if (curbone) {
+								if (curbone && (g_changeUpdateThreadsNum == false)) {
 									bool callingbythread = true;
 									curbone->UpdateMatrix(m_limitdegflag, motid, frame, &wmat, &vpmat, callingbythread, updateslot);
 								}
