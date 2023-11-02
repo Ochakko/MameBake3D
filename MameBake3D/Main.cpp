@@ -3114,7 +3114,9 @@ static int OnRenderSprite(ID3D11DeviceContext* pd3dImmediateContext);
 static int OnRenderUtDialog(ID3D11DeviceContext* pd3dImmediateContext, float fElapsedTime);
 
 static int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe);
-static int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double copystarttime, double srcframe, double dststartframe, double newframe);
+static int PasteNotMvParMotionPoint(CBone* srcbone, 
+	double copystarttime, double srcframe, double srcframe2, double interpolaterate, 
+	double dststartframe, double newframe);
 static int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double startframe, double endframe);
 //static int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, double startframe, double endframe);
 static CMotionPoint CalcPasteMotionPoint(CBone* srcbone, double srcframe, double srcframe2, double interpolaterate);
@@ -31855,7 +31857,9 @@ int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 	return 0;
 }
 
-int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double copystarttime, double srcframe, double dststartframe, double newframe)
+int PasteNotMvParMotionPoint(CBone* srcbone, 
+	double copystarttime, double srcframe, double srcframe2, double interpolaterate, 
+	double dststartframe, double newframe)
 {
 	//###########################
 	//return operatingjointno
@@ -31955,19 +31959,30 @@ int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double copystar
 							ChaMatrix srclocalparent;
 							srclocalparent.SetIdentity();
 
-							vector<CPELEM2>::iterator itrcp;
-							for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
-								CBone* findbone = itrcp->bone;
-								if (findbone && findbone == parentbone) {
-									CMotionPoint findmp = itrcp->mp;
-									if (IsEqualRoundingTime(findmp.GetFrame(), srcframe)) {
-										srclocalparent = findmp.GetWorldMat();//copy情報としてローカルが格納されているがhipsなので実質global
-									}
-									if (IsEqualRoundingTime(findmp.GetFrame(), copystarttime)) {
-										srclocalparent0 = findmp.GetWorldMat();//copy情報としてローカルが格納されているがhipsなので実質global
-									}
-								}
-							}
+
+							//2023/11/02 src側のsrcframeの姿勢は　滑らかさのために補間する
+							CMotionPoint srcmp;
+							srcmp = CalcPasteMotionPoint(parentbone, srcframe, srcframe2, interpolaterate);
+							srclocalparent = srcmp.GetWorldMat();
+							
+							//src側のstartframeの姿勢は　rate=0.0でそのままの姿勢
+							CMotionPoint srcstartmp;
+							srcstartmp = CalcPasteMotionPoint(parentbone, copystarttime, copystarttime, 0.0);
+							srclocalparent0 = srcstartmp.GetWorldMat();
+
+							//vector<CPELEM2>::iterator itrcp;
+							//for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
+							//	CBone* findbone = itrcp->bone;
+							//	if (findbone && findbone == parentbone) {
+							//		CMotionPoint findmp = itrcp->mp;
+							//		if (IsEqualRoundingTime(findmp.GetFrame(), srcframe)) {
+							//			srclocalparent = findmp.GetWorldMat();//copy情報としてローカルが格納されているがhipsなので実質global
+							//		}
+							//		if (IsEqualRoundingTime(findmp.GetFrame(), copystarttime)) {
+							//			srclocalparent0 = findmp.GetWorldMat();//copy情報としてローカルが格納されているがhipsなので実質global
+							//		}
+							//	}
+							//}
 
 							ChaMatrix smat0, rmat0, tmat0, tanimmat0;
 							GetSRTandTraAnim(parentwm0, parentbone->GetNodeMat(), &smat0, &rmat0, &tmat0, &tanimmat0);
@@ -32064,23 +32079,34 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 			//}
 		}
 	}
+	ResetPasteDoneFlagReq(s_model->GetTopBone(false));//!!!!念のためにここでもリセットしておく
+
+
 
 	////移動しないボーンのための処理
 	int operatingjointno = 0;
 	for (dstframe = roundingstartframe; dstframe <= roundingendframe; dstframe += 1.0) {
 
-		double dstrate = (dstframe - startframe) / dstleng;
+		ResetPasteDoneFlagReq(s_model->GetTopBone(false));//!!!!
+
+		//double dstrate = (dstframe - startframe) / dstleng;
+		double dstrate = (dstframe - roundingstartframe) / dstleng;
+
+		double srcjustframe = copyStartTime + dstrate * srcleng;
 		double srcframe;
-		srcframe = RoundingTime(copyStartTime + dstrate * srcleng);
+		srcframe = RoundingTime(srcjustframe);
+		double srcframe2;
+		srcframe2 = min((srcframe + 1.0), RoundingTime(copyEndTime));
+		double interpolaterate = (srcjustframe - srcframe);
 
 		vector<CPELEM2>::iterator itrcp;
 		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
 			CBone* srcbone = itrcp->bone;
-			if (srcbone) {
+			if (srcbone && (srcbone->GetPasteDoneFlag() == false)) {
 				CMotionPoint srcmp = itrcp->mp;
 				if (IsEqualRoundingTime(srcmp.GetFrame(), srcframe)) {
-					int resultjointno = PasteNotMvParMotionPoint(srcbone, srcmp, 
-						RoundingTime(copyStartTime), srcframe, 
+					int resultjointno = PasteNotMvParMotionPoint(srcbone, 
+						RoundingTime(copyStartTime), srcframe, srcframe2, interpolaterate,
 						RoundingTime(startframe), dstframe);
 
 					if (resultjointno >= 0) {
@@ -32091,6 +32117,8 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 					else {
 						_ASSERT(0);
 					}
+
+					srcbone->SetPasteDoneFlag(true);//!!!!!
 				}
 			}
 		}
