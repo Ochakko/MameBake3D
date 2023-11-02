@@ -3117,6 +3117,9 @@ static int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 static int PasteNotMvParMotionPoint(CBone* srcbone, CMotionPoint srcmp, double copystarttime, double srcframe, double dststartframe, double newframe);
 static int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double startframe, double endframe);
 //static int PasteMotionPointAfterCopyEnd(double copyStartTime, double copyEndTime, double startframe, double endframe);
+static CMotionPoint CalcPasteMotionPoint(CBone* srcbone, double srcframe, double srcframe2, double interpolaterate);
+static void ResetPasteDoneFlagReq(CBone* srcbone);
+
 
 static int ChangeCurrentBone();
 static int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag);
@@ -31700,6 +31703,87 @@ int CreateDollyHistoryDlg()
 }
 
 
+void ResetPasteDoneFlagReq(CBone* srcbone)
+{
+	if (!s_model || !srcbone) {
+		_ASSERT(0);
+		return;
+	}
+
+	srcbone->SetPasteDoneFlag(false);
+
+	if (srcbone->GetChild(false)) {
+		ResetPasteDoneFlagReq(srcbone->GetChild(false));
+	}
+	if (srcbone->GetBrother(false)) {
+		ResetPasteDoneFlagReq(srcbone->GetBrother(false));
+	}
+}
+
+CMotionPoint CalcPasteMotionPoint(CBone* srcbone, double srcframe, double srcframe2, double interpolaterate)
+{
+	CMotionPoint retmp;
+	retmp.InitParams();
+
+	if (!s_model) {
+		_ASSERT(0);
+		return retmp;
+	}
+
+	CMotionPoint mp0;
+	CMotionPoint mp1;
+	mp0.InitParams();
+	mp1.InitParams();
+	bool getflag0 = false;
+	bool getflag1 = false;
+	vector<CPELEM2>::iterator itrcp;
+	for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
+		CBone* chkbone = itrcp->bone;
+		if (chkbone && (chkbone == srcbone)) {
+			CMotionPoint srcmp = itrcp->mp;
+			if (!getflag0 && IsEqualRoundingTime(srcmp.GetFrame(), srcframe)) {
+				mp0 = itrcp->mp;
+				getflag0 = true;
+			}
+			if (!getflag1 && IsEqualRoundingTime(srcmp.GetFrame(), srcframe2)) {
+				mp1 = itrcp->mp;
+				getflag1 = true;
+			}
+			if (getflag0 && getflag1) {
+				break;
+			}
+		}
+	}
+
+	if (!getflag0) {
+		_ASSERT(0);
+		return retmp;
+	}
+
+	if (!getflag1 || (interpolaterate == 0.0)) {
+		retmp = mp0;
+	}
+	else {
+		ChaMatrix resultwm;
+		ChaMatrix wm0;
+		ChaMatrix wm1;
+		resultwm.SetIdentity();
+		wm0.SetIdentity();
+		wm1.SetIdentity();
+
+		wm0 = mp0.GetWorldMat();
+		wm1 = mp1.GetWorldMat();
+		resultwm =  (wm0 * (1.0 - interpolaterate)) + (wm1 * interpolaterate);
+
+		retmp = mp0;
+		retmp.SetWorldMat(resultwm);
+	}
+
+	return retmp;
+}
+
+
+
 int PasteMotionPoint(CBone* srcbone, CMotionPoint srcmp, double newframe)
 {
 	if (!s_model) {
@@ -31945,18 +32029,39 @@ int PasteMotionPointJustInTerm(double copyStartTime, double copyEndTime, double 
 	roundingendframe = RoundingTime(endframe);
 	double dstframe;
 	for (dstframe = roundingstartframe; dstframe <= roundingendframe; dstframe += 1.0) {
+
+		ResetPasteDoneFlagReq(s_model->GetTopBone(false));//!!!!
+
+		//####################################################################################
+		//2023/11/02
+		//コピーフレーム長が短く　ペーストフレーム長が長い場合にも　結果が滑らかになるように
+		//srcjustframeの端数を考慮して　CalcPasteMotionPoint()で　姿勢を補間する
+		//####################################################################################
 		double dstrate = (dstframe - roundingstartframe) / dstleng;
+		double srcjustframe = copyStartTime + dstrate * srcleng;
 		double srcframe;
-		srcframe = RoundingTime(copyStartTime + dstrate * srcleng);
+		srcframe = RoundingTime(srcjustframe);
+		double srcframe2;
+		srcframe2 = min((srcframe + 1.0), RoundingTime(copyEndTime));
+		double interpolaterate = (srcjustframe - srcframe);
+
 		vector<CPELEM2>::iterator itrcp;
 		for (itrcp = s_pastemotvec.begin(); itrcp != s_pastemotvec.end(); itrcp++) {
 			CBone* srcbone = itrcp->bone;
-			if (srcbone) {
-				CMotionPoint srcmp = itrcp->mp;
-				if (IsEqualRoundingTime(srcmp.GetFrame(), srcframe)) {
-					PasteMotionPoint(srcbone, srcmp, dstframe);
-				}
+			if (srcbone && (srcbone->GetPasteDoneFlag() == false)) {
+				CMotionPoint srcmp;
+				srcmp = CalcPasteMotionPoint(srcbone, srcframe, srcframe2, interpolaterate);
+				PasteMotionPoint(srcbone, srcmp, dstframe);
+
+				srcbone->SetPasteDoneFlag(true);//!!!!!
 			}
+
+			//if (srcbone) {
+			//	CMotionPoint srcmp = itrcp->mp;
+			//	if (IsEqualRoundingTime(srcmp.GetFrame(), srcframe)) {
+			//		PasteMotionPoint(srcbone, srcmp, dstframe);
+			//	}
+			//}
 		}
 	}
 

@@ -348,6 +348,7 @@ int CBone::InitParams()
 	m_allocheadflag = 0;//1: head pointer at allocated
 
 	m_dbgcount = 0;
+	m_pastedoneflag = false;
 
 	m_extendflag = false;
 

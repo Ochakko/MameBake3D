@@ -1673,7 +1673,14 @@ public: //accesser
 			return;
 		}
 	}
-
+	bool GetPasteDoneFlag()
+	{
+		return m_pastedoneflag;
+	}
+	void SetPasteDoneFlag(bool srcflag)
+	{
+		m_pastedoneflag = srcflag;
+	}
 
 public:
 	CRITICAL_SECTION m_CritSection_GetBefNext;
@@ -1853,6 +1860,9 @@ private:
 	std::vector<IKROTREC> m_ikrotrec_v;
 
 	int m_dbgcount;
+
+	bool m_pastedoneflag;
+
 
 	CBone* m_parent;
 	CBone* m_child;
