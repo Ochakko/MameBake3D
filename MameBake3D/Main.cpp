@@ -36984,6 +36984,7 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 			//if (keynum >= 3) {
 				MOTINFO* curmi = s_model->GetCurMotInfo();
 				if (curmi) {
+					int curmotid = curmi->motid;
 					double currentframe = curmi->curframe;
 					CBone* curbone = s_model->GetBoneByID(s_curboneno);
 					if (curbone) {
@@ -36999,9 +37000,10 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 							s_model->SetMotionFrame(renderframe);
 							//s_model->UpdateMatrix(&s_model->GetWorldMat(), &s_matVP);
 							//ChaMatrix tmpwm = s_model->GetWorldMat();
-							s_model->HierarchyRouteUpdateMatrix(g_limitdegflag, curbone, &modelwm, &s_matVP);//高速化：関係ボーンルート限定アップデート
+							//s_model->HierarchyRouteUpdateMatrix(g_limitdegflag, curbone, &modelwm, &s_matVP);//高速化：関係ボーンルート限定アップデート
 							ChaVector3 tmpfpos = curbone->GetJointFPos();
-							ChaMatrix tmpcurwm = curbone->GetCurMp().GetWorldMat() * s_matWorld;//2023/08/27 s_matWorldを掛ける
+							//ChaMatrix tmpcurwm = curbone->GetCurMp().GetWorldMat() * s_matWorld;//2023/08/27 s_matWorldを掛ける
+							ChaMatrix tmpcurwm = curbone->GetWorldMat(g_limitdegflag, curmotid, renderframe, 0) * modelwm;
 							ChaVector3TransformCoord(&curbonepos, &tmpfpos, &tmpcurwm);
 							vecbonepos.push_back(curbonepos);
 
@@ -37011,11 +37013,11 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 								if ((rendercount % g_refposstep) == 0) {
 									//refframeのポーズを表示
 									int btflag1 = 0;
-
+							
 									s_model->SetMotionFrame(renderframe);
-									s_model->UpdateMatrix(g_limitdegflag, &modelwm, &s_matVP);
-
-
+									s_model->UpdateMatrix(g_limitdegflag, &modelwm, &s_matVP, true, s_chascene->GetUpdateSlot());
+							
+							
 									//カレントフレームから離れるほど　透明度を薄くする
 									const double refstartalpha = 0.80f;
 									double rendernum;
@@ -37024,9 +37026,11 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 									renderalpha0 = (rendernum - fabs(currentframe - renderframe)) / rendernum;
 									renderalpha = refstartalpha * renderalpha0 * renderalpha0 * renderalpha0 * (double)g_refalpha * 0.01f;
 									ChaVector4 refdiffusemult = ChaVector4(1.0f, 1.0f, 1.0f, (float)renderalpha);
-
+							
 									bool withalpha = true;
-									s_model->OnRender(withalpha, pd3dImmediateContext, lightflag, refdiffusemult, btflag1);//render model at reference pos
+									bool calcslotflag = true;
+									s_model->OnRender(withalpha, pd3dImmediateContext, lightflag, refdiffusemult, 
+										btflag1, calcslotflag);//render model at reference pos
 								}
 							}
 							rendercount++;
@@ -37036,8 +37040,8 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 						{
 							////カレントフレームをレンダー
 							s_model->SetMotionFrame(currentframe);
-							s_model->UpdateMatrix(g_limitdegflag, &modelwm, &s_matVP);
-
+							s_model->UpdateMatrix(g_limitdegflag, &modelwm, &s_matVP, true, s_chascene->GetUpdateSlot());
+						
 							int lightflag2 = 0;//!!!!!!!透けるために必要!!!!!!!!!
 							//const float orgalpha = 0.8880f;
 							const float orgalpha = 1.0f;
@@ -37058,9 +37062,10 @@ int OnRenderRefPose(ID3D11DeviceContext* pd3dImmediateContext, CModel* curmodel)
 								}
 							}
 							bool withalpha = false;
-							s_model->OnRender(withalpha, pd3dImmediateContext, lightflag2, diffusemult, btflag2);
+							bool calcslotflag = true;
+							s_model->OnRender(withalpha, pd3dImmediateContext, lightflag2, diffusemult, btflag2, calcslotflag);
 							withalpha = true;
-							s_model->OnRender(withalpha, pd3dImmediateContext, lightflag2, diffusemult, btflag2);
+							s_model->OnRender(withalpha, pd3dImmediateContext, lightflag2, diffusemult, btflag2, calcslotflag);
 						}
 
 

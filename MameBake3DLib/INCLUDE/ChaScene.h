@@ -111,6 +111,10 @@ private:
 
 
 public:
+	int GetUpdateSlot()
+	{
+		return m_updateslot;
+	}
 	bool ModelEmpty()
 	{
 		if (m_modelindex.empty()) {

@@ -1383,7 +1383,7 @@ int CModel::CreateMaterialTexture(ID3D11DeviceContext* pd3dImmediateContext)
 
 
 int CModel::OnRender(bool withalpha, 
-	ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int btflag )
+	ID3D11DeviceContext* pd3dImmediateContext, int lightflag, ChaVector4 diffusemult, int btflag, bool calcslotflag )
 {
 
 	if (GetInView() == false) {
@@ -1436,11 +1436,11 @@ int CModel::OnRender(bool withalpha,
 
 					if (curobj->GetDispObj()) {
 						if (curobj->GetPm3()) {
-							CallF(SetShaderConst(curobj, btflag), return 1);
+							CallF(SetShaderConst(curobj, btflag, calcslotflag), return 1);
 							CallF(curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, curobj), return 1);
 						}
 						else if (curobj->GetPm4()) {
-							CallF(SetShaderConst(curobj, btflag), return 1);						
+							CallF(SetShaderConst(curobj, btflag, calcslotflag), return 1);
 							CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, curobj), return 1);
 						}
 						else {
@@ -2662,7 +2662,7 @@ int CModel::GetShapeWeight(FbxNode* pNode, FbxMesh* pMesh, FbxTime& pTime, FbxAn
 }
 
 
-int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
+int CModel::SetShaderConst( CMQOObject* srcobj, int btflag, bool calcslotflag )
 {
 
 	//ボーンが無くても　非スキンメッシュを表示することはある
@@ -2754,7 +2754,7 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 		}
 
 		bool currentlimitdegflag = g_limitdegflag;
-		CMotionPoint curmp = curbone->GetCurMp();
+		CMotionPoint curmp = curbone->GetCurMp(calcslotflag);
 
 
 
@@ -2770,14 +2770,14 @@ int CModel::SetShaderConst( CMQOObject* srcobj, int btflag )
 		}else if(btflag == 1){
 			//物理シミュ
 			//set4x4[clcnt] = curbone->GetBtMat();
-			clustermat = curbone->GetBtMat();
+			clustermat = curbone->GetBtMat(calcslotflag);
 			MoveMemory(&(m_setfl4x4[16 * clcnt]), 
 				clustermat.GetDataPtr(), sizeof(float) * 16);
 		}
 		else if (btflag == 2) {
 			//物理IK
 			//set4x4[clcnt] = curbone->GetBtMat();
-			clustermat = curbone->GetBtMat();
+			clustermat = curbone->GetBtMat(calcslotflag);
 			MoveMemory(&(m_setfl4x4[16 * clcnt]), 
 				curbone->GetBtMat().GetDataPtr(), sizeof(float) * 16);
 		}

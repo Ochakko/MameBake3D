@@ -145,6 +145,9 @@ void ChaScene::InitParams()
 void ChaScene::DestroyObjs()
 {
 
+	DestroyMotion2BtThreads();
+	DestroySetBtMotionThreads();
+
 	vector<MODELELEM>::iterator itrmodel;
 	for (itrmodel = m_modelindex.begin(); itrmodel != m_modelindex.end(); itrmodel++) {
 		CModel* curmodel = itrmodel->modelptr;
