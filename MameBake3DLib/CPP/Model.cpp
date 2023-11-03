@@ -492,7 +492,11 @@ int CModel::InitParams()
 	m_Under_UpdateTimeline = false;
 	m_Under_IKRot = false;
 	m_Under_IKRotApplyFrame = false;
+	m_Under_Motion2Bt = false;
+	m_Under_Bt2Motion = false;
 
+
+	m_loopstartflag = 0;
 
 	m_vrmtexcount = 0;
 
@@ -635,22 +639,22 @@ int CModel::DestroyObjs()
 	InitUndoMotion(0);
 
 	//スレッドを先に止める
-	DestroyBoneUpdateMatrix();
 	WaitUpdateMatrixFinished();
-	DestroyLoadFbxAnim();
+	DestroyBoneUpdateMatrix();
 	WaitLoadFbxAnimFinished();
-	DestroyCalcEulThreads();
+	DestroyLoadFbxAnim();
 	WaitCalcEulFinished();
-	DestroyPostIKThreads();
+	DestroyCalcEulThreads();
 	WaitPostIKFinished();
-	DestroyFKTraThreads();
+	DestroyPostIKThreads();
 	WaitFKTraFinished();
-	DestroyCopyW2LWThreads();
+	DestroyFKTraThreads();
 	WaitCopyW2LWFinished();
-	DestroyRetargetThreads();
+	DestroyCopyW2LWThreads();
 	WaitRetargetFinished();
-	DestroyInitMpThreads();
+	DestroyRetargetThreads();
 	WaitInitMpFinished();
+	DestroyInitMpThreads();
 
 	
 	DeleteCriticalSection(&m_CritSection_Node);//スレッド終了よりも後
@@ -1102,14 +1106,16 @@ int CModel::LoadFBX(int skipdefref, ID3D11Device* pdev, ID3D11DeviceContext* pd3
 
 _ASSERT(m_bonelist[0]);
 
+	if (GetNoBoneFlag() == false) {
+		CreateBoneUpdateMatrix();
+		CreateCalcEulThreads();
+		CreatePostIKThreads();
+		CreateFKTraThreads();
+		CreateCopyW2LWThreads();
+		CreateRetargetThreads();
+		CreateInitMpThreads();
+	}
 
-	CreateBoneUpdateMatrix();
-	CreateCalcEulThreads();
-	CreatePostIKThreads();
-	CreateFKTraThreads();
-	CreateCopyW2LWThreads();
-	CreateRetargetThreads();
-	CreateInitMpThreads();
 
 	ChaMatrix firstmeshmat;
 	firstmeshmat.SetIdentity();
@@ -2083,134 +2089,20 @@ int CModel::MakeDispObj()
 	return 0;
 }
 
-int CModel::Motion2Bt(bool limitdegflag, int firstflag, double nextframe, ChaMatrix* mW, ChaMatrix* mVP, int selectboneno )
+int CModel::Motion2Bt(bool limitdegflag, double nextframe, ChaMatrix* pmVP, int updateslot)
 {
-	UpdateMatrix(limitdegflag, mW, mVP);
-
-
-	if (!m_topbt){
-		return 0;
-	}
-	if (!m_btWorld){
-		return 0;
+	if (!pmVP) {
+		_ASSERT(0);
+		return 1;
 	}
 
-
-	//if( m_topbt ){
-	//	if (g_previewFlag != 5){
-	//		//SetBtKinFlagReq(m_topbt, 0);
-	//	}
-	//	else{
-	//		//if (GetBtCnt() <= 10) {
-	//		//	SetKinematicFlag();
-	//		//	//SetBtEquilibriumPoint();
-	//		//}
-	//		//else {
-	//		//	SetRagdollKinFlagReq(m_topbt, selectboneno);
-	//		//}
-	//	}
-	//}
-
-	//if (firstflag == 1){
-	//	map<int, CBone*>::iterator itrbone;
-	//	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
-	//		CBone* boneptr = itrbone->second;
-	//		if (boneptr){
-	//			//boneptr->SetStartMat2(boneptr->GetCurMp().GetWorldMat());
-	//			boneptr->SetStartMat2(boneptr->GetCurrentZeroFrameMat(0));
-	//		}
-	//	}
-	//}
-
-	map<int, CBone*>::iterator itrbone;
-	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
-		CBone* boneptr = itrbone->second;
-		if (boneptr && boneptr->GetParent(false) && (boneptr->IsSkeleton())){
-			CRigidElem* curre = boneptr->GetParent(false)->GetRigidElem(boneptr);
-			if (curre){
-				boneptr->GetParent(false)->CalcRigidElemParams(boneptr, firstflag);
-			}
-		}
-
-		/*
-		if (boneptr){
-			std::map<CBone*, CRigidElem*>::iterator itrtmpmap;
-			for (itrtmpmap = boneptr->GetRigidElemMapBegin(); itrtmpmap != boneptr->GetRigidElemMapEnd(); itrtmpmap++){
-				CRigidElem* curre = itrtmpmap->second;
-				if (curre){
-					CBone* childbone = itrtmpmap->first;
-					_ASSERT(childbone);
-					if (childbone){
-						boneptr->CalcRigidElemParams(childbone, firstflag);
-					}
-				}
-			}
-		}
-		*/
-	}
-
-
-	Motion2BtReq(m_topbt);
-
-	/*
-	//map<int, CBone*>::iterator itrbone;
-	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++){
-		CBone* curbone = itrbone->second;
-		if (curbone){
-			if ((curbone->GetBtKinFlag() == 0) && curbone->GetParent() && (curbone->GetParent()->GetBtKinFlag() == 1)){
-				map<CBone*, CBtObject*>::iterator itrbto;
-				for (itrbto = curbone->GetBtObjectMapBegin(); itrbto != curbone->GetBtObjectMapEnd(); itrbto++){
-					CBtObject* curbto = itrbto->second;
-					if (curbto){
-						CBtObject* parbto = itrbto->second->GetParBt();
-						if (parbto){
-							int constraintnum = parbto->GetConstraintSize();
-							int cno;
-							for (cno = 0; cno < constraintnum; cno++){
-								CONSTRAINTELEM ce = parbto->GetConstraintElem(cno);
-								if (ce.centerbone == curbone){
-									btGeneric6DofSpringConstraint* dofC = ce.constraint;
-									if (dofC){
-										int dofid;
-										for (dofid = 0; dofid < 3; dofid++){
-											dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
-											//dofC->enableSpring(dofid, true);
-										}
-										for (dofid = 3; dofid < 6; dofid++){
-											//dofC->enableSpring(dofid, true);
-											dofC->enableSpring(dofid, false);//!!!!!!!!!!!!!
-										}
-										//dofC->setAngularLowerLimit(btVector3(0.0, 0.0, 0.0));
-										//dofC->setAngularUpperLimit(btVector3(0.0, 0.0, 0.0));
-
-										//ChaVector3 bonepos = parbto->Getparentbone()->GetBtchildpos();
-										//ChaVector3 bonepos = curbone->GetParent()->GetBtchildpos();
-										ChaVector3 bonepos = curbone->GetBtparentpos();
-
-										dofC->setLinearLowerLimit(btVector3(bonepos.x, bonepos.y, bonepos.z));
-										dofC->setLinearUpperLimit(btVector3(bonepos.x, bonepos.y, bonepos.z));
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	*/
-
-	//if (g_previewFlag == 5){
-	//	if (m_topbt){
-	//		SetBtEquilibriumPointReq(m_topbt);
-	//	}
-	//}
-
+	ChaCalcFunc chacalcfunc;
+	chacalcfunc.Motion2Bt(this, limitdegflag, nextframe, pmVP, updateslot);
 
 	return 0;
 }
 
-void CModel::Motion2BtReq( CBtObject* srcbto )
+void CModel::Motion2BtReq(CBtObject* srcbto)
 {
 	//if( srcbto->GetBone() && (srcbto->GetBone()->GetBtKinFlag() == 1) ){
 	if (srcbto->GetBone()){
@@ -2317,44 +2209,44 @@ int CModel::UpdateMatrix(bool limitdegflag, ChaMatrix* wmat, ChaMatrix* vpmat, b
 	//}
 
 
+	if (GetNoBoneFlag() == false) {
+		//if ((m_boneupdatematrix != NULL) && (m_bonelist.size() >= (m_creatednum_boneupdatematrix * 4))) {
+		if ((m_boneupdatematrix != NULL) && (m_bonelist.size() >= (m_creatednum_boneupdatematrix * 2))) {
 
-	//if ((m_boneupdatematrix != NULL) && (m_bonelist.size() >= (m_creatednum_boneupdatematrix * 4))) {
-	if ((m_boneupdatematrix != NULL) && (m_bonelist.size() >= (m_creatednum_boneupdatematrix * 2))) {
-
-		//WaitUpdateMatrixFinished();//needwaitfinishedがfalseのときにも必要
-		//SwapCurrentMotionPoint();//<--- この方式は角度制限を有効にしたときに顕著にぎくしゃくするのでやめた
+			//WaitUpdateMatrixFinished();//needwaitfinishedがfalseのときにも必要
+			//SwapCurrentMotionPoint();//<--- この方式は角度制限を有効にしたときに顕著にぎくしゃくするのでやめた
 
 
-		//2023/02/02
-		//limitdegflag == true時にも　UpdateMatrixは計算済を補間するだけなので　再帰呼び出ししなくてOKになった
-		//limitdegflag == true時にも　UpdateMatrixでオイラー角もセットされるようになった(スレッド後処理は不要)
-		int updatecount;
-		for (updatecount = 0; updatecount < m_creatednum_boneupdatematrix; updatecount++) {
-			CThreadingUpdateMatrix* curupdate = m_boneupdatematrix + updatecount;
-			curupdate->UpdateMatrix(limitdegflag, curmotid, curframe, wmat, vpmat, updateslot);
+			//2023/02/02
+			//limitdegflag == true時にも　UpdateMatrixは計算済を補間するだけなので　再帰呼び出ししなくてOKになった
+			//limitdegflag == true時にも　UpdateMatrixでオイラー角もセットされるようになった(スレッド後処理は不要)
+			int updatecount;
+			for (updatecount = 0; updatecount < m_creatednum_boneupdatematrix; updatecount++) {
+				CThreadingUpdateMatrix* curupdate = m_boneupdatematrix + updatecount;
+				curupdate->UpdateMatrix(limitdegflag, curmotid, curframe, wmat, vpmat, updateslot);
+			}
+
+			if (needwaitfinished) {
+				WaitUpdateMatrixFinished();
+			}
+
+
+			//if (g_limitdegflag == true) {
+			//	CalcWorldMatAfterThreadReq(m_topbone, curmotid, curframe, wmat, vpmat);//curframe : 時間補間有り
+			//	//CalcLimitedEulAfterThreadReq(m_topbone, curmotid, curframe);
+			//}
 		}
-
-		if (needwaitfinished) {
-			WaitUpdateMatrixFinished();
+		else {
+			//map<int, CBone*>::iterator itrbone;
+			//for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
+			//	CBone* curbone = itrbone->second;
+			//	if( curbone ){
+			//		curbone->UpdateMatrix( curmotid, curframe, wmat, vpmat );
+			//	}
+			//}
+			UpdateMatrixReq(limitdegflag, GetTopBone(false), curmotid, curframe, wmat, vpmat);
 		}
-		
-
-		//if (g_limitdegflag == true) {
-		//	CalcWorldMatAfterThreadReq(m_topbone, curmotid, curframe, wmat, vpmat);//curframe : 時間補間有り
-		//	//CalcLimitedEulAfterThreadReq(m_topbone, curmotid, curframe);
-		//}
 	}
-	else {
-		//map<int, CBone*>::iterator itrbone;
-		//for( itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++ ){
-		//	CBone* curbone = itrbone->second;
-		//	if( curbone ){
-		//		curbone->UpdateMatrix( curmotid, curframe, wmat, vpmat );
-		//	}
-		//}
-		UpdateMatrixReq(limitdegflag, GetTopBone(false), curmotid, curframe, wmat, vpmat);
-	}
-
 
 
 
@@ -3287,11 +3179,17 @@ int CModel::SetCurrentMotion( int srcmotid )
 		return 0;
 	}
 }
-int CModel::SetMotionFrame( double srcframe )
+int CModel::SetMotionFrame(double srcframe)
 {
 	if( !m_curmotinfo ){
-		_ASSERT( 0 );
-		return 1;
+		if (GetNoBoneFlag()) {
+			return 0;//エラーではない　ボーンが無いだけ
+		}
+		else {
+			//エラーの可能性がある
+			_ASSERT(0);
+			return 1;
+		}
 	}
 
 	m_curmotinfo->curframe = max( 0.0, min( (m_curmotinfo->frameleng - 1.0), srcframe ) );
@@ -3303,6 +3201,16 @@ int CModel::SetMotionFrame(int srcmotid, double srcframe)
 	MOTINFO* curmi = GetMotInfo(srcmotid);
 	if (curmi) {
 		curmi->curframe = max(0.0, min((curmi->frameleng - 1.0), srcframe));
+	}
+	else {
+		if (GetNoBoneFlag()) {
+			return 0;//エラーではない　ボーンが無いだけ
+		}
+		else {
+			//エラーの可能性がある
+			_ASSERT(0);
+			return 1;
+		}
 	}
 
 	return 0;
@@ -8535,7 +8443,32 @@ void CModel::CalcRigidElemReq(CBone* curbone)
 
 }
 
+int CModel::CalcRigidElemParamsOnBt()
+{
+	if (!GetTopBt()) {
+		return 0;
+	}
+	if (!GetBtWorld()) {
+		return 0;
+	}
 
+
+	int firstflag = 0;//OnBtのときには　firstflag = 0 !!!! CalcRigidElem()との違い
+
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+		CBone* boneptr = itrbone->second;
+		if (boneptr && boneptr->GetParent(false) && (boneptr->IsSkeleton())) {
+			CRigidElem* curre = boneptr->GetParent(false)->GetRigidElem(boneptr);
+			if (curre) {
+				boneptr->GetParent(false)->CalcRigidElemParams(boneptr, firstflag);
+			}
+		}
+	}
+
+	return 0;
+
+}
 
 void CModel::CalcBtAxismat(int onfirstcreate)
 {
@@ -8567,6 +8500,106 @@ void CModel::CalcBtAxismatReq( CBone* curbone, int onfirstcreate )
 		CalcBtAxismatReq(curbone->GetBrother(false), onfirstcreate);
 	}
 }
+
+
+int CModel::SetBtMotionOnBt(bool limitdegflag,
+	double srcframe, ChaMatrix* vpmat, int updateslot)
+{
+	if (!vpmat) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	//m_matWorld = *wmat;//そのまま
+	m_matVP = *vpmat;
+
+	if (!m_topbt) {
+		//_ASSERT( 0 );
+		return 0;
+	}
+	if (!m_btWorld) {
+		return 0;
+	}
+	if (!m_curmotinfo) {
+		_ASSERT(0);
+		return 0;//!!!!!!!!!!!!
+	}
+
+	int curmotid = m_curmotinfo->motid;
+	double curframe = m_curmotinfo->curframe;
+
+	ChaMatrix inimat;
+	ChaMatrixIdentity(&inimat);
+	CQuaternion iniq;
+	iniq.SetParams(1.0f, 0.0f, 0.0f, 0.0f);
+
+	map<int, CBone*>::iterator itrbone;
+	for (itrbone = m_bonelist.begin(); itrbone != m_bonelist.end(); itrbone++) {
+		CBone* curbone = itrbone->second;
+		if (curbone) {
+			//CMotionPoint curmp = curbone->GetCurMp();
+			curbone->SetBtFlag(0);
+			//curbone->SetCurMp( curmp );
+		}
+	}
+
+	SetBtMotionReq(limitdegflag, m_topbt, &m_matWorld, vpmat);
+
+	//#########################################################################################
+	//2022/07/09
+	// endjointが頂点に影響度を持つ場合、物理時に動かないendjointに頂点が引っ張られる不具合解消
+	//2022/07/11
+	// SetShaderConstから本関数SetBtMotionに処理を移動。
+	//#########################################################################################
+
+	double roundingframe = RoundingTime(curframe);
+
+	map<int, CBone*>::iterator itrbone2;
+	for (itrbone2 = m_bonelist.begin(); itrbone2 != m_bonelist.end(); itrbone2++) {
+		CBone* curbone2 = itrbone2->second;
+		if (curbone2 && (curbone2->IsSkeleton())) {
+			if ((curbone2->GetChild(false) == NULL) || (curbone2->GetChild(false)->IsNull())) {//2023/05/09 eNullの場合も
+				if (curbone2->GetParent(false)) {
+					//2023/05/09
+					//Kinematic == falseの場合だけ　BtMatはセットされている
+					//Kinematic == trueの場合には　BtMatはセットされていない
+
+					if ((curbone2->GetParent(false)->GetBtKinFlag() != 0) ||
+						(curbone2->GetParent(false)->GetTmpKinematic() == true)) {
+
+						//parentがkinematicの場合　worldmat, limitedworldmatをセット
+						bool calcslotflag = true;
+						CMotionPoint tmpmp2 = curbone2->GetParent(false)->GetCurMp(calcslotflag);//motid, curframeを参照してもうなくいかない。GetCurMpを使う。
+						if (limitdegflag == false) {
+							curbone2->SetBtMat(tmpmp2.GetWorldMat());
+						}
+						else {
+							curbone2->SetBtMat(tmpmp2.GetLimitedWM());
+						}
+
+					}
+					else {
+						//parentが　simuの場合　btmatをセット
+						curbone2->SetBtMat(curbone2->GetParent(false)->GetBtMat(false));
+					}
+				}
+				else {
+					bool calcslotflag = true;
+					CMotionPoint tmpmp4 = curbone2->GetCurMp(calcslotflag);//motid, curframeを参照してもうなくいかない。GetCurMpを使う。
+					if (limitdegflag == false) {
+						curbone2->SetBtMat(tmpmp4.GetWorldMat());
+					}
+					else {
+						curbone2->SetBtMat(tmpmp4.GetLimitedWM());
+					}
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
 
 int CModel::SetBtMotion(bool limitdegflag, CBone* srcbone, int ragdollflag, 
 	double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat )
@@ -8671,7 +8704,7 @@ int CModel::SetBtMotion(bool limitdegflag, CBone* srcbone, int ragdollflag,
 					}
 					else {
 						//parentが　simuの場合　btmatをセット
-						curbone2->SetBtMat(curbone2->GetParent(false)->GetBtMat());
+						curbone2->SetBtMat(curbone2->GetParent(false)->GetBtMat(false));
 					}
 				}
 				else {
@@ -16618,11 +16651,11 @@ void CModel::ApplyBtToMotionReq(bool limitdegflag, CBone* srcbone)
 	if (srcbone->IsSkeleton()){
 		ChaMatrix btmat;
 		if (srcbone->GetChild(false)){
-			btmat = srcbone->GetBtMat();
+			btmat = srcbone->GetBtMat(false);
 		}
 		else{
 			if (srcbone->GetParent(false) && srcbone->GetParent(false)->IsSkeleton()) {
-				btmat = srcbone->GetParent(false)->GetBtMat();
+				btmat = srcbone->GetParent(false)->GetBtMat(false);
 			}
 			else {
 				btmat.SetIdentity();
@@ -16805,7 +16838,7 @@ void CModel::PhysIKRecReq(bool limitdegflag, CBone* srcbone, double srcrectime)
 		PHYSIKREC currec;
 		currec.time = srcrectime;
 		currec.pbone = srcbone;
-		currec.btmat = srcbone->GetBtMat();
+		currec.btmat = srcbone->GetBtMat(false);
 
 		//currec.btmat = srcbone->GetWorldMat(curmi->motid, curmi->curframe);
 
@@ -16949,8 +16982,8 @@ void CModel::ApplyPhysIkRecReq(bool limitdegflag, CBone* srcbone, double srcfram
 
 			if (foundrecdata0 && foundrecdata) {
 				ChaMatrix worldmat0 = btbone->GetWorldMat(limitdegflag, curmi->motid, RoundingTime(g_motionbrush_applyframe), 0);//or srcframe
-				ChaMatrix btmat0 = recdata0.btmat;//カレントボーンのApplyFrameにおけるドラッグ時間ゼロの姿勢
-				ChaMatrix btmat = recdata.btmat;//カレントボーンのApplyFrameにおけるドラッグ時間カレントの姿勢
+				ChaMatrix btmat0 = recdata0.btmat * ChaMatrixInv(GetWorldMat());//カレントボーンのApplyFrameにおけるドラッグ時間ゼロの姿勢
+				ChaMatrix btmat = recdata.btmat * ChaMatrixInv(GetWorldMat());//カレントボーンのApplyFrameにおけるドラッグ時間カレントの姿勢
 
 				ChaMatrix curworldmat = btbone->GetWorldMat(limitdegflag, curmi->motid, roundingframe, 0);
 
@@ -17339,7 +17372,7 @@ int CModel::CreateBoneUpdateMatrix()
 {
 
 	DestroyBoneUpdateMatrix();
-	Sleep(100);
+	//Sleep(100);
 
 
 	if (m_bonelist[0] == NULL) {
@@ -17347,21 +17380,25 @@ int CModel::CreateBoneUpdateMatrix()
 		return 1;
 	}
 
+	if (GetNoBoneFlag()) {
+		return 0;
+	}
 
-	m_boneupdatematrix = new CThreadingUpdateMatrix[g_UpdateMatrixThreads];
-	if (!m_boneupdatematrix) {
+
+	//m_boneupdatematrix = new CThreadingUpdateMatrix[g_UpdateMatrixThreads];
+	CThreadingUpdateMatrix* newthreads = new CThreadingUpdateMatrix[g_UpdateMatrixThreads];//作成途中でアクセスされないように
+	if (!newthreads) {
 		_ASSERT(0);
 		return 1;
 	}
 	int createno;
 	for (createno = 0; createno < g_UpdateMatrixThreads; createno++) {
-		CThreadingUpdateMatrix* curupdate = m_boneupdatematrix + createno;
+		CThreadingUpdateMatrix* curupdate = newthreads + createno;
 		curupdate->ClearBoneList();
 		curupdate->CreateThread((DWORD)(1 << createno));//2023/08/27
 
 		curupdate->SetModel(this);//2023/08/27
 	}
-
 
 
 	int threadcount = 0;
@@ -17378,7 +17415,7 @@ int CModel::CreateBoneUpdateMatrix()
 	for (bonecount = 0; bonecount < bonenum; bonecount++) {
 		CBone* curbone = m_bonelist[bonecount];
 		if (curbone && (curbone->IsSkeleton() || curbone->IsCamera())) {
-			CThreadingUpdateMatrix* curupdate = m_boneupdatematrix + threadcount;
+			CThreadingUpdateMatrix* curupdate = newthreads + threadcount;
 
 			curupdate->AddBoneList(curbone);
 
@@ -17406,7 +17443,8 @@ int CModel::CreateBoneUpdateMatrix()
 		}
 	}
 
-	m_creatednum_boneupdatematrix = g_UpdateMatrixThreads;
+	m_boneupdatematrix = newthreads;//作成途中でアクセスされないように　作成完了後にセット
+	m_creatednum_boneupdatematrix = g_UpdateMatrixThreads;//DestroyBoneUpdateMatrixで0セットされていて　ここで値をセット
 
 
 	return 0;
@@ -17419,12 +17457,18 @@ int CModel::DestroyBoneUpdateMatrix()
 		delete[] m_boneupdatematrix;
 	}
 	m_boneupdatematrix = 0;
+	m_creatednum_boneupdatematrix = 0;
 
 	return 0;
 }
 
 void CModel::WaitUpdateMatrixFinished()
 {
+	if (GetNoBoneFlag() == true) {
+		//2023/11/03 ボーンが無いモデルの場合　即リターン
+		return;
+	}
+
 	if (m_boneupdatematrix != NULL) {
 
 		bool yetflag = true;
@@ -17457,14 +17501,16 @@ void CModel::WaitUpdateMatrixFinished()
 int CModel::CreateCalcEulThreads()
 {
 	DestroyCalcEulThreads();
-	Sleep(100);
-
+	//Sleep(100);
 
 	if (m_bonelist[0] == NULL) {
 		_ASSERT(0);
 		return 1;
 	}
 
+	if (GetNoBoneFlag()) {
+		return 0;
+	}
 
 	m_CalcEulThreads = new CThreadingCalcEul[CALCEUL_THREADSNUM];
 	if (!m_CalcEulThreads) {
@@ -17595,6 +17641,10 @@ int CModel::CreatePostIKThreads()
 	if (m_bonelist[0] == NULL) {
 		_ASSERT(0);
 		return 1;
+	}
+
+	if (GetNoBoneFlag()) {
+		return 0;
 	}
 
 
@@ -17764,7 +17814,7 @@ int CModel::CreateInitMpThreads()
 {
 
 	DestroyInitMpThreads();
-	Sleep(100);
+	//Sleep(100);
 
 
 	if (m_bonelist[0] == NULL) {
@@ -17772,6 +17822,9 @@ int CModel::CreateInitMpThreads()
 		return 1;
 	}
 
+	if (GetNoBoneFlag()) {
+		return 0;
+	}
 
 	m_InitMpThreads = new CThreadingInitMp[INITMP_THREADSNUM];
 	if (!m_InitMpThreads) {
@@ -17939,7 +17992,7 @@ int CModel::CreateRetargetThreads()
 {
 
 	DestroyRetargetThreads();
-	Sleep(100);
+	//Sleep(100);
 
 
 	if (m_bonelist[0] == NULL) {
@@ -17947,6 +18000,9 @@ int CModel::CreateRetargetThreads()
 		return 1;
 	}
 
+	if (GetNoBoneFlag()) {
+		return 0;
+	}
 
 	m_RetargetThreads = new CThreadingRetarget[RETARGET_THREADSNUM];
 	if (!m_RetargetThreads) {
@@ -18075,7 +18131,7 @@ int CModel::CreateFKTraThreads()
 {
 
 	DestroyFKTraThreads();
-	Sleep(100);
+	//Sleep(100);
 
 
 	if (m_bonelist[0] == NULL) {
@@ -18083,6 +18139,9 @@ int CModel::CreateFKTraThreads()
 		return 1;
 	}
 
+	if (GetNoBoneFlag()) {
+		return 0;
+	}
 
 	m_FKTraThreads = new CThreadingFKTra[POSTFKTRA_THREADSNUM];
 	if (!m_FKTraThreads) {
@@ -18209,7 +18268,7 @@ int CModel::CreateCopyW2LWThreads()
 {
 
 	DestroyCopyW2LWThreads();
-	Sleep(100);
+	//Sleep(100);
 
 
 	if (m_bonelist[0] == NULL) {
@@ -18217,6 +18276,9 @@ int CModel::CreateCopyW2LWThreads()
 		return 1;
 	}
 
+	if (GetNoBoneFlag()) {
+		return 0;
+	}
 
 	m_CopyW2LWThreads = new CThreadingCopyW2LW[COPYW2LW_THREADSNUM];
 	if (!m_CopyW2LWThreads) {

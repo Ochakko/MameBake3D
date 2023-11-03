@@ -1272,15 +1272,25 @@ public: //accesser
 	};
 
 
-	ChaMatrix GetBefBtMat(){ return m_befbtmat; };
-	void SetBefBtMat(ChaMatrix srcmat){ m_befbtmat = srcmat; };
-	ChaMatrix GetBtMat(){ return m_btmat; };
-	ChaMatrix GetInvBtMat(){ ChaMatrix retmat; ChaMatrixInverse(&retmat, NULL, &m_btmat); return retmat; };
+	//ChaMatrix GetBefBtMat(){ return m_befbtmat; };
+	//void SetBefBtMat(ChaMatrix srcmat){ m_befbtmat = srcmat; };
+	ChaMatrix GetBtMat(bool calcslotflag = false){
+		if (calcslotflag == false) {
+			//計算済のm_curmpを取得する場合
+			int renderslot = (int)(!(m_updateslot != 0));
+			return m_btmat[renderslot];
+		}
+		else {
+			//姿勢の計算中にGetCurMpする場合
+			return m_btmat[m_updateslot];
+		}
+	};
+	//ChaMatrix GetInvBtMat(){ ChaMatrix retmat; ChaMatrixInverse(&retmat, NULL, &m_btmat); return retmat; };
 	void SetBtMat(ChaMatrix srcmat){
-		//if (GetBtFlag() == 0){
-			SetBefBtMat(m_btmat);
-		//}
-		m_btmat = srcmat;
+		////if (GetBtFlag() == 0){
+		//	SetBefBtMat(m_btmat[m_updateslot]);
+		////}
+		m_btmat[m_updateslot] = srcmat;
 	};
 	void SetBtEul(ChaVector3 srceul) {
 		m_bteul = srceul;
@@ -1776,8 +1786,8 @@ private:
 
 	//CQuaternion m_addlimitq;
 
-	ChaMatrix m_btmat;
-	ChaMatrix m_befbtmat;
+	ChaMatrix m_btmat[2];
+	//ChaMatrix m_befbtmat[2];
 	int m_setbtflag;
 	ChaVector3 m_bteul;
 

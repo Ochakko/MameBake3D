@@ -3095,6 +3095,7 @@ static int OnFrameBatchThread();
 //static int OnFrame();
 static int OnFrameUpdateGround();
 static int OnFrameInitBtWorld();
+int StopBtRec();
 static int ToggleRig();
 //static void UpdateBtSimu(double nextframe, CModel* curmodel);
 //static void SetKinematicToHand(CModel* srcmodel, bool srcflag);
@@ -8221,7 +8222,10 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 	VisibleUtDialog();
 
 
-	if (s_underdelmotion || s_underdelmodel || s_underselectmotion || s_underselectcamera || s_underselectmodel || s_underdispmodel) {
+	if (s_underdelmotion || s_underdelmodel || 
+		s_underselectmotion || s_underselectcamera || s_underselectmodel || s_underdispmodel || 
+		g_changeUpdateThreadsNum) {
+
 		OnFrameCloseFlag();
 		OnFrameToolWnd();
 
@@ -8288,6 +8292,7 @@ void OnUserFrameMove(double fTime, float fElapsedTime)
 		int endflag = 0;
 		int loopstartflag = 0;
 		OnFrameProcessTime(difftime, &nextframe, &endflag, &loopstartflag);
+
 
 		//#############
 		//Camera Anim
@@ -8754,7 +8759,7 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* pd3dDevice, ID3D11DeviceContext* 
 	//if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_motioncachebatchflag, 0) == 0) &&
 	if ((InterlockedAdd(&g_retargetbatchflag, 0) == 0) && (InterlockedAdd(&g_bvh2fbxbatchflag, 0) == 0) && (InterlockedAdd(&g_calclimitedwmflag, 0) == 0) &&
 		!s_underdelmodel && !s_underdelmotion && 
-		!s_underselectmodel && !s_underselectmotion && !s_underselectcamera && !s_underdispmodel) {
+		!s_underselectmodel && !s_underselectmotion && !s_underselectcamera && !s_underdispmodel && !g_changeUpdateThreadsNum) {
 
 		if (s_disponlyoneobj == false) {
 			OnRenderModel(pd3dImmediateContext);
@@ -8937,7 +8942,7 @@ void PrepairUndo()
 		//if ((s_editmotionflag >= 0) || (g_btsimurecflag == true)) {
 
 		if (s_model) {
-			CreateTimeLineMark();
+			//CreateTimeLineMark();
 			SetLTimelineMark(s_curboneno);
 
 			BRUSHSTATE brushstate;
@@ -10939,12 +10944,16 @@ void CALLBACK OnGUIEvent(UINT nEvent, int nControlID, CDXUTControl* pControl, vo
 		//s_bpWorld->setNumThread(g_numthread);
 		break;
 	case IDC_SL_UMTHREADS:
-		RollbackCurBoneNo();
-		g_UpdateMatrixThreads = (int)(g_SampleUI.GetSlider(IDC_SL_UMTHREADS)->GetValue());
-		swprintf_s(sz, 100, L"UpdateThreads:%d", g_UpdateMatrixThreads);
-		g_SampleUI.GetStatic(IDC_STATIC_UMTHREADS)->SetText(sz);
 
-		s_changeupdatethreadsFlag = true;
+		if (nEvent == EVENT_SLIDER_VALUE_CHANGED_UP) {//マウスアップのイベント
+			g_SampleUI.GetSlider(IDC_SL_UMTHREADS)->SetEnabled(false);//!!!!!!!!!
+
+			RollbackCurBoneNo();
+			g_UpdateMatrixThreads = (int)(g_SampleUI.GetSlider(IDC_SL_UMTHREADS)->GetValue());
+			swprintf_s(sz, 100, L"UpdateThreads:%d", g_UpdateMatrixThreads);
+			g_SampleUI.GetStatic(IDC_STATIC_UMTHREADS)->SetText(sz);
+			s_changeupdatethreadsFlag = true;
+		}
 
 		break;
 	case IDC_BRUSH_MIRROR_U:
@@ -15968,6 +15977,7 @@ int OnDelModel(int delmenuindex, bool ondelbutton)//default : ondelbutton == fal
 		return 0;
 	}
 
+	StopBt();//2023/11/03
 
 	int mdlnum;
 	mdlnum = s_chascene->GetModelNum();
@@ -16026,6 +16036,8 @@ int OnDelAllModel()
 		_ASSERT(0);
 		return 0;
 	}
+
+	StopBt();//2023/11/03
 
 	OrgWindowListenMouse(false);
 
@@ -29650,9 +29662,9 @@ int OnFrameUtCheckBox()
 
 
 	if (s_changeupdatethreadsFlag) {
-
 		ChangeUpdateMatrixThreads();
 		s_changeupdatethreadsFlag = false;
+		g_SampleUI.GetSlider(IDC_SL_UMTHREADS)->SetEnabled(true);//!!!!!!!!!
 	}
 
 
@@ -29986,44 +29998,6 @@ int OnFramePreviewBt(double nextframe, double difftime, int endflag, int loopsta
 	}
 
 
-	//BOOL isstartframe = FALSE;
-	//double rangestart = 1.0;
-	//s_previewrange = s_editrange;
-	//if (s_previewrange.IsSameStartAndEnd()) {
-	//	rangestart = 1.0;
-	//}
-	//else {
-	//	rangestart = s_previewrange.GetStartFrame();
-	//}
-
-	//if (g_previewFlag != 0) {
-	//	if (s_savepreviewFlag == 0) {
-	//		//preview start frame
-	//		*pdifftime = 0.0;
-	//		*pnextframe = rangestart;
-	//		isstartframe = TRUE;
-	//	}
-	//}
-
-	//if (g_previewFlag != 0) {
-	//	if (s_savepreviewFlag == 0) {
-	//		//preview start frame
-	//		s_previewrange = s_editrange;
-	//		double rangestart;
-	//		if (s_previewrange.IsSameStartAndEnd()) {
-	//			rangestart = 1.0;
-	//		}
-	//		else {
-	//			rangestart = s_previewrange.GetStartFrame();
-	//		}
-	//		s_model->SetMotionFrame(rangestart);
-	//		*pdifftime = 0.0;
-	//	}
-	//}
-
-
-	//CModel* curmodel = s_model;
-
 
 	//安定のために　シミュ開始時の姿勢で　キネマティックしている回数
 	int INITTERM;
@@ -30036,7 +30010,7 @@ int OnFramePreviewBt(double nextframe, double difftime, int endflag, int loopsta
 	int modelcount;
 	for (modelcount = 0; modelcount < modelnum; modelcount++) {
 		CModel* curmodel = s_chascene->GetModel(modelcount);
-		if (curmodel) {
+		if (curmodel && (curmodel->GetNoBoneFlag() == false)) {//2023/11/03 NoBoneのときはスキップ
 
 			if (curmodel->GetBtCnt() <= INITTERM) {
 				curmodel->SetKinematicFlag();
@@ -30052,15 +30026,6 @@ int OnFramePreviewBt(double nextframe, double difftime, int endflag, int loopsta
 				s_reccnt = 0;
 				s_model->PhysIKRec(g_limitdegflag, s_rectime);
 			}
-
-			//int endflag = 0;
-			//int loopstartflag = 0;
-			////if (isstartframe == FALSE) {
-			//curmodel->AdvanceTime(s_onefps, s_previewrange, g_previewFlag, *pdifftime, pnextframe, &endflag, &loopstartflag, -1);
-			////}
-			////else {
-			////	loopstartflag = 1;
-			////}
 
 			if ((g_btsimurecflag == true) && ((loopstartflag == 1) || (endflag == 1))) {
 				recstopflag = true;//!!!!!!!!!!!!!!!!!!!!!!!
@@ -30083,76 +30048,34 @@ int OnFramePreviewBt(double nextframe, double difftime, int endflag, int loopsta
 				//g_previewFlag = 0;
 			//}
 
-			int firstflag = 0;
 			curmodel->SetMotionFrame(nextframe);
-			////if ((IsTimeEqual(*pnextframe, rangestart)) || (loopstartflag == 1)){
-			//if((curmodel->GetBtCnt() != 0) && (loopstartflag == 1)) {
-			//	curmodel->ZeroBtCnt();
-			//	//g_previewFlag = 0;
-			//	//StartBt(curmodel, firstmodelflag, 2, 0);
-			//	//firstflag = 1;
-
-			//	curmodel->SetKinematicFlag();
-			//	//!!curmodel->SetBtEquilibriumPoint();
-
-			//}
-
-
-
-			if ((curmodel->GetBtCnt() != 0) && (loopstartflag == 1)) {
-				curmodel->ZeroBtCnt();
-				//StartBt(curmodel, TRUE, 2, 1);//flag = 2 --> resetflag = 1  //短いリターゲットモデルが頻繁に呼び出し重すぎるし他のモデルも揺れなくなる。作り直さなくても良いのでコメントアウト.　2022/01/11
-			}
-			else {
-				//UpdateBtSimu(*pnextframe, curmodel);
-				if (curmodel && curmodel->GetCurMotInfo()) {
-					ChaMatrix tmpwm = curmodel->GetWorldMat();
-					curmodel->Motion2Bt(g_limitdegflag, firstflag, nextframe, &tmpwm, &s_matVP, s_curboneno);
-				}
-				curmodel->PlusPlusBtCnt();
-			}
-
 
 		}
 	}
 
-	if (s_model && (recstopflag == true)) {
-		StopBt();
-		s_model->ApplyPhysIkRec(g_limitdegflag);
-		PrepairUndo();//物理REC用保存
-		g_btsimurecflag = false;
-	}
-	else {
-		s_bpWorld->clientMoveAndDisplay();
 
-		int modelcount2;
-		for (modelcount2 = 0; modelcount2 < modelnum; modelcount2++) {
-			CModel* curmodel = s_chascene->GetModel(modelcount2);
-			if (curmodel && (curmodel->GetBtCnt() != 0)) {
-				if (curmodel->GetCurMotInfo()) {
-					//curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
-					ChaMatrix tmpwm = curmodel->GetWorldMat();
-					curmodel->SetBtMotion(g_limitdegflag, 0, 0, nextframe, &tmpwm, &s_matVP);//第一引数は物理IK用
+	s_chascene->UpdateBtFunc(g_limitdegflag, nextframe, &s_matVP, loopstartflag, s_model, recstopflag, s_bpWorld, s_reccnt, StopBtRec);
 
-					//60 x 60 frames limit : 60 sec limit
-					if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
-						s_rectime = (double)((int)s_reccnt);
-						s_model->PhysIKRec(g_limitdegflag, s_rectime);
-						s_reccnt++;
-					}
-				}
-				else {
-					//モーションが無い場合にもChkInViewを呼ぶためにUpdateMatrix呼び出しは必要
-					ChaMatrix tmpwm = curmodel->GetWorldMat();
-					curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
-				}
-			}
-			//s_tum.SetBtMotion(OnFramePreviewBtAftFunc, s_modelindex, *pnextframe);
-		}
+	//60 x 60 frames limit : 60 sec limit
+	if ((s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
+		s_reccnt += 1.0;
 	}
+
 
 	return 0;
 }
+
+int StopBtRec()
+{
+	StopBt();
+	s_model->ApplyPhysIkRec(g_limitdegflag);
+	PrepairUndo();//物理REC用保存
+	g_btsimurecflag = false;
+
+	return 0;
+}
+
+
 
 //int OnFramePreviewBtAftFunc(double nextframe, CModel* curmodel)
 //{
@@ -32571,6 +32494,10 @@ int OnSpriteUndo()
 				}
 				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, operatingjointno, onpasteflag);
 			}
+			
+
+			//2023/11/03 hipsを３回転してアンドゥしたときに　編集範囲の境目で　オイラーグラフが連続するために必要
+			s_model->CalcBoneEul(g_limitdegflag, curmi->motid);
 
 
 
@@ -50797,8 +50724,9 @@ int ChangeUpdateMatrixThreads()
 		return 0;
 	}
 
-	g_changeUpdateThreadsNum = true;
 	StopBt();
+
+	g_changeUpdateThreadsNum = true;
 
 	//SleepEx(30, false);
 

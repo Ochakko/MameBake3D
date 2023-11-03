@@ -382,8 +382,10 @@ int CBone::InitParams()
 
 	ChaMatrixIdentity(&m_tmpsymmat);
 
-	ChaMatrixIdentity(&m_btmat);
-	ChaMatrixIdentity(&m_befbtmat);
+	ChaMatrixIdentity(&(m_btmat[0]));
+	ChaMatrixIdentity(&(m_btmat[1]));
+	//ChaMatrixIdentity(&(m_befbtmat[0]));
+	//ChaMatrixIdentity(&(m_befbtmat[1]));
 	m_setbtflag = 0;
 	m_bteul = ChaVector3(0.0f, 0.0f, 0.0f);
 

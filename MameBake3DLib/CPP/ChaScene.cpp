@@ -36,6 +36,16 @@
 
 #include <EGPFile.h>
 
+
+#include <BPWorld.h>
+#include <GlutStuff.h>
+#include <GLDebugDrawer.h>
+#include <btBulletDynamicsCommon.h>
+
+#include <ThreadingMotion2Bt.h>
+#include <ThreadingSetBtMotion.h>
+
+
 #define DBGH
 #include <dbg.h>
 
@@ -124,6 +134,13 @@ void ChaScene::InitParams()
 
 	m_totalupdatethreadsnum = 0;
 	m_updateslot = 0;
+
+	m_Motion2BtThreads = 0;//モデル数分配列
+	m_SetBtMotionThreads = 0;//モデル数分配列
+	m_created_Motion2BtThreadsNum = 0;
+	m_created_SetBtMotionThreadsNum = 0;
+
+
 }
 void ChaScene::DestroyObjs()
 {
@@ -155,7 +172,7 @@ int ChaScene::UpdateMatrixModels(bool limitdegflag, ChaMatrix* vpmat, double src
 	if (!m_modelindex.empty()) {
 
 		m_updateslot = (int)(!(m_updateslot != 0));
-		m_totalupdatethreadsnum = 0;
+		//m_totalupdatethreadsnum = 0;
 
 		bool needwaitflag = false;
 		int modelnum = (int)m_modelindex.size();
@@ -174,7 +191,12 @@ int ChaScene::UpdateMatrixModels(bool limitdegflag, ChaMatrix* vpmat, double src
 					ChaMatrix tmpwm = curmodel->GetWorldMat();
 					curmodel->UpdateMatrix(limitdegflag, &tmpwm, vpmat, needwaitflag, m_updateslot);
 				}
-				m_totalupdatethreadsnum += curmodel->GetThreadingUpdateMatrixNum();
+
+				//2023/11/03
+				//ここ(UpdateMatrixModels)でtotalupdatethreadsnumをセットすると
+				//UpdateMatrixModelsとRenderModelsの間で　OnDelModelを呼んだ場合にスレッド数が合わずに無限ループする
+				//よって　スレッド総数はWaitUpdateThreadsで調べてセットすることにした
+				//m_totalupdatethreadsnum += curmodel->GetThreadingUpdateMatrixNum();
 			}
 		}
 
@@ -340,9 +362,12 @@ int ChaScene::RenderModels(ID3D11DeviceContext* pd3dImmediateContext, int lightf
 		//Renderはm_updateslotとは違う側の計算済のデータを参照する
 		//#########################################################################################################################
 
-		WaitUpdateThreads();//!!!!!!!!!!!!!!!!
-
-
+		if (g_previewFlag != 4) {
+			WaitUpdateThreads();//!!!!!!!!!!!!!!!!
+		}
+		else {
+			WaitSetBtMotionFinished();//!!!!!!!!!!!!!!!!
+		}
 	}
 
 	return 0;
@@ -356,7 +381,19 @@ int ChaScene::WaitUpdateThreads()
 	//	return 0;
 	//}
 
+
 	int modelnum = (int)m_modelindex.size();
+
+	m_totalupdatethreadsnum = 0;
+	if (!m_modelindex.empty()) {
+		int modelindex;
+		for (modelindex = 0; modelindex < modelnum; modelindex++) {
+			CModel* curmodel = m_modelindex[modelindex].modelptr;
+			if (curmodel) {
+				m_totalupdatethreadsnum += curmodel->GetThreadingUpdateMatrixNum();
+			}
+		}
+	}
 
 	int donethreadingnum = 0;
 	bool yetflag = true;
@@ -367,7 +404,7 @@ int ChaScene::WaitUpdateThreads()
 		int modelindex2;
 		for (modelindex2 = 0; modelindex2 < modelnum; modelindex2++) {
 			CModel* curmodel = m_modelindex[modelindex2].modelptr;
-			if (curmodel) {
+			if (curmodel && (curmodel->GetNoBoneFlag() == false)) {
 				if (curmodel->GetThreadingUpdateMatrix() != NULL) {
 
 					int finishedcount = 0;
@@ -493,6 +530,20 @@ int ChaScene::DelModel(int srcmodelindex)
 		CModel* delmodel;
 		delmodel = GetModel(srcmodelindex);
 		if (delmodel) {
+
+			std::vector<MODELELEM> tmpvec;
+			std::vector<MODELELEM>::iterator itrmodel;
+			for (itrmodel = m_modelindex.begin(); itrmodel != m_modelindex.end(); itrmodel++) {
+				MODELELEM chkelem = *itrmodel;
+				CModel* chkmodel = chkelem.modelptr;
+				if (chkmodel != delmodel) {
+					tmpvec.push_back(chkelem);
+				}
+			}
+			m_modelindex.clear();
+			m_modelindex = tmpvec;
+
+
 			//map<CModel*, int>::iterator itrbonecnt;
 			//itrbonecnt = g_bonecntmap.find(delmodel);
 			//if (itrbonecnt != g_bonecntmap.end()){
@@ -510,13 +561,19 @@ int ChaScene::DelModel(int srcmodelindex)
 			delete delmodel;
 		}
 
-		int mdlno;
-		std::vector<MODELELEM>::iterator itrmodel = m_modelindex.begin();
-		for (mdlno = 0; mdlno < srcmodelindex; mdlno++) {
-			itrmodel++;
-		}
-		m_modelindex.erase(itrmodel);
-		//s_modelindex.pop_back();
+		//int mdlno;
+		//std::vector<MODELELEM>::iterator itrmodel = m_modelindex.begin();
+		//for (mdlno = 0; mdlno < srcmodelindex; mdlno++) {
+		//	itrmodel++;
+		//}
+		//m_modelindex.erase(itrmodel);
+		////s_modelindex.pop_back();
+
+
+		CreateMotion2BtThreads();
+		CreateSetBtMotionThreads();
+
+
 	}
 	else {
 		_ASSERT(0);
@@ -554,6 +611,9 @@ int ChaScene::DelAllModel()
 
 
 	m_modelindex.clear();
+
+	DestroyMotion2BtThreads();
+	DestroySetBtMotionThreads();
 
 	return 0;
 }
@@ -690,4 +750,323 @@ int ChaScene::SetENullTime(int srcmodelindex, double srcframe)
 	}
 
 	return 0;
+}
+
+int ChaScene::Motion2Bt(bool limitdegflag, double nextframe, ChaMatrix* pmVP, int loopstartflag)
+{
+	if (!pmVP) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	if (!m_modelindex.empty()) {
+
+		if (m_Motion2BtThreads) {
+			int updatecount;
+			for (updatecount = 0; updatecount < m_created_Motion2BtThreadsNum; updatecount++) {
+				CThreadingMotion2Bt* curupdate = m_Motion2BtThreads + updatecount;
+				curupdate->Motion2Bt(limitdegflag, nextframe, pmVP, loopstartflag, m_updateslot);
+			}
+			WaitMotion2BtFinished();//次に順番に計算することがあるので　待機が必要
+		}
+
+
+
+		//m_updateslot = (int)(!(m_updateslot != 0));
+		////m_totalupdatethreadsnum = 0;
+		//
+		//bool needwaitflag = false;
+		//int modelnum = (int)m_modelindex.size();
+		//int modelindex;
+		//for (modelindex = 0; modelindex < modelnum; modelindex++) {
+		//	CModel* curmodel = m_modelindex[modelindex].modelptr;
+		//	if (curmodel) {
+		//		if ((curmodel->GetBtCnt() != 0) && (loopstartflag == 1)) {
+		//			curmodel->ZeroBtCnt();
+		//		}
+		//		else {
+		//			if (curmodel->GetCurMotInfo()) {
+		//				curmodel->Motion2Bt(limitdegflag, nextframe, pmVP, m_updateslot);
+		//			}
+		//			curmodel->PlusPlusBtCnt();
+		//		}
+		//	}
+		//}
+	}
+
+
+
+
+	return 0;
+}
+
+
+int ChaScene::SetBtMotion(bool limitdegflag, double nextframe, ChaMatrix* pmVP, CModel* smodel, double srcreccnt)
+{
+	if (!pmVP) {
+		_ASSERT(0);
+		return 1;
+	}
+
+
+	if (!m_modelindex.empty()) {
+
+		if (m_SetBtMotionThreads) {
+			int updatecount;
+			for (updatecount = 0; updatecount < m_created_SetBtMotionThreadsNum; updatecount++) {
+				CThreadingSetBtMotion* curupdate = m_SetBtMotionThreads + updatecount;
+				curupdate->SetBtMotion(limitdegflag, nextframe, pmVP, smodel, srcreccnt, m_updateslot);
+			}
+			//WaitSetBtMotionFinished();//レンダー中に計算し　レンダー後に待機するので　コメントアウト
+		}
+
+
+
+		//bool needwaitflag = false;
+		//int modelnum = (int)m_modelindex.size();
+		//int modelindex;
+		//for (modelindex = 0; modelindex < modelnum; modelindex++) {
+		//	CModel* curmodel = m_modelindex[modelindex].modelptr;
+		//	if (curmodel) {
+		//		if (curmodel->GetBtCnt() != 0) {
+		//			if (curmodel->GetCurMotInfo()) {
+
+		//				curmodel->SetBtMotionOnBt(limitdegflag, nextframe, pmVP, m_updateslot);
+
+		//				////60 x 60 frames limit : 60 sec limit
+		//				//if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
+		//				//	s_rectime = (double)((int)s_reccnt);
+		//				//	s_model->PhysIKRec(g_limitdegflag, s_rectime);
+		//				//	s_reccnt++;
+		//				//}
+		//			}
+		//			else {
+		//				//モーションが無い場合にもChkInViewを呼ぶためにUpdateMatrix呼び出しは必要
+		//				ChaMatrix tmpwm = curmodel->GetWorldMat();
+		//				curmodel->UpdateMatrix(limitdegflag, &tmpwm, pmVP, m_updateslot);
+		//			}
+		//		}
+		//	}
+		//}
+	}
+
+	return 0;
+}
+
+
+int ChaScene::UpdateBtFunc(bool limitdegflag, double nextframe, ChaMatrix* pmVP, int loopstartflag,
+	CModel* smodel, bool recstopflag, BPWorld* bpWorld, double srcreccnt,
+	int (*srcStopBtRec)())
+{
+	if (!pmVP || !smodel || !bpWorld || !srcStopBtRec) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	m_updateslot = (int)(!(m_updateslot != 0));
+
+	Motion2Bt(limitdegflag, nextframe, pmVP, loopstartflag);
+
+	if (smodel && (recstopflag == true)) {
+		if (srcStopBtRec) {
+			(srcStopBtRec)();
+		}
+	}
+	else {
+		bpWorld->clientMoveAndDisplay();
+
+
+		//#### ChaSceneへ移動 ####
+		//int modelcount2;
+		//for (modelcount2 = 0; modelcount2 < modelnum; modelcount2++) {
+		//	CModel* curmodel = s_chascene->GetModel(modelcount2);
+		//	if (curmodel && (curmodel->GetBtCnt() != 0)) {
+		//		if (curmodel->GetCurMotInfo()) {
+		//			//curmodel->SetBtMotion(curmodel->GetBoneByID(s_curboneno), 0, *pnextframe, &curmodel->GetWorldMat(), &s_matVP);
+		//			ChaMatrix tmpwm = curmodel->GetWorldMat();
+		//			curmodel->SetBtMotion(g_limitdegflag, 0, 0, nextframe, &tmpwm, &s_matVP);//第一引数は物理IK用
+
+		//			//60 x 60 frames limit : 60 sec limit
+		//			if ((curmodel == s_model) && (s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
+		//				s_rectime = (double)((int)s_reccnt);
+		//				s_model->PhysIKRec(g_limitdegflag, s_rectime);
+		//				s_reccnt++;
+		//			}
+		//		}
+		//		else {
+		//			//モーションが無い場合にもChkInViewを呼ぶためにUpdateMatrix呼び出しは必要
+		//			ChaMatrix tmpwm = curmodel->GetWorldMat();
+		//			curmodel->UpdateMatrix(g_limitdegflag, &tmpwm, &s_matVP);
+		//		}
+		//	}
+		//	//s_tum.SetBtMotion(OnFramePreviewBtAftFunc, s_modelindex, *pnextframe);
+		//}
+
+		////60 x 60 frames limit : 60 sec limit
+		//if ((smodel->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {
+		//	s_rectime = (double)((int)s_reccnt);
+		//	s_model->PhysIKRec(g_limitdegflag, s_rectime);
+		//	s_reccnt++;
+		//}
+
+		SetBtMotion(limitdegflag, nextframe, pmVP, smodel, srcreccnt);
+
+	}
+
+	return 0;
+}
+
+
+
+int ChaScene::CreateMotion2BtThreads()
+{
+
+	DestroyMotion2BtThreads();
+	//Sleep(100);
+
+	int ThreadsNum = (int)m_modelindex.size();
+
+	CThreadingMotion2Bt* newthreads;
+	newthreads = new CThreadingMotion2Bt[ThreadsNum];
+	if (!newthreads) {
+		_ASSERT(0);
+		return 1;
+	}
+	int createno;
+	for (createno = 0; createno < ThreadsNum; createno++) {
+		CThreadingMotion2Bt* curupdate = newthreads + createno;
+		curupdate->CreateThread((DWORD)(1 << createno));
+
+		CModel* srcmodel = m_modelindex[createno].modelptr;
+		curupdate->SetModel(srcmodel);
+	}
+
+	m_Motion2BtThreads = newthreads;
+	m_created_Motion2BtThreadsNum = ThreadsNum;
+
+	return 0;
+}
+
+
+int ChaScene::DestroyMotion2BtThreads()
+{
+	WaitMotion2BtFinished();
+
+	if (m_Motion2BtThreads) {
+		delete[] m_Motion2BtThreads;
+	}
+	m_Motion2BtThreads = 0;
+	m_created_Motion2BtThreadsNum = 0;
+
+	return 0;
+}
+
+void ChaScene::WaitMotion2BtFinished()
+{
+	if (m_Motion2BtThreads != NULL) {
+
+		//int ThreadsNum = (int)m_modelindex.size();
+		int ThreadsNum = m_created_Motion2BtThreadsNum;
+
+		bool yetflag = true;
+		while (yetflag == true) {
+			int finishedcount = 0;
+			int updatecount;
+			for (updatecount = 0; updatecount < ThreadsNum; updatecount++) {
+				CThreadingMotion2Bt* curupdate = m_Motion2BtThreads + updatecount;
+				if (curupdate->IsFinished()) {
+					finishedcount++;
+				}
+			}
+
+			if (finishedcount == ThreadsNum) {
+				yetflag = false;
+				return;
+			}
+			else {
+				//__nop();
+				//__nop();
+				//__nop();
+				//__nop();
+			}
+		}
+
+	}
+
+}
+
+int ChaScene::CreateSetBtMotionThreads()
+{
+
+	DestroySetBtMotionThreads();
+	//Sleep(100);
+
+	int ThreadsNum = (int)m_modelindex.size();
+
+	CThreadingSetBtMotion* newthreads;
+	newthreads = new CThreadingSetBtMotion[ThreadsNum];
+	if (!newthreads) {
+		_ASSERT(0);
+		return 1;
+	}
+	int createno;
+	for (createno = 0; createno < ThreadsNum; createno++) {
+		CThreadingSetBtMotion* curupdate = newthreads + createno;
+		curupdate->CreateThread((DWORD)(1 << createno));
+
+		CModel* srcmodel = m_modelindex[createno].modelptr;
+		curupdate->SetModel(srcmodel);
+	}
+
+	m_SetBtMotionThreads = newthreads;
+	m_created_SetBtMotionThreadsNum = ThreadsNum;
+
+	return 0;
+}
+
+int ChaScene::DestroySetBtMotionThreads()
+{
+	WaitSetBtMotionFinished();
+
+	if (m_SetBtMotionThreads) {
+		delete[] m_SetBtMotionThreads;
+	}
+	m_SetBtMotionThreads = 0;
+	m_created_SetBtMotionThreadsNum = 0;
+
+	return 0;
+}
+
+void ChaScene::WaitSetBtMotionFinished()
+{
+	if (m_SetBtMotionThreads != NULL) {
+
+		//int ThreadsNum = (int)m_modelindex.size();
+		int ThreadsNum = m_created_SetBtMotionThreadsNum;
+
+		bool yetflag = true;
+		while (yetflag == true) {
+			int finishedcount = 0;
+			int updatecount;
+			for (updatecount = 0; updatecount < ThreadsNum; updatecount++) {
+				CThreadingSetBtMotion* curupdate = m_SetBtMotionThreads + updatecount;
+				if (curupdate->IsFinished()) {
+					finishedcount++;
+				}
+			}
+
+			if (finishedcount == ThreadsNum) {
+				yetflag = false;
+				return;
+			}
+			else {
+				//__nop();
+				//__nop();
+				//__nop();
+				//__nop();
+			}
+		}
+
+	}
+
 }

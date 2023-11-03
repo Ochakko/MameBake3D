@@ -92,6 +92,8 @@ public:
 		ChaMatrix oldparentwm, ChaMatrix newparentwm);
 
 
+	int Motion2Bt(CModel* srcmodel, bool limitdegflag, double nextframe, ChaMatrix* pmVP, int updateslot);
+
 
 //##############
 //For Retarget

@@ -1772,7 +1772,7 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 		//2023/10/25
 		//3回転して１回転の制限角度にする場合などに　制限中のはずの角度が小さい角度で評価されないように　&& 
 		//limitdeg trueのときにも　180度オーバーの角度で制限を掛ける
-		//if (g_underCalcEul) {
+		////if (g_underCalcEul) {
 		if (srcbone && srcbone->GetParModel() && srcbone->GetParModel()->GetUnderCalcEul()) {
 			befeul = srcbone->GetBefEul(limitdegflag, srcmotid, roundingframe);
 		}
@@ -1780,6 +1780,8 @@ ChaVector3 ChaCalcFunc::CalcLocalEulXYZ(CBone* srcbone, bool limitdegflag, int a
 			bool befeullimitdegflag = false;
 			befeul = srcbone->GetBefEul(befeullimitdegflag, srcmotid, roundingframe);
 		}
+
+
 	}
 	else if ((befeulkind == BEFEUL_DIRECT) && directbefeul) {
 		befeul.befframeeul = *directbefeul;
@@ -2921,6 +2923,47 @@ void ChaCalcFunc::UpdateParentWMReq(CBone* srcbone, bool limitdegflag, bool setb
 		UpdateParentWMReq(srcbone->GetBrother(false), limitdegflag, setbroflag, srcmotid, roundingframe,
 			oldparentwm, newparentwm);
 	}
+
+}
+
+int ChaCalcFunc::Motion2Bt(CModel* srcmodel, bool limitdegflag, double nextframe, ChaMatrix* pmVP, int updateslot)
+{
+	if (!srcmodel) {
+		_ASSERT(0);
+		return 1;
+	}
+	if (!pmVP) {
+		_ASSERT(0);
+		return 1;
+	}
+
+	ChaMatrix mW = srcmodel->GetWorldMat();
+	srcmodel->UpdateMatrix(limitdegflag, &mW, pmVP, true, updateslot);
+
+
+	if (!srcmodel->GetTopBt()) {
+		return 0;
+	}
+	if (!srcmodel->GetBtWorld()) {
+		return 0;
+	}
+
+
+	srcmodel->CalcRigidElemParamsOnBt();
+
+	srcmodel->Motion2BtReq(srcmodel->GetTopBt());
+
+
+	//if (g_previewFlag == 5){
+	//	if (m_topbt){
+	//		SetBtEquilibriumPointReq(m_topbt);
+	//	}
+	//}
+
+
+	return 0;
+
+
 
 }
 

@@ -723,6 +723,8 @@ public:
  */
 	int SetBtMotion(bool limitdegflag, CBone* srcbone, int rgdollflag, 
 		double srcframe, ChaMatrix* wmat, ChaMatrix* vpmat );
+	int SetBtMotionOnBt(bool limitdegflag,
+		double srcframe, ChaMatrix* vpmat, int updateslot);
 
 /**
  * @fn
@@ -787,8 +789,9 @@ public:
 
 	int SetColTypeAll(int reindex, int srctype);
 
-	int Motion2Bt(bool limitdegflag, int firstflag, double nextframe, 
-		ChaMatrix* mW, ChaMatrix* mVP, int selectboneno);
+	int Motion2Bt(bool limitdegflag, double nextframe, ChaMatrix* pmVP, int updateslot);
+	void Motion2BtReq(CBtObject* srcbto);
+
 	//int SetRagdollKinFlag(int selectbone, int physicsmvkind = 0);
 	int SetKinematicFlag();
 	int CreateRigidElem();
@@ -852,6 +855,7 @@ public:
 	int ApplyBtToMotion(bool limitdegflag);
 	void CalcBtAxismat(int onfirstcreate);
 	void CalcRigidElem();
+	int CalcRigidElemParamsOnBt();
 	void SetBtKinFlagReq(CBtObject* srcbto, int oncreateflag);
 	void SetKinematicFlagReq(CBtObject* srcbto);
 
@@ -958,6 +962,7 @@ public:
 	int Retarget(CModel* srcbvhmodel, ChaMatrix smatVP,
 		std::map<CBone*, CBone*>& sconvbonemap,
 		int (*srcAddMotionFunc)(const WCHAR* wfilename, double srcmotleng));
+
 
 private:
 	int InitParams();
@@ -1100,7 +1105,6 @@ private:
 	void SetColTypeReq(int reindex, CBone* srcbone, int srctype);
 
 	//void SetBtKinFlagReq(CBtObject* srcbto, int oncreateflag);
-	void Motion2BtReq( CBtObject* srcbto );
 	//void SetBtGravityReq( CBtObject* srcbto );
 	//void SetRagdollKinFlagReq( CBtObject* srcbto, int selectbone, int physicsmvkind = 0 );
 	//void CreateBtConnectReq( CBone* curbone );
@@ -1751,6 +1755,10 @@ public: //accesser
 	void SetBtWorld( btDynamicsWorld* srcworld ){
 		m_btWorld = srcworld;
 	};
+	btDynamicsWorld* GetBtWorld()
+	{
+		return m_btWorld;
+	};
 
 	int GetOldAxisFlagAtLoading()
 	{
@@ -2190,7 +2198,22 @@ public: //accesser
 		}
 	}
 
-
+	void SetUnderMotion2Bt(bool srcflag)
+	{
+		m_Under_Motion2Bt = srcflag;
+	}
+	bool GetUnderMotion2Bt()
+	{
+		return m_Under_Motion2Bt;
+	}
+	void SetUnderBt2Motion(bool srcflag)
+	{
+		m_Under_Bt2Motion = srcflag;
+	}
+	bool GetUnderBt2Motion()
+	{
+		return m_Under_Bt2Motion;
+	}
 	void SetUnderIKRot(bool srcflag)
 	{
 		m_Under_IKRot = srcflag;
@@ -2282,7 +2305,14 @@ public: //accesser
 		return m_creatednum_boneupdatematrix;
 	}
 
-
+	int GetLoopStartFlag()
+	{
+		return m_loopstartflag;
+	}
+	void SetLoopStartFlag(int srcflag)
+	{
+		m_loopstartflag = srcflag;
+	}
 
 public:
 	//CRITICAL_SECTION m_CritSection_GetGP;
@@ -2460,7 +2490,10 @@ private:
 	bool m_Under_Retarget;
 	//bool m_Under_UpdateMatrix;
 	bool m_Under_UpdateTimeline;
+	bool m_Under_Motion2Bt;
+	bool m_Under_Bt2Motion;
 
+	int m_loopstartflag;
 };
 
 #endif

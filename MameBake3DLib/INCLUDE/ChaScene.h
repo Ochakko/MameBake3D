@@ -21,6 +21,9 @@
 
 
 class CModel;
+class BPWorld;
+class CThreadingMotion2Bt;
+class CThreadingSetBtMotion;
 
 class ChaScene
 {
@@ -36,6 +39,10 @@ public:
 	{
 		if (srcmodelelem.modelptr) {
 			m_modelindex.push_back(srcmodelelem);
+
+			CreateMotion2BtThreads();
+			CreateSetBtMotionThreads();
+
 			return 0;
 		}
 		else {
@@ -43,20 +50,20 @@ public:
 			return 1;
 		}
 	};
-	int AddToModelVec(CModel* srcmodel)
-	{
-		if (srcmodel) {
-			MODELELEM addelem;
-			addelem.Init();
-			addelem.modelptr = srcmodel;
-			m_modelindex.push_back(addelem);
-			return 0;
-		}
-		else {
-			_ASSERT(0);
-			return 1;
-		}
-	};
+	//int AddToModelVec(CModel* srcmodel)
+	//{
+	//	if (srcmodel) {
+	//		MODELELEM addelem;
+	//		addelem.Init();
+	//		addelem.modelptr = srcmodel;
+	//		m_modelindex.push_back(addelem);
+	//		return 0;
+	//	}
+	//	else {
+	//		_ASSERT(0);
+	//		return 1;
+	//	}
+	//};
 
 	int UpdateMatrixModels(bool limitdegflag, ChaMatrix* vpmat, double srcframe);
 	int WaitUpdateThreads();
@@ -77,6 +84,10 @@ public:
 	int SetMotionFrame(int srcmodelindex, double srcframe);
 	int SetENullTime(int srcmodelindex, double srcframe);
 
+	int UpdateBtFunc(bool limitdegflag, double nextframe, ChaMatrix* pmVP, int loopstartflag,
+		CModel* smodel, bool recstopflag, BPWorld* bpWorld, double srcreccnt,
+		int (*srcStopBtRec)());
+
 private:
 	void InitParams();
 	void DestroyObjs();
@@ -85,6 +96,19 @@ private:
 
 	void SetKinematicToHand(CModel* srcmodel, bool srcflag);
 	void SetKinematicToHandReq(CModel* srcmodel, CBone* srcbone, bool srcflag);
+
+	int Motion2Bt(bool limitdegflag, double nextframe, ChaMatrix* pmVP, int loopstartflag);
+	int SetBtMotion(bool limitdegflag, double nextframe, ChaMatrix* pmVP, CModel* smodel, double srcreccnt);
+
+
+	int CreateMotion2BtThreads();
+	int DestroyMotion2BtThreads();
+	void WaitMotion2BtFinished();
+
+	int CreateSetBtMotionThreads();
+	int DestroySetBtMotionThreads();
+	void WaitSetBtMotionFinished();
+
 
 public:
 	bool ModelEmpty()
@@ -232,6 +256,13 @@ private:
 
 	int m_totalupdatethreadsnum;
 	int m_updateslot;
+
+	CThreadingMotion2Bt* m_Motion2BtThreads;//モデル数分配列
+	CThreadingSetBtMotion* m_SetBtMotionThreads;//モデル数分配列
+	int m_created_Motion2BtThreadsNum;
+	int m_created_SetBtMotionThreadsNum;
+
+
 };
 
 

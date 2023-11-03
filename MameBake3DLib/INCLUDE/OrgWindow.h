@@ -3313,8 +3313,14 @@ void s_dummyfunc()
 			buttonPush=false;
 			//buttonListener = [](){s_dummyfunc();};
 			buttonListener = NULL;
+
+			underButtonUpThreadFlag = 0;
 		}
 		~OWP_Button(){
+			while (InterlockedAdd(&underButtonUpThreadFlag, 0) != 0) {
+				//ボタンを押すアニメーションを再生中に　ボタンを削除しないように　待機ループ
+				Sleep(1);
+			}
 			delete[] name;
 		}
 
@@ -3422,6 +3428,7 @@ void s_dummyfunc()
 				draw();
 
 				//ボタンアップアニメーションのためのスレッド作成
+				InterlockedExchange(&underButtonUpThreadFlag, (LONG)1);
 				_beginthread(drawButtonUpThread, 0, (void*)this);
 			}
 		}
@@ -3470,6 +3477,8 @@ void s_dummyfunc()
 		static const int BOX_POS_X= 3;
 		static const int BOX_WIDTH= 10;
 
+		LONG underButtonUpThreadFlag;//ボタンを押している間にボタンを削除しないようにフラグを立てる
+
 		//////////////////////////// Method //////////////////////////////
 		//	Method : ボタンアップのスレッド
 		static void drawButtonUpThread(LPVOID	pParam){
@@ -3488,6 +3497,8 @@ void s_dummyfunc()
 				tmpRect.bottom = thisClass->pos.y + thisClass->size.y - 1;
 				InvalidateRect(thisClass->parentWindow->getHWnd(), &tmpRect, false);
 			}
+
+			InterlockedExchange(&(thisClass->underButtonUpThreadFlag), (LONG)0);
 		}
 	};
 
