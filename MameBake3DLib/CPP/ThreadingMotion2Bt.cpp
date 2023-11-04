@@ -118,7 +118,9 @@ int CThreadingMotion2Bt::ThreadFunc()
 					InterlockedExchange(&m_start_state, 0L);
 				}
 
-				m_model->SetUnderMotion2Bt(false);//!!!!!!!!
+				if (m_model) {
+					m_model->SetUnderMotion2Bt(false);//!!!!!!!!
+				}
 			}
 			else {
 
@@ -167,7 +169,9 @@ int CThreadingMotion2Bt::ThreadFunc()
 						InterlockedExchange(&m_start_state, 0L);
 					}
 
-					m_model->SetUnderMotion2Bt(false);//!!!!!!!!
+					if (m_model) {
+						m_model->SetUnderMotion2Bt(false);//!!!!!!!!
+					}
 				}
 				break;
 

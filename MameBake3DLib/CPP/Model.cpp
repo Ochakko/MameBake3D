@@ -5689,6 +5689,18 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 		return 0;
 	}
 	else {
+
+
+		CreateLoadFbxAnim(pScene);
+		//#### 2022/11/01 ################################################
+		//この時点において　m_bonelistにはCBone*がセットされている 
+		//LoadFbx()内で　CBone::SetFbxNodeOnLoadするようにした
+		//よって　スレッド準備は　CreateLoadFbxAnimでしてしまうことが可能
+		//CreateFbxAnimReq不要
+		//#### 2022/11/01 ################################################
+		//CreateFBXAnimReq(animno, pScene, pPose, prootnode, curmotid, animleng);//2022/10/21 : 最終フレームのモーションフレーム無し問題対応
+
+
 		int animno;
 		for (animno = 0; animno < lAnimStackCount; animno++) {
 
@@ -5707,6 +5719,7 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 			FbxAnimStack* lCurrentAnimationStack = m_pscene->FindMember<FbxAnimStack>(mAnimStackNameArray[animno]->Buffer());
 			if (lCurrentAnimationStack == NULL) {
 				_ASSERT(0);
+				DestroyLoadFbxAnim();
 				return 1;
 			}
 
@@ -5812,19 +5825,16 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 			//Local情報からモーションを計算する
 			m_loadbonecount = 0;
 
-			if (animno == 0) {
-				CreateLoadFbxAnim(pScene);
-
-				//#### 2022/11/01 ################################################
-				//この時点において　m_bonelistにはCBone*がセットされている 
-				//LoadFbx()内で　CBone::SetFbxNodeOnLoadするようにした
-				//よって　スレッド準備は　CreateLoadFbxAnimでしてしまうことが可能
-				//CreateFbxAnimReq不要
-				//#### 2022/11/01 ################################################
-				//CreateFBXAnimReq(animno, pScene, pPose, prootnode, curmotid, animleng);//2022/10/21 : 最終フレームのモーションフレーム無し問題対応
-
-
-			}
+			//if (animno == 0) {//2023/11/04 anim loopが始まる前の場所に引っ越し
+			//	CreateLoadFbxAnim(pScene);
+			//	//#### 2022/11/01 ################################################
+			//	//この時点において　m_bonelistにはCBone*がセットされている 
+			//	//LoadFbx()内で　CBone::SetFbxNodeOnLoadするようにした
+			//	//よって　スレッド準備は　CreateLoadFbxAnimでしてしまうことが可能
+			//	//CreateFbxAnimReq不要
+			//	//#### 2022/11/01 ################################################
+			//	//CreateFBXAnimReq(animno, pScene, pPose, prootnode, curmotid, animleng);//2022/10/21 : 最終フレームのモーションフレーム無し問題対応
+			//}
 
 			//スレッド読み込みしない場合
 			//map<int, CBone*>::iterator itranimbone;
@@ -5873,9 +5883,9 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 			}
 			else {
 			}
-			if (animno == (lAnimStackCount - 1)) {
-				DestroyLoadFbxAnim();
-			}
+			//if (animno == (lAnimStackCount - 1)) {//2023/11/04 anim loopを出たところに引っ越し
+			//	DestroyLoadFbxAnim();
+			//}
 
 
 			//motioncreatebatchflagが立っていた場合ここまで
@@ -5885,10 +5895,10 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 				//FillUpEmptyKeyReq(curmotid, (animleng - 1), m_topbone, 0);//nullジョイント対策？ 初期姿勢で初期化する処理はmotid==1以外のときにAddMotion内で行う
 
 
-			if (animno == 0) {
-				//2022/11/01 Comment out
-				//CallF(CreateFBXShape(mCurrentAnimLayer, animleng, mStart, mFrameTime2), return 1);//2022/10/21 : 最終フレームのモーションフレーム無し問題対応
-			}
+			//if (animno == 0) {
+			//	//2022/11/01 Comment out
+			//	//CallF(CreateFBXShape(mCurrentAnimLayer, animleng, mStart, mFrameTime2), return 1);//2022/10/21 : 最終フレームのモーションフレーム無し問題対応
+			//}
 
 
 			MOTINFO* pmotinfo = GetMotInfo(curmotid);
@@ -5900,6 +5910,8 @@ int CModel::CreateFBXAnim( FbxScene* pScene, FbxNode* prootnode, BOOL motioncach
 
 			//}
 		}
+
+		DestroyLoadFbxAnim();
 
 
 		////読み込みが終わったら最初のモーションをセットしておく

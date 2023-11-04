@@ -20933,11 +20933,11 @@ int RetargetMotion()
 
 	if (!s_convbone_model || !s_convbone_bvh) {
 		return 0;
-		return 0;
 	}
 
 	if (s_model != s_convbone_model) {
 		::DSMessageBox(NULL, L"Retry After Selectiong ShapeModel using ModelMenu Of MainWindow.", L"error!!!", MB_OK);
+		s_convbone_model->SetUnderRetarget(false);
 		return 1;
 	}
 
