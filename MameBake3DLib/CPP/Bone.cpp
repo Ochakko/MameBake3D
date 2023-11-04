@@ -774,7 +774,8 @@ int CBone::UpdateMatrix(bool limitdegflag, int srcmotid, double srcframe,
 		}
 
 		if (m_parmodel && (m_parmodel->GetBtCnt() == 0)) {//2022/08/18 add checking m_parmodel
-			SetBtMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, &(m_curmp[updateslot])));
+			bool settobothflag = true;//2023/11/04 ダブルバッファ物理の始まりで乱れないように　両方のスロットにセット
+			SetBtMat(GetWorldMat(limitdegflag, srcmotid, roundingframe, &(m_curmp[updateslot])), settobothflag);
 		}
 	}
 	else{

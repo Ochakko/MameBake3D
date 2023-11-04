@@ -116,7 +116,13 @@ int	g_numthread = 3;
 
 //double g_btcalccnt = 3.0;
 //double g_btcalccnt = 1.0;//2023/01/18
-double g_btcalccnt = 2.0;//2023/01/21 : Main.cpp InitApp()内でセットし直しているので注意
+//double g_btcalccnt = 2.0;//2023/01/21 : Main.cpp InitApp()内でセットし直しているので注意
+
+
+//2023/11/04 物理ダブルバッファ化で表示速度が速くなったので　2だった値を1に変更
+//Main.cpp InitApp()内でセットし直しているので注意
+double g_btcalccnt = 1.0;
+
 
 int g_dbgloadcnt = 0;
 double g_calcfps = 60.0;

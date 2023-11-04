@@ -4414,7 +4414,8 @@ void InitApp()
 	g_zcmpalways = false;
 	g_lightflag = 1;
 
-	g_btcalccnt = 2.0;
+	//g_btcalccnt = 2.0;
+	g_btcalccnt = 1.0;//2023/11/04 物理ダブルバッファ化で表示速度が速くなったので　2だった値を1に変更
 
 	s_befdeltax = 0.0f;
 
@@ -30054,7 +30055,9 @@ int OnFramePreviewBt(double nextframe, double difftime, int endflag, int loopsta
 	}
 
 
+	//2023/11/03 モデル単位マルチスレッド＆ダブルバッファ
 	s_chascene->UpdateBtFunc(g_limitdegflag, nextframe, &s_matVP, loopstartflag, s_model, recstopflag, s_bpWorld, s_reccnt, StopBtRec);
+
 
 	//60 x 60 frames limit : 60 sec limit
 	if ((s_model->GetBtCnt() > 0) && (s_reccnt < MAXPHYSIKRECCNT)) {

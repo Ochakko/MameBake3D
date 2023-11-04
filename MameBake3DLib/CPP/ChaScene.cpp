@@ -868,7 +868,7 @@ int ChaScene::UpdateBtFunc(bool limitdegflag, double nextframe, ChaMatrix* pmVP,
 
 	m_updateslot = (int)(!(m_updateslot != 0));
 
-	Motion2Bt(limitdegflag, nextframe, pmVP, loopstartflag);
+	Motion2Bt(limitdegflag, nextframe, pmVP, loopstartflag);//MultiThreading per CModel. Wait threads on return.
 
 	if (smodel && (recstopflag == true)) {
 		if (srcStopBtRec) {
@@ -879,7 +879,6 @@ int ChaScene::UpdateBtFunc(bool limitdegflag, double nextframe, ChaMatrix* pmVP,
 		bpWorld->clientMoveAndDisplay();
 
 
-		//#### ChaSceneへ移動 ####
 		//int modelcount2;
 		//for (modelcount2 = 0; modelcount2 < modelnum; modelcount2++) {
 		//	CModel* curmodel = s_chascene->GetModel(modelcount2);
@@ -912,7 +911,7 @@ int ChaScene::UpdateBtFunc(bool limitdegflag, double nextframe, ChaMatrix* pmVP,
 		//	s_reccnt++;
 		//}
 
-		SetBtMotion(limitdegflag, nextframe, pmVP, smodel, srcreccnt);
+		SetBtMotion(limitdegflag, nextframe, pmVP, smodel, srcreccnt);//MultiThreading per CModel, Not Wait threads on return.
 
 	}
 

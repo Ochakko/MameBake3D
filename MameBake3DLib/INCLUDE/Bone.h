@@ -1286,11 +1286,19 @@ public: //accesser
 		}
 	};
 	//ChaMatrix GetInvBtMat(){ ChaMatrix retmat; ChaMatrixInverse(&retmat, NULL, &m_btmat); return retmat; };
-	void SetBtMat(ChaMatrix srcmat){
+	void SetBtMat(ChaMatrix srcmat, bool settobothflag = false){
 		////if (GetBtFlag() == 0){
 		//	SetBefBtMat(m_btmat[m_updateslot]);
 		////}
-		m_btmat[m_updateslot] = srcmat;
+
+		if (settobothflag == false) {
+			m_btmat[m_updateslot] = srcmat;
+		}
+		else {
+			m_btmat[0] = srcmat;
+			m_btmat[1] = srcmat;
+		}
+		
 	};
 	void SetBtEul(ChaVector3 srceul) {
 		m_bteul = srceul;
