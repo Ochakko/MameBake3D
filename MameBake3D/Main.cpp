@@ -12420,7 +12420,8 @@ int RetargetBatch()
 
 	//2023/10/12
 	int optionret;
-	optionret = (int)::MessageBox(s_mainhwnd, L"リターゲット前にSmooth処理をしますか？", L"Select Option", MB_YESNO);
+	optionret = (int)::MessageBox(s_mainhwnd, L"リターゲット前にSmooth処理をしますか？\nDo you want to smooth before retargeting?\nN or Y.", L"Select Option", 
+		MB_ICONQUESTION | MB_YESNO | MB_DEFBUTTON2);
 	if (optionret == IDYES) {
 		s_smoothBefRetarget = true;
 	}
