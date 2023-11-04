@@ -3072,7 +3072,8 @@ int CQuaternion::Q2EulXYZusingQ(bool srcunderIKRot, bool srcunderRetarget,
 	//float throundX = 91.0f;
 	//float throundY = 180.0f;
 	//float throundZ = 180.0f;
-	float throundX = 91.0f;
+	//float throundX = 91.0f;
+	float throundX = 181.0f;
 	float throundY = 181.0f;
 	float throundZ = 181.0f;
 
@@ -3266,7 +3267,6 @@ int CQuaternion::Q2EulXYZusingQ(bool srcunderIKRot, bool srcunderRetarget,
 		//x180のGUIスイッチをオンにした時のみModifyする
 		if (g_x180flag == true) {
 		
-
 			//if((g_underRetargetFlag == true) || (g_x180flag == true)) {
 			//if ((notmodify180flag == 0) && (isendbone != 0)) {
 			if (notmodify180flag == 0) {
