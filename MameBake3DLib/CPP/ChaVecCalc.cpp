@@ -3259,7 +3259,14 @@ int CQuaternion::Q2EulXYZusingQ(bool srcunderIKRot, bool srcunderRetarget,
 		
 		//if (g_underRetargetFlag == false) {
 		//if ((g_underIKRot == false) || (g_x180flag == true)) {
-		if ((srcunderRetarget == false) || (g_x180flag == true)) {
+		//if ((srcunderRetarget == false) || (g_x180flag == true)) {
+
+
+		//2023/11/04 fbxの読み書きの際に　ModifyXは不要(Hunt+bvh144_2の読み書きでテスト)
+		//x180のGUIスイッチをオンにした時のみModifyする
+		if (g_x180flag == true) {
+		
+
 			//if((g_underRetargetFlag == true) || (g_x180flag == true)) {
 			//if ((notmodify180flag == 0) && (isendbone != 0)) {
 			if (notmodify180flag == 0) {
