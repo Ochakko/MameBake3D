@@ -3056,7 +3056,15 @@ int CQuaternion::Q2EulXYZusingQ(bool srcunderIKRot, bool srcunderRetarget,
 
 		//thdeg = 140.0f;
 		//thdeg = 90.0f;
-		thdeg = 91.0f;
+		
+
+		//thdeg = 91.0f;//1.2.0.27, 1.2.0.28
+
+
+		//2023/11/06
+		//他の部分が直ったから？　直感的にも適当な値でうまくいった
+		//bvh144_1, bvh144_2をリターゲットして　読み書き読み書きテストOK
+		thdeg = 181.0f;
 
 	}
 	else {
@@ -3072,10 +3080,13 @@ int CQuaternion::Q2EulXYZusingQ(bool srcunderIKRot, bool srcunderRetarget,
 	//float throundX = 91.0f;
 	//float throundY = 180.0f;
 	//float throundZ = 180.0f;
-	//float throundX = 91.0f;
-	float throundX = 181.0f;
-	float throundY = 181.0f;
-	float throundZ = 181.0f;
+	//float throundX = 91.0f;//1.2.0.27
+	//float throundX = 181.0f;//1.2.0.28
+	//float throundY = 181.0f;//1.2.0.28
+	//float throundZ = 181.0f;//1.2.0.28
+	float throundX = 179.0f;//2023/11/06　bvh144_1も直った　オイラー角の３６０degree段差も直った
+	float throundY = 179.0f;//2023/11/06　bvh144_1も直った　オイラー角の３６０degree段差も直った
+	float throundZ = 179.0f;//2023/11/06　bvh144_1も直った　オイラー角の３６０degree段差も直った
 
 
 	ChaVector3 validbefeul;//2023/10/14

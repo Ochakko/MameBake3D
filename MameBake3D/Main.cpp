@@ -10505,22 +10505,23 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 
 		if ((s_undoFlag == false) && (s_redoFlag == false)) {
 
-			if (s_model && ikdoneflag) {
-				//############################################################################################################
-				//2023/10/16 - 2023/10/19
-				//マルチスレッドのコンテクストを　揃っている情報と要求される計算順序によって決めた
-				//親のボーンの姿勢を使う階層順の計算では　フレーム番号単位のマルチスレッド
-				//全ボーンの姿勢が揃った後で　前のフレームの姿勢を元にオイラー角を計算する際には　ボーンごとのマルチスレッド
-				// 
-				//befeul.currentframeeulでオイラーは　フレーム番号ごとのマルチスレッドで計算されている状態
-				// ！！！！！　g_underIKRot = falseとした後で　！！！！！
-				//後処理として　befeul.befframeeulで　ボーンごとのマルチスレッドで計算して正しいオイラーにする
-				//############################################################################################################
-				MOTINFO* curmi = s_model->GetCurMotInfo();
-				if (curmi) {
-					s_model->CalcBoneEul(g_limitdegflag, curmi->motid);
-				}
-			}
+			//2023//11/06 CopyLimitedWorldToWorldよりも後ろに移動
+			//if (s_model && ikdoneflag) {
+			//	//############################################################################################################
+			//	//2023/10/16 - 2023/10/19
+			//	//マルチスレッドのコンテクストを　揃っている情報と要求される計算順序によって決めた
+			//	//親のボーンの姿勢を使う階層順の計算では　フレーム番号単位のマルチスレッド
+			//	//全ボーンの姿勢が揃った後で　前のフレームの姿勢を元にオイラー角を計算する際には　ボーンごとのマルチスレッド
+			//	// 
+			//	//befeul.currentframeeulでオイラーは　フレーム番号ごとのマルチスレッドで計算されている状態
+			//	// ！！！！！　g_underIKRot = falseとした後で　！！！！！
+			//	//後処理として　befeul.befframeeulで　ボーンごとのマルチスレッドで計算して正しいオイラーにする
+			//	//############################################################################################################
+			//	MOTINFO* curmi = s_model->GetCurMotInfo();
+			//	if (curmi) {
+			//		s_model->CalcBoneEul(g_limitdegflag, curmi->motid);
+			//	}
+			//}
 
 			//2023/02/04
 			//LimitEulにチェックを入れて編集したモーション部分を　角度制限無しの姿勢にベイクする
@@ -10538,6 +10539,27 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 				CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag,
 					s_model->GetTopBone(false)->GetBoneNo(), onpasteflag);
 			}
+
+
+			//2023//11/06 CopyLimitedWorldToWorldよりも後ろに移動
+			if (s_model && ikdoneflag) {
+				//############################################################################################################
+				//2023/10/16 - 2023/10/19
+				//マルチスレッドのコンテクストを　揃っている情報と要求される計算順序によって決めた
+				//親のボーンの姿勢を使う階層順の計算では　フレーム番号単位のマルチスレッド
+				//全ボーンの姿勢が揃った後で　前のフレームの姿勢を元にオイラー角を計算する際には　ボーンごとのマルチスレッド
+				// 
+				//befeul.currentframeeulでオイラーは　フレーム番号ごとのマルチスレッドで計算されている状態
+				// ！！！！！　g_underIKRot = falseとした後で　！！！！！
+				//後処理として　befeul.befframeeulで　ボーンごとのマルチスレッドで計算して正しいオイラーにする
+				//############################################################################################################
+				MOTINFO* curmi = s_model->GetCurMotInfo();
+				if (curmi) {
+					s_model->CalcBoneEul(g_limitdegflag, curmi->motid);
+				}
+			}
+
+
 
 			UpdateEditedEuler();
 			//refreshEulerGraph();
@@ -17418,7 +17440,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				wfilename[0] = 0L;
 				WCHAR waFolderPath[MAX_PATH];
 				//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_PROGRAMS, 0);//これではAppDataのパスになってしまう
-				swprintf_s(waFolderPath, MAX_PATH, L"C:\\Program Files\\OchakkoLAB\\EditMot1.2.0.28\\Test\\");
+				swprintf_s(waFolderPath, MAX_PATH, L"C:\\Program Files\\OchakkoLAB\\EditMot1.2.0.29\\Test\\");
 				ofn.lpstrInitialDir = waFolderPath;
 				ofn.lpstrFile = wfilename;
 
@@ -29217,6 +29239,14 @@ int ChangeLimitDegFlag(bool srcflag, bool setcheckflag, bool updateeulflag)
 		//	}
 		//}
 
+
+		//2023/11/06 IK直後のグラフと　LimitEulオンオフ後のグラフが同一になるように
+		MOTINFO* curmi = s_model->GetCurMotInfo();
+		if (curmi) {
+			s_model->CalcBoneEul(g_limitdegflag, curmi->motid);
+		}
+
+
 		//refreshEulerGraph();
 		UpdateEditedEuler();
 	}
@@ -40302,7 +40332,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.28 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.29 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -48266,7 +48296,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.28 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.29 : No.%d : ", s_appcnt);
 
 
 	if (s_model && s_chascene) {
