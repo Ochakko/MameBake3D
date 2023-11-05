@@ -31351,6 +31351,13 @@ int OnFrameToolWnd()
 				}
 			}
 
+
+			MOTINFO* curmi = s_model->GetCurMotInfo();
+			if (curmi) {
+				s_model->CalcBoneEul(g_limitdegflag, curmi->motid);//2023/11/05 既存モーションの上にペーストする際にギザギザしないように
+			}
+
+
 			//UpdateEditedEuler();
 			refreshEulerGraph();
 
