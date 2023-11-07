@@ -1693,12 +1693,19 @@ int ChaCalcFunc::CalcBoneEulOne(CModel* srcmodel, bool limitdegflag, CBone* curb
 		double srcframe;
 		for (srcframe = RoundingTime(startframe); srcframe <= RoundingTime(endframe); srcframe += 1.0) {
 			cureul = curbone->CalcLocalEulXYZ(limitdegflag, paraxiskind, srcmotid, srcframe, BEFEUL_BEFFRAME);
-			//curbone->SetLocalEul(limitdegflag, srcmotid, srcframe, cureul, 0);
+			////curbone->SetLocalEul(limitdegflag, srcmotid, srcframe, cureul, 0);
 
-			//ChaVector3 srceul = curbone->GetLocalEul(limitdegflag, srcmotid, srcframe, 0);
-			BEFEUL befeul = curbone->GetBefEul(limitdegflag, srcmotid, srcframe);
-			int notmodify180flag = curbone->GetNotModify180Flag(srcmotid, srcframe);
-			ModifyEuler360(&cureul, &(befeul.befframeeul), notmodify180flag, 15.0f, 15.0f, 15.0f);
+			////ChaVector3 srceul = curbone->GetLocalEul(limitdegflag, srcmotid, srcframe, 0);
+
+			//2023/11/07 
+			// GetLocalEulではなくCalcLocalEulXYZを呼び出すことにしたので　ModifyEulerについてはCalcLocalEulXYZで呼び出されている
+			// よってModifyEuler360をコメントアウト
+			//BEFEUL befeul = curbone->GetBefEul(limitdegflag, srcmotid, srcframe);
+			//int notmodify180flag = curbone->GetNotModify180Flag(srcmotid, srcframe);
+			////ModifyEuler360(&cureul, &(befeul.befframeeul), notmodify180flag, 15.0f, 15.0f, 15.0f);//1.2.0.27, 1.2.0.28, 1.2.0.29
+			//ModifyEuler360(&cureul, &(befeul.befframeeul), notmodify180flag, 1.0f, 1.0f, 1.0f);
+
+
 			//ModifyEuler360(&srceul, &(befeul.befframeeul), notmodify180flag, 91.0f, 181.0f, 181.0f);
 			//ModifyEuler360(&srceul, &(befeul.befframeeul), notmodify180flag, 91.0f, 91.0f, 91.0f);
 			//ModifyEuler360(&srceul, &(befeul.befframeeul), notmodify180flag, 45.0f, 45.0f, 45.0f);

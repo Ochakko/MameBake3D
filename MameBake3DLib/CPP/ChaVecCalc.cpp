@@ -2965,7 +2965,8 @@ int CQuaternion::Q2EulXYZusingMat(int rotorder, CQuaternion* axisq, ChaVector3 b
 	Euler.x = (float)(x * 180.0 / PAI);
 	Euler.y = (float)(y * 180.0 / PAI);
 	Euler.z = (float)(z * 180.0 / PAI);
-	chacalcfunc.ModifyEuler360(&Euler, &befeul, notmodify180flag, 91.0f, 180.0f, 180.0f);
+	//chacalcfunc.ModifyEuler360(&Euler, &befeul, notmodify180flag, 91.0f, 180.0f, 180.0f);
+	chacalcfunc.ModifyEuler360(&Euler, &befeul, notmodify180flag, 179.0f, 179.0f, 179.0f);//2023/11/07
 
 
 	*reteul = Euler;
@@ -3071,7 +3072,31 @@ int CQuaternion::Q2EulXYZusingQ(bool srcunderIKRot, bool srcunderRetarget,
 		//thdeg = 180.0f;
 		//thdeg = 360.0f;
 		//thdeg = 91.0f;
-		thdeg = 165.0f;
+		
+		//thdeg = 165.0f;//1.2.0.27, 1.2.0.28, 1.2.0.29
+
+
+		//2023/11/07
+		//bvh144_1の足のつま先について　試行錯誤　
+		//一番ましなところで妥協
+		// 
+		//thdeg = 181.0f;//最後から大分前から裏
+		//thdeg = 155.0f;//最後の部分が裏
+		//thdeg = 145.0f;//最後から少し前から裏
+		//thdeg = 179.0f;//最後から大分前から裏
+		//thdeg = 175.0f;//最後から大分前から裏
+		//thdeg = 160.0f;//最後から大分前から裏
+		//thdeg = 134.0f;//最後から大分前から裏
+		//thdeg = 158.0f;//最後の部分が裏
+		//thdeg = 143.0f;//最後から大分前から裏
+
+
+		//2023/11/08
+		//最後の部分が裏
+		//プログラムとしてはこれ以上は難しい
+		//最後の部分は使う側で角度制限の設定で対応する他にない
+		//つま先のXのmin:-30, max:30(実際にはそんなに動かないが)で　かなり緩和
+		thdeg = 159.0f;
 	}
 
 	//2023/10/16

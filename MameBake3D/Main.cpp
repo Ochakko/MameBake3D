@@ -9307,6 +9307,10 @@ LRESULT CALLBACK MsgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, boo
 						bool onpasteflag = false;
 						CopyLimitedWorldToWorld(s_model, allframeflag, setcursorflag, updatejointno, onpasteflag);
 					}
+
+					s_model->CalcBoneEul(g_limitdegflag, mi->motid);//2023/11/07
+					
+
 					refreshEulerGraph();
 					PrepairUndo();
 				}
@@ -17440,7 +17444,7 @@ LRESULT CALLBACK OpenMqoDlgProc(HWND hDlgWnd, UINT msg, WPARAM wp, LPARAM lp)
 				wfilename[0] = 0L;
 				WCHAR waFolderPath[MAX_PATH];
 				//SHGetSpecialFolderPath(NULL, waFolderPath, CSIDL_PROGRAMS, 0);//これではAppDataのパスになってしまう
-				swprintf_s(waFolderPath, MAX_PATH, L"C:\\Program Files\\OchakkoLAB\\EditMot1.2.0.29\\Test\\");
+				swprintf_s(waFolderPath, MAX_PATH, L"C:\\Program Files\\OchakkoLAB\\EditMot1.2.0.30\\Test\\");
 				ofn.lpstrInitialDir = waFolderPath;
 				ofn.lpstrFile = wfilename;
 
@@ -40332,7 +40336,7 @@ HWND CreateMainWindow()
 
 
 	WCHAR strwindowname[MAX_PATH] = { 0L };
-	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.29 : No.%d : ", s_appcnt);
+	swprintf_s(strwindowname, MAX_PATH, L"EditMot Ver1.2.0.30 : No.%d : ", s_appcnt);
 
 	s_rcmainwnd.top = 0;
 	s_rcmainwnd.left = 0;
@@ -48296,7 +48300,7 @@ void SetMainWindowTitle()
 
 	//"まめばけ３D (MameBake3D)"
 	WCHAR strmaintitle[MAX_PATH * 3] = { 0L };
-	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.29 : No.%d : ", s_appcnt);
+	swprintf_s(strmaintitle, MAX_PATH * 3, L"EditMot Ver1.2.0.30 : No.%d : ", s_appcnt);
 
 
 	if (s_model && s_chascene) {
