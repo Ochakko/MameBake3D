@@ -3022,11 +3022,6 @@ int CQuaternion::Q2EulXYZusingQ(bool srcunderIKRot, bool srcunderRetarget,
 	//const float thdeg = 165.0f;
 	//const float thdeg = 90.0f;//2023/10/11
 
-
-	//2023/10/12_1
-	//通常ボーン90.0度 endjoint180度で大体うまくいくのでこれをデフォルト値とする (一番問題が出やすいbvh121とbvh144でテストして決めた)
-	//bvh2fbxもやり直してテスト
-	//今後の予定として　デフォルト値を変更必要なジョイントに対して　GUIで閾値を軸ごとに変更可能にする
 	float thdeg;
 	if (isendbone == 0) {
 
@@ -3065,7 +3060,7 @@ int CQuaternion::Q2EulXYZusingQ(bool srcunderIKRot, bool srcunderRetarget,
 		//2023/11/06
 		//他の部分が直ったから？　直感的にも適当な値でうまくいった
 		//bvh144_1, bvh144_2をリターゲットして　読み書き読み書きテストOK
-		thdeg = 181.0f;
+		thdeg = 181.0f;//1.2.0.29
 
 	}
 	else {
@@ -3096,7 +3091,7 @@ int CQuaternion::Q2EulXYZusingQ(bool srcunderIKRot, bool srcunderRetarget,
 		//プログラムとしてはこれ以上は難しい
 		//最後の部分は使う側で角度制限の設定で対応する他にない
 		//つま先のXのmin:-30, max:30(実際にはそんなに動かないが)で　かなり緩和
-		thdeg = 159.0f;
+		thdeg = 159.0f;//1.2.0.30
 	}
 
 	//2023/10/16

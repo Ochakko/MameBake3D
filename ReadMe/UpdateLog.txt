@@ -1,7 +1,9 @@
 2023/11/08
-　　気になったので　覚えているうちにDirectX12対応前に　特別に対応
+    EditMot 1.2.0.30 RC1(リリース候補1)
 
-    2023/11/08
+　　マウスホイールでタイムラインのフレームを移動する場合に　前フレーム以前のゴーストがみえるのを軽減
+
+　　裏返り対策処理における　末端ジョイントの閾値を再調整
 	bvh144_1について
 	大体は出来ていたのだが最後の部分でどうしてもつま先が裏返っていた
 	よって調整
@@ -11,10 +13,56 @@
 	つま先のXのmin:-30, max:30(実際にはそんなに動かないが)で　かなり緩和.
 	
 
+    今後の予定
+	1.2.0.30リリース後は　DirectX12対応のため　次回リリースまでの期間が長くなる予定
+	DirectX12対応版は　MameBake3D別レポジトリになる可能性が高い
+	別レポジトリにする場合においても　github.com/Ochakkoアカウント内のレポジトリの予定
+	1.2.0.30の致命的な不具合が分かった場合には　対応予定
+
+
+
+　おちゃっこLAB
+	https://ochakkolab.jp/
+
+　YouTubeチャンネル
+	https://www.youtube.com/@ochakkolab
+
+	動画　モーキャプでポーズtoポーズ　ver.1.2.0.25
+		https://youtu.be/e6XSIv3hiJI
+
+	動画　モーキャプを滑らかにコピペ編集 ver.1.2.0.25
+		https://youtu.be/A8E1K5UXOaM
+
+	動画　モーキャプ編集ツール　1.2.0.24 (2023/09)
+		https://youtu.be/LEbueHtc57Q
+
+	動画　0.07倍速でパンチしたら物理はどうなるんだろう？
+		https://youtu.be/gKuLzPDt-cc
+
+	動画　【小人】小人制御の物理【ドリブン】
+		https://youtu.be/SRoi8Ds9NYI
+
+	動画　いろいろ直った物理でボクシングの動画	
+		https://youtu.be/Zr7fT1gsCl4
+
+	動画　作り直した位置コンストレイント
+		https://youtu.be/8p13H6MGQZ8
+
+	動画　変な風には曲がらない位置コンストレイント
+		https://youtu.be/9Xt8cxjByeA
+
+	動画　制限角度をキャプチャーする
+		https://youtu.be/mkkpo5cmLBs
+
+	動画　モーキャプの動きを盛れ！
+		https://youtu.be/DV9gYsgDzz0
+
+
+
 
 
 2023/11/06
-    EditMot 1.2.0.29 RC1 (リリース候補1)
+    EditMot 1.2.0.29 release
 
 　　オイラーグラフ全般の改善
 	fbx読み書きにも関わる修正
@@ -23,14 +71,11 @@
 	IK終了後に　LimitEulをオンオフするとグラフの形が変わる不具合修正
 	bvh144_1の足が180degree反転する不具合が直った
 
-
     今後の予定
 	1.2.0.29リリース後は　DirectX12対応のため　次回リリースまでの期間が長くなる予定
 	DirectX12対応版は　MameBake3D別レポジトリになる可能性が高い
 	別レポジトリにする場合においても　github.com/Ochakkoアカウント内のレポジトリの予定
 	1.2.0.29の致命的な不具合が分かった場合には　対応予定
-
-
 
 
 2023/11/05
@@ -89,41 +134,6 @@
 
 
 
-　おちゃっこLAB
-	https://ochakkolab.jp/
-
-　YouTubeチャンネル
-	https://www.youtube.com/@ochakkolab
-
-	動画　モーキャプでポーズtoポーズ　ver.1.2.0.25
-		https://youtu.be/e6XSIv3hiJI
-
-	動画　モーキャプを滑らかにコピペ編集 ver.1.2.0.25
-		https://youtu.be/A8E1K5UXOaM
-
-	動画　モーキャプ編集ツール　1.2.0.24 (2023/09)
-		https://youtu.be/LEbueHtc57Q
-
-	動画　0.07倍速でパンチしたら物理はどうなるんだろう？
-		https://youtu.be/gKuLzPDt-cc
-
-	動画　【小人】小人制御の物理【ドリブン】
-		https://youtu.be/SRoi8Ds9NYI
-
-	動画　いろいろ直った物理でボクシングの動画	
-		https://youtu.be/Zr7fT1gsCl4
-
-	動画　作り直した位置コンストレイント
-		https://youtu.be/8p13H6MGQZ8
-
-	動画　変な風には曲がらない位置コンストレイント
-		https://youtu.be/9Xt8cxjByeA
-
-	動画　制限角度をキャプチャーする
-		https://youtu.be/mkkpo5cmLBs
-
-	動画　モーキャプの動きを盛れ！
-		https://youtu.be/DV9gYsgDzz0
 
 
 

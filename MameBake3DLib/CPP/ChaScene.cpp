@@ -214,33 +214,15 @@ int ChaScene::UpdateMatrixModels(bool limitdegflag, ChaMatrix* vpmat, double src
 		//#########################################################################################
 
 
-		//int donethreadingnum = 0;
-		//bool yetflag = true;
-		//while (donethreadingnum < totalupdatethreadsnum) {
-		//
-		//	donethreadingnum = 0;
-		//
-		//	int modelindex2;
-		//	for (modelindex2 = 0; modelindex2 < modelnum; modelindex2++) {
-		//		CModel* curmodel = m_modelindex[modelindex2].modelptr;
-		//		if (curmodel) {
-		//			if (curmodel->GetThreadingUpdateMatrix() != NULL) {
-		//
-		//				int finishedcount = 0;
-		//				int updatecount;
-		//				for (updatecount = 0; updatecount < curmodel->GetThreadingUpdateMatrixNum(); updatecount++) {
-		//					CThreadingUpdateMatrix* curupdate = curmodel->GetThreadingUpdateMatrix() + updatecount;
-		//					if (curupdate->IsFinished()) {
-		//						donethreadingnum++;
-		//					}
-		//				}
-		//			}
-		//			else {
-		//				_ASSERT(0);
-		//			}
-		//		}
-		//	}
-		//}
+
+		//2023/11/09 1.2.0.30 RC1
+		//プレビュー中以外に　タイムラインのフレームを移動する場合に　前フレーム以前の表示が気になるので
+		//プレビュー中以外のときには同期する　Render()においてはcalcslotflag=trueで描画
+		if (g_previewFlag == 0) {
+			WaitUpdateThreads();
+		}
+
+
 	}
 
 	return 0;
@@ -252,6 +234,18 @@ int ChaScene::RenderModels(ID3D11DeviceContext* pd3dImmediateContext, int lightf
 	if (g_changeUpdateThreadsNum) {
 		//アップデート用スレッド数を変更中
 		return 0;
+	}
+
+
+	//2023/11/09
+	//マウスホイールで　ロングタイムラインのフレームを移動する際に
+	//前フレーム以前のゴーストがみえないように calcslotflag = trueを SetShaderConst()に渡す
+	bool calcslotflag;
+	if (g_previewFlag == 0) {
+		calcslotflag = true;
+	}
+	else {
+		calcslotflag = false;
 	}
 
 
@@ -333,11 +327,11 @@ int ChaScene::RenderModels(ID3D11DeviceContext* pd3dImmediateContext, int lightf
 
 									if (curobj->GetDispObj()) {
 										if (curobj->GetPm3()) {
-											CallF(curmodel->SetShaderConst(curobj, btflag), return 1);
+											CallF(curmodel->SetShaderConst(curobj, btflag, calcslotflag), return 1);
 											CallF(curobj->GetDispObj()->RenderNormalPM3(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, curobj), return 1);
 										}
 										else if (curobj->GetPm4()) {
-											CallF(curmodel->SetShaderConst(curobj, btflag), return 1);
+											CallF(curmodel->SetShaderConst(curobj, btflag, calcslotflag), return 1);
 											CallF(curobj->GetDispObj()->RenderNormal(withalpha, pd3dImmediateContext, lightflag, diffusemult, materialdisprate, curobj), return 1);
 										}
 										else {
@@ -365,12 +359,24 @@ int ChaScene::RenderModels(ID3D11DeviceContext* pd3dImmediateContext, int lightf
 		//Renderはm_updateslotとは違う側の計算済のデータを参照する
 		//#########################################################################################################################
 
-		if (g_previewFlag != 4) {
-			WaitUpdateThreads();//!!!!!!!!!!!!!!!!
+		//Render中は同時進行し　Render後に待つことで　ダブルバッファ同期!!!!!!!!!!!!!!!!
+		if ((g_previewFlag != 0) && (g_previewFlag != 4)) {
+			WaitUpdateThreads();
 		}
-		else {
+		else if (g_previewFlag == 4) {
 			WaitSetBtMotionFinished();//!!!!!!!!!!!!!!!!
 		}
+		else {
+			//
+			//g_previewFlag == 0
+			// 
+			// 
+			//2023/11/09 1.2.0.30 RC1
+			//プレビュー中以外に　タイムラインのフレームを移動する場合に　前フレーム以前の表示が気になるので
+			//プレビュー中以外のときには同期する(UpdaetMatrixModelsの終わりで終了待機)　Render()においてはcalcslotflag=trueで描画
+		}
+
+		
 	}
 
 	return 0;
