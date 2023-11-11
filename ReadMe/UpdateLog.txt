@@ -1,3 +1,11 @@
+2023/11/11
+　　ドキュメント追加（仕様分）
+	Documents/MameBake3DSpec_MultiThreading_DoubleBuffer_20231111.txt
+
+
+
+
+
 2023/11/09
     EditMot 1.2.0.30 release
 
